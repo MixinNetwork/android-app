@@ -16,7 +16,7 @@ import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -59,24 +59,24 @@ open class MixinApplication :
     CameraXConfig.Provider {
 
     @EntryPoint
-    @InstallIn(ApplicationComponent::class)
+    @InstallIn(SingletonComponent::class)
     interface MixinJobManagerEntryPoint {
         fun getMixinJobManager(): MixinJobManager
     }
 
     @EntryPoint
-    @InstallIn(ApplicationComponent::class)
+    @InstallIn(SingletonComponent::class)
     interface CallStateLiveDataEntryPoint {
         fun getCallStateLiveData(): CallStateLiveData
     }
 
     @EntryPoint
-    @InstallIn(ApplicationComponent::class)
+    @InstallIn(SingletonComponent::class)
     interface HiltWorkerFactoryEntryPoint {
         fun getHiltWorkerFactory(): HiltWorkerFactory
     }
 
-    @InstallIn(ApplicationComponent::class)
+    @InstallIn(SingletonComponent::class)
     @EntryPoint
     interface AppEntryPoint {
         fun inject(app: MixinApplication)

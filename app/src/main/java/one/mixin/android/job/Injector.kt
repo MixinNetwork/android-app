@@ -5,7 +5,7 @@ import com.google.gson.JsonElement
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.CircleService
@@ -99,7 +99,7 @@ open class Injector {
     @Inject
     lateinit var database: MixinDatabase
 
-    @InstallIn(ApplicationComponent::class)
+    @InstallIn(SingletonComponent::class)
     @EntryPoint
     interface InjectorEntryPoint {
         fun inject(injector: Injector)

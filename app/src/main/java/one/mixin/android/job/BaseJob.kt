@@ -10,7 +10,7 @@ import com.bugsnag.android.MetaData
 import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -60,7 +60,7 @@ import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params) {
 
-    @InstallIn(ApplicationComponent::class)
+    @InstallIn(SingletonComponent::class)
     @EntryPoint
     interface JobEntryPoint {
         fun inject(baseJob: BaseJob)
