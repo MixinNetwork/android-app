@@ -635,6 +635,7 @@
     <string name="setting_notification_confirmation">通知和确认</string>
     <string name="contact_share_apps_no_app">没有应用</string>
     <string name="setting_appearance">外观</string>
+    <string name="setting_diagnosis">网络诊断</string>
     <string name="setting_theme">主题</string>
     <string name="setting_phone_number">手机号码</string>
     <string name="setting_phone_number_privacy">谁可以通过手机号找到你</string>

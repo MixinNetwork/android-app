@@ -34,6 +34,7 @@ class HostSelectionInterceptor private constructor() : Interceptor {
     private var host: HttpUrl? = URL.toHttpUrlOrNull()
 
     private fun setHost(url: String) {
+        CURRENT_URL = url
         this.host = url.toHttpUrlOrNull()
     }
 
@@ -65,6 +66,9 @@ class HostSelectionInterceptor private constructor() : Interceptor {
     }
 
     companion object {
+        var CURRENT_URL: String = URL
+            private set
+
         @Synchronized
         fun get(): HostSelectionInterceptor {
             if (instance == null) {
