@@ -14,7 +14,7 @@
 
     <TextView
         android:id="@+id/symbol_tv"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/badge_circle_iv"
         android:layout_marginEnd="@dimen/margin20"
@@ -25,7 +25,7 @@
 
     <TextView
         android:id="@+id/name_tv"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/symbol_tv"
         android:layout_marginTop="6dp"
@@ -35,4 +35,30 @@
         android:ellipsize="end"
         android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/change_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_toEndOf="@id/symbol_tv"
+        android:layout_alignBaseline="@id/symbol_tv"
+        android:layout_alignParentEnd="true"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textColor="@color/wallet_green"/>
+
+    <TextView
+        android:id="@+id/price_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_marginTop="2dp"
+        android:layout_toEndOf="@id/name_tv"
+        android:layout_alignBaseline="@+id/name_tv"
+        android:layout_alignParentEnd="true"
+        android:gravity="end"
+        android:maxLines="1"
+        android:textSize="12sp"
+        android:textColor="?attr/text_minor"/>
 </RelativeLayout>

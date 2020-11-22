@@ -66,4 +66,4 @@ fun Asset.toAssetItem(): AssetItem = AssetItem(
     confirmations, null, null, null, null, assetKey, reserve
 )
 
-fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl)
+fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, priceUsd, changeUsd)
