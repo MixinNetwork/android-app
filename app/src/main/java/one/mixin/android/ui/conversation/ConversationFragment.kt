@@ -42,6 +42,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
@@ -141,6 +142,8 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
+import one.mixin.android.ui.conversation.chat.ChatItemCallback
+import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
@@ -1209,6 +1212,11 @@ class ConversationFragment() :
                 releaseChatControl(fling)
             }
         }
+
+        chat_rv.setScrollingTouchSlop(SWAP_SLOT)
+
+        initTouchHelper()
+
         action_bar.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
@@ -1376,6 +1384,34 @@ class ConversationFragment() :
             }
         )
         bindData()
+    }
+
+    lateinit var itemTouchHelper:ItemTouchHelper
+    private fun initTouchHelper() {
+        val callback =
+            ChatItemCallback(
+                object : ChatItemCallback.ItemCallbackListener {
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
+                        chatAdapter.getItem(viewHolder.absoluteAdapterPosition)?.let {
+                            reply_view.bind(it)
+                        }
+                        itemTouchHelper.attachToRecyclerView(null)
+                        itemTouchHelper.attachToRecyclerView(chat_rv)
+                        if (!reply_view.isVisible) {
+                            reply_view.fadeIn()
+                            chat_control.reset()
+                            if (chat_control.isRecording) {
+                                OpusAudioRecorder.get(conversationId).stopRecording(false)
+                                chat_control.cancelExternal()
+                            }
+                            chat_control.chat_et.showKeyboard()
+                            chat_control.chat_et.requestFocus()
+                        }
+                    }
+                }
+            )
+        itemTouchHelper = ItemTouchHelper(callback)
+        itemTouchHelper.attachToRecyclerView(chat_rv)
     }
 
     private fun addSticker(m: MessageItem) = lifecycleScope.launch(Dispatchers.IO) {
