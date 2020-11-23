@@ -30,7 +30,7 @@ class CustomDns(private val dnsHostname: String) : Dns {
             }.map {
                 val kFunction = ARecord::getAddress
                 kFunction(it)
-            }
+            }.filter { it.hostAddress != "127.0.0.1" && it.hostAddress != "0.0.0.0" }
         if (ipAddresses.isNotEmpty()) {
             return ipAddresses
         }
