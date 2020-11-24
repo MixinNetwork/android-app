@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_bot_manager.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.notEmptyWithElse
-import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 
@@ -67,7 +67,7 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
             v.startDrag(data, shadowBuilder, v, 0)
         }
         v.alpha = 0.2f
-        v.context.vibrate(longArrayOf(0, 30L))
+        v.context.tapVibrate()
         return false
     }
 }

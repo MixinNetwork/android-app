@@ -23,7 +23,7 @@ import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.FabLoadingFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
@@ -107,7 +107,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment() {
 
     private val mKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 id_et.setText(id_et.text.dropLast(1))
             } else {
@@ -116,7 +116,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment() {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 id_et.setText("")
             } else {

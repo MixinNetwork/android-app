@@ -122,7 +122,6 @@ import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.vibrate
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
@@ -1326,16 +1325,7 @@ class ConversationFragment() :
             chatAdapter.selectSet.valueAt(0)?.let {
                 reply_view.bind(it)
             }
-            if (!reply_view.isVisible) {
-                reply_view.fadeIn()
-                chat_control.reset()
-                if (chat_control.isRecording) {
-                    OpusAudioRecorder.get(conversationId).stopRecording(false)
-                    chat_control.cancelExternal()
-                }
-                chat_control.chat_et.showKeyboard()
-                chat_control.chat_et.requestFocus()
-            }
+            displayReplyView()
             closeTool()
         }
 
@@ -1393,24 +1383,14 @@ class ConversationFragment() :
             ChatItemCallback(
                 requireContext(),
                 object : ChatItemCallback.ItemCallbackListener {
-                    override fun onSwiped(position:Int) {
+                    override fun onSwiped(position: Int) {
                         chatAdapter.getItem(position)?.let {
                             reply_view.bind(it)
                         }
                         itemTouchHelper.attachToRecyclerView(null)
                         itemTouchHelper.attachToRecyclerView(chat_rv)
-                        if (!reply_view.isVisible) {
-                            reply_view.fadeIn()
-                            chat_control.reset()
-                            if (chat_control.isRecording) {
-                                OpusAudioRecorder.get(conversationId).stopRecording(false)
-                                chat_control.cancelExternal()
-                            }
-                            if (!input_layout.isKeyboardOpen) {
-                                chat_control.chat_et.showKeyboard()
-                            }
-                            chat_control.chat_et.requestFocus()
-                        }
+                        displayReplyView()
+                        closeTool()
                     }
                 }
             )
@@ -2697,5 +2677,18 @@ class ConversationFragment() :
                 (this.view.findViewById(R.id.snackbar_text) as TextView)
                     .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }.show()
+    }
+
+    private fun displayReplyView() {
+        if (!reply_view.isVisible) {
+            reply_view.fadeIn()
+            chat_control.reset()
+            if (chat_control.isRecording) {
+                OpusAudioRecorder.get(conversationId).stopRecording(false)
+                chat_control.cancelExternal()
+            }
+            chat_control.chat_et.showKeyboard()
+            chat_control.chat_et.requestFocus()
+        }
     }
 }

@@ -69,9 +69,9 @@ import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.renderConversation
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.vibrate
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -201,7 +201,7 @@ class ConversationListFragment : LinkFragment() {
 
                     if (height >= vibrateDis) {
                         if (!vibrated) {
-                            requireContext().vibrate(longArrayOf(0, 30))
+                            requireContext().tapVibrate()
                             vibrated = true
                         }
                         animDownIcon(true)
@@ -216,7 +216,7 @@ class ConversationListFragment : LinkFragment() {
             override fun onRelease(fling: Int) {
                 val shouldVibrate = false
                 if (shouldVibrate && !vibrated) {
-                    requireContext().vibrate(longArrayOf(0, 30))
+                    requireContext().tapVibrate()
                     vibrated = true
                 }
                 val topFl = top_fl ?: return

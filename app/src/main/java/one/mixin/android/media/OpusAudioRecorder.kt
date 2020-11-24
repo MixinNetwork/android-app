@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.util.DispatchQueue
 import java.io.File
 import java.util.UUID
@@ -190,7 +190,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                 audioRecord = null
                 return@Runnable
             }
-            ctx.vibrate(longArrayOf(0, 10))
+            ctx.tapVibrate()
             state = STATE_RECORDING
         } catch (e: Exception) {
             recordingAudioFile?.delete()
@@ -215,7 +215,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
     fun stopRecording(send: Boolean, vibrate: Boolean = true) {
         recordQueue.cancelRunnable(recodeStartRunnable)
         if (vibrate) {
-            ctx.vibrate(longArrayOf(0, 10))
+            ctx.tapVibrate()
         }
         recordQueue.postRunnable(
             Runnable {

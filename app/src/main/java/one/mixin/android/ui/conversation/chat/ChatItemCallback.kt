@@ -7,8 +7,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.translationX
-import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import kotlin.math.max
 
@@ -16,7 +16,7 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
     ItemTouchHelper.Callback() {
 
     private fun vibrate() {
-        context.vibrate(longArrayOf(0, 15))
+        context.tapVibrate()
     }
 
     private fun rootLayout(itemView: View): View {

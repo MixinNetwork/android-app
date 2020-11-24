@@ -17,8 +17,8 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -280,7 +280,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 pin.delete()
             } else {
@@ -289,7 +289,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 pin.clear()
             } else {

@@ -16,7 +16,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.tapVibrate
 import java.util.LinkedList
 import java.util.regex.Pattern
 
@@ -102,7 +102,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                             handleLongClick = false
                             delay(LONG_CLICK_TIME)
                             autoLinkOnLongClickListener?.let {
-                                context.vibrate(longArrayOf(0, 30))
+                                context.tapVibrate()
                                 it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
                             }
                             setLongPressed(true)
