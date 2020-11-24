@@ -5,6 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.extension.ANIMATION_DURATION_SHORTEST
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.translationX
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
@@ -60,7 +61,7 @@ class ChatItemCallback(private val listener: ItemCallbackListener) :
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         super.clearView(recyclerView, viewHolder)
         rootLayout(viewHolder.itemView).apply {
-            translationX(0f, 100)
+            translationX(0f, ANIMATION_DURATION_SHORTEST)
         }
     }
 
