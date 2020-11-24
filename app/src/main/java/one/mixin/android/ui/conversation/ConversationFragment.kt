@@ -122,6 +122,7 @@ import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.vibrate
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
@@ -1386,12 +1387,13 @@ class ConversationFragment() :
         bindData()
     }
 
-    lateinit var itemTouchHelper:ItemTouchHelper
+    lateinit var itemTouchHelper: ItemTouchHelper
     private fun initTouchHelper() {
         val callback =
             ChatItemCallback(
                 object : ChatItemCallback.ItemCallbackListener {
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
+                        requireContext().vibrate(longArrayOf(0, 10))
                         chatAdapter.getItem(viewHolder.absoluteAdapterPosition)?.let {
                             reply_view.bind(it)
                         }
@@ -1404,7 +1406,9 @@ class ConversationFragment() :
                                 OpusAudioRecorder.get(conversationId).stopRecording(false)
                                 chat_control.cancelExternal()
                             }
-                            chat_control.chat_et.showKeyboard()
+                            if (!input_layout.isKeyboardOpen) {
+                                chat_control.chat_et.showKeyboard()
+                            }
                             chat_control.chat_et.requestFocus()
                         }
                     }

@@ -50,7 +50,7 @@ class ChatItemCallback(private val listener: ItemCallbackListener) :
         if (!isCurrentlyActive) return
 
         rootLayout(viewHolder.itemView).apply {
-            translationX = max(-SWAP_SLOT.toFloat(), dX)
+            translationX = max(-(SWAP_SLOT - 16.dp).toFloat(), dX)
         }
     }
 
@@ -61,7 +61,7 @@ class ChatItemCallback(private val listener: ItemCallbackListener) :
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         super.clearView(recyclerView, viewHolder)
         rootLayout(viewHolder.itemView).apply {
-            translationX(0f, ANIMATION_DURATION_SHORTEST)
+            translationX(0f, 100)
         }
     }
 
@@ -70,6 +70,6 @@ class ChatItemCallback(private val listener: ItemCallbackListener) :
     }
 
     companion object {
-        val SWAP_SLOT: Int = 48.dp
+        val SWAP_SLOT: Int = 64.dp
     }
 }
