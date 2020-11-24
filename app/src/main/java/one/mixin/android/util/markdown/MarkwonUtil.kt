@@ -14,6 +14,7 @@ import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.MarkwonVisitor
 import io.noties.markwon.core.CorePlugin
 import io.noties.markwon.core.MarkwonTheme
+import io.noties.markwon.core.SimplePlugin
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.ext.tasklist.TaskListPlugin
@@ -40,11 +41,8 @@ import org.commonmark.node.SoftLineBreak
 class MarkwonUtil {
     companion object {
 
-        fun getBaseMarkwon(context: Context): Markwon {
-            return Markwon.builder(context).usePlugin(
-                object : AbstractMarkwonPlugin() {
-                }
-            ).build()
+        fun getSimpleMarkwon(context: Context): Markwon {
+            return Markwon.builderNoCore(context).usePlugin(SimplePlugin.create()).build()
         }
 
         fun getMarkwon(
@@ -203,22 +201,24 @@ class MarkwonUtil {
         }
 
         fun parseContent(content: String?): String {
-            content ?: return MixinApplication.appContext.getString(R.string.conversation_status_post)
+            content
+                ?: return MixinApplication.appContext.getString(R.string.conversation_status_post)
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
 
-        private fun createGlidePlugin(context: Context): GlideImagesPlugin = GlideImagesPlugin.create(
-            object : GlideStore {
-                override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
-                    if (context.isActivityNotDestroyed()) {
-                        Glide.with(context).clear(target)
+        private fun createGlidePlugin(context: Context): GlideImagesPlugin =
+            GlideImagesPlugin.create(
+                object : GlideStore {
+                    override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
+                        if (context.isActivityNotDestroyed()) {
+                            Glide.with(context).clear(target)
+                        }
+                    }
+
+                    override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
+                        return Glide.with(context).load(drawable.destination)
                     }
                 }
-
-                override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                    return Glide.with(context).load(drawable.destination)
-                }
-            }
-        )
+            )
     }
 }

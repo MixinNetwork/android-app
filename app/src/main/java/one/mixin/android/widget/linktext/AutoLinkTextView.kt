@@ -17,6 +17,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.extension.tapVibrate
+import one.mixin.android.util.markdown.MarkwonUtil.Companion.getSimpleMarkwon
 import java.util.LinkedList
 import java.util.regex.Pattern
 
@@ -48,7 +49,8 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             return
         }
 
-        val spannableString = makeSpannableString(text)
+        // Todo mention
+        val spannableString = makeSpannableString(getSimpleMarkwon(context).toMarkdown(text.toString()))
         if (movementMethod == null) {
             movementMethod = LinkTouchMovementMethod()
         }
@@ -76,10 +78,13 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     private var handleLongClick = false
 
     private fun makeSpannableString(
-        text: CharSequence,
-        spannable: SpannableString? = null
+        text: CharSequence
     ): SpannableString {
-        val spannableString = spannable ?: SpannableString(text)
+        val spannableString = if (text is SpannableString) {
+            text
+        } else {
+            SpannableString(text)
+        }
 
         val autoLinkItems = matchedRanges(text)
 
