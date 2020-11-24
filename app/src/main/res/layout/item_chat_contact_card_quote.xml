@@ -1,136 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/chat_msg_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:paddingTop="1.5dp"
-    tools:ignore="UselessParent">
+    android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/chat_name"
-        android:layout_width="wrap_content"
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical|end"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginEnd="-40dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        tools:ignore="ContentDescription" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="1.5dp"
-        android:ellipsize="end"
-        android:gravity="start|center_vertical"
-        android:lines="1"
-        android:minWidth="30dp"
-        android:textColor="#19BEF1"
-        android:textSize="14sp" />
+        android:id="@+id/chat_msg_layout"
 
-    <FrameLayout
-        android:id="@+id/chat_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp">
-
-        <one.mixin.android.widget.QuoteLayout
-            android:id="@+id/chat_quote_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <one.mixin.android.widget.QuoteView
-                android:id="@+id/chat_quote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <RelativeLayout
-                android:layout_width="240dp"
-                android:layout_height="68dp"
-                android:padding="4dp">
-
-                <Space
-                    android:id="@+id/center"
-                    android:layout_width="1dp"
-                    android:layout_height="1dp"
-                    android:layout_centerVertical="true" />
-
-                <one.mixin.android.widget.AvatarView
-                    android:id="@+id/avatar_iv"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="4dp"
-                    android:src="@drawable/default_avatar" />
-
-                <TextView
-                    android:id="@+id/name_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@id/center"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginBottom="2dp"
-                    android:layout_toEndOf="@id/avatar_iv"
-                    android:ellipsize="end"
-                    android:maxWidth="140dp"
-                    android:minWidth="30dp"
-                    android:singleLine="true"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp" />
-
-                <ImageView
-                    android:id="@+id/verified_iv"
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_alignTop="@id/name_tv"
-                    android:layout_alignBottom="@id/name_tv"
-                    android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@id/name_tv"
-                    android:src="@drawable/ic_user_verified"
-                    android:visibility="gone"
-                    tools:ignore="ContentDescription" />
-
-                <ImageView
-                    android:id="@+id/bot_iv"
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_alignTop="@id/name_tv"
-                    android:layout_alignBottom="@id/name_tv"
-                    android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@id/verified_iv"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_bot"
-                    android:visibility="gone" />
-
-                <TextView
-                    android:id="@+id/id_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/center"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_toEndOf="@id/avatar_iv"
-                    android:ellipsize="end"
-                    android:fontFamily="@font/roboto_light"
-                    android:singleLine="true"
-                    android:textColor="@color/gray_50"
-                    android:textSize="12sp" />
-
-            </RelativeLayout>
-        </one.mixin.android.widget.QuoteLayout>
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="1.5dp"
+        tools:ignore="UselessParent">
 
         <TextView
-            android:id="@+id/chat_time"
+            android:id="@+id/chat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="4dp"
-            android:layout_marginBottom="4dp"
-            android:drawablePadding="3dp"
-            android:fontFamily="@font/roboto_light"
-            android:gravity="end|bottom"
-            android:textColor="@color/color_chat_date"
-            android:textSize="@dimen/chat_date_size"
-            tools:text="7:48AM" />
-    </FrameLayout>
-</LinearLayout>
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="1.5dp"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:lines="1"
+            android:minWidth="30dp"
+            android:textColor="#19BEF1"
+            android:textSize="14sp" />
+
+        <FrameLayout
+            android:id="@+id/chat_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp">
+
+            <one.mixin.android.widget.QuoteLayout
+                android:id="@+id/chat_quote_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <one.mixin.android.widget.QuoteView
+                    android:id="@+id/chat_quote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <RelativeLayout
+                    android:layout_width="240dp"
+                    android:layout_height="68dp"
+                    android:padding="4dp">
+
+                    <Space
+                        android:id="@+id/center"
+                        android:layout_width="1dp"
+                        android:layout_height="1dp"
+                        android:layout_centerVertical="true" />
+
+                    <one.mixin.android.widget.AvatarView
+                        android:id="@+id/avatar_iv"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:src="@drawable/default_avatar" />
+
+                    <TextView
+                        android:id="@+id/name_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/center"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginBottom="2dp"
+                        android:layout_toEndOf="@id/avatar_iv"
+                        android:ellipsize="end"
+                        android:maxWidth="140dp"
+                        android:minWidth="30dp"
+                        android:singleLine="true"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="16sp" />
+
+                    <ImageView
+                        android:id="@+id/verified_iv"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_alignTop="@id/name_tv"
+                        android:layout_alignBottom="@id/name_tv"
+                        android:layout_marginStart="8dp"
+                        android:layout_toEndOf="@id/name_tv"
+                        android:src="@drawable/ic_user_verified"
+                        android:visibility="gone"
+                        tools:ignore="ContentDescription" />
+
+                    <ImageView
+                        android:id="@+id/bot_iv"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_alignTop="@id/name_tv"
+                        android:layout_alignBottom="@id/name_tv"
+                        android:layout_marginStart="8dp"
+                        android:layout_toEndOf="@id/verified_iv"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_bot"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/id_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/center"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_toEndOf="@id/avatar_iv"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/roboto_light"
+                        android:singleLine="true"
+                        android:textColor="@color/gray_50"
+                        android:textSize="12sp" />
+
+                </RelativeLayout>
+            </one.mixin.android.widget.QuoteLayout>
+
+            <TextView
+                android:id="@+id/chat_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="4dp"
+                android:drawablePadding="3dp"
+                android:fontFamily="@font/roboto_light"
+                android:gravity="end|bottom"
+                android:textColor="@color/color_chat_date"
+                android:textSize="@dimen/chat_date_size"
+                tools:text="7:48AM" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

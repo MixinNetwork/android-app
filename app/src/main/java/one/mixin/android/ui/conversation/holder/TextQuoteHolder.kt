@@ -40,18 +40,18 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (itemView.chat_msg_layout.layoutParams as FrameLayout.LayoutParams)
+        val lp = (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams)
         if (isMe) {
             lp.gravity = Gravity.END
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    itemView.chat_content_layout,
                     R.drawable.chat_bubble_reply_me_last,
                     R.drawable.chat_bubble_reply_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    itemView.chat_content_layout,
                     R.drawable.chat_bubble_reply_me,
                     R.drawable.chat_bubble_reply_me_night
                 )
@@ -60,13 +60,13 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             lp.gravity = Gravity.START
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    itemView.chat_content_layout,
                     R.drawable.chat_bubble_reply_other_last,
                     R.drawable.chat_bubble_reply_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    itemView.chat_content_layout,
                     R.drawable.chat_bubble_reply_other,
                     R.drawable.chat_bubble_reply_other_night
                 )
@@ -123,7 +123,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             }
         }
 
-        itemView.chat_layout.setOnLongClickListener {
+        itemView.chat_content_layout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -215,7 +215,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             itemView.chat_representative.isVisible = representativeIcon != null
         }
         itemView.chat_secret.isVisible = messageItem.isSignal()
-        itemView.chat_layout.setOnClickListener {
+        itemView.chat_content_layout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {

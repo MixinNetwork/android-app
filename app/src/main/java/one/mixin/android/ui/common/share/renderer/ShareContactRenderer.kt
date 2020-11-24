@@ -20,7 +20,7 @@ open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
     val contentView: View = LayoutInflater.from(context).inflate(R.layout.item_chat_contact_card, null)
 
     init {
-        (contentView.out_ll.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
+        (contentView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
         contentView.chat_name.isVisible = false
     }
 
@@ -41,7 +41,7 @@ open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
             contentView.chat_secret.isVisible = secretIcon != null
         }
 
-        contentView.chat_layout.setBackgroundResource(
+        contentView.chat_content_layout.setBackgroundResource(
             if (!isNightMode) {
                 R.drawable.bill_bubble_me_last
             } else {

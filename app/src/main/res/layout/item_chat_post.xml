@@ -7,6 +7,22 @@
     android:clickable="true"
     android:focusable="true">
 
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginStart="16dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_layout"
+        tools:ignore="ContentDescription" />
+
     <TextView
         android:id="@+id/chat_name"
         android:layout_width="wrap_content"
