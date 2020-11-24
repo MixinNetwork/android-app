@@ -1391,10 +1391,10 @@ class ConversationFragment() :
     private fun initTouchHelper() {
         val callback =
             ChatItemCallback(
+                requireContext(),
                 object : ChatItemCallback.ItemCallbackListener {
-                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
-                        requireContext().vibrate(longArrayOf(0, 10))
-                        chatAdapter.getItem(viewHolder.absoluteAdapterPosition)?.let {
+                    override fun onSwiped(position:Int) {
+                        chatAdapter.getItem(position)?.let {
                             reply_view.bind(it)
                         }
                         itemTouchHelper.attachToRecyclerView(null)

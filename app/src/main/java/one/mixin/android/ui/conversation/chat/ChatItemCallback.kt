@@ -1,18 +1,23 @@
 package one.mixin.android.ui.conversation.chat
 
+import android.content.Context
 import android.graphics.Canvas
 import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.extension.ANIMATION_DURATION_SHORTEST
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.translationX
+import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import kotlin.math.max
 
-class ChatItemCallback(private val listener: ItemCallbackListener) :
+class ChatItemCallback(private val context: Context, private val listener: ItemCallbackListener) :
     ItemTouchHelper.Callback() {
+
+    private fun vibrate() {
+        context.vibrate(longArrayOf(0, 15))
+    }
 
     private fun rootLayout(itemView: View): View {
         return itemView.findViewById(R.id.chat_layout)
@@ -38,6 +43,16 @@ class ChatItemCallback(private val listener: ItemCallbackListener) :
         return false
     }
 
+    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+    override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+        super.onSelectedChanged(viewHolder, actionState)
+        if (actionState == ItemTouchHelper.ACTION_STATE_IDLE && hold != -1) {
+            listener.onSwiped(hold)
+        }
+    }
+
+    private var hold = -1
     override fun onChildDraw(
         c: Canvas,
         recyclerView: RecyclerView,
@@ -47,15 +62,17 @@ class ChatItemCallback(private val listener: ItemCallbackListener) :
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        if (!isCurrentlyActive) return
-
-        rootLayout(viewHolder.itemView).apply {
-            translationX = max(-(SWAP_SLOT - 16.dp).toFloat(), dX)
+        if (dX < -TRIGGER) {
+            if (hold != viewHolder.absoluteAdapterPosition) {
+                hold = viewHolder.absoluteAdapterPosition
+                vibrate()
+            }
+        } else {
+            hold = -1
         }
-    }
-
-    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        listener.onSwiped(viewHolder)
+        rootLayout(viewHolder.itemView).apply {
+            translationX = max(-(DISPLAY).toFloat(), dX)
+        }
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
@@ -66,10 +83,12 @@ class ChatItemCallback(private val listener: ItemCallbackListener) :
     }
 
     interface ItemCallbackListener {
-        fun onSwiped(viewHolder: RecyclerView.ViewHolder)
+        fun onSwiped(position: Int)
     }
 
     companion object {
-        val SWAP_SLOT: Int = 64.dp
+        val SWAP_SLOT: Int = 128.dp
+        val TRIGGER: Int = 48.dp
+        val DISPLAY: Int = 64.dp
     }
 }
