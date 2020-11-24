@@ -27,6 +27,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {

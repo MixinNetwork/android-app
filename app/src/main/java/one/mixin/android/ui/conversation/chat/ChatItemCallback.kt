@@ -27,7 +27,7 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder
     ): Int {
-        val swipeFlags = if (viewHolder is BaseViewHolder) {
+        val swipeFlags = if (viewHolder is BaseViewHolder && !viewHolder.canNotReply) {
             ItemTouchHelper.LEFT
         } else {
             0

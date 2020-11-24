@@ -90,12 +90,12 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         onItemListener: ConversationAdapter.OnItemListener,
         miniMarkwon: Markwon
     ) {
+        super.bind(messageItem)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-
         itemView.chat_tv.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)

@@ -142,6 +142,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         this.onItemListener = onItemListener
         location = toLocationData(messageItem.content)
         if (location?.name == null) {

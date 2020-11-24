@@ -6,7 +6,8 @@ import one.mixin.android.vo.MessageItem
 
 class CardHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
-    fun bind(messageItem: MessageItem) {
+    public override fun bind(messageItem: MessageItem) {
+        super.bind(messageItem)
         itemView.name_tv.text = messageItem.content
     }
 }

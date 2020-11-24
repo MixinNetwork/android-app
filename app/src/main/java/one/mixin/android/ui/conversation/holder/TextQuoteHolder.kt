@@ -86,6 +86,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)

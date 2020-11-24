@@ -80,6 +80,7 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         val isMe = meId == messageItem.userId
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {

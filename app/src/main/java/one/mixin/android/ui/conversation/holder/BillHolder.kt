@@ -32,6 +32,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         this.onItemListener = onItemListener
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
