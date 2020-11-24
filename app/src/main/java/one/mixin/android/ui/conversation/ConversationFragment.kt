@@ -54,6 +54,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
+import kotlinx.android.synthetic.main.fragment_conversation.view.*
+import kotlinx.android.synthetic.main.view_chat_control.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_flag.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
@@ -89,6 +91,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
@@ -969,7 +972,7 @@ class ConversationFragment() :
                 }
                 reply_view.messageItem?.let {
                     if (it.messageId == event.messageId) {
-                        reply_view.fadeOut(isGone = true)
+                        reply_view.animateHeight(53.dp, 0)
                         reply_view.messageItem = null
                     }
                 }
@@ -1115,7 +1118,7 @@ class ConversationFragment() :
                 true
             }
             reply_view.visibility == VISIBLE -> {
-                reply_view.fadeOut(isGone = true)
+                reply_view.animateHeight(53.dp, 0)
                 true
             }
             else -> false
@@ -1130,7 +1133,7 @@ class ConversationFragment() :
             chat_control.reset()
         }
         if (reply_view.isVisible) {
-            reply_view.fadeOut(isGone = true)
+            reply_view.animateHeight(53.dp, 0)
         }
     }
 
@@ -1275,7 +1278,7 @@ class ConversationFragment() :
         }
         reply_view.reply_close_iv.setOnClickListener {
             reply_view.messageItem = null
-            reply_view.fadeOut(isGone = true)
+            reply_view.animateHeight(53.dp, 0)
         }
         tool_view.copy_iv.setOnClickListener {
             try {
@@ -1735,7 +1738,7 @@ class ConversationFragment() :
         if (isAdded) {
             val messageItem = reply_view.messageItem
             if (reply_view.isVisible) {
-                reply_view.fadeOut(isGone = true)
+                reply_view.animateHeight(53.dp, 0)
                 reply_view.messageItem = null
             }
             return messageItem
@@ -1773,7 +1776,7 @@ class ConversationFragment() :
                     reply_view.messageItem!!,
                     isPlainMessage()
                 )
-                reply_view.fadeOut(isGone = true)
+                reply_view.animateHeight(53.dp, 0)
                 reply_view.messageItem = null
                 scrollToDown()
                 markRead()
@@ -2680,15 +2683,11 @@ class ConversationFragment() :
     }
 
     private fun displayReplyView() {
-        if (!reply_view.isVisible) {
-            reply_view.fadeIn()
-            chat_control.reset()
-            if (chat_control.isRecording) {
-                OpusAudioRecorder.get(conversationId).stopRecording(false)
-                chat_control.cancelExternal()
-            }
-            chat_control.chat_et.showKeyboard()
-            chat_control.chat_et.requestFocus()
+        if (!reply_view.isVisible) reply_view.animateHeight(0, 53.dp)
+        if (chat_control.isRecording) {
+            OpusAudioRecorder.get(conversationId).stopRecording(false)
+            chat_control.cancelExternal()
         }
+        chat_control.chat_et.showKeyboard()
     }
 }

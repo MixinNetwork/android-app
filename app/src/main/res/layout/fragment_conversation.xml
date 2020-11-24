@@ -198,18 +198,11 @@
                     android:id="@+id/mention_rv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
                     android:layout_alignWithParentIfMissing="true"
-                    android:layout_above="@id/reply_view"
                     android:background="?attr/bg_white"
                     android:visibility="gone" />
 
-                <one.mixin.android.widget.ReplyView
-                    android:id="@+id/reply_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:visibility="gone"
-                    tools:ignore="MissingConstraints" />
             </one.mixin.android.widget.FloatingLayout>
 
             <FrameLayout
