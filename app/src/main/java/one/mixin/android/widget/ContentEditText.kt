@@ -1,14 +1,18 @@
 package one.mixin.android.widget
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.text.Spanned
 import android.util.AttributeSet
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.core.view.inputmethod.InputContentInfoCompat
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.markdown.MarkdownEditText
 
@@ -30,6 +34,35 @@ class ContentEditText : MarkdownEditText {
         MimeType.WEBP.toString(),
         MimeType.HEIC.toString()
     )
+
+    override fun onTextContextMenuItem(id: Int): Boolean {
+        if (id == android.R.id.paste) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return super.onTextContextMenuItem(android.R.id.pasteAsPlainText)
+            } else {
+                onInterceptClipDataToPlainText()
+            }
+        }
+        return super.onTextContextMenuItem(id)
+    }
+
+    private fun onInterceptClipDataToPlainText() {
+        val clipboard: ClipboardManager = context?.getClipboardManager() ?: return
+        val clip: ClipData? = clipboard.primaryClip
+        if (clip != null) {
+            for (i in 0 until clip.itemCount) {
+                val paste: CharSequence
+                val text = clip.getItemAt(i).coerceToText(context)
+                paste = (text as? Spanned)?.toString() ?: text
+                if (paste != null) {
+                    clipboard.setPrimaryClip(
+                        ClipData.newPlainText(null, paste)
+                    )
+                }
+            }
+        }
+    }
+
     override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection {
         val ic = super.onCreateInputConnection(editorInfo)
         if (listener == null) {

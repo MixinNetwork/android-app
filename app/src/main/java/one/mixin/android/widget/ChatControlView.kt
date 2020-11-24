@@ -12,7 +12,6 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.TextWatcher
-import android.text.style.MetricAffectingSpan
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.KeyEvent
@@ -653,20 +652,10 @@ class ChatControlView : LinearLayout {
         }
         false
     }
+
     private val editTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             setSend()
-            s?.let { ed ->
-                val toBeRemovedSpans = ed.getSpans(0, ed.length, MetricAffectingSpan::class.java)
-                if (toBeRemovedSpans.isNotEmpty()) {
-                    for (span in toBeRemovedSpans) {
-                        ed.removeSpan(span)
-                    }
-                    val curString = ed.trim()
-                    binding.chatEt.setText(curString)
-                    binding.chatEt.setSelection(curString.length)
-                }
-            }
 
             binding.chatEt.setTextSize(
                 TypedValue.COMPLEX_UNIT_SP,
