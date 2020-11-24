@@ -349,10 +349,6 @@ androidExtensions {
 
 apply plugin: 'com.google.gms.google-services'
 
-task allTests(type: Exec, dependsOn: 'test') {
+task allTests(dependsOn: ['testStagingUnitTest', 'connectedStagingAndroidTest']) {
     description = "Run unit tests and instrumentation tests"
-    def runInstrumentationCmd = ['adb', 'shell', 'am', 'instrument', '-w', '-m', '-e', 'package',
-                                 'one.mixin.android.ui',  // currently ignore db tests
-                                 'one.mixin.messenger.test/one.mixin.android.CustomTestRunner']
-    commandLine runInstrumentationCmd
 }
