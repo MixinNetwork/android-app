@@ -80,8 +80,12 @@ interface TransactionInterface {
                 if (ticker != null) {
                     contentView.that_va?.displayedChild = POS_TEXT
                     contentView.that_tv?.apply {
-                        val amount = (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).priceFormat()
-                        text = fragment.getString(R.string.wallet_transaction_that_time_value, "${Fiats.getSymbol()}$amount")
+                        text = if (ticker.priceUsd == "0") {
+                            fragment.getString(R.string.wallet_transaction_that_time_no_value)
+                        } else {
+                            val amount = (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).priceFormat()
+                            fragment.getString(R.string.wallet_transaction_that_time_value, "${Fiats.getSymbol()}$amount")
+                        }
                         fragment.context?.let { c ->
                             setTextColor(c.colorFromAttribute(R.attr.text_minor))
                             setOnClickListener {

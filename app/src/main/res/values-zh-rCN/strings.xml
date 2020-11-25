@@ -366,6 +366,7 @@
     <string name="wallet_transaction_tip_title">大额转账确认</string>
     <string name="wallet_transaction_current_value">价值 %1$s</string>
     <string name="wallet_transaction_that_time_value">当时价值 %1$s</string>
+    <string name="wallet_transaction_that_time_no_value">当时价值 暂无</string>
     <string name="wallet_transaction_that_time_value_tip">交易时的价值</string>
     <string name="transfer_duplicate_title">重复转账确认</string>
     <string name="withdraw_duplicate_title">重复提现确认</string>
