@@ -21,8 +21,12 @@ import one.mixin.android.vo.toAssetItem
 import org.hamcrest.core.IsNot.not
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 
 abstract class DepositFragmentTest {
+
+    @get:Rule(order = 1)
+    val walletRule = WalletRule()
 
     @Before
     fun registerIdlingResource() {
@@ -56,20 +60,18 @@ abstract class DepositFragmentTest {
 
     protected fun go2Deposit(isAccount: Boolean, action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
         }
         onView(withId(R.id.coins_rv))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, click()))
         var fragment: TransactionsFragment? = null
-        activityScenario.onActivity { activity ->
+        walletRule.activityScenario.onActivity { activity ->
             fragment = activity.supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.first() as TransactionsFragment
         }
         fragment?.asset = (if (isAccount) mockAssetWithDestinationAndTag() else mockAssetWithDestination()).toAssetItem()
         onView(withId(R.id.receive_tv)).perform(click())
 
-        action.invoke(navController, activityScenario)
-
-        activityScenario.close()
+        action.invoke(navController, walletRule.activityScenario)
     }
 }

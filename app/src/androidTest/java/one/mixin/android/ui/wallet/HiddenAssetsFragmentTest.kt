@@ -31,8 +31,11 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 class HiddenAssetsFragmentTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
+    val walletRule = WalletRule()
 
     @Before
     fun init() {

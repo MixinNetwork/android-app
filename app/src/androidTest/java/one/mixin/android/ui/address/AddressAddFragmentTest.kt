@@ -34,6 +34,7 @@ import one.mixin.android.ui.TestRegistry
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletRule
 import one.mixin.android.util.EspressoIdlingResource
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
@@ -52,8 +53,11 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 class AddressAddFragmentTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
+    val walletRule = WalletRule()
 
     @Before
     fun init() {
@@ -149,7 +153,7 @@ class AddressAddFragmentTest {
 
     private fun go2AddressAdd(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
         }
         onView(withId(R.id.coins_rv))
@@ -161,9 +165,7 @@ class AddressAddFragmentTest {
         onView(withId(R.id.address)).perform(click())
         onView(withId(R.id.right_animator)).perform(click())
 
-        action.invoke(navController, activityScenario)
-
-        activityScenario.close()
+        action.invoke(navController, walletRule.activityScenario)
     }
 
     private fun testDisplayInternal(asset: AssetItem) {

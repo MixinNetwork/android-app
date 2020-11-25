@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 class DepositPublicKeyFragmentTest : DepositFragmentTest() {
 
-    @get:Rule
+    @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
 
     @Before

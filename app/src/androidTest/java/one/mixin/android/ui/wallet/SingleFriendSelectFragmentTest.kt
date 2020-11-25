@@ -30,8 +30,11 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
 class SingleFriendSelectFragmentTest {
-    @get:Rule
+    @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
+    val walletRule = WalletRule()
 
     @Before
     fun init() {
@@ -83,7 +86,7 @@ class SingleFriendSelectFragmentTest {
 
     private fun go2SingleFriendSelect(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
         }
         onView(withId(R.id.coins_rv))
@@ -94,8 +97,6 @@ class SingleFriendSelectFragmentTest {
             .check(matches(isDisplayed()))
         onView(withId(R.id.contact)).perform(click())
 
-        action.invoke(navController, activityScenario)
-
-        activityScenario.close()
+        action.invoke(navController, walletRule.activityScenario)
     }
 }

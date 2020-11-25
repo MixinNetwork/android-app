@@ -37,8 +37,11 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 class WalletFragmentTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
+    val walletRule = WalletRule()
 
     @Before
     fun init() {
@@ -59,23 +62,18 @@ class WalletFragmentTest {
     fun testShowCheckPin() {
         val ctx: Context = ApplicationProvider.getApplicationContext()
         ctx.defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, 0)
-
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java)
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java)
 
         onView(withId(R.id.top_ll))
             .inRoot(isDialog())
             .check(matches(isDisplayed()))
 
-        activityScenario.close()
+        ctx.defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, System.currentTimeMillis())
     }
 
     @Test
     fun testNotShowCheckPin() {
-        val ctx: Context = ApplicationProvider.getApplicationContext()
-        ctx.defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, System.currentTimeMillis())
-
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java)
-
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java)
         try {
             onView(withId(R.id.top_ll))
                 .check(matches(isDisplayed()))
@@ -83,27 +81,23 @@ class WalletFragmentTest {
         } catch (e: NoMatchingViewException) {
             // true
         }
-
-        activityScenario.close()
     }
 
     @Test
     fun testOpenWalletSearch() {
         var navController: NavController? = null
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
         }
 
         onView(withId(R.id.search_ib)).perform(click())
         assertTrue(navController?.currentDestination?.id == R.id.wallet_search_fragment)
-
-        activityScenario.close()
     }
 
     @Test
     fun testBottomMenuNavigate() {
         var navController: NavController? = null
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
         }
 
@@ -114,7 +108,7 @@ class WalletFragmentTest {
             .check(matches(isDisplayed()))
         onView(withId(R.id.hide)).perform(click())
         assertTrue(navController?.currentDestination?.id == R.id.hidden_assets_fragment)
-        activityScenario.onActivity {
+        walletRule.activityScenario.onActivity {
             navController?.navigateUp()
         }
 
@@ -125,25 +119,21 @@ class WalletFragmentTest {
             .check(matches(isDisplayed()))
         onView(withId(R.id.transactions_tv)).perform(click())
         assertTrue(navController?.currentDestination?.id == R.id.all_transactions_fragment)
-
-        activityScenario.close()
     }
 
     @Test
     fun testAssetRv() {
         val ctx: Context = ApplicationProvider.getApplicationContext()
         var navController: NavController? = null
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity { activity ->
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity { activity ->
             navController = activity.navController
         }
 
         // open first asset item
-        onView(
-            withId(R.id.coins_rv)
-        )
+        onView(withId(R.id.coins_rv))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(1, click()))
         assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
-        activityScenario.onActivity {
+        walletRule.activityScenario.onActivity {
             navController?.navigateUp()
         }
 
@@ -156,7 +146,5 @@ class WalletFragmentTest {
         waitMillis(1000)
         onView(withId(com.google.android.material.R.id.snackbar_action))
             .perform(click())
-
-        activityScenario.close()
     }
 }

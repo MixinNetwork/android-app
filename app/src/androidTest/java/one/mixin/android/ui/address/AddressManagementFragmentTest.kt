@@ -18,6 +18,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
 import one.mixin.android.extension.getRVCount
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletRule
 import one.mixin.android.util.EspressoIdlingResource
 import one.mixin.android.util.swipeRight
 import org.hamcrest.core.IsNot.not
@@ -32,8 +33,11 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 class AddressManagementFragmentTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
+    val walletRule = WalletRule()
 
     @Before
     fun init() {
@@ -104,7 +108,7 @@ class AddressManagementFragmentTest {
 
     private fun go2AddressManagement(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
         }
         onView(withId(R.id.coins_rv))
@@ -115,8 +119,6 @@ class AddressManagementFragmentTest {
             .check(matches(isDisplayed()))
         onView(withId(R.id.address)).perform(click())
 
-        action.invoke(navController, activityScenario)
-
-        activityScenario.close()
+        action.invoke(navController, walletRule.activityScenario)
     }
 }
