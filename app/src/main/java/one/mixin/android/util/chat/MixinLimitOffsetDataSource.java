@@ -2,7 +2,6 @@ package one.mixin.android.util.chat;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
@@ -11,6 +10,7 @@ import androidx.room.InvalidationTracker;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
+import one.mixin.android.util.LogsUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,12 +53,15 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
     /**
      * Count number of rows query can return
      */
+    @SuppressLint("DefaultLocale")
     @SuppressWarnings("WeakerAccess")
     public int countItems() {
         Cursor cursor = mDb.query(mCountQuery);
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getInt(0);
+                int count = cursor.getInt(0);
+                LogsUtil.log(String.format("%d %s", count, mCountQuery.getSql()));
+                return count;
             }
             return 0;
         } finally {
