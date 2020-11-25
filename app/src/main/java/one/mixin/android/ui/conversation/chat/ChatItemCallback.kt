@@ -53,7 +53,7 @@ class ChatItemCallback(private val context: Context, private val listener: ItemC
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         super.onSelectedChanged(viewHolder, actionState)
-        if (actionState == ItemTouchHelper.ACTION_STATE_IDLE && hold != -1) {
+        if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
             listener.onSwiped(hold)
         }
     }

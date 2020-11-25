@@ -1387,13 +1387,16 @@ class ConversationFragment() :
                 requireContext(),
                 object : ChatItemCallback.ItemCallbackListener {
                     override fun onSwiped(position: Int) {
-                        chatAdapter.getItem(position)?.let {
-                            reply_view.bind(it)
-                        }
                         itemTouchHelper.attachToRecyclerView(null)
                         itemTouchHelper.attachToRecyclerView(chat_rv)
-                        displayReplyView()
-                        closeTool()
+                        if (position >= 0) {
+                            chatAdapter.getItem(position)?.let {
+                                reply_view.bind(it)
+                            }
+
+                            displayReplyView()
+                            closeTool()
+                        }
                     }
                 }
             )
