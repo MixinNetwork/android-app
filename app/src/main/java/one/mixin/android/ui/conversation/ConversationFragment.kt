@@ -44,6 +44,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.internal.util.LogUtil
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -157,6 +158,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.LogsUtil
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -1469,10 +1471,12 @@ class ConversationFragment() :
 
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
+        LogsUtil.log("Conversation Fragment liveDataMessage")
         chatViewModel.getMessages(conversationId, unreadCount)
             .observe(
                 viewLifecycleOwner,
                 { list ->
+                    LogsUtil.log("Conversation Fragment getMessages ${list.size}")
                     if (oldCount == -1) {
                         oldCount = list.size
                     } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
@@ -1519,9 +1523,10 @@ class ConversationFragment() :
 
     private var unreadCount = 0
     private fun bindData() {
+        LogsUtil.log("Conversation Fragment bindData")
         unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
         liveDataMessage(unreadCount, initialPositionMessageId)
-
+        LogsUtil.log("Conversation Fragment bindData unreadCount")
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
             { mentionMessages ->

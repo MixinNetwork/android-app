@@ -8,7 +8,7 @@ public class LogsUtil {
         ArrayMap<String, String> logs = new ArrayMap<String, String>();
         logs.put("log", log);
         Crashes.trackError(
-                new IllegalStateException(),
+                new Exception(),
                 logs
                 ,
                 null);

@@ -24,6 +24,8 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.LogsUtil
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
@@ -118,6 +120,7 @@ class ConversationActivity : BlazeBaseActivity() {
                 conversationRepository.findFirstUnreadMessageId(cid, unreadCount - 1)
             }
             bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId)
+            LogsUtil.log("Conversation replace $cid $userId")
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
