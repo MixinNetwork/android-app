@@ -31,6 +31,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -67,7 +68,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         }
         if (itemView.tag != messageItem.content?.hashCode()) {
             val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<AppButtonData>::class.java)
-            itemView.flow_layout.removeAllViews()
+            itemView.chat_layout.removeAllViews()
             for (b in buttons) {
                 val button = ActionButton(itemView.context)
                 button.setTextColor(
@@ -80,7 +81,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label
                 button.supportBackgroundTintList = ColorStateList.valueOf(itemView.context.colorFromAttribute(R.attr.bg_bubble))
-                itemView.flow_layout.addView(button)
+                itemView.chat_layout.addView(button)
                 (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp8
                 button.topPadding = dp8
                 button.bottomPadding = dp8

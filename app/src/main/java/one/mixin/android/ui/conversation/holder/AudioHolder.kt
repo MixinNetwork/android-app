@@ -48,12 +48,12 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {

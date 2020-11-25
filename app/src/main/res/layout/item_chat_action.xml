@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginBottom="1dp"
     android:orientation="vertical"
     android:paddingTop="0.5dp">
@@ -19,14 +20,32 @@
         android:textColor="#19BEF1"
         android:textSize="14sp" />
 
-    <one.mixin.android.widget.FlowLayout
-        android:id="@+id/flow_layout"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="1.5dp"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:paddingStart="3dp"
-        android:paddingEnd="3dp" />
+        android:layout_height="wrap_content">
 
+        <ImageView
+            android:id="@+id/chat_reply"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical|end"
+            android:background="@drawable/bg_circle_reply"
+            android:layout_marginEnd="-40dp"
+            android:padding="4dp"
+            android:alpha="0"
+            android:scaleX="0"
+            android:scaleY="0"
+            android:src="@drawable/ic_reply_white"
+            tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.FlowLayout
+            android:id="@+id/chat_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1.5dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp" />
+    </FrameLayout>
 </LinearLayout>

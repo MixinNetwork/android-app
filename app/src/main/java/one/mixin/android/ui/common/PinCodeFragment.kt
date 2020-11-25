@@ -124,7 +124,7 @@ abstract class PinCodeFragment : FabLoadingFragment() {
 
     private val mKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 pin_verification_view?.delete()
             } else {
@@ -133,7 +133,7 @@ abstract class PinCodeFragment : FabLoadingFragment() {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 pin_verification_view?.clear()
             } else {

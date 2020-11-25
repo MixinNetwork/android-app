@@ -21,7 +21,6 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         val id = meId
-
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {

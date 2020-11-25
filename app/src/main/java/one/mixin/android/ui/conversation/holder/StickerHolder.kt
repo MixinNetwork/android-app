@@ -48,6 +48,7 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         val isMe = meId == messageItem.userId
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)

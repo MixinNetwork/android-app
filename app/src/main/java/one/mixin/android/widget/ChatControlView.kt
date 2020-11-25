@@ -30,8 +30,8 @@ import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import androidx.core.content.res.ResourcesCompat
@@ -57,7 +57,7 @@ import org.jetbrains.anko.dip
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
-class ChatControlView : FrameLayout {
+class ChatControlView : LinearLayout {
 
     companion object {
         const val REPLY = -1
@@ -123,7 +123,14 @@ class ChatControlView : FrameLayout {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+
+    @SuppressLint("CheckResult")
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
+        orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
 
         chat_et.addTextChangedListener(editTextWatcher)

@@ -33,7 +33,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
@@ -249,7 +249,7 @@ class MobileFragment : BaseFragment() {
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (!isAdded) {
                 return
             }
@@ -279,7 +279,7 @@ class MobileFragment : BaseFragment() {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (!isAdded) {
                 return
             }

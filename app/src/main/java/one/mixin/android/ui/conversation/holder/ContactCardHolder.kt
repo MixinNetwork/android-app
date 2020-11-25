@@ -27,6 +27,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -67,7 +68,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         }
         chatLayout(isMe, isLast)
 
-        itemView.chat_layout.setOnClickListener {
+        itemView.chat_content_layout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onContactCardClick(messageItem.sharedUserId!!)
             } else {
@@ -87,7 +88,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
                 true
             }
         }
-        itemView.chat_layout.setOnLongClickListener {
+        itemView.chat_content_layout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -102,29 +103,29 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    itemView.chat_content_layout,
                     R.drawable.bill_bubble_me_last,
                     R.drawable.bill_bubble_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    itemView.chat_content_layout,
                     R.drawable.bill_bubble_me,
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (itemView.out_ll.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
         } else {
-            (itemView.out_ll.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    itemView.chat_content_layout,
                     R.drawable.chat_bubble_other_last,
                     R.drawable.chat_bubble_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    itemView.chat_content_layout,
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night
                 )

@@ -74,7 +74,6 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 }
             )
         ).apply { attachToRecyclerView(assets_rv) }
-        assetsAdapter.onItemListener = this
         assets_rv.adapter = assetsAdapter
 
         walletViewModel.hiddenAssets().observe(

@@ -26,6 +26,7 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (hasSelect && isSelect) {

@@ -94,7 +94,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (itemView.chat_msg_layout.layoutParams as FrameLayout.LayoutParams)
+        val lp = (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams)
         if (isMe) {
             lp.gravity = Gravity.END
             if (isLast) {
@@ -142,6 +142,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        super.bind(messageItem)
         this.onItemListener = onItemListener
         location = toLocationData(messageItem.content)
         if (location?.name == null) {
@@ -200,7 +201,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 onItemListener.onLocationClick(messageItem)
             }
         }
-        itemView.chat_layout.setOnClickListener {
+        itemView.chat_content_layout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
@@ -215,7 +216,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 true
             }
         }
-        itemView.chat_layout.setOnLongClickListener {
+        itemView.chat_content_layout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {

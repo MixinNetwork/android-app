@@ -15,9 +15,9 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
@@ -121,7 +121,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 pin.delete()
             } else {
@@ -130,7 +130,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 pin.clear()
             } else {

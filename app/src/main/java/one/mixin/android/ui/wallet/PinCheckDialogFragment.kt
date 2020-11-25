@@ -17,8 +17,8 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.extension.vibrate
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.Keyboard
@@ -142,7 +142,7 @@ class PinCheckDialogFragment : DialogFragment() {
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 contentView.pin.delete()
             } else {
@@ -151,7 +151,7 @@ class PinCheckDialogFragment : DialogFragment() {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
+            context?.tapVibrate()
             if (position == 11) {
                 contentView.pin.clear()
             } else {

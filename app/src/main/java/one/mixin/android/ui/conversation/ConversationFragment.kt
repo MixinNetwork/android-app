@@ -42,6 +42,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
@@ -53,6 +54,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
+import kotlinx.android.synthetic.main.fragment_conversation.view.*
+import kotlinx.android.synthetic.main.view_chat_control.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_flag.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
@@ -88,6 +91,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
@@ -141,6 +145,8 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
+import one.mixin.android.ui.conversation.chat.ChatItemCallback
+import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
@@ -966,7 +972,7 @@ class ConversationFragment() :
                 }
                 reply_view.messageItem?.let {
                     if (it.messageId == event.messageId) {
-                        reply_view.fadeOut(isGone = true)
+                        reply_view.animateHeight(53.dp, 0)
                         reply_view.messageItem = null
                     }
                 }
@@ -1112,7 +1118,7 @@ class ConversationFragment() :
                 true
             }
             reply_view.visibility == VISIBLE -> {
-                reply_view.fadeOut(isGone = true)
+                reply_view.animateHeight(53.dp, 0)
                 true
             }
             else -> false
@@ -1127,7 +1133,7 @@ class ConversationFragment() :
             chat_control.reset()
         }
         if (reply_view.isVisible) {
-            reply_view.fadeOut(isGone = true)
+            reply_view.animateHeight(53.dp, 0)
         }
     }
 
@@ -1209,6 +1215,11 @@ class ConversationFragment() :
                 releaseChatControl(fling)
             }
         }
+
+        chat_rv.setScrollingTouchSlop(SWAP_SLOT)
+
+        initTouchHelper()
+
         action_bar.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
@@ -1267,7 +1278,7 @@ class ConversationFragment() :
         }
         reply_view.reply_close_iv.setOnClickListener {
             reply_view.messageItem = null
-            reply_view.fadeOut(isGone = true)
+            reply_view.animateHeight(53.dp, 0)
         }
         tool_view.copy_iv.setOnClickListener {
             try {
@@ -1317,16 +1328,7 @@ class ConversationFragment() :
             chatAdapter.selectSet.valueAt(0)?.let {
                 reply_view.bind(it)
             }
-            if (!reply_view.isVisible) {
-                reply_view.fadeIn()
-                chat_control.reset()
-                if (chat_control.isRecording) {
-                    OpusAudioRecorder.get(conversationId).stopRecording(false)
-                    chat_control.cancelExternal()
-                }
-                chat_control.chat_et.showKeyboard()
-                chat_control.chat_et.requestFocus()
-            }
+            displayReplyView()
             closeTool()
         }
 
@@ -1376,6 +1378,30 @@ class ConversationFragment() :
             }
         )
         bindData()
+    }
+
+    lateinit var itemTouchHelper: ItemTouchHelper
+    private fun initTouchHelper() {
+        val callback =
+            ChatItemCallback(
+                requireContext(),
+                object : ChatItemCallback.ItemCallbackListener {
+                    override fun onSwiped(position: Int) {
+                        itemTouchHelper.attachToRecyclerView(null)
+                        itemTouchHelper.attachToRecyclerView(chat_rv)
+                        if (position >= 0) {
+                            chatAdapter.getItem(position)?.let {
+                                reply_view.bind(it)
+                            }
+
+                            displayReplyView()
+                            closeTool()
+                        }
+                    }
+                }
+            )
+        itemTouchHelper = ItemTouchHelper(callback)
+        itemTouchHelper.attachToRecyclerView(chat_rv)
     }
 
     private fun addSticker(m: MessageItem) = lifecycleScope.launch(Dispatchers.IO) {
@@ -1715,7 +1741,7 @@ class ConversationFragment() :
         if (isAdded) {
             val messageItem = reply_view.messageItem
             if (reply_view.isVisible) {
-                reply_view.fadeOut(isGone = true)
+                reply_view.animateHeight(53.dp, 0)
                 reply_view.messageItem = null
             }
             return messageItem
@@ -1753,7 +1779,7 @@ class ConversationFragment() :
                     reply_view.messageItem!!,
                     isPlainMessage()
                 )
-                reply_view.fadeOut(isGone = true)
+                reply_view.animateHeight(53.dp, 0)
                 reply_view.messageItem = null
                 scrollToDown()
                 markRead()
@@ -2657,5 +2683,14 @@ class ConversationFragment() :
                 (this.view.findViewById(R.id.snackbar_text) as TextView)
                     .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }.show()
+    }
+
+    private fun displayReplyView() {
+        if (!reply_view.isVisible) reply_view.animateHeight(0, 53.dp)
+        if (chat_control.isRecording) {
+            OpusAudioRecorder.get(conversationId).stopRecording(false)
+            chat_control.cancelExternal()
+        }
+        chat_control.chat_et.showKeyboard()
     }
 }

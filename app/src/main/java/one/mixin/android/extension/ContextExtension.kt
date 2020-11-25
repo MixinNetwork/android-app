@@ -150,6 +150,10 @@ fun Context.vibrate(pattern: LongArray) {
     }
 }
 
+fun Context.tapVibrate() {
+    vibrate(longArrayOf(0, 30L))
+}
+
 fun Context.dpToPx(dp: Float): Int {
     return if (dp == 0f) {
         0

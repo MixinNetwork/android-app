@@ -60,7 +60,6 @@ class WaitingHolder constructor(
     ) {
         val isMe = meId == messageItem.userId
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-
         val learn: String = MixinApplication.get().getString(R.string.chat_learn)
         val info =
             MixinApplication.get().getString(
