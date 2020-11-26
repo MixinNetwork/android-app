@@ -100,20 +100,23 @@ class KeyboardLayout : LinearLayout {
         }
     }
 
-    fun forceClose() {
+    fun forceClose(inputTarget: EditText? = null) {
         input_area.layoutParams.height = 0
         requestLayout()
+        inputTarget?.let { edit ->
+            hideSoftKey(edit)
+        }
         status = STATUS.CLOSED
     }
 
     fun showSoftKey(inputTarget: ContentEditText) {
-        post {
+        (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(
+            inputTarget,
+            0
+        )
+        postDelayed({
             inputTarget.requestFocus()
-            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(
-                inputTarget,
-                0
-            )
-        }
+        }, 20)
     }
 
     private fun hideSoftKey(inputTarget: EditText) {
@@ -132,10 +135,6 @@ class KeyboardLayout : LinearLayout {
                     insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
                         systemBottom = systemInserts.bottom
                         systemTop = systemInserts.top
-                        updatePadding(
-                            top = systemTop,
-                            bottom = systemBottom
-                        )
                     }
                     if (inMultiWindowMode) {
                         calculateInsertBottom(insets.getInsets(WindowInsetsCompat.Type.ime()))
@@ -199,10 +198,6 @@ class KeyboardLayout : LinearLayout {
                     insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
                         systemBottom = systemInserts.bottom
                         systemTop = systemInserts.top
-                        updatePadding(
-                            top = systemTop,
-                            bottom = systemBottom
-                        )
                     }
                     calculateInsertBottom(insets.getInsets(WindowInsetsCompat.Type.ime()))
                     WindowInsetsCompat.CONSUMED
@@ -232,9 +227,9 @@ class KeyboardLayout : LinearLayout {
                 canvas.save()
                 canvas.clipRect(
                     0,
-                    systemTop + actionBarHeight,
+                    actionBarHeight,
                     measuredWidth,
-                    measuredHeight - systemBottom
+                    measuredHeight
                 )
                 backgroundImage.setBounds(x, y, x + width, y + height)
                 backgroundImage.draw(canvas)
