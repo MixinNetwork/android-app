@@ -14,10 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_auth.view.*
-import kotlinx.android.synthetic.main.item_third_login_scope.view.*
 import one.mixin.android.R
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.databinding.ItemThirdLoginScopeBinding
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.withArgs
@@ -72,9 +72,9 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.avatar.loadCircleImage(auth.app.iconUrl, R.mipmap.ic_launcher_round)
         contentView.scope_rv.adapter = scopeAdapter
         scopeAdapter.onScopeListener = object : OnScopeListener {
-            override fun onScope(itemView: View, position: Int) {
-                itemView.cb.isChecked = !itemView.cb.isChecked
-                if (itemView.cb.isChecked) {
+            override fun onScope(binding: ItemThirdLoginScopeBinding, position: Int) {
+                binding.cb.isChecked = !binding.cb.isChecked
+                if (binding.cb.isChecked) {
                     scopeAdapter.checkedScopes.add(scopes[position].name)
                 } else {
                     scopeAdapter.checkedScopes.remove(scopes[position].name)
@@ -152,24 +152,24 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         override fun onBindViewHolder(holder: ScopeViewHolder, position: Int) {
             val scope = scopes[position]
-            holder.itemView.title.text = scope.convertName(holder.itemView.context)
-            holder.itemView.desc.text = scope.desc
-            holder.itemView.cb.isChecked = checkedScopes.contains(scope.name)
+            holder.bind.title.text = scope.convertName(holder.itemView.context)
+            holder.bind.desc.text = scope.desc
+            holder.bind.cb.isChecked = checkedScopes.contains(scope.name)
             if (scope.name == SCOPES[0]) {
-                holder.itemView.cb.isEnabled = false
+                holder.bind.cb.isEnabled = false
             } else {
-                holder.itemView.cb.isEnabled = true
-                holder.itemView.setOnClickListener { onScopeListener?.onScope(holder.itemView, position) }
+                holder.bind.cb.isEnabled = true
+                holder.itemView.setOnClickListener { onScopeListener?.onScope(holder.bind, position) }
             }
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScopeViewHolder =
-            ScopeViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_third_login_scope, parent, false))
+            ScopeViewHolder(ItemThirdLoginScopeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
-    class ScopeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class ScopeViewHolder(val bind: ItemThirdLoginScopeBinding) : RecyclerView.ViewHolder(bind.root)
 
     interface OnScopeListener {
-        fun onScope(itemView: View, position: Int)
+        fun onScope(binding: ItemThirdLoginScopeBinding, position: Int)
     }
 }

@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
@@ -10,9 +11,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_app_list_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.item_app_list.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemAppListBinding
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
@@ -73,7 +74,7 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 class AppListAdapter(private val onClickListener: (String) -> Unit) :
     ListAdapter<App, AppHolder>(App.DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        AppHolder(parent.inflate(R.layout.item_app_list, false))
+        AppHolder(ItemAppListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: AppHolder, position: Int) {
         getItem(position)?.let { app ->
@@ -85,10 +86,10 @@ class AppListAdapter(private val onClickListener: (String) -> Unit) :
     }
 }
 
-class AppHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class AppHolder(val binding: ItemAppListBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(app: App) {
-        itemView.name_tv.text = app.name
-        itemView.desc_tv.text = app.description
-        itemView.avatar.loadImage(app.iconUrl)
+        binding.nameTv.text = app.name
+        binding.descTv.text = app.description
+        binding.avatar.loadImage(app.iconUrl)
     }
 }

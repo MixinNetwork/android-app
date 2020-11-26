@@ -12,12 +12,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_circle_manager.*
-import kotlinx.android.synthetic.main.item_circle_manager.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
+import one.mixin.android.databinding.ItemCircleManagerBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -229,7 +229,7 @@ class CircleManagerFragment : BaseFragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CircleHolder =
-            CircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_circle_manager, parent, false))
+            CircleHolder(ItemCircleManagerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
         override fun getItemCount(): Int = (
             includeCircleItem.notEmptyWithElse({ it.size }, 0) +
@@ -282,26 +282,26 @@ class CircleManagerFragment : BaseFragment() {
         }
     }
 
-    class CircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class CircleHolder(val binding: ItemCircleManagerBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             conversationCircleItem: ConversationCircleManagerItem,
             onAddCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null,
             onRemoveCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null
         ) {
             if (onAddCircle != null) {
-                itemView.action_iv.setImageResource(R.drawable.ic_add_circle)
-                itemView.action_iv.setOnClickListener {
+                binding.actionIv.setImageResource(R.drawable.ic_add_circle)
+                binding.actionIv.setOnClickListener {
                     onAddCircle.invoke(conversationCircleItem)
                 }
             } else {
-                itemView.action_iv.setImageResource(R.drawable.ic_remove_circle)
-                itemView.action_iv.setOnClickListener {
+                binding.actionIv.setImageResource(R.drawable.ic_remove_circle)
+                binding.actionIv.setOnClickListener {
                     onRemoveCircle?.invoke(conversationCircleItem)
                 }
             }
-            itemView.circle_title.text = conversationCircleItem.name
-            itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
-            itemView.circle_icon.imageTintList = ColorStateList.valueOf(getCircleColor(conversationCircleItem.circleId))
+            binding.circleTitle.text = conversationCircleItem.name
+            binding.circleSubtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
+            binding.circleIcon.imageTintList = ColorStateList.valueOf(getCircleColor(conversationCircleItem.circleId))
         }
     }
 }

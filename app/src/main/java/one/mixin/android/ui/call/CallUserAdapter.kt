@@ -1,15 +1,14 @@
 package one.mixin.android.ui.call
 
-import android.view.View
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_call_user.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemCallUserBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.inflate
 import one.mixin.android.extension.round
 import one.mixin.android.vo.User
 
@@ -19,7 +18,7 @@ class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder
     var rvWidth = 0f
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        CallUserHolder(parent.inflate(R.layout.item_call_user))
+        CallUserHolder(ItemCallUserBinding.inflate(LayoutInflater.from(parent.context),parent,false))
 
     override fun onBindViewHolder(holder: CallUserHolder, position: Int) {
         getItem(position)?.let {
@@ -40,7 +39,7 @@ class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder
     }
 }
 
-class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder(binding.root) {
     private val max = 96.dp
     private val mid = 76.dp
     private val min = 64.dp
@@ -51,26 +50,26 @@ class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             updateLayoutParams<ViewGroup.LayoutParams> {
                 height = size + getOffset(renderSize, rvWidth)
             }
-            avatar_view.updateLayoutParams<ViewGroup.LayoutParams> {
+            binding.avatarView.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = size
                 height = size
             }
-            loading.updateLayoutParams<ViewGroup.LayoutParams> {
+            binding.loading.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = size
                 height = size
             }
-            cover.updateLayoutParams<ViewGroup.LayoutParams> {
+            binding.cover.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = size
                 height = size
             }
-            avatar_view.setInfo(user.fullName, user.avatarUrl, user.userId)
-            loading.round(size)
-            loading.setAutoRepeat(true)
-            loading.setAnimation(R.raw.anim_call_loading, size, size)
-            loading.playAnimation()
+            binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
+            binding.loading.round(size)
+            binding.loading.setAutoRepeat(true)
+            binding.loading.setAnimation(R.raw.anim_call_loading, size, size)
+            binding.loading.playAnimation()
             val vis = user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
-            loading.isVisible = vis
-            cover.isVisible = vis
+            binding.loading.isVisible = vis
+            binding.cover.isVisible = vis
         }
     }
 
