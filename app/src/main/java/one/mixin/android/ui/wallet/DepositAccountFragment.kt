@@ -16,7 +16,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_deposit_account.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
+
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R

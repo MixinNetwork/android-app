@@ -6,7 +6,6 @@ import android.os.CountDownTimer
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_deposit_tip_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.getTipsByAsset

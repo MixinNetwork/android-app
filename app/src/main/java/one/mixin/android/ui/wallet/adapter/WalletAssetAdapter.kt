@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_wallet_asset.view.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2

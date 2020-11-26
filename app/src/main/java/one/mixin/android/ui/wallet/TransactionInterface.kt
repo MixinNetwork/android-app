@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.android.synthetic.main.fragment_transaction.view.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

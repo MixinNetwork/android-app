@@ -8,7 +8,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_header.view.*
 import kotlinx.android.synthetic.main.item_wallet_search.view.*
 import kotlinx.android.synthetic.main.item_wallet_search.view.symbol_tv
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.loadImage

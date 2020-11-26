@@ -8,7 +8,6 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet_address.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID

@@ -16,7 +16,6 @@ import androidx.paging.PagedList
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transactions.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_transactions_fragment_header.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_send_bottom.view.*
