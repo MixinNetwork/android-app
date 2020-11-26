@@ -38,8 +38,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.view_search.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -64,6 +62,7 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
+import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -177,6 +176,8 @@ class MainActivity : BlazeBaseActivity() {
         return R.style.AppTheme_Night_NoActionBar
     }
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         navigationController = NavigationController(this)
@@ -231,7 +232,8 @@ class MainActivity : BlazeBaseActivity() {
             delayShowModifyMobile()
         }
 
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (savedInstanceState == null) {
             navigationController.navigateToMessage()
@@ -431,7 +433,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun popupSnackbarForCompleteUpdate() {
         Snackbar.make(
-            root_view,
+            binding.rootView,
             getString(R.string.update_downloaded),
             Snackbar.LENGTH_INDEFINITE
         ).apply {
@@ -617,27 +619,27 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initView() {
-        search_bar.setOnLeftClickListener {
+        binding.searchBar.setOnLeftClickListener {
             openSearch()
         }
-        search_bar.setOnGroupClickListener {
+        binding.searchBar.setOnGroupClickListener {
             navigationController.pushContacts()
         }
-        search_bar.setOnAddClickListener {
+        binding.searchBar.setOnAddClickListener {
             addCircle()
         }
-        search_bar.setOnConfirmClickListener {
+        binding.searchBar.setOnConfirmClickListener {
             val circlesFragment =
                 supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
             circlesFragment.cancelSort()
-            search_bar?.action_va?.showPrevious()
+            binding.searchBar.actionVa.showPrevious()
         }
 
-        search_bar.setOnBackClickListener {
-            search_bar.closeSearch()
+        binding.searchBar.setOnBackClickListener {
+            binding.searchBar.closeSearch()
         }
 
-        search_bar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
+        binding.searchBar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
                 (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
                     newText
@@ -646,7 +648,7 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
-        search_bar.setSearchViewListener(
+        binding.searchBar.setSearchViewListener(
             object : MaterialSearchView.SearchViewListener {
                 override fun onSearchViewClosed() {
                     navigationController.hideSearch()
@@ -657,13 +659,13 @@ class MainActivity : BlazeBaseActivity() {
                 }
             }
         )
-        search_bar.hideAction = {
+        binding.searchBar.hideAction = {
             (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
         }
-        search_bar?.logo?.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
-        root_view.setOnKeyListener { _, keyCode, _ ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && search_bar.isOpen) {
-                search_bar.closeSearch()
+        binding.searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
+        binding.rootView.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && binding.searchBar.isOpen) {
+                binding.searchBar.closeSearch()
                 true
             } else {
                 false
@@ -674,7 +676,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun openSearch() {
-        search_bar?.openSearch()
+        binding.searchBar.openSearch()
     }
 
     fun openWallet() {
@@ -682,7 +684,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun openCircle() {
-        search_bar?.showContainer()
+        binding.searchBar.showContainer()
     }
 
     private val circlesFragment by lazy {
@@ -690,24 +692,24 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun closeSearch() {
-        search_bar?.closeSearch()
+        binding.searchBar.closeSearch()
     }
 
     fun dragSearch(progress: Float) {
-        search_bar?.dragSearch(progress)
+        binding.searchBar.dragSearch(progress)
     }
 
     fun selectCircle(name: String?, circleId: String?) {
         setCircleName(name)
         defaultSharedPreferences.putString(CIRCLE_NAME, name)
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
-        search_bar?.hideContainer()
+        binding.searchBar.hideContainer()
         (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
         observeOtherCircleUnread(circleId)
     }
 
     fun setCircleName(name: String?) {
-        search_bar?.logo?.text = name ?: "Mixin"
+        binding.searchBar.logo.text = name ?: "Mixin"
     }
 
     fun openCircleEdit(circleId: String) {
@@ -722,18 +724,18 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun sortAction() {
-        search_bar?.action_va?.showNext()
+        binding.searchBar.actionVa.showNext()
     }
 
     private var dotObserver = Observer<Boolean> {
-        search_bar.dot.isVisible = it
+        binding.searchBar.dot.isVisible = it
     }
     private var dotLiveData: LiveData<Boolean>? = null
 
     private fun observeOtherCircleUnread(circleId: String?) = lifecycleScope.launch {
         dotLiveData?.removeObserver(dotObserver)
         if (circleId == null) {
-            search_bar.dot.isVisible = false
+            binding.searchBar.dot.isVisible = false
             return@launch
         }
         dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
@@ -796,12 +798,12 @@ class MainActivity : BlazeBaseActivity() {
             searchMessageFragment != null -> super.onBackPressed()
             searchSingleFragment != null -> super.onBackPressed()
             conversationCircleEditFragment != null -> super.onBackPressed()
-            search_bar.isOpen -> search_bar.closeSearch()
-            search_bar.containerDisplay -> {
+            binding.searchBar.isOpen -> binding.searchBar.closeSearch()
+            binding.searchBar.containerDisplay -> {
                 if (!circlesFragment.onBackPressed()) {
-                    search_bar.hideContainer()
+                    binding.searchBar.hideContainer()
                 } else {
-                    search_bar?.action_va?.showPrevious()
+                    binding.searchBar.actionVa.showPrevious()
                 }
             }
             else -> super.onBackPressed()
