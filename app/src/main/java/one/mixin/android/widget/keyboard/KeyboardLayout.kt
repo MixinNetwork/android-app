@@ -224,9 +224,9 @@ class KeyboardLayout : LinearLayout {
                 canvas.save()
                 canvas.clipRect(
                     0,
-                    systemTop + actionBarHeight,
+                    actionBarHeight,
                     measuredWidth,
-                    measuredHeight - systemBottom
+                    measuredHeight
                 )
                 backgroundImage.setBounds(x, y, x + width, y + height)
                 backgroundImage.draw(canvas)
