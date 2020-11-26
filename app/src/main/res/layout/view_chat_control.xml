@@ -120,12 +120,13 @@
             android:paddingBottom="14dp"
             android:src="@drawable/ic_chat_mic"
             tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.audio.SlidePanelView
+            android:id="@+id/chat_slide"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/chat_control_height"
+            android:layout_gravity="bottom"
+            android:visibility="gone" />
     </RelativeLayout>
 
-    <one.mixin.android.widget.audio.SlidePanelView
-        android:id="@+id/chat_slide"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/chat_control_height"
-        android:layout_gravity="bottom"
-        android:visibility="gone" />
 </merge>
