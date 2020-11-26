@@ -132,10 +132,6 @@ class KeyboardLayout : LinearLayout {
                     insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
                         systemBottom = systemInserts.bottom
                         systemTop = systemInserts.top
-                        updatePadding(
-                            top = systemTop,
-                            bottom = systemBottom
-                        )
                     }
                     if (inMultiWindowMode) {
                         calculateInsertBottom(insets.getInsets(WindowInsetsCompat.Type.ime()))
@@ -199,10 +195,6 @@ class KeyboardLayout : LinearLayout {
                     insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
                         systemBottom = systemInserts.bottom
                         systemTop = systemInserts.top
-                        updatePadding(
-                            top = systemTop,
-                            bottom = systemBottom
-                        )
                     }
                     calculateInsertBottom(insets.getInsets(WindowInsetsCompat.Type.ime()))
                     WindowInsetsCompat.CONSUMED
