@@ -124,6 +124,7 @@ import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.supportsNougat
+import one.mixin.android.extension.supportsR
 import one.mixin.android.extension.toast
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
@@ -965,6 +966,9 @@ class ConversationFragment() :
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
+        supportsR({
+            chat_control.getVisibleContainer() ?: input_layout.forceClose()
+        })
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
@@ -993,6 +997,9 @@ class ConversationFragment() :
         paused = true
         input_layout.setOnKeyboardShownListener(null)
         input_layout.setOnKeyBoardHiddenListener(null)
+        supportsR({
+            chat_control.getVisibleContainer() ?: input_layout.forceClose()
+        })
         MixinApplication.conversationId = null
     }
 

@@ -100,6 +100,12 @@ class KeyboardLayout : LinearLayout {
         }
     }
 
+    fun forceClose() {
+        input_area.layoutParams.height = 0
+        requestLayout()
+        status = STATUS.CLOSED
+    }
+
     fun showSoftKey(inputTarget: ContentEditText) {
         post {
             inputTarget.requestFocus()
