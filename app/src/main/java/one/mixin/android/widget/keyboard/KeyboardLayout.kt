@@ -110,13 +110,13 @@ class KeyboardLayout : LinearLayout {
     }
 
     fun showSoftKey(inputTarget: ContentEditText) {
-        post {
+        (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(
+            inputTarget,
+            0
+        )
+        postDelayed({
             inputTarget.requestFocus()
-            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(
-                inputTarget,
-                0
-            )
-        }
+        }, 20)
     }
 
     private fun hideSoftKey(inputTarget: EditText) {
