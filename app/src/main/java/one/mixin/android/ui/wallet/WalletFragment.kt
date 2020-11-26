@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_wallet.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_fragment_header.view.*
 import kotlinx.coroutines.Dispatchers
@@ -83,8 +82,8 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.right_animator.setOnClickListener { showBottom() }
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.rightAnimator.setOnClickListener { showBottom() }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
         search_ib.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
         header = layoutInflater.inflate(R.layout.view_wallet_fragment_header, coins_rv, false)

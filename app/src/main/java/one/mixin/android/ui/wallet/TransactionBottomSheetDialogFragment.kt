@@ -9,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transaction.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
@@ -54,7 +53,7 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
         contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight()
         }
-        contentView.title_view.left_ib.setOnClickListener { dismiss() }
+        contentView.title_view.leftIb.setOnClickListener { dismiss() }
         initView(this, contentView, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

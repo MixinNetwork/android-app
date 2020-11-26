@@ -17,7 +17,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transfer_out.view.*
 import kotlinx.android.synthetic.main.layout_empty_transaction.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -80,7 +79,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight()
         }
-        contentView.title_view.left_ib.setOnClickListener { dismiss() }
+        contentView.title_view.leftIb.setOnClickListener { dismiss() }
         contentView.transactions_rv.adapter = adapter
         contentView.transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         contentView.transactions_rv.setOnScrollChangeListener { list, _, _, _, _ ->

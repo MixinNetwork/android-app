@@ -24,7 +24,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_forward.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -144,7 +143,7 @@ class ForwardFragment : BaseFragment() {
         }
 
         if (!action.name.isNullOrBlank()) {
-            title_view.title_tv.text = action.name
+            title_view.titleTv.text = action.name
         }
         title_view.setOnClickListener {
             search_et?.hideKeyboard()

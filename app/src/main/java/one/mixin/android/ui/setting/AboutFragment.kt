@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_about.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -32,7 +31,7 @@ class AboutFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         val versionName = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName
         title_view.setSubTitle(getString(R.string.app_name), getString(R.string.about_version, versionName))
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
         imageView.setOnClickListener(object : DebugClickListener() {
             override fun onDebugClick() {
                 if (defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {

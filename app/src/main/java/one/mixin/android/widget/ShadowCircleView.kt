@@ -22,7 +22,7 @@ class ShadowCircleView : LinearLayoutCompat {
         binding = ViewShadowCircleBinding.inflate(LayoutInflater.from(context), this)
     }
 
-    private val binding:ViewShadowCircleBinding
+    private val binding: ViewShadowCircleBinding
     val more get() = binding.more
     val firstIv get() = binding.firstIv
     val secondIv get() = binding.secondIv

@@ -61,7 +61,6 @@ import kotlinx.android.synthetic.main.view_chat_control.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_flag.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import kotlinx.android.synthetic.main.view_url_bottom.view.*
 import kotlinx.coroutines.Dispatchers
@@ -1249,7 +1248,7 @@ class ConversationFragment() :
 
         initTouchHelper()
 
-        action_bar.left_ib.setOnClickListener {
+        action_bar.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
 
@@ -1821,8 +1820,8 @@ class ConversationFragment() :
 
     @SuppressLint("SetTextI18n")
     private fun renderGroup() {
-        action_bar.avatar_iv.visibility = VISIBLE
-        action_bar.avatar_iv.setOnClickListener {
+        action_bar.avatarIv.visibility = VISIBLE
+        action_bar.avatarIv.setOnClickListener {
             showGroupBottomSheet(false)
         }
         chatViewModel.getConversationById(conversationId).observe(
@@ -1835,7 +1834,7 @@ class ConversationFragment() :
                             ?: "",
                         getString(R.string.title_participants, groupNumber)
                     )
-                    action_bar.avatar_iv.setGroup(it.iconUrl)
+                    action_bar.avatarIv.setGroup(it.iconUrl)
                 }
             }
         )
@@ -1904,7 +1903,7 @@ class ConversationFragment() :
                 }
             }
         )
-        action_bar.avatar_iv.setOnClickListener {
+        action_bar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
             UserBottomSheetDialogFragment.newInstance(user, conversationId)
                 .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -1939,9 +1938,9 @@ class ConversationFragment() :
 
     private fun renderUserInfo(user: User) {
         action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
-        action_bar.avatar_iv.visibility = VISIBLE
-        action_bar.avatar_iv.setTextSize(16f)
-        action_bar.avatar_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
+        action_bar.avatarIv.visibility = VISIBLE
+        action_bar.avatarIv.setTextSize(16f)
+        action_bar.avatarIv.setInfo(user.fullName, user.avatarUrl, user.userId)
         user.let {
             if (it.relationship == UserRelationship.BLOCKING.name) {
                 chat_control.visibility = INVISIBLE

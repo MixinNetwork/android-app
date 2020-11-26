@@ -14,7 +14,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.android.synthetic.main.fragment_setting_mobile_contact.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
@@ -42,7 +41,7 @@ class MobileContactFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
 
         lifecycleScope.launch {
             op_pb?.isVisible = true

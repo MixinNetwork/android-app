@@ -14,7 +14,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
 import kotlinx.android.synthetic.main.layout_empty_transaction.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,8 +42,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { view.findNavController().navigateUp() }
-        title_view.right_animator.setOnClickListener { showFiltersSheet() }
+        title_view.leftIb.setOnClickListener { view.findNavController().navigateUp() }
+        title_view.rightAnimator.setOnClickListener { showFiltersSheet() }
         adapter.listener = this
         transactions_rv.itemAnimator = null
         transactions_rv.adapter = adapter

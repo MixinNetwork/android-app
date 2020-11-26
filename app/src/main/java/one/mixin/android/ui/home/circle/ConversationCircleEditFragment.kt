@@ -17,7 +17,6 @@ import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.*
 import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.search_et
 import kotlinx.android.synthetic.main.fragment_group.select_rv
 import kotlinx.android.synthetic.main.fragment_group.title_view
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -79,10 +78,10 @@ class ConversationCircleEditFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             parentFragmentManager.popBackStackImmediate()
         }
-        title_view.right_animator.setOnClickListener {
+        title_view.rightAnimator.setOnClickListener {
             save()
         }
         updateTitleText(circle.count)
@@ -147,11 +146,11 @@ class ConversationCircleEditFragment : BaseFragment() {
 
     private fun updateTitleText(size: Int) {
         if (!hasChanged()) {
-            title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
-            title_view.right_animator.isEnabled = false
+            title_view.rightTv.textColor = resources.getColor(R.color.text_gray, null)
+            title_view.rightAnimator.isEnabled = false
         } else {
-            title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
-            title_view.right_animator.isEnabled = true
+            title_view.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
+            title_view.rightAnimator.isEnabled = true
         }
         title_view.setSubTitle(circle.name, getString(R.string.circle_subtitle, size))
     }

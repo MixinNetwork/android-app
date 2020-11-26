@@ -22,7 +22,6 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_storage.*
 import kotlinx.android.synthetic.main.item_contact_storage.view.*
 import kotlinx.android.synthetic.main.item_storage_check.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
@@ -59,7 +58,7 @@ class SettingStorageFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
         b_rv.adapter = adapter
         menuView.adapter = menuAdapter
         viewModel.getConversationStorageUsage().autoDispose(stopScope)

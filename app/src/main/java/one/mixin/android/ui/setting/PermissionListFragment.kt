@@ -17,7 +17,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_permission_list.*
 import kotlinx.android.synthetic.main.item_permission_list.view.*
 import kotlinx.android.synthetic.main.layout_permission_list_foot.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
@@ -66,7 +65,7 @@ class PermissionListFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
         permission_rv.layoutManager = LinearLayoutManager(requireContext())
         val foot = layoutInflater.inflate(R.layout.layout_permission_list_foot, permission_rv, false)
         foot.revoke_rl.setOnClickListener { showDialog(app) }

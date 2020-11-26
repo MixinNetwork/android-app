@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_appearance.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
@@ -45,7 +44,7 @@ class AppearanceFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
         night_mode_tv.setText(R.string.setting_theme)

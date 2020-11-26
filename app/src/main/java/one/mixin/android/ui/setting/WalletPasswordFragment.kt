@@ -8,7 +8,6 @@ import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_wallet_password.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
@@ -81,7 +80,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
         } else {
             title_view.setSubTitle(getString(R.string.wallet_password_set_pin), "1/4")
         }
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             when (step) {
                 STEP1 -> activity?.onBackPressed()
                 STEP2 -> toStep1()
@@ -90,7 +89,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
             }
         }
         disableTitleRight()
-        title_view.right_animator.setOnClickListener { createPin() }
+        title_view.rightAnimator.setOnClickListener { createPin() }
         pin.setListener(this)
         keyboard.setKeyboardKeys(Constants.KEYS)
         keyboard.setOnClickKeyboardListener(keyboardListener)
@@ -99,8 +98,8 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
     override fun onUpdate(index: Int) {
         if (index == pin.getCount()) {
-            title_view.right_tv.setTextColor(resources.getColor(R.color.colorBlue, null))
-            title_view.right_animator.isEnabled = true
+            title_view.rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
+            title_view.rightAnimator.isEnabled = true
         } else {
             disableTitleRight()
         }
@@ -126,8 +125,8 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     }
 
     private fun disableTitleRight() {
-        title_view.right_tv.setTextColor(resources.getColor(R.color.text_gray, null))
-        title_view.right_animator.isEnabled = false
+        title_view.rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
+        title_view.rightAnimator.isEnabled = false
     }
 
     private fun toStep1() {

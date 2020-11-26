@@ -22,7 +22,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
@@ -67,16 +66,16 @@ class StickerManagementFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { requireActivity().onBackPressed() }
-        title_view.right_tv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        title_view.right_animator.setOnClickListener {
+        title_view.leftIb.setOnClickListener { requireActivity().onBackPressed() }
+        title_view.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        title_view.rightAnimator.setOnClickListener {
             if (stickerAdapter.editing) {
-                title_view.right_tv.text = getString(R.string.select)
+                title_view.rightTv.text = getString(R.string.select)
                 if (stickerAdapter.checkedList.isNotEmpty()) {
                     stickerViewModel.removeStickers(stickerAdapter.checkedList)
                 }
             } else {
-                title_view.right_tv.text = getString(R.string.conversation_delete)
+                title_view.rightTv.text = getString(R.string.conversation_delete)
             }
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.notifyDataSetChanged()
@@ -109,7 +108,7 @@ class StickerManagementFragment : BaseFragment() {
                 }
 
                 override fun onDelete() {
-                    title_view.right_tv.text = getString(R.string.conversation_delete)
+                    title_view.rightTv.text = getString(R.string.conversation_delete)
                 }
             }
         )
@@ -136,7 +135,7 @@ class StickerManagementFragment : BaseFragment() {
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.checkedList.clear()
             stickerAdapter.notifyDataSetChanged()
-            title_view.right_tv.text = getString(R.string.select)
+            title_view.rightTv.text = getString(R.string.select)
 
             return true
         }

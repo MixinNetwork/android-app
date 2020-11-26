@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_blocked.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -43,7 +42,7 @@ class SettingBlockedFragment : BaseFragment() {
             }
         }
         blocked_rv.adapter = adapter
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
         viewModel.blockingUsers(stopScope).observe(
             viewLifecycleOwner,
             {

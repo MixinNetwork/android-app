@@ -65,13 +65,13 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = View.inflate(context, R.layout.fragment_qr_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title.left_ib.setOnClickListener { dismiss() }
-        contentView.right_animator.setOnClickListener { showBottom() }
+        contentView.title.leftIb.setOnClickListener { dismiss() }
+        contentView.title.rightAnimator.setOnClickListener { showBottom() }
         if (type == TYPE_MY_QR) {
-            contentView.title.title_tv.text = getString(R.string.contact_my_qr_title)
+            contentView.title.titleTv.text = getString(R.string.contact_my_qr_title)
             contentView.tip_tv.text = getString(R.string.contact_my_qr_tip)
         } else if (type == TYPE_RECEIVE_QR) {
-            contentView.title.title_tv.text = getString(R.string.contact_receive_money)
+            contentView.title.titleTv.text = getString(R.string.contact_receive_money)
             contentView.tip_tv.text = getString(R.string.contact_receive_tip)
         }
         bottomViewModel.findUserById(userId).observe(

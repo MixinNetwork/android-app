@@ -22,7 +22,6 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -85,9 +84,9 @@ class StickerAddFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.right_tv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener {
+        title_view.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
+        title_view.rightAnimator.setOnClickListener {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(
                     message = R.string.pb_dialog_message,

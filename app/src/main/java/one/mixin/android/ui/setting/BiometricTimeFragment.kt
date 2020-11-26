@@ -11,7 +11,6 @@ import android.widget.TextView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_biometric_time.*
 import kotlinx.android.synthetic.main.item_biometric_time.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
@@ -52,7 +51,7 @@ class BiometricTimeFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title.leftIb.setOnClickListener { activity?.onBackPressed() }
         lv.adapter = adapter
         val footer = layoutInflater.inflate(R.layout.view_biometric_footer, lv, false)
         lv.addFooterView(footer)

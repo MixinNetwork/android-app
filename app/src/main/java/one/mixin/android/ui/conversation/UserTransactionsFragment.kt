@@ -12,7 +12,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
 import kotlinx.android.synthetic.main.layout_empty_transaction.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
@@ -54,8 +53,8 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        title_view.right_animator.visibility = View.GONE
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.rightAnimator.visibility = View.GONE
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
         adapter.listener = this
         transactions_rv.adapter = adapter
         dataObserver = Observer {

@@ -19,7 +19,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_new_group.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
@@ -74,11 +73,11 @@ class NewGroupFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val users: List<User> = requireArguments().getParcelableArrayList(ARGS_USERS)!!
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             name_desc_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        title_view.right_animator.setOnClickListener {
+        title_view.rightAnimator.setOnClickListener {
             createGroup()
         }
         enableCreate(false)
@@ -156,11 +155,11 @@ class NewGroupFragment : BaseFragment() {
 
     private fun enableCreate(enable: Boolean) {
         if (enable) {
-            title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
-            title_view.right_animator.isEnabled = true
+            title_view.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
+            title_view.rightAnimator.isEnabled = true
         } else {
-            title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
-            title_view.right_animator.isEnabled = false
+            title_view.rightTv.textColor = resources.getColor(R.color.text_gray, null)
+            title_view.rightAnimator.isEnabled = false
         }
     }
 

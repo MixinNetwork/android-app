@@ -11,7 +11,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_authentications.*
 import kotlinx.android.synthetic.main.item_auth.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.extension.navTo
@@ -37,7 +36,7 @@ class AuthenticationsFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
         val adapter = AuthenticationAdapter(
             object : OnAppClick {
                 override fun onClick(app: App, position: Int) {

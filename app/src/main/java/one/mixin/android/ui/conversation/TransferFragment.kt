@@ -39,7 +39,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
@@ -215,7 +214,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
 
         WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
-        contentView.title_view.left_ib.setOnClickListener { dismiss() }
+        contentView.title_view.leftIb.setOnClickListener { dismiss() }
         contentView.amount_et.addTextChangedListener(mWatcher)
         contentView.amount_et.filters = arrayOf(inputFilter)
         contentView.amount_et.setAdapter(autoCompleteAdapter)
@@ -247,14 +246,14 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             }
         }
 
-        contentView.title_view.right_animator.isVisible = true
-        contentView.title_view.right_ib.setImageResource(R.drawable.ic_transaction)
+        contentView.title_view.rightAnimator.isVisible = true
+        contentView.title_view.rightIb.setImageResource(R.drawable.ic_transaction)
         if (isInnerTransfer()) {
             handleInnerTransfer()
         } else {
             handleAddressTransfer()
         }
-        contentView.title_view.right_ib.setOnClickListener {
+        contentView.title_view.rightIb.setOnClickListener {
             currentAsset?.let { asset ->
                 TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address)
                     .show(parentFragmentManager, TransferOutViewFragment.TAG)

@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_friends.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
@@ -37,8 +36,8 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.title_tv.text = getString(getTitleResId())
-        title_view.left_ib.setOnClickListener {
+        title_view.titleTv.text = getString(getTitleResId())
+        title_view.leftIb.setOnClickListener {
             search_et.hideKeyboard()
             activity?.onBackPressed()
         }

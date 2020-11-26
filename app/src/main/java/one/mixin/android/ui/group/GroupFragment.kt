@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_group.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
@@ -101,11 +100,11 @@ class GroupFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
         if (from == TYPE_ADD || from == TYPE_REMOVE) {
-            title_view.right_tv.text = getString(R.string.done)
+            title_view.rightTv.text = getString(R.string.done)
             updateTitle(alreadyUsers?.size ?: 0)
         } else if (from == TYPE_CREATE) {
             updateTitle(0)
@@ -113,7 +112,7 @@ class GroupFragment : BaseFragment() {
         select_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         select_rv.adapter = groupAdapter
         groupAdapter.checkedUsers = checkedUsers
-        title_view.right_animator.setOnClickListener {
+        title_view.rightAnimator.setOnClickListener {
             search_et.hideKeyboard()
             if (from == TYPE_ADD || from == TYPE_REMOVE) {
                 handleAddOrRemove()
@@ -125,7 +124,7 @@ class GroupFragment : BaseFragment() {
                 )
             }
         }
-        title_view.right_animator.isEnabled = false
+        title_view.rightAnimator.isEnabled = false
         groupFriendAdapter.setGroupFriendListener(mGroupFriendListener)
         alreadyUsers?.let {
             val alreadyUserIds = mutableListOf<String>()
@@ -223,11 +222,11 @@ class GroupFragment : BaseFragment() {
             groupAdapter.notifyDataSetChanged()
             select_rv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
             if (checkedUsers.isEmpty()) {
-                title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
-                title_view.right_animator.isEnabled = false
+                title_view.rightTv.textColor = resources.getColor(R.color.text_gray, null)
+                title_view.rightAnimator.isEnabled = false
             } else {
-                title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
-                title_view.right_animator.isEnabled = true
+                title_view.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
+                title_view.rightAnimator.isEnabled = true
             }
         }
     }

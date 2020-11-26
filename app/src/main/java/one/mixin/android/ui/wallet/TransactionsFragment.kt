@@ -17,7 +17,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transactions.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_transactions_fragment_header.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_send_bottom.view.*
@@ -73,9 +72,9 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.title_tv.text = asset.name
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener {
+        title_view.titleTv.text = asset.name
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
+        title_view.rightAnimator.setOnClickListener {
             showBottom()
         }
 

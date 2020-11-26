@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_view_emergency_contact.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
@@ -33,10 +32,10 @@ class ViewEmergencyContactFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
-        title_view.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+        title_view.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
         avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         name_tv.text = user.fullName
         id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)

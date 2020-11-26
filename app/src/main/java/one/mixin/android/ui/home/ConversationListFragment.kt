@@ -162,17 +162,17 @@ class ConversationListFragment : LinkFragment() {
         navigationController = NavigationController(activity as MainActivity)
         val headerBinding = ItemListConversationHeaderBinding.inflate(layoutInflater)
         messageAdapter.headerView = headerBinding.root.apply {
-                headerBinding.headerClose.setOnClickListener {
-                    messageAdapter.setShowHeader(false, binding.messageRv)
-                    requireContext().defaultSharedPreferences.putLong(
-                        PREF_NOTIFICATION_ON,
-                        System.currentTimeMillis()
-                    )
-                }
-                headerBinding.headerSettings.setOnClickListener {
-                    requireContext().openNotificationSetting()
-                }
+            headerBinding.headerClose.setOnClickListener {
+                messageAdapter.setShowHeader(false, binding.messageRv)
+                requireContext().defaultSharedPreferences.putLong(
+                    PREF_NOTIFICATION_ON,
+                    System.currentTimeMillis()
+                )
             }
+            headerBinding.headerSettings.setOnClickListener {
+                requireContext().openNotificationSetting()
+            }
+        }
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -400,7 +400,7 @@ class ConversationListFragment : LinkFragment() {
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
         val builder = BottomSheet.Builder(requireActivity())
-        val viewBinding = ViewConversationBottomBinding.inflate(LayoutInflater.from(  ContextThemeWrapper(requireActivity(), R.style.Custom)), null,false)
+        val viewBinding = ViewConversationBottomBinding.inflate(LayoutInflater.from(ContextThemeWrapper(requireActivity(), R.style.Custom)), null, false)
         builder.setCustomView(viewBinding.root)
         viewBinding.muteTv.setText(
             if (isMute) {

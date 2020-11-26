@@ -14,7 +14,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_add_people.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
@@ -48,7 +47,7 @@ class AddPeopleFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
         val account = Session.getAccount()

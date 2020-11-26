@@ -17,7 +17,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_search_message.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
@@ -64,22 +63,22 @@ class SearchMessageFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             search_rv.hideKeyboard()
             requireActivity().onBackPressed()
         }
-        title_view.avatar_iv.visibility = VISIBLE
-        title_view.avatar_iv.setTextSize(16f)
+        title_view.avatarIv.visibility = VISIBLE
+        title_view.avatarIv.setTextSize(16f)
         if (searchMessageItem.conversationCategory == ConversationCategory.CONTACT.name) {
-            title_view.title_tv.text = searchMessageItem.userFullName
-            title_view.avatar_iv.setInfo(
+            title_view.titleTv.text = searchMessageItem.userFullName
+            title_view.avatarIv.setInfo(
                 searchMessageItem.userFullName,
                 searchMessageItem.userAvatarUrl,
                 searchMessageItem.userId
             )
         } else {
-            title_view.title_tv.text = searchMessageItem.conversationName
-            title_view.avatar_iv.setGroup(searchMessageItem.conversationAvatarUrl)
+            title_view.titleTv.text = searchMessageItem.conversationName
+            title_view.avatarIv.setGroup(searchMessageItem.conversationAvatarUrl)
         }
 
         search_rv.layoutManager = LinearLayoutManager(requireContext())

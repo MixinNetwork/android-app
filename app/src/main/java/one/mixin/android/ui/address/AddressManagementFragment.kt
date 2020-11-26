@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_address_management.*
 import kotlinx.android.synthetic.main.item_address.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
@@ -50,8 +49,8 @@ class AddressManagementFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener {
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
+        title_view.rightAnimator.setOnClickListener {
             view.navigate(
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {

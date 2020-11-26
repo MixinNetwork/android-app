@@ -9,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_emergency_contact.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -41,10 +40,10 @@ class EmergencyContactFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
-        title_view.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+        title_view.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
         enable_rl.setOnClickListener {
             EmergencyContactTipBottomSheetDialogFragment.newInstance()
                 .showNow(parentFragmentManager, EmergencyContactTipBottomSheetDialogFragment.TAG)

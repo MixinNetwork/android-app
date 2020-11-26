@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_pin_setting.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
@@ -39,7 +38,7 @@ class PinSettingFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title.leftIb.setOnClickListener { activity?.onBackPressed() }
         change_tv.setOnClickListener {
             navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
         }

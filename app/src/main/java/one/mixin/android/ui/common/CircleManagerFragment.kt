@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_circle_manager.*
 import kotlinx.android.synthetic.main.item_circle_manager.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -72,11 +71,11 @@ class CircleManagerFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.setSubTitle(getString(R.string.circle_title, name), "")
-        title_view.left_ib.setOnClickListener {
+        title_view.leftIb.setOnClickListener {
             if (!isAdded) return@setOnClickListener
             activity?.onBackPressed()
         }
-        title_view.right_ib.setOnClickListener {
+        title_view.rightIb.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             addCircle()

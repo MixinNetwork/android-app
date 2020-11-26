@@ -20,7 +20,6 @@ import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.fragment_device.view.ph
 import kotlinx.android.synthetic.main.fragment_device.view.title_view
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -101,7 +100,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
         }
 
-        contentView.title_view.left_ib.setOnClickListener { dismiss() }
+        contentView.title_view.leftIb.setOnClickListener { dismiss() }
         contentView.auth_tv.setOnClickListener {
             if (loggedIn) {
                 loadOuting.show()

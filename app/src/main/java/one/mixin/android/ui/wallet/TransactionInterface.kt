@@ -8,7 +8,6 @@ import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import kotlinx.android.synthetic.main.fragment_transaction.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +38,7 @@ interface TransactionInterface {
         assetItem: AssetItem?,
         snapshotItem: SnapshotItem?
     ) {
-        contentView.title_view.right_animator.visibility = View.GONE
+        contentView.title_view.rightAnimator.visibility = View.GONE
         if (snapshotItem == null || assetItem == null) {
             if (snapshotId != null && assetId != null) {
                 lifecycleScope.launch {

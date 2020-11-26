@@ -8,7 +8,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_old_password.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -42,8 +41,8 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.setSubTitle(getString(R.string.wallet_password_old_title), "1/5")
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener { verify(pin.code()) }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
+        title_view.rightAnimator.setOnClickListener { verify(pin.code()) }
         disableTitleRight()
         pin.setListener(this)
         keyboard.setKeyboardKeys(KEYS)
@@ -53,16 +52,16 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
     override fun onUpdate(index: Int) {
         if (index == pin.getCount()) {
-            title_view.right_tv.setTextColor(resources.getColor(R.color.colorBlue, null))
-            title_view.right_animator.isEnabled = true
+            title_view.rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
+            title_view.rightAnimator.isEnabled = true
         } else {
             disableTitleRight()
         }
     }
 
     private fun disableTitleRight() {
-        title_view.right_tv.setTextColor(resources.getColor(R.color.text_gray, null))
-        title_view.right_animator.isEnabled = false
+        title_view.rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
+        title_view.rightAnimator.isEnabled = false
     }
 
     private fun verify(pinCode: String) = lifecycleScope.launch {

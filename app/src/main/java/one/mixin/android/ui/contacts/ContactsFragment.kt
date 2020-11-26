@@ -18,7 +18,6 @@ import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.android.synthetic.main.fragment_contacts.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
@@ -84,8 +83,8 @@ class ContactsFragment : BaseFragment() {
             contactAdapter.hideEmptyFooter()
         }
         contactAdapter.setContactListener(mContactListener)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener { SettingActivity.show(requireContext()) }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
+        title_view.rightAnimator.setOnClickListener { SettingActivity.show(requireContext()) }
 
         if (hasContactPermission() &&
             !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)

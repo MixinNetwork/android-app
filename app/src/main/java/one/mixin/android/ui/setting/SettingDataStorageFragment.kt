@@ -11,7 +11,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_storage.title_view
 import kotlinx.android.synthetic.main.fragment_storage_data.*
 import kotlinx.android.synthetic.main.view_stotage_data.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_DOCUMENT
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_MOBILE
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_PHOTO
@@ -46,7 +45,7 @@ class SettingDataStorageFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
         storage_rl.setOnClickListener {
             requireActivity().addFragment(
                 this@SettingDataStorageFragment,

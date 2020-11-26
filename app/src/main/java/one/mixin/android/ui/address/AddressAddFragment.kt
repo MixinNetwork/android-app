@@ -19,7 +19,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
@@ -85,8 +84,8 @@ class AddressAddFragment() : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.right_animator.isEnabled = false
-        title_view.left_ib.setOnClickListener {
+        title_view.rightAnimator.isEnabled = false
+        title_view.leftIb.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             if (label_et.isFocused) label_et.hideKeyboard()
@@ -94,7 +93,7 @@ class AddressAddFragment() : BaseFragment() {
             if (tag_et.isFocused) tag_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        title_view.title_tv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
+        title_view.titleTv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {

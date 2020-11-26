@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_pin_logs.*
 import kotlinx.android.synthetic.main.item_pin_logs.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -40,7 +39,7 @@ class PinLogsFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title.leftIb.setOnClickListener { activity?.onBackPressed() }
         list.adapter = adapter
         list.setOnScrollChangeListener { _, _, _, _, _ ->
             if (isAdded) {

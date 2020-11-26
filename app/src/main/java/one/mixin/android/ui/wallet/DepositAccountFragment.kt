@@ -17,7 +17,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_deposit_account.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -49,8 +48,8 @@ class DepositAccountFragment : DepositFragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
+        title.leftIb.setOnClickListener { activity?.onBackPressed() }
+        title.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         account_name_qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         account_name_qr_avatar.setBorder()
