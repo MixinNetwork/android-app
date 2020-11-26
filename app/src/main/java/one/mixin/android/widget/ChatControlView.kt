@@ -30,6 +30,7 @@ import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.animation.addListener
@@ -52,7 +53,7 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
-import one.mixin.android.widget.keyboard.InputAwareLayout
+import one.mixin.android.widget.keyboard.KeyboardLayout
 import org.jetbrains.anko.dip
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -64,24 +65,84 @@ class ChatControlView : LinearLayout {
         const val SEND = 0
         const val AUDIO = 1
 
-        const val STICKER = 0
-        const val KEYBOARD = 1
-
         const val RECORD_DELAY = 200L
         const val RECORD_TIP_MILLIS = 2000L
+    }
 
-        const val NONE = 0
-        const val MENU = 1
-        const val IMAGE = 2
+    private enum class STATUS {
+        EXPANDED_KEYBOARD, // + ☺ i
+        EXPANDED_MENU, // x ☺ i
+        EXPANDED_STICKER, // + k i
+        EXPANDED_GALLERY, // + ☺ i[√]
+        COLLAPSED // + ☺ i
+    }
+
+    private enum class STICKER_STATUS {
+        STICKER,
+        KEYBOARD
+    }
+
+    private enum class MENU_STATUS {
+        EXPANDED,
+        COLLAPSED
     }
 
     lateinit var callback: Callback
-    lateinit var inputLayout: InputAwareLayout
-    lateinit var stickerContainer: InputAwareFrameLayout
-    lateinit var menuContainer: InputAwareFrameLayout
-    lateinit var galleryContainer: InputAwareFrameLayout
+    lateinit var inputLayout: KeyboardLayout
+    lateinit var stickerContainer: FrameLayout
+    lateinit var menuContainer: FrameLayout
+    lateinit var galleryContainer: FrameLayout
     lateinit var recordTipView: View
 
+    private var controlState: STATUS = STATUS.COLLAPSED
+        set(value) {
+            if (value == field) return
+            field = value
+
+            when (value) {
+                STATUS.EXPANDED_MENU -> {
+                    menuStatus = MENU_STATUS.EXPANDED
+                    stickerStatus = STICKER_STATUS.STICKER
+                    keyboardDrawable
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    menuContainer.isVisible = true
+                    stickerContainer.isVisible = false
+                    galleryContainer.isVisible = false
+                }
+                STATUS.EXPANDED_KEYBOARD -> {
+                    menuStatus = MENU_STATUS.COLLAPSED
+                    stickerStatus = STICKER_STATUS.STICKER
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    menuContainer.isVisible = false
+                    stickerContainer.isVisible = false
+                    galleryContainer.isVisible = false
+                }
+                STATUS.EXPANDED_STICKER -> {
+                    menuStatus = MENU_STATUS.COLLAPSED
+                    stickerStatus = STICKER_STATUS.KEYBOARD
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    menuContainer.isVisible = false
+                    stickerContainer.isVisible = true
+                    galleryContainer.isVisible = false
+                }
+                STATUS.EXPANDED_GALLERY -> {
+                    menuStatus = MENU_STATUS.COLLAPSED
+                    stickerStatus = STICKER_STATUS.STICKER
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img_checked)
+                    menuContainer.isVisible = false
+                    stickerContainer.isVisible = false
+                    galleryContainer.isVisible = true
+                }
+                STATUS.COLLAPSED -> {
+                    menuStatus = MENU_STATUS.COLLAPSED
+                    stickerStatus = STICKER_STATUS.STICKER
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    menuContainer.isVisible = false
+                    stickerContainer.isVisible = false
+                    galleryContainer.isVisible = false
+                }
+            }
+        }
     private var sendStatus = AUDIO
         set(value) {
             if (value == field) return
@@ -89,7 +150,7 @@ class ChatControlView : LinearLayout {
             field = value
             checkSend()
         }
-    private var stickerStatus = STICKER
+    private var stickerStatus = STICKER_STATUS.STICKER
         set(value) {
             if (value == field) return
 
@@ -97,29 +158,69 @@ class ChatControlView : LinearLayout {
             checkSticker()
         }
 
-    private var lastSendStatus = AUDIO
-
-    private var currentChecked = NONE
+    private var menuStatus = MENU_STATUS.COLLAPSED
         set(value) {
             if (value == field) return
 
-            val lastChecked = field
             field = value
-            checkChecked(lastChecked)
+            val anim =
+                chat_menu_iv.animate().rotation(if (value == MENU_STATUS.EXPANDED) 45f else -45f)
+            anim.setListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        chat_menu_iv.rotation = 0f
+                        chat_menu_iv.setImageResource(if (value == MENU_STATUS.EXPANDED) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
+                    }
+                }
+            )
+            anim.start()
         }
+
+    private var lastSendStatus = AUDIO
 
     var isRecording = false
 
     var activity: Activity? = null
     private lateinit var recordCircle: RecordCircleView
     private var upBeforeGrant = false
-    private var keyboardShown = false
 
-    private val sendDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_send_checked, context.theme)!! }
-    private val audioDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_mic, context.theme)!! }
+    private val sendDrawable: Drawable by lazy {
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_chat_send_checked,
+                context.theme
+            )
+        )
+    }
+    private val audioDrawable: Drawable by lazy {
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_chat_mic,
+                context.theme
+            )
+        )
+    }
 
-    private val stickerDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_sticker, context.theme)!! }
-    private val keyboardDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_keyboard, context.theme)!! }
+    private val stickerDrawable: Drawable by lazy {
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_chat_sticker,
+                context.theme
+            )
+        )
+    }
+    private val keyboardDrawable: Drawable by lazy {
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_chat_keyboard,
+                context.theme
+            )
+        )
+    }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -135,7 +236,6 @@ class ChatControlView : LinearLayout {
 
         chat_et.addTextChangedListener(editTextWatcher)
         chat_et.setOnKeyListener(keyListener)
-        chat_et.setOnClickListener(onChatEtClickListener)
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
         chat_menu_iv.setOnClickListener(onChatMenuClickListener)
         chat_sticker_ib.setOnClickListener(onStickerClickListener)
@@ -166,10 +266,10 @@ class ChatControlView : LinearLayout {
     }
 
     fun reset() {
-        stickerStatus = STICKER
-        currentChecked = NONE
+        controlState = STATUS.COLLAPSED
         setSend()
-        inputLayout.hideCurrentInput(chat_et)
+        inputLayout.closeInputArea(chat_et)
+        getVisibleContainer()?.isVisible = false
     }
 
     fun cancelExternal() {
@@ -196,14 +296,12 @@ class ChatControlView : LinearLayout {
     }
 
     fun toggleKeyboard(shown: Boolean) {
-        keyboardShown = shown
         if (shown) {
-            stickerStatus = STICKER
-            currentChecked = NONE
-        } else {
-            if (inputLayout.isInputOpen) {
-                stickerStatus = KEYBOARD
-            }
+            controlState = STATUS.EXPANDED_KEYBOARD
+            chat_et.requestFocus()
+        } else if (controlState == STATUS.EXPANDED_KEYBOARD) {
+            controlState = STATUS.COLLAPSED
+            inputLayout.closeInputArea(chat_et)
         }
         setSend()
     }
@@ -254,35 +352,11 @@ class ChatControlView : LinearLayout {
 
     private fun checkSticker() {
         val d = when (stickerStatus) {
-            STICKER -> stickerDrawable
-            KEYBOARD -> keyboardDrawable
-            else -> null
+            STICKER_STATUS.STICKER -> stickerDrawable
+            STICKER_STATUS.KEYBOARD -> keyboardDrawable
         }
-        d?.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
+        d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         startScaleAnim(chat_sticker_ib, d)
-    }
-
-    private fun checkChecked(lastChecked: Int) {
-        when (currentChecked) {
-            MENU -> {
-                if (lastChecked != MENU) {
-                    rotateChatMenu(true)
-                }
-                chat_img_iv.setImageResource(R.drawable.ic_chat_img)
-            }
-            IMAGE -> {
-                if (lastChecked == MENU) {
-                    rotateChatMenu(false)
-                }
-                chat_img_iv.setImageResource(R.drawable.ic_chat_img_checked)
-            }
-            else -> {
-                if (lastChecked == MENU) {
-                    rotateChatMenu(false)
-                }
-                chat_img_iv.setImageResource(R.drawable.ic_chat_img)
-            }
-        }
     }
 
     private fun startScaleAnim(v: ImageView, d: Drawable?) {
@@ -419,7 +493,10 @@ class ChatControlView : LinearLayout {
         return getLayoutTransition(scaleUp, scaleDown)
     }
 
-    private fun getLayoutTransition(scaleUp: ObjectAnimator, scaleDown: ObjectAnimator): LayoutTransition {
+    private fun getLayoutTransition(
+        scaleUp: ObjectAnimator,
+        scaleDown: ObjectAnimator
+    ): LayoutTransition {
         val layoutTransition = LayoutTransition()
         layoutTransition.setAnimator(LayoutTransition.APPEARING, scaleUp)
         layoutTransition.setAnimator(LayoutTransition.DISAPPEARING, scaleDown)
@@ -449,19 +526,6 @@ class ChatControlView : LinearLayout {
                 postDelayed(hideRecordTipRunnable, RECORD_TIP_MILLIS)
             }
         }
-    }
-
-    private fun rotateChatMenu(checked: Boolean) {
-        val anim = chat_menu_iv.animate().rotation(if (checked) 45f else -45f)
-        anim.setListener(
-            object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    chat_menu_iv.rotation = 0f
-                    chat_menu_iv.setImageResource(if (checked) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
-                }
-            }
-        )
-        anim.start()
     }
 
     private fun isEditEmpty() = chat_et.text.toString().trim().isEmpty()
@@ -497,39 +561,39 @@ class ChatControlView : LinearLayout {
     }
 
     private val onChatMenuClickListener = OnClickListener {
-        if (currentChecked != MENU) {
-            currentChecked = MENU
-            inputLayout.show(chat_et, menuContainer)
-            callback.onMenuClick()
-        } else {
-            currentChecked = NONE
+        if (controlState == STATUS.EXPANDED_MENU) {
+            controlState = STATUS.EXPANDED_KEYBOARD
             inputLayout.showSoftKey(chat_et)
+        } else {
+            controlState = STATUS.EXPANDED_MENU
+            inputLayout.openInputArea(chat_et)
+            callback.onMenuClick()
         }
         remainFocusable()
     }
 
     private val onStickerClickListener = OnClickListener {
-        if (stickerStatus == KEYBOARD) {
-            stickerStatus = STICKER
+        if (controlState == STATUS.EXPANDED_KEYBOARD || controlState == STATUS.COLLAPSED) {
+            controlState = STATUS.EXPANDED_STICKER
+            inputLayout.openInputArea(chat_et)
+            callback.onStickerClick()
+        } else if (controlState == STATUS.EXPANDED_STICKER) {
+            controlState = STATUS.EXPANDED_KEYBOARD
             inputLayout.showSoftKey(chat_et)
         } else {
-            stickerStatus = KEYBOARD
-            inputLayout.show(chat_et, stickerContainer)
+            controlState = STATUS.EXPANDED_STICKER
+            inputLayout.openInputArea(chat_et)
             callback.onStickerClick()
-
-            if (stickerStatus == KEYBOARD && inputLayout.isInputOpen &&
-                sendStatus == AUDIO && lastSendStatus == AUDIO
-            ) {
-                setSend()
-            }
-            remainFocusable()
         }
-        currentChecked = NONE
+        remainFocusable()
     }
 
     private val onChatImgClickListener = OnClickListener {
         RxPermissions(activity!! as FragmentActivity)
-            .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .request(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
             .subscribe(
                 { granted ->
                     if (granted) {
@@ -543,14 +607,13 @@ class ChatControlView : LinearLayout {
     }
 
     private fun clickGallery() {
-        if (currentChecked != IMAGE) {
-            currentChecked = IMAGE
-            inputLayout.show(chat_et, galleryContainer)
-            callback.onGalleryClick()
+        if (controlState == STATUS.EXPANDED_GALLERY) {
+            controlState = STATUS.COLLAPSED
+            inputLayout.closeInputArea(chat_et)
         } else {
-            currentChecked = NONE
-            stickerStatus = STICKER
-            inputLayout.hideCurrentInput(chat_et)
+            controlState = STATUS.EXPANDED_GALLERY
+            inputLayout.openInputArea(chat_et)
+            callback.onGalleryClick()
         }
         remainFocusable()
     }
@@ -575,10 +638,6 @@ class ChatControlView : LinearLayout {
         } else {
             FLING_NONE
         }
-    }
-
-    private val onChatEtClickListener = OnClickListener {
-        currentChecked = NONE
     }
 
     private val keyListener = OnKeyListener { _, keyCode, _ ->
@@ -721,6 +780,7 @@ class ChatControlView : LinearLayout {
     private var maxScrollX = context.dip(100f)
     var calling = false
 
+    @SuppressLint("ClickableViewAccessibility")
     private val sendOnTouchListener = OnTouchListener { _, event ->
         if (calling && sendStatus == AUDIO) {
             callback.onCalling()
@@ -829,12 +889,17 @@ class ChatControlView : LinearLayout {
 
             if (activity == null || !currentAudio()) return@Runnable
 
-            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(activity!! as FragmentActivity).isGranted(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
+            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(
+                    activity!! as FragmentActivity
+                ).isGranted(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
             ) {
                 RxPermissions(activity!! as FragmentActivity)
-                    .request(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .request(
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
                     .autoDispose(this)
                     .subscribe({}, { Bugsnag.notify(it) })
                 return@Runnable

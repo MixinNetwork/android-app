@@ -612,6 +612,14 @@ inline fun <T : Number, R> T?.notEmptyWithElse(normalAction: (T) -> R, elseActio
     }
 }
 
+fun supportsR(code: () -> Unit, elseAction: (() -> Unit)? = null) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        code()
+    } else {
+        elseAction?.invoke()
+    }
+}
+
 inline fun supportsQ(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         code()

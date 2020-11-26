@@ -4,14 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.os.Bundle
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -34,14 +33,7 @@ class ConversationActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        if (booleanFromAttribute(R.attr.flag_night)) {
-            container.backgroundImage = resources.getDrawable(R.drawable.bg_chat_night, theme)
-        } else {
-            container.backgroundImage = resources.getDrawable(R.drawable.bg_chat, theme)
-        }
-        window.decorView.systemUiVisibility =
-            window.decorView.systemUiVisibility or SYSTEM_UI_FLAG_LAYOUT_STABLE
-
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
             replaceFragment(
                 ConversationFragment.newInstance(intent.extras!!),

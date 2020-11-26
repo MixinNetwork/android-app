@@ -77,7 +77,6 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
-import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.MentionReadEvent
@@ -89,6 +88,7 @@ import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -118,12 +118,13 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
 import one.mixin.android.extension.scamPreferences
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.selectEarpiece
 import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.supportsNougat
+import one.mixin.android.extension.supportsR
 import one.mixin.android.extension.toast
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
@@ -205,12 +206,11 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
-import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
-import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
-import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
+import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
+import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -225,8 +225,8 @@ class ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
     OnKeyboardHiddenListener,
-    OpusAudioRecorder.Callback,
     SensorEventListener,
+    OpusAudioRecorder.Callback,
     AudioPlayer.StatusListener {
 
     companion object {
@@ -940,8 +940,11 @@ class ConversationFragment() :
             sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY),
             SensorManager.SENSOR_DELAY_NORMAL
         )
-        input_layout.addOnKeyboardShownListener(this)
-        input_layout.addOnKeyboardHiddenListener(this)
+        supportsNougat {
+            input_layout.onMultiWindowModeChanged(requireActivity().isInMultiWindowMode)
+        }
+        input_layout.setOnKeyboardShownListener(this)
+        input_layout.setOnKeyBoardHiddenListener(this)
         MixinApplication.conversationId = conversationId
         if (isGroup) {
             RxBus.listen(GroupEvent::class.java)
@@ -963,6 +966,9 @@ class ConversationFragment() :
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
+        supportsR({
+            chat_control.getVisibleContainer() ?: input_layout.forceClose()
+        })
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
@@ -989,8 +995,11 @@ class ConversationFragment() :
         deleteDialog?.dismiss()
         super.onPause()
         paused = true
-        input_layout.removeOnKeyboardShownListener(this)
-        input_layout.removeOnKeyboardHiddenListener(this)
+        input_layout.setOnKeyboardShownListener(null)
+        input_layout.setOnKeyBoardHiddenListener(null)
+        supportsR({
+            chat_control.getVisibleContainer() ?: input_layout.forceClose()
+        })
         MixinApplication.conversationId = null
     }
 
@@ -1150,6 +1159,13 @@ class ConversationFragment() :
     private var firstPosition = 0
 
     private fun initView() {
+        if (requireActivity().booleanFromAttribute(R.attr.flag_night)) {
+            input_layout.backgroundImage =
+                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_night)
+        } else {
+            input_layout.backgroundImage =
+                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat)
+        }
         chat_rv.visibility = INVISIBLE
         if (chat_rv.adapter == null) {
             chat_rv.adapter = chatAdapter
@@ -1856,7 +1872,7 @@ class ConversationFragment() :
         chat_control.toggleKeyboard(false)
     }
 
-    override fun onKeyboardShown() {
+    override fun onKeyboardShown(height: Int) {
         chat_control.toggleKeyboard(true)
     }
 
@@ -2163,10 +2179,7 @@ class ConversationFragment() :
                 override fun onStickerClick(stickerId: String) {
                     if (isAdded) {
                         if (sticker_container.height != input_layout.keyboardHeight) {
-                            sticker_container.animateHeight(
-                                sticker_container.height,
-                                input_layout.keyboardHeight
-                            )
+                            input_layout.openInputArea(chat_control.chat_et)
                         }
                         sendStickerMessage(stickerId)
                     }
@@ -2391,66 +2404,16 @@ class ConversationFragment() :
     }
 
     private fun dragChatControl(dis: Float) {
-        val currentContainer = chat_control.getDraggableContainer() ?: return
-        val params = currentContainer.layoutParams
-        val targetH = params.height - dis.toInt()
-        val total = (requireContext().screenHeight() * 2) / 3
-        if (targetH <= 0 || targetH >= total) return
-
-        params.height = targetH
-        currentContainer.layoutParams = params
+        chat_control.getDraggableContainer() ?: return
+        input_layout.drag(dis)
     }
 
     private fun releaseChatControl(fling: Int) {
         if (!isAdded) return
-
-        val currentContainer = chat_control.getDraggableContainer() ?: return
-        val curH = currentContainer.height
-        val max = (requireContext().screenHeight() * 2) / 3
-        val maxMid = input_layout.keyboardHeight + (max - input_layout.keyboardHeight) / 2
-        val minMid = input_layout.keyboardHeight / 2
-        val targetH = if (curH > input_layout.keyboardHeight) {
-            if (fling == FLING_UP) {
-                max
-            } else if (fling == FLING_DOWN) {
-                input_layout.keyboardHeight
-            } else {
-                if (curH <= maxMid) {
-                    input_layout.keyboardHeight
-                } else {
-                    max
-                }
-            }
-        } else if (curH < input_layout.keyboardHeight) {
-            if (fling == FLING_UP) {
-                input_layout.keyboardHeight
-            } else if (fling == FLING_DOWN) {
-                0
-            } else {
-                if (curH > minMid) {
-                    input_layout.keyboardHeight
-                } else {
-                    0
-                }
-            }
-        } else {
-            when (fling) {
-                FLING_UP -> {
-                    max
-                }
-                FLING_DOWN -> {
-                    0
-                }
-                else -> {
-                    input_layout.keyboardHeight
-                }
-            }
-        }
-        if (targetH == 0) {
+        chat_control.getDraggableContainer() ?: return
+        input_layout.releaseDrag(fling) {
             chat_control.reset()
         }
-        currentContainer.animateHeight(curH, targetH)
-        RxBus.publish(DragReleaseEvent(targetH == max))
     }
 
     private fun showBottomSheet(messageItem: MessageItem) {
