@@ -133,65 +133,60 @@ class KeyboardLayout : LinearLayout {
                     }
                     if (inMultiWindowMode) {
                         calculateInsertBottom(insets.getInsets(WindowInsetsCompat.Type.ime()))
+                    } else {
+                        max(
+                            insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom,
+                            0
+                        ).let { value ->
+                            if (lastKeyboardHeight == value) return@let
+                            lastKeyboardHeight = value
+                            if (value > 0) {
+                                onKeyboardShownListener?.onKeyboardShown(value)
+                            } else {
+                                onKeyboardHiddenListener?.onKeyboardHidden()
+                            }
+                        }
                     }
                     WindowInsetsCompat.CONSUMED
                 }
                 setWindowInsetsAnimationCallback(object :
-                        WindowInsetsAnimation.Callback(DISPATCH_MODE_STOP) {
-                        override fun onProgress(
-                            insets: WindowInsets,
-                            runningAnimations: MutableList<WindowInsetsAnimation>
-                        ): WindowInsets {
-                            if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
-                                input_area.layoutParams.height = max(
-                                    0,
-                                    insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom
-                                )
-                                requestLayout()
-                            } else if (status == STATUS.EXPANDED) {
-                                val percent =
-                                    insets.getInsets(WindowInsetsCompat.Type.ime()).bottom / keyboardHeight.toFloat()
-                                input_area.layoutParams.height =
-                                    (keyboardHeight - systemBottom + gap * (1 - percent)).toInt()
-                                requestLayout()
-                            }
-                            return insets
+                    WindowInsetsAnimation.Callback(DISPATCH_MODE_STOP) {
+                    override fun onProgress(
+                        insets: WindowInsets,
+                        runningAnimations: MutableList<WindowInsetsAnimation>
+                    ): WindowInsets {
+                        if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
+                            input_area.layoutParams.height = max(
+                                0,
+                                insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom
+                            )
+                            requestLayout()
+                        } else if (status == STATUS.EXPANDED) {
+                            val percent =
+                                insets.getInsets(WindowInsetsCompat.Type.ime()).bottom / keyboardHeight.toFloat()
+                            input_area.layoutParams.height =
+                                (keyboardHeight - systemBottom + gap * (1 - percent)).toInt()
+                            requestLayout()
                         }
+                        return insets
+                    }
 
-                        private var gap = 0
-                        override fun onPrepare(animation: WindowInsetsAnimation) {
-                            super.onPrepare(animation)
-                            if (status == STATUS.EXPANDED) {
-                                gap = input_area.layoutParams.height - keyboardHeight
-                            }
+                    private var gap = 0
+                    override fun onPrepare(animation: WindowInsetsAnimation) {
+                        super.onPrepare(animation)
+                        if (status == STATUS.EXPANDED) {
+                            gap = input_area.layoutParams.height - keyboardHeight
                         }
+                    }
 
-                        override fun onEnd(animation: WindowInsetsAnimation) {
-                            super.onEnd(animation)
-                            ViewCompat.getRootWindowInsets(this@KeyboardLayout)
-                                ?.getInsets(WindowInsetsCompat.Type.ime())?.let { imeInserts ->
-                                    if (imeInserts.bottom > 0) {
-                                        if (status != STATUS.KEYBOARD_OPENED) {
-                                            status = STATUS.KEYBOARD_OPENED
-                                            onKeyboardShownListener?.onKeyboardShown(imeInserts.bottom)
-                                        }
-                                    } else {
-                                        if (status == STATUS.KEYBOARD_OPENED) {
-                                            status = STATUS.CLOSED
-                                            onKeyboardHiddenListener?.onKeyboardHidden()
-                                        }
-                                    }
-                                }
-                        }
-
-                        override fun onStart(
-                            animation: WindowInsetsAnimation,
-                            bounds: WindowInsetsAnimation.Bounds
-                        ): WindowInsetsAnimation.Bounds {
-                            keyboardHeight = bounds.upperBound.bottom
-                            return super.onStart(animation, bounds)
-                        }
-                    })
+                    override fun onStart(
+                        animation: WindowInsetsAnimation,
+                        bounds: WindowInsetsAnimation.Bounds
+                    ): WindowInsetsAnimation.Bounds {
+                        keyboardHeight = bounds.upperBound.bottom
+                        return super.onStart(animation, bounds)
+                    }
+                })
             },
             {
                 ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
