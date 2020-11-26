@@ -6,7 +6,6 @@ import androidx.core.view.postDelayed
 import androidx.lifecycle.viewModelScope
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,7 +54,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     }
 
     protected fun setBiometricLayout() {
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
+        contentView.title_view.rightIv.setOnClickListener { dismiss() }
         contentView.biometric_layout.setKeyboard(contentView.keyboard)
         contentView.biometric_layout.callback = biometricLayoutCallback
         contentView.post {

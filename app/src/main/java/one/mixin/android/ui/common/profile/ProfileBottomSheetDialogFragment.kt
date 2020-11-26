@@ -20,7 +20,6 @@ import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_profile_bottom_sheet_dialog.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -102,7 +101,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView.title.right_iv.setOnClickListener { dismiss() }
+        contentView.title.rightIv.setOnClickListener { dismiss() }
         val account = Session.getAccount()
         if (account == null) {
             toast(R.string.error_user_invalid_format)

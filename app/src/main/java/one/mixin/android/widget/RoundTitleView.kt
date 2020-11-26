@@ -15,7 +15,9 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 
 class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
-    private val binding = ViewRoundTitleBinding.inflate(LayoutInflater.from(context),this,true)
+    private val binding = ViewRoundTitleBinding.inflate(LayoutInflater.from(context), this, true)
+    val rightIv = binding.rightIv
+    val titleTv = binding.titleTv
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.RoundTitleView)
         if (ta.hasValue(R.styleable.RoundTitleView_title_text)) {

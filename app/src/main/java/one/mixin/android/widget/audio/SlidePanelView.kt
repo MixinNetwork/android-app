@@ -27,8 +27,8 @@ class SlidePanelView : RelativeLayout {
     private var toCanceled = false
     private var onEnding = false
 
-    private val binding = ViewSlidePanelBinding.inflate(LayoutInflater.from(context),this)
-    
+    private val binding = ViewSlidePanelBinding.inflate(LayoutInflater.from(context), this)
+
     var callback: Callback? = null
 
     constructor(context: Context) : this(context, null)

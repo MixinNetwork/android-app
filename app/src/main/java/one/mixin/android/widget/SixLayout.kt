@@ -33,7 +33,7 @@ class SixLayout : ConstraintLayout {
     private var titles: List<TextView>
     private var titlesLayouts: List<RelativeLayout>
     private var avatars: List<CircleImageView>
-    private val binding =ViewSixBinding.inflate(LayoutInflater.from(context),this)
+    private val binding = ViewSixBinding.inflate(LayoutInflater.from(context), this)
     init {
         layouts = listOf(
             binding.thumbnailLayout1,

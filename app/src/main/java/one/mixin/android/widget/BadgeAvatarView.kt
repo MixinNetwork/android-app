@@ -7,7 +7,7 @@ import android.widget.FrameLayout
 import one.mixin.android.databinding.ViewBadgeAvatarBinding
 
 class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
-    val binding = ViewBadgeAvatarBinding.inflate(LayoutInflater.from(context),this)
+    val binding = ViewBadgeAvatarBinding.inflate(LayoutInflater.from(context), this)
 
     var pos: Int = START_BOTTOM
 

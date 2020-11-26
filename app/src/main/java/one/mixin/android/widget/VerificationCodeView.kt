@@ -124,7 +124,7 @@ class VerificationCodeView : LinearLayout {
         removeAllViews()
 
         for (i in 0 until count) {
-            val itemBinding = ViewVerificationCodeBinding.inflate(LayoutInflater.from(context),null,false)
+            val itemBinding = ViewVerificationCodeBinding.inflate(LayoutInflater.from(context), null, false)
             codes.add(itemBinding.code)
             spaces.add(itemBinding.space)
             containers.add(itemBinding.root)

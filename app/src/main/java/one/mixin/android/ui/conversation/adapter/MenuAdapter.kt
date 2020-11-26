@@ -7,7 +7,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_chat_menu.view.*
-
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.AppItem

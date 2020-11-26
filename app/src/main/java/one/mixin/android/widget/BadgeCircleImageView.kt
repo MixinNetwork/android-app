@@ -10,7 +10,7 @@ import one.mixin.android.extension.dpToPx
 
 open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
     FrameLayout(context, attrs) {
-    private val binding = ViewBadgeCircleImageBinding.inflate(LayoutInflater.from(context),this)
+    private val binding = ViewBadgeCircleImageBinding.inflate(LayoutInflater.from(context), this)
     val bg get() = binding.bg
     val badge get() = binding.badge
 

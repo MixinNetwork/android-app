@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_user_list_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_user_list.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.withArgs
@@ -48,8 +47,8 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = View.inflate(context, R.layout.fragment_user_list_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title_tv.text = title
+        contentView.title_view.rightIv.setOnClickListener { dismiss() }
+        contentView.title_view.titleTv.text = title
         contentView.recycler_view.layoutManager = LinearLayoutManager(requireContext())
         contentView.recycler_view.adapter = adapter
         adapter.submitList(userList)

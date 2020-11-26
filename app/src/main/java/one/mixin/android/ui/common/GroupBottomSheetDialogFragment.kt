@@ -15,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -103,7 +102,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView.title.right_iv.setOnClickListener { dismiss() }
+        contentView.title.rightIv.setOnClickListener { dismiss() }
         contentView.member_fl.setOnClickListener {
             GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
             dismiss()

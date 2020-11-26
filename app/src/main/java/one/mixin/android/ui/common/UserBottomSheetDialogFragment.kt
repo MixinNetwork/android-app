@@ -30,7 +30,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -143,7 +142,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         super.setupDialog(dialog, style)
         user = requireArguments().getParcelable(ARGS_USER)!!
         conversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
-        contentView.title.right_iv.setOnClickListener { dismiss() }
+        contentView.title.rightIv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 

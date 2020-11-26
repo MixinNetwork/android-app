@@ -38,7 +38,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
-
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID

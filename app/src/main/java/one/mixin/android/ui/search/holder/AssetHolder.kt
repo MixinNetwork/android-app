@@ -3,7 +3,6 @@ package one.mixin.android.ui.search.holder
 import android.annotation.SuppressLint
 import android.view.View
 import kotlinx.android.synthetic.main.item_search_asset.view.*
-
 import one.mixin.android.R
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage

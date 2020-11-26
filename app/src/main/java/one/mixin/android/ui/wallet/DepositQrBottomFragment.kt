@@ -15,7 +15,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_deposit_qr_bottom.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
@@ -64,14 +63,14 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         contentView = View.inflate(context, R.layout.fragment_deposit_qr_bottom, null)
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title.right_iv.setOnClickListener { dismiss() }
+        contentView.title.rightIv.setOnClickListener { dismiss() }
         when (type) {
             TYPE_TAG -> {
-                contentView.title.title_tv.text = getString(R.string.account_memo)
+                contentView.title.titleTv.text = getString(R.string.account_memo)
                 contentView.addr_tv.text = asset.tag
             }
             else -> {
-                contentView.title.title_tv.text = getString(R.string.address)
+                contentView.title.titleTv.text = getString(R.string.address)
                 contentView.addr_tv.text = asset.destination
             }
         }

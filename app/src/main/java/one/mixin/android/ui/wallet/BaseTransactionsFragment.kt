@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.RefreshSnapshotEvent
@@ -53,7 +52,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
 
     private val filtersView: View by lazy {
         val view = View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null)
-        view.filters_title.right_iv.setOnClickListener { filtersSheet.dismiss() }
+        view.filters_title.rightIv.setOnClickListener { filtersSheet.dismiss() }
         view.apply_tv.setOnClickListener { onApplyClick() }
         view.filter_flow.setOnCheckedListener(
             object : CheckedFlowLayout.OnCheckedListener {

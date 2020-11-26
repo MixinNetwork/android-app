@@ -7,7 +7,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.layout_asset_balance.view.*
-
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat

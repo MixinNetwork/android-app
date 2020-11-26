@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_asset_key_bottom.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -33,8 +32,8 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = View.inflate(context, R.layout.fragment_asset_key_bottom, null)
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title_view.title_tv.text = asset.name
+        contentView.title_view.rightIv.setOnClickListener { dismiss() }
+        contentView.title_view.titleTv.text = asset.name
         contentView.title_view.showBadgeCircleView(asset)
         contentView.symbol_as_tv.text = asset.symbol
         contentView.chain_as_tv.text = asset.chainName

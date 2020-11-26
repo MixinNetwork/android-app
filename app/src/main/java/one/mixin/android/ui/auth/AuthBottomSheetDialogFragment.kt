@@ -15,7 +15,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_auth.view.*
 import kotlinx.android.synthetic.main.item_third_login_scope.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.response.AuthorizationResponse
@@ -69,7 +68,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         dialog as BottomSheet
         dialog.setCustomView(contentView)
 
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
+        contentView.title_view.rightIv.setOnClickListener { dismiss() }
         contentView.avatar.loadCircleImage(auth.app.iconUrl, R.mipmap.ic_launcher_round)
         contentView.scope_rv.adapter = scopeAdapter
         scopeAdapter.onScopeListener = object : OnScopeListener {

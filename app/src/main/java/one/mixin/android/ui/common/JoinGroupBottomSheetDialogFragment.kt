@@ -13,7 +13,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_join_group_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -65,7 +64,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         behavior?.isDraggable = false
-        contentView.title.right_iv.setOnClickListener { dismiss() }
+        contentView.title.rightIv.setOnClickListener { dismiss() }
         contentView.join_tv.setOnClickListener {
             contentView.join_tv?.visibility = View.INVISIBLE
             contentView.join_progress?.visibility = View.VISIBLE
