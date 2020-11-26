@@ -169,6 +169,7 @@ dependencies {
     implementation "androidx.preference:preference-ktx:${preference_version}"
     implementation "androidx.viewpager2:viewpager2:${viewpagerVersion}"
     implementation "androidx.sharetarget:sharetarget:${sharetargetVersion}"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:${coordinatorVersion}"
 
     implementation "androidx.camera:camera-core:${cameraxVersion}"
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"

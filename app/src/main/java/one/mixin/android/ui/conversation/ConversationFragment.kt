@@ -20,6 +20,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.text.method.LinkMovementMethod
 import android.view.ContextThemeWrapper
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -27,11 +28,13 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
@@ -90,6 +93,7 @@ import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -126,7 +130,6 @@ import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.supportsNougat
-import one.mixin.android.extension.supportsR
 import one.mixin.android.extension.toast
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
@@ -2652,13 +2655,12 @@ class ConversationFragment() :
 
         val selectItem = selectItems[0]
         this.selectItem = selectItem
-        Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
+        Snackbar.make(bar_layout, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
             .setAction(R.string.chat_go_check) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                this.view.setBackgroundResource(R.color.call_btn_icon_checked)
-                (this.view.findViewById(R.id.snackbar_text) as TextView)
-                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                view.setBackgroundResource(R.color.call_btn_icon_checked)
+                (view.findViewById<TextView>(R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }.show()
     }
 
