@@ -100,9 +100,12 @@ class KeyboardLayout : LinearLayout {
         }
     }
 
-    fun forceClose() {
+    fun forceClose(inputTarget: EditText? = null) {
         input_area.layoutParams.height = 0
         requestLayout()
+        inputTarget?.let { edit ->
+            hideSoftKey(edit)
+        }
         status = STATUS.CLOSED
     }
 

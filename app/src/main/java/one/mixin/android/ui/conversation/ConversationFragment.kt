@@ -998,7 +998,7 @@ class ConversationFragment() :
         input_layout.setOnKeyboardShownListener(null)
         input_layout.setOnKeyBoardHiddenListener(null)
         supportsR({
-            chat_control.getVisibleContainer() ?: input_layout.forceClose()
+            chat_control.getVisibleContainer() ?: input_layout.forceClose(chat_control.chat_et)
         })
         MixinApplication.conversationId = null
     }
