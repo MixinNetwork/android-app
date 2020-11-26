@@ -25,6 +25,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.ANIMATION_DURATION_SHORTEST
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenHeight
@@ -100,12 +101,10 @@ class KeyboardLayout : LinearLayout {
         }
     }
 
-    fun forceClose(inputTarget: EditText? = null) {
+    fun forceClose(editText: EditText? = null) {
         input_area.layoutParams.height = 0
         requestLayout()
-        inputTarget?.let { edit ->
-            hideSoftKey(edit)
-        }
+        editText?.hideKeyboard()
         status = STATUS.CLOSED
     }
 

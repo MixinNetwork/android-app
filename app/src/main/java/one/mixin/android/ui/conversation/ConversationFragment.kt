@@ -35,6 +35,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isGone
@@ -966,9 +968,16 @@ class ConversationFragment() :
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
-        supportsR({
-            chat_control.getVisibleContainer() ?: input_layout.forceClose()
-        })
+        if (chat_control.getVisibleContainer() == null) {
+            ViewCompat.getRootWindowInsets(input_area)?.let { windowInsetsCompat ->
+                val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                if (imeHeight > 0) {
+                    input_layout.openInputArea(chat_control.chat_et)
+                } else {
+                    input_layout.forceClose(chat_control.chat_et)
+                }
+            }
+        }
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
@@ -997,9 +1006,14 @@ class ConversationFragment() :
         paused = true
         input_layout.setOnKeyboardShownListener(null)
         input_layout.setOnKeyBoardHiddenListener(null)
-        supportsR({
-            chat_control.getVisibleContainer() ?: input_layout.forceClose(chat_control.chat_et)
-        })
+        if (chat_control.getVisibleContainer() == null) {
+            ViewCompat.getRootWindowInsets(input_area)?.let { windowInsetsCompat ->
+                val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                if (imeHeight <= 0) {
+                    input_layout.forceClose()
+                }
+            }
+        }
         MixinApplication.conversationId = null
     }
 
