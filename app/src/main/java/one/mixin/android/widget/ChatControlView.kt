@@ -298,6 +298,7 @@ class ChatControlView : LinearLayout {
     fun toggleKeyboard(shown: Boolean) {
         if (shown) {
             controlState = STATUS.EXPANDED_KEYBOARD
+            chat_et.requestFocus()
         } else if (controlState == STATUS.EXPANDED_KEYBOARD) {
             controlState = STATUS.COLLAPSED
             inputLayout.closeInputArea(chat_et)
