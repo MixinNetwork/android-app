@@ -5,7 +5,9 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.R
+import one.mixin.android.databinding.ItemSearchAssetBinding
+import one.mixin.android.databinding.ItemSearchContactBinding
+import one.mixin.android.databinding.ItemSearchMessageBinding
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.holder.AssetHolder
@@ -23,10 +25,10 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder {
         return when (type) {
-            TypeAsset -> AssetHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_search_asset, parent, false))
-            TypeChat -> ChatHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false))
-            TypeUser -> ContactHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false))
-            TypeMessage -> MessageHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_search_message, parent, false))
+            TypeAsset -> AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            TypeChat -> ChatHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            TypeUser -> ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            TypeMessage -> MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
     }
 

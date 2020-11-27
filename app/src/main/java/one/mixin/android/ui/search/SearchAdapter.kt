@@ -6,6 +6,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemSearchAssetBinding
+import one.mixin.android.databinding.ItemSearchContactBinding
+import one.mixin.android.databinding.ItemSearchMessageBinding
+import one.mixin.android.databinding.ItemSearchTipBinding
 import one.mixin.android.ui.search.holder.AssetHolder
 import one.mixin.android.ui.search.holder.ChatHolder
 import one.mixin.android.ui.search.holder.ContactHolder
@@ -133,28 +137,22 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
             0 -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_tip, parent, false)
-                TipHolder(item)
+                TipHolder(ItemSearchTipBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             TypeAsset.index -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_asset, parent, false)
-                AssetHolder(item)
+                AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             TypeUser.index -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false)
-                ContactHolder(item)
+                ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             TypeChat.index -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false)
-                ChatHolder(item)
+                ChatHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             TypeMessage.index -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_message, parent, false)
-                MessageHolder(item)
+                MessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             else -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false)
-                ContactHolder(item)
+                ContactHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
         }
 

@@ -1,7 +1,7 @@
 package one.mixin.android.ui.search.holder
 
 import android.view.View
-import kotlinx.android.synthetic.main.item_search_contact.view.*
+import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
@@ -9,26 +9,26 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.showVerifiedOrBot
 
-class ChatHolder constructor(containerView: View) : NormalHolder(containerView) {
+class ChatHolder constructor(val binding: ItemSearchContactBinding) : NormalHolder(binding.root) {
     init {
-        itemView.bot_iv.visibility = View.GONE
-        itemView.verified_iv.visibility = View.GONE
+        binding.botIv.visibility = View.GONE
+        binding.verifiedIv.visibility = View.GONE
     }
 
     fun bind(chat: ChatMinimal, target: String?, onItemClickListener: SearchFragment.OnSearchClickListener?) {
         if (chat.category == ConversationCategory.CONTACT.name) {
-            itemView.search_name.text = chat.fullName
-            itemView.search_name.highLight(target)
-            itemView.search_avatar_iv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)
-            chat.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
+            binding.searchName.text = chat.fullName
+            binding.searchName.highLight(target)
+            binding.searchAvatarIv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)
+            chat.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
         } else {
-            itemView.bot_iv.visibility = View.GONE
-            itemView.verified_iv.visibility = View.GONE
-            itemView.search_name.text = chat.groupName
-            itemView.search_name.highLight(target)
-            itemView.search_avatar_iv.setInfo(chat.groupName, chat.groupIconUrl, chat.conversationId)
+            binding.botIv.visibility = View.GONE
+            binding.verifiedIv.visibility = View.GONE
+            binding.searchName.text = chat.groupName
+            binding.searchName.highLight(target)
+            binding.searchAvatarIv.setInfo(chat.groupName, chat.groupIconUrl, chat.conversationId)
         }
-        itemView.setOnClickListener {
+        binding.root.setOnClickListener {
             onItemClickListener?.onChatClick(chat)
         }
     }
