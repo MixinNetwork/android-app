@@ -8,8 +8,9 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_transaction.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentTransactionBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -39,6 +40,11 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
         }
     }
 
+    private var _binding: FragmentTransactionBinding? = null
+    private val binding get() = requireNotNull(_binding)
+    private var _titleBinding: ViewTitleBinding? = null
+    private val titleBinding get() = requireNotNull(_titleBinding)
+
     private val walletViewModel by viewModels<WalletViewModel>()
 
     private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelable(ARGS_SNAPSHOT) }
@@ -49,14 +55,22 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_transaction, null).apply { isClickable = true }
-        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+        _binding = FragmentTransactionBinding.bind(View.inflate(context, R.layout.fragment_transaction, null).apply { isClickable = true })
+        _titleBinding = ViewTitleBinding.bind(binding.titleView)
+        contentView = binding.root
+        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight()
         }
-        contentView.title_view.leftIb.setOnClickListener { dismiss() }
-        initView(this, contentView, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
+        titleBinding.leftIb.setOnClickListener { dismiss() }
+        initView(this, binding, titleBinding, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _titleBinding = null
     }
 }

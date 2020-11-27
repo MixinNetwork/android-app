@@ -19,9 +19,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_wallet.*
-import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
-import kotlinx.android.synthetic.main.view_wallet_fragment_header.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,6 +26,10 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.databinding.FragmentWalletBinding
+import one.mixin.android.databinding.ViewTitleBinding
+import one.mixin.android.databinding.ViewWalletBottomBinding
+import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
@@ -63,10 +64,18 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    private var _binding: FragmentWalletBinding? = null
+    private val binding get() = requireNotNull(_binding)
+    private var _titleBinding: ViewTitleBinding? = null
+    private val titleBinding get() = requireNotNull(_titleBinding)
+    private var _headBinding: ViewWalletFragmentHeaderBinding? = null
+    private val headBinding get() = requireNotNull(_headBinding)
+    private var _bottomBinding: ViewWalletBottomBinding? = null
+    private val bottomBinding get() = requireNotNull(_bottomBinding)
+
     private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
-    private lateinit var header: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,48 +86,53 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_wallet, container, false)
+    ): View? {
+        _binding = FragmentWalletBinding.inflate(inflater, container, false)
+        _titleBinding = ViewTitleBinding.bind(binding.titleView)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.rightAnimator.setOnClickListener { showBottom() }
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        search_ib.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
+        binding.apply {
+            titleBinding.rightAnimator.setOnClickListener { showBottom() }
+            titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+            searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
-        header = layoutInflater.inflate(R.layout.view_wallet_fragment_header, coins_rv, false)
-        assetsAdapter.headerView = header
-        (coins_rv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
-        coins_rv.setHasFixedSize(true)
-        ItemTouchHelper(
-            AssetItemCallback(
-                object : AssetItemCallback.ItemCallbackListener {
-                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
-                        val hiddenPos = viewHolder.absoluteAdapterPosition
-                        val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
-                        val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                        lifecycleScope.launch {
-                            walletViewModel.updateAssetHidden(asset.assetId, true)
-                            val anchorView = coins_rv ?: return@launch
+            _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false))
+            assetsAdapter.headerView = headBinding.root
+            (coinsRv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+            coinsRv.setHasFixedSize(true)
+            ItemTouchHelper(
+                AssetItemCallback(
+                    object : AssetItemCallback.ItemCallbackListener {
+                        override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
+                            val hiddenPos = viewHolder.absoluteAdapterPosition
+                            val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
+                            val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
+                            lifecycleScope.launch {
+                                walletViewModel.updateAssetHidden(asset.assetId, true)
+                                val anchorView = coinsRv
 
-                            Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
-                                .setAction(R.string.undo_capital) {
-                                    assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                                    lifecycleScope.launch(Dispatchers.IO) {
-                                        walletViewModel.updateAssetHidden(asset.assetId, false)
-                                    }
-                                }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                    this.view.setBackgroundResource(R.color.call_btn_icon_checked)
-                                    (this.view.findViewById(R.id.snackbar_text) as TextView)
-                                        .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                }.show()
+                                Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
+                                    .setAction(R.string.undo_capital) {
+                                        assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                                        lifecycleScope.launch(Dispatchers.IO) {
+                                            walletViewModel.updateAssetHidden(asset.assetId, false)
+                                        }
+                                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                        this.view.setBackgroundResource(R.color.call_btn_icon_checked)
+                                        (this.view.findViewById(R.id.snackbar_text) as TextView)
+                                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                                    }.show()
+                            }
                         }
                     }
-                }
-            )
-        ).apply { attachToRecyclerView(coins_rv) }
-        assetsAdapter.onItemListener = this
-        coins_rv.adapter = assetsAdapter
+                )
+            ).apply { attachToRecyclerView(coinsRv) }
+            assetsAdapter.onItemListener = this@WalletFragment
+            coinsRv.adapter = assetsAdapter
+        }
 
         walletViewModel.assetItems().observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
@@ -134,6 +148,14 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         checkPin()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _titleBinding = null
+        _headBinding = null
+        _bottomBinding = null
+    }
+
     private suspend fun renderPie(assets: List<AssetItem>) {
         var totalBTC = BigDecimal.ZERO
         var totalFiat = BigDecimal.ZERO
@@ -142,51 +164,55 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             totalFiat = totalFiat.add(it.fiat())
         }
         withContext(Dispatchers.Main) {
-            header.total_as_tv.text = try {
-                if (totalBTC.numberFormat8().toFloat() == 0f) {
-                    "0.00"
-                } else {
+            headBinding.apply {
+                totalAsTv.text = try {
+                    if (totalBTC.numberFormat8().toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        totalBTC.numberFormat8()
+                    }
+                } catch (ignored: NumberFormatException) {
                     totalBTC.numberFormat8()
                 }
-            } catch (ignored: NumberFormatException) {
-                totalBTC.numberFormat8()
-            }
-            header.total_tv.text = try {
-                if (totalFiat.numberFormat2().toFloat() == 0f) {
-                    "0.00"
-                } else {
+                totalTv.text = try {
+                    if (totalFiat.numberFormat2().toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        totalFiat.numberFormat2()
+                    }
+                } catch (ignored: NumberFormatException) {
                     totalFiat.numberFormat2()
                 }
-            } catch (ignored: NumberFormatException) {
-                totalFiat.numberFormat2()
-            }
-            header.symbol.text = Fiats.getSymbol()
+                symbol.text = Fiats.getSymbol()
 
-            if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
-                header.pie_item_container.visibility = GONE
-                header.percent_view.visibility = GONE
-                header.btc_rl.updateLayoutParams<LinearLayout.LayoutParams> {
-                    bottomMargin = requireContext().dpToPx(32f)
+                if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
+                    pieItemContainer.visibility = GONE
+                    percentView.visibility = GONE
+                    btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
+                        bottomMargin = requireContext().dpToPx(32f)
+                    }
+                    return@withContext
                 }
-                return@withContext
-            }
 
-            header.btc_rl.updateLayoutParams<LinearLayout.LayoutParams> {
-                bottomMargin = requireContext().dpToPx(16f)
+                btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
+                    bottomMargin = requireContext().dpToPx(16f)
+                }
+                pieItemContainer.visibility = VISIBLE
+                percentView.visibility = VISIBLE
+                setPieView(assets, totalFiat)
             }
-            header.pie_item_container.visibility = VISIBLE
-            header.percent_view.visibility = VISIBLE
-            setPieView(assets, totalFiat)
         }
     }
 
     @SuppressLint("SetTextI18n")
     private fun setEmpty() {
-        header.pie_item_container.visibility = GONE
-        header.percent_view.visibility = GONE
-        assetsAdapter.setAssetList(emptyList())
-        header.total_as_tv.text = "0.00"
-        header.total_tv.text = "0.00"
+        headBinding.apply {
+            pieItemContainer.visibility = GONE
+            percentView.visibility = GONE
+            assetsAdapter.setAssetList(emptyList())
+            totalAsTv.text = "0.00"
+            totalTv.text = "0.00"
+        }
     }
 
     private fun setPieView(r: List<AssetItem>, totalUSD: BigDecimal) {
@@ -195,10 +221,10 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             PercentView.PercentItem(it.symbol, p)
         }.toMutableList()
         if (list.isNotEmpty()) {
-            header.pie_item_container.removeAllViews()
+            headBinding.pieItemContainer.removeAllViews()
             list.sortWith { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() }
             context?.mainThread {
-                header.percent_view.setPercents(list)
+                headBinding.percentView.setPercents(list)
             }
             when {
                 list.size == 1 -> {
@@ -233,11 +259,11 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     val other = (100 - pre) / 100f
                     val item = PercentItemView(requireContext())
                     item.setPercentItem(PercentView.PercentItem(getString(R.string.other), other), 2)
-                    header.pie_item_container.addView(item)
+                    headBinding.pieItemContainer.addView(item)
                 }
             }
 
-            header.pie_item_container.visibility = VISIBLE
+            headBinding.pieItemContainer.visibility = VISIBLE
         }
     }
 
@@ -259,21 +285,21 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private fun addItem(p: PercentView.PercentItem, index: Int) {
         val item = PercentItemView(requireContext())
         item.setPercentItem(p, index)
-        header.pie_item_container.addView(item)
+        headBinding.pieItemContainer.addView(item)
     }
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null)
-        builder.setCustomView(view)
+        _bottomBinding = ViewWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null))
+        builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
         val rootView = this.view
-        view.hide.setOnClickListener {
+        bottomBinding.hide.setOnClickListener {
             rootView?.navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
             bottomSheet.dismiss()
         }
-        view.transactions_tv.setOnClickListener {
+        bottomBinding.transactionsTv.setOnClickListener {
             rootView?.navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
             bottomSheet.dismiss()
         }

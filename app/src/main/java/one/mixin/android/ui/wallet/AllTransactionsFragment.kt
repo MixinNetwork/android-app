@@ -12,13 +12,13 @@ import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_all_transactions.*
-import kotlinx.android.synthetic.main.layout_empty_transaction.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAllTransactionsBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.navigate
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
@@ -35,19 +35,31 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         const val TAG = "AllTransactionsFragment"
     }
 
+    private var _binding: FragmentAllTransactionsBinding? = null
+    private val binding get() = requireNotNull(_binding)
+    private var _titleBinding: ViewTitleBinding? = null
+    private val titleBinding get() = requireNotNull(_titleBinding)
+
     private val adapter = SnapshotPagedAdapter()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_all_transactions, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = FragmentAllTransactionsBinding.inflate(layoutInflater, container, false)
+        _titleBinding = ViewTitleBinding.bind(binding.titleView)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener { view.findNavController().navigateUp() }
-        title_view.rightAnimator.setOnClickListener { showFiltersSheet() }
+        titleBinding.apply {
+            leftIb.setOnClickListener { view.findNavController().navigateUp() }
+            rightAnimator.setOnClickListener { showFiltersSheet() }
+        }
         adapter.listener = this
-        transactions_rv.itemAnimator = null
-        transactions_rv.adapter = adapter
-        transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.apply {
+            transactionsRv.itemAnimator = null
+            transactionsRv.adapter = adapter
+            transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        }
         dataObserver = Observer { pagedList ->
             if (pagedList != null && pagedList.isNotEmpty()) {
                 showEmpty(false)
@@ -68,6 +80,12 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             }
         }
         bindLiveData()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _titleBinding = null
     }
 
     override fun <T> onNormalItemClick(item: T) {
@@ -151,19 +169,21 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     private fun showEmpty(show: Boolean) {
-        if (show) {
-            if (empty_rl.visibility == GONE) {
-                empty_rl.visibility = VISIBLE
-            }
-            if (transactions_rv.visibility == VISIBLE) {
-                transactions_rv.visibility = GONE
-            }
-        } else {
-            if (empty_rl.visibility == VISIBLE) {
-                empty_rl.visibility = GONE
-            }
-            if (transactions_rv.visibility == GONE) {
-                transactions_rv.visibility = VISIBLE
+        binding.apply {
+            if (show) {
+                if (empty.root.visibility == GONE) {
+                    empty.root.visibility = VISIBLE
+                }
+                if (transactionsRv.visibility == VISIBLE) {
+                    transactionsRv.visibility = GONE
+                }
+            } else {
+                if (empty.root.visibility == VISIBLE) {
+                    empty.root.visibility = GONE
+                }
+                if (transactionsRv.visibility == GONE) {
+                    transactionsRv.visibility = VISIBLE
+                }
             }
         }
     }

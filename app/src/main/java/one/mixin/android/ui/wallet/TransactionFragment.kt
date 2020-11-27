@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_transaction.*
-import one.mixin.android.R
+import one.mixin.android.databinding.FragmentTransactionBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -36,6 +36,11 @@ class TransactionFragment : BaseFragment(), TransactionInterface {
         }
     }
 
+    private var _binding: FragmentTransactionBinding? = null
+    private val binding get() = requireNotNull(_binding)
+    private var _titleBinding: ViewTitleBinding? = null
+    private val titleBinding get() = requireNotNull(_titleBinding)
+
     private val walletViewModel by viewModels<WalletViewModel>()
 
     private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelable(ARGS_SNAPSHOT) }
@@ -43,14 +48,23 @@ class TransactionFragment : BaseFragment(), TransactionInterface {
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_transaction, container, false).apply {
-            isClickable = true
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = FragmentTransactionBinding.inflate(layoutInflater, container, false).apply {
+            root.isClickable = true
         }
+        _titleBinding = ViewTitleBinding.bind(binding.titleView)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        initView(this, container, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
+        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+        initView(this, binding, titleBinding, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _titleBinding = null
     }
 }

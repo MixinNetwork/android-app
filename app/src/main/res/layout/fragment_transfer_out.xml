@@ -31,7 +31,8 @@
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        <include layout="@layout/layout_empty_transaction" />
+        <include android:id="@+id/empty"
+            layout="@layout/layout_empty_transaction" />
 
         <FrameLayout
             android:id="@+id/progress"
