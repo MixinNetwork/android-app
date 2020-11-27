@@ -7,12 +7,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_wallet_password.*
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.databinding.FragmentWalletPasswordBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
@@ -20,7 +21,6 @@ import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
@@ -34,7 +34,7 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
-class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
+class WalletPasswordFragment : BaseSettingFragment<FragmentWalletPasswordBinding>(), PinView.OnPinListener {
 
     companion object {
         const val TAG = "WalletPasswordFragment"
@@ -69,37 +69,41 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
     private var lastPassword: String? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_wallet_password, container, false)
+    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
+        FragmentWalletPasswordBinding.inflate(inflater, container, false).apply {
+            _titleBinding = ViewTitleBinding.bind(titleView)
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (change) {
-            title_view.setSubTitle(getString(R.string.wallet_password_set_new_pin), "2/5")
-            tip_tv.text = getString(R.string.wallet_password_set_new_pin_desc)
-        } else {
-            title_view.setSubTitle(getString(R.string.wallet_password_set_pin), "1/4")
-        }
-        title_view.leftIb.setOnClickListener {
-            when (step) {
-                STEP1 -> activity?.onBackPressed()
-                STEP2 -> toStep1()
-                STEP3 -> toStep2()
-                STEP4 -> toStep3()
+        binding.apply {
+            if (change) {
+                titleView.setSubTitle(getString(R.string.wallet_password_set_new_pin), "2/5")
+                tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
+            } else {
+                titleView.setSubTitle(getString(R.string.wallet_password_set_pin), "1/4")
             }
+            titleView.leftIb.setOnClickListener {
+                when (step) {
+                    STEP1 -> activity?.onBackPressed()
+                    STEP2 -> toStep1()
+                    STEP3 -> toStep2()
+                    STEP4 -> toStep3()
+                }
+            }
+            disableTitleRight()
+            titleView.rightAnimator.setOnClickListener { createPin() }
+            pin.setListener(this@WalletPasswordFragment)
+            keyboard.setKeyboardKeys(Constants.KEYS)
+            keyboard.setOnClickKeyboardListener(keyboardListener)
+            keyboard.animate().translationY(0f).start()
         }
-        disableTitleRight()
-        title_view.rightAnimator.setOnClickListener { createPin() }
-        pin.setListener(this)
-        keyboard.setKeyboardKeys(Constants.KEYS)
-        keyboard.setOnClickKeyboardListener(keyboardListener)
-        keyboard.animate().translationY(0f).start()
     }
 
     override fun onUpdate(index: Int) {
-        if (index == pin.getCount()) {
-            title_view.rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
-            title_view.rightAnimator.isEnabled = true
+        if (index == binding.pin.getCount()) {
+            binding.titleView.rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
+            titleBinding.rightAnimator.isEnabled = true
         } else {
             disableTitleRight()
         }
@@ -125,50 +129,58 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     }
 
     private fun disableTitleRight() {
-        title_view.rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
-        title_view.rightAnimator.isEnabled = false
+        titleBinding.apply {
+            rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
+            rightAnimator.isEnabled = false
+        }
     }
 
     private fun toStep1() {
         step = STEP1
         lastPassword = null
-        pin.clear()
-        title_view.setSubTitle(
+        binding.pin.clear()
+        binding.titleView.setSubTitle(
             getString(if (change) R.string.wallet_password_set_new_pin else R.string.wallet_password_set_pin),
             getSubTitle()
         )
-        tip_tv.text = getString(if (change) R.string.wallet_password_set_new_pin_desc else R.string.wallet_password_set_pin_desc)
+        binding.tipTv.text = getString(if (change) R.string.wallet_password_set_new_pin_desc else R.string.wallet_password_set_pin_desc)
     }
 
     private fun toStep2(check: Boolean = false) {
         if (check && !validatePin()) {
-            pin.clear()
+            binding.pin.clear()
             return
         }
 
         step = STEP2
-        lastPassword = pin.code()
-        pin.clear()
-        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
-        tip_tv.text = getString(R.string.wallet_password_confirm_1)
+        lastPassword = binding.pin.code()
+        binding.apply {
+            pin.clear()
+            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
+            tipTv.text = getString(R.string.wallet_password_confirm_1)
+        }
     }
 
     private fun toStep3(check: Boolean = false) {
         if (check && checkEqual()) return
 
         step = STEP3
-        pin.clear()
-        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
-        tip_tv.text = getString(R.string.wallet_password_confirm_2)
+        binding.apply {
+            pin.clear()
+            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
+            tipTv.text = getString(R.string.wallet_password_confirm_2)
+        }
     }
 
     private fun toStep4(check: Boolean = false) {
         if (check && checkEqual()) return
 
         step = STEP4
-        pin.clear()
-        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
-        tip_tv.text = getString(R.string.wallet_password_confirm_3)
+        binding.apply {
+            pin.clear()
+            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
+            tipTv.text = getString(R.string.wallet_password_confirm_3)
+        }
     }
 
     private fun getSubTitle(): String {
@@ -182,7 +194,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     }
 
     private fun validatePin(): Boolean {
-        val pin = pin.code()
+        val pin = binding.pin.code()
         if (pin == "123456") {
             context?.toast(R.string.wallet_password_unsafe)
             return false
@@ -217,7 +229,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                 dialog.setCancelable(false)
                 dialog.show()
 
-                walletViewModel.updatePin(pin.code(), oldPassword)
+                walletViewModel.updatePin(binding.pin.code(), oldPassword)
                     .autoDispose(stopScope).subscribe(
                         { r: MixinResponse<Account> ->
                             if (r.isSuccess) {
@@ -231,7 +243,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
                                     val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
                                     if (openBiometrics) {
-                                        BiometricUtil.savePin(requireContext(), pin.code(), this@WalletPasswordFragment)
+                                        BiometricUtil.savePin(requireContext(), binding.pin.code(), this@WalletPasswordFragment)
                                     }
 
                                     activity?.let { activity ->
@@ -269,7 +281,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     }
 
     private fun checkEqual(): Boolean {
-        if (lastPassword != pin.code()) {
+        if (lastPassword != binding.pin.code()) {
             context?.toast(R.string.wallet_password_not_equal)
             toStep1()
             return true
@@ -281,18 +293,18 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                pin.delete()
+                binding.pin.delete()
             } else {
-                pin.append(value)
+                binding.pin.append(value)
             }
         }
 
         override fun onLongClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                pin.clear()
+                binding.pin.clear()
             } else {
-                pin.append(value)
+                binding.pin.append(value)
             }
         }
     }

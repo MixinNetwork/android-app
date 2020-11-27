@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -55,7 +54,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), Frie
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.confirm) { dialog, _ ->
-                search_et.hideKeyboard()
+                binding.searchEt.hideKeyboard()
                 requestCreateEmergency(user)
                 dialog.dismiss()
             }

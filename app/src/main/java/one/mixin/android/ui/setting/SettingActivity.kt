@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -18,9 +19,12 @@ class SettingActivity : BlazeBaseActivity() {
         }
     }
 
+    private lateinit var binding: ActivityContactBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_contact)
+        binding = ActivityContactBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val fragment = SettingFragment.newInstance()
         replaceFragment(fragment, R.id.container, SettingFragment.TAG)
         if (intent.getBooleanExtra(FROM_NOTIFICATION, false)) {

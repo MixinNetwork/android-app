@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_emergency_contact_bottom.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentEmergencyContactBottomBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.session.Session
@@ -23,52 +23,58 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
         fun newInstance() = EmergencyContactTipBottomSheetDialogFragment()
     }
 
+    private var _binding: FragmentEmergencyContactBottomBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_emergency_contact_bottom, null)
+        _binding = FragmentEmergencyContactBottomBinding.bind(View.inflate(context, R.layout.fragment_emergency_contact_bottom, null))
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.continue_tv.setOnClickListener {
-            if (Session.getAccount()?.hasPin == true) {
-                activity?.supportFragmentManager?.inTransaction {
-                    setCustomAnimations(
-                        R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom,
-                        R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom
-                    )
-                        .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
-                        .addToBackStack(null)
+        binding.apply {
+            continueTv.setOnClickListener {
+                if (Session.getAccount()?.hasPin == true) {
+                    activity?.supportFragmentManager?.inTransaction {
+                        setCustomAnimations(
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom
+                        )
+                            .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
+                            .addToBackStack(null)
+                    }
+                } else {
+                    parentFragmentManager.inTransaction {
+                        setCustomAnimations(
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                            R
+                                .anim.slide_in_bottom,
+                            R.anim.slide_out_bottom
+                        )
+                            .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                            .addToBackStack(null)
+                    }
                 }
-            } else {
-                parentFragmentManager.inTransaction {
-                    setCustomAnimations(
-                        R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom,
-                        R
-                            .anim.slide_in_bottom,
-                        R.anim.slide_out_bottom
-                    )
-                        .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
-                        .addToBackStack(null)
-                }
+                dismiss()
             }
-            dismiss()
-        }
 
-        contentView.scroll_view.post {
-            val childHeight = contentView.scroll_content.height
-            val isScrollable = contentView.scroll_view.height <
-                childHeight + contentView.scroll_view.paddingTop + contentView.scroll_view.paddingBottom
-            if (isScrollable) {
-                contentView.image_view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    topMargin = context?.dpToPx(12f) ?: 0
-                    bottomMargin = context?.dpToPx(12f) ?: 0
-                }
-                contentView.continue_tv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    topMargin = context?.dpToPx(20f) ?: 0
-                    bottomMargin = context?.dpToPx(20f) ?: 0
+            scrollView.post {
+                val childHeight = scrollContent.height
+                val isScrollable = scrollView.height <
+                    childHeight + scrollView.paddingTop + scrollView.paddingBottom
+                if (isScrollable) {
+                    imageView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        topMargin = context?.dpToPx(12f) ?: 0
+                        bottomMargin = context?.dpToPx(12f) ?: 0
+                    }
+                    continueTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        topMargin = context?.dpToPx(20f) ?: 0
+                        bottomMargin = context?.dpToPx(20f) ?: 0
+                    }
                 }
             }
         }

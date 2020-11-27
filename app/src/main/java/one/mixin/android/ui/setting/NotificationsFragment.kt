@@ -10,12 +10,13 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.databinding.FragmentNotificationsBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openNotificationSetting
@@ -23,13 +24,12 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.util.ChannelManager
 import one.mixin.android.vo.Fiats
 
 @AndroidEntryPoint
-class NotificationsFragment : BaseFragment() {
+class NotificationsFragment : BaseSettingFragment<FragmentNotificationsBinding>() {
     companion object {
         const val TAG = "NotificationsFragment"
         fun newInstance(): NotificationsFragment {
@@ -41,35 +41,39 @@ class NotificationsFragment : BaseFragment() {
 
     private val viewModel by viewModels<SettingViewModel>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_notifications, container, false)
+    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
+        FragmentNotificationsBinding.inflate(inflater, container, false).apply {
+            _titleBinding = ViewTitleBinding.bind(titleView)
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        transfer_rl.setOnClickListener {
-            showDialog(transfer_tv.text.toString().removePrefix(accountSymbol), true)
-        }
-        refreshNotification(Session.getAccount()!!.transferNotificationThreshold)
-        system_notification.setOnClickListener {
-            context?.openNotificationSetting()
-        }
+        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.apply {
+            transferRl.setOnClickListener {
+                showDialog(transferTv.text.toString().removePrefix(accountSymbol), true)
+            }
+            refreshNotification(Session.getAccount()!!.transferNotificationThreshold)
+            systemNotification.setOnClickListener {
+                context?.openNotificationSetting()
+            }
 
-        large_amount_rl.setOnClickListener {
-            showDialog(Session.getAccount()!!.transferConfirmationThreshold.toString(), false)
-        }
-        refreshLargeAmount(Session.getAccount()!!.transferConfirmationThreshold)
+            largeAmountRl.setOnClickListener {
+                showDialog(Session.getAccount()!!.transferConfirmationThreshold.toString(), false)
+            }
+            refreshLargeAmount(Session.getAccount()!!.transferConfirmationThreshold)
 
-        duplicate_transfer_sc.isChecked = defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
-        duplicate_transfer_sc.setOnCheckedChangeListener { _, isChecked ->
-            defaultSharedPreferences.putBoolean(PREF_DUPLICATE_TRANSFER, isChecked)
-        }
+            duplicateTransferSc.isChecked = defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
+            duplicateTransferSc.setOnCheckedChangeListener { _, isChecked ->
+                defaultSharedPreferences.putBoolean(PREF_DUPLICATE_TRANSFER, isChecked)
+            }
 
-        supportsOreo {
-            notification_reset.isVisible = true
-            notification_reset.setOnClickListener {
-                ChannelManager.resetChannelSound(requireContext())
-                toast(R.string.successful)
+            supportsOreo {
+                notificationReset.isVisible = true
+                notificationReset.setOnClickListener {
+                    ChannelManager.resetChannelSound(requireContext())
+                    toast(R.string.successful)
+                }
             }
         }
     }
@@ -152,20 +156,24 @@ class NotificationsFragment : BaseFragment() {
     @SuppressLint("SetTextI18n")
     private fun refreshNotification(threshold: Double) {
         if (!isAdded) return
-        transfer_tv.text = "$accountSymbol$threshold"
-        transfer_desc_tv.text = getString(
-            R.string.setting_notification_transfer_desc,
-            "$accountSymbol$threshold"
-        )
+        binding.apply {
+            transferTv.text = "$accountSymbol$threshold"
+            transferDescTv.text = getString(
+                R.string.setting_notification_transfer_desc,
+                "$accountSymbol$threshold"
+            )
+        }
     }
 
     @SuppressLint("SetTextI18n")
     private fun refreshLargeAmount(largeAmount: Double) {
         if (!isAdded) return
-        large_amount_tv.text = "$accountSymbol$largeAmount"
-        large_amount_desc_tv.text = getString(
-            R.string.setting_transfer_large_summary,
-            "$accountSymbol$largeAmount"
-        )
+        binding.apply {
+            largeAmountTv.text = "$accountSymbol$largeAmount"
+            largeAmountDescTv.text = getString(
+                R.string.setting_transfer_large_summary,
+                "$accountSymbol$largeAmount"
+            )
+        }
     }
 }

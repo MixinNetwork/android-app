@@ -8,17 +8,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_setting_conversation.*
 import kotlinx.coroutines.launch
-import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.databinding.FragmentSettingConversationBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.MessageSource
 
 @AndroidEntryPoint
-class SettingConversationFragment : BaseFragment() {
+class SettingConversationFragment : BaseSettingFragment<FragmentSettingConversationBinding>() {
     companion object {
         const val TAG = "SettingConversationFragment"
         const val CONVERSATION_KEY = "conversation_key"
@@ -28,16 +27,14 @@ class SettingConversationFragment : BaseFragment() {
 
     private val viewModel by viewModels<SettingConversationViewModel>()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? =
-        layoutInflater.inflate(R.layout.fragment_setting_conversation, container, false)
+    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
+        FragmentSettingConversationBinding.inflate(inflater, container, false).apply {
+            _titleBinding = ViewTitleBinding.bind(titleView)
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
+        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
         viewModel.initPreferences(requireContext())
             .observe(
                 viewLifecycleOwner,
@@ -59,152 +56,156 @@ class SettingConversationFragment : BaseFragment() {
     }
 
     private fun render(prefer: Int) {
-        if (prefer == MessageSource.EVERYBODY.ordinal) {
-            everybody_iv.visibility = VISIBLE
-            my_contacts_iv.visibility = View.GONE
-            everybody_pb.visibility = View.GONE
-            my_contacts_pb.visibility = View.GONE
-            my_contacts_rl.setOnClickListener {
-                if (my_contacts_iv.visibility == VISIBLE) return@setOnClickListener
+        binding.apply {
+            if (prefer == MessageSource.EVERYBODY.ordinal) {
+                everybodyIv.visibility = VISIBLE
+                myContactsIv.visibility = View.GONE
+                everybodyPb.visibility = View.GONE
+                myContactsPb.visibility = View.GONE
+                myContactsRl.setOnClickListener {
+                    if (myContactsIv.visibility == VISIBLE) return@setOnClickListener
 
-                everybody_iv.visibility = View.GONE
-                my_contacts_pb.visibility = VISIBLE
-                lifecycleScope.launch {
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.CONTACTS.name))
-                        },
-                        successBlock = {
-                            it.data?.let { account ->
-                                Session.storeAccount(account)
+                    everybodyIv.visibility = View.GONE
+                    myContactsPb.visibility = VISIBLE
+                    lifecycleScope.launch {
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.CONTACTS.name))
+                            },
+                            successBlock = {
+                                it.data?.let { account ->
+                                    Session.storeAccount(account)
+                                }
+                                viewModel.preferences.setContacts()
+                            },
+                            failureBlock = {
+                                viewModel.preferences.setEveryBody()
+                                return@handleMixinResponse false
+                            },
+                            exceptionBlock = {
+                                myContactsPb.visibility = View.GONE
+                                viewModel.preferences.setEveryBody()
+                                return@handleMixinResponse false
+                            },
+                            doAfterNetworkSuccess = {
+                                myContactsPb.visibility = View.GONE
                             }
-                            viewModel.preferences.setContacts()
-                        },
-                        failureBlock = {
-                            viewModel.preferences.setEveryBody()
-                            return@handleMixinResponse false
-                        },
-                        exceptionBlock = {
-                            my_contacts_pb?.visibility = View.GONE
-                            viewModel.preferences.setEveryBody()
-                            return@handleMixinResponse false
-                        },
-                        doAfterNetworkSuccess = {
-                            my_contacts_pb?.visibility = View.GONE
-                        }
-                    )
+                        )
+                    }
                 }
-            }
-        } else {
-            everybody_iv.visibility = View.GONE
-            my_contacts_iv.visibility = VISIBLE
-            everybody_pb.visibility = View.GONE
-            my_contacts_pb.visibility = View.GONE
-            everybody_rl.setOnClickListener {
-                if (everybody_iv.visibility == VISIBLE) return@setOnClickListener
+            } else {
+                everybodyIv.visibility = View.GONE
+                myContactsIv.visibility = VISIBLE
+                everybodyPb.visibility = View.GONE
+                myContactsPb.visibility = View.GONE
+                everybodyRl.setOnClickListener {
+                    if (everybodyIv.visibility == VISIBLE) return@setOnClickListener
 
-                everybody_pb.visibility = VISIBLE
-                my_contacts_iv.visibility = View.GONE
-                lifecycleScope.launch {
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.EVERYBODY.name))
-                        },
-                        successBlock = {
-                            it.data?.let { account ->
-                                Session.storeAccount(account)
+                    everybodyPb.visibility = VISIBLE
+                    myContactsIv.visibility = View.GONE
+                    lifecycleScope.launch {
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.EVERYBODY.name))
+                            },
+                            successBlock = {
+                                it.data?.let { account ->
+                                    Session.storeAccount(account)
+                                }
+                                viewModel.preferences.setEveryBody()
+                            },
+                            failureBlock = {
+                                viewModel.preferences.setContacts()
+                                return@handleMixinResponse false
+                            },
+                            exceptionBlock = {
+                                everybodyPb.visibility = View.GONE
+                                viewModel.preferences.setContacts()
+                                return@handleMixinResponse false
+                            },
+                            doAfterNetworkSuccess = {
+                                everybodyPb.visibility = View.GONE
                             }
-                            viewModel.preferences.setEveryBody()
-                        },
-                        failureBlock = {
-                            viewModel.preferences.setContacts()
-                            return@handleMixinResponse false
-                        },
-                        exceptionBlock = {
-                            everybody_pb?.visibility = View.GONE
-                            viewModel.preferences.setContacts()
-                            return@handleMixinResponse false
-                        },
-                        doAfterNetworkSuccess = {
-                            everybody_pb?.visibility = View.GONE
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
     }
 
     private fun renderGroup(prefer: Int) {
-        if (prefer == MessageSource.EVERYBODY.ordinal) {
-            everybody_group_iv.visibility = VISIBLE
-            my_contacts_group_iv.visibility = View.GONE
-            everybody_group_pb.visibility = View.GONE
-            my_contacts_group_pb.visibility = View.GONE
-            my_contacts_group_rl.setOnClickListener {
-                if (my_contacts_group_iv.visibility == VISIBLE) return@setOnClickListener
+        binding.apply {
+            if (prefer == MessageSource.EVERYBODY.ordinal) {
+                everybodyGroupIv.visibility = VISIBLE
+                myContactsGroupIv.visibility = View.GONE
+                everybodyGroupPb.visibility = View.GONE
+                myContactsGroupPb.visibility = View.GONE
+                myContactsGroupRl.setOnClickListener {
+                    if (myContactsGroupIv.visibility == VISIBLE) return@setOnClickListener
 
-                everybody_group_iv.visibility = View.GONE
-                my_contacts_group_pb.visibility = VISIBLE
-                lifecycleScope.launch {
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.CONTACTS.name))
-                        },
-                        successBlock = {
-                            it.data?.let { account ->
-                                Session.storeAccount(account)
+                    everybodyGroupIv.visibility = View.GONE
+                    myContactsGroupPb.visibility = VISIBLE
+                    lifecycleScope.launch {
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.CONTACTS.name))
+                            },
+                            successBlock = {
+                                it.data?.let { account ->
+                                    Session.storeAccount(account)
+                                }
+                                viewModel.groupPreferences.setContacts()
+                            },
+                            failureBlock = {
+                                viewModel.groupPreferences.setEveryBody()
+                                return@handleMixinResponse false
+                            },
+                            exceptionBlock = {
+                                myContactsGroupPb.visibility = View.GONE
+                                viewModel.groupPreferences.setEveryBody()
+                                return@handleMixinResponse false
+                            },
+                            doAfterNetworkSuccess = {
+                                myContactsGroupPb.visibility = View.GONE
                             }
-                            viewModel.groupPreferences.setContacts()
-                        },
-                        failureBlock = {
-                            viewModel.groupPreferences.setEveryBody()
-                            return@handleMixinResponse false
-                        },
-                        exceptionBlock = {
-                            my_contacts_group_pb?.visibility = View.GONE
-                            viewModel.groupPreferences.setEveryBody()
-                            return@handleMixinResponse false
-                        },
-                        doAfterNetworkSuccess = {
-                            my_contacts_group_pb?.visibility = View.GONE
-                        }
-                    )
+                        )
+                    }
                 }
-            }
-        } else {
-            everybody_group_iv.visibility = View.GONE
-            my_contacts_group_iv.visibility = VISIBLE
-            everybody_group_pb.visibility = View.GONE
-            my_contacts_group_pb.visibility = View.GONE
-            everybody_group_rl.setOnClickListener {
-                if (everybody_group_iv.visibility == VISIBLE) return@setOnClickListener
+            } else {
+                everybodyGroupIv.visibility = View.GONE
+                myContactsGroupIv.visibility = VISIBLE
+                everybodyGroupPb.visibility = View.GONE
+                myContactsGroupPb.visibility = View.GONE
+                everybodyGroupRl.setOnClickListener {
+                    if (everybodyGroupIv.visibility == VISIBLE) return@setOnClickListener
 
-                everybody_group_pb.visibility = VISIBLE
-                my_contacts_group_iv.visibility = View.GONE
-                lifecycleScope.launch {
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.EVERYBODY.name))
-                        },
-                        successBlock = {
-                            it.data?.let { account ->
-                                Session.storeAccount(account)
+                    everybodyGroupPb.visibility = VISIBLE
+                    myContactsGroupIv.visibility = View.GONE
+                    lifecycleScope.launch {
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.EVERYBODY.name))
+                            },
+                            successBlock = {
+                                it.data?.let { account ->
+                                    Session.storeAccount(account)
+                                }
+                                viewModel.groupPreferences.setEveryBody()
+                            },
+                            failureBlock = {
+                                viewModel.groupPreferences.setContacts()
+                                return@handleMixinResponse false
+                            },
+                            exceptionBlock = {
+                                everybodyGroupPb.visibility = View.GONE
+                                viewModel.groupPreferences.setContacts()
+                                return@handleMixinResponse false
+                            },
+                            doAfterNetworkSuccess = {
+                                everybodyGroupPb.visibility = View.GONE
                             }
-                            viewModel.groupPreferences.setEveryBody()
-                        },
-                        failureBlock = {
-                            viewModel.groupPreferences.setContacts()
-                            return@handleMixinResponse false
-                        },
-                        exceptionBlock = {
-                            everybody_group_pb?.visibility = View.GONE
-                            viewModel.groupPreferences.setContacts()
-                            return@handleMixinResponse false
-                        },
-                        doAfterNetworkSuccess = {
-                            everybody_group_pb?.visibility = View.GONE
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

@@ -7,15 +7,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_blocked.*
-import kotlinx.android.synthetic.main.item_contact_normal.view.*
-import one.mixin.android.R
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.databinding.FragmentBlockedBinding
+import one.mixin.android.databinding.ItemBlockedFooterBinding
+import one.mixin.android.databinding.ItemContactNormalBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint
-class SettingBlockedFragment : BaseFragment() {
+class SettingBlockedFragment : BaseSettingFragment<FragmentBlockedBinding>() {
     companion object {
         const val TAG = "SettingBlockedFragment"
         const val POS_LIST = 0
@@ -30,8 +30,10 @@ class SettingBlockedFragment : BaseFragment() {
 
     private val adapter = BlockedAdapter()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_blocked, container, false)
+    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
+        FragmentBlockedBinding.inflate(inflater, container, false).apply {
+            _titleBinding = ViewTitleBinding.bind(titleView)
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -41,19 +43,21 @@ class SettingBlockedFragment : BaseFragment() {
                     .show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }
-        blocked_rv.adapter = adapter
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        viewModel.blockingUsers(stopScope).observe(
-            viewLifecycleOwner,
-            {
-                if (it != null && it.isNotEmpty()) {
-                    block_va.displayedChild = POS_LIST
-                    adapter.setUsers(it)
-                } else {
-                    block_va.displayedChild = POS_EMPTY
+        binding.apply {
+            blockedRv.adapter = adapter
+            titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+            viewModel.blockingUsers(stopScope).observe(
+                viewLifecycleOwner,
+                {
+                    if (it != null && it.isNotEmpty()) {
+                        blockVa.displayedChild = POS_LIST
+                        adapter.setUsers(it)
+                    } else {
+                        blockVa.displayedChild = POS_EMPTY
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 
     class BlockedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -81,9 +85,9 @@ class SettingBlockedFragment : BaseFragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
             return if (viewType == TYPE_FOOTER) {
-                FooterHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_blocked_footer, parent, false))
+                FooterHolder(ItemBlockedFooterBinding.inflate(LayoutInflater.from(parent.context), parent, false).root)
             } else {
-                ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_normal, parent, false))
+                ItemHolder(ItemContactNormalBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
         }
 
@@ -99,10 +103,12 @@ class SettingBlockedFragment : BaseFragment() {
         override fun getItemCount(): Int = (users?.size ?: 0) + 1
     }
 
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ItemHolder(private val itemBinding: ItemContactNormalBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(user: User, callback: Callback?) {
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            itemView.normal.text = user.fullName
+            itemBinding.apply {
+                avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+                normal.text = user.fullName
+            }
             itemView.setOnClickListener {
                 callback?.onClick(user)
             }

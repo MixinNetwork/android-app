@@ -7,24 +7,24 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_old_password.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.databinding.FragmentOldPasswordBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
-class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
+class OldPasswordFragment : BaseSettingFragment<FragmentOldPasswordBinding>(), PinView.OnPinListener {
 
     companion object {
         const val TAG = "OldPasswordFragment"
@@ -35,33 +35,43 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_old_password, container, false)
+    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
+        FragmentOldPasswordBinding.inflate(inflater, container, false).apply {
+            _titleBinding = ViewTitleBinding.bind(titleView)
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.setSubTitle(getString(R.string.wallet_password_old_title), "1/5")
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        title_view.rightAnimator.setOnClickListener { verify(pin.code()) }
-        disableTitleRight()
-        pin.setListener(this)
-        keyboard.setKeyboardKeys(KEYS)
-        keyboard.setOnClickKeyboardListener(keyboardListener)
-        keyboard.animate().translationY(0f).start()
+        titleBinding.apply {
+            leftIb.setOnClickListener { activity?.onBackPressed() }
+            rightAnimator.setOnClickListener { verify(binding.pin.code()) }
+        }
+        binding.apply {
+            titleView.setSubTitle(getString(R.string.wallet_password_old_title), "1/5")
+            disableTitleRight()
+            pin.setListener(this@OldPasswordFragment)
+            keyboard.setKeyboardKeys(KEYS)
+            keyboard.setOnClickKeyboardListener(keyboardListener)
+            keyboard.animate().translationY(0f).start()
+        }
     }
 
     override fun onUpdate(index: Int) {
-        if (index == pin.getCount()) {
-            title_view.rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
-            title_view.rightAnimator.isEnabled = true
+        if (index == binding.pin.getCount()) {
+            titleBinding.apply {
+                rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
+                rightAnimator.isEnabled = true
+            }
         } else {
             disableTitleRight()
         }
     }
 
     private fun disableTitleRight() {
-        title_view.rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
-        title_view.rightAnimator.isEnabled = false
+        titleBinding.apply {
+            rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
+            rightAnimator.isEnabled = false
+        }
     }
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
@@ -77,18 +87,18 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
                 dialog.dismiss()
                 context?.updatePinCheck()
                 response.data?.let {
-                    val pin = pin.code()
+                    val pin = binding.pin.code()
                     activity?.onBackPressed()
                     navTo(WalletPasswordFragment.newInstance(true, pin), WalletPasswordFragment.TAG)
                 }
             },
             exceptionBlock = {
                 dialog.dismiss()
-                pin.clear()
+                binding.pin.clear()
                 return@handleMixinResponse false
             },
             failureBlock = {
-                pin.clear()
+                binding.pin.clear()
                 if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                     dialog.dismiss()
                     toast(R.string.error_pin_check_too_many_request)
@@ -109,18 +119,18 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                pin.delete()
+                binding.pin.delete()
             } else {
-                pin.append(value)
+                binding.pin.append(value)
             }
         }
 
         override fun onLongClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                pin.clear()
+                binding.pin.clear()
             } else {
-                pin.append(value)
+                binding.pin.append(value)
             }
         }
     }
