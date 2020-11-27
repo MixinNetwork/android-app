@@ -15,8 +15,8 @@ import android.view.animation.OvershootInterpolator
 import android.view.animation.TranslateAnimation
 import android.widget.LinearLayout
 import android.widget.TextView
-import kotlinx.android.synthetic.main.layout_pin.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewPinBinding
 import one.mixin.android.extension.colorFromAttribute
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.hintTextColor
@@ -42,6 +42,8 @@ class PinView : LinearLayout {
     private val textSize = 26f
     private val starSize = 18f
 
+    private val binding = ViewPinBinding.inflate(LayoutInflater.from(context), this)
+
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
@@ -49,7 +51,6 @@ class PinView : LinearLayout {
         attrs,
         defStyleAttr
     ) {
-        LayoutInflater.from(context).inflate(R.layout.layout_pin, this, true) as LinearLayout
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PinView)
         if (ta.hasValue(R.styleable.PinView_pin_color)) {
             color = ta.getColor(R.styleable.PinView_pin_color, Color.BLACK)
@@ -60,8 +61,8 @@ class PinView : LinearLayout {
         if (ta.hasValue(R.styleable.PinView_pin_tipVisible)) {
             tipVisible = ta.getBoolean(R.styleable.PinView_pin_tipVisible, true)
             if (!tipVisible) {
-                tip_tv.visibility = View.GONE
-                line.visibility = View.GONE
+                binding.tipTv.visibility = View.GONE
+                binding.line.visibility = View.GONE
             }
         }
         ta.recycle()
@@ -69,7 +70,7 @@ class PinView : LinearLayout {
         mid = count / 2
         for (i in 0..count) {
             if (i == mid) {
-                container_ll.addView(View(context), LayoutParams(context.dip(20), MATCH_PARENT))
+                binding.containerLl.addView(View(context), LayoutParams(context.dip(20), MATCH_PARENT))
             } else {
                 val item = TextView(context)
                 item.textSize = starSize
@@ -82,7 +83,7 @@ class PinView : LinearLayout {
                 val params = LayoutParams(0, MATCH_PARENT)
                 params.weight = 1f
                 params.gravity = Gravity.BOTTOM
-                container_ll.addView(item, params)
+                binding.containerLl.addView(item, params)
                 views.add(item)
             }
         }
@@ -90,8 +91,8 @@ class PinView : LinearLayout {
 
     fun append(s: String) {
         if (index >= views.size) return
-        if (tipVisible && tip_tv.visibility == View.VISIBLE) {
-            tip_tv.visibility = View.INVISIBLE
+        if (tipVisible && binding.tipTv.visibility == View.VISIBLE) {
+            binding.tipTv.visibility = View.INVISIBLE
         }
 
         if (index > 0) {
@@ -149,8 +150,8 @@ class PinView : LinearLayout {
     fun error(tip: String) {
         if (!tipVisible) return
 
-        tip_tv.text = tip
-        tip_tv.visibility = View.VISIBLE
+        binding.tipTv.text = tip
+        binding.tipTv.visibility = View.VISIBLE
         clear()
     }
 

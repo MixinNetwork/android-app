@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
@@ -128,7 +127,7 @@ class AvatarsView : ViewGroup {
                         setBorderWidth(borderWidth)
                         setBorderColor(borderColor)
                     }
-                    avatarView.avatar_simple.setCircleBackgroundColorResource(R.color.white)
+                    avatarView.avatarSimple.setCircleBackgroundColorResource(R.color.white)
                     addView(avatarView)
                     avatarView.setInfo(t.fullName, t.avatarUrl, t.userId)
                 } else if (t is String) {

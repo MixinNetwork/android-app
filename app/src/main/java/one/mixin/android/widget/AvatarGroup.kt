@@ -6,8 +6,8 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.view_avatar_group.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewAvatarGroupBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
@@ -20,9 +20,8 @@ class AvatarGroup @JvmOverloads constructor(
     defStyle: Int = 0
 ) :
     RelativeLayout(context, attrs, defStyle) {
-
+    private val binding = ViewAvatarGroupBinding.inflate(LayoutInflater.from(context), this)
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_avatar_group, this, true)
         attrs?.let {
             attrs
             val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarsGroup)
@@ -33,24 +32,24 @@ class AvatarGroup @JvmOverloads constructor(
             val margin = ta.getDimensionPixelSize(R.styleable.AvatarsGroup_avatar_group_margin, 16.dp)
             setSize(size, margin)
             val color = ta.getColor(R.styleable.AvatarsGroup_avatar_group_border_color, context.colorFromAttribute(R.attr.bg_gray_light))
-            avatar_1.borderColor = color
-            avatar_2.borderColor = color
-            avatar_3.borderColor = color
+            binding.avatar1.borderColor = color
+            binding.avatar2.borderColor = color
+            binding.avatar3.borderColor = color
             ta.recycle()
         }
     }
 
     fun setSize(size: Int, margin: Int) {
-        avatar_1.layoutParams = (avatar_1.layoutParams as MarginLayoutParams).apply {
+        binding.avatar1.layoutParams = (binding.avatar1.layoutParams as MarginLayoutParams).apply {
             width = size
             height = size
         }
-        avatar_2.layoutParams = (avatar_2.layoutParams as MarginLayoutParams).apply {
+        binding.avatar2.layoutParams = (binding.avatar2.layoutParams as MarginLayoutParams).apply {
             marginStart = margin
             width = size
             height = size
         }
-        avatar_3.layoutParams = (avatar_3.layoutParams as MarginLayoutParams).apply {
+        binding.avatar3.layoutParams = (binding.avatar3.layoutParams as MarginLayoutParams).apply {
             marginStart = margin * 2
             width = size
             height = size
@@ -60,30 +59,30 @@ class AvatarGroup @JvmOverloads constructor(
     fun setUrls(urls: List<String?>) {
         when {
             urls.size >= 3 -> {
-                avatar_1.isVisible = true
-                avatar_2.isVisible = true
-                avatar_3.isVisible = true
-                avatar_1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
-                avatar_2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
-                avatar_3.loadImage(urls[2], R.drawable.ic_avatar_place_holder)
+                binding.avatar1.isVisible = true
+                binding.avatar2.isVisible = true
+                binding.avatar3.isVisible = true
+                binding.avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
+                binding.avatar2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
+                binding.avatar3.loadImage(urls[2], R.drawable.ic_avatar_place_holder)
             }
             urls.size == 2 -> {
-                avatar_1.isVisible = true
-                avatar_2.isVisible = true
-                avatar_3.isVisible = false
-                avatar_1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
-                avatar_2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
+                binding.avatar1.isVisible = true
+                binding.avatar2.isVisible = true
+                binding.avatar3.isVisible = false
+                binding.avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
+                binding.avatar2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
             }
             urls.size == 1 -> {
-                avatar_1.isVisible = true
-                avatar_2.isVisible = false
-                avatar_3.isVisible = false
-                avatar_1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
+                binding.avatar1.isVisible = true
+                binding.avatar2.isVisible = false
+                binding.avatar3.isVisible = false
+                binding.avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
             }
             else -> {
-                avatar_1.isVisible = false
-                avatar_2.isVisible = false
-                avatar_3.isVisible = false
+                binding.avatar1.isVisible = false
+                binding.avatar2.isVisible = false
+                binding.avatar3.isVisible = false
             }
         }
     }

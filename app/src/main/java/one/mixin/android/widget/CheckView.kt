@@ -7,47 +7,43 @@ import android.widget.Checkable
 import android.widget.CompoundButton
 import android.widget.FrameLayout
 import androidx.annotation.StringRes
-import kotlinx.android.synthetic.main.view_check.view.*
-import one.mixin.android.R
-import one.mixin.android.R.id.check_box
-import one.mixin.android.R.id.name_tv
-import one.mixin.android.R.id.storage_tv
+import one.mixin.android.databinding.ViewCheckBinding
 import one.mixin.android.extension.fileSize
 
 class CheckView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs), Checkable {
 
+    private val binding = ViewCheckBinding.inflate(LayoutInflater.from(context), this, true)
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_check, this, true)
         setOnClickListener {
             toggle()
         }
     }
 
     override fun isChecked(): Boolean {
-        return check_box.isChecked
+        return binding.checkBox.isChecked
     }
 
     override fun toggle() {
-        check_box.isChecked = !check_box.isChecked
+        binding.checkBox.isChecked = !binding.checkBox.isChecked
     }
 
     override fun setChecked(checked: Boolean) {
-        check_box.isChecked = checked
+        binding.checkBox.isChecked = checked
     }
 
     fun setName(name: String) {
-        name_tv.text = name
+        binding.nameTv.text = name
     }
 
     fun setName(@StringRes name: Int) {
-        name_tv.setText(name)
+        binding.nameTv.setText(name)
     }
 
     fun setSize(size: Long) {
-        storage_tv.text = size.fileSize()
+        binding.storageTv.text = size.fileSize()
     }
 
     fun setOnCheckedChangeListener(listener: CompoundButton.OnCheckedChangeListener) {
-        check_box.setOnCheckedChangeListener(listener)
+        binding.checkBox.setOnCheckedChangeListener(listener)
     }
 }

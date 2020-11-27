@@ -8,8 +8,8 @@ import android.view.MotionEvent
 import android.view.animation.DecelerateInterpolator
 import android.widget.RelativeLayout
 import androidx.collection.ArraySet
-import kotlinx.android.synthetic.main.view_pseudo_notification.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewPseudoNotificationBinding
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isMixinUrl
 import org.jetbrains.anko.dip
@@ -23,6 +23,8 @@ class PseudoNotificationView : RelativeLayout {
 
     lateinit var callback: Callback
 
+    private val binding = ViewPseudoNotificationBinding.inflate(LayoutInflater.from(context), this, true)
+
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
@@ -30,7 +32,7 @@ class PseudoNotificationView : RelativeLayout {
         val d = resources.getDrawable(R.drawable.ic_qr_code_preview, context.theme)
         val size = context.dip(12)
         d.setBounds(0, 0, size, size)
-        title_tv.setCompoundDrawables(d, null, null, null)
+        binding.titleTv.setCompoundDrawables(d, null, null, null)
     }
 
     fun addContent(s: String) {
@@ -39,7 +41,7 @@ class PseudoNotificationView : RelativeLayout {
         }
         contentSet.add(s)
         currContent = s
-        content_tv.text = if (s.isMixinUrl() || s.isDonateUrl()) {
+        binding.contentTv.text = if (s.isMixinUrl() || s.isDonateUrl()) {
             context.getString(R.string.detect_qr_tip)
         } else {
             s

@@ -4,20 +4,22 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
-import kotlinx.android.synthetic.main.view_fail_load.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewFailLoadBinding
 
 class FailLoadView(context: Context, attrs: AttributeSet?) : RelativeLayout(context, attrs) {
+
+    private val binding = ViewFailLoadBinding.inflate(LayoutInflater.from(context), this, true)
 
     var listener: FailLoadListener? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_fail_load, this, true)
 
-        reload_tv.setOnClickListener {
+        binding.reloadTv.setOnClickListener {
             listener?.onReloadClick()
         }
-        contact_tv.setOnClickListener {
+        binding.contactTv.setOnClickListener {
             listener?.onContactClick()
         }
     }
