@@ -1,12 +1,13 @@
 package one.mixin.android.ui.conversation.adapter
 
 import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import kotlinx.android.synthetic.main.layout_sticker_tab.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutStickerTabBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.conversation.GiphyFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
@@ -74,14 +75,14 @@ class StickerAlbumAdapter(activity: FragmentActivity, private val albums: List<S
     }
 
     fun getTabView(pos: Int, context: Context): View {
-        val view = View.inflate(context, R.layout.layout_sticker_tab, null)
+        val binding = LayoutStickerTabBinding.inflate(LayoutInflater.from(context))
         when (pos) {
-            TYPE_RECENT -> view.icon.setImageResource(R.drawable.ic_sticker_common)
-            TYPE_LIKE -> view.icon.setImageResource(R.drawable.ic_sticker_favorite)
-            TYPE_GIPHY -> view.icon.setImageResource(R.drawable.ic_sticker_gif)
-            else -> view.icon.loadImage(albums[pos - UN_NORMAL_COUNT].iconUrl)
+            TYPE_RECENT -> binding.icon.setImageResource(R.drawable.ic_sticker_common)
+            TYPE_LIKE -> binding.icon.setImageResource(R.drawable.ic_sticker_favorite)
+            TYPE_GIPHY -> binding.icon.setImageResource(R.drawable.ic_sticker_gif)
+            else -> binding.icon.loadImage(albums[pos - UN_NORMAL_COUNT].iconUrl)
         }
-        return view
+        return binding.root
     }
 
     interface Callback {

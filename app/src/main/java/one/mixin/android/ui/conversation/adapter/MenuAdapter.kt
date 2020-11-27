@@ -1,13 +1,12 @@
 package one.mixin.android.ui.conversation.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_chat_menu.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatMenuBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.AppItem
 import one.mixin.android.widget.BadgeCircleImageView
@@ -65,46 +64,40 @@ class MenuAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        MenuHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.item_chat_menu,
-                parent,
-                false
-            )
-        ).apply {
-            itemView.app_icon.pos = BadgeCircleImageView.END_BOTTOM
+        MenuHolder(ItemChatMenuBinding.inflate(LayoutInflater.from(parent.context),parent,false)).apply {
+            binding.appIcon.pos = BadgeCircleImageView.END_BOTTOM
         }
 
     override fun getItemCount() = menus.size
 
     override fun onBindViewHolder(holder: MenuHolder, position: Int) {
-        val view = holder.itemView
-        val ctx = view.context
+        val binding = holder.binding
+        val ctx = holder.itemView.context
         val menu = menus[position]
         if (menu.icon != null) {
-            view.menu_icon.visibility = VISIBLE
-            view.menu_icon.setImageResource(menu.icon)
-            view.app_icon.visibility = GONE
+            binding.menuIcon.visibility = VISIBLE
+            binding.menuIcon.setImageResource(menu.icon)
+            binding.appIcon.visibility = GONE
             menu.nameRes?.let {
-                view.menu_title.text = ctx.getString(it)
+                binding.menuTitle.text = ctx.getString(it)
             }
         } else {
-            view.app_icon.visibility = VISIBLE
-            view.app_icon.bg.loadImage(menu.app?.iconUrl, R.drawable.ic_avatar_place_holder)
+            binding.appIcon.visibility = VISIBLE
+            binding.appIcon.bg.loadImage(menu.app?.iconUrl, R.drawable.ic_avatar_place_holder)
             if (!isGroup) {
                 menu.app?.avatarUrl?.let {
-                    view.app_icon.badge.loadImage(it, R.drawable.ic_avatar_place_holder)
+                    binding.appIcon.badge.loadImage(it, R.drawable.ic_avatar_place_holder)
                 }
             }
-            view.menu_icon.visibility = GONE
-            view.menu_title.text = menu.app?.name
+            binding.menuIcon.visibility = GONE
+            binding.menuTitle.text = menu.app?.name
         }
-        view.setOnClickListener {
+        binding.root.setOnClickListener {
             onMenuListener?.onMenuClick(menu)
         }
     }
 
-    class MenuHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class MenuHolder(val binding: ItemChatMenuBinding) : RecyclerView.ViewHolder(binding.root)
 
     interface OnMenuListener {
         fun onMenuClick(menu: Menu)

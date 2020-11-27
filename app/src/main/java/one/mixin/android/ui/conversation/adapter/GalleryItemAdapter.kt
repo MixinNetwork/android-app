@@ -5,14 +5,13 @@ import android.net.Uri
 import android.os.Build
 import android.text.format.DateUtils
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_chat_gallery.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatGalleryBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImageCenterCrop
@@ -41,21 +40,21 @@ class GalleryItemAdapter(
         params.height = size
         val ctx = holder.itemView.context
         holder.itemView.layoutParams = params
-        val imageView = holder.itemView.thumbnail_iv
-        val coverView = holder.itemView.cover_view
+        val imageView = holder.binding.thumbnailIv
+        val coverView = holder.binding.coverView
         if (position == 0 && needCamera) {
-            holder.itemView.thumbnail_iv.scaleType = ImageView.ScaleType.FIT_CENTER
-            holder.itemView.gif_tv.isVisible = false
-            holder.itemView.video_iv.isVisible = false
-            holder.itemView.duration_tv.isVisible = false
+            holder.binding.thumbnailIv.scaleType = ImageView.ScaleType.FIT_CENTER
+            holder.binding.gifTv.isVisible = false
+            holder.binding.videoIv.isVisible = false
+            holder.binding.durationTv.isVisible = false
             coverView.isVisible = false
-            holder.itemView.send_tv.isVisible = false
+            holder.binding.sendTv.isVisible = false
             imageView.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = ctx.dpToPx(42f)
                 height = ctx.dpToPx(42f)
             }
             imageView.setImageResource(R.drawable.ic_gallery_camera)
-            holder.itemView.bg.setBackgroundResource(R.drawable.bg_gray_black_round_8dp)
+            holder.binding.bg.setBackgroundResource(R.drawable.bg_gray_black_round_8dp)
             imageView.setOnClickListener { listener?.onCameraClick() }
         } else {
             imageView.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -65,24 +64,24 @@ class GalleryItemAdapter(
             imageView.round(ctx.dpToPx(8f))
             coverView.round(ctx.dpToPx(8f))
             val item = items!![if (needCamera) position - 1 else position]
-            holder.itemView.bg.setBackgroundResource(0)
+            holder.binding.bg.setBackgroundResource(0)
             if (item.isGif) {
-                holder.itemView.gif_tv.isVisible = true
-                holder.itemView.video_iv.isVisible = false
-                holder.itemView.duration_tv.isVisible = false
+                holder.binding.gifTv.isVisible = true
+                holder.binding.videoIv.isVisible = false
+                holder.binding.durationTv.isVisible = false
                 imageView.loadGif(item.uri.toString(), centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
             } else {
-                holder.itemView.gif_tv.isVisible = false
+                holder.binding.gifTv.isVisible = false
                 if (item.isVideo) {
-                    holder.itemView.video_iv.isVisible = true
-                    holder.itemView.duration_tv.isVisible = true
-                    holder.itemView.duration_tv.text = DateUtils.formatElapsedTime(item.duration / 1000)
+                    holder.binding.videoIv.isVisible = true
+                    holder.binding.durationTv.isVisible = true
+                    holder.binding.durationTv.text = DateUtils.formatElapsedTime(item.duration / 1000)
                 } else {
-                    holder.itemView.video_iv.isVisible = false
-                    holder.itemView.duration_tv.isVisible = false
+                    holder.binding.videoIv.isVisible = false
+                    holder.binding.durationTv.isVisible = false
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && item.isHeif) {
-                    holder.itemView.thumbnail_iv.scaleType = ImageView.ScaleType.CENTER_CROP
+                    holder.binding.thumbnailIv.scaleType = ImageView.ScaleType.CENTER_CROP
                     imageView.setImageDrawable(null)
                     HeicLoader.fromUrl(ctx, item.uri).addListener(
                         object : ImageListener<Drawable> {
@@ -97,10 +96,10 @@ class GalleryItemAdapter(
             }
             if (selectedUri == item.uri) {
                 coverView.isVisible = true
-                holder.itemView.send_tv.isVisible = true
+                holder.binding.sendTv.isVisible = true
             } else {
                 coverView.isVisible = false
-                holder.itemView.send_tv.isVisible = false
+                holder.binding.sendTv.isVisible = false
             }
             imageView.setOnClickListener {
                 if (selectedUri == item.uri) {
@@ -125,8 +124,7 @@ class GalleryItemAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_gallery, parent, false)
-        return ItemViewHolder(view)
+        return ItemViewHolder(ItemChatGalleryBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     @Synchronized
@@ -139,5 +137,5 @@ class GalleryItemAdapter(
         currentPos?.let { notifyItemChanged(it) }
     }
 
-    class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class ItemViewHolder(val binding: ItemChatGalleryBinding) : RecyclerView.ViewHolder(binding.root)
 }
