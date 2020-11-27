@@ -6,8 +6,8 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.item_chat_action.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.ColorUtil
@@ -21,7 +21,7 @@ import org.jetbrains.anko.leftPadding
 import org.jetbrains.anko.rightPadding
 import org.jetbrains.anko.topPadding
 
-class ActionHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
 
     @SuppressLint("RestrictedApi")
     fun bind(
@@ -53,22 +53,22 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         }
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = itemView.dip(3)
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
         if (itemView.tag != messageItem.content?.hashCode()) {
             val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<AppButtonData>::class.java)
-            itemView.chat_layout.removeAllViews()
+            binding.chatLayout.removeAllViews()
             for (b in buttons) {
                 val button = ActionButton(itemView.context)
                 button.setTextColor(
@@ -81,7 +81,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label
                 button.supportBackgroundTintList = ColorStateList.valueOf(itemView.context.colorFromAttribute(R.attr.bg_bubble))
-                itemView.chat_layout.addView(button)
+                binding.chatLayout.addView(button)
                 (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp8
                 button.topPadding = dp8
                 button.bottomPadding = dp8

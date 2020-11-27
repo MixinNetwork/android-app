@@ -61,7 +61,7 @@
                     android:textColor="?attr/text_primary"
                     android:textSize="14sp"/>
 
-                <include layout="@layout/date_wrapper"/>
+                <include android:id="@+id/data_wrapper" layout="@layout/date_wrapper"/>
 
                 <one.mixin.android.widget.QuoteView
                     android:id="@+id/chat_quote"

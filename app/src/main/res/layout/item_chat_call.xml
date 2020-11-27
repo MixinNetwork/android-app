@@ -31,7 +31,7 @@
             android:textSize="14sp"
             app:drawableStartCompat="@drawable/ic_voice" />
 
-        <include layout="@layout/date_wrapper"/>
+        <include android:id="@+id/data_wrapper" layout="@layout/date_wrapper"/>
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

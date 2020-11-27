@@ -45,7 +45,9 @@
             android:textSize="14sp"
             tools:text="message" />
 
-        <include layout="@layout/date_wrapper" />
+         <include
+            android:id="@+id/data_wrapper"
+            layout="@layout/date_wrapper" />
 
         <TextView
             android:id="@+id/chat_name"

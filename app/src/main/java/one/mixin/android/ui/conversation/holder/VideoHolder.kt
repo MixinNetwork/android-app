@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.Gravity
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -10,8 +9,8 @@ import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
-import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
@@ -29,13 +28,13 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
-class VideoHolder constructor(containerView: View) : MediaHolder(containerView) {
+class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
-        itemView.chat_image.round(radius)
-        itemView.chat_time.round(radius)
-        itemView.progress.round(radius)
+        binding.chatImage.round(radius)
+        binding.chatTime.round(radius)
+        binding.progress.round(radius)
     }
 
     private val dp4 by lazy {
@@ -74,72 +73,72 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = itemView.dip(3)
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {
-            itemView.chat_name.visibility = GONE
+            binding.chatName.visibility = GONE
         }
 
         if (messageItem.isLive()) {
-            itemView.chat_warning.visibility = GONE
-            itemView.duration_tv.visibility = GONE
-            itemView.progress.visibility = GONE
-            itemView.play.isVisible = true
-            itemView.live_tv.visibility = VISIBLE
-            itemView.progress.setBindId(messageItem.messageId)
-            itemView.progress.setOnClickListener {}
-            itemView.progress.setOnLongClickListener { false }
-            itemView.chat_image.setOnLongClickListener {
+            binding.chatWarning.visibility = GONE
+            binding.durationTv.visibility = GONE
+            binding.progress.visibility = GONE
+            binding.play.isVisible = true
+            binding.liveTv.visibility = VISIBLE
+            binding.progress.setBindId(messageItem.messageId)
+            binding.progress.setOnClickListener {}
+            binding.progress.setOnLongClickListener { false }
+            binding.chatImage.setOnLongClickListener {
                 if (!hasSelect) {
                     onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                 } else {
                     true
                 }
             }
-            itemView.chat_image.setOnClickListener {
+            binding.chatImage.setOnClickListener {
                 if (hasSelect) {
                     onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 } else {
-                    onItemListener.onImageClick(messageItem, itemView.chat_image)
+                    onItemListener.onImageClick(messageItem, binding.chatImage)
                 }
             }
         } else {
-            itemView.live_tv.visibility = GONE
+            binding.liveTv.visibility = GONE
             when (messageItem.mediaStatus) {
                 MediaStatus.DONE.name -> {
-                    itemView.duration_tv.bindId(null)
+                    binding.durationTv.bindId(null)
                     messageItem.mediaDuration.notNullWithElse(
                         {
-                            itemView.duration_tv.visibility = VISIBLE
-                            itemView.duration_tv.text = it.toLongOrNull()?.formatMillis() ?: ""
+                            binding.durationTv.visibility = VISIBLE
+                            binding.durationTv.text = it.toLongOrNull()?.formatMillis() ?: ""
                         },
                         {
-                            itemView.duration_tv.visibility = GONE
+                            binding.durationTv.visibility = GONE
                         }
                     )
                 }
                 MediaStatus.PENDING.name -> {
                     messageItem.mediaSize.notNullWithElse(
                         {
-                            itemView.duration_tv.visibility = VISIBLE
+                            binding.durationTv.visibility = VISIBLE
                             if (it == 0L) {
-                                itemView.duration_tv.bindId(messageItem.messageId)
+                                binding.durationTv.bindId(messageItem.messageId)
                             } else {
-                                itemView.duration_tv.text = it.fileSize()
-                                itemView.duration_tv.bindId(null)
+                                binding.durationTv.text = it.fileSize()
+                                binding.durationTv.bindId(null)
                             }
                         },
                         {
-                            itemView.duration_tv.bindId(null)
-                            itemView.duration_tv.visibility = GONE
+                            binding.durationTv.bindId(null)
+                            binding.durationTv.visibility = GONE
                         }
                     )
                 }
@@ -147,102 +146,102 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                     messageItem.mediaSize.notNullWithElse(
                         {
                             if (it == 0L) {
-                                itemView.duration_tv.visibility = GONE
+                                binding.durationTv.visibility = GONE
                             } else {
-                                itemView.duration_tv.visibility = VISIBLE
-                                itemView.duration_tv.text = it.fileSize()
+                                binding.durationTv.visibility = VISIBLE
+                                binding.durationTv.text = it.fileSize()
                             }
                         },
                         {
-                            itemView.duration_tv.visibility = GONE
+                            binding.durationTv.visibility = GONE
                         }
                     )
-                    itemView.duration_tv.bindId(null)
+                    binding.durationTv.bindId(null)
                 }
             }
             messageItem.mediaStatus?.let {
                 when (it) {
                     MediaStatus.EXPIRED.name -> {
-                        itemView.chat_warning.visibility = VISIBLE
-                        itemView.progress.visibility = GONE
-                        itemView.play.visibility = GONE
-                        itemView.chat_image.setOnLongClickListener {
+                        binding.chatWarning.visibility = VISIBLE
+                        binding.progress.visibility = GONE
+                        binding.play.visibility = GONE
+                        binding.chatImage.setOnLongClickListener {
                             if (!hasSelect) {
                                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                             } else {
                                 true
                             }
                         }
-                        itemView.chat_image.setOnClickListener {
+                        binding.chatImage.setOnClickListener {
                             if (hasSelect) {
                                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                             }
                         }
                     }
                     MediaStatus.PENDING.name -> {
-                        itemView.chat_warning.visibility = GONE
-                        itemView.progress.visibility = VISIBLE
-                        itemView.play.visibility = GONE
-                        itemView.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                        itemView.progress.setBindOnly(messageItem.messageId)
-                        itemView.progress.setOnLongClickListener {
+                        binding.chatWarning.visibility = GONE
+                        binding.progress.visibility = VISIBLE
+                        binding.play.visibility = GONE
+                        binding.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                        binding.progress.setBindOnly(messageItem.messageId)
+                        binding.progress.setOnLongClickListener {
                             if (!hasSelect) {
                                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                             } else {
                                 false
                             }
                         }
-                        itemView.progress.setOnClickListener {
+                        binding.progress.setOnClickListener {
                             if (hasSelect) {
                                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                             } else {
                                 onItemListener.onCancel(messageItem.messageId)
                             }
                         }
-                        itemView.chat_image.setOnClickListener { }
-                        itemView.chat_image.setOnLongClickListener { false }
+                        binding.chatImage.setOnClickListener { }
+                        binding.chatImage.setOnLongClickListener { false }
                     }
                     MediaStatus.DONE.name -> {
-                        itemView.chat_warning.visibility = GONE
-                        itemView.progress.visibility = GONE
-                        itemView.play.visibility = VISIBLE
-                        itemView.progress.setBindId(messageItem.messageId)
-                        itemView.progress.setOnClickListener {}
-                        itemView.progress.setOnLongClickListener { false }
-                        itemView.chat_image.setOnLongClickListener {
+                        binding.chatWarning.visibility = GONE
+                        binding.progress.visibility = GONE
+                        binding.play.visibility = VISIBLE
+                        binding.progress.setBindId(messageItem.messageId)
+                        binding.progress.setOnClickListener {}
+                        binding.progress.setOnLongClickListener { false }
+                        binding.chatImage.setOnLongClickListener {
                             if (!hasSelect) {
                                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                             } else {
                                 true
                             }
                         }
-                        itemView.chat_image.setOnClickListener {
+                        binding.chatImage.setOnClickListener {
                             if (hasSelect) {
                                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                             } else {
-                                onItemListener.onImageClick(messageItem, itemView.chat_image)
+                                onItemListener.onImageClick(messageItem, binding.chatImage)
                             }
                         }
                     }
                     MediaStatus.CANCELED.name -> {
-                        itemView.chat_warning.visibility = GONE
-                        itemView.progress.visibility = VISIBLE
-                        itemView.play.visibility = GONE
+                        binding.chatWarning.visibility = GONE
+                        binding.progress.visibility = VISIBLE
+                        binding.play.visibility = GONE
                         if (isMe) {
-                            itemView.progress.enableUpload()
+                            binding.progress.enableUpload()
                         } else {
-                            itemView.progress.enableDownload()
+                            binding.progress.enableDownload()
                         }
-                        itemView.progress.setBindId(messageItem.messageId)
-                        itemView.progress.setProgress(-1)
-                        itemView.progress.setOnLongClickListener {
+                        binding.progress.setBindId(messageItem.messageId)
+                        binding.progress.setProgress(-1)
+                        binding.progress.setOnLongClickListener {
                             if (!hasSelect) {
                                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                             } else {
                                 false
                             }
                         }
-                        itemView.progress.setOnClickListener {
+                        binding.progress.setOnClickListener {
                             if (hasSelect) {
                                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                             } else {
@@ -253,19 +252,19 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                                 }
                             }
                         }
-                        itemView.chat_image.setOnClickListener {}
-                        itemView.chat_image.setOnLongClickListener { false }
+                        binding.chatImage.setOnClickListener {}
+                        binding.chatImage.setOnLongClickListener { false }
                     }
                 }
             }
         }
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
+        binding.chatTime.timeAgoClock(messageItem.createdAt)
 
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
 
         dataWidth = messageItem.mediaWidth
@@ -289,43 +288,43 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
-            (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
-            (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
-            (itemView.live_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
-            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
+            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.durationTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
+            (binding.liveTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
         } else {
-            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
-            (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
-            (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
-            (itemView.live_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
-            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp3
+            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.durationTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
+            (binding.liveTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp3
         }
 
         var width = mediaWidth - dp6
         when {
             isLast -> {
                 width = mediaWidth
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+                (binding.chatImage.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (binding.chatImage.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
             }
             isMe -> {
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+                (binding.chatImage.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+                (binding.chatImage.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
             }
             else -> {
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
+                (binding.chatImage.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (binding.chatImage.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
             }
         }
         if (dataWidth == null || dataHeight == null ||
             dataWidth!! <= 0 || dataHeight!! <= 0
         ) {
-            itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height = width
+            binding.chatImage.layoutParams.width = width
+            binding.chatImage.layoutParams.height = width
         } else {
-            itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height = width * dataHeight!! / dataWidth!!
+            binding.chatImage.layoutParams.width = width
+            binding.chatImage.layoutParams.height = width * dataHeight!! / dataWidth!!
         }
 
         val mark = when {
@@ -335,11 +334,11 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             else -> R.drawable.chat_mark_image
         }
 
-        itemView.chat_image.setShape(mark)
+        binding.chatImage.setShape(mark)
         if (type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name) {
-            itemView.chat_image.loadImageMark(dataUrl, R.drawable.image_holder, mark)
+            binding.chatImage.loadImageMark(dataUrl, R.drawable.image_holder, mark)
         } else {
-            itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
+            binding.chatImage.loadVideoMark(dataUrl, dataThumbImage, mark)
         }
     }
 }

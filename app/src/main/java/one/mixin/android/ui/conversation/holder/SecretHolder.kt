@@ -1,10 +1,10 @@
 package one.mixin.android.ui.conversation.holder
 
-import android.view.View
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatSecretBinding
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 
-class SecretHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class SecretHolder constructor(val binding: ItemChatSecretBinding) : BaseViewHolder(binding.root) {
 
     fun bind(onItemListener: ConversationAdapter.OnItemListener) {
         itemView.setOnClickListener {

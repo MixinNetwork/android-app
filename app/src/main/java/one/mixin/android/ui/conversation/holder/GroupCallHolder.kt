@@ -2,15 +2,14 @@ package one.mixin.android.ui.conversation.holder
 
 import android.content.Context
 import android.graphics.Color
-import android.view.View
-import kotlinx.android.synthetic.main.item_chat_system.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 
-class GroupCallHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class GroupCallHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHolder(binding.root) {
 
     var context: Context = itemView.context
 
@@ -47,14 +46,13 @@ class GroupCallHolder constructor(containerView: View) : BaseViewHolder(containe
         }
         when (messageItem.type) {
             MessageCategory.KRAKEN_INVITE.name -> {
-                itemView.chat_info.text = context.getString(R.string.chat_group_call_invite, messageItem.userFullName)
+                binding.chatInfo.text = context.getString(R.string.chat_group_call_invite, messageItem.userFullName)
             }
             MessageCategory.KRAKEN_CANCEL.name -> {
-
-                itemView.chat_info.text = context.getString(R.string.chat_group_call_cancel, name)
+                binding.chatInfo.text = context.getString(R.string.chat_group_call_cancel, name)
             }
             MessageCategory.KRAKEN_DECLINE.name -> {
-                itemView.chat_info.text = context.getString(R.string.chat_group_call_decline, name)
+                binding.chatInfo.text = context.getString(R.string.chat_group_call_decline, name)
             }
             MessageCategory.KRAKEN_END.name -> {
                 val duration = try {
@@ -62,7 +60,7 @@ class GroupCallHolder constructor(containerView: View) : BaseViewHolder(containe
                 } catch (e: Exception) {
                     ""
                 }
-                itemView.chat_info.text = context.getString(R.string.chat_group_call_end, duration)
+                binding.chatInfo.text = context.getString(R.string.chat_group_call_end, duration)
             }
         }
     }

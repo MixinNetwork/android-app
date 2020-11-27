@@ -5,19 +5,18 @@ import android.view.View
 import android.view.View.GONE
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.date_wrapper.view.*
-import kotlinx.android.synthetic.main.item_chat_recall.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatRecallBinding
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
-class RecallHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHolder(binding.root) {
 
     init {
-        itemView.chat_flag.visibility = GONE
+        binding.time.chatTime.visibility = GONE
     }
 
     fun bind(
@@ -31,29 +30,29 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
         val ctx = itemView.context
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = itemView.dip(3)
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
-        itemView.chat_secret.isVisible = messageItem.isSignal()
+        binding.time.chatSecret.isVisible = messageItem.isSignal()
         if (messageItem.appId != null) {
-            itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-            itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+            binding.chatName.compoundDrawablePadding = itemView.dip(3)
         } else {
-            itemView.chat_name.setCompoundDrawables(null, null, null, null)
+            binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         chatLayout(isMe, isLast)
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        itemView.recall_tv.text = if (isMe) {
+        binding.time.chatTime.timeAgoClock(messageItem.createdAt)
+        binding.recallTv.text = if (isMe) {
             ctx.getString(R.string.chat_recall_me) + " "
         } else {
             ctx.getString(R.string.chat_recall_delete) + " "
@@ -72,7 +71,7 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.chat_layout.setOnClickListener {
+        binding.chatLayout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
@@ -82,7 +81,7 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        itemView.chat_layout.setOnLongClickListener {
+        binding.chatLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -94,18 +93,18 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_me_last,
                     R.drawable.chat_bubble_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_me,
                     R.drawable.chat_bubble_me_night
                 )
@@ -114,13 +113,13 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
             lp.horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_other_last,
                     R.drawable.chat_bubble_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night
                 )

@@ -17,8 +17,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_search.*
-import kotlinx.android.synthetic.main.item_search_app.view.*
 import kotlinx.android.synthetic.main.item_search_header.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,6 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentSearchBinding
+import one.mixin.android.databinding.ItemSearchAppBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
@@ -93,12 +93,22 @@ class SearchFragment : BaseFragment() {
 
     private val appAdapter = AppAdapter()
 
+    private var _binding: FragmentSearchBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_search, container, false)
+    ): View {
+        _binding = FragmentSearchBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -107,11 +117,11 @@ class SearchFragment : BaseFragment() {
                 (requireActivity() as MainActivity).closeSearch()
             }
         }
-        search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        search_rv.addItemDecoration(decoration)
-        search_rv.adapter = searchAdapter
-        search_rv.addOnItemTouchListener(
-            StickyRecyclerHeadersTouchListener(search_rv, decoration).apply {
+        binding.searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+        binding.searchRv.addItemDecoration(decoration)
+        binding.searchRv.adapter = searchAdapter
+        binding.searchRv.addOnItemTouchListener(
+            StickyRecyclerHeadersTouchListener(binding.searchRv, decoration).apply {
                 setOnHeaderClickListener { headerView, position, _, e ->
                     if (headerView.search_header_more.x > e.rawX) return@setOnHeaderClickListener
 
@@ -123,26 +133,26 @@ class SearchFragment : BaseFragment() {
                             keyword ?: ""
                         )
                         requireActivity().addFragment(this@SearchFragment, f, SearchSingleFragment.TAG, R.id.root_view)
-                        search_rv.hideKeyboard()
+                        binding.searchRv.hideKeyboard()
                     }
                 }
             }
         )
 
-        app_rv.layoutManager = GridLayoutManager(requireContext(), 4)
+        binding.appRv.layoutManager = GridLayoutManager(requireContext(), 4)
         appAdapter.appListener = object : AppListener {
             override fun onItemClick(app: App) {
                 (requireActivity() as MainActivity).closeSearch()
                 ConversationActivity.show(requireContext(), null, app.appId)
             }
         }
-        app_rv.adapter = appAdapter
+        binding.appRv.adapter = appAdapter
 
         showBots()
 
         searchAdapter.onItemClickListener = object : OnSearchClickListener {
             override fun onTipClick() {
-                search_rv.hideKeyboard()
+                binding.searchRv.hideKeyboard()
                 searchAdapter.searchingId = true
                 searchViewModel.search(searchAdapter.query).autoDispose(stopScope).subscribe(
                     { r ->
@@ -175,18 +185,18 @@ class SearchFragment : BaseFragment() {
             }
 
             override fun onMessageClick(message: SearchMessageItem) {
-                search_rv.hideKeyboard()
+                binding.searchRv.hideKeyboard()
                 val f = SearchMessageFragment.newInstance(message, keyword ?: "")
                 requireActivity().addFragment(this@SearchFragment, f, SearchMessageFragment.TAG, R.id.root_view)
             }
 
             override fun onChatClick(chatMinimal: ChatMinimal) {
-                search_rv.hideKeyboard()
+                binding.searchRv.hideKeyboard()
                 context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
             }
 
             override fun onUserClick(user: User) {
-                search_rv.hideKeyboard()
+                binding.searchRv.hideKeyboard()
                 context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             }
         }
@@ -228,16 +238,16 @@ class SearchFragment : BaseFragment() {
     }
 
     private fun showSearch() {
-        search_rv.post {
-            search_rv.isVisible = true
-            app_rv.isGone = true
+        binding.searchRv.post {
+            binding.searchRv.isVisible = true
+            binding.appRv.isGone = true
         }
     }
 
     private fun showBots() {
-        search_rv.post {
-            search_rv.isGone = true
-            app_rv.isVisible = true
+        binding.searchRv.post {
+            binding.searchRv.isGone = true
+            binding.appRv.isVisible = true
         }
     }
 
@@ -260,7 +270,7 @@ class SearchFragment : BaseFragment() {
         var appListener: AppListener? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-            AppHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_search_app, parent, false))
+            AppHolder(ItemSearchAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
         override fun onBindViewHolder(holder: AppHolder, position: Int) {
             getItem(position)?.let {
@@ -269,11 +279,11 @@ class SearchFragment : BaseFragment() {
         }
     }
 
-    internal class AppHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    internal class AppHolder(val binding: ItemSearchAppBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(app: App, listener: AppListener?) {
-            itemView.icon_iv.setInfo(app.name, app.iconUrl, app.appId)
-            itemView.name_tv.text = app.name
-            itemView.setOnClickListener {
+            binding.iconIv.setInfo(app.name, app.iconUrl, app.appId)
+            binding.nameTv.text = app.name
+            binding.root.setOnClickListener {
                 listener?.onItemClick(app)
             }
         }
