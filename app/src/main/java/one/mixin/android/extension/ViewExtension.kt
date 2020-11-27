@@ -69,9 +69,10 @@ fun View.hideKeyboard() {
 }
 
 fun View.showKeyboard() {
-    requestFocus()
-    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    inputMethodManager.showSoftInput(this, SHOW_IMPLICIT)
+    if (requestFocus()) {
+        val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.showSoftInput(this, SHOW_IMPLICIT)
+    }
 }
 
 fun View.fadeIn(maxAlpha: Float = 1f) {
