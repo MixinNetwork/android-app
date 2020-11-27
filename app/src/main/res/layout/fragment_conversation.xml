@@ -286,6 +286,14 @@
             android:id="@+id/tap_join_view"
             android:visibility="gone"
             layout="@layout/layout_conversation_group_call" />
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/bar_layout"
+            android:layout_alignParentBottom="true"
+            android:background="@android:color/transparent" />
+
     </RelativeLayout>
 
     <FrameLayout

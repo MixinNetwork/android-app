@@ -20,6 +20,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.text.method.LinkMovementMethod
 import android.view.ContextThemeWrapper
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -27,14 +28,18 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isGone
@@ -88,6 +93,7 @@ import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -124,7 +130,6 @@ import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.supportsNougat
-import one.mixin.android.extension.supportsR
 import one.mixin.android.extension.toast
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
@@ -966,9 +971,16 @@ class ConversationFragment() :
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
-        supportsR({
-            chat_control.getVisibleContainer() ?: input_layout.forceClose()
-        })
+        if (chat_control.getVisibleContainer() == null) {
+            ViewCompat.getRootWindowInsets(input_area)?.let { windowInsetsCompat ->
+                val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                if (imeHeight > 0) {
+                    input_layout.openInputArea(chat_control.chat_et)
+                } else {
+                    input_layout.forceClose(chat_control.chat_et)
+                }
+            }
+        }
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
@@ -997,9 +1009,14 @@ class ConversationFragment() :
         paused = true
         input_layout.setOnKeyboardShownListener(null)
         input_layout.setOnKeyBoardHiddenListener(null)
-        supportsR({
-            chat_control.getVisibleContainer() ?: input_layout.forceClose(chat_control.chat_et)
-        })
+        if (chat_control.getVisibleContainer() == null) {
+            ViewCompat.getRootWindowInsets(input_area)?.let { windowInsetsCompat ->
+                val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                if (imeHeight <= 0) {
+                    input_layout.forceClose()
+                }
+            }
+        }
         MixinApplication.conversationId = null
     }
 
@@ -2638,13 +2655,12 @@ class ConversationFragment() :
 
         val selectItem = selectItems[0]
         this.selectItem = selectItem
-        Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
+        Snackbar.make(bar_layout, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
             .setAction(R.string.chat_go_check) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                this.view.setBackgroundResource(R.color.call_btn_icon_checked)
-                (this.view.findViewById(R.id.snackbar_text) as TextView)
-                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                view.setBackgroundResource(R.color.call_btn_icon_checked)
+                (view.findViewById<TextView>(R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }.show()
     }
 
