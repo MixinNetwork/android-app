@@ -11,7 +11,6 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.util.MimeTypes
-import kotlinx.android.synthetic.main.date_wrapper.view.*
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.extension.fileSize
@@ -48,7 +47,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.chat_secret.isVisible = messageItem.isSignal()
+        binding.billTime.chatSecret.isVisible = messageItem.isSignal()
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
@@ -107,10 +106,10 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
             }
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            itemView.chat_flag.isVisible = statusIcon != null
-            itemView.chat_flag.setImageDrawable(statusIcon)
-            itemView.chat_secret.isVisible = secretIcon != null
-            itemView.chat_representative.isVisible = representativeIcon != null
+            binding.billTime.chatFlag.isVisible = statusIcon != null
+            binding.billTime.chatFlag.setImageDrawable(statusIcon)
+            binding.billTime.chatSecret.isVisible = secretIcon != null
+            binding.billTime.chatRepresentative.isVisible = representativeIcon != null
         }
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
