@@ -46,11 +46,11 @@ import com.bumptech.glide.load.engine.GlideException
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_call.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityCallBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.checkInlinePermissions
@@ -121,6 +121,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private var join = false
 
+    private lateinit var binding: ActivityCallBinding
     @SuppressLint("InvalidWakeLockTag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,71 +143,71 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
             )
         }
-
-        setContentView(R.layout.activity_call)
+        binding = ActivityCallBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         sensorManager = getSystemService()
         powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
         if (window?.isNotchScreen() == true) {
-            guideline_top.updateLayoutParams<ConstraintLayout.LayoutParams> {
+            binding.guidelineTop.updateLayoutParams<ConstraintLayout.LayoutParams> {
                 guidePercent = 0.15f
             }
         }
         join = intent.getBooleanExtra(EXTRA_JOIN, false)
         if (callState.isGroupCall()) {
-            avatar.isVisible = false
-            users_rv.isVisible = true
-            add_iv.isVisible = true
+            binding.avatar.isVisible = false
+            binding.usersRv.isVisible = true
+            binding.addIv.isVisible = true
             if (userAdapter == null) {
                 userAdapter = CallUserAdapter(self)
             }
-            users_rv.adapter = userAdapter
+            binding.usersRv.adapter = userAdapter
             userAdapter?.rvWidth = realSize().x * .8f
             callState.conversationId?.let {
                 viewModel.observeConversationNameById(it).observe(
                     this,
                     { name ->
-                        name_tv?.text = name
+                        binding.nameTv?.text = name
                     }
                 )
             }
             refreshUsers()
         } else {
-            avatar.isVisible = true
-            users_rv.isVisible = false
-            add_iv.isVisible = false
+            binding.avatar.isVisible = true
+            binding.usersRv.isVisible = false
+            binding.addIv.isVisible = false
             val callee = callState.user
             if (callee != null) {
-                name_tv.text = callee.fullName
-                avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
-                avatar.setTextSize(48f)
+                binding.nameTv.text = callee.fullName
+                binding.avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
+                binding.avatar.setTextSize(48f)
                 if (callee.avatarUrl != null) {
                     setBlurBg(callee.avatarUrl)
                 }
             }
         }
-        pip_iv.setOnClickListener {
+        binding.pipIv.setOnClickListener {
             switch2Pip()
         }
-        add_iv.setOnClickListener {
+        binding.addIv.setOnClickListener {
             if (callState.isGroupCall() && callState.conversationId != null) {
                 GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
                     .showNow(supportFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
             }
         }
-        hangup_cb.setOnClickListener {
+        binding.hangupCb.setOnClickListener {
             hangup()
         }
-        answer_cb.setOnClickListener {
+        binding.answerCb.setOnClickListener {
             handleAnswer()
         }
-        close_iv.setOnClickListener {
+        binding.closeIv.setOnClickListener {
             hangup()
         }
-        encryption_tv.setOnClickListener {
+        binding.encryptionTv.setOnClickListener {
             showE2EETip()
         }
-        mute_cb.setOnCheckedChangeListener(
+        binding.muteCb.setOnCheckedChangeListener(
             object : CallButton.OnCheckedChangeListener {
                 override fun onCheckedChanged(id: Int, checked: Boolean) {
                     if (callState.isGroupCall()) {
@@ -217,7 +218,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         )
-        voice_cb.setOnCheckedChangeListener(
+        binding.voiceCb.setOnCheckedChangeListener(
             object : CallButton.OnCheckedChangeListener {
                 override fun onCheckedChanged(id: Int, checked: Boolean) {
                     if (callState.isGroupCall()) {
@@ -243,7 +244,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     refreshUsers()
                 }
                 if (state == CallService.CallState.STATE_IDLE) {
-                    call_cl.post { handleDisconnected() }
+                    binding.callCl.post { handleDisconnected() }
                     return@Observer
                 }
                 if (uiState >= state) {
@@ -259,10 +260,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
                 when (state) {
                     CallService.CallState.STATE_DIALING -> {
-                        call_cl.post { handleDialing() }
+                        binding.callCl.post { handleDialing() }
                     }
                     CallService.CallState.STATE_RINGING -> {
-                        call_cl.post {
+                        binding.callCl.post {
                             if (join) {
                                 handleJoin()
                             } else {
@@ -271,13 +272,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
                         }
                     }
                     CallService.CallState.STATE_ANSWERING -> {
-                        call_cl.post { handleAnswering() }
+                        binding.callCl.post { handleAnswering() }
                     }
                     CallService.CallState.STATE_CONNECTED -> {
-                        call_cl.post { handleConnected(callState.disconnected) }
+                        binding.callCl.post { handleConnected(callState.disconnected) }
                     }
                     CallService.CallState.STATE_BUSY -> {
-                        call_cl.post { handleBusy() }
+                        binding.callCl.post { handleBusy() }
                     }
                 }
             }
@@ -389,24 +390,24 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun updateUI() {
-        mute_cb?.isChecked = !callState.audioEnable
-        voice_cb?.isChecked = callState.speakerEnable
-        voice_cb?.isEnabled = !callState.customAudioDeviceAvailable
-        pip_iv?.isVisible = callState.isConnected()
-        if (pip_iv?.isVisible == true) {
-            close_iv?.isVisible = false
+        binding.muteCb.isChecked = !callState.audioEnable
+        binding.voiceCb.isChecked = callState.speakerEnable
+        binding.voiceCb.isEnabled = !callState.customAudioDeviceAvailable
+        binding.pipIv.isVisible = callState.isConnected()
+        if (binding.pipIv.isVisible) {
+            binding.closeIv.isVisible = false
         }
-        add_iv?.isVisible = callState.isConnected() && callState.isGroupCall()
+        binding.addIv.isVisible = callState.isConnected() && callState.isGroupCall()
     }
 
     private fun refreshUsers() = lifecycleScope.launch {
         val cid = callState.conversationId ?: return@launch
         val us = callState.getUsers(cid)
         val callees = mutableListOf<String>().apply { us?.let { addAll(it) } }
-        var layoutManager: GridLayoutManager? = users_rv?.layoutManager as GridLayoutManager?
+        var layoutManager: GridLayoutManager? = binding.usersRv.layoutManager as GridLayoutManager?
         if (layoutManager == null) {
             layoutManager = GridLayoutManager(this@CallActivity, 3)
-            users_rv?.layoutManager = layoutManager
+            binding.usersRv.layoutManager = layoutManager
         }
 
         if (callees.isNullOrEmpty()) {
@@ -451,7 +452,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 .fastBlur(1f, 10)
             withContext(Dispatchers.Main) {
                 bitmap?.let { bitmap ->
-                    blur_iv.setImageBitmap(bitmap)
+                    binding.blurIv.setImageBitmap(bitmap)
                 }
             }
         } catch (e: TimeoutException) {
@@ -504,7 +505,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
         pipAnimationInProgress = true
         val rect = PipCallView.getPipRect()
-        val windowView = call_cl
+        val windowView = binding.callCl
         val isLandscape = isLandscape()
         if (isLandscape) {
             val screenHeight = realSize().y
@@ -588,55 +589,55 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
 
     private fun handleDialing() {
-        voice_cb.isVisible = true
-        mute_cb.isVisible = true
-        answer_cb.isVisible = false
+        binding.voiceCb.isVisible = true
+        binding.muteCb.isVisible = true
+        binding.answerCb.isVisible = false
         moveHangup(true, 0)
-        action_tv.text = getString(R.string.call_notification_outgoing)
+        binding.actionTv.text = getString(R.string.call_notification_outgoing)
     }
 
     private fun handleRinging() {
-        voice_cb.isVisible = false
-        mute_cb.isVisible = false
-        answer_cb.isVisible = true
+        binding.voiceCb.isVisible = false
+        binding.muteCb.isVisible = false
+        binding.answerCb.isVisible = true
         moveHangup(false, 0)
-        action_tv.text = getString(R.string.call_notification_incoming_voice)
+        binding.actionTv.text = getString(R.string.call_notification_incoming_voice)
     }
 
     private fun handleJoin() {
-        voice_cb.isVisible = false
-        mute_cb.isVisible = false
-        answer_cb.isVisible = true
-        hangup_cb.isVisible = false
-        answer_cb.updateLayoutParams<ConstraintLayout.LayoutParams> {
+        binding.voiceCb.isVisible = false
+        binding.muteCb.isVisible = false
+        binding.answerCb.isVisible = true
+        binding.hangupCb.isVisible = false
+        binding.answerCb.updateLayoutParams<ConstraintLayout.LayoutParams> {
             horizontalBias = 0.5f
         }
-        close_iv.isVisible = true
+        binding.closeIv.isVisible = true
     }
 
     private fun handleAnswering() {
-        voice_cb.fadeIn()
-        mute_cb.fadeIn()
-        answer_cb.fadeOut()
+        binding.voiceCb.fadeIn()
+        binding.muteCb.fadeIn()
+        binding.answerCb.fadeOut()
         moveHangup(true, 250)
-        action_tv.text = getString(R.string.call_connecting)
+        binding.actionTv.text = getString(R.string.call_connecting)
     }
 
     private fun handleConnected(disconnected: Boolean) {
-        if (!voice_cb.isVisible) {
-            voice_cb.fadeIn()
+        if (!binding.voiceCb.isVisible) {
+            binding.voiceCb.fadeIn()
         }
-        if (!mute_cb.isVisible) {
-            mute_cb.fadeIn()
+        if (!binding.muteCb.isVisible) {
+            binding.muteCb.fadeIn()
         }
-        if (answer_cb.isVisible) {
-            answer_cb.fadeOut()
+        if (binding.answerCb.isVisible) {
+            binding.answerCb.fadeOut()
         }
         moveHangup(true, 250)
         if (disconnected) {
-            tip_tv?.isVisible = true
+            binding.tipTv.isVisible = true
         } else {
-            tip_tv?.isVisible = false
+            binding.tipTv.isVisible = false
             startTimer()
         }
     }
@@ -650,16 +651,16 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun moveHangup(center: Boolean, duration: Long) {
-        hangup_cb.visibility = VISIBLE
+        binding.hangupCb.visibility = VISIBLE
         val constraintSet = ConstraintSet().apply {
-            clone(call_cl)
-            setHorizontalBias(hangup_cb.id, if (center) 0.5f else 0.1f)
+            clone(binding.callCl)
+            setHorizontalBias(binding.hangupCb.id, if (center) 0.5f else 0.1f)
         }
         val transition = AutoTransition().apply {
             this.duration = duration
         }
-        TransitionManager.beginDelayedTransition(call_cl, transition)
-        constraintSet.applyTo(call_cl)
+        TransitionManager.beginDelayedTransition(binding.callCl, transition)
+        constraintSet.applyTo(binding.callCl)
     }
 
     private var timer: Timer? = null
@@ -671,7 +672,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 runOnUiThread {
                     if (callState.connectedTime != null) {
                         val duration = System.currentTimeMillis() - callState.connectedTime!!
-                        action_tv.text = duration.formatMillis()
+                        binding.actionTv.text = duration.formatMillis()
                     }
                 }
             }

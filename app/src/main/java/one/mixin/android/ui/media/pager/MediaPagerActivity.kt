@@ -44,7 +44,6 @@ import com.google.android.exoplayer2.Player
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_media_pager.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
@@ -53,6 +52,7 @@ import kotlinx.android.synthetic.main.view_drag_video_bottom.view.cancel
 import kotlinx.android.synthetic.main.view_player_control.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityMediaPagerBinding
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
@@ -140,6 +140,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         return R.style.AppTheme_Night_Photo
     }
 
+    private lateinit var binding: ActivityMediaPagerBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         if (ratio == 0f) {
             postponeEnterTransition()
@@ -148,7 +149,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         window.sharedElementExitTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
-        setContentView(R.layout.activity_media_pager)
+        binding = ActivityMediaPagerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         window.decorView.systemUiVisibility =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
@@ -167,12 +169,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         SystemUIManager.lightUI(window, false)
 
         colorDrawable = ColorDrawable(Color.BLACK)
-        view_pager.backgroundDrawable = colorDrawable
-        view_pager.adapter = adapter
-        view_pager.registerOnPageChangeCallback(onPageChangeCallback)
+        binding.viewPager.backgroundDrawable = colorDrawable
+        binding.viewPager.adapter = adapter
+        binding.viewPager.registerOnPageChangeCallback(onPageChangeCallback)
         VideoPlayer.player().setCycle(false)
 
-        lock_tv.setOnClickListener(onLockClickListener)
+        binding.lockTv.setOnClickListener(onLockClickListener)
 
         SensorOrientationChangeNotifier.init(this, requestedOrientation)
 
@@ -191,19 +193,19 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     override fun onStop() {
         super.onStop()
-        lock_tv.removeCallbacks(hideLockRunnable)
+        binding.lockTv.removeCallbacks(hideLockRunnable)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         processor.close()
         SensorOrientationChangeNotifier.reset()
-        view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
+        binding.viewPager?.unregisterOnPageChangeCallback(onPageChangeCallback)
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         val enable = ev?.pointerCount ?: 0 < 2
-        view_pager?.isUserInputEnabled = enable
+        binding.viewPager?.isUserInputEnabled = enable
         return super.dispatchTouchEvent(ev)
     }
 
@@ -269,7 +271,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     adapter.submitList(it) {
                         if (firstLoad) {
                             adapter.initialPos = initialIndex
-                            view_pager.setCurrentItem(initialIndex, false)
+                            binding.viewPager.setCurrentItem(initialIndex, false)
                             checkOrientation()
                             firstLoad = false
                         }
@@ -579,7 +581,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
 
     private fun dismiss() {
-        view_pager.visibility = View.INVISIBLE
+        binding.viewPager.visibility = View.INVISIBLE
         overridePendingTransition(0, 0)
         super.finish()
     }
@@ -606,12 +608,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
 
     private inline fun findViewPagerChildByTag(
-        pos: Int = view_pager.currentItem,
+        pos: Int = binding.viewPager.currentItem,
         crossinline action: (v: ViewGroup) -> Unit
     ) {
         if (isFinishing) return
         val id = getMessageItemByPosition(pos)?.messageId ?: return
-        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX$id")
+        val v = binding.viewPager.findViewWithTag<DismissFrameLayout>("$PREFIX$id")
         if (v != null) {
             action(v as ViewGroup)
         }
@@ -621,7 +623,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.loadVideoOrLive {
                 val view =
-                    view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${messageItem.messageId}")
+                    binding.viewPager.findViewWithTag<DismissFrameLayout>("$PREFIX${messageItem.messageId}")
                 if (view != null) {
                     view.player_view.player = VideoPlayer.player().player
                 }
@@ -632,9 +634,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     private var isLocked = false
 
     private fun showLock() {
-        lock_tv.isVisible = true
-        lock_tv.removeCallbacks(hideLockRunnable)
-        lock_tv.postDelayed(hideLockRunnable, 3000)
+        binding.lockTv.isVisible = true
+        binding.lockTv.removeCallbacks(hideLockRunnable)
+        binding.lockTv.postDelayed(hideLockRunnable, 3000)
     }
 
     private fun checkOrientation() {
@@ -648,27 +650,27 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     private val hideLockRunnable = Runnable {
-        lock_tv.isVisible = false
+        binding.lockTv.isVisible = false
     }
 
     private val onLockClickListener = View.OnClickListener {
         isLocked = !isLocked
         if (isLocked) {
-            lock_tv.text = getString(R.string.click_unlock)
-            lock_tv.textColor = getColor(R.color.colorAccent)
+            binding.lockTv.text = getString(R.string.click_unlock)
+            binding.lockTv.textColor = getColor(R.color.colorAccent)
         } else {
-            lock_tv.text = getString(R.string.click_lock)
-            lock_tv.textColor = getColor(R.color.white)
+            binding.lockTv.text = getString(R.string.click_lock)
+            binding.lockTv.textColor = getColor(R.color.white)
         }
-        lock_tv.removeCallbacks(hideLockRunnable)
-        lock_tv.postDelayed(hideLockRunnable, 3000)
+        binding.lockTv.removeCallbacks(hideLockRunnable)
+        binding.lockTv.postDelayed(hideLockRunnable, 3000)
         checkOrientation()
     }
 
     private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
-            lock_tv.removeCallbacks(hideLockRunnable)
-            lock_tv.post(hideLockRunnable)
+            binding.lockTv.removeCallbacks(hideLockRunnable)
+            binding.lockTv.post(hideLockRunnable)
 
             if (downloadMedia(position)) return
 
@@ -690,7 +692,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun onDismissProgress(progress: Float) {
         if (progress > 0 && !inDismissState) {
             inDismissState = true
-            val messageItem = getMessageItemByPosition(view_pager.currentItem) ?: return
+            val messageItem = getMessageItemByPosition(binding.viewPager.currentItem) ?: return
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
                     val playerView = it.player_view
@@ -712,7 +714,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun onCancel() {
         if (inDismissState) {
             inDismissState = false
-            val messageItem = getMessageItemByPosition(view_pager.currentItem) ?: return
+            val messageItem = getMessageItemByPosition(binding.viewPager.currentItem) ?: return
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
                     val playerView = it.player_view

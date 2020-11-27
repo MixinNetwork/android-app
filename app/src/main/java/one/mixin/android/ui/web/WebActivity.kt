@@ -8,8 +8,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_web.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityWebBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.isDarkColor
@@ -65,6 +65,7 @@ class WebActivity : BaseActivity() {
 
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Web
 
+    private lateinit var binding: ActivityWebBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         if (intent.extras != null) {
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
@@ -72,22 +73,23 @@ class WebActivity : BaseActivity() {
             overridePendingTransition(R.anim.fade_in, R.anim.stay)
         }
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_web)
+        binding = ActivityWebBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         screenshot?.let {
-            container.background = BitmapDrawable(resources, it.blurBitmap(25))
+            binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
         }
-        container.setOnClickListener {
+        binding.container.setOnClickListener {
             onBackPressed()
         }
 
-        six.setOnCloseListener(object : SixLayout.OnCloseListener {
+        binding.six.setOnCloseListener(object : SixLayout.OnCloseListener {
             override fun onClose(index: Int) {
                 releaseClip(index)
-                six.loadData(clips, loadViewAction)
+                binding.six.loadData(clips, loadViewAction)
             }
         })
 
-        clear.setOnClickListener {
+        binding.clear.setOnClickListener {
             alertDialogBuilder()
                 .setMessage(getString(R.string.web_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -100,7 +102,7 @@ class WebActivity : BaseActivity() {
                 .show()
         }
 
-        close.setOnClickListener {
+        binding.close.setOnClickListener {
             onBackPressed()
         }
         handleExtras(intent)
@@ -182,7 +184,7 @@ class WebActivity : BaseActivity() {
     }
 
     private fun handleExtras(intent: Intent) {
-        six.loadData(clips, loadViewAction)
+        binding.six.loadData(clips, loadViewAction)
         intent.extras.notNullWithElse(
             { extras ->
                 isExpand = true

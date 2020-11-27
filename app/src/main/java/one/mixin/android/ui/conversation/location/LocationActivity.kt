@@ -35,7 +35,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.android.synthetic.main.mention_location.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
@@ -43,6 +42,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
+import one.mixin.android.databinding.ActivityLocationBinding
 import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
@@ -77,8 +77,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 location?.let { location ->
                     calculationByDistance(value, LatLng(location.latitude, location.longitude)).distanceFormat()
                 }?.let {
-                    if (location_sub_title.text == null)
-                        location_sub_title.text = getString(R.string.location_distance, it.first, getString(it.second))
+                    if (binding.locationSubTitle.text == null)
+                        binding.locationSubTitle.text = getString(R.string.location_distance, it.first, getString(it.second))
                 }
             }
             field = value
@@ -131,52 +131,54 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         override fun onProviderDisabled(provider: String) {}
     }
 
+    private lateinit var binding: ActivityLocationBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_location)
+        binding = ActivityLocationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         if (location != null) {
             motion.loadLayoutDescription(R.xml.scene_location_none)
         }
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.onCreate(savedInstanceState)
         map_view.getMapAsync(this)
-        ic_back.setOnClickListener {
-            if (search_va.displayedChild == 1) {
-                search_va.showPrevious()
-                search_et.text = null
-                search_et.hideKeyboard()
+        binding.icBack.setOnClickListener {
+            if (binding.searchVa.displayedChild == 1) {
+                binding.searchVa.showPrevious()
+                binding.searchEt.text = null
+                binding.searchEt.hideKeyboard()
                 location_empty.isVisible = false
             } else {
                 finish()
             }
         }
-        ic_search.isVisible = location == null
-        ic_location_shared.isVisible = location != null
-        location_pb.isVisible = location == null
-        location_go.isVisible = location != null
+        binding.icSearch.isVisible = location == null
+        binding.icLocationShared.isVisible = location != null
+        binding.mentionLocation.locationPb.isVisible = location == null
+        binding.locationGo.isVisible = location != null
         location_recycler.isVisible = location == null
-        ic_search.setOnClickListener {
-            search_va.showNext()
-            search_et.requestFocus()
-            search_et.showKeyboard()
+        binding.icSearch.setOnClickListener {
+            binding.searchVa.showNext()
+            binding.searchEt.requestFocus()
+            binding.searchEt.showKeyboard()
         }
         my_location.setOnClickListener {
             selfPosition?.let { selfPosition ->
                 moveCamera(selfPosition)
             }
         }
-        ic_close.setOnClickListener {
-            search_va.showPrevious()
-            search_et.text = null
-            search_et.hideKeyboard()
+        binding.icClose.setOnClickListener {
+            binding.searchVa.showPrevious()
+            binding.searchEt.text = null
+            binding.searchEt.hideKeyboard()
             location_empty.isVisible = false
         }
-        search_et.addTextChangedListener(textWatcher)
-        search_et.setOnEditorActionListener(
+        binding.searchEt.addTextChangedListener(textWatcher)
+        binding.searchEt.setOnEditorActionListener(
             object : TextView.OnEditorActionListener {
                 override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
                     if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                        search_et.hideKeyboard()
+                        binding.searchEt.hideKeyboard()
                         return true
                     }
                     return false
@@ -186,19 +188,19 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
         location.notNullWithElse(
             { location ->
-                location_title.text = location.name ?: getString(R.string.location_unnamed)
+                binding.locationTitle.text = location.name ?: getString(R.string.location_unnamed)
                 location.address?.let { address ->
-                    location_sub_title.text = address
+                    binding.locationSubTitle.text = address
                 }
                 location.getImageUrl().notNullWithElse(
                     {
-                        location_icon.loadImage(it)
+                        binding.locationIcon.loadImage(it)
                     },
                     {
-                        location_icon.setBackgroundResource(R.drawable.ic_current_location)
+                        binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
                     }
                 )
-                ic_location_shared.setOnClickListener {
+                binding.icLocationShared.setOnClickListener {
                     try {
                         startActivity(
                             Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}"))
@@ -207,7 +209,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                         toast(R.string.error_open_location)
                     }
                 }
-                location_go_iv.setOnClickListener {
+                binding.locationGoIv.setOnClickListener {
                     selfPosition?.let { selfPosition ->
                         try {
                             startActivity(
@@ -231,10 +233,10 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     override fun onBackPressed() {
-        if (search_va.displayedChild == 1) {
-            search_va.showPrevious()
-            search_et.text = null
-            search_et.hideKeyboard()
+        if (binding.searchVa.displayedChild == 1) {
+            binding.searchVa.showPrevious()
+            binding.searchEt.text = null
+            binding.searchEt.hideKeyboard()
             location_empty.isVisible = false
         } else {
             super.onBackPressed()

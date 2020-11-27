@@ -18,7 +18,7 @@ class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder
     var rvWidth = 0f
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        CallUserHolder(ItemCallUserBinding.inflate(LayoutInflater.from(parent.context),parent,false))
+        CallUserHolder(ItemCallUserBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: CallUserHolder, position: Int) {
         getItem(position)?.let {

@@ -57,7 +57,7 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
 class UserListAdapter : ListAdapter<User, UserHolder>(User.DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        UserHolder(ItemUserListBinding.inflate(LayoutInflater.from(parent.context),parent,false))
+        UserHolder(ItemUserListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: UserHolder, position: Int) {
         getItem(position)?.let {

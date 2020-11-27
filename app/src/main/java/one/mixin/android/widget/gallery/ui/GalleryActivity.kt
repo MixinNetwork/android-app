@@ -15,8 +15,8 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_gallery.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityGalleryBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
@@ -57,6 +57,7 @@ class GalleryActivity :
         return R.style.AppTheme_NoActionBar
     }
 
+    private lateinit var binding: ActivityGalleryBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         if (isNightMode()) {
             setTheme(getNightThemeId())
@@ -75,7 +76,8 @@ class GalleryActivity :
             finish()
             return
         }
-        setContentView(R.layout.activity_gallery)
+        binding = ActivityGalleryBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (mSpec.needOrientationRestriction()) {
             requestedOrientation = mSpec.orientation
@@ -88,11 +90,11 @@ class GalleryActivity :
             mMediaStoreCompat.setCaptureStrategy(mSpec.captureStrategy)
         }
 
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         val actionBar = supportActionBar!!
         actionBar.setDisplayShowTitleEnabled(false)
         actionBar.setDisplayHomeAsUpEnabled(true)
-        val navigationIcon = toolbar.navigationIcon!!
+        val navigationIcon = binding.toolbar.navigationIcon!!
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             navigationIcon.colorFilter = BlendModeColorFilter(colorFromAttribute(R.attr.icon_black), BlendMode.SRC_IN)
         } else {
@@ -105,8 +107,8 @@ class GalleryActivity :
         mAlbumsAdapter = AlbumsAdapter(this, null, false)
         mAlbumsSpinner = AlbumsSpinner(this)
         mAlbumsSpinner.setOnItemSelectedListener(this)
-        mAlbumsSpinner.setSelectedTextView(selected_album)
-        mAlbumsSpinner.setPopupAnchorView(toolbar)
+        mAlbumsSpinner.setSelectedTextView(binding.selectedAlbum)
+        mAlbumsSpinner.setPopupAnchorView(binding.toolbar)
         mAlbumsSpinner.setAdapter(mAlbumsAdapter)
         mAlbumCollection.onCreate(this, this)
         mAlbumCollection.onRestoreInstanceState(savedInstanceState)
@@ -175,11 +177,11 @@ class GalleryActivity :
 
     private fun onAlbumSelected(album: Album) {
         if (album.isAll && album.isEmpty) {
-            container.visibility = View.GONE
-            empty_view.visibility = View.VISIBLE
+            binding.container.visibility = View.GONE
+            binding.emptyView.visibility = View.VISIBLE
         } else {
-            container.visibility = View.VISIBLE
-            empty_view.visibility = View.GONE
+            binding.container.visibility = View.VISIBLE
+            binding.emptyView.visibility = View.GONE
             val fragment = MediaSelectionFragment.newInstance(album)
             supportFragmentManager
                 .beginTransaction()
