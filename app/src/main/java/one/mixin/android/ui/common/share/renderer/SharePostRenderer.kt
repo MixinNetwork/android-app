@@ -6,9 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
-import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
-import kotlinx.android.synthetic.main.item_chat_post.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatPostBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.nowInUtc
@@ -21,17 +20,18 @@ import one.mixin.android.vo.MessageStatus
 
 open class SharePostRenderer(val context: Activity) : ShareMessageRenderer {
 
-    val contentView: View = LayoutInflater.from(context).inflate(R.layout.item_chat_post, null)
+    private val binding = ItemChatPostBinding.inflate(LayoutInflater.from(context), null, false)
+    val contentView get() = binding.root
 
     init {
-        contentView.chat_tv.layoutParams.width = context.maxItemWidth() * 2 / 3
-        contentView.chat_tv.maxHeight = context.maxItemWidth() / 2 * 10 / 16
-        contentView.chat_tv.round(3.dp)
-        contentView.chat_name.visibility = View.GONE
-        (contentView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
-        (contentView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 12.dp
-        (contentView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 12.dp
-        (contentView.chat_tv.layoutParams as ViewGroup.MarginLayoutParams).apply {
+        binding.chatTv.layoutParams.width = context.maxItemWidth() * 2 / 3
+        binding.chatTv.maxHeight = context.maxItemWidth() / 2 * 10 / 16
+        binding.chatTv.round(3.dp)
+        binding.chatName.visibility = View.GONE
+        (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
+        (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 12.dp
+        (binding.chatPost.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 12.dp
+        (binding.chatTv.layoutParams as ViewGroup.MarginLayoutParams).apply {
             marginStart = 8.dp
             marginEnd = 14.dp
         }
@@ -42,17 +42,17 @@ open class SharePostRenderer(val context: Activity) : ShareMessageRenderer {
     }
 
     fun render(content: String, isNightMode: Boolean) {
-        miniMarkwon.setMarkdown(contentView.chat_tv, content.postOptimize())
-        contentView.chat_time.timeAgoClock(nowInUtc())
+        miniMarkwon.setMarkdown(binding.chatTv, content.postOptimize())
+        binding.chatTime.timeAgoClock(nowInUtc())
         setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = true) { statusIcon, secretIcon ->
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
-            TextViewCompat.setCompoundDrawablesRelative(contentView.chat_time, secretIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon, null, statusIcon, null)
         }
-        contentView.chat_tv.setOnClickListener {
+        binding.chatTv.setOnClickListener {
             MarkdownActivity.show(context, content)
         }
-        contentView.chat_layout.setBackgroundResource(
+        binding.chatLayout.setBackgroundResource(
             if (!isNightMode) {
                 R.drawable.chat_bubble_post_me_last
             } else {

@@ -64,7 +64,7 @@ class MenuAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        MenuHolder(ItemChatMenuBinding.inflate(LayoutInflater.from(parent.context),parent,false)).apply {
+        MenuHolder(ItemChatMenuBinding.inflate(LayoutInflater.from(parent.context), parent, false)).apply {
             binding.appIcon.pos = BadgeCircleImageView.END_BOTTOM
         }
 
