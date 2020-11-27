@@ -28,6 +28,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.supportsR
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
@@ -108,9 +109,7 @@ class KeyboardLayout : LinearLayout {
     }
 
     fun showSoftKey(inputTarget: ContentEditText) {
-        (inputTarget.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(
-            inputTarget, InputMethodManager.SHOW_IMPLICIT
-        )
+        inputTarget.showKeyboard()
         postDelayed(
             {
                 inputTarget.requestFocus()
