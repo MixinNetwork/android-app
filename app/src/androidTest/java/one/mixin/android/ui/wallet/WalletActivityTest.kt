@@ -7,11 +7,11 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import junit.framework.Assert.assertTrue
 import one.mixin.android.R
 import one.mixin.android.mock.mockAsset
 import one.mixin.android.ui.wallet.WalletActivity.Companion.ASSET
 import one.mixin.android.vo.toAssetItem
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

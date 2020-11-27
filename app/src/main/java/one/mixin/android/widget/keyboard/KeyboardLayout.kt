@@ -17,7 +17,6 @@ import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
-import androidx.core.view.updatePadding
 import androidx.preference.PreferenceManager
 import kotlinx.android.synthetic.main.fragment_conversation.view.*
 import one.mixin.android.R
@@ -113,9 +112,12 @@ class KeyboardLayout : LinearLayout {
             inputTarget,
             0
         )
-        postDelayed({
-            inputTarget.requestFocus()
-        }, 20)
+        postDelayed(
+            {
+                inputTarget.requestFocus()
+            },
+            20
+        )
     }
 
     private fun hideSoftKey(inputTarget: EditText) {
@@ -154,43 +156,43 @@ class KeyboardLayout : LinearLayout {
                     WindowInsetsCompat.CONSUMED
                 }
                 setWindowInsetsAnimationCallback(object :
-                    WindowInsetsAnimation.Callback(DISPATCH_MODE_STOP) {
-                    override fun onProgress(
-                        insets: WindowInsets,
-                        runningAnimations: MutableList<WindowInsetsAnimation>
-                    ): WindowInsets {
-                        if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
-                            input_area.layoutParams.height = max(
-                                0,
-                                insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom
-                            )
-                            requestLayout()
-                        } else if (status == STATUS.EXPANDED) {
-                            val percent =
-                                insets.getInsets(WindowInsetsCompat.Type.ime()).bottom / keyboardHeight.toFloat()
-                            input_area.layoutParams.height =
-                                (keyboardHeight - systemBottom + gap * (1 - percent)).toInt()
-                            requestLayout()
+                        WindowInsetsAnimation.Callback(DISPATCH_MODE_STOP) {
+                        override fun onProgress(
+                            insets: WindowInsets,
+                            runningAnimations: MutableList<WindowInsetsAnimation>
+                        ): WindowInsets {
+                            if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
+                                input_area.layoutParams.height = max(
+                                    0,
+                                    insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom
+                                )
+                                requestLayout()
+                            } else if (status == STATUS.EXPANDED) {
+                                val percent =
+                                    insets.getInsets(WindowInsetsCompat.Type.ime()).bottom / keyboardHeight.toFloat()
+                                input_area.layoutParams.height =
+                                    (keyboardHeight - systemBottom + gap * (1 - percent)).toInt()
+                                requestLayout()
+                            }
+                            return insets
                         }
-                        return insets
-                    }
 
-                    private var gap = 0
-                    override fun onPrepare(animation: WindowInsetsAnimation) {
-                        super.onPrepare(animation)
-                        if (status == STATUS.EXPANDED) {
-                            gap = input_area.layoutParams.height - keyboardHeight
+                        private var gap = 0
+                        override fun onPrepare(animation: WindowInsetsAnimation) {
+                            super.onPrepare(animation)
+                            if (status == STATUS.EXPANDED) {
+                                gap = input_area.layoutParams.height - keyboardHeight
+                            }
                         }
-                    }
 
-                    override fun onStart(
-                        animation: WindowInsetsAnimation,
-                        bounds: WindowInsetsAnimation.Bounds
-                    ): WindowInsetsAnimation.Bounds {
-                        keyboardHeight = bounds.upperBound.bottom
-                        return super.onStart(animation, bounds)
-                    }
-                })
+                        override fun onStart(
+                            animation: WindowInsetsAnimation,
+                            bounds: WindowInsetsAnimation.Bounds
+                        ): WindowInsetsAnimation.Bounds {
+                            keyboardHeight = bounds.upperBound.bottom
+                            return super.onStart(animation, bounds)
+                        }
+                    })
             },
             {
                 ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
