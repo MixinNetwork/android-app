@@ -262,6 +262,7 @@ class WebFragment : BaseFragment() {
 
     private var _binding: FragmentWebBinding? = null
     private val binding get() = requireNotNull(_binding)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -270,7 +271,6 @@ class WebFragment : BaseFragment() {
         _binding = FragmentWebBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
-        
 
     private lateinit var contentView: ViewGroup
     private lateinit var webView: MixinWebView

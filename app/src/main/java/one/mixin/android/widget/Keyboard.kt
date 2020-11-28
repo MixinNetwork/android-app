@@ -24,11 +24,13 @@ class Keyboard @JvmOverloads constructor(
     private val keyboardAdapter = object : RecyclerView.Adapter<KeyboardHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): KeyboardHolder {
             return if (viewType == 1) {
-                    NormalKeyboardHolder(ItemGridKeyboardBinding.inflate(LayoutInflater.from(context), parent, false))
-                } else {
-                    KeyboardHolder( LayoutInflater.from(context)
-                        .inflate(R.layout.item_grid_keyboard_delete, parent, false))
-                }
+                NormalKeyboardHolder(ItemGridKeyboardBinding.inflate(LayoutInflater.from(context), parent, false))
+            } else {
+                KeyboardHolder(
+                    LayoutInflater.from(context)
+                        .inflate(R.layout.item_grid_keyboard_delete, parent, false)
+                )
+            }
         }
 
         override fun getItemCount(): Int = key!!.size
@@ -60,14 +62,14 @@ class Keyboard @JvmOverloads constructor(
 
     open class KeyboardHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    class NormalKeyboardHolder(val binding: ItemGridKeyboardBinding) : KeyboardHolder(binding.root){
+    class NormalKeyboardHolder(val binding: ItemGridKeyboardBinding) : KeyboardHolder(binding.root) {
         fun bind(text: String?) {
             binding.tvKeyboardKeys.text = text
             itemView.isEnabled = !text.isNullOrEmpty()
         }
     }
 
-    private val binding = ViewKeyboardBinding.inflate(LayoutInflater.from(context),this,true)
+    private val binding = ViewKeyboardBinding.inflate(LayoutInflater.from(context), this, true)
 
     /**
      * 初始化KeyboardView

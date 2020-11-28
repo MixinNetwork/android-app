@@ -23,11 +23,11 @@ import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentEditBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.bounce
 import one.mixin.android.extension.copy
@@ -117,18 +117,28 @@ class EditFragment : VisionFragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_edit, container, false)
+    private var _binding: FragmentEditBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentEditBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        send_fl.post {
+        binding.sendFl.post {
             val navigationBarHeight = requireContext().navigationBarHeight()
-            send_fl.translationY = -navigationBarHeight.toFloat()
-            download_iv.translationY = -navigationBarHeight.toFloat()
+            binding.sendFl.translationY = -navigationBarHeight.toFloat()
+            binding.downloadIv.translationY = -navigationBarHeight.toFloat()
         }
-        close_iv.setOnClickListener { activity?.onBackPressed() }
-        download_iv.setOnClickListener {
+        binding.closeIv.setOnClickListener { activity?.onBackPressed() }
+        binding.downloadIv.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
@@ -139,9 +149,9 @@ class EditFragment : VisionFragment() {
                         context?.openPermissionSetting()
                     }
                 }
-            download_iv.bounce()
+            binding.downloadIv.bounce()
         }
-        send_fl.setOnClickListener {
+        binding.sendFl.setOnClickListener {
             if (isVideo) {
                 ForwardActivity.show(
                     requireContext(),
@@ -167,27 +177,27 @@ class EditFragment : VisionFragment() {
             }
         }
         if (fromScan) {
-            send_fl.isVisible = false
-            download_iv.isVisible = false
+            binding.sendFl.isVisible = false
+            binding.downloadIv.isVisible = false
         }
         if (isVideo) {
             setBg()
             mixinPlayer.loadVideo(path)
-            preview_video_texture.visibility = VISIBLE
-            mixinPlayer.setVideoTextureView(preview_video_texture)
+            binding.previewVideoTexture.visibility = VISIBLE
+            mixinPlayer.setVideoTextureView(binding.previewVideoTexture)
             mixinPlayer.start()
         } else {
-            preview_iv.visibility = VISIBLE
+            binding.previewIv.visibility = VISIBLE
             if (fromGallery) {
-                preview_iv.loadImage(path)
+                binding.previewIv.loadImage(path)
                 scan()
                 setBg()
             } else {
-                preview_iv.scaleType = ImageView.ScaleType.CENTER_CROP
-                preview_iv.loadImage(path, requestListener = glideRequestListener)
+                binding.previewIv.scaleType = ImageView.ScaleType.CENTER_CROP
+                binding.previewIv.loadImage(path, requestListener = glideRequestListener)
             }
         }
-        download_iv.isVisible = !fromGallery
+        binding.downloadIv.isVisible = !fromGallery
     }
 
     private fun scan() = lifecycleScope.launch(Dispatchers.IO) {
@@ -254,7 +264,7 @@ class EditFragment : VisionFragment() {
     }
 
     private fun setBg() {
-        root_view?.setBackgroundColor(resources.getColor(R.color.black, null))
+        binding.rootView.setBackgroundColor(resources.getColor(R.color.black, null))
     }
 
     private fun save() = lifecycleScope.launch {
@@ -283,7 +293,7 @@ class EditFragment : VisionFragment() {
             } else {
                 matrix.postScale(1f, screenWidth / ratio / screenHeight, screenWidth / 2f, screenHeight / 2f)
             }
-            preview_video_texture.setTransform(matrix)
+            binding.previewVideoTexture.setTransform(matrix)
         }
     }
 
