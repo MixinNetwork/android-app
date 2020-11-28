@@ -8,9 +8,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_my_shared_apps.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentMySharedAppsBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -28,18 +28,22 @@ class MySharedAppsFragment : BaseFragment() {
     }
 
     private val mySharedAppsViewModel by viewModels<MySharedAppsViewModel>()
+    private val binding get() = baseBinding as FragmentMySharedAppsBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_my_shared_apps, container, false)
+    ): View? {
+        baseBinding = FragmentMySharedAppsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerView.adapter = adapter
-        recyclerView.addItemDecoration(SegmentationItemDecoration())
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.addItemDecoration(SegmentationItemDecoration())
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
         loadData()
         refresh()
     }
@@ -60,9 +64,9 @@ class MySharedAppsFragment : BaseFragment() {
             val favoriteApps =
                 mySharedAppsViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             val unFavoriteApps = mySharedAppsViewModel.getUnfavoriteApps()
-            recyclerView ?: return@launch
-            recyclerView.isVisible = favoriteApps.isNotEmpty() || unFavoriteApps.isNotEmpty()
-            empty.isVisible = favoriteApps.isEmpty() && unFavoriteApps.isEmpty()
+            binding.recyclerView ?: return@launch
+            binding.recyclerView.isVisible = favoriteApps.isNotEmpty() || unFavoriteApps.isNotEmpty()
+            binding.empty.isVisible = favoriteApps.isEmpty() && unFavoriteApps.isEmpty()
             adapter.setData(favoriteApps, unFavoriteApps)
         }
     }
