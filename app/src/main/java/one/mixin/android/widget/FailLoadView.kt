@@ -10,7 +10,8 @@ import one.mixin.android.databinding.ViewFailLoadBinding
 class FailLoadView(context: Context, attrs: AttributeSet?) : RelativeLayout(context, attrs) {
 
     private val binding = ViewFailLoadBinding.inflate(LayoutInflater.from(context), this, true)
-
+    val contactTv get() = binding.contactTv
+    val webFailDescription get() = binding.webFailDescription
     var listener: FailLoadListener? = null
 
     init {

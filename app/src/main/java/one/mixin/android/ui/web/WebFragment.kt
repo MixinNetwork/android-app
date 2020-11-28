@@ -57,9 +57,6 @@ import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_web.view.*
-import kotlinx.android.synthetic.main.view_fail_load.view.*
-import kotlinx.android.synthetic.main.view_web_bottom_menu.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -69,6 +66,8 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentWebBinding
+import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
@@ -261,32 +260,37 @@ class WebFragment : BaseFragment() {
         index = requireArguments().getInt(ARGS_INDEX, -1)
     }
 
+    private var _binding: FragmentWebBinding? = null
+    private val binding get() = requireNotNull(_binding)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View =
-        layoutInflater.inflate(R.layout.fragment_web, container, false)
+    ): View {
+        _binding = FragmentWebBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
+        
 
     private lateinit var contentView: ViewGroup
     private lateinit var webView: MixinWebView
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        contentView = view.container
+        contentView = binding.container
         webView = if (index >= 0 && index < clips.size) {
             clips[index].let { clip ->
-                contentView.title_tv.text = clip.name
+                binding.titleTv.text = clip.name
                 clip.icon?.let { icon ->
                     this.icon = icon
-                    contentView.icon_iv.isVisible = true
-                    contentView.icon_iv.setImageBitmap(icon)
+                    binding.iconIv.isVisible = true
+                    binding.iconIv.setImageBitmap(icon)
                 }
                 clip.webView ?: MixinWebView(requireContext())
             }
         } else {
             MixinWebView(requireContext())
         }
-        contentView.web_ll.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-        contentView.web_control.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        binding.webLl.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        binding.webControl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = requireContext().dpToPx(6f)
         }
         registerForContextMenu(webView)
@@ -327,9 +331,9 @@ class WebFragment : BaseFragment() {
     }
 
     private fun controlSuspiciousView(show: Boolean) {
-        contentView.suspicious_link_view.isVisible = show
+        binding.suspiciousLinkView.isVisible = show
         if (show) {
-            contentView.pb.isVisible = false
+            binding.pb.isVisible = false
         }
     }
 
@@ -339,7 +343,7 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
-        contentView.suspicious_link_view.listener = object : SuspiciousLinkView.SuspiciousListener {
+        binding.suspiciousLinkView.listener = object : SuspiciousLinkView.SuspiciousListener {
             override fun onBackClick() {
                 requireActivity().finish()
             }
@@ -351,13 +355,13 @@ class WebFragment : BaseFragment() {
         }
         app.notNullWithElse(
             {
-                contentView.fail_load_view.contact_tv.visibility = VISIBLE
+                binding.failLoadView.contactTv.visibility = VISIBLE
             },
             {
-                contentView.fail_load_view.contact_tv.visibility = INVISIBLE
+                binding.failLoadView.contactTv.visibility = INVISIBLE
             }
         )
-        contentView.fail_load_view.listener = object : FailLoadView.FailLoadListener {
+        binding.failLoadView.listener = object : FailLoadView.FailLoadListener {
             override fun onReloadClick() {
                 refresh()
             }
@@ -375,7 +379,7 @@ class WebFragment : BaseFragment() {
             }
         }
 
-        contentView.web_control.callback = object : WebControlView.Callback {
+        binding.webControl.callback = object : WebControlView.Callback {
             override fun onMoreClick() {
                 showBottomSheet()
             }
@@ -423,9 +427,9 @@ class WebFragment : BaseFragment() {
                         errorCode == ERROR_IO ||
                         errorCode == ERROR_TIMEOUT
                     ) {
-                        contentView.fail_load_view.web_fail_description.text =
+                        binding.failLoadView.webFailDescription.text =
                             getString(R.string.web_cannot_reached_desc, failingUrl)
-                        contentView.fail_load_view.isVisible = true
+                        binding.failLoadView.isVisible = true
                     }
                     description?.let { reportException(Exception(it)) }
                 }
@@ -450,10 +454,10 @@ class WebFragment : BaseFragment() {
                 customViewCallback = callback
                 originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
 
-                contentView.customViewContainer.addView(view)
-                contentView.customViewContainer.isVisible = true
-                contentView.web_ll.isVisible = false
-                contentView.web_control.isVisible = false
+                binding.customViewContainer.addView(view)
+                binding.customViewContainer.isVisible = true
+                binding.webLl.isVisible = false
+                binding.webControl.isVisible = false
 
                 requireActivity().window.decorView.systemUiVisibility =
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -468,10 +472,10 @@ class WebFragment : BaseFragment() {
             override fun onHideCustomView() {
                 if (customView == null)
                     return
-                contentView.customViewContainer.isVisible = false
-                contentView.web_ll.isVisible = true
-                contentView.web_control.isVisible = true
-                contentView.customViewContainer.removeView(customView)
+                binding.customViewContainer.isVisible = false
+                binding.webLl.isVisible = true
+                binding.webControl.isVisible = true
+                binding.customViewContainer.removeView(customView)
                 customView = null
 
                 requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
@@ -484,7 +488,7 @@ class WebFragment : BaseFragment() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
                 if (!isBot()) {
-                    contentView.title_tv.text = title
+                    binding.titleTv.text = title
                 }
             }
 
@@ -492,8 +496,8 @@ class WebFragment : BaseFragment() {
                 super.onReceivedIcon(view, icon)
                 if (!isBot()) {
                     icon?.let {
-                        contentView.icon_iv.isVisible = true
-                        contentView.icon_iv.setImageBitmap(it)
+                        binding.iconIv.isVisible = true
+                        binding.iconIv.setImageBitmap(it)
                         this@WebFragment.icon = it
                     }
                 }
@@ -522,7 +526,7 @@ class WebFragment : BaseFragment() {
                 if (fileChooserParams?.isCaptureEnabled == true) {
                     if (intent?.type == "video/*") {
                         PermissionBottomSheetDialogFragment.requestVideo(
-                            contentView.title_tv.text.toString(),
+                            binding.titleTv.text.toString(),
                             app?.name,
                             app?.iconUrl
                         )
@@ -552,7 +556,7 @@ class WebFragment : BaseFragment() {
                         return true
                     } else if (intent?.type == "image/*") {
                         PermissionBottomSheetDialogFragment.requestCamera(
-                            contentView.title_tv.text.toString(),
+                            binding.titleTv.text.toString(),
                             app?.name,
                             app?.iconUrl
                         )
@@ -613,7 +617,7 @@ class WebFragment : BaseFragment() {
     }
 
     private fun loadWebView() {
-        contentView.pb.isVisible = false
+        binding.pb.isVisible = false
 
         var immersive = false
         app?.capabilities?.let {
@@ -621,15 +625,15 @@ class WebFragment : BaseFragment() {
                 immersive = true
             }
         }
-        app?.name?.let { contentView.title_tv.text = it }
+        app?.name?.let { binding.titleTv.text = it }
         app?.iconUrl?.let {
-            contentView.icon_iv.isVisible = true
-            contentView.icon_iv.loadImage(it)
-            contentView.title_tv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            binding.iconIv.isVisible = true
+            binding.iconIv.loadImage(it)
+            binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 marginStart = requireContext().dpToPx(10f)
             }
         }
-        contentView.title_ll.isGone = immersive
+        binding.titleLl.isGone = immersive
 
         webView.addJavascriptInterface(
             WebAppInterface(
@@ -688,7 +692,7 @@ class WebFragment : BaseFragment() {
             screenshot,
             app,
             titleColor,
-            app?.name ?: contentView.title_tv.text.toString(),
+            app?.name ?: binding.titleTv.text.toString(),
             icon,
             webView
         )
@@ -713,12 +717,13 @@ class WebFragment : BaseFragment() {
             }
         }
         unregisterForContextMenu(webView)
-        contentView.web_ll.removeView(webView)
+        binding.webLl.removeView(webView)
         processor.close()
         if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
+        _binding = null
         super.onDestroyView()
     }
 
@@ -726,26 +731,28 @@ class WebFragment : BaseFragment() {
         if (!isAdded) return
 
         val builder = BottomSheet.Builder(requireActivity())
+
         val view = View.inflate(
             ContextThemeWrapper(requireActivity(), R.style.Custom),
             R.layout.view_web_bottom_menu,
             null
         )
+        val viewBinding = ViewWebBottomMenuBinding.bind(view)
         if (isBot()) {
             app?.let {
-                view.avatar.loadImage(it.iconUrl)
-                view.name_tv.text = it.name
-                view.desc_tv.text = it.appNumber
+                viewBinding.avatar.loadImage(it.iconUrl)
+                viewBinding.nameTv.text = it.name
+                viewBinding.descTv.text = it.appNumber
             }
-            view.avatar.isVisible = true
+            viewBinding.avatar.isVisible = true
         } else {
-            view.name_tv.text = contentView.title_tv.text
-            view.desc_tv.text = webView.url
-            view.avatar.isVisible = false
+            viewBinding.nameTv.text = binding.titleTv.text
+            viewBinding.descTv.text = webView.url
+            viewBinding.avatar.isVisible = false
         }
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.close_iv.setOnClickListener { bottomSheet.dismiss() }
+        viewBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
 
         val shareMenu = menu {
             title = getString(if (isBot()) R.string.about else R.string.share)
@@ -892,7 +899,7 @@ class WebFragment : BaseFragment() {
             }
         }
         list.createMenuLayout(requireContext()).let { layout ->
-            view.root.addView(layout)
+            viewBinding.root.addView(layout)
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 bottomMargin = requireContext().dpToPx(30f)
             }
@@ -931,7 +938,7 @@ class WebFragment : BaseFragment() {
     private fun refresh() {
         webView.clearCache(true)
         webView.reload()
-        contentView.fail_load_view.isVisible = false
+        binding.failLoadView.isVisible = false
     }
 
     private fun openBot() = lifecycleScope.launch {
@@ -1034,17 +1041,17 @@ class WebFragment : BaseFragment() {
         requireActivity().window.statusBarColor = color
         requireActivity().window.decorView.let {
             if (dark) {
-                contentView.title_tv.setTextColor(Color.WHITE)
+                binding.titleTv.setTextColor(Color.WHITE)
                 it.systemUiVisibility =
                     it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
             } else {
-                contentView.title_tv.setTextColor(Color.BLACK)
+                binding.titleTv.setTextColor(Color.BLACK)
                 it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         }
         titleColor = color
-        contentView.title_ll.setBackgroundColor(color)
-        contentView.web_control.mode = dark
+        binding.titleLl.setBackgroundColor(color)
+        binding.webControl.mode = dark
     }
 
     @Suppress("DEPRECATION")
