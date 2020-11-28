@@ -20,6 +20,8 @@ import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.android.synthetic.main.fragment_contacts.*
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewContactHeaderBinding
+import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
@@ -72,10 +74,9 @@ class ContactsFragment : BaseFragment() {
         contact_recycler_view.setHasFixedSize(true)
         contact_recycler_view.layoutManager = LinearLayoutManager(context)
         contact_recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
-        val header = LayoutInflater.from(context).inflate(R.layout.view_contact_header, contact_recycler_view, false)
+        val header = ViewContactHeaderBinding.inflate(LayoutInflater.from(context), contact_recycler_view, false)
         contactAdapter.setHeader(header)
-        val footer = LayoutInflater.from(context)
-            .inflate(R.layout.view_contact_list_empty, contact_recycler_view, false)
+        val footer = ViewContactListEmptyBinding.inflate(LayoutInflater.from(context), contact_recycler_view, false)
         contactAdapter.setFooter(footer)
         if (!hasContactPermission()) {
             contactAdapter.showEmptyFooter()

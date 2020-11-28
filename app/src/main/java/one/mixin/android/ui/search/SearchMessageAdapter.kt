@@ -2,13 +2,12 @@ package one.mixin.android.ui.search
 
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_search_message.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemSearchMessageBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
@@ -20,7 +19,7 @@ class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, Searc
     var query: String = ""
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        SearchMessageHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_search_message, parent, false))
+        SearchMessageHolder(ItemSearchMessageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: SearchMessageHolder, position: Int) {
         getItem(position)?.let {
@@ -35,7 +34,7 @@ class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, Searc
     }
 }
 
-class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.ViewHolder(binding.root) {
     val icon: Drawable? by lazy {
         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file).apply {
             this?.setBounds(0, 0, itemView.dip(12f), itemView.dip(12f))
@@ -47,20 +46,20 @@ class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         query: String,
         searchMessageCallback: SearchMessageAdapter.SearchMessageCallback?
     ) {
-        itemView.search_name_tv.text = message.userFullName
+        binding.searchNameTv.text = message.userFullName
         if (message.type == MessageCategory.SIGNAL_DATA.name || message.type == MessageCategory.PLAIN_DATA.name) {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, icon, null, null, null)
-            itemView.search_msg_tv.text = message.mediaName
+            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, icon, null, null, null)
+            binding.searchMsgTv.text = message.mediaName
         } else if (message.type == MessageCategory.SIGNAL_CONTACT.name || message.type == MessageCategory.PLAIN_CONTACT.name) {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, null, null, null, null)
-            itemView.search_msg_tv.text = message.mediaName
+            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, null, null, null, null)
+            binding.searchMsgTv.text = message.mediaName
         } else {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, null, null, null, null)
-            itemView.search_msg_tv.text = message.content
+            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, null, null, null, null)
+            binding.searchMsgTv.text = message.content
         }
-        itemView.search_time_tv.timeAgoDate(message.createdAt)
-        itemView.search_msg_tv.highLight(query)
-        itemView.search_avatar_iv.setInfo(message.userFullName, message.userAvatarUrl, message.userId)
+        binding.searchTimeTv.timeAgoDate(message.createdAt)
+        binding.searchMsgTv.highLight(query)
+        binding.searchAvatarIv.setInfo(message.userFullName, message.userAvatarUrl, message.userId)
         itemView.setOnClickListener {
             searchMessageCallback?.onItemClick(message)
         }

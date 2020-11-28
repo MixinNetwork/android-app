@@ -14,8 +14,8 @@ import androidx.core.view.ViewPropertyAnimatorCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.item_dock.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemDockBinding
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.vo.BotInterface
 import java.lang.Exception
@@ -51,6 +51,8 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         clipToPadding = false
         render()
     }
+
+    private fun getItemDock(view: View) = ItemDockBinding.bind(view)
 
     private var itemWidth = 0
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -133,7 +135,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             }
         }
         for (i in 1..4) {
-            val avatar = getChildAt(i).apply {
+            val avatar = getItemDock(getChildAt(i)).apply {
                 avatar.alpha = 1f
                 avatar.translationX = 0f
             }.avatar
@@ -195,9 +197,9 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             currentShoveIndex = index
             for (i in 1..4) {
                 if (i <= index) {
-                    viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                    viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
                 } else {
-                    viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
+                    viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
                 }
             }
         }
@@ -211,24 +213,24 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                 appIndex + 1 > index -> {
                     for (i in 1..4) { // forward
                         if (i >= appIndex + 1 || i < index) {
-                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
                         } else {
-                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
+                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
                         }
                     }
                 }
                 appIndex + 1 < index -> { // backward
                     for (i in 1..4) {
                         if (i <= appIndex + 1 || i > index) {
-                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
                         } else {
-                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(-itemWidth.toFloat()).start()
+                            viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).translationX(-itemWidth.toFloat()).start()
                         }
                     }
                 }
                 else -> { // hold
                     for (i in 1..4) {
-                        viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                        viewPropertyAnimator(getItemDock(getChildAt(i)).avatar).translationX(0f).start()
                     }
                 }
             }

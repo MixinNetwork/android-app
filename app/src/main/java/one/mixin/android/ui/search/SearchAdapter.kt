@@ -8,6 +8,7 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.databinding.ItemSearchContactBinding
+import one.mixin.android.databinding.ItemSearchHeaderBinding
 import one.mixin.android.databinding.ItemSearchMessageBinding
 import one.mixin.android.databinding.ItemSearchTipBinding
 import one.mixin.android.ui.search.holder.AssetHolder
@@ -58,8 +59,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderHolder {
-        val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_header, parent, false)
-        return HeaderHolder(item)
+        return HeaderHolder(ItemSearchHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     private var data = SearchDataPackage()

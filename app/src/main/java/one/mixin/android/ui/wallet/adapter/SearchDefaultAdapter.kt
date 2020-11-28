@@ -54,9 +54,9 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         return if (viewType == TYPE_RECENT) {
-            AssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context),parent,false))
+            AssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else {
-            TopAssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context),parent,false))
+            TopAssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
     }
 

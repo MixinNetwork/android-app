@@ -9,9 +9,9 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutRecyclerViewBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
@@ -42,19 +42,29 @@ class PostFragment : BaseFragment() {
 
     private val viewModel by viewModels<SharedMediaViewModel>()
 
+    private var _binding: LayoutRecyclerViewBinding? = null
+    private val binding get() = requireNotNull(_binding)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.layout_recycler_view, container, false)
+    ): View {
+        _binding = LayoutRecyclerViewBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        empty_iv.setImageResource(R.drawable.ic_empty_file)
-        empty_tv.setText(R.string.no_post)
-        recycler_view.layoutManager = LinearLayoutManager(requireContext())
-        recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        recycler_view.adapter = adapter
+        binding.emptyIv.setImageResource(R.drawable.ic_empty_file)
+        binding.emptyTv.setText(R.string.no_post)
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.recyclerView.adapter = adapter
         viewModel.getPostMessages(conversationId).observe(
             viewLifecycleOwner,
             {
