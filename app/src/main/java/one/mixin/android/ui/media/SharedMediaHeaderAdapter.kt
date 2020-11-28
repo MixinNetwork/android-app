@@ -4,8 +4,8 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_shared_media_header.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemSharedMediaHeaderBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
@@ -25,7 +25,8 @@ abstract class SharedMediaHeaderAdapter<VH : NormalHolder>(diffCallback: DiffUti
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): MediaHeaderViewHolder {
         val view = parent.inflate(R.layout.item_shared_media_header, false)
-        view.date_tv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        val binding = ItemSharedMediaHeaderBinding.bind(view)
+        binding.dateTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             val margin = parent.context.dpToPx(getHeaderTextMargin())
             marginStart = margin
             marginEnd = margin

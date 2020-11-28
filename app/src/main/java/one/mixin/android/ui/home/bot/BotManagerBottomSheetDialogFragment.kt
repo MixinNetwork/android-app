@@ -68,13 +68,13 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         }
     }
 
-    private var _binding : FragmentBotManagerBinding? = null
+    private var _binding: FragmentBotManagerBinding? = null
     private val binding get() = requireNotNull(_binding)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentBotManagerBinding.inflate(LayoutInflater.from(context),null,false)
+        _binding = FragmentBotManagerBinding.inflate(LayoutInflater.from(context), null, false)
         contentView = binding.root
         dialog.setContentView(contentView)
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams

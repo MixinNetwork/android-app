@@ -9,9 +9,9 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutRecyclerViewBinding
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -62,19 +62,25 @@ class AudioFragment : BaseFragment() {
         }
     )
 
+    private var _binding: LayoutRecyclerViewBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.layout_recycler_view, container, false)
+    ): View {
+        _binding = LayoutRecyclerViewBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recycler_view.layoutManager = LinearLayoutManager(requireContext())
-        recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        recycler_view.adapter = adapter
-        empty_iv.setImageResource(R.drawable.ic_empty_audio)
-        empty_tv.setText(R.string.no_audio)
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.recyclerView.adapter = adapter
+        binding.emptyIv.setImageResource(R.drawable.ic_empty_audio)
+        binding.emptyTv.setText(R.string.no_audio)
         viewModel.getAudioMessages(conversationId).observe(
             viewLifecycleOwner,
             {
@@ -86,5 +92,10 @@ class AudioFragment : BaseFragment() {
                 adapter.submitList(it)
             }
         )
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

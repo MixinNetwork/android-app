@@ -12,12 +12,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.response.VerificationResponse
-import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.FragmentVerificationEmergencyIdBinding
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.tapVibrate
@@ -43,7 +41,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment() {
 
     private val viewModel by viewModels<EmergencyViewModel>()
 
-    private var _binding : FragmentVerificationEmergencyIdBinding? = null
+    private var _binding: FragmentVerificationEmergencyIdBinding? = null
     private val binding get() = requireNotNull(_binding)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

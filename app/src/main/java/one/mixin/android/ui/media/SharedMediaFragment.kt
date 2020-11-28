@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_shared_media.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentSharedMediaBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 
@@ -31,19 +31,25 @@ class SharedMediaFragment : BaseFragment() {
         SharedMediaAdapter(requireActivity(), conversationId)
     }
 
+    private var _binding: FragmentSharedMediaBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_shared_media, container, false)
+    ): View {
+        _binding = FragmentSharedMediaBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        view_pager.adapter = adapter
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.viewPager.adapter = adapter
         TabLayoutMediator(
-            shared_tl,
-            view_pager
+            binding.sharedTl,
+            binding.viewPager
         ) { tab, position ->
             tab.text = getString(
                 when (position) {
@@ -54,9 +60,14 @@ class SharedMediaFragment : BaseFragment() {
                     else -> R.string.files
                 }
             )
-            view_pager.setCurrentItem(tab.position, true)
+            binding.viewPager.setCurrentItem(tab.position, true)
         }.attach()
-        shared_tl.tabMode = TabLayout.MODE_FIXED
-        view_pager.currentItem = 0
+        binding.sharedTl.tabMode = TabLayout.MODE_FIXED
+        binding.viewPager.currentItem = 0
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

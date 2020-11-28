@@ -63,7 +63,7 @@ class NewGroupFragment : BaseFragment() {
     private val adapter = NewGroupAdapter()
     private var dialog: Dialog? = null
 
-    private var _binding : FragmentNewGroupBinding? = null
+    private var _binding: FragmentNewGroupBinding? = null
     private val binding get() = requireNotNull(_binding)
 
     override fun onCreateView(
@@ -107,7 +107,7 @@ class NewGroupFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.dismiss()
-        _binding =null
+        _binding = null
     }
 
     private fun createGroup() = lifecycleScope.launch {

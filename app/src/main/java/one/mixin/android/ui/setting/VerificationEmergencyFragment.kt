@@ -63,11 +63,11 @@ class VerificationEmergencyFragment : PinCodeFragment() {
 
     private val viewModel by viewModels<EmergencyViewModel>()
 
-    private var _binding : FragmentVerificationBinding? = null
+    private var _binding: FragmentVerificationBinding? = null
     private val binding get() = requireNotNull(_binding)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View{
-        _binding =   FragmentVerificationBinding.inflate(layoutInflater, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentVerificationBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 

@@ -53,11 +53,6 @@ class PostFragment : BaseFragment() {
         return binding.root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.emptyIv.setImageResource(R.drawable.ic_empty_file)
@@ -76,5 +71,10 @@ class PostFragment : BaseFragment() {
                 adapter.submitList(it)
             }
         )
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

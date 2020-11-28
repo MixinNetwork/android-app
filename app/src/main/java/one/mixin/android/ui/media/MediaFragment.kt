@@ -8,9 +8,9 @@ import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutRecyclerViewBinding
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -47,11 +47,17 @@ class MediaFragment : BaseFragment() {
 
     private val viewModel by viewModels<SharedMediaViewModel>()
 
+    private var _binding: LayoutRecyclerViewBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.layout_recycler_view, container, false)
+    ): View {
+        _binding = LayoutRecyclerViewBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -69,14 +75,14 @@ class MediaFragment : BaseFragment() {
                 }
             }
         }
-        recycler_view.layoutManager = lm
-        recycler_view.itemAnimator = null
-        recycler_view.isVerticalScrollBarEnabled = false
-        recycler_view.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, false))
-        recycler_view.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
-        recycler_view.adapter = adapter
-        empty_iv.setImageResource(R.drawable.ic_empty_media)
-        empty_tv.setText(R.string.no_media)
+        binding.recyclerView.layoutManager = lm
+        binding.recyclerView.itemAnimator = null
+        binding.recyclerView.isVerticalScrollBarEnabled = false
+        binding.recyclerView.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, false))
+        binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
+        binding.recyclerView.adapter = adapter
+        binding.emptyIv.setImageResource(R.drawable.ic_empty_media)
+        binding.emptyTv.setText(R.string.no_media)
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(
             viewLifecycleOwner,
             {
@@ -108,5 +114,10 @@ class MediaFragment : BaseFragment() {
             }
         }
         return pos
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

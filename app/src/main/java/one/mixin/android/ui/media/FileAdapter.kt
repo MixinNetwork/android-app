@@ -5,8 +5,8 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.item_file.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemFileBinding
 import one.mixin.android.extension.fileSize
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -35,48 +35,49 @@ class FileAdapter(private val onClickListener: (MessageItem) -> Unit) :
 }
 
 class FileHolder(itemView: View) : NormalHolder(itemView) {
+    private val binding = ItemFileBinding.bind(itemView)
     fun bind(item: MessageItem, onClickListener: (MessageItem) -> Unit) {
-        itemView.name_tv.text = item.mediaName
-        itemView.size_tv.text = item.mediaSize?.fileSize()
+        binding.nameTv.text = item.mediaName
+        binding.sizeTv.text = item.mediaSize?.fileSize()
         var type = item.mediaName
             ?.substringAfterLast(".", "")
             ?.toUpperCase(Locale.getDefault())
         if (type != null && type.length > 3) {
             type = type.substring(0, 3)
         }
-        itemView.type_tv.text = type
+        binding.typeTv.text = type
         item.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
-                    itemView.file_expired.visibility = VISIBLE
-                    itemView.file_progress.visibility = GONE
-                    itemView.type_tv.visibility = GONE
+                    binding.fileExpired.visibility = VISIBLE
+                    binding.fileProgress.visibility = GONE
+                    binding.typeTv.visibility = GONE
                 }
                 MediaStatus.PENDING.name -> {
-                    itemView.file_expired.visibility = GONE
-                    itemView.file_progress.visibility = VISIBLE
-                    itemView.type_tv.visibility = GONE
-                    itemView.file_progress.enableLoading()
-                    itemView.file_progress.setBindId(item.messageId)
+                    binding.fileExpired.visibility = GONE
+                    binding.fileProgress.visibility = VISIBLE
+                    binding.typeTv.visibility = GONE
+                    binding.fileProgress.enableLoading()
+                    binding.fileProgress.setBindId(item.messageId)
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
-                    itemView.file_expired.visibility = GONE
-                    itemView.file_progress.visibility = GONE
-                    itemView.type_tv.visibility = VISIBLE
-                    itemView.file_progress.setDone()
-                    itemView.file_progress.setBindId(null)
+                    binding.fileExpired.visibility = GONE
+                    binding.fileProgress.visibility = GONE
+                    binding.typeTv.visibility = VISIBLE
+                    binding.fileProgress.setDone()
+                    binding.fileProgress.setBindId(null)
                 }
                 MediaStatus.CANCELED.name -> {
-                    itemView.file_expired.visibility = GONE
-                    itemView.file_progress.visibility = VISIBLE
-                    itemView.type_tv.visibility = GONE
+                    binding.fileExpired.visibility = GONE
+                    binding.fileProgress.visibility = VISIBLE
+                    binding.typeTv.visibility = GONE
                     if (Session.getAccountId() == item.userId && item.mediaUrl != null) {
-                        itemView.file_progress.enableUpload()
+                        binding.fileProgress.enableUpload()
                     } else {
-                        itemView.file_progress.enableDownload()
+                        binding.fileProgress.enableDownload()
                     }
-                    itemView.file_progress.setBindId(item.messageId)
-                    itemView.file_progress.setProgress(-1)
+                    binding.fileProgress.setBindId(item.messageId)
+                    binding.fileProgress.setProgress(-1)
                 }
             }
         }
