@@ -103,7 +103,7 @@ fun MenuList.createMenuLayout(
             orientation = LinearLayout.VERTICAL
         }
         group.menus.forEachIndexed { index, menu ->
-            val menuBinding = LayoutMenuBinding.inflate( LayoutInflater.from(context), null, false)
+            val menuBinding = LayoutMenuBinding.inflate(LayoutInflater.from(context), null, false)
             menuBinding.titleTv.text = menu.title
             menuBinding.subtitleTv.text = menu.subtitle
             menuBinding.titleTv.setTextColor(

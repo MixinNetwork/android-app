@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import kotlinx.android.synthetic.main.view_flag.view.*
 import one.mixin.android.databinding.ViewFlagBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.translationY
@@ -17,6 +18,8 @@ class FlagLayout @JvmOverloads constructor(
 ) : ViewGroup(context, attrs, defStyle) {
 
     private val binding = ViewFlagBinding.inflate(LayoutInflater.from(context), this)
+    val downFlagLayout get() = binding.downFlagLayout
+    val mentionFlagLayout get() = binding.mentionFlagLayout
 
     private val space by lazy {
         3.dp

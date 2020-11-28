@@ -97,6 +97,8 @@ class ChatControlView : LinearLayout {
     private val _binding: ViewChatControlBinding
 
     private val binding get() = _binding
+    val chatEt get() = binding.chatEt
+    val replyView get() = binding.replyView
 
     private var controlState: STATUS = STATUS.COLLAPSED
         set(value) {

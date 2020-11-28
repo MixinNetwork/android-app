@@ -24,8 +24,9 @@ import org.jetbrains.anko.dip
 
 class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
 
-    val binding = ViewReplyBinding.inflate(LayoutInflater.from(context), this, true)
+    private val binding = ViewReplyBinding.inflate(LayoutInflater.from(context), this, true)
 
+    val replyCloseIv = binding.replyCloseIv
     init {
         setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
         binding.replyViewIv.round(dip(3))
