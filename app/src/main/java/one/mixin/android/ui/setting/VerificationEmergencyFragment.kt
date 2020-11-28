@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_verification_emergency.*
 import kotlinx.coroutines.launch
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.Constants.ARGS_USER
@@ -16,6 +15,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.crypto.*
+import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
@@ -63,13 +63,23 @@ class VerificationEmergencyFragment : PinCodeFragment() {
 
     private val viewModel by viewModels<EmergencyViewModel>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_verification_emergency, container, false)
+    private var _binding : FragmentVerificationBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View{
+        _binding =   FragmentVerificationBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        pin_verification_title_tv.text =
+        binding.pinVerificationTitleTv.text =
             getString(R.string.setting_emergency_send_code, user?.identityNumber ?: userIdentityNumber)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun clickNextFab() {
@@ -94,7 +104,7 @@ class VerificationEmergencyFragment : PinCodeFragment() {
                         user?.phone,
                         user?.identityNumber ?: userIdentityNumber,
                         Session.getPinToken()?.let { encryptPin(it, pin)!! },
-                        pin_verification_view.code(),
+                        binding.pinVerificationView.code(),
                         EmergencyPurpose.CONTACT.name
                     )
                 )
@@ -162,7 +172,7 @@ class VerificationEmergencyFragment : PinCodeFragment() {
             user?.phone,
             user?.identityNumber ?: userIdentityNumber,
             Session.getPinToken()?.let { encryptPin(it, pin)!! },
-            pin_verification_view.code(),
+            binding.pinVerificationView.code(),
             EmergencyPurpose.SESSION.name,
             sessionSecret = sessionSecret,
             registrationId = registrationId

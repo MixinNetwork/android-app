@@ -11,17 +11,14 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_verification_emergency_id.*
-import kotlinx.android.synthetic.main.fragment_verification_emergency_id.back_iv
-import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_cover
-import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_keyboard
-import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_next_fab
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.databinding.FragmentVerificationBinding
+import one.mixin.android.databinding.FragmentVerificationEmergencyIdBinding
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.withArgs
@@ -46,20 +43,24 @@ class VerificationEmergencyIdFragment : FabLoadingFragment() {
 
     private val viewModel by viewModels<EmergencyViewModel>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_verification_emergency_id, container, false)
+    private var _binding : FragmentVerificationEmergencyIdBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentVerificationEmergencyIdBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        back_iv.setOnClickListener { activity?.onBackPressed() }
-        verification_next_fab.setOnClickListener {
-            sendCode(id_et.text.toString())
+        binding.backIv.setOnClickListener { activity?.onBackPressed() }
+        binding.verificationNextFab.setOnClickListener {
+            sendCode(binding.idEt.text.toString())
         }
-        id_et.addTextChangedListener(watcher)
-        id_et.showSoftInputOnFocus = false
-        id_et.requestFocus()
-
-        verification_keyboard.setOnClickKeyboardListener(mKeyboardListener)
+        binding.idEt.addTextChangedListener(watcher)
+        binding.idEt.showSoftInputOnFocus = false
+        binding.idEt.requestFocus()
+        binding.verificationKeyboard.setOnClickKeyboardListener(mKeyboardListener)
     }
 
     private fun sendCode(mixinID: String) = lifecycleScope.launch {
@@ -85,9 +86,8 @@ class VerificationEmergencyIdFragment : FabLoadingFragment() {
 
     override fun hideLoading() {
         if (!isAdded) return
-
-        verification_next_fab.hide()
-        verification_cover.visibility = View.GONE
+        binding.verificationNextFab.hide()
+        binding.verificationCover.visibility = View.GONE
     }
 
     private fun buildEmergencyRequest(mixinID: String) = EmergencyRequest(
@@ -97,11 +97,11 @@ class VerificationEmergencyIdFragment : FabLoadingFragment() {
     )
 
     private fun handleEditView(str: String) {
-        id_et.setSelection(id_et.text.toString().length)
+        binding.idEt.setSelection(binding.idEt.text.toString().length)
         if (str.isNotBlank()) {
-            verification_next_fab.visibility = VISIBLE
+            binding.verificationNextFab.visibility = VISIBLE
         } else {
-            verification_next_fab.visibility = INVISIBLE
+            binding.verificationNextFab.visibility = INVISIBLE
         }
     }
 
@@ -109,18 +109,18 @@ class VerificationEmergencyIdFragment : FabLoadingFragment() {
         override fun onKeyClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                id_et.setText(id_et.text.dropLast(1))
+                binding.idEt.setText(binding.idEt.text.dropLast(1))
             } else {
-                id_et.text = id_et.text.append(value)
+                binding.idEt.text = binding.idEt.text.append(value)
             }
         }
 
         override fun onLongClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                id_et.setText("")
+                binding.idEt.setText("")
             } else {
-                id_et.text = id_et.text.append(value)
+                binding.idEt.text = binding.idEt.text.append(value)
             }
         }
     }
