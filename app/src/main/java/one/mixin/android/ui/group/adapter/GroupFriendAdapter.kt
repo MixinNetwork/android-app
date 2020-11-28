@@ -8,6 +8,7 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_header.view.*
 import kotlinx.android.synthetic.main.item_group_friend.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
@@ -64,8 +65,7 @@ class GroupFriendAdapter :
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
-        return HeaderViewHolder(view)
+        return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: FriendViewHolder, position: Int) {
@@ -118,7 +118,7 @@ class GroupFriendAdapter :
             }
         }
     }
-    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class HeaderViewHolder(binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(user: User) {
             itemView.header.text = if (user.fullName != null && user.fullName.isNotEmpty())
                 user.fullName[0].toString() else ""

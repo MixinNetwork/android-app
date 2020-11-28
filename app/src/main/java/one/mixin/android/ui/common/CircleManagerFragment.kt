@@ -75,7 +75,6 @@ class CircleManagerFragment : BaseFragment() {
     ): View {
         _binding = FragmentCircleManagerBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onDestroyView() {

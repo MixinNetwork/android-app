@@ -8,8 +8,8 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_wallet_asset.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -77,8 +77,9 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is NormalHolder) {
+            val binding = ItemWalletAssetBinding.bind(holder.itemView)
             val asset = data!![getPos(position)]
-            holder.itemView.balance.text = try {
+            binding.balance.text = try {
                 if (asset.balance.numberFormat8().toFloat() == 0f) {
                     "0.00"
                 } else {
@@ -87,25 +88,25 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
             } catch (ignored: NumberFormatException) {
                 asset.balance.numberFormat8()
             }
-            holder.itemView.symbol_tv.text = asset.symbol
-            holder.itemView.balance_as.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+            binding.symbolTv.text = asset.symbol
+            binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
-                holder.itemView.price_tv.setText(R.string.asset_none)
-                holder.itemView.change_tv.visibility = GONE
+                binding.priceTv.setText(R.string.asset_none)
+                binding.changeTv.visibility = GONE
             } else {
-                holder.itemView.change_tv.visibility = VISIBLE
-                holder.itemView.price_tv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
+                binding.changeTv.visibility = VISIBLE
+                binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO
-                    holder.itemView.change_tv.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    holder.itemView.change_tv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                    binding.changeTv.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                    binding.changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
                 }
             }
-            holder.itemView.back_left_tv.setText(if (slideShow) R.string.shown else R.string.hidden)
-            holder.itemView.back_right_tv.setText(if (slideShow) R.string.shown else R.string.hidden)
-            holder.itemView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-            holder.itemView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            binding.backLeftTv.setText(if (slideShow) R.string.shown else R.string.hidden)
+            binding.backRightTv.setText(if (slideShow) R.string.shown else R.string.hidden)
+            binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+            binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
         }
     }

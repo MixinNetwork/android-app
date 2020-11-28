@@ -54,7 +54,6 @@ class AddressManagementFragment : BaseFragment() {
     ): View {
         _binding = FragmentAddressManagementBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onDestroyView() {

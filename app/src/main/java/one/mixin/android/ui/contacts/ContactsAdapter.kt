@@ -1,6 +1,7 @@
 package one.mixin.android.ui.contacts
 
 import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -12,6 +13,7 @@ import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_contact_header.view.*
 import kotlinx.android.synthetic.main.view_contact_list_empty.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.extension.inflate
 import one.mixin.android.session.Session
 import one.mixin.android.vo.User
@@ -86,8 +88,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
-        return HeaderViewHolder(view)
+        return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindHeaderViewHolder(holder: HeaderViewHolder, position: Int) {
@@ -171,13 +172,13 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         mContactListener = listener
     }
 
-    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind() {
-            itemView.header.text = itemView.context.getString(R.string.contact_item_title)
+            binding.header.text = itemView.context.getString(R.string.contact_item_title)
         }
 
         fun bind(user: User) {
-            itemView.header.text = if (user.fullName != null &&
+            binding.header.text = if (user.fullName != null &&
                 user.fullName.isNotEmpty()
             ) user.fullName[0].toString() else ""
         }

@@ -45,7 +45,7 @@ class KeyboardLayout : LinearLayout {
         context,
         attrs,
         defStyleAttr
-    ){
+    ) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.KeyboardLayout)
         inputAreaId = ta.getResourceIdOrThrow(R.styleable.KeyboardLayout_input_aera_id)
         ta.recycle()
@@ -74,7 +74,7 @@ class KeyboardLayout : LinearLayout {
 
     private val _inputArea get() = requireNotNull(findViewById(inputAreaId))
     @IdRes
-    private val inputAreaId:Int
+    private val inputAreaId: Int
 
     private var inputAreaHeight: Int = 0
         @SuppressLint("Recycle")

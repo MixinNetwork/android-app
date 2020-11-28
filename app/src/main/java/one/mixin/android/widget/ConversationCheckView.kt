@@ -18,6 +18,10 @@ class ConversationCheckView : LinearLayout, Checkable {
     private var checked = false
 
     private val binding = ViewConversationCheckBinding.inflate(LayoutInflater.from(context), this, true)
+    val normal get() = binding.normal
+    val avatar get() = binding.avatar
+    val verifiedIv get() = binding.verifiedIv
+    val botIv get() = binding.botIv
 
     constructor(context: Context) : super(context)
 

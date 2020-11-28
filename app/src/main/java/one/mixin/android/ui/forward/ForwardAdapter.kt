@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_header.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.extension.inflate
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
@@ -127,8 +128,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
-        return HeaderViewHolder(view)
+        return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -229,7 +229,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
         }
     }
 
-    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class HeaderViewHolder(binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root)
 
     interface ForwardListener {
         fun onUserItemClick(user: User)

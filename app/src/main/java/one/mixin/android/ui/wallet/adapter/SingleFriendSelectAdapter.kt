@@ -1,13 +1,12 @@
 package one.mixin.android.ui.wallet.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_contact_header.view.*
-import kotlinx.android.synthetic.main.view_conversation_check.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemContactHeaderBinding
+import one.mixin.android.databinding.ItemSingleSelectFriendBinding
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.contacts.ContactsAdapter
 import one.mixin.android.vo.User
@@ -62,16 +61,16 @@ class SingleFriendSelectAdapter :
         if (conversations == null || conversations!!.isEmpty() && friends == null && friends!!.isEmpty()) {
             return
         }
+        val binding = ItemContactHeaderBinding.bind(holder.itemView)
         if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
-            holder.itemView.header.text = holder.itemView.context.getString(R.string.chat_item_title)
+            binding.header.text = holder.itemView.context.getString(R.string.chat_item_title)
         } else {
-            holder.itemView.header.text = holder.itemView.context.getString(R.string.contact_item_title)
+            binding.header.text = holder.itemView.context.getString(R.string.contact_item_title)
         }
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
-        return HeaderViewHolder(view)
+        return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -92,26 +91,25 @@ class SingleFriendSelectAdapter :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_CONVERSATION) {
-            ConversationViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_single_select_friend, parent, false))
+            ConversationViewHolder(ItemSingleSelectFriendBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else {
-            FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_single_select_friend, parent, false))
+            FriendViewHolder(ItemSingleSelectFriendBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
     }
-
-    open class FriendViewHolder(itemView: View) : ContactsAdapter.ViewHolder(itemView) {
+    open class FriendViewHolder(val binding: ItemSingleSelectFriendBinding) : ContactsAdapter.ViewHolder(binding.root) {
         fun bind(user: User, listener: FriendSelectListener?) {
-            itemView.normal.text = user.fullName
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
+            binding.root.normal.text = user.fullName
+            binding.root.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+            user.showVerifiedOrBot(binding.root.verifiedIv, binding.root.botIv)
             if (listener != null) {
                 itemView.setOnClickListener { listener.onItemClick(user) }
             }
         }
     }
 
-    class ConversationViewHolder(itemView: View) : FriendViewHolder(itemView)
+    class ConversationViewHolder(binding: ItemSingleSelectFriendBinding) : FriendViewHolder(binding)
 
-    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root)
 
     interface FriendSelectListener {
         fun onItemClick(user: User)
