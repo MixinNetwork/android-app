@@ -121,4 +121,7 @@
     <declare-styleable name="PlayerView">
         <attr name="use_controller" format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="KeyboardLayout">
+        <attr name="input_aera_id" format="reference"/>
+    </declare-styleable>
 </resources>

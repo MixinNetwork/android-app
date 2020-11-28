@@ -17,10 +17,10 @@ import com.sandro.bitcoinpaymenturi.BitcoinPaymentURI
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_address_add.*
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAddressAddBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
@@ -74,29 +74,40 @@ class AddressAddFragment() : BaseFragment() {
         asset = requireArguments().getParcelable(ARGS_ASSET)!!
     }
 
+    private var _binding: FragmentAddressAddBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_address_add, container, false)
+    ): View {
+        _binding = FragmentAddressAddBinding.inflate(inflater, container, false)
+        return binding.root
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.rightAnimator.isEnabled = false
-        title_view.leftIb.setOnClickListener {
+        binding.titleView.rightAnimator.isEnabled = false
+        binding.titleView.leftIb.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
-            if (label_et.isFocused) label_et.hideKeyboard()
-            if (addr_et.isFocused) addr_et.hideKeyboard()
-            if (tag_et.isFocused) tag_et.hideKeyboard()
+            if (binding.labelEt.isFocused) binding.labelEt.hideKeyboard()
+            if (binding.addrEt.isFocused) binding.addrEt.hideKeyboard()
+            if (binding.tagEt.isFocused) binding.tagEt.hideKeyboard()
             activity?.onBackPressed()
         }
-        title_view.titleTv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
-        avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        save_tv.setOnClickListener {
-            var destination = addr_et.text.toString()
+        binding.titleView.titleTv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
+        binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+        binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.saveTv.setOnClickListener {
+            var destination = binding.addrEt.text.toString()
             if (asset.chainId == BITCOIN_CHAIN_ID) {
                 val dest = BitcoinPaymentURI.parse(destination)
                 if (dest != null) {
@@ -110,10 +121,10 @@ class AddressAddFragment() : BaseFragment() {
                     assetUrl = asset.iconUrl,
                     chainId = asset.chainId,
                     chainIconUrl = asset.chainIconUrl,
-                    label = label_et.text.toString(),
+                    label = binding.labelEt.text.toString(),
                     destination = destination,
                     tag = if (memoEnabled) {
-                        tag_et.text.toString()
+                        binding.tagEt.text.toString()
                     } else {
                         ""
                     },
@@ -129,38 +140,38 @@ class AddressAddFragment() : BaseFragment() {
         }
 
         if (asset.assetId == RIPPLE_CHAIN_ID) {
-            tag_et.setHint(R.string.withdrawal_addr_tag_hint)
+            binding.tagEt.setHint(R.string.withdrawal_addr_tag_hint)
         } else {
-            tag_et.setHint(R.string.withdrawal_addr_memo_hint)
+            binding.tagEt.setHint(R.string.withdrawal_addr_memo_hint)
         }
-        label_et.addTextChangedListener(mWatcher)
-        addr_et.addTextChangedListener(mWatcher)
-        tag_et.addTextChangedListener(mWatcher)
-        addr_iv.setOnClickListener { handleClick(true) }
+        binding.labelEt.addTextChangedListener(mWatcher)
+        binding.addrEt.addTextChangedListener(mWatcher)
+        binding.tagEt.addTextChangedListener(mWatcher)
+        binding.addrIv.setOnClickListener { handleClick(true) }
         handleMemo()
-        label_et.showKeyboard()
+        binding.labelEt.showKeyboard()
     }
 
     private fun handleMemo(address: Address? = null) {
         if (memoEnabled) {
-            tag_et.isEnabled = memoEnabled
-            tag_rl.isVisible = memoEnabled
-            tag_et.setText(address?.tag ?: "")
-            tag_iv.isVisible = memoEnabled
-            tag_iv.setOnClickListener { handleClick(false) }
-            info.setOnClickListener {
+            binding.tagEt.isEnabled = memoEnabled
+            binding.tagRl.isVisible = memoEnabled
+            binding.tagEt.setText(address?.tag ?: "")
+            binding.tagIv.isVisible = memoEnabled
+            binding.tagIv.setOnClickListener { handleClick(false) }
+            binding.info.setOnClickListener {
                 memoEnabled = false
                 updateSaveButton()
                 handleMemo()
             }
-            info.setText(
+            binding.info.setText(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
                     R.string.withdrawal_addr_tag
                 } else {
                     R.string.withdrawal_addr_memo
                 }
             )
-            info.highLight(
+            binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
                     getString(R.string.withdrawal_addr_tag_link)
                 } else {
@@ -168,24 +179,24 @@ class AddressAddFragment() : BaseFragment() {
                 }
             )
         } else {
-            tag_et.isEnabled = memoEnabled
-            tag_rl.isVisible = memoEnabled
-            tag_et.setText(R.string.withdrawal_no_tag)
-            tag_iv.isVisible = memoEnabled
-            info.setOnClickListener {
+            binding.tagEt.isEnabled = memoEnabled
+            binding.tagRl.isVisible = memoEnabled
+            binding.tagEt.setText(R.string.withdrawal_no_tag)
+            binding.tagIv.isVisible = memoEnabled
+            binding.info.setOnClickListener {
                 memoEnabled = true
                 updateSaveButton()
                 handleMemo()
-                tag_et.showKeyboard()
+                binding.tagEt.showKeyboard()
             }
-            info.setText(
+            binding.info.setText(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
                     R.string.withdrawal_addr_no_tag
                 } else {
                     R.string.withdrawal_addr_no_memo
                 }
             )
-            info.highLight(
+            binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
                     getString(R.string.withdrawal_addr_no_tag_link)
                 } else {
@@ -217,12 +228,12 @@ class AddressAddFragment() : BaseFragment() {
         if (text != null) {
             if (isAddr) {
                 if (isIcapAddress(text)) {
-                    addr_et.setText(decodeICAP(text))
+                    binding.addrEt.setText(decodeICAP(text))
                 } else {
-                    addr_et.setText(text)
+                    binding.addrEt.setText(text)
                 }
             } else {
-                tag_et.setText(text)
+                binding.tagEt.setText(text)
             }
         }
     }
@@ -241,12 +252,12 @@ class AddressAddFragment() : BaseFragment() {
     }
 
     private fun updateSaveButton() {
-        if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty() && (!memoEnabled || tag_et.text.isNotEmpty())) {
-            save_tv.isEnabled = true
-            save_tv.textColor = requireContext().getColor(R.color.white)
+        if (binding.addrEt.text.isNotEmpty() && binding.labelEt.text.isNotEmpty() && (!memoEnabled || binding.tagEt.text.isNotEmpty())) {
+            binding.saveTv.isEnabled = true
+            binding.saveTv.textColor = requireContext().getColor(R.color.white)
         } else {
-            save_tv.isEnabled = false
-            save_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+            binding.saveTv.isEnabled = false
+            binding.saveTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
         }
     }
 }

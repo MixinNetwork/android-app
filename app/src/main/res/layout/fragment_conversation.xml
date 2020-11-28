@@ -5,7 +5,8 @@
     android:id="@+id/input_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    app:input_aera_id="@id/input_area">
 
     <FrameLayout
         android:id="@+id/bar_fl"

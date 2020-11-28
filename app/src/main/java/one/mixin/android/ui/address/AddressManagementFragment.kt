@@ -12,9 +12,9 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_address_management.*
 import kotlinx.android.synthetic.main.item_address.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAddressManagementBinding
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -44,13 +44,28 @@ class AddressManagementFragment : BaseFragment() {
 
     private val adapter: AddressAdapter by lazy { AddressAdapter(asset, true) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_address_management, container, false)
+    private var _binding: FragmentAddressManagementBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAddressManagementBinding.inflate(inflater, container, false)
+        return binding.root
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        title_view.rightAnimator.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.rightAnimator.setOnClickListener {
             view.navigate(
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {
@@ -58,7 +73,7 @@ class AddressManagementFragment : BaseFragment() {
                 }
             )
         }
-        empty_tv.setOnClickListener {
+        binding.emptyTv.setOnClickListener {
             view.navigate(
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {
@@ -71,11 +86,11 @@ class AddressManagementFragment : BaseFragment() {
             {
                 val list = it?.toMutableList()
                 if (list.isNullOrEmpty()) {
-                    empty_tv.isVisible = true
-                    content_ll.isGone = true
+                    binding.emptyTv.isVisible = true
+                    binding.contentLl.isGone = true
                 } else {
-                    empty_tv.isVisible = false
-                    content_ll.isGone = false
+                    binding.emptyTv.isVisible = false
+                    binding.contentLl.isGone = false
                 }
                 addresses = list
                 adapter.addresses = list
@@ -126,10 +141,10 @@ class AddressManagementFragment : BaseFragment() {
                     }
                 }
             )
-        ).apply { attachToRecyclerView(addr_rv) }
-        addr_rv.adapter = adapter
+        ).apply { attachToRecyclerView(binding.addrRv) }
+        binding.addrRv.adapter = adapter
         adapter.setAddrListener(addrListener)
-        search_et.listener = object : SearchView.OnSearchViewListener {
+        binding.searchEt.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
                     it.label.contains(s.toString(), ignoreCase = true)

@@ -12,12 +12,13 @@ import android.view.WindowInsets
 import android.view.WindowInsetsAnimation
 import android.widget.EditText
 import android.widget.LinearLayout
+import androidx.annotation.IdRes
+import androidx.core.content.res.getResourceIdOrThrow
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.preference.PreferenceManager
-import kotlinx.android.synthetic.main.fragment_conversation.view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.DragReleaseEvent
@@ -44,7 +45,11 @@ class KeyboardLayout : LinearLayout {
         context,
         attrs,
         defStyleAttr
-    )
+    ){
+        val ta = context.obtainStyledAttributes(attrs, R.styleable.KeyboardLayout)
+        inputAreaId = ta.getResourceIdOrThrow(R.styleable.KeyboardLayout_input_aera_id)
+        ta.recycle()
+    }
 
     private val defaultCustomKeyboardSize =
         resources.getDimensionPixelSize(R.dimen.default_custom_keyboard_size)
@@ -67,15 +72,19 @@ class KeyboardLayout : LinearLayout {
             }
         }
 
+    private val _inputArea get() = requireNotNull(findViewById(inputAreaId))
+    @IdRes
+    private val inputAreaId:Int
+
     private var inputAreaHeight: Int = 0
         @SuppressLint("Recycle")
         set(value) {
-            if (value != field || input_area.layoutParams.height != value) {
+            if (value != field || _inputArea.layoutParams.height != value) {
                 field = value
-                ValueAnimator.ofInt(input_area.layoutParams.height, value)
+                ValueAnimator.ofInt(_inputArea.layoutParams.height, value)
                     .apply {
                         addUpdateListener { valueAnimator ->
-                            input_area.layoutParams.height = valueAnimator.animatedValue as Int
+                            _inputArea.layoutParams.height = valueAnimator.animatedValue as Int
                             requestLayout()
                         }
                         interpolator = CubicBezierInterpolator.DEFAULT
@@ -101,7 +110,7 @@ class KeyboardLayout : LinearLayout {
     }
 
     fun forceClose(editText: EditText? = null) {
-        input_area.layoutParams.height = 0
+        _inputArea.layoutParams.height = 0
         requestLayout()
         editText?.hideKeyboard()
         status = STATUS.CLOSED
@@ -156,7 +165,7 @@ class KeyboardLayout : LinearLayout {
                             runningAnimations: MutableList<WindowInsetsAnimation>
                         ): WindowInsets {
                             if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
-                                input_area.layoutParams.height = max(
+                                _inputArea.layoutParams.height = max(
                                     0,
                                     insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom
                                 )
@@ -164,7 +173,7 @@ class KeyboardLayout : LinearLayout {
                             } else if (status == STATUS.EXPANDED) {
                                 val percent =
                                     insets.getInsets(WindowInsetsCompat.Type.ime()).bottom / keyboardHeight.toFloat()
-                                input_area.layoutParams.height =
+                                _inputArea.layoutParams.height =
                                     (keyboardHeight - systemBottom + gap * (1 - percent)).toInt()
                                 requestLayout()
                             }
@@ -175,7 +184,7 @@ class KeyboardLayout : LinearLayout {
                         override fun onPrepare(animation: WindowInsetsAnimation) {
                             super.onPrepare(animation)
                             if (status == STATUS.EXPANDED) {
-                                gap = input_area.layoutParams.height - keyboardHeight
+                                gap = _inputArea.layoutParams.height - keyboardHeight
                             }
                         }
 
@@ -248,22 +257,22 @@ class KeyboardLayout : LinearLayout {
 
     fun drag(dis: Float) {
         if (status == STATUS.KEYBOARD_OPENED) return
-        val params = input_area.layoutParams
+        val params = _inputArea.layoutParams
         val targetH = params.height - dis.toInt()
         val total = context.screenHeight() * 2 / 3
         if (targetH <= 0 || targetH >= total) return
 
         params.height = targetH
-        input_area.layoutParams = params
+        _inputArea.layoutParams = params
     }
 
     fun releaseDrag(fling: Int, resetCallback: () -> Unit) {
         if (status == STATUS.KEYBOARD_OPENED) return
-        val curH = input_area.height
+        val curH = _inputArea.height
         val max = (context.screenHeight() * 2) / 3
         val maxMid = keyboardHeight + (max - keyboardHeight) / 2
         val minMid = keyboardHeight / 2
-        val targetH = if (curH > input_layout.keyboardHeight) {
+        val targetH = if (curH > keyboardHeight) {
             if (fling == FLING_UP) {
                 max
             } else if (fling == FLING_DOWN) {
@@ -275,7 +284,7 @@ class KeyboardLayout : LinearLayout {
                     max
                 }
             }
-        } else if (curH < input_layout.keyboardHeight) {
+        } else if (curH < keyboardHeight) {
             if (fling == FLING_UP) {
                 keyboardHeight
             } else if (fling == FLING_DOWN) {
@@ -317,7 +326,7 @@ class KeyboardLayout : LinearLayout {
             this.duration = duration
             this.interpolator = interpolator
             addUpdateListener { valueAnimator ->
-                input_area.updateLayoutParams<ViewGroup.LayoutParams> {
+                _inputArea.updateLayoutParams<ViewGroup.LayoutParams> {
                     this.height = valueAnimator.animatedValue as Int
                 }
             }

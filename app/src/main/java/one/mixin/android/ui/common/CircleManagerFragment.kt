@@ -11,12 +11,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_circle_manager.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
+import one.mixin.android.databinding.FragmentCircleManagerBinding
 import one.mixin.android.databinding.ItemCircleManagerBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notEmptyWithElse
@@ -65,28 +65,43 @@ class CircleManagerFragment : BaseFragment() {
 
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_circle_manager, container, false)
+    private var _binding: FragmentCircleManagerBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCircleManagerBinding.inflate(inflater, container, false)
+        return binding.root
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.setSubTitle(getString(R.string.circle_title, name), "")
-        title_view.leftIb.setOnClickListener {
+        binding.titleView.setSubTitle(getString(R.string.circle_title, name), "")
+        binding.titleView.leftIb.setOnClickListener {
             if (!isAdded) return@setOnClickListener
             activity?.onBackPressed()
         }
-        title_view.rightIb.setOnClickListener {
+        binding.titleView.rightIb.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             addCircle()
         }
-        circle_add.setOnClickListener {
+        binding.circleAdd.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             addCircle()
         }
-        circle_manager_rv.adapter = circleAdapter
-        circle_manager_rv.addItemDecoration(SegmentationItemDecoration())
+        binding.circleManagerRv.adapter = circleAdapter
+        binding.circleManagerRv.addItemDecoration(SegmentationItemDecoration())
         loadData()
     }
 
@@ -102,8 +117,8 @@ class CircleManagerFragment : BaseFragment() {
                     Session.getAccountId()!!, userId!!
                 )
             )
-            circle_manager_rv.isVisible = includeCircleItem.isNotEmpty() || otherCircleItem.isNotEmpty()
-            empty.isVisible = includeCircleItem.isEmpty() && otherCircleItem.isEmpty()
+            binding.circleManagerRv.isVisible = includeCircleItem.isNotEmpty() || otherCircleItem.isNotEmpty()
+            binding.empty.isVisible = includeCircleItem.isEmpty() && otherCircleItem.isEmpty()
             circleAdapter.setData(includeCircleItem, otherCircleItem)
         }
     }
