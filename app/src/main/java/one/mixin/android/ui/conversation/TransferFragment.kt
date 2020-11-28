@@ -38,12 +38,12 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
-import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
@@ -83,7 +83,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.BottomSheetLinearLayout
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import one.mixin.android.worker.RefreshAssetsWorker
@@ -153,23 +152,23 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     private var transferBottomOpened = false
 
-    private val assetsView: View by lazy {
-        val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null) as BottomSheetLinearLayout
-        view.type_rv.adapter = adapter
+    private val assetsViewBinding: ViewWalletTransferTypeBottomBinding by lazy {
+        val viewBinding = ViewWalletTransferTypeBottomBinding.inflate(LayoutInflater.from(context), null, false)
+        viewBinding.typeRv.adapter = adapter
         context?.let { c ->
             val topOffset = c.appCompatActionBarHeight()
-            view.heightOffset = topOffset
+            viewBinding.root.heightOffset = topOffset
         }
-        view
+        viewBinding
     }
 
     private val assetsBottomSheet: BottomSheet by lazy {
         val builder = BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false)
         val bottomSheet = builder.create()
-        builder.setCustomView(assetsView)
+        builder.setCustomView(assetsViewBinding.root)
         bottomSheet.setOnDismissListener {
             if (isAdded) {
-                assetsView.search_et.text?.clear()
+                assetsViewBinding.searchEt.text?.clear()
                 operateKeyboard(true)
             }
         }
@@ -236,7 +235,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     }
                 }
         }
-        assetsView.search_et.listener = object : SearchView.OnSearchViewListener {
+        assetsViewBinding.searchEt.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 filter(s.toString())
             }
@@ -325,11 +324,11 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         }
                     )
 
-                    assetsView.close_iv.setOnClickListener {
+                    assetsViewBinding.closeIv.setOnClickListener {
                         assetsBottomSheet.dismiss()
                     }
                     assetsBottomSheet.show()
-                    assetsView.search_et.remainFocusable()
+                    assetsViewBinding.searchEt.remainFocusable()
                 }
 
                 assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())

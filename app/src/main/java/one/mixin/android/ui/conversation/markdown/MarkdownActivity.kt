@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import dagger.hilt.android.AndroidEntryPoint
 import io.noties.markwon.recycler.MarkwonAdapter
-import kotlinx.android.synthetic.main.view_markdown.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMarkdownBinding
+import one.mixin.android.databinding.ViewMarkdownBinding
 import one.mixin.android.extension.createPostTemp
 import one.mixin.android.extension.getPublicDocumentPath
 import one.mixin.android.extension.isNightMode
@@ -98,14 +98,15 @@ class MarkdownActivity : BaseActivity() {
             R.layout.view_markdown,
             null
         )
+        val viewBinding = ViewMarkdownBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.forward.setOnClickListener {
+        viewBinding.forward.setOnClickListener {
             val markdown = intent.getStringExtra(CONTENT) ?: return@setOnClickListener
             ForwardActivity.show(this, arrayListOf(ForwardMessage(ShareCategory.Post, markdown)), ForwardAction.App.Resultless())
             bottomSheet.dismiss()
         }
-        view.save.setOnClickListener {
+        viewBinding.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe(

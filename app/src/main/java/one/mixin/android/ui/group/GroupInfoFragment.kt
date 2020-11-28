@@ -17,10 +17,10 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_group_info.*
-import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewGroupInfoHeaderBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
@@ -75,7 +75,7 @@ class GroupInfoFragment : BaseFragment() {
     private var participantsMap: ArrayMap<String, Participant> = ArrayMap()
     private var users = arrayListOf<User>()
     private var dialog: Dialog? = null
-    private lateinit var header: View
+    private lateinit var headerBinding: ViewGroupInfoHeaderBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         LayoutInflater.from(context).inflate(R.layout.fragment_group_info, container, false)
@@ -86,8 +86,8 @@ class GroupInfoFragment : BaseFragment() {
             search_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
-        adapter.headerView = header
+        headerBinding = ViewGroupInfoHeaderBinding.inflate(LayoutInflater.from(context), group_info_rv, false)
+        adapter.headerView = headerBinding.root
         group_info_rv.adapter = adapter
         adapter.setGroupInfoListener(
             object : GroupInfoAdapter.GroupInfoListener {
@@ -224,7 +224,7 @@ class GroupInfoFragment : BaseFragment() {
                     users.clear()
                     users.addAll(u)
 
-                    header.add_rl.visibility = if (it.isEmpty() || it.size >= MAX_USER || role == null ||
+                    headerBinding.addRl.visibility = if (it.isEmpty() || it.size >= MAX_USER || role == null ||
                         (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name)
                     )
                         GONE else VISIBLE

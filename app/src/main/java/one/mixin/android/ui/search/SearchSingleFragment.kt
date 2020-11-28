@@ -13,10 +13,10 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.view_head_search_single.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchSingleBinding
+import one.mixin.android.databinding.ViewHeadSearchSingleBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.withArgs
@@ -90,13 +90,14 @@ class SearchSingleFragment : BaseFragment() {
         }
         binding.searchRv.layoutManager = LinearLayoutManager(requireContext())
         val header = LayoutInflater.from(requireContext()).inflate(R.layout.view_head_search_single, binding.searchRv, false)
+        val headerBinding = ViewHeadSearchSingleBinding.bind(header)
         val text = when (type) {
             TypeAsset -> requireContext().getString(R.string.search_title_assets)
             TypeUser -> requireContext().getText(R.string.search_title_contacts)
             TypeChat -> requireContext().getText(R.string.search_title_chat)
             TypeMessage -> requireContext().getText(R.string.search_title_messages)
         }
-        header.title_tv.text = text
+        headerBinding.titleTv.text = text
         adapter.headerView = header
         binding.searchRv.adapter = adapter
         adapter.data = data

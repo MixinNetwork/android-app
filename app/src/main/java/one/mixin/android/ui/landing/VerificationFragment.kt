@@ -17,7 +17,6 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verification.*
-import kotlinx.android.synthetic.main.view_verification_bottom.view.*
 import kotlinx.coroutines.launch
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.R
@@ -30,6 +29,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
@@ -130,14 +130,15 @@ class VerificationFragment : PinCodeFragment() {
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_verification_bottom, null)
-        view.lost_tv.isVisible = hasEmergencyContact && !isPhoneModification()
+        val viewBinding = ViewVerificationBottomBinding.bind(view)
+        viewBinding.lostTv.isVisible = hasEmergencyContact && !isPhoneModification()
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.cant_tv.setOnClickListener {
+        viewBinding.cantTv.setOnClickListener {
             requireContext().openUrl(getString(R.string.landing_verification_tip_url))
             bottomSheet.dismiss()
         }
-        view.lost_tv.setOnClickListener {
+        viewBinding.lostTv.setOnClickListener {
             navTo(VerificationEmergencyIdFragment.newInstance(phoneNum), VerificationEmergencyIdFragment.TAG)
             bottomSheet.dismiss()
         }

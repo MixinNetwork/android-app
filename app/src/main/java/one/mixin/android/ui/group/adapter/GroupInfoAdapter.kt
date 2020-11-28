@@ -10,8 +10,8 @@ import androidx.collection.ArrayMap
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_group_info.view.*
-import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewGroupInfoHeaderBinding
 import one.mixin.android.ui.common.recyclerview.HeaderFilterAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.group.InviteActivity
@@ -73,19 +73,20 @@ class GroupInfoAdapter : HeaderFilterAdapter<User>() {
             isAdmin: Boolean,
             inGroup: Boolean
         ) {
+            val binding = ViewGroupInfoHeaderBinding.bind(itemView)
             conversation?.let { c ->
-                itemView.add_rl.setOnClickListener { listener?.onAdd() }
-                itemView.invite_item.setOnClickListener {
+                binding.addRl.setOnClickListener { listener?.onAdd() }
+                binding.inviteItem.setOnClickListener {
                     InviteActivity.show(itemView.context, c.conversationId)
                 }
                 if (isAdmin) {
-                    itemView.add_rl.visibility = VISIBLE
-                    itemView.invite_item.visibility = VISIBLE
+                    binding.addRl.visibility = VISIBLE
+                    binding.inviteItem.visibility = VISIBLE
                 } else {
-                    itemView.add_rl.visibility = GONE
-                    itemView.invite_item.visibility = GONE
+                    binding.addRl.visibility = GONE
+                    binding.inviteItem.visibility = GONE
                 }
-                itemView.group_info_not_in.visibility = if (inGroup) GONE else VISIBLE
+                binding.groupInfoNotIn.visibility = if (inGroup) GONE else VISIBLE
             }
         }
     }
