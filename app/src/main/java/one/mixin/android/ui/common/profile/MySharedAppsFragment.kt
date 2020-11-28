@@ -41,9 +41,11 @@ class MySharedAppsFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.addItemDecoration(SegmentationItemDecoration())
-        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.apply {
+            recyclerView.adapter = adapter
+            recyclerView.addItemDecoration(SegmentationItemDecoration())
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        }
         loadData()
         refresh()
     }
@@ -64,7 +66,6 @@ class MySharedAppsFragment : BaseFragment() {
             val favoriteApps =
                 mySharedAppsViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             val unFavoriteApps = mySharedAppsViewModel.getUnfavoriteApps()
-            binding.recyclerView ?: return@launch
             binding.recyclerView.isVisible = favoriteApps.isNotEmpty() || unFavoriteApps.isNotEmpty()
             binding.empty.isVisible = favoriteApps.isEmpty() && unFavoriteApps.isEmpty()
             adapter.setData(favoriteApps, unFavoriteApps)

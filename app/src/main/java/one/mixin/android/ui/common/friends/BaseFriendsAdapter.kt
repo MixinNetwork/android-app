@@ -1,10 +1,9 @@
 package one.mixin.android.ui.common.friends
 
-import android.view.View
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_contact_normal.view.*
+import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.vo.User
 
@@ -19,11 +18,13 @@ abstract class AbsFriendsAdapter<VH : BaseFriendsViewHolder>(callback: UserItemC
     }
 }
 
-open class BaseFriendsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+open class BaseFriendsViewHolder(private val itemBinding: ItemContactNormalBinding) : RecyclerView.ViewHolder(itemBinding.root) {
     open fun bind(item: User, filter: String, listener: FriendsListener?) {
-        itemView.normal.text = item.fullName
-        itemView.normal.highLight(filter)
-        itemView.avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
+        itemBinding.apply {
+            normal.text = item.fullName
+            normal.highLight(filter)
+            avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
+        }
         itemView.setOnClickListener {
             listener?.onItemClick(item)
         }

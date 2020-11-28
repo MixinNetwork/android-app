@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import one.mixin.android.databinding.FragmentFriendsBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.User
@@ -33,26 +32,20 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
 
     private var _binding: FragmentFriendsBinding? = null
     protected val binding get() = requireNotNull(_binding)
-    private var _titleBinding: ViewTitleBinding? = null
-    private val titleBinding get() = requireNotNull(_titleBinding)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentFriendsBinding.inflate(layoutInflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+        _binding = FragmentFriendsBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.apply {
-            titleTv.text = getString(getTitleResId())
-            leftIb.setOnClickListener {
+        binding.apply {
+            titleView.titleTv.text = getString(getTitleResId())
+            titleView.leftIb.setOnClickListener {
                 binding.searchEt.hideKeyboard()
                 activity?.onBackPressed()
             }
-        }
-        binding.apply {
             friendsRv.adapter = adapter
             lifecycleScope.launch {
                 users = getFriends()
@@ -90,7 +83,6 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _titleBinding = null
     }
 
     abstract fun getTitleResId(): Int

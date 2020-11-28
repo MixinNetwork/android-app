@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemWalletSearchBinding
-import one.mixin.android.extension.inflate
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.TopAssetItem
 

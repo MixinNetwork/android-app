@@ -6,8 +6,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_address.view.*
-import one.mixin.android.R
+import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
@@ -24,17 +23,19 @@ class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean
     private var addrListener: AddressListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
-        ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_address, parent, false))
+        ItemHolder(ItemAddressBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: ItemHolder, position: Int) {
         if (addresses == null || addresses!!.isEmpty()) {
             return
         }
         val addr = addresses!![position]
-        holder.itemView.background_rl.visibility = if (canSwipe) VISIBLE else GONE
-        holder.itemView.name_tv.text = addr.label
-        holder.itemView.addr_tv.text = addr.displayAddress()
-        holder.itemView.created_tv.text = addr.updatedAt.timeAgo(holder.itemView.context)
+        holder.itemBinding.apply {
+            backgroundRl.visibility = if (canSwipe) VISIBLE else GONE
+            nameTv.text = addr.label
+            addrTv.text = addr.displayAddress()
+            createdTv.text = addr.updatedAt.timeAgo(holder.itemView.context)
+        }
         holder.itemView.setOnClickListener { addrListener?.onAddrClick(addr) }
         holder.itemView.setOnLongClickListener {
             addrListener?.onAddrLongClick(holder.itemView, addr)
@@ -70,5 +71,5 @@ class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean
         override fun onAddrLongClick(view: View, addr: Address) {}
     }
 
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class ItemHolder(val itemBinding: ItemAddressBinding) : RecyclerView.ViewHolder(itemBinding.root)
 }

@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemSharedAppBinding
+import one.mixin.android.databinding.ItemSharedLocalAppBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.profile.holder.FooterHolder
 import one.mixin.android.ui.common.profile.holder.ItemViewHolder
@@ -31,16 +33,10 @@ class MySharedAppsAdapter(
     ): ItemViewHolder {
         return when (viewType) {
             0 -> {
-                val view =
-                    LayoutInflater.from(parent.context)
-                        .inflate(R.layout.item_shared_app, parent, false)
-                SharedAppHolder(view)
+                SharedAppHolder(ItemSharedAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             1 -> {
-                val view =
-                    LayoutInflater.from(parent.context)
-                        .inflate(R.layout.item_shared_local_app, parent, false)
-                LocalAppHolder(view)
+                LocalAppHolder(ItemSharedLocalAppBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             else -> {
                 val view =

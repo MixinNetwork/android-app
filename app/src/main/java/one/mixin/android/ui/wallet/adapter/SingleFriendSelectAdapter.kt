@@ -7,7 +7,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemSingleSelectFriendBinding
-import one.mixin.android.extension.inflate
 import one.mixin.android.ui.contacts.ContactsAdapter
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
