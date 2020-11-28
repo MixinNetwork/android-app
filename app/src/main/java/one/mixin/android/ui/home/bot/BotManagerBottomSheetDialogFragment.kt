@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -22,10 +23,10 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.databinding.FragmentBotManagerBinding
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.booleanFromAttribute
@@ -67,10 +68,14 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         }
     }
 
+    private var _binding : FragmentBotManagerBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_bot_manager, null)
+        _binding = FragmentBotManagerBinding.inflate(LayoutInflater.from(context),null,false)
+        contentView = binding.root
         dialog.setContentView(contentView)
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
         val behavior = params.behavior as BottomSheetBehavior<*>
@@ -119,14 +124,14 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
     }
 
     private fun initView() {
-        contentView.bot_close.setOnClickListener {
+        binding.botClose.setOnClickListener {
             dismiss()
         }
-        contentView.bot_dock.setOnDragListener(bottomListAdapter.dragInstance)
-        contentView.bot_rv.layoutManager = GridLayoutManager(requireContext(), 4)
-        contentView.bot_rv.adapter = bottomListAdapter
-        contentView.bot_rv.setOnDragListener(bottomListAdapter.dragInstance)
-        contentView.bot_dock.setOnDockListener(this)
+        binding.botDock.setOnDragListener(bottomListAdapter.dragInstance)
+        binding.botRv.layoutManager = GridLayoutManager(requireContext(), 4)
+        binding.botRv.adapter = bottomListAdapter
+        binding.botRv.setOnDragListener(bottomListAdapter.dragInstance)
+        binding.botDock.setOnDockListener(this)
     }
 
     private fun loadData() {
@@ -160,15 +165,15 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                 }
             }
 
-            contentView.bot_dock.apps = topApps
+            binding.botDock.apps = topApps
             val notTopApps = botManagerViewModel.getNotTopApps(topIds)
             if (notTopApps.isNullOrEmpty()) {
-                contentView.empty_fl.isVisible = true
-                contentView.bot_rv.updateLayoutParams<ViewGroup.LayoutParams> {
+                binding.emptyFl.isVisible = true
+                binding.botRv.updateLayoutParams<ViewGroup.LayoutParams> {
                     height = ViewGroup.LayoutParams.WRAP_CONTENT
                 }
             } else {
-                contentView.empty_fl.isVisible = false
+                binding.emptyFl.isVisible = false
                 defaultApps.addAll(notTopApps)
             }
             bottomListAdapter.list = defaultApps
