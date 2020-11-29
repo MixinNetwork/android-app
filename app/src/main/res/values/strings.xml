@@ -768,7 +768,6 @@
     <string name="slide_to_cancel">Slide to Cancel</string>
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>
-    <string name="account_name">Address</string>
     <string name="account_memo">Memo</string>
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_address">Address</string>

@@ -753,7 +753,6 @@
     <string name="slide_to_cancel">滑动取消</string>
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
-    <string name="account_name">提现地址</string>
     <string name="account_memo">Memo（标签）</string>
     <string name="withdrawal_label">地址名称，例如 OceanOne</string>
     <string name="withdrawal_address">提现地址</string>

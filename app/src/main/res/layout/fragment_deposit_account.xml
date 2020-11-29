@@ -42,7 +42,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="32dp"
-                    android:text="@string/account_name"
+                    android:text="@string/address"
                     android:textColor="?attr/text_assist"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
@@ -131,7 +131,7 @@
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="32dp"
                     android:text="@string/account_memo"
-                    android:textColor="?attr/text_primary"
+                    android:textColor="?attr/text_assist"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
 

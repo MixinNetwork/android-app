@@ -193,7 +193,7 @@ interface TransactionInterface {
             }
             else -> {
                 if (!asset.tag.isNullOrEmpty()) {
-                    contentView.receiver_title.text = fragment.getString(R.string.account_name)
+                    contentView.receiver_title.text = fragment.getString(R.string.address)
                 } else {
                     contentView.receiver_title.text = fragment.getString(R.string.receiver)
                 }
