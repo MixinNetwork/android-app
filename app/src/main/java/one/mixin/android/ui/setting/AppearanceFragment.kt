@@ -2,27 +2,26 @@ package one.mixin.android.ui.setting
 
 import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAppearanceBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import java.util.Locale
 
 @AndroidEntryPoint
-class AppearanceFragment : BaseSettingFragment<FragmentAppearanceBinding>() {
+class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
     companion object {
         const val TAG = "AppearanceFragment"
 
@@ -35,17 +34,14 @@ class AppearanceFragment : BaseSettingFragment<FragmentAppearanceBinding>() {
         fun newInstance() = AppearanceFragment()
     }
 
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?): FragmentAppearanceBinding =
-        FragmentAppearanceBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentAppearanceBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener {
-            activity?.onBackPressed()
-        }
         binding.apply {
+            titleView.leftIb.setOnClickListener {
+                activity?.onBackPressed()
+            }
             nightModeTv.setText(R.string.setting_theme)
             val currentId = defaultSharedPreferences.getInt(
                 Constants.Theme.THEME_CURRENT_ID,

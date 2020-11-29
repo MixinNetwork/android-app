@@ -2,9 +2,7 @@ package one.mixin.android.ui.setting
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -12,15 +10,16 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSettingBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class SettingFragment : BaseSettingFragment<FragmentSettingBinding>() {
+class SettingFragment : BaseFragment(R.layout.fragment_setting) {
     companion object {
         const val TAG = "SettingFragment"
 
@@ -28,16 +27,11 @@ class SettingFragment : BaseSettingFragment<FragmentSettingBinding>() {
     }
 
     private val viewModel by viewModels<SettingViewModel>()
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?): FragmentSettingBinding {
-        return FragmentSettingBinding.inflate(layoutInflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
-    }
+    private val binding by viewBinding(FragmentSettingBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
         binding.apply {

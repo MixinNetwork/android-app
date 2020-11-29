@@ -14,14 +14,15 @@ import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBiometricTimeBinding
 import one.mixin.android.databinding.ItemBiometricTimeBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class BiometricTimeFragment : BaseSettingFragment<FragmentBiometricTimeBinding>() {
+class BiometricTimeFragment : BaseFragment(R.layout.fragment_biometric_time) {
     companion object {
         const val TAG = "BiometricTimeFragment"
 
@@ -46,15 +47,12 @@ class BiometricTimeFragment : BaseSettingFragment<FragmentBiometricTimeBinding>(
     }
     private val adapter by lazy { TimeAdapter(values) }
 
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentBiometricTimeBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(title)
-        }
+    private val binding by viewBinding(FragmentBiometricTimeBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
         binding.apply {
+            title.leftIb.setOnClickListener { activity?.onBackPressed() }
             lv.adapter = adapter
             val footer = layoutInflater.inflate(R.layout.view_biometric_footer, lv, false)
             lv.addFooterView(footer)

@@ -16,29 +16,26 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentPinLogsBinding
 import one.mixin.android.databinding.ItemPinLogsBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.localTime
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.LogResponse
 
 @AndroidEntryPoint
-class PinLogsFragment : BaseSettingFragment<FragmentPinLogsBinding>() {
+class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
     private val viewModel by viewModels<SettingViewModel>()
+    private val binding by viewBinding(FragmentPinLogsBinding::bind)
 
     companion object {
         const val TAG = "PinLogsFragment"
         fun newInstance() = PinLogsFragment()
     }
 
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentPinLogsBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(title)
-        }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
         binding.apply {
+            title.leftIb.setOnClickListener { activity?.onBackPressed() }
             list.adapter = adapter
             list.setOnScrollChangeListener { _, _, _, _, _ ->
                 if (isAdded) {

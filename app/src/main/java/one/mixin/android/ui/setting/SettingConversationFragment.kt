@@ -1,23 +1,23 @@
 package one.mixin.android.ui.setting
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentSettingConversationBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MessageSource
 
 @AndroidEntryPoint
-class SettingConversationFragment : BaseSettingFragment<FragmentSettingConversationBinding>() {
+class SettingConversationFragment : BaseFragment(R.layout.fragment_setting_conversation) {
     companion object {
         const val TAG = "SettingConversationFragment"
         const val CONVERSATION_KEY = "conversation_key"
@@ -26,15 +26,11 @@ class SettingConversationFragment : BaseSettingFragment<FragmentSettingConversat
     }
 
     private val viewModel by viewModels<SettingConversationViewModel>()
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentSettingConversationBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentSettingConversationBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
         viewModel.initPreferences(requireContext())
             .observe(
                 viewLifecycleOwner,

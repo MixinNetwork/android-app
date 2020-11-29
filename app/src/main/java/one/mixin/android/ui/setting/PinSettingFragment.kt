@@ -2,11 +2,9 @@ package one.mixin.android.ui.setting
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
@@ -15,33 +13,31 @@ import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPinSettingBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class PinSettingFragment : BaseSettingFragment<FragmentPinSettingBinding>() {
+class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
     companion object {
         const val TAG = "PinSettingFragment"
 
         fun newInstance() = PinSettingFragment()
     }
 
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentPinSettingBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(title)
-        }
+    private val binding by viewBinding(FragmentPinSettingBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
         binding.apply {
+            title.leftIb.setOnClickListener { activity?.onBackPressed() }
             changeTv.setOnClickListener {
                 navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
             }

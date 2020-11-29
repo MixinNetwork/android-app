@@ -3,12 +3,10 @@ package one.mixin.android.ui.setting
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -21,7 +19,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBackupBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
@@ -31,13 +28,15 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
+import one.mixin.android.util.viewBinding
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class BackUpFragment : BaseSettingFragment<FragmentBackupBinding>() {
+class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     companion object {
         const val TAG = "BackUpFragment"
         fun newInstance() = BackUpFragment()
@@ -46,10 +45,7 @@ class BackUpFragment : BaseSettingFragment<FragmentBackupBinding>() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentBackupBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentBackupBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -59,7 +55,7 @@ class BackUpFragment : BaseSettingFragment<FragmentBackupBinding>() {
                 showBackupDialog()
             }
             backupAutoTv.text = options[defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)]
-            titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             backupBn.setOnClickListener {
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)

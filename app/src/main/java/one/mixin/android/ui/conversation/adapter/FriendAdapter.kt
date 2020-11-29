@@ -3,7 +3,7 @@ package one.mixin.android.ui.conversation.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import one.mixin.android.databinding.ItemContactNormalBinding
-import one.mixin.android.extension.inflate
+import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.friends.AbsFriendsAdapter
 import one.mixin.android.ui.common.friends.BaseFriendsViewHolder
 import one.mixin.android.ui.common.friends.FriendsListener
@@ -18,7 +18,14 @@ class FriendsAdapter(callback: UserItemCallback) : AbsFriendsAdapter<FriendsView
 
 class FriendsViewHolder(val binding: ItemContactNormalBinding) : BaseFriendsViewHolder(binding.root) {
     override fun bind(item: User, filter: String, listener: FriendsListener?) {
-        super.bind(item, filter, listener)
-        item.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+        binding.apply {
+            normal.text = item.fullName
+            normal.highLight(filter)
+            avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
+            item.showVerifiedOrBot(verifiedIv, botIv)
+        }
+        itemView.setOnClickListener {
+            listener?.onItemClick(item)
+        }
     }
 }

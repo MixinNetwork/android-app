@@ -1,9 +1,7 @@
 package one.mixin.android.ui.setting
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -12,19 +10,20 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentOldPasswordBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
-class OldPasswordFragment : BaseSettingFragment<FragmentOldPasswordBinding>(), PinView.OnPinListener {
+class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinView.OnPinListener {
 
     companion object {
         const val TAG = "OldPasswordFragment"
@@ -34,19 +33,13 @@ class OldPasswordFragment : BaseSettingFragment<FragmentOldPasswordBinding>(), P
     }
 
     private val walletViewModel by viewModels<WalletViewModel>()
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentOldPasswordBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentOldPasswordBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.apply {
-            leftIb.setOnClickListener { activity?.onBackPressed() }
-            rightAnimator.setOnClickListener { verify(binding.pin.code()) }
-        }
         binding.apply {
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.rightAnimator.setOnClickListener { verify(binding.pin.code()) }
             titleView.setSubTitle(getString(R.string.wallet_password_old_title), "1/5")
             disableTitleRight()
             pin.setListener(this@OldPasswordFragment)
@@ -58,9 +51,9 @@ class OldPasswordFragment : BaseSettingFragment<FragmentOldPasswordBinding>(), P
 
     override fun onUpdate(index: Int) {
         if (index == binding.pin.getCount()) {
-            titleBinding.apply {
-                rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
-                rightAnimator.isEnabled = true
+            binding.apply {
+                titleView.rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
+                titleView.rightAnimator.isEnabled = true
             }
         } else {
             disableTitleRight()
@@ -68,9 +61,9 @@ class OldPasswordFragment : BaseSettingFragment<FragmentOldPasswordBinding>(), P
     }
 
     private fun disableTitleRight() {
-        titleBinding.apply {
-            rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
-            rightAnimator.isEnabled = false
+        binding.apply {
+            titleView.rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
+            titleView.rightAnimator.isEnabled = false
         }
     }
 

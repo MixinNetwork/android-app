@@ -1,9 +1,7 @@
 package one.mixin.android.ui.setting
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -17,7 +15,6 @@ import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_WIFI
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStorageDataBinding
 import one.mixin.android.databinding.ViewStotageDataBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.autoDownloadDocument
@@ -28,10 +25,12 @@ import one.mixin.android.extension.getAutoDownloadMobileValue
 import one.mixin.android.extension.getAutoDownloadRoamingValue
 import one.mixin.android.extension.getAutoDownloadWifiValue
 import one.mixin.android.extension.putInt
+import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.layoutInflater
 
 @AndroidEntryPoint
-class SettingDataStorageFragment : BaseSettingFragment<FragmentStorageDataBinding>() {
+class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) {
     companion object {
         const val TAG = "SettingDataStorageFragment"
 
@@ -40,15 +39,12 @@ class SettingDataStorageFragment : BaseSettingFragment<FragmentStorageDataBindin
         }
     }
 
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentStorageDataBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentStorageDataBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
         binding.apply {
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             storageRl.setOnClickListener {
                 requireActivity().addFragment(
                     this@SettingDataStorageFragment,

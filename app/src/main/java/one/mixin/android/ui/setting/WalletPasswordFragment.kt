@@ -1,9 +1,7 @@
 package one.mixin.android.ui.setting
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -13,7 +11,6 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
@@ -21,6 +18,7 @@ import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
@@ -28,13 +26,14 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
-class WalletPasswordFragment : BaseSettingFragment<FragmentWalletPasswordBinding>(), PinView.OnPinListener {
+class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), PinView.OnPinListener {
 
     companion object {
         const val TAG = "WalletPasswordFragment"
@@ -57,6 +56,7 @@ class WalletPasswordFragment : BaseSettingFragment<FragmentWalletPasswordBinding
     }
 
     private val walletViewModel by viewModels<WalletViewModel>()
+    private val binding by viewBinding(FragmentWalletPasswordBinding::bind)
 
     private val change: Boolean by lazy {
         requireArguments().getBoolean(ARGS_CHANGE)
@@ -68,11 +68,6 @@ class WalletPasswordFragment : BaseSettingFragment<FragmentWalletPasswordBinding
     private var step = STEP1
 
     private var lastPassword: String? = null
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentWalletPasswordBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -103,7 +98,7 @@ class WalletPasswordFragment : BaseSettingFragment<FragmentWalletPasswordBinding
     override fun onUpdate(index: Int) {
         if (index == binding.pin.getCount()) {
             binding.titleView.rightTv.setTextColor(resources.getColor(R.color.colorBlue, null))
-            titleBinding.rightAnimator.isEnabled = true
+            binding.titleView.rightAnimator.isEnabled = true
         } else {
             disableTitleRight()
         }
@@ -129,7 +124,7 @@ class WalletPasswordFragment : BaseSettingFragment<FragmentWalletPasswordBinding
     }
 
     private fun disableTitleRight() {
-        titleBinding.apply {
+        binding.titleView.apply {
             rightTv.setTextColor(resources.getColor(R.color.text_gray, null))
             rightAnimator.isEnabled = false
         }

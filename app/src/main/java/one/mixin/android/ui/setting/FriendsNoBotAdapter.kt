@@ -17,10 +17,15 @@ class FriendsNoBotAdapter(callback: UserItemCallback) : AbsFriendsAdapter<Friend
 
 class FriendsNoBotViewHolder(private val itemBinding: ItemFriendsNoBotBinding) : BaseFriendsViewHolder(itemBinding.root) {
     override fun bind(item: User, filter: String, listener: FriendsListener?) {
-        super.bind(item, filter, listener)
         itemBinding.apply {
             identity.text = item.identityNumber
             identity.highLight(filter)
+            normal.text = item.fullName
+            normal.highLight(filter)
+            avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
+        }
+        itemView.setOnClickListener {
+            listener?.onItemClick(item)
         }
     }
 }

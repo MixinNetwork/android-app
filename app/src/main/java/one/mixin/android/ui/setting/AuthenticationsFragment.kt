@@ -9,16 +9,18 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentAuthenticationsBinding
 import one.mixin.android.databinding.ItemAuthBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.navTo
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 
 @AndroidEntryPoint
-class AuthenticationsFragment : BaseSettingFragment<FragmentAuthenticationsBinding>() {
+class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) {
     companion object {
         const val TAG = "AuthenticationsFragment"
 
@@ -26,18 +28,14 @@ class AuthenticationsFragment : BaseSettingFragment<FragmentAuthenticationsBindi
     }
 
     private val viewModel by viewModels<SettingViewModel>()
+    private val binding by viewBinding(FragmentAuthenticationsBinding::bind)
 
     private var list: MutableList<App>? = null
     private var authResponseList: MutableList<AuthorizationResponse>? = null
 
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentAuthenticationsBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
         val adapter = AuthenticationAdapter(
             object : OnAppClick {
                 override fun onClick(app: App, position: Int) {

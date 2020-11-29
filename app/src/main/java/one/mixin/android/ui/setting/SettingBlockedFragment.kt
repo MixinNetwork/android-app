@@ -7,15 +7,17 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBlockedBinding
 import one.mixin.android.databinding.ItemBlockedFooterBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
-import one.mixin.android.databinding.ViewTitleBinding
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint
-class SettingBlockedFragment : BaseSettingFragment<FragmentBlockedBinding>() {
+class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
     companion object {
         const val TAG = "SettingBlockedFragment"
         const val POS_LIST = 0
@@ -27,13 +29,9 @@ class SettingBlockedFragment : BaseSettingFragment<FragmentBlockedBinding>() {
     }
 
     private val viewModel by viewModels<SettingBlockedViewModel>()
+    private val binding by viewBinding(FragmentBlockedBinding::bind)
 
     private val adapter = BlockedAdapter()
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentBlockedBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -45,7 +43,7 @@ class SettingBlockedFragment : BaseSettingFragment<FragmentBlockedBinding>() {
         }
         binding.apply {
             blockedRv.adapter = adapter
-            titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             viewModel.blockingUsers(stopScope).observe(
                 viewLifecycleOwner,
                 {

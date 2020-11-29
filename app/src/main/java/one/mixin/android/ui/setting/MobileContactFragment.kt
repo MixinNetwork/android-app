@@ -2,9 +2,7 @@ package one.mixin.android.ui.setting
 
 import android.Manifest
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -19,31 +17,28 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.createContactsRequests
 import one.mixin.android.databinding.FragmentSettingMobileContactBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.textColorResource
 
 @AndroidEntryPoint
-class MobileContactFragment : BaseSettingFragment<FragmentSettingMobileContactBinding>() {
+class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_contact) {
     companion object {
         const val TAG = "MobileContactFragment"
         fun newInstance() = MobileContactFragment()
     }
 
     private val viewModel by viewModels<SettingViewModel>()
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentSettingMobileContactBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentSettingMobileContactBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
 
         lifecycleScope.launch {
             binding.opPb.isVisible = true

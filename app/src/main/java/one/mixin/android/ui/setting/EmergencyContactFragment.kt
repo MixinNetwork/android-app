@@ -1,9 +1,7 @@
 package one.mixin.android.ui.setting
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -13,18 +11,19 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentEmergencyContactBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint
-class EmergencyContactFragment : BaseSettingFragment<FragmentEmergencyContactBinding>() {
+class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contact) {
     companion object {
         const val TAG = "EmergencyContactFragment"
 
@@ -34,19 +33,15 @@ class EmergencyContactFragment : BaseSettingFragment<FragmentEmergencyContactBin
     private var showEmergency = true
 
     private val viewModel by viewModels<EmergencyViewModel>()
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentEmergencyContactBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentEmergencyContactBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener {
-            activity?.onBackPressed()
-        }
-        titleBinding.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
         binding.apply {
+            titleView.leftIb.setOnClickListener {
+                activity?.onBackPressed()
+            }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
             enableRl.setOnClickListener {
                 EmergencyContactTipBottomSheetDialogFragment.newInstance()
                     .showNow(parentFragmentManager, EmergencyContactTipBottomSheetDialogFragment.TAG)

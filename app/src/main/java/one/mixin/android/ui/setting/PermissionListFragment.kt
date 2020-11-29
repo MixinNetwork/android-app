@@ -21,20 +21,21 @@ import one.mixin.android.api.response.getScopes
 import one.mixin.android.databinding.FragmentPermissionListBinding
 import one.mixin.android.databinding.ItemPermissionListBinding
 import one.mixin.android.databinding.LayoutPermissionListFootBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.convertName
 
 @AndroidEntryPoint
-class PermissionListFragment : BaseSettingFragment<FragmentPermissionListBinding>() {
+class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     companion object {
         const val TAG = "PermissionListFragment"
         const val ARGS_APP = "args_app"
@@ -56,16 +57,12 @@ class PermissionListFragment : BaseSettingFragment<FragmentPermissionListBinding
     }
 
     private val viewModel by viewModels<SettingViewModel>()
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentPermissionListBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentPermissionListBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
         binding.apply {
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             permissionRv.layoutManager = LinearLayoutManager(requireContext())
             val footBinding = LayoutPermissionListFootBinding.inflate(layoutInflater, permissionRv, false).apply {
                 revokeRl.setOnClickListener { showDialog(app) }

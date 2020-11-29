@@ -1,18 +1,18 @@
 package one.mixin.android.ui.setting
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPrivacyBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class PrivacyFragment : BaseSettingFragment<FragmentPrivacyBinding>() {
+class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
     companion object {
         const val TAG = "PrivacyFragment"
 
@@ -20,18 +20,14 @@ class PrivacyFragment : BaseSettingFragment<FragmentPrivacyBinding>() {
     }
 
     private val viewModel by viewModels<SettingViewModel>()
-
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentPrivacyBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
+    private val binding by viewBinding(FragmentPrivacyBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener {
-            activity?.onBackPressed()
-        }
         binding.apply {
+            titleView.leftIb.setOnClickListener {
+                activity?.onBackPressed()
+            }
             viewModel.countBlockingUsers().observe(
                 viewLifecycleOwner,
                 {

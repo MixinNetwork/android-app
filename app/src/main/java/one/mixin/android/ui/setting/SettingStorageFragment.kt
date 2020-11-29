@@ -26,18 +26,19 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStorageBinding
 import one.mixin.android.databinding.ItemContactStorageBinding
 import one.mixin.android.databinding.ItemStorageCheckBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
 
 @AndroidEntryPoint
-class SettingStorageFragment : BaseSettingFragment<FragmentStorageBinding>() {
+class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     companion object {
         const val TAG = "SettingStorageFragment"
 
@@ -47,20 +48,16 @@ class SettingStorageFragment : BaseSettingFragment<FragmentStorageBinding>() {
     }
 
     private val viewModel by viewModels<SettingStorageViewModel>()
+    private val binding by viewBinding(FragmentStorageBinding::bind)
 
     private val adapter = StorageAdapter {
         showMenu(it)
     }
 
-    override fun bind(inflater: LayoutInflater, container: ViewGroup?) =
-        FragmentStorageBinding.inflate(inflater, container, false).apply {
-            _titleBinding = ViewTitleBinding.bind(titleView)
-        }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
         binding.apply {
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             bRv.adapter = adapter
             menuView.adapter = menuAdapter
             viewModel.getConversationStorageUsage().autoDispose(stopScope)
