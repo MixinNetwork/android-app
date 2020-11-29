@@ -10,9 +10,9 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.item_address.view.*
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddressManagementBinding
+import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -81,7 +81,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         )
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
             override fun onAddrLongClick(view: View, addr: Address) {
-                val popMenu = PopupMenu(activity!!, view.addr_tv)
+                val popMenu = PopupMenu(requireActivity(), ItemAddressBinding.bind(view).addrTv)
                 popMenu.menuInflater.inflate(R.menu.address_mamangement_item, popMenu.menu)
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {

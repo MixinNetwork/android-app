@@ -3,23 +3,26 @@ package one.mixin.android.ui.conversation.holder
 import android.annotation.SuppressLint
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_chat_mention.view.*
+import one.mixin.android.databinding.ItemChatMentionBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
 class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
+    private val binding by lazy {
+        ItemChatMentionBinding.bind(containerView)
+    }
     @SuppressLint("SetTextI18n")
     fun bind(user: User, keyword: String?, listener: MentionAdapter.OnUserClickListener) {
-        itemView.name.text = user.fullName
-        itemView.name.highLight(keyword)
-        itemView.id_tv.text = "@${user.identityNumber}"
+        binding.name.text = user.fullName
+        binding.name.highLight(keyword)
+        binding.idTv.text = "@${user.identityNumber}"
         if (!keyword.isNullOrEmpty()) {
-            itemView.id_tv.highLight("@$keyword")
+            binding.idTv.highLight("@$keyword")
         }
-        itemView.icon_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
-        user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
+        binding.iconIv.setInfo(user.fullName, user.avatarUrl, user.userId)
+        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
         itemView.setOnClickListener {
             listener.onUserClick(user)
         }

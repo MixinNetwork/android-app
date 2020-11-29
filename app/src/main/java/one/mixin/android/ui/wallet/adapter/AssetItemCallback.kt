@@ -1,11 +1,12 @@
 package one.mixin.android.ui.wallet.adapter
 
 import android.graphics.Canvas
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_wallet_asset.view.*
+import one.mixin.android.R
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 
 class AssetItemCallback(private val listener: ItemCallbackListener) :
@@ -26,10 +27,10 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         viewHolder?.let {
-            if (actionState != ItemTouchHelper.ACTION_STATE_IDLE && it.itemView.background_rl.visibility != VISIBLE) {
-                it.itemView.background_rl.visibility = VISIBLE
+            if (actionState != ItemTouchHelper.ACTION_STATE_IDLE && findBackground(it.itemView).visibility != VISIBLE) {
+                findBackground(it.itemView).visibility = VISIBLE
             }
-            ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(it.itemView.foreground_rl)
+            ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(findBackground(it.itemView))
         }
     }
 
@@ -44,12 +45,12 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
     ) {
         viewHolder?.let {
             ItemTouchHelper.Callback.getDefaultUIUtil()
-                .onDrawOver(c, recyclerView, it.itemView.foreground_rl, dX, dY, actionState, isCurrentlyActive)
+                .onDrawOver(c, recyclerView, findBackground(it.itemView), dX, dY, actionState, isCurrentlyActive)
         }
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-        ItemTouchHelper.Callback.getDefaultUIUtil().clearView(viewHolder.itemView.foreground_rl)
+        ItemTouchHelper.Callback.getDefaultUIUtil().clearView(findBackground(viewHolder.itemView))
     }
 
     override fun onChildDraw(
@@ -62,13 +63,15 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
         isCurrentlyActive: Boolean
     ) {
         ItemTouchHelper.Callback.getDefaultUIUtil()
-            .onDraw(c, recyclerView, viewHolder.itemView.foreground_rl, dX, dY, actionState, isCurrentlyActive)
+            .onDraw(c, recyclerView, findBackground(viewHolder.itemView), dX, dY, actionState, isCurrentlyActive)
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        viewHolder.itemView.background_rl.visibility = GONE
+        findBackground(viewHolder.itemView).visibility = GONE
         listener.onSwiped(viewHolder)
     }
+
+    private fun findBackground(view: View): View = view.findViewById(R.id.background_rl)
 
     interface ItemCallbackListener {
         fun onSwiped(viewHolder: RecyclerView.ViewHolder)

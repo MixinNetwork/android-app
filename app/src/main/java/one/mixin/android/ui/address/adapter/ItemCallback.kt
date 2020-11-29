@@ -18,7 +18,7 @@ class ItemCallback(private val listener: ItemCallbackListener) :
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         viewHolder?.let {
-            ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(findView(viewHolder.itemView,R.id.foreground_rl))
+            ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(findView(viewHolder.itemView, R.id.foreground_rl))
         }
     }
 

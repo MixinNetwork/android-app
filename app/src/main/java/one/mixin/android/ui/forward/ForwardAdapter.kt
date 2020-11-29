@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_contact_header.view.*
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.extension.inflate
@@ -116,7 +115,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
         if (conversations.isNullOrEmpty() && friends.isNullOrEmpty() && bots.isNullOrEmpty()) {
             return
         }
-        holder.itemView.header.text = holder.itemView.context.getString(
+        ItemContactHeaderBinding.bind(holder.itemView).header.text = holder.itemView.context.getString(
             if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
                 R.string.chat_item_title
             } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {

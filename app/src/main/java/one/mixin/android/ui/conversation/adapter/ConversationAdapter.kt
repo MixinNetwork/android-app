@@ -12,7 +12,6 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -42,6 +41,7 @@ import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.databinding.ItemChatTimeBinding
 import one.mixin.android.databinding.ItemChatTransparentBinding
 import one.mixin.android.databinding.ItemChatUnknownBinding
+import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
@@ -169,7 +169,7 @@ class ConversationAdapter(
 
     override fun onBindAttachView(view: View) {
         unreadMsgId?.let {
-            view.unread_tv.text = view.context.getString(R.string.unread)
+            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.unread)
         }
     }
 

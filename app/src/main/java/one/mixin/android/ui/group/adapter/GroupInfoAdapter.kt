@@ -9,8 +9,8 @@ import android.view.ViewGroup
 import androidx.collection.ArrayMap
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_group_info.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemGroupInfoBinding
 import one.mixin.android.databinding.ViewGroupInfoHeaderBinding
 import one.mixin.android.ui.common.recyclerview.HeaderFilterAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -92,42 +92,45 @@ class GroupInfoAdapter : HeaderFilterAdapter<User>() {
     }
 
     class ItemHolder(itemView: View) : NormalHolder(itemView) {
+        private val binding by lazy {
+            ItemGroupInfoBinding.bind(itemView)
+        }
         fun bind(
             user: User,
             listener: GroupInfoListener?,
             self: User?,
             participantsMap: ArrayMap<String, Participant>?
         ) {
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            itemView.normal.text = user.fullName
-            itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
-            itemView.verify_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
+            binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+            binding.normal.text = user.fullName
+            binding.botIv.visibility = if (user.appId != null) VISIBLE else GONE
+            binding.verifyIv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
             participantsMap?.let {
                 val p = it[user.userId]
                 p?.let { partition ->
                     when (partition.role) {
                         ParticipantRole.OWNER.name -> {
-                            itemView.desc.setText(R.string.owner)
-                            itemView.desc.isVisible = true
+                            binding.desc.setText(R.string.owner)
+                            binding.desc.isVisible = true
                         }
                         ParticipantRole.ADMIN.name -> {
-                            itemView.desc.setText(R.string.admin)
-                            itemView.desc.isVisible = true
+                            binding.desc.setText(R.string.admin)
+                            binding.desc.isVisible = true
                         }
                         else -> {
-                            itemView.desc.isVisible = false
+                            binding.desc.isVisible = false
                         }
                     }
                 }
             }
             itemView.setOnClickListener {
                 if (self?.userId != user.userId) {
-                    listener?.onClick(itemView.normal, user)
+                    listener?.onClick(binding.normal, user)
                 }
             }
             itemView.setOnLongClickListener {
                 if (self?.userId == user.userId) return@setOnLongClickListener false
-                return@setOnLongClickListener listener?.onLongClick(itemView.normal, user) ?: false
+                return@setOnLongClickListener listener?.onLongClick(binding.normal, user) ?: false
             }
         }
     }

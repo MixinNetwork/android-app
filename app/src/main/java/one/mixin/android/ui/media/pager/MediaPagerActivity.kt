@@ -44,7 +44,6 @@ import com.google.android.exoplayer2.Player
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
@@ -53,6 +52,7 @@ import kotlinx.android.synthetic.main.view_player_control.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMediaPagerBinding
+import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
@@ -232,7 +232,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         findViewPagerChildByTag {
-            it.player_view?.switchFullscreen(orientation == 90 || orientation == 270)
+            ItemPagerVideoLayoutBinding.bind(it).playerView.switchFullscreen(orientation == 90 || orientation == 270)
             (it as DismissFrameLayout).resetChildren()
         }
     }
@@ -472,7 +472,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         pipAnimationInProgress = true
         findViewPagerChildByTag { windowView ->
             val videoAspectRatioLayout =
-                windowView.player_view.video_aspect_ratio
+                ItemPagerVideoLayoutBinding.bind(windowView).playerView.video_aspect_ratio
             val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
             val isLandscape = isLandscape()
             if (isLandscape) {
@@ -625,7 +625,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 val view =
                     binding.viewPager.findViewWithTag<DismissFrameLayout>("$PREFIX${messageItem.messageId}")
                 if (view != null) {
-                    view.player_view.player = VideoPlayer.player().player
+                    ItemPagerVideoLayoutBinding.bind(view).playerView.player = VideoPlayer.player().player
                 }
             }
         }
@@ -695,11 +695,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             val messageItem = getMessageItemByPosition(binding.viewPager.currentItem) ?: return
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
-                    val playerView = it.player_view
-                    if (playerView != null) {
-                        controllerVisibleBeforeDismiss = playerView.useController && playerView.player_control_view.isVisible
-                        playerView.hideController()
-                    }
+                    val playerView = ItemPagerVideoLayoutBinding.bind(it).playerView
+                    controllerVisibleBeforeDismiss = playerView.useController && playerView.player_control_view.isVisible
+                    playerView.hideController()
                 }
             }
         }
@@ -717,13 +715,11 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             val messageItem = getMessageItemByPosition(binding.viewPager.currentItem) ?: return
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
-                    val playerView = it.player_view
-                    if (playerView != null) {
-                        if (controllerVisibleBeforeDismiss) {
-                            playerView.showController(false)
-                        } else {
-                            playerView.hideController()
-                        }
+                    val playerView = ItemPagerVideoLayoutBinding.bind(it).playerView
+                    if (controllerVisibleBeforeDismiss) {
+                        playerView.showController(false)
+                    } else {
+                        playerView.hideController()
                     }
                 }
             }
@@ -733,7 +729,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     override fun finishAfterTransition() {
         findViewPagerChildByTag {
-            it.player_view?.hideController()
+            ItemPagerVideoLayoutBinding.bind(it).playerView.hideController()
         }
         super.finishAfterTransition()
     }
