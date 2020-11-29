@@ -30,6 +30,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_ADDRESS
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG
 import one.mixin.android.vo.needShowReserve
 
@@ -65,7 +66,7 @@ class DepositAccountFragment : DepositFragment() {
         } else ""
         warning_tv.text = "${getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
         account_name_qr_fl.setOnClickListener {
-            DepositQrBottomFragment.newInstance(asset).show(parentFragmentManager, DepositQrBottomFragment.TAG)
+            DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
         account_memo_qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset, TYPE_TAG).show(parentFragmentManager, DepositQrBottomFragment.TAG)

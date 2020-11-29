@@ -750,7 +750,6 @@
     <string name="slide_to_cancel">Geser untuk Membatalkan</string>
     <string name="gallery_all">Semua Media</string>
     <string name="gallery_empty_text">Belum ada media</string>
-    <string name="account_name">Alamat</string>
     <string name="account_memo">Memo</string>
     <string name="withdrawal_label">Label (mis. Kurs, wallet, dll.)</string>
     <string name="withdrawal_address">Alamat</string>

@@ -43,11 +43,10 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "DepositQrBottomFragment"
         const val ARGS_TYPE = "args_type"
 
-        const val TYPE_NAME = 0
-        const val TYPE_TAG = 1
-        const val TYPE_ADDRESS = 2
+        const val TYPE_TAG = 0
+        const val TYPE_ADDRESS = 1
 
-        fun newInstance(asset: AssetItem, type: Int = TYPE_NAME) = DepositQrBottomFragment().apply {
+        fun newInstance(asset: AssetItem, type: Int) = DepositQrBottomFragment().apply {
             arguments = bundleOf(
                 ARGS_ASSET to asset,
                 ARGS_TYPE to type
@@ -57,7 +56,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         fun getSize(context: Context) = context.screenWidth() - context.dpToPx(64f)
     }
 
-    private val asset: AssetItem by lazy { requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!! }
+    private val asset: AssetItem by lazy { requireArguments().getParcelable(ARGS_ASSET)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
     @SuppressLint("RestrictedApi")
@@ -68,10 +67,6 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
         contentView.title.right_iv.setOnClickListener { dismiss() }
         when (type) {
-            TYPE_NAME -> {
-                contentView.title.title_tv.text = getString(R.string.account_name)
-                contentView.addr_tv.text = asset.destination
-            }
             TYPE_TAG -> {
                 contentView.title.title_tv.text = getString(R.string.account_memo)
                 contentView.addr_tv.text = asset.tag
@@ -106,7 +101,6 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         }
 
         val name = when (type) {
-            TYPE_NAME -> "${BuildConfig.VERSION_CODE}-${asset.destination}"
             TYPE_TAG -> "${BuildConfig.VERSION_CODE}-${asset.tag}"
             else -> "${BuildConfig.VERSION_CODE}-${asset.destination}"
         }
@@ -116,7 +110,6 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             contentView.qr.post {
                 Observable.create<Bitmap> { e ->
                     val code = when (type) {
-                        TYPE_NAME -> asset.destination
                         TYPE_TAG -> asset.tag
                         else -> asset.destination
                     }

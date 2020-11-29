@@ -684,7 +684,6 @@
     <string name="slide_to_cancel">スライドしてキャンセル</string>
     <string name="gallery_all">全てのメディア</string>
     <string name="gallery_empty_text">まだメディアがありません</string>
-    <string name="account_name">アドレス</string>
     <string name="account_memo">メモ</string>
     <string name="withdrawal_label">ラベル (例. 取引所, ウォレットなど)</string>
     <string name="withdrawal_address">アドレス</string>
