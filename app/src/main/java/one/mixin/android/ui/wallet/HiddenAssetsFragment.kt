@@ -1,9 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
@@ -16,16 +14,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentHiddenAssetsBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.navigate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 
 @AndroidEntryPoint
-class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
+class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), HeaderAdapter.OnItemListener {
 
     companion object {
         val TAG = HiddenAssetsFragment::class.java.simpleName
@@ -35,27 +33,17 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         const val POS_EMPTY = 1
     }
 
-    private var _binding: FragmentHiddenAssetsBinding? = null
-    private val binding get() = requireNotNull(_binding)
-    private var _titleBinding: ViewTitleBinding? = null
-    private val titleBinding get() = requireNotNull(_titleBinding)
-
     private val walletViewModel by viewModels<WalletViewModel>()
+    private val binding by viewBinding(FragmentHiddenAssetsBinding::bind)
 
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(true) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        _binding = FragmentHiddenAssetsBinding.inflate(layoutInflater, container, false)
-        _titleBinding = ViewTitleBinding.bind(binding.titleView)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
         assetsAdapter.onItemListener = this
         binding.apply {
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             ItemTouchHelper(
                 AssetItemCallback(
                     object : AssetItemCallback.ItemCallbackListener {
@@ -98,12 +86,6 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 }
             )
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-        _titleBinding = null
     }
 
     override fun <T> onNormalItemClick(item: T) {

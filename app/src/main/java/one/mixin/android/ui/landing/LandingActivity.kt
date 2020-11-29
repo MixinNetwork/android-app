@@ -5,9 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityLandingBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.doAsync
 import javax.inject.Inject
 
@@ -36,9 +38,11 @@ class LandingActivity : BaseActivity() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    private val binding by viewBinding(ActivityLandingBinding::inflate)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_landing)
+        setContentView(binding.root)
         val pin = intent.getStringExtra(ARGS_PIN)
         val fragment = if (pin != null) {
             MobileFragment.newInstance(pin)

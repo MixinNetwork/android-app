@@ -1,9 +1,7 @@
 package one.mixin.android.ui.media
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -17,10 +15,11 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.dip
 
 @AndroidEntryPoint
-class MediaFragment : BaseFragment() {
+class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
     companion object {
         const val TAG = "MediaFragment"
         const val PADDING = 1
@@ -46,18 +45,7 @@ class MediaFragment : BaseFragment() {
     )
 
     private val viewModel by viewModels<SharedMediaViewModel>()
-
-    private var _binding: LayoutRecyclerViewBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = LayoutRecyclerViewBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -114,10 +102,5 @@ class MediaFragment : BaseFragment() {
             }
         }
         return pos
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

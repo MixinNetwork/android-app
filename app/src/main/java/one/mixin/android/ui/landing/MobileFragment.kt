@@ -5,7 +5,6 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.View.GONE
@@ -21,14 +20,13 @@ import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_mobile.*
-import kotlinx.android.synthetic.main.fragment_mobile.keyboard
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.databinding.FragmentMobileBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
@@ -38,11 +36,12 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
 
 @AndroidEntryPoint
-class MobileFragment : BaseFragment() {
+class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     companion object {
         const val TAG: String = "MobileFragment"
@@ -59,6 +58,7 @@ class MobileFragment : BaseFragment() {
     }
 
     private val mobileViewModel by viewModels<MobileViewModel>()
+    private val binding by viewBinding(FragmentMobileBinding::bind)
 
     private lateinit var countryPicker: CountryPicker
     private lateinit var mCountry: Country
@@ -69,46 +69,45 @@ class MobileFragment : BaseFragment() {
 
     private var captchaView: CaptchaView? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_mobile, container, false) as ViewGroup
-
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        pin = requireArguments().getString(ARGS_PIN)
-        if (pin != null) {
-            mobile_title_tv.setText(R.string.landing_enter_new_mobile_number)
-        }
-        back_iv.setOnClickListener { activity?.onBackPressed() }
-        country_icon_iv.setOnClickListener { showCountry() }
-        country_code_tv.setOnClickListener { showCountry() }
-        mobile_fab.setOnClickListener { showDialog() }
-        mobile_et.showSoftInputOnFocus = false
-        mobile_et.addTextChangedListener(mWatcher)
-        mobile_et.requestFocus()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mobile_et.setAutofillHints(AUTOFILL_HINT_PHONE)
-        }
-        mobile_cover.isClickable = true
+        binding.apply {
+            pin = requireArguments().getString(ARGS_PIN)
+            if (pin != null) {
+                mobileTitleTv.setText(R.string.landing_enter_new_mobile_number)
+            }
+            backIv.setOnClickListener { activity?.onBackPressed() }
+            countryIconIv.setOnClickListener { showCountry() }
+            countryCodeTv.setOnClickListener { showCountry() }
+            mobileFab.setOnClickListener { showDialog() }
+            mobileEt.showSoftInputOnFocus = false
+            mobileEt.addTextChangedListener(mWatcher)
+            mobileEt.requestFocus()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mobileEt.setAutofillHints(AUTOFILL_HINT_PHONE)
+            }
+            mobileCover.isClickable = true
 
-        countryPicker = CountryPicker.newInstance()
-        countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
-            Unit
-            mCountry = Country()
-            mCountry.code = code
-            mCountry.dialCode = dialCode
-            mCountry.flag = flagResId
-            country_icon_iv.setImageResource(flagResId)
-            country_code_tv.text = dialCode
-            handleEditView(mobile_et.text.toString())
-            activity?.supportFragmentManager?.popBackStackImmediate()
-            country_icon_iv.hideKeyboard()
-        }
-        getUserCountryInfo()
+            countryPicker = CountryPicker.newInstance()
+            countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
+                Unit
+                mCountry = Country()
+                mCountry.code = code
+                mCountry.dialCode = dialCode
+                mCountry.flag = flagResId
+                countryIconIv.setImageResource(flagResId)
+                countryCodeTv.text = dialCode
+                handleEditView(mobileEt.text.toString())
+                activity?.supportFragmentManager?.popBackStackImmediate()
+                countryIconIv.hideKeyboard()
+            }
+            getUserCountryInfo()
 
-        keyboard.setKeyboardKeys(KEYS)
-        keyboard.setOnClickKeyboardListener(mKeyboardListener)
-        keyboard.animate().translationY(0f).start()
+            keyboard.setKeyboardKeys(KEYS)
+            keyboard.setOnClickKeyboardListener(mKeyboardListener)
+            keyboard.animate().translationY(0f).start()
+        }
     }
 
     override fun onBackPressed(): Boolean {
@@ -128,7 +127,7 @@ class MobileFragment : BaseFragment() {
             .setMessage(
                 getString(
                     R.string.landing_invitation_dialog_content,
-                    mCountry.dialCode + " " + mobile_et.text.toString()
+                    mCountry.dialCode + " " + binding.mobileEt.text.toString()
                 )
             )
             .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }
@@ -142,8 +141,8 @@ class MobileFragment : BaseFragment() {
     private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
         if (!isAdded) return
 
-        mobile_fab.show()
-        mobile_cover.visibility = VISIBLE
+        binding.mobileFab.show()
+        binding.mobileCover.visibility = VISIBLE
         val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
@@ -194,8 +193,8 @@ class MobileFragment : BaseFragment() {
                 requireContext(),
                 object : CaptchaView.Callback {
                     override fun onStop() {
-                        mobile_fab?.hide()
-                        mobile_cover?.visibility = GONE
+                        binding.mobileFab.hide()
+                        binding.mobileCover.visibility = GONE
                     }
 
                     override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
@@ -209,24 +208,26 @@ class MobileFragment : BaseFragment() {
     }
 
     private fun hideLoading() {
-        mobile_fab?.hide()
-        mobile_cover?.visibility = GONE
+        binding.mobileFab.hide()
+        binding.mobileCover.visibility = GONE
         captchaView?.hide()
     }
 
     private fun handleEditView(str: String) {
-        mobile_et.setSelection(mobile_et.text.toString().length)
-        if (str.isNotEmpty() && isValidNumber(mCountry.dialCode + str)) {
-            mobile_fab.visibility = VISIBLE
-        } else {
-            mobile_fab.visibility = INVISIBLE
+        binding.apply {
+            mobileEt.setSelection(mobileEt.text.toString().length)
+            if (str.isNotEmpty() && isValidNumber(mCountry.dialCode + str)) {
+                mobileFab.visibility = VISIBLE
+            } else {
+                mobileFab.visibility = INVISIBLE
+            }
         }
     }
 
     private fun getUserCountryInfo() {
         mCountry = countryPicker.getUserCountryInfo(context)
-        country_icon_iv.setImageResource(mCountry.flag)
-        country_code_tv.text = mCountry.dialCode
+        binding.countryIconIv.setImageResource(mCountry.flag)
+        binding.countryCodeTv.text = mCountry.dialCode
         countryPicker.setLocationCountry(mCountry)
     }
 
@@ -253,28 +254,30 @@ class MobileFragment : BaseFragment() {
             if (!isAdded) {
                 return
             }
-            val editable = mobile_et.text
-            val start = mobile_et.selectionStart
-            val end = mobile_et.selectionEnd
-            if (position == 11) {
-                if (editable.isNullOrEmpty()) return
+            binding.apply {
+                val editable = mobileEt.text
+                val start = mobileEt.selectionStart
+                val end = mobileEt.selectionEnd
+                if (position == 11) {
+                    if (editable.isNullOrEmpty()) return
 
-                if (start == end) {
-                    if (start == 0) {
-                        mobile_et.text?.delete(0, end)
+                    if (start == end) {
+                        if (start == 0) {
+                            mobileEt.text?.delete(0, end)
+                        } else {
+                            mobileEt.text?.delete(start - 1, end)
+                        }
+                        if (start > 0) {
+                            mobileEt.setSelection(start - 1)
+                        }
                     } else {
-                        mobile_et.text?.delete(start - 1, end)
-                    }
-                    if (start > 0) {
-                        mobile_et.setSelection(start - 1)
+                        mobileEt.text?.delete(start, end)
+                        mobileEt.setSelection(start)
                     }
                 } else {
-                    mobile_et.text?.delete(start, end)
-                    mobile_et.setSelection(start)
+                    mobileEt.text = editable?.insert(start, value)
+                    mobileEt.setSelection(start + 1)
                 }
-            } else {
-                mobile_et.text = editable?.insert(start, value)
-                mobile_et.setSelection(start + 1)
             }
         }
 
@@ -283,15 +286,17 @@ class MobileFragment : BaseFragment() {
             if (!isAdded) {
                 return
             }
-            val editable = mobile_et.text
-            if (position == 11) {
-                if (editable.isNullOrEmpty()) return
+            binding.apply {
+                val editable = mobileEt.text
+                if (position == 11) {
+                    if (editable.isNullOrEmpty()) return
 
-                mobile_et.text?.clear()
-            } else {
-                val start = mobile_et.selectionStart
-                mobile_et.text = editable?.insert(start, value)
-                mobile_et.setSelection(start + 1)
+                    mobileEt.text?.clear()
+                } else {
+                    val start = mobileEt.selectionStart
+                    mobileEt.text = editable?.insert(start, value)
+                    mobileEt.setSelection(start + 1)
+                }
             }
         }
     }

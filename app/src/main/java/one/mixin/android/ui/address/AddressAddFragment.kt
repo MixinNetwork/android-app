@@ -6,9 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
@@ -35,12 +33,13 @@ import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.AD
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
-class AddressAddFragment() : BaseFragment() {
+class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
     companion object {
         const val ARGS_ADDRESS = "args_address"
     }
@@ -62,6 +61,8 @@ class AddressAddFragment() : BaseFragment() {
 
     lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
 
+    private val binding by viewBinding(FragmentAddressAddBinding::bind)
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
@@ -72,23 +73,6 @@ class AddressAddFragment() : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         asset = requireArguments().getParcelable(ARGS_ASSET)!!
-    }
-
-    private var _binding: FragmentAddressAddBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentAddressAddBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

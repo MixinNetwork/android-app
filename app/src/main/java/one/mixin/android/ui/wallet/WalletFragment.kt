@@ -2,11 +2,9 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
@@ -27,7 +25,6 @@ import one.mixin.android.R
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.extension.defaultSharedPreferences
@@ -44,6 +41,7 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
@@ -54,7 +52,7 @@ import java.math.RoundingMode
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
+class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnItemListener {
 
     companion object {
         const val TAG = "WalletFragment"
@@ -64,16 +62,13 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    private var _binding: FragmentWalletBinding? = null
-    private val binding get() = requireNotNull(_binding)
-    private var _titleBinding: ViewTitleBinding? = null
-    private val titleBinding get() = requireNotNull(_titleBinding)
     private var _headBinding: ViewWalletFragmentHeaderBinding? = null
     private val headBinding get() = requireNotNull(_headBinding)
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
     private val walletViewModel by viewModels<WalletViewModel>()
+    private val binding by viewBinding(FragmentWalletBinding::bind)
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
 
@@ -82,21 +77,11 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentWalletBinding.inflate(inflater, container, false)
-        _titleBinding = ViewTitleBinding.bind(binding.titleView)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            titleBinding.rightAnimator.setOnClickListener { showBottom() }
-            titleBinding.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.rightAnimator.setOnClickListener { showBottom() }
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false))
@@ -150,8 +135,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
-        _titleBinding = null
         _headBinding = null
         _bottomBinding = null
     }

@@ -1,9 +1,7 @@
 package one.mixin.android.ui.media
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,12 +15,13 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.mediaDownloaded
 
 @AndroidEntryPoint
-class AudioFragment : BaseFragment() {
+class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
     companion object {
         const val TAG = "AudioFragment"
 
@@ -32,6 +31,7 @@ class AudioFragment : BaseFragment() {
     }
 
     private val viewModel by viewModels<SharedMediaViewModel>()
+    private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
 
     private val conversationId: String by lazy {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
@@ -62,18 +62,6 @@ class AudioFragment : BaseFragment() {
         }
     )
 
-    private var _binding: LayoutRecyclerViewBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = LayoutRecyclerViewBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -92,10 +80,5 @@ class AudioFragment : BaseFragment() {
                 adapter.submitList(it)
             }
         )
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

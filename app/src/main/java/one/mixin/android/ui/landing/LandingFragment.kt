@@ -1,34 +1,23 @@
 package one.mixin.android.ui.landing
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.highlightLinkText
+import one.mixin.android.util.viewBinding
 
-class LandingFragment : Fragment() {
+class LandingFragment : Fragment(R.layout.fragment_landing) {
 
     companion object {
         const val TAG: String = "LandingFragment"
 
         fun newInstance() = LandingFragment()
     }
-    private var _binding: FragmentLandingBinding? = null
-    private val binding get() = requireNotNull(_binding)
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        FragmentLandingBinding.inflate(inflater, container, false).run {
-            _binding = this
-            root
-        }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    private val binding by viewBinding(FragmentLandingBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

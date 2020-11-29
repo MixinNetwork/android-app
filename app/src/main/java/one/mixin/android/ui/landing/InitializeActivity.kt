@@ -6,15 +6,19 @@ import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
+import one.mixin.android.databinding.ActivityLandingBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class InitializeActivity : BaseActivity() {
 
+    private val binding by viewBinding(ActivityLandingBinding::inflate)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_landing)
+        setContentView(binding.root)
         val setName = intent.getBooleanExtra(SET_NAME, false)
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
         val ftsUpgrade = intent.getBooleanExtra(FTS_UPGRADE, false)

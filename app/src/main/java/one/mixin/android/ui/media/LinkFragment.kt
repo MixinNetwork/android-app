@@ -1,9 +1,7 @@
 package one.mixin.android.ui.media
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,9 +13,10 @@ import one.mixin.android.databinding.LayoutRecyclerViewBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class LinkFragment : BaseFragment() {
+class LinkFragment : BaseFragment(R.layout.layout_recycler_view) {
     companion object {
         const val TAG = "LinkFragment"
 
@@ -35,18 +34,7 @@ class LinkFragment : BaseFragment() {
     }
 
     private val viewModel by viewModels<SharedMediaViewModel>()
-
-    private var _binding: LayoutRecyclerViewBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = LayoutRecyclerViewBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -66,10 +54,5 @@ class LinkFragment : BaseFragment() {
                 adapter.submitList(it)
             }
         )
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

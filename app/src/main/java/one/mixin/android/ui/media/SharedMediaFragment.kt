@@ -1,9 +1,7 @@
 package one.mixin.android.ui.media
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
@@ -12,9 +10,10 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSharedMediaBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class SharedMediaFragment : BaseFragment() {
+class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
     companion object {
         const val TAG = "SharedMediaFragment"
 
@@ -31,17 +30,7 @@ class SharedMediaFragment : BaseFragment() {
         SharedMediaAdapter(requireActivity(), conversationId)
     }
 
-    private var _binding: FragmentSharedMediaBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentSharedMediaBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    private val binding by viewBinding(FragmentSharedMediaBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -64,10 +53,5 @@ class SharedMediaFragment : BaseFragment() {
         }.attach()
         binding.sharedTl.tabMode = TabLayout.MODE_FIXED
         binding.viewPager.currentItem = 0
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

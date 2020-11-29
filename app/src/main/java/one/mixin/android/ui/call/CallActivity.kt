@@ -67,6 +67,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
@@ -90,6 +91,7 @@ import javax.inject.Inject
 class CallActivity : BaseActivity(), SensorEventListener {
 
     private val viewModel by viewModels<CallViewModel>()
+    private val binding by viewBinding(ActivityCallBinding::inflate)
 
     @Inject
     lateinit var callState: CallStateLiveData
@@ -121,7 +123,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private var join = false
 
-    private lateinit var binding: ActivityCallBinding
     @SuppressLint("InvalidWakeLockTag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,7 +144,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
             )
         }
-        binding = ActivityCallBinding.inflate(layoutInflater)
         setContentView(binding.root)
         sensorManager = getSystemService()
         powerManager = getSystemService()
