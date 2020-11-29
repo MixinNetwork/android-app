@@ -10,12 +10,13 @@ import androidx.camera.core.UseCase
 import androidx.camera.core.impl.utils.futures.FutureCallback
 import androidx.camera.core.impl.utils.futures.Futures
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_scan.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentScanBinding
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
+import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 
@@ -46,6 +47,8 @@ class ScanFragment : BaseCameraxFragment() {
     ): View? =
         layoutInflater.inflate(R.layout.fragment_scan, container, false)
 
+    private val binding by viewBinding(FragmentScanBinding::bind)
+
     @SuppressLint("RestrictedApi")
     override fun onFlashClick() {
         if (camera?.cameraInfo?.hasFlashUnit() == false) {
@@ -53,7 +56,7 @@ class ScanFragment : BaseCameraxFragment() {
             return
         }
         val torchState = camera?.cameraInfo?.torchState?.value ?: TorchState.OFF
-        flash.setImageResource(R.drawable.ic_scan_flash)
+        binding.flash.setImageResource(R.drawable.ic_scan_flash)
         val future = (
             if (torchState == TorchState.ON) {
                 camera?.cameraControl?.enableTorch(false)

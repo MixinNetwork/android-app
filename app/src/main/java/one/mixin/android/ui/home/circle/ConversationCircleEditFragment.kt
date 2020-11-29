@@ -13,15 +13,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.*
-import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.search_et
-import kotlinx.android.synthetic.main.fragment_group.select_rv
-import kotlinx.android.synthetic.main.fragment_group.title_view
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationPayload
 import one.mixin.android.api.request.CircleConversationRequest
+import one.mixin.android.databinding.FragmentConversationCircleEditBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
@@ -29,6 +26,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.ui.home.ConversationListViewModel
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.ConversationItem
@@ -76,20 +74,22 @@ class ConversationCircleEditFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_conversation_circle_edit, container, false)
 
+    private val binding by viewBinding(FragmentConversationCircleEditBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener {
             parentFragmentManager.popBackStackImmediate()
         }
-        title_view.rightAnimator.setOnClickListener {
+        binding.titleView.rightAnimator.setOnClickListener {
             save()
         }
         updateTitleText(circle.count)
 
-        select_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        select_rv.adapter = selectAdapter
-        conversation_rv.adapter = adapter
-        conversation_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        binding.selectRv.adapter = selectAdapter
+        binding.conversationRv.adapter = adapter
+        binding.conversationRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.setForwardListener(
             object : ForwardAdapter.ForwardListener {
                 override fun onUserItemClick(user: User) {
@@ -112,7 +112,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                         }
                         adapter.notifyDataSetChanged()
                         selectAdapter.notifyDataSetChanged()
-                        select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
+                        binding.selectRv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
                         updateTitleText(adapter.selectItem.size)
                     }
                 }
@@ -133,26 +133,25 @@ class ConversationCircleEditFragment : BaseFragment() {
                         }
                         adapter.notifyDataSetChanged()
                         selectAdapter.notifyDataSetChanged()
-                        select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
+                        binding.selectRv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
                         updateTitleText(adapter.selectItem.size)
                     }
                 }
             }
         )
-        search_et.addTextChangedListener(mWatcher)
-
+        binding.searchEt.addTextChangedListener(mWatcher)
         loadData()
     }
 
     private fun updateTitleText(size: Int) {
         if (!hasChanged()) {
-            title_view.rightTv.textColor = resources.getColor(R.color.text_gray, null)
-            title_view.rightAnimator.isEnabled = false
+            binding.titleView.rightTv.textColor = resources.getColor(R.color.text_gray, null)
+            binding.titleView.rightAnimator.isEnabled = false
         } else {
-            title_view.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
-            title_view.rightAnimator.isEnabled = true
+            binding.titleView.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
+            binding.titleView.rightAnimator.isEnabled = true
         }
-        title_view.setSubTitle(circle.name, getString(R.string.circle_subtitle, size))
+        binding.titleView.setSubTitle(circle.name, getString(R.string.circle_subtitle, size))
     }
 
     private fun hasChanged(): Boolean {
@@ -236,7 +235,7 @@ class ConversationCircleEditFragment : BaseFragment() {
             setCancelable(false)
         }
         dialog.show()
-        search_et.hideKeyboard()
+        binding.searchEt.hideKeyboard()
 
         val conversationRequests = mutableSetOf<CircleConversationPayload>()
         adapter.selectItem.forEach { item ->

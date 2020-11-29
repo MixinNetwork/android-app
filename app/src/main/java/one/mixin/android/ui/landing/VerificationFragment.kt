@@ -16,7 +16,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.launch
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.R
@@ -29,6 +28,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
@@ -44,6 +44,7 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -86,15 +87,16 @@ class VerificationFragment : PinCodeFragment() {
 
     private var hasEmergencyContact = false
 
+    private val binding by viewBinding(FragmentVerificationBinding::bind)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_verification, container, false) as ViewGroup
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         hasEmergencyContact = requireArguments().getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
-        pin_verification_title_tv.text = getString(R.string.landing_validation_title, phoneNum)
-        verification_resend_tv.setOnClickListener { sendVerification() }
-        verification_need_help_tv.setOnClickListener { showBottom() }
+        binding.pinVerificationTitleTv.text = getString(R.string.landing_validation_title, phoneNum)
+        binding.verificationResendTv.setOnClickListener { sendVerification() }
+        binding.verificationNeedHelpTv.setOnClickListener { showBottom() }
 
         startCountDown()
     }
@@ -147,11 +149,11 @@ class VerificationFragment : PinCodeFragment() {
 
     private fun handlePhoneModification() {
         showLoading()
-        viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
+        viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code(), pin = pin!!)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<Account> ->
-                    verification_next_fab.hide()
-                    verification_cover.visibility = GONE
+                    binding.verificationNextFab.hide()
+                    binding.verificationCover.visibility = GONE
                     if (!r.isSuccess) {
                         handleFailure(r)
                         return@subscribe
@@ -190,7 +192,7 @@ class VerificationFragment : PinCodeFragment() {
 
         val sessionSecret = publicKey.abyte.base64Encode()
         val accountRequest = AccountRequest(
-            pin_verification_view.code(),
+            binding.pinVerificationView.code(),
             registration_id = registrationId,
             purpose = VerificationPurpose.SESSION.name,
             pin = Session.getPinToken()?.let { encryptPin(it, pin) },
@@ -245,13 +247,13 @@ class VerificationFragment : PinCodeFragment() {
                     } else {
                         hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
                         hideLoading()
-                        pin_verification_view?.clear()
+                        binding.pinVerificationView?.clear()
                         startCountDown()
                     }
                 },
                 { t: Throwable ->
                     handleError(t)
-                    verification_next_fab.visibility = GONE
+                    binding.verificationNextFab.visibility = GONE
                     captchaView?.webView?.visibility = GONE
                 }
             )
@@ -281,8 +283,7 @@ class VerificationFragment : PinCodeFragment() {
         mCountDownTimer = object : CountDownTimer(60000, 1000) {
 
             override fun onTick(l: Long) {
-                if (verification_resend_tv != null)
-                    verification_resend_tv.text = getString(R.string.landing_resend_code_disable, l / 1000)
+                binding.verificationResendTv.text = getString(R.string.landing_resend_code_disable, l / 1000)
             }
 
             override fun onFinish() {
@@ -290,20 +291,18 @@ class VerificationFragment : PinCodeFragment() {
             }
         }
         mCountDownTimer?.start()
-        verification_resend_tv.isEnabled = false
+        binding.verificationResendTv.isEnabled = false
         context?.let {
-            verification_resend_tv.setTextColor(ContextCompat.getColor(it, R.color.colorGray))
+            binding.verificationResendTv.setTextColor(ContextCompat.getColor(it, R.color.colorGray))
         }
     }
 
     private fun resetCountDown() {
-        if (verification_resend_tv != null) {
-            verification_resend_tv.setText(R.string.landing_resend_code_enable)
-            verification_resend_tv.isEnabled = true
-            context?.let {
-                verification_resend_tv.setTextColor(ContextCompat.getColor(it, R.color.colorBlue))
-            }
+        binding.verificationResendTv.setText(R.string.landing_resend_code_enable)
+        binding.verificationResendTv.isEnabled = true
+        context?.let {
+            binding.verificationResendTv.setTextColor(ContextCompat.getColor(it, R.color.colorBlue))
         }
-        verification_need_help_tv?.isVisible = true
+        binding.verificationNeedHelpTv?.isVisible = true
     }
 }

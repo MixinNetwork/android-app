@@ -21,7 +21,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_add_sticker.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,6 +28,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.databinding.FragmentAddStickerBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getFilePath
@@ -44,6 +44,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.textColor
@@ -82,11 +83,13 @@ class StickerAddFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_add_sticker, container, false)
 
+    private val binding by viewBinding(FragmentAddStickerBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        title_view.rightAnimator.setOnClickListener {
+        binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.rightAnimator.setOnClickListener {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(
                     message = R.string.pb_dialog_message,
@@ -123,14 +126,14 @@ class StickerAddFragment : BaseFragment() {
         }
 
         if (w == dp100) {
-            sticker_iv?.updateLayoutParams<ViewGroup.LayoutParams> {
+            binding.stickerIv.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = w
                 height = w
             }
         } else {
-            sticker_iv?.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            binding.stickerIv.scaleType = ImageView.ScaleType.CENTER_INSIDE
         }
-        sticker_iv?.loadImage(url)
+        binding.stickerIv.loadImage(url)
     }
 
     private fun addSticker() = lifecycleScope.launch {

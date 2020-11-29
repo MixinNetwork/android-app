@@ -21,8 +21,8 @@ import androidx.core.view.isVisible
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_capture.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentCaptureBinding
 import one.mixin.android.extension.bounce
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
@@ -37,6 +37,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.util.reportException
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CameraOpView
 import java.io.File
 
@@ -59,35 +60,37 @@ class CaptureFragment : BaseCameraxFragment() {
     ): View? =
         layoutInflater.inflate(R.layout.fragment_capture, container, false)
 
+    private val binding by viewBinding(FragmentCaptureBinding::bind)
+
     @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        op.post {
+        binding.op.post {
             if (!isAdded) return@post
 
-            val b = bottom_ll.bottom
+            val b = binding.bottomLl.bottom
             val hasNavigationBar = requireContext().hasNavigationBar(b)
             if (hasNavigationBar) {
                 val navigationBarHeight = requireContext().navigationBarHeight()
-                bottom_ll.translationY = -navigationBarHeight.toFloat()
+                binding.bottomLl.translationY = -navigationBarHeight.toFloat()
             }
         }
-        switch_camera.setOnClickListener {
+        binding.switchCamera.setOnClickListener {
             onSwitchClick()
             checkFlash()
-            switch_camera.bounce()
+            binding.switchCamera.bounce()
         }
-        op.setMaxDuration(CaptureActivity.MAX_DURATION)
-        op.setCameraOpCallback(opCallback)
+        binding.op.setMaxDuration(CaptureActivity.MAX_DURATION)
+        binding.op.setCameraOpCallback(opCallback)
     }
 
     override fun onFlashClick() {
         val flashMode = imageCapture?.flashMode ?: FLASH_MODE_OFF
         if (flashMode == FLASH_MODE_ON) {
-            flash.setImageResource(R.drawable.ic_flash_off)
+            binding.flash.setImageResource(R.drawable.ic_flash_off)
             imageCapture?.flashMode = FLASH_MODE_OFF
         } else {
-            flash.setImageResource(R.drawable.ic_flash_on)
+            binding.flash.setImageResource(R.drawable.ic_flash_on)
             imageCapture?.flashMode = FLASH_MODE_ON
         }
     }
@@ -115,7 +118,7 @@ class CaptureFragment : BaseCameraxFragment() {
         lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
             CameraSelector.LENS_FACING_BACK
         } else {
-            flash.setImageResource(R.drawable.ic_flash_off)
+            binding.flash.setImageResource(R.drawable.ic_flash_off)
             CameraSelector.LENS_FACING_FRONT
         }
         try {
@@ -162,10 +165,11 @@ class CaptureFragment : BaseCameraxFragment() {
                     { granted ->
                         if (granted) {
                             onTakePicture()
-                            capture_border_view?.isVisible = true
-                            capture_border_view?.postDelayed(
+                            binding.captureBorderView.isVisible = true
+                            binding.captureBorderView.postDelayed(
                                 {
-                                    capture_border_view?.isVisible = false
+                                    binding.captureBorderView
+                                        .isVisible = false
                                 },
                                 100
                             )
@@ -179,12 +183,12 @@ class CaptureFragment : BaseCameraxFragment() {
         }
 
         override fun onProgressStart() {
-            close.fadeOut()
-            flash.fadeOut()
-            switch_camera.fadeOut()
-            chronometer_layout.fadeIn()
-            chronometer.base = SystemClock.elapsedRealtime()
-            chronometer.start()
+            binding.close.fadeOut()
+            binding.flash.fadeOut()
+            binding.switchCamera.fadeOut()
+            binding.chronometerLayout.fadeIn()
+            binding.chronometer.base = SystemClock.elapsedRealtime()
+            binding.chronometer.start()
             videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
             try {
                 oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
@@ -197,11 +201,11 @@ class CaptureFragment : BaseCameraxFragment() {
         }
 
         override fun onProgressStop(time: Float) {
-            close.fadeIn()
-            flash.fadeIn()
-            switch_camera.fadeIn()
-            chronometer_layout.fadeOut()
-            chronometer.stop()
+            binding.close.fadeIn()
+            binding.flash.fadeIn()
+            binding.switchCamera.fadeIn()
+            binding.chronometerLayout.fadeOut()
+            binding.chronometer.stop()
             if (time < CaptureActivity.MIN_DURATION) {
                 toast(R.string.error_duration_short)
             } else {
