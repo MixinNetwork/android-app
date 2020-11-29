@@ -22,6 +22,7 @@ import org.jetbrains.anko.textColor
 class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimator(context, attributeSet) {
     private val binding: LayoutPinBiometricBinding = LayoutPinBiometricBinding.inflate(LayoutInflater.from(context), this)
     val biometricTv get() = binding.biometricTv
+    val payTv get() = binding.payTv
 
     var callback: Callback? = null
 

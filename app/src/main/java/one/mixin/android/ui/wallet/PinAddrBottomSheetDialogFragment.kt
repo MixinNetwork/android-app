@@ -2,20 +2,19 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.view.View
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet_address.view.*
-import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.databinding.FragmentPinBottomSheetAddressBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_ADDRESS
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.widget.BottomSheet
 
@@ -79,21 +78,24 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
     private val addressTag: String? by lazy { requireArguments().getString(ARGS_TAG) }
 
+    private val binding by viewBinding(FragmentPinBottomSheetAddressBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet_address, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
-
-        contentView.title_view.rightIv.setOnClickListener { dismiss() }
-        contentView.title.text = getTitle()
-        contentView.asset_icon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
-        contentView.asset_icon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
-        contentView.asset_name.text = label
-        contentView.asset_address.text = destination
-        contentView.pay_tv.text = getTipText()
-        contentView.biometric_tv.text = getBiometricText()
+        binding.apply {
+            titleView.rightIv.setOnClickListener { dismiss() }
+            title.text = getTitle()
+            assetIcon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
+            assetIcon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
+            assetName.text = label
+            assetAddress.text = destination
+            biometricLayout.payTv.text = getTipText()
+            biometricLayout.biometricTv.text = getBiometricText()
+        }
     }
 
     override fun getBiometricInfo(): BiometricInfo {
@@ -120,7 +122,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             } else {
                 bottomViewModel.deleteLocalAddr(addressId!!)
             }
-            contentView.biometric_layout.showPin(false)
+            binding.biometricLayout.showPin(false)
         }
         return true
     }

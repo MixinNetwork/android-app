@@ -17,7 +17,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.item_search_header.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -26,6 +25,7 @@ import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchBinding
 import one.mixin.android.databinding.ItemSearchAppBinding
+import one.mixin.android.databinding.ItemSearchHeaderBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
@@ -123,7 +123,8 @@ class SearchFragment : BaseFragment() {
         binding.searchRv.addOnItemTouchListener(
             StickyRecyclerHeadersTouchListener(binding.searchRv, decoration).apply {
                 setOnHeaderClickListener { headerView, position, _, e ->
-                    if (headerView.search_header_more.x > e.rawX) return@setOnHeaderClickListener
+
+                    if (ItemSearchHeaderBinding.bind(headerView).searchHeaderMore.x > e.rawX) return@setOnHeaderClickListener
 
                     searchAdapter.getTypeData(position)?.let {
                         val f = SearchSingleFragment.newInstance(

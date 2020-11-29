@@ -9,8 +9,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_invite.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentInviteBinding
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
@@ -18,6 +18,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.InviteActivity.Companion.ARGS_ID
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class InviteFragment : BaseFragment() {
@@ -43,6 +44,7 @@ class InviteFragment : BaseFragment() {
 
     private val inviteViewModel by viewModels<InviteViewModel>()
 
+    private val binding by viewBinding(FragmentInviteBinding::bind)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_invite, container, false)
 
@@ -59,7 +61,7 @@ class InviteFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
 
         inviteViewModel.getConversation(conversationId).observe(
             viewLifecycleOwner,
@@ -67,15 +69,15 @@ class InviteFragment : BaseFragment() {
                 it.notNullWithElse(
                     { c ->
                         val url = c.codeUrl
-                        invite_link.text = url
-                        invite_forward.setOnClickListener {
+                        binding.inviteLink.text = url
+                        binding.inviteForward.setOnClickListener {
                             url?.let { ForwardActivity.show(requireContext(), url) }
                         }
-                        invite_copy.setOnClickListener {
+                        binding.inviteCopy.setOnClickListener {
                             context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))
                             context?.toast(R.string.copy_success)
                         }
-                        invite_share.setOnClickListener {
+                        binding.inviteShare.setOnClickListener {
                             val sendIntent = Intent()
                             sendIntent.action = Intent.ACTION_SEND
                             sendIntent.putExtra(Intent.EXTRA_TEXT, url)
@@ -90,12 +92,12 @@ class InviteFragment : BaseFragment() {
             }
         )
 
-        invite_revoke.setOnClickListener {
+        binding.inviteRevoke.setOnClickListener {
             inviteViewModel.rotate(conversationId).autoDispose(stopScope).subscribe(
                 {
                     if (it.isSuccess) {
                         val cr = it.data!!
-                        invite_link.text = cr.codeUrl
+                        binding.inviteLink.text = cr.codeUrl
                         inviteViewModel.updateCodeUrl(cr.conversationId, cr.codeUrl)
                     }
                 },

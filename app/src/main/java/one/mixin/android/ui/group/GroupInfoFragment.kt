@@ -16,10 +16,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_group_info.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentGroupInfoBinding
 import one.mixin.android.databinding.ViewGroupInfoHeaderBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
@@ -38,6 +38,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.MAX_USER
 import one.mixin.android.ui.group.adapter.GroupInfoAdapter
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
@@ -77,18 +78,19 @@ class GroupInfoFragment : BaseFragment() {
     private var dialog: Dialog? = null
     private lateinit var headerBinding: ViewGroupInfoHeaderBinding
 
+    private val binding by viewBinding(FragmentGroupInfoBinding::bind)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         LayoutInflater.from(context).inflate(R.layout.fragment_group_info, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.leftIb.setOnClickListener {
-            search_et.hideKeyboard()
+        binding.titleView.leftIb.setOnClickListener {
+            binding.searchEt.hideKeyboard()
             activity?.onBackPressed()
         }
-        headerBinding = ViewGroupInfoHeaderBinding.inflate(LayoutInflater.from(context), group_info_rv, false)
+        headerBinding = ViewGroupInfoHeaderBinding.inflate(LayoutInflater.from(context), binding.groupInfoRv, false)
         adapter.headerView = headerBinding.root
-        group_info_rv.adapter = adapter
+        binding.groupInfoRv.adapter = adapter
         adapter.setGroupInfoListener(
             object : GroupInfoAdapter.GroupInfoListener {
                 override fun onAdd() {
@@ -266,7 +268,7 @@ class GroupInfoFragment : BaseFragment() {
             }
         )
 
-        search_et.addTextChangedListener(
+        binding.searchEt.addTextChangedListener(
             object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 

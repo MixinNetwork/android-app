@@ -6,7 +6,6 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
@@ -17,12 +16,10 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.fragment_device.view.*
-import kotlinx.android.synthetic.main.fragment_device.view.ph
-import kotlinx.android.synthetic.main.fragment_device.view.title_view
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentDeviceBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
@@ -38,6 +35,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 
@@ -89,19 +87,21 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
         getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
     }
 
+    private val binding by viewBinding(FragmentDeviceBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_device, null)
-        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+        contentView = binding.root
+        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight()
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
 
-        contentView.title_view.leftIb.setOnClickListener { dismiss() }
-        contentView.auth_tv.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener { dismiss() }
+        binding.authTv.setOnClickListener {
             if (loggedIn) {
                 loadOuting.show()
                 lifecycleScope.launch {
@@ -178,12 +178,12 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     private fun updateUI(loggedIn: Boolean) {
         this.loggedIn = loggedIn
         if (loggedIn) {
-            contentView.auth_tv.text = getString(R.string.setting_logout_desktop)
-            contentView.desc_tv.text = getString(R.string.setting_desktop_signed)
-            contentView.auth_tv.textColor = requireContext().colorFromAttribute(R.attr.text_blue)
+            binding.authTv.text = getString(R.string.setting_logout_desktop)
+            binding.descTv.text = getString(R.string.setting_desktop_signed)
+            binding.authTv.textColor = requireContext().colorFromAttribute(R.attr.text_blue)
         } else {
-            contentView.auth_tv.text = getString(R.string.setting_scan_qr_code)
-            contentView.desc_tv.text = getString(R.string.setting_scan_qr_code)
+            binding.authTv.text = getString(R.string.setting_scan_qr_code)
+            binding.descTv.text = getString(R.string.setting_scan_qr_code)
         }
     }
 
