@@ -3,12 +3,9 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.view.View
 import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_multisigs_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -18,6 +15,7 @@ import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.response.MultisigsAction
 import one.mixin.android.api.response.MultisigsState
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.databinding.FragmentMultisigsBottomSheetBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -25,6 +23,7 @@ import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.MultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
@@ -46,30 +45,34 @@ class MultisigsBottomSheetDialogFragment :
 
     private var success: Boolean = false
 
+    private val binding by viewBinding(FragmentMultisigsBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_multisigs_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
         setBiometricItem()
 
         val t = this.t
-        if (t is Multi2MultiBiometricItem) {
-            if (t.action == MultisigsAction.cancel.name) {
-                contentView.title.text = getString(R.string.multisig_revoke_transaction)
-                contentView.arrow_iv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
+        binding.apply {
+            if (t is Multi2MultiBiometricItem) {
+                if (t.action == MultisigsAction.cancel.name) {
+                    title.text = getString(R.string.multisig_revoke_transaction)
+                    arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
+                } else {
+                    title.text = getString(R.string.multisig_transaction)
+                    arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
+                }
             } else {
-                contentView.title.text = getString(R.string.multisig_transaction)
-                contentView.arrow_iv.setImageResource(R.drawable.ic_multisigs_arrow_right)
+                title.text = getString(R.string.multisig_transaction)
+                arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
             }
-        } else {
-            contentView.title.text = getString(R.string.multisig_transaction)
-            contentView.arrow_iv.setImageResource(R.drawable.ic_multisigs_arrow_right)
+            subTitle.text = t.memo
+            biometricLayout.payTv.setText(R.string.multisig_pay_pin)
+            biometricLayout.biometricTv.setText(R.string.multisig_pay_biometric)
         }
-        contentView.sub_title.text = t.memo
-        contentView.pay_tv.setText(R.string.multisig_pay_pin)
-        contentView.biometric_tv.setText(R.string.multisig_pay_biometric)
 
         lifecycleScope.launch {
             val users = bottomViewModel.findMultiUsers(t.senders, t.receivers)
@@ -84,32 +87,36 @@ class MultisigsBottomSheetDialogFragment :
                         receivers.add(u)
                     }
                 }
-                contentView.senders_view.addList(senders)
-                contentView.receivers_view.addList(receivers)
+                binding.apply {
+                    sendersView.addList(senders)
+                    receiversView.addList(receivers)
 
-                contentView.senders_view.setOnClickListener {
-                    showUserList(senders, true)
-                }
-                contentView.receivers_view.setOnClickListener {
-                    showUserList(receivers, false)
+                    sendersView.setOnClickListener {
+                        showUserList(senders, true)
+                    }
+                    receiversView.setOnClickListener {
+                        showUserList(receivers, false)
+                    }
                 }
             }
         }
     }
 
     override fun checkState(t: BiometricItem) {
-        when (t.state) {
-            MultisigsState.signed.name -> {
-                contentView.error_btn.visibility = GONE
-                showErrorInfo(getString(R.string.multisig_state_signed))
-            }
-            MultisigsState.unlocked.name -> {
-                contentView.error_btn.visibility = GONE
-                showErrorInfo(getString(R.string.multisig_state_unlocked))
-            }
-            PaymentStatus.paid.name -> {
-                contentView.error_btn.visibility = GONE
-                showErrorInfo(getString(R.string.pay_paid))
+        binding.biometricLayout.apply {
+            when (t.state) {
+                MultisigsState.signed.name -> {
+                    errorBtn.visibility = GONE
+                    showErrorInfo(getString(R.string.multisig_state_signed))
+                }
+                MultisigsState.unlocked.name -> {
+                    errorBtn.visibility = GONE
+                    showErrorInfo(getString(R.string.multisig_state_unlocked))
+                }
+                PaymentStatus.paid.name -> {
+                    errorBtn.visibility = GONE
+                    showErrorInfo(getString(R.string.pay_paid))
+                }
             }
         }
     }

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.common.biometric
 
-import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -12,12 +11,12 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : BiometricItem> : B
 
     override fun onResume() {
         super.onResume()
-        contentView.asset_balance.parent.requestLayout()
+        biometricBinding.assetBalance.parent.requestLayout()
     }
 
     protected fun setBiometricItem() {
         val t = getBiometricItem()
-        contentView.asset_balance.setInfo(t)
+        biometricBinding.assetBalance.setInfo(t)
         checkState(t)
     }
 

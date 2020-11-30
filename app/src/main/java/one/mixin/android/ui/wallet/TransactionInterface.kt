@@ -13,7 +13,6 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionBinding
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
@@ -32,7 +31,6 @@ interface TransactionInterface {
     fun initView(
         fragment: Fragment,
         contentBinding: FragmentTransactionBinding,
-        titleBinding: ViewTitleBinding,
         lifecycleScope: CoroutineScope,
         walletViewModel: WalletViewModel,
         assetId: String?,
@@ -40,7 +38,7 @@ interface TransactionInterface {
         assetItem: AssetItem?,
         snapshotItem: SnapshotItem?
     ) {
-        titleBinding.rightAnimator.visibility = View.GONE
+        contentBinding.titleView.rightAnimator.visibility = View.GONE
         if (snapshotItem == null || assetItem == null) {
             if (snapshotId != null && assetId != null) {
                 lifecycleScope.launch {
