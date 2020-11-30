@@ -891,6 +891,8 @@ class ConversationFragment() :
         return binding.root
     }
 
+    override fun getContentView(): View = binding.root
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initView()

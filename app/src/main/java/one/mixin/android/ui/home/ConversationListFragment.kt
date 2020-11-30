@@ -157,6 +157,8 @@ class ConversationListFragment : LinkFragment() {
         return binding.root
     }
 
+    override fun getContentView() = binding.root
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController(activity as MainActivity)
