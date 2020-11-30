@@ -74,7 +74,6 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
                     rvCallback?.onRelease(fling)
                 }
             }
-            viewPager.registerOnPageChangeCallback(onPageChangeCallback)
         }
 
         albumCollection.onCreate(this, this)
@@ -94,10 +93,15 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         albumCollection.onSaveInstanceState(outState)
     }
 
-    override fun onDestroyView() {
+    override fun onStart() {
+        super.onStart()
+        binding.viewPager.registerOnPageChangeCallback(onPageChangeCallback)
+    }
+
+    override fun onStop() {
+        super.onStop()
         binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
         binding.va.removeCallbacks(restartLoadRunnable)
-        super.onDestroyView()
     }
 
     override fun onDestroy() {
