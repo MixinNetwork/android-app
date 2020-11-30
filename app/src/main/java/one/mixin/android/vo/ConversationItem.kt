@@ -79,7 +79,7 @@ data class ConversationItem(
     }
 
     fun isBot(): Boolean {
-        return appId != null
+        return category == ConversationCategory.CONTACT.name && appId != null
     }
 
     fun isCallMessage() =
