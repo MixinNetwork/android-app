@@ -161,6 +161,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
@@ -879,16 +880,12 @@ class ConversationFragment() :
         recipient = requireArguments().getParcelable(RECIPIENT)
     }
 
-    private var _binding: FragmentConversationBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding (FragmentConversationBinding::bind)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentConversationBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    ): View = inflater.inflate(R.layout.fragment_conversation, container, false)
 
     override fun getContentView(): View = binding.root
 
@@ -1084,7 +1081,6 @@ class ConversationFragment() :
         if (isAdded) {
             chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
-        _binding = null
         super.onDestroyView()
     }
 
