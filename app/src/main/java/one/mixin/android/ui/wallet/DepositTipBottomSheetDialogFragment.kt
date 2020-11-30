@@ -8,12 +8,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositTipBottomSheetBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.needShowReserve
 import one.mixin.android.widget.BottomSheet
@@ -29,10 +29,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private var _binding: FragmentDepositTipBottomSheetBinding? = null
-    private val binding get() = requireNotNull(_binding)
-    private var _badgeBinding: ViewBadgeCircleImageBinding? = null
-    private val badgeBinding get() = requireNotNull(_badgeBinding)
+    private val binding by viewBinding(FragmentDepositTipBottomSheetBinding::inflate)
 
     private val asset: AssetItem by lazy {
         requireArguments().getParcelable(ARGS_ASSET)!!
@@ -41,8 +38,6 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentDepositTipBottomSheetBinding.bind(View.inflate(context, R.layout.fragment_deposit_tip_bottom_sheet, null))
-        _badgeBinding = ViewBadgeCircleImageBinding.bind(binding.assetIcon)
         contentView = binding.root
         (dialog as BottomSheet).run {
             setCustomView(contentView)
@@ -51,7 +46,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         binding.apply {
             titleTv.text = getString(R.string.bottom_deposit_title, asset.symbol)
-            badgeBinding.apply {
+            binding.assetIcon.apply {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
@@ -75,8 +70,6 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
-        _badgeBinding = null
         countDownTimer?.cancel()
     }
 
