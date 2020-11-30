@@ -14,7 +14,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardAction
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 
@@ -26,9 +25,9 @@ class ForwardActivity : BlazeBaseActivity() {
 
         const val ARGS_RESULT = "args_result"
 
-        inline fun <reified T : ForwardCategory> show(
+        inline fun show(
             context: Context,
-            messages: ArrayList<ForwardMessage<T>>,
+            messages: ArrayList<ForwardMessage>,
             action: ForwardAction
         ) {
             val intent = Intent(context, ForwardActivity::class.java).apply {
@@ -42,20 +41,20 @@ class ForwardActivity : BlazeBaseActivity() {
         }
 
         fun show(context: Context, link: String) {
-            val list = ArrayList<ForwardMessage<ForwardCategory>>().apply {
+            val list = ArrayList<ForwardMessage>().apply {
                 add(ForwardMessage(ShareCategory.Text, content = link))
             }
             show(context, list, ForwardAction.App.Resultless())
         }
     }
 
-    class ForwardContract <T : ForwardCategory> : ActivityResultContract<Pair<ArrayList<ForwardMessage<T>>, String?>, Intent?>() {
+    class ForwardContract : ActivityResultContract<Pair<ArrayList<ForwardMessage>, String?>, Intent?>() {
         override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }
 
-        override fun createIntent(context: Context, input: Pair<ArrayList<ForwardMessage<T>>, String?>): Intent {
+        override fun createIntent(context: Context, input: Pair<ArrayList<ForwardMessage>, String?>): Intent {
             return Intent(context, ForwardActivity::class.java).apply {
                 putParcelableArrayListExtra(ARGS_MESSAGES, input.first)
                 putExtra(ARGS_ACTION, ForwardAction.App.Resultful(input.second))
@@ -66,7 +65,7 @@ class ForwardActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        val list = intent.getParcelableArrayListExtra<ForwardMessage<ForwardCategory>>(ARGS_MESSAGES)
+        val list = intent.getParcelableArrayListExtra<ForwardMessage>(ARGS_MESSAGES)
         val action = intent.getParcelableExtra<ForwardAction>(ARGS_ACTION)
         if (action != null && list != null && list.isNotEmpty()) {
             val f = ForwardFragment.newInstance(list, action)

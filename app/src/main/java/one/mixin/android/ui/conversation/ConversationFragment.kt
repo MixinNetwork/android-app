@@ -165,7 +165,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
@@ -861,7 +860,7 @@ class ConversationFragment() :
     // for testing
     var selectItem: SelectItem? = null
 
-    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage<ForwardCategory>>, String?>>
+    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)

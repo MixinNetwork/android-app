@@ -11,8 +11,8 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.parcelize.Parcelize
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.ConversationResponse

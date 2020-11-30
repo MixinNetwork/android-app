@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.CountDownTimer
-import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.R

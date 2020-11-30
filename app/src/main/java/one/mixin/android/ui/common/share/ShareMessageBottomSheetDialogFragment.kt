@@ -42,6 +42,7 @@ import one.mixin.android.vo.ShareImageData
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
+import java.lang.IllegalArgumentException
 
 @AndroidEntryPoint
 class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -53,7 +54,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val CONVERSATION_ID = "conversation_id"
         private const val APP = "app"
         private const val HOST = "host"
-        fun newInstance(shareMessage: ForwardMessage<ShareCategory>, conversationId: String?, app: App? = null, host: String? = null) =
+        fun newInstance(shareMessage: ForwardMessage, conversationId: String?, app: App? = null, host: String? = null) =
             ShareMessageBottomSheetDialogFragment().withArgs {
                 putString(CONVERSATION_ID, conversationId)
                 putParcelable(SHARE_MESSAGE, shareMessage)
@@ -78,7 +79,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments?.getString(CONVERSATION_ID)
     }
 
-    private val shareMessage: ForwardMessage<ShareCategory> by lazy {
+    private val shareMessage: ForwardMessage by lazy {
         requireNotNull(arguments?.getParcelable(SHARE_MESSAGE)) {
             "error data"
         }
@@ -154,6 +155,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             ShareCategory.Live -> {
                 getString(R.string.live)
             }
+            else -> throw IllegalArgumentException()
         }
     }
 

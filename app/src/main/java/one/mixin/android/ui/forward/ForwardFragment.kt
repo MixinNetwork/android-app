@@ -69,8 +69,8 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     companion object {
         const val TAG = "ForwardFragment"
 
-        inline fun <reified T : ForwardCategory> newInstance(
-            messages: ArrayList<ForwardMessage<T>>,
+        inline fun newInstance(
+            messages: ArrayList<ForwardMessage>,
             action: ForwardAction
         ): ForwardFragment {
             val fragment = ForwardFragment()
@@ -89,7 +89,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         ForwardAdapter()
     }
 
-    private val messages: ArrayList<ForwardMessage<ForwardCategory>> by lazy {
+    private val messages: ArrayList<ForwardMessage> by lazy {
         requireArguments().getParcelableArrayList(ARGS_MESSAGES)!!
     }
     private val action: ForwardAction by lazy {
