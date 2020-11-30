@@ -60,6 +60,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     private val componentListener = ComponentListener()
     private val binding = LayoutPlayerViewBinding.inflate(LayoutInflater.from(context), this)
     val videoAspectRatio get() = binding.videoAspectRatio
+    val playerControlView get() = binding.playerControlView
 
     init {
         val useController = true

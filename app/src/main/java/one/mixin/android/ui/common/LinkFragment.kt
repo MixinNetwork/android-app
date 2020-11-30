@@ -66,13 +66,13 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
 
     abstract fun getContentView(): View
     private val _contentView get() = getContentView()
-    private val stateLayout:View by lazy {
+    private val stateLayout: View by lazy {
         _contentView.findViewById(R.id.state_layout)
     }
-    private val progressBar:View by lazy {
+    private val progressBar: View by lazy {
         _contentView.findViewById(R.id.progressBar)
     }
-    private val stateTv:TextView by lazy {
+    private val stateTv: TextView by lazy {
         _contentView.findViewById(R.id.state_tv)
     }
 

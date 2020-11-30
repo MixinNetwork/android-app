@@ -8,8 +8,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.layout_player_view.view.*
-import kotlinx.android.synthetic.main.view_player_control.view.*
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
 import one.mixin.android.extension.decodeBase64
@@ -32,10 +30,10 @@ class VideoHolder(
     itemView: View,
     private val mediaPagerAdapterListener: MediaPagerAdapterListener
 ) : MediaPagerHolder(itemView) {
-
+    val binding = ItemPagerVideoLayoutBinding.bind(itemView)
     init {
         itemView.post {
-            itemView.bottom_ll.setPadding(12.dp, 24.dp, 12.dp, 12.dp + itemView.context.navigationBarHeight())
+            binding.playerView.playerControlView.bottomLayout.setPadding(12.dp, 24.dp, 12.dp, 12.dp + itemView.context.navigationBarHeight())
         }
     }
 
@@ -46,19 +44,19 @@ class VideoHolder(
     ) {
         val context = itemView.context
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
-        val binding = ItemPagerVideoLayoutBinding.bind(itemView)
-        itemView.close_iv.setOnClickListener {
+
+        binding.playerView.playerControlView.closeIv.setOnClickListener {
             mediaPagerAdapterListener.finishAfterTransition()
         }
-        itemView.pip_iv.setOnClickListener {
+        binding.playerView.playerControlView.pipView.setOnClickListener {
             binding.playerView.hideController()
             mediaPagerAdapterListener.switchToPin(messageItem, itemView)
         }
-        itemView.fullscreen_iv.setOnClickListener {
+        binding.playerView.playerControlView.fullscreenIv.setOnClickListener {
             mediaPagerAdapterListener.switchFullscreen()
         }
-        itemView.pip_iv.isEnabled = false
-        itemView.pip_iv.alpha = 0.5f
+        binding.playerView.playerControlView.pipView.isEnabled = false
+        binding.playerView.playerControlView.pipView.alpha = 0.5f
 
         binding.playerView.apply {
             currentMessageId = messageItem.messageId
@@ -78,17 +76,17 @@ class VideoHolder(
 
                 override fun onRenderFirstFrame() {
                     if (VideoPlayer.player().mId == messageItem.messageId) {
-                        itemView.video_aspect_ratio.updateLayoutParams {
+                        binding.playerView.videoAspectRatio.updateLayoutParams {
                             width = MATCH_PARENT
                             height = MATCH_PARENT
                         }
                         binding.previewIv.isVisible = false
-                        itemView.pip_iv.isEnabled = true
-                        itemView.pip_iv.alpha = 1f
+                        binding.playerView.playerControlView.pipView.isEnabled = true
+                        binding.playerView.playerControlView.pipView.alpha = 1f
                     } else {
                         binding.previewIv.isVisible = true
-                        itemView.pip_iv.isEnabled = false
-                        itemView.pip_iv.alpha = .5f
+                        binding.playerView.playerControlView.pipView.isEnabled = false
+                        binding.playerView.playerControlView.pipView.alpha = .5f
                     }
                 }
             }
@@ -147,12 +145,10 @@ class VideoHolder(
     }
 
     private fun setSize(context: Context, ratio: Float, view: View) {
-        val binding = ItemPagerVideoLayoutBinding.bind(view)
-
         val w = context.realSize().x
         val h = context.realSize().y
         val deviceRatio = w / h.toFloat()
-        val ratioParams = binding.playerView.video_aspect_ratio.layoutParams
+        val ratioParams = binding.playerView.videoAspectRatio.layoutParams
         val previewParams = binding.previewIv.layoutParams
         if (deviceRatio > ratio) {
             ratioParams.height = h
@@ -163,7 +159,7 @@ class VideoHolder(
         }
         previewParams.width = ratioParams.width
         previewParams.height = ratioParams.height
-        binding.playerView.video_aspect_ratio.layoutParams = ratioParams
+        binding.playerView.videoAspectRatio.layoutParams = ratioParams
         binding.previewIv.layoutParams = previewParams
     }
 }

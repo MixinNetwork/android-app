@@ -7,22 +7,19 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.DefaultControlDispatcher
 import com.google.android.exoplayer2.PlaybackPreparer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.ui.DefaultTimeBar
 import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewPlayerControlBinding
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.widget.PlayView2
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
 import java.util.Formatter
@@ -31,16 +28,6 @@ import kotlin.math.min
 
 class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
-
-    private val topLayout: View
-    private val bottomLayout: View
-    private val playView: PlayView2
-    private val durationView: TextView
-    private val positionView: TextView
-    private val timeBar: TimeBar
-    private val liveView: View
-    private val pipView: View
-    private val fullscreenView: ImageView
 
     private val componentListener = ComponentListener()
     private val controlDispatcher = DefaultControlDispatcher()
@@ -97,19 +84,21 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     var progressUpdateListener: ProgressUpdateListener? = null
     var visibilityListener: VisibilityListener? = null
 
+    private val binding = ViewPlayerControlBinding.inflate(LayoutInflater.from(context), this, true)
+    private val topLayout by lazy { binding.topFl }
+    private val playView by lazy { binding.playView }
+    private val durationView by lazy { binding.exoDuration }
+    private val positionView by lazy { binding.exoPosition }
+    private val timeBar by lazy { binding.exoProgress }
+    private val liveView by lazy { binding.liveTv }
+    val bottomLayout by lazy { binding.bottomLl }
+    val fullscreenIv by lazy { binding.fullscreenIv }
+    val pipView by lazy { binding.pipIv }
+    val closeIv by lazy { binding.closeIv }
+
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_player_control, this)
-        topLayout = findViewById(R.id.top_fl)
-        bottomLayout = findViewById(R.id.bottom_ll)
-        playView = findViewById(R.id.play_view)
         playView.setOnClickListener(componentListener)
-        durationView = findViewById(R.id.exo_duration)
-        positionView = findViewById(R.id.exo_position)
-        timeBar = findViewById<DefaultTimeBar>(R.id.exo_progress)
         timeBar.addListener(componentListener)
-        liveView = findViewById(R.id.live_tv)
-        pipView = findViewById(R.id.pip_iv)
-        fullscreenView = findViewById(R.id.fullscreen_iv)
     }
 
     override fun onFinishInflate() {
@@ -170,10 +159,10 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
 
     fun switchFullscreen(fullscreen: Boolean) {
         if (fullscreen) {
-            fullscreenView.setImageResource(R.drawable.ic_fullscreen_exit)
+            fullscreenIv.setImageResource(R.drawable.ic_fullscreen_exit)
             topLayout.setPadding(0, 0, 0, 0)
         } else {
-            fullscreenView.setImageResource(R.drawable.ic_fullscreen)
+            fullscreenIv.setImageResource(R.drawable.ic_fullscreen)
             topLayout.setPadding(0, statusBarHeight, 0, 0)
         }
     }
@@ -291,7 +280,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                 enableSeeking = isSeekable
             }
         }
-        timeBar.setEnabled(enableSeeking)
+        timeBar.isEnabled = enableSeeking
     }
 
     private fun updateTimeline() {
