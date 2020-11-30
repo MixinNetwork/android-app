@@ -52,41 +52,41 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
         binding.replyNameTv.setTextColor(BaseViewHolder.getColorById(messageItem.userId))
         when {
             messageItem.type.endsWith("_IMAGE") -> {
-                binding.replyNameTv.setText(R.string.photo)
+                binding.replyViewTv.setText(R.string.photo)
                 setIcon(R.drawable.ic_type_pic)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_VIDEO") -> {
-                binding.replyNameTv.setText(R.string.video)
+                binding.replyViewTv.setText(R.string.video)
                 setIcon(R.drawable.ic_type_video)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_LIVE") -> {
-                binding.replyNameTv.setText(R.string.live)
+                binding.replyViewTv.setText(R.string.live)
                 setIcon(R.drawable.ic_type_live)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.thumbUrl, R.drawable.image_holder)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_STICKER") -> {
-                binding.replyNameTv.setText(R.string.sticker)
+                binding.replyViewTv.setText(R.string.sticker)
                 setIcon(R.drawable.ic_type_stiker)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.assetUrl, R.drawable.image_holder)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_CONTACT") -> {
-                binding.replyNameTv.setText(R.string.contact)
+                binding.replyViewTv.setText(R.string.contact)
                 setIcon(R.drawable.ic_type_contact)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyAvatar.setInfo(
                     messageItem.sharedUserFullName,
                     messageItem.sharedUserAvatarUrl,
@@ -97,49 +97,49 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyViewIv.visibility = View.INVISIBLE
             }
             messageItem.type.endsWith("_DATA") -> {
-                binding.replyNameTv.setText(R.string.document)
+                binding.replyViewTv.setText(R.string.document)
                 setIcon(R.drawable.ic_type_file)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_POST") -> {
-                binding.replyNameTv.setText(R.string.post)
+                binding.replyViewTv.setText(R.string.post)
                 setIcon(R.drawable.ic_type_file)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_AUDIO") -> {
-                binding.replyNameTv.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
+                binding.replyViewTv.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
                 setIcon(R.drawable.ic_type_audio)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_LOCATION") -> {
-                binding.replyNameTv.setText(R.string.location)
+                binding.replyViewTv.setText(R.string.location)
                 setIcon(R.drawable.ic_type_location)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_TEXT") -> {
                 if (messageItem.mentions?.isNotBlank() == true) {
                     val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(messageItem.mentions) { _ -> }
-                    binding.replyNameTv.renderMessage(messageItem.content, mentionRenderContext)
+                    binding.replyViewTv.renderMessage(messageItem.content, mentionRenderContext)
                 } else {
-                    binding.replyNameTv.text = messageItem.content
+                    binding.replyViewTv.text = messageItem.content
                 }
-                TextViewCompat.setCompoundDrawablesRelative(binding.replyNameTv, null, null, null, null)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                TextViewCompat.setCompoundDrawablesRelative(binding.replyViewTv, null, null, null, null)
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type == MessageCategory.APP_CARD.name || messageItem.type == MessageCategory.APP_BUTTON_GROUP.name -> {
-                binding.replyNameTv.setText(R.string.extensions)
+                binding.replyViewTv.setText(R.string.extensions)
                 setIcon(R.drawable.ic_type_touch_app)
-                (binding.replyNameTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
