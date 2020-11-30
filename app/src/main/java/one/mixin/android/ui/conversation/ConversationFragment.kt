@@ -1057,8 +1057,8 @@ class ConversationFragment() :
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
         }
-        if (binding.chatControl?.isRecording == true) {
-            binding.chatControl?.cancelExternal()
+        if (binding.chatControl.isRecording) {
+            binding.chatControl.cancelExternal()
         }
         if (wakeLock.isHeld) {
             wakeLock.release()
