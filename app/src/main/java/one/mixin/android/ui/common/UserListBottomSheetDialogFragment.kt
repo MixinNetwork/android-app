@@ -3,16 +3,15 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_user_list_bottom_sheet.view.*
-import one.mixin.android.R
+import one.mixin.android.databinding.FragmentUserListBottomSheetBinding
 import one.mixin.android.databinding.ItemUserListBinding
 import one.mixin.android.extension.withArgs
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
@@ -41,16 +40,20 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter = UserListAdapter()
 
+    private val binding by viewBinding(FragmentUserListBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_user_list_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title_view.rightIv.setOnClickListener { dismiss() }
-        contentView.title_view.titleTv.text = title
-        contentView.recycler_view.layoutManager = LinearLayoutManager(requireContext())
-        contentView.recycler_view.adapter = adapter
+        binding.apply {
+            titleView.rightIv.setOnClickListener { dismiss() }
+            titleView.titleTv.text = title
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.adapter = adapter
+        }
         adapter.submitList(userList)
     }
 }

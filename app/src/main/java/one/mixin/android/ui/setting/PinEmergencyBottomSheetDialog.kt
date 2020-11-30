@@ -2,13 +2,13 @@ package one.mixin.android.ui.setting
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentPinBottomSheetBinding
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -19,13 +19,11 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
         fun newInstance() = PinEmergencyBottomSheetDialog()
     }
 
-    private var _binding: FragmentPinBottomSheetBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentPinBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentPinBottomSheetBinding.bind(View.inflate(context, R.layout.fragment_pin_bottom_sheet, null))
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
@@ -34,11 +32,6 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
             title.setText(R.string.setting_emergency_pin_tip)
             biometricLayout.biometricTv.setText(R.string.verify_by_biometric)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {

@@ -3,16 +3,16 @@ package one.mixin.android.ui.conversation.web
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_permission.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentPermissionBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_SCOPES
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -66,38 +66,40 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private var isHandle: Boolean = false
 
+    private val binding by viewBinding(FragmentPermissionBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_permission, null)
+        contentView = binding.root
         dialog as BottomSheet
         dialog.setCustomView(contentView)
         dialog.setCustomViewHeight(miniHeight)
 
         isHandle = false
         if (permission == PERMISSION_CAMERA) {
-            contentView.info.setText(R.string.permission_camera)
+            binding.info.setText(R.string.permission_camera)
         } else {
-            contentView.info.setText(R.string.permission_video)
+            binding.info.setText(R.string.permission_video)
         }
-        contentView.authorization.setOnClickListener {
+        binding.authorization.setOnClickListener {
             grantedAction?.invoke()
             isHandle = true
             dismiss()
         }
-        contentView.refuse.setOnClickListener {
+        binding.refuse.setOnClickListener {
             dismiss()
         }
         if (!appAvatar.isNullOrBlank()) {
-            contentView.avatar.layoutParams.width = requireContext().dpToPx(36f)
-            contentView.avatar.loadCircleImage(appAvatar)
+            binding.avatar.layoutParams.width = requireContext().dpToPx(36f)
+            binding.avatar.loadCircleImage(appAvatar)
         } else {
-            contentView.avatar.layoutParams.width = requireContext().dpToPx(0f)
+            binding.avatar.layoutParams.width = requireContext().dpToPx(0f)
         }
         if (!appName.isNullOrBlank()) {
-            contentView.name.text = appName
+            binding.name.text = appName
         } else {
-            contentView.name.text = title
+            binding.name.text = title
         }
     }
 

@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
@@ -15,9 +14,9 @@ import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_share_message_bottom_sheet.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentShareMessageBottomSheetBinding
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -33,6 +32,7 @@ import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -84,12 +84,14 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private val binding by viewBinding(FragmentShareMessageBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi", "StringFormatInvalid")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_share_message_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
-        contentView.close.setOnClickListener {
+        binding.close.setOnClickListener {
             dismiss()
         }
         try {
@@ -101,16 +103,16 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         when {
             app != null -> {
-                contentView.share_title.text = getString(R.string.share_message_description, "${app?.name}(${app?.appNumber})", getMessageCategory())
+                binding.shareTitle.text = getString(R.string.share_message_description, "${app?.name}(${app?.appNumber})", getMessageCategory())
             }
             host != null -> {
-                contentView.share_title.text = getString(R.string.share_message_description, host, getMessageCategory())
+                binding.shareTitle.text = getString(R.string.share_message_description, host, getMessageCategory())
             }
             else -> {
-                contentView.share_title.text = getString(R.string.share_message_description_empty, getMessageCategory())
+                binding.shareTitle.text = getString(R.string.share_message_description_empty, getMessageCategory())
             }
         }
-        contentView.send.setOnClickListener {
+        binding.send.setOnClickListener {
             if (shareMessage.category == ShareCategory.Image) {
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -186,43 +188,43 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun loadText(content: String) {
         val renderer = ShareTextRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content, requireContext().isNightMode())
     }
 
     private fun loadImage(content: String) {
         val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
         val renderer = ShareImageRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(shareImageData)
     }
 
     private fun loadContact(content: String) {
         lifecycleScope.launch {
             val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
-            contentView.progress.isVisible = true
+            binding.progress.isVisible = true
             val user = viewModel.refreshUser(contactData.userId)
             if (user == null) {
                 toast(R.string.error_not_found)
                 return@launch
             }
             val renderer = ShareContactRenderer(requireContext())
-            contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+            binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
             renderer.render(user, requireContext().isNightMode())
-            contentView.progress.isVisible = false
+            binding.progress.isVisible = false
         }
     }
 
     private fun loadPost(content: String) {
         val renderer = SharePostRenderer(requireActivity())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content, requireContext().isNightMode())
     }
 
     private fun loadAppCard(content: String) {
         val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
         val renderer = ShareAppCardRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(appCardData, requireContext().isNightMode())
     }
 
@@ -233,7 +235,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dismiss()
         }
         val renderer = ShareLiveRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+        binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(liveData)
     }
 
