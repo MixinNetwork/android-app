@@ -10,7 +10,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
@@ -19,13 +18,12 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.RoundTitleView
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
     private var dismissRunnable: Runnable? = null
-
-    protected open val biometricBinding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -54,15 +52,23 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     open fun doWithMixinErrorCode(errorCode: Int): String? {
         return null
     }
+    private val titleView by lazy {
+        contentView.findViewById<RoundTitleView>(R.id.title_view)
+    }
+
+    private val biometricLayout by lazy {
+        contentView.findViewById<BiometricLayout>(R.id.biometric_layout)
+    }
+    private val keyboard by lazy {
+        contentView.findViewById<Keyboard>(R.id.keyboard)
+    }
 
     protected fun setBiometricLayout() {
-        biometricBinding.apply {
-            titleView.rightIv.setOnClickListener { dismiss() }
-            biometricLayout.setKeyboard(biometricBinding.keyboard)
-            biometricLayout.callback = biometricLayoutCallback
-            root.post {
-                biometricLayout.keyboardHeight = keyboard.height
-            }
+        titleView.rightIv.setOnClickListener { dismiss() }
+        biometricLayout.setKeyboard(keyboard)
+        biometricLayout.callback = biometricLayoutCallback
+        contentView.post {
+            biometricLayout.keyboardHeight = keyboard.height
         }
     }
 
@@ -73,13 +79,13 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         errorAction: BiometricLayout.ErrorAction? = null
     ) {
         if (!isAdded) return
-        biometricBinding.biometricLayout.showErrorInfo(content, animate, tickMillis, errorAction)
+        biometricLayout.showErrorInfo(content, animate, tickMillis, errorAction)
     }
 
     protected fun showDone() {
         if (!isAdded) return
-        biometricBinding.biometricLayout.showDone()
-        dismissRunnable = biometricBinding.root.postDelayed(3000) {
+        biometricLayout.showDone()
+        dismissRunnable = contentView.postDelayed(3000) {
             dismissRunnable = null
             dismiss()
             callback?.onSuccess()
@@ -97,19 +103,19 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     protected fun showPin() {
         if (!isAdded) return
-        biometricBinding.biometricLayout.showPin(true)
+        biometricLayout.showPin(true)
     }
 
     private fun onPinComplete(pin: String) = bottomViewModel.viewModelScope.launch {
         if (!isAdded) return@launch
 
-        biometricBinding.biometricLayout.showPb()
+        biometricLayout.showPb()
         val response = try {
             withContext(Dispatchers.IO) {
                 invokeNetwork(pin)
             }
         } catch (t: Throwable) {
-            biometricBinding.biometricLayout.showPin(true)
+            biometricLayout.showPin(true)
             ErrorHandler.handleError(t)
             return@launch
         }
@@ -128,7 +134,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         } else {
             val errorString = doWithMixinErrorCode(response.errorCode)
 
-            biometricBinding.biometricLayout.let { layout ->
+            biometricLayout.let { layout ->
                 layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))
                 layout.pin.clear()
             }
@@ -150,7 +156,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
 
         override fun showPin() {
-            biometricBinding.biometricLayout.showPin(false)
+            biometricLayout.showPin(false)
         }
 
         override fun showAuthenticationScreen() {
@@ -159,7 +165,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
         override fun onCancel() {
             context?.let {
-                biometricBinding.biometricLayout.isBiometricTextVisible(BiometricUtil.shouldShowBiometric(it))
+                biometricLayout.isBiometricTextVisible(BiometricUtil.shouldShowBiometric(it))
             }
         }
     }

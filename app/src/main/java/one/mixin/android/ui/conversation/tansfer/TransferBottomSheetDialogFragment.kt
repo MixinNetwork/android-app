@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.tansfer
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.TextUtils
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.lifecycleScope
@@ -13,6 +12,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.nowInUtc
@@ -30,6 +30,7 @@ import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_TRANSACTION_FE
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
 import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
@@ -51,13 +52,15 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
 
     var onDestroyListener: OnDestroyListener? = null
 
+    private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_transfer_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
-        biometricBinding.apply {
+        binding.apply {
             when (t) {
                 is TransferBiometricItem -> {
                     (t as TransferBiometricItem).let {
@@ -88,7 +91,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     override fun checkState(t: BiometricItem) {
         val state = t.state
         if (state == PaymentStatus.paid.name) {
-            biometricBinding.biometricLayout.errorBtn.visibility = GONE
+            binding.biometricLayout.errorBtn.visibility = GONE
             showErrorInfo(getString(R.string.pay_paid))
         }
     }
