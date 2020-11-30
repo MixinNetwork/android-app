@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import android.view.View
 import androidx.core.view.isVisible
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize

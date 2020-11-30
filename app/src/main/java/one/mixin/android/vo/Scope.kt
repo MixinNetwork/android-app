@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
 
 @SuppressLint("ParcelCreator")

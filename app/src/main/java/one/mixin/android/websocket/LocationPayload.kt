@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 

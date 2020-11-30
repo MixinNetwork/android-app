@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.android.exoplayer2.util.MimeTypes
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream

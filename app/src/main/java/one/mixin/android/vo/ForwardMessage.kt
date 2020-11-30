@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Parcelable
 import androidx.core.net.toUri
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.getAttachment
