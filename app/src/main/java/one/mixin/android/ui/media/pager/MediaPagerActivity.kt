@@ -44,15 +44,12 @@ import com.google.android.exoplayer2.Player
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.layout_player_view.view.*
-import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
-import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
-import kotlinx.android.synthetic.main.view_drag_video_bottom.view.cancel
-import kotlinx.android.synthetic.main.view_player_control.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMediaPagerBinding
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
+import one.mixin.android.databinding.ViewDragImageBottomBinding
+import one.mixin.android.databinding.ViewDragVideoBottomBinding
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
@@ -293,9 +290,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             R.layout.view_drag_video_bottom,
             null
         )
+        val binding = ViewDragVideoBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.save_video.setOnClickListener {
+        binding.saveVideo.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
@@ -313,13 +311,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 )
             bottomSheet.dismiss()
         }
-        view.share.setOnClickListener {
+        binding.share.setOnClickListener {
             messageItem.mediaUrl?.let {
                 shareMedia(true, it)
             }
             bottomSheet.dismiss()
         }
-        view.cancel.setOnClickListener { bottomSheet.dismiss() }
+        binding.cancel.setOnClickListener { bottomSheet.dismiss() }
         bottomSheet.show()
     }
 
@@ -330,9 +328,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             R.layout.view_drag_image_bottom,
             null
         )
+        val binding = ViewDragImageBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.save.setOnClickListener {
+        binding.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
@@ -380,18 +379,17 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 )
             bottomSheet.dismiss()
         }
-        view.share_image.setOnClickListener {
+        binding.shareImage.setOnClickListener {
             item.mediaUrl?.let {
                 shareMedia(false, it)
             }
             bottomSheet.dismiss()
         }
-        view.decode.setOnClickListener {
+        binding.decode.setOnClickListener {
             decodeQRCode(pagerItemView as ViewGroup)
             bottomSheet.dismiss()
         }
-        view.cancel.setOnClickListener { bottomSheet.dismiss() }
-
+        binding.cancel.setOnClickListener { bottomSheet.dismiss() }
         bottomSheet.show()
     }
 
@@ -472,7 +470,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         pipAnimationInProgress = true
         findViewPagerChildByTag { windowView ->
             val videoAspectRatioLayout =
-                ItemPagerVideoLayoutBinding.bind(windowView).playerView.video_aspect_ratio
+                ItemPagerVideoLayoutBinding.bind(windowView).playerView.videoAspectRatio
             val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
             val isLandscape = isLandscape()
             if (isLandscape) {
@@ -528,10 +526,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             animatorSet.addListener(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationStart(animation: Animator?) {
-                        windowView.pip_iv.fadeOut()
-                        windowView.close_iv.fadeOut()
-                        if (windowView.live_tv.isEnabled) {
-                            windowView.live_tv.fadeOut()
+                        windowView.findViewById<View>(R.id.pip_iv).fadeOut()
+                        windowView.findViewById<View>(R.id.close_iv).fadeOut()
+                        if (windowView.findViewById<View>(R.id.live_tv).isEnabled) {
+                            windowView.findViewById<View>(R.id.live_tv).fadeOut()
                         }
                         if (!SystemUIManager.hasCutOut(window)) {
                             SystemUIManager.clearStyle(window)
@@ -696,7 +694,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
                     val playerView = ItemPagerVideoLayoutBinding.bind(it).playerView
-                    controllerVisibleBeforeDismiss = playerView.useController && playerView.player_control_view.isVisible
+                    controllerVisibleBeforeDismiss = playerView.useController && playerView.videoAspectRatio.isVisible
                     playerView.hideController()
                 }
             }
