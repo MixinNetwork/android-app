@@ -23,7 +23,6 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.getShareCategory
@@ -208,7 +207,7 @@ fun Uri.handleSchemeSend(
         {
             ForwardActivity.show(
                 context,
-                arrayListOf(ForwardMessage<ForwardCategory>(ShareCategory.Text, it)),
+                arrayListOf(ForwardMessage(ShareCategory.Text, it)),
                 ForwardAction.App.Resultless()
             )
             afterShareText?.invoke()

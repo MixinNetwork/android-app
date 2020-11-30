@@ -15,15 +15,13 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.fragment_wallet_search.*
-import kotlinx.android.synthetic.main.fragment_wallet_search.search_et
-import kotlinx.android.synthetic.main.fragment_wallet_search.search_rv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentWalletSearchBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -45,6 +43,9 @@ class WalletSearchFragment : BaseFragment() {
         const val POS_SEARCH = 1
         const val POS_EMPTY = 2
     }
+
+    private var _binding: FragmentWalletSearchBinding? = null
+    private val binding get() = requireNotNull(_binding)
 
     private val viewModel by viewModels<WalletViewModel>()
 
@@ -79,37 +80,39 @@ class WalletSearchFragment : BaseFragment() {
     }
 
     private fun initViews() {
-        back_ib.setOnClickListener {
-            search_et.hideKeyboard()
-            activity?.onBackPressed()
-        }
-        search_et.hint = getString(R.string.wallet_search_hint)
-        search_et.post { search_et?.showKeyboard() }
-        @SuppressLint("AutoDispose")
-        disposable = search_et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    if (it.isNullOrBlank()) {
-                        rv_va?.displayedChild = POS_DEFAULT
-                    } else {
-                        rv_va?.displayedChild = POS_SEARCH
-                        if (it.toString() != currentQuery) {
-                            currentQuery = it.toString()
-                            search(it.toString())
+        binding.apply {
+            backIb.setOnClickListener {
+                searchEt.hideKeyboard()
+                activity?.onBackPressed()
+            }
+            searchEt.hint = getString(R.string.wallet_search_hint)
+            searchEt.post { searchEt.showKeyboard() }
+            @SuppressLint("AutoDispose")
+            disposable = searchEt.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        if (it.isNullOrBlank()) {
+                            rvVa.displayedChild = POS_DEFAULT
+                        } else {
+                            rvVa.displayedChild = POS_SEARCH
+                            if (it.toString() != currentQuery) {
+                                currentQuery = it.toString()
+                                search(it.toString())
+                            }
                         }
-                    }
-                },
-                {}
-            )
+                    },
+                    {}
+                )
 
-        default_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        val decoration by lazy { StickyRecyclerHeadersDecoration(searchDefaultAdapter) }
-        default_rv.addItemDecoration(decoration)
-        default_rv.adapter = searchDefaultAdapter
+            defaultRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+            val decoration by lazy { StickyRecyclerHeadersDecoration(searchDefaultAdapter) }
+            defaultRv.addItemDecoration(decoration)
+            defaultRv.adapter = searchDefaultAdapter
 
-        search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        search_rv.adapter = searchAdapter
+            searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+            searchRv.adapter = searchAdapter
+        }
 
         searchDefaultAdapter.callback = callback
         searchAdapter.callback = callback
@@ -124,6 +127,11 @@ class WalletSearchFragment : BaseFragment() {
         currentSearch?.cancel()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         disposable?.dispose()
@@ -136,8 +144,8 @@ class WalletSearchFragment : BaseFragment() {
             viewLifecycleOwner,
             {
                 searchDefaultAdapter.topAssets = it
-                if (search_et.text.isNullOrBlank() && rv_va.displayedChild == POS_SEARCH) {
-                    rv_va.displayedChild = POS_DEFAULT
+                if (binding.searchEt.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
+                    binding.rvVa.displayedChild = POS_DEFAULT
                 }
             }
         )
@@ -163,7 +171,7 @@ class WalletSearchFragment : BaseFragment() {
             if (!isAdded) return@launch
 
             searchAdapter.clear()
-            pb.isVisible = true
+            binding.pb.isVisible = true
 
             val localAssets = viewModel.fuzzySearchAssets(query)
             searchAdapter.localAssets = localAssets
@@ -184,17 +192,17 @@ class WalletSearchFragment : BaseFragment() {
                 }
                 searchAdapter.remoteAssets = filtered
             }
-            pb.isVisible = false
+            binding.pb.isVisible = false
 
             if (localAssets.isNullOrEmpty() && remoteAssets.isNullOrEmpty()) {
-                rv_va?.displayedChild = POS_EMPTY
+                binding.rvVa.displayedChild = POS_EMPTY
             }
         }
     }
 
     private val callback = object : WalletSearchCallback {
         override fun onAssetClick(assetId: String, assetItem: AssetItem?) {
-            search_et?.hideKeyboard()
+            binding.searchEt.hideKeyboard()
             if (assetItem != null) {
                 view?.navigate(
                     R.id.action_wallet_search_to_transactions,
@@ -230,7 +238,7 @@ class WalletSearchFragment : BaseFragment() {
         } else {
             (rootView?.parent as? ViewGroup)?.removeView(rootView)
         }
-
-        return rootView
+        rootView?.let { _binding = FragmentWalletSearchBinding.bind(it) }
+        return binding.root
     }
 }

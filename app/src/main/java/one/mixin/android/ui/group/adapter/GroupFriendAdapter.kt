@@ -5,9 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_contact_header.view.*
-import kotlinx.android.synthetic.main.item_group_friend.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemContactHeaderBinding
+import one.mixin.android.databinding.ItemGroupFriendBinding
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
@@ -64,8 +64,7 @@ class GroupFriendAdapter :
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
-        return HeaderViewHolder(view)
+        return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: FriendViewHolder, position: Int) {
@@ -84,6 +83,7 @@ class GroupFriendAdapter :
     }
 
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val binding = ItemGroupFriendBinding.bind(itemView)
         fun bind(
             user: User,
             listener: GroupFriendListener?,
@@ -91,36 +91,36 @@ class GroupFriendAdapter :
             alreadyUserIds: List<String>?,
             isAdd: Boolean
         ) {
-            itemView.name.text = user.fullName
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+            binding.name.text = user.fullName
+            binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             if (isAdd) {
                 alreadyUserIds?.let {
                     if (it.contains(user.userId)) {
-                        itemView.cb.setButtonDrawable(R.drawable.ic_round_gray)
+                        binding.cb.setButtonDrawable(R.drawable.ic_round_gray)
                         itemView.isEnabled = false
-                        user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
+                        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
                         return
                     } else {
-                        itemView.cb.setButtonDrawable(R.drawable.cb_add_member)
+                        binding.cb.setButtonDrawable(R.drawable.cb_add_member)
                         itemView.isEnabled = true
                     }
                 }
             }
             if (checkedMap.containsKey(user.identityNumber)) {
-                itemView.cb.isChecked = checkedMap[user.identityNumber]!!
+                binding.cb.isChecked = checkedMap[user.identityNumber]!!
             }
-            user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
-            itemView.cb.isClickable = false
+            user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+            binding.cb.isClickable = false
             itemView.setOnClickListener {
-                itemView.cb.isChecked = !itemView.cb.isChecked
-                checkedMap[user.identityNumber] = itemView.cb.isChecked
-                listener?.onItemClick(user, itemView.cb.isChecked)
+                binding.cb.isChecked = !binding.cb.isChecked
+                checkedMap[user.identityNumber] = binding.cb.isChecked
+                listener?.onItemClick(user, binding.cb.isChecked)
             }
         }
     }
-    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(user: User) {
-            itemView.header.text = if (user.fullName != null && user.fullName.isNotEmpty())
+            binding.header.text = if (user.fullName != null && user.fullName.isNotEmpty())
                 user.fullName[0].toString() else ""
         }
     }

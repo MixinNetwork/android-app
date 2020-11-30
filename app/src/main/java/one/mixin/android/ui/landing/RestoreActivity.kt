@@ -11,12 +11,12 @@ import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_restore.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityRestoreBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
@@ -115,13 +115,15 @@ class RestoreActivity : BaseActivity() {
             }
     }
 
+    private lateinit var binding: ActivityRestoreBinding
     @SuppressLint("MissingPermission")
     private fun initUI(data: File) {
-        setContentView(R.layout.activity_restore)
-        restore_time.text = data.lastModified().run {
+        binding = ActivityRestoreBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.restoreTime.text = data.lastModified().run {
             this.getRelativeTimeSpan()
         }
-        restore_restore.setOnClickListener {
+        binding.restoreRestore.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
@@ -141,8 +143,8 @@ class RestoreActivity : BaseActivity() {
                     }
                 )
         }
-        restore_size.text = getString(R.string.restore_size, data.length().fileSize())
-        restore_skip.setOnClickListener {
+        binding.restoreSize.text = getString(R.string.restore_size, data.length().fileSize())
+        binding.restoreSkip.setOnClickListener {
             InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
             finish()
@@ -167,15 +169,15 @@ class RestoreActivity : BaseActivity() {
     }
 
     private fun showProgress() {
-        restore_progress.visibility = View.VISIBLE
-        restore_restore.visibility = View.GONE
-        restore_skip.visibility = View.GONE
+        binding.restoreProgress.visibility = View.VISIBLE
+        binding.restoreRestore.visibility = View.GONE
+        binding.restoreSkip.visibility = View.GONE
     }
 
     private fun hideProgress() {
-        restore_progress.visibility = View.GONE
-        restore_restore.visibility = View.VISIBLE
-        restore_skip.visibility = View.VISIBLE
+        binding.restoreProgress.visibility = View.GONE
+        binding.restoreRestore.visibility = View.VISIBLE
+        binding.restoreSkip.visibility = View.VISIBLE
     }
 
     override fun onBackPressed() {

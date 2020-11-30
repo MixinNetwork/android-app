@@ -10,8 +10,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewAvatarBinding
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.dpToPx
@@ -26,13 +26,15 @@ import org.jetbrains.anko.sp
 
 class AvatarView : ViewAnimator {
 
+    private val binding = ViewAvatarBinding.inflate(LayoutInflater.from(context), this)
+    val avatarSimple get() = binding.avatarSimple
+
     constructor(context: Context) : this(context, null)
     @SuppressLint("CustomViewStyleable")
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        LayoutInflater.from(context).inflate(R.layout.view_avatar, this, true)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
         if (ta.hasValue(R.styleable.CircleImageView_border_text_size)) {
-            avatar_tv.setTextSize(
+            binding.avatarTv.setTextSize(
                 TypedValue.COMPLEX_UNIT_PX,
                 ta.getDimension(
                     R.styleable.CircleImageView_border_text_size,
@@ -41,12 +43,12 @@ class AvatarView : ViewAnimator {
             )
         }
         if (ta.hasValue(R.styleable.CircleImageView_border_width)) {
-            avatar_simple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
-            avatar_simple.borderColor = ta.getColor(
+            avatarSimple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
+            avatarSimple.borderColor = ta.getColor(
                 R.styleable.CircleImageView_border_color,
                 ContextCompat.getColor(context, android.R.color.white)
             )
-            avatar_tv.setBorderInfo(avatar_simple.borderWidth.toFloat(), avatar_simple.borderColor)
+            binding.avatarTv.setBorderInfo(avatarSimple.borderWidth.toFloat(), avatarSimple.borderColor)
         }
 
         ta.recycle()
@@ -84,32 +86,32 @@ class AvatarView : ViewAnimator {
         Glide.with(this)
             .load(url)
             .apply(RequestOptions().dontAnimate().placeholder(R.drawable.ic_group_place_holder))
-            .into(avatar_simple)
+            .into(avatarSimple)
     }
 
     fun setNet(padding: Int = context.dpToPx(8f)) {
         displayedChild = POS_AVATAR
-        avatar_simple.setBackgroundResource(R.drawable.bg_circle_70_solid_gray)
-        avatar_simple.setImageResource(R.drawable.ic_transfer_address)
-        avatar_simple.setPadding(padding)
+        avatarSimple.setBackgroundResource(R.drawable.bg_circle_70_solid_gray)
+        avatarSimple.setImageResource(R.drawable.ic_transfer_address)
+        avatarSimple.setPadding(padding)
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        avatar_tv.round((right - left) / 2)
+        binding.avatarTv.round((right - left) / 2)
     }
 
     fun setInfo(name: String?, url: String?, id: String) {
-        avatar_tv.text = checkEmoji(name)
+        binding.avatarTv.text = checkEmoji(name)
         try {
-            avatar_tv.setBackgroundColor(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar(avatarArray.size))))
+            binding.avatarTv.setBackgroundColor(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar(avatarArray.size))))
         } catch (e: NumberFormatException) {
         }
         displayedChild = if (url != null && url.isNotEmpty()) {
-            avatar_simple.setBackgroundResource(0)
-            avatar_simple.setImageResource(0)
-            avatar_simple.setPadding(0)
-            avatar_simple.loadImage(url, R.drawable.ic_avatar_place_holder)
+            avatarSimple.setBackgroundResource(0)
+            avatarSimple.setImageResource(0)
+            avatarSimple.setPadding(0)
+            avatarSimple.loadImage(url, R.drawable.ic_avatar_place_holder)
             POS_AVATAR
         } else {
             POS_TEXT
@@ -121,23 +123,23 @@ class AvatarView : ViewAnimator {
             setInfo(app.name, app.iconUrl, app.appId)
         } else if (app is Bot) {
             displayedChild = POS_AVATAR
-            avatar_simple.setBackgroundResource(0)
-            avatar_simple.setPadding(0)
-            avatar_simple.clear()
-            avatar_simple.setImageResource(app.icon)
+            avatarSimple.setBackgroundResource(0)
+            avatarSimple.setPadding(0)
+            avatarSimple.clear()
+            avatarSimple.setImageResource(app.icon)
         }
     }
 
     fun setBorderWidth(borderWidth: Int) {
-        avatar_simple.borderWidth = borderWidth
+        avatarSimple.borderWidth = borderWidth
     }
 
     fun setBorderColor(borderColor: Int) {
-        avatar_simple.borderColor = borderColor
+        avatarSimple.borderColor = borderColor
     }
 
     fun setTextSize(size: Float) {
-        avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+        binding.avatarTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
     }
 
     private fun getAvatarPlaceHolderById(code: Int): Int {

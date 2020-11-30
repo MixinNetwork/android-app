@@ -23,13 +23,12 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_forward.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentForwardBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -44,6 +43,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.ShortcutInfo
 import one.mixin.android.util.generateDynamicShortcut
 import one.mixin.android.util.maxDynamicShortcutCount
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
@@ -65,12 +65,12 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
-class ForwardFragment : BaseFragment() {
+class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     companion object {
         const val TAG = "ForwardFragment"
 
-        inline fun <reified T : ForwardCategory> newInstance(
-            messages: ArrayList<ForwardMessage<T>>,
+        inline fun newInstance(
+            messages: ArrayList<ForwardMessage>,
             action: ForwardAction
         ): ForwardFragment {
             val fragment = ForwardFragment()
@@ -89,7 +89,7 @@ class ForwardFragment : BaseFragment() {
         ForwardAdapter()
     }
 
-    private val messages: ArrayList<ForwardMessage<ForwardCategory>> by lazy {
+    private val messages: ArrayList<ForwardMessage> by lazy {
         requireArguments().getParcelableArrayList(ARGS_MESSAGES)!!
     }
     private val action: ForwardAction by lazy {
@@ -98,14 +98,16 @@ class ForwardFragment : BaseFragment() {
 
     private val sender = Session.getAccount()?.toUser()
 
+    private val binding by viewBinding(FragmentForwardBinding::bind)
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_forward, container, false)
 
     private fun setForwardText() {
         if (adapter.selectItem.size > 0) {
-            forward_group.visibility = View.VISIBLE
+            binding.forwardGroup.visibility = View.VISIBLE
         } else {
-            forward_group.visibility = View.GONE
+            binding.forwardGroup.visibility = View.GONE
         }
         val str = StringBuffer()
         for (i in adapter.selectItem.size - 1 downTo 0) {
@@ -127,7 +129,7 @@ class ForwardFragment : BaseFragment() {
                 }
             }
         }
-        forward_tv.text = str
+        binding.forwardTv.text = str
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -144,16 +146,16 @@ class ForwardFragment : BaseFragment() {
         }
 
         if (!action.name.isNullOrBlank()) {
-            title_view.title_tv.text = action.name
+            binding.titleView.titleTv.text = action.name
         }
-        title_view.setOnClickListener {
-            search_et?.hideKeyboard()
+        binding.titleView.setOnClickListener {
+            binding.searchEt.hideKeyboard()
             activity?.onBackPressed()
         }
-        forward_rv.adapter = adapter
-        forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        forward_bn.setOnClickListener {
-            search_et?.hideKeyboard()
+        binding.forwardRv.adapter = adapter
+        binding.forwardRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        binding.forwardBn.setOnClickListener {
+            binding.searchEt.hideKeyboard()
             checkPermission {
                 updateDynamicShortcuts(adapter.selectItem)
 
@@ -195,7 +197,7 @@ class ForwardFragment : BaseFragment() {
                 }
             }
         )
-        search_et.addTextChangedListener(mWatcher)
+        binding.searchEt.addTextChangedListener(mWatcher)
 
         loadData()
     }

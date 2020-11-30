@@ -10,8 +10,8 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import kotlinx.android.synthetic.main.view_six.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewSixBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.loadImage
@@ -33,71 +33,70 @@ class SixLayout : ConstraintLayout {
     private var titles: List<TextView>
     private var titlesLayouts: List<RelativeLayout>
     private var avatars: List<CircleImageView>
-
+    private val binding = ViewSixBinding.inflate(LayoutInflater.from(context), this)
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_six, this, true)
         layouts = listOf(
-            thumbnail_layout_1,
-            thumbnail_layout_2,
-            thumbnail_layout_3,
-            thumbnail_layout_4,
-            thumbnail_layout_5,
-            thumbnail_layout_6
+            binding.thumbnailLayout1,
+            binding.thumbnailLayout2,
+            binding.thumbnailLayout3,
+            binding.thumbnailLayout4,
+            binding.thumbnailLayout5,
+            binding.thumbnailLayout6
         )
         thumbs = listOf(
-            thumbnail_iv_1,
-            thumbnail_iv_2,
-            thumbnail_iv_3,
-            thumbnail_iv_4,
-            thumbnail_iv_5,
-            thumbnail_iv_6
+            binding.thumbnailIv1,
+            binding.thumbnailIv2,
+            binding.thumbnailIv3,
+            binding.thumbnailIv4,
+            binding.thumbnailIv5,
+            binding.thumbnailIv6
         )
         avatars = listOf(
-            avatar_1,
-            avatar_2,
-            avatar_3,
-            avatar_4,
-            avatar_5,
-            avatar_6
+            binding.avatar1,
+            binding.avatar2,
+            binding.avatar3,
+            binding.avatar4,
+            binding.avatar5,
+            binding.avatar6
         )
         titles = listOf(
-            title_1,
-            title_2,
-            title_3,
-            title_4,
-            title_5,
-            title_6,
+            binding.title1,
+            binding.title2,
+            binding.title3,
+            binding.title4,
+            binding.title5,
+            binding.title6,
         )
         titlesLayouts = listOf(
-            title_layout_1,
-            title_layout_2,
-            title_layout_3,
-            title_layout_4,
-            title_layout_5,
-            title_layout_6
+            binding.titleLayout1,
+            binding.titleLayout2,
+            binding.titleLayout3,
+            binding.titleLayout4,
+            binding.titleLayout5,
+            binding.titleLayout6
         )
-        thumbnail_layout_1.round(8.dp)
-        thumbnail_layout_2.round(8.dp)
-        thumbnail_layout_3.round(8.dp)
-        thumbnail_layout_4.round(8.dp)
-        thumbnail_layout_5.round(8.dp)
-        thumbnail_layout_6.round(8.dp)
-        close_1.setOnClickListener {
+        binding.thumbnailLayout1.round(8.dp)
+        binding.thumbnailLayout2.round(8.dp)
+        binding.thumbnailLayout3.round(8.dp)
+        binding.thumbnailLayout4.round(8.dp)
+        binding.thumbnailLayout5.round(8.dp)
+        binding.thumbnailLayout6.round(8.dp)
+        binding.close1.setOnClickListener {
             onCloseListener?.onClose(0)
         }
-        close_2.setOnClickListener {
+        binding.close2.setOnClickListener {
             onCloseListener?.onClose(1)
         }
-        close_3.setOnClickListener {
+        binding.close3.setOnClickListener {
             onCloseListener?.onClose(2)
         }
-        close_4.setOnClickListener {
+        binding.close4.setOnClickListener {
             onCloseListener?.onClose(3)
         }
-        close_5.setOnClickListener {
+        binding.close5.setOnClickListener {
             onCloseListener?.onClose(4)
         }
-        close_6.setOnClickListener {
+        binding.close6.setOnClickListener {
             onCloseListener?.onClose(5)
         }
     }

@@ -32,12 +32,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin20"
             android:layout_marginBottom="32dp"
-            android:drawableStart="@drawable/ic_biometric"
             android:drawablePadding="@dimen/padding8"
             android:text="@string/multisig_pay_biometric"
             android:textColor="@color/wallet_blue_secondary"
             android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/ic_biometric" />
     </LinearLayout>
 
     <FrameLayout

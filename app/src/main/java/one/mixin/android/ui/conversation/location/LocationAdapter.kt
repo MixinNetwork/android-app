@@ -4,8 +4,8 @@ import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_location.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemLocationBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
@@ -36,22 +36,23 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPa
     override fun getItemCount(): Int = venues.notNullWithElse({ it.size + 1 }, 1)
 
     override fun onBindViewHolder(holder: VenueHolder, position: Int) {
+        val binding = ItemLocationBinding.bind(holder.itemView)
         if (position == 0) {
-            holder.itemView.title.setText(R.string.location_send_current_location)
-            holder.itemView.sub_title.text = accurate
-            holder.itemView.location_icon.setBackgroundResource(R.drawable.ic_current_location)
-            holder.itemView.location_icon.setImageDrawable(null)
-            holder.itemView.location_icon.imageTintList = null
+            binding.title.setText(R.string.location_send_current_location)
+            binding.subTitle.text = accurate
+            binding.locationIcon.setBackgroundResource(R.drawable.ic_current_location)
+            binding.locationIcon.setImageDrawable(null)
+            binding.locationIcon.imageTintList = null
             holder.itemView.setOnClickListener {
                 currentCallback()
             }
         } else {
             val venue = venues?.get(position - 1)
-            holder.itemView.title.text = venue?.name
-            holder.itemView.location_icon.loadImage(venue?.getImageUrl())
-            holder.itemView.location_icon.setBackgroundResource(R.drawable.bg_menu)
-            holder.itemView.location_icon.imageTintList = ColorStateList.valueOf(holder.itemView.context.colorFromAttribute(R.attr.icon_default))
-            holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress?.get(0)
+            binding.title.text = venue?.name
+            binding.locationIcon.loadImage(venue?.getImageUrl())
+            binding.locationIcon.setBackgroundResource(R.drawable.bg_menu)
+            binding.locationIcon.imageTintList = ColorStateList.valueOf(holder.itemView.context.colorFromAttribute(R.attr.icon_default))
+            binding.subTitle.text = venue?.location?.address ?: venue?.location?.formattedAddress?.get(0)
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
                 callback(

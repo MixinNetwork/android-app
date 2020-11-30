@@ -8,10 +8,9 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.date_wrapper.view.*
-import kotlinx.android.synthetic.main.item_chat_text_quote.view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
@@ -27,31 +26,31 @@ import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
-class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(containerView) {
+class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseMentionHolder(binding.root) {
     private val dp16 = itemView.context.dpToPx(16f)
     private val dp6 = itemView.context.dpToPx(6f)
 
     init {
-        itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-        itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp16
-        itemView.chat_msg_content.setMaxWidth(itemView.context.maxItemWidth() - dp16)
+        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.chatTv.setUrlModeColor(LINK_COLOR)
+        binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
+        binding.chatMsgContent.setMaxWidth(itemView.context.maxItemWidth() - dp16)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as FrameLayout.LayoutParams)
         if (isMe) {
             lp.gravity = Gravity.END
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_content_layout,
+                    binding.chatContentLayout,
                     R.drawable.chat_bubble_reply_me_last,
                     R.drawable.chat_bubble_reply_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_content_layout,
+                    binding.chatContentLayout,
                     R.drawable.chat_bubble_reply_me,
                     R.drawable.chat_bubble_reply_me_night
                 )
@@ -60,13 +59,13 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             lp.gravity = Gravity.START
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_content_layout,
+                    binding.chatContentLayout,
                     R.drawable.chat_bubble_reply_other_last,
                     R.drawable.chat_bubble_reply_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_content_layout,
+                    binding.chatContentLayout,
                     R.drawable.chat_bubble_reply_other,
                     R.drawable.chat_bubble_reply_other_night
                 )
@@ -94,7 +93,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
 
-        itemView.chat_tv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
+        binding.chatTv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlLongClick(matchedText)
@@ -104,7 +103,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             }
         }
 
-        itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
+        binding.chatTv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
@@ -114,7 +113,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             }
         }
 
-        itemView.chat_tv.setOnLongClickListener {
+        binding.chatTv.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -123,7 +122,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             }
         }
 
-        itemView.chat_content_layout.setOnLongClickListener {
+        binding.chatContentLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -132,7 +131,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             }
         }
 
-        itemView.chat_tv.setOnClickListener {
+        binding.chatTv.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
@@ -153,14 +152,14 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             }
         }
 
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
+        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
             ) { identityNumber ->
                 onItemListener.onMentionClick(identityNumber)
             }
-            itemView.chat_tv.renderMessage(messageItem.content, mentionRenderContext, keyword)
+            binding.chatTv.renderMessage(messageItem.content, mentionRenderContext, keyword)
         } else {
             keyword.notNullWithElse(
                 { k ->
@@ -174,48 +173,48 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
                                 start + k.length,
                                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                             )
-                            itemView.chat_tv.text = sp
+                            binding.chatTv.text = sp
                         } else {
-                            itemView.chat_tv.text = str
+                            binding.chatTv.text = str
                         }
                     }
                 },
                 {
-                    itemView.chat_tv.text = messageItem.content
+                    binding.chatTv.text = messageItem.content
                 }
             )
         }
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = itemView.dip(3)
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
 
         if (messageItem.appId != null) {
-            itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-            itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+            binding.chatName.compoundDrawablePadding = itemView.dip(3)
         } else {
-            itemView.chat_name.setCompoundDrawables(null, null, null, null)
+            binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            itemView.chat_flag.isVisible = statusIcon != null
-            itemView.chat_flag.setImageDrawable(statusIcon)
-            itemView.chat_secret.isVisible = secretIcon != null
-            itemView.chat_representative.isVisible = representativeIcon != null
+            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
+            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
+            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
+            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
         }
-        itemView.chat_secret.isVisible = messageItem.isSignal()
-        itemView.chat_content_layout.setOnClickListener {
+        binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
+        binding.chatContentLayout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {
@@ -224,8 +223,8 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
         }
 
         val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        itemView.chat_quote.bind(quoteMessage)
-        itemView.chat_quote.setOnClickListener {
+        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {

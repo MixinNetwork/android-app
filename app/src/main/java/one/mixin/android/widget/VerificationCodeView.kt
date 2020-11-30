@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.AnimationSet
@@ -13,8 +14,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.core.view.updateLayoutParams
-import kotlinx.android.synthetic.main.view_verification_code.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewVerificationCodeBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.backgroundColor
@@ -123,11 +124,11 @@ class VerificationCodeView : LinearLayout {
         removeAllViews()
 
         for (i in 0 until count) {
-            val item = View.inflate(context, R.layout.view_verification_code, null)
-            codes.add(item.code)
-            spaces.add(item.space)
-            containers.add(item)
-            addView(item)
+            val itemBinding = ViewVerificationCodeBinding.inflate(LayoutInflater.from(context), null, false)
+            codes.add(itemBinding.code)
+            spaces.add(itemBinding.space)
+            containers.add(itemBinding.root)
+            addView(itemBinding.root)
         }
         spaces.forEach { view ->
             view.setBackgroundColor(inputColor)

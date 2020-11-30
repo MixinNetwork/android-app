@@ -4,89 +4,90 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_setup_name.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.databinding.FragmentSetupNameBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 
 @AndroidEntryPoint
-class SetupNameFragment : BaseFragment() {
+class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
 
     private val mobileViewModel by viewModels<MobileViewModel>()
+    private val binding by viewBinding(FragmentSetupNameBinding::bind)
 
     companion object {
         fun newInstance() = SetupNameFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_setup_name, container, false)
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().onlining.set(true)
-        name_fab.visibility = GONE
-        name_fab.setOnClickListener {
-            name_fab.show()
-            name_cover.visibility = VISIBLE
-            val accountUpdateRequest = AccountUpdateRequest(name_et.text.toString())
-            mobileViewModel.update(accountUpdateRequest)
-                .autoDispose(stopScope).subscribe(
-                    { r: MixinResponse<Account> ->
-                        name_fab?.hide()
-                        name_cover?.visibility = INVISIBLE
-                        if (!r.isSuccess) {
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                            return@subscribe
-                        }
-                        r.data?.let { data ->
-                            Session.storeAccount(data)
-                            mobileViewModel.insertUser(data.toUser())
-                        }
+        binding.apply {
+            nameFab.visibility = GONE
+            nameFab.setOnClickListener {
+                nameFab.show()
+                nameCover.visibility = VISIBLE
+                val accountUpdateRequest = AccountUpdateRequest(nameEt.text.toString())
+                mobileViewModel.update(accountUpdateRequest)
+                    .autoDispose(stopScope).subscribe(
+                        { r: MixinResponse<Account> ->
+                            nameFab.hide()
+                            nameCover.visibility = INVISIBLE
+                            if (!r.isSuccess) {
+                                ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                                return@subscribe
+                            }
+                            r.data?.let { data ->
+                                Session.storeAccount(data)
+                                mobileViewModel.insertUser(data.toUser())
+                            }
 
-                        name_et?.hideKeyboard()
-                        startActivity(Intent(context, MainActivity::class.java))
-                        activity?.finish()
-                    },
-                    { t: Throwable ->
-                        name_fab?.hide()
-                        name_cover?.visibility = INVISIBLE
-                        ErrorHandler.handleError(t)
-                    }
-                )
-        }
-        name_et.addTextChangedListener(mWatcher)
-        name_cover.isClickable = true
+                            nameEt.hideKeyboard()
+                            startActivity(Intent(context, MainActivity::class.java))
+                            activity?.finish()
+                        },
+                        { t: Throwable ->
+                            nameFab.hide()
+                            nameCover.visibility = INVISIBLE
+                            ErrorHandler.handleError(t)
+                        }
+                    )
+            }
+            nameEt.addTextChangedListener(mWatcher)
+            nameCover.isClickable = true
 
-        name_et.post {
-            name_et?.requestFocus()
-            name_et?.showKeyboard()
+            nameEt.post {
+                nameEt.requestFocus()
+                nameEt.showKeyboard()
+            }
         }
     }
 
     private fun handleEditView(str: String) {
-        name_et.setSelection(name_et.text.toString().length)
-        if (str.isNotBlank()) {
-            name_fab.visibility = VISIBLE
-        } else {
-            name_fab.visibility = INVISIBLE
+        binding.apply {
+            nameEt.setSelection(nameEt.text.toString().length)
+            if (str.isNotBlank()) {
+                nameFab.visibility = VISIBLE
+            } else {
+                nameFab.visibility = INVISIBLE
+            }
         }
     }
 

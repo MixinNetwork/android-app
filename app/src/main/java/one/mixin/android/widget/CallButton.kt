@@ -5,8 +5,8 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.Checkable
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.view_call_button.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewCallButtonBinding
 import org.jetbrains.anko.backgroundResource
 
 class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, attr), Checkable {
@@ -19,8 +19,9 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
     private var srcUnchecked = 0
     private var srcDisable = 0
 
+    private val binding = ViewCallButtonBinding.inflate(LayoutInflater.from(context), this, true)
+
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_call_button, this, true)
         val ta = context.obtainStyledAttributes(attr, R.styleable.CallButton)
         checkable = ta.getBoolean(R.styleable.CallButton_android_checkable, false)
         checked = ta.getBoolean(R.styleable.CallButton_android_checked, true)
@@ -64,17 +65,17 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
 
     private fun update(isChecked: Boolean) {
         if (!isEnabled) {
-            icon.backgroundResource = bgUnchecked
-            icon.setImageResource(srcDisable)
+            binding.icon.backgroundResource = bgUnchecked
+            binding.icon.setImageResource(srcDisable)
             return
         }
 
         if (isChecked) {
-            icon.backgroundResource = bgChecked
-            icon.setImageResource(srcChecked)
+            binding.icon.backgroundResource = bgChecked
+            binding.icon.setImageResource(srcChecked)
         } else {
-            icon.backgroundResource = bgUnchecked
-            icon.setImageResource(srcUnchecked)
+            binding.icon.backgroundResource = bgUnchecked
+            binding.icon.setImageResource(srcUnchecked)
         }
     }
 

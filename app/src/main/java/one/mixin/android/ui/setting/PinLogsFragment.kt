@@ -11,68 +11,64 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_pin_logs.*
-import kotlinx.android.synthetic.main.item_pin_logs.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.databinding.FragmentPinLogsBinding
+import one.mixin.android.databinding.ItemPinLogsBinding
 import one.mixin.android.extension.localTime
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.LogResponse
 
 @AndroidEntryPoint
-class PinLogsFragment : BaseFragment() {
+class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
     private val viewModel by viewModels<SettingViewModel>()
+    private val binding by viewBinding(FragmentPinLogsBinding::bind)
 
     companion object {
         const val TAG = "PinLogsFragment"
         fun newInstance() = PinLogsFragment()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_pin_logs, container, false)
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        list.adapter = adapter
-        list.setOnScrollChangeListener { _, _, _, _, _ ->
-            if (isAdded) {
-                if (!list.canScrollVertically(1)) {
-                    loadMore()
+        binding.apply {
+            title.leftIb.setOnClickListener { activity?.onBackPressed() }
+            list.adapter = adapter
+            list.setOnScrollChangeListener { _, _, _, _, _ ->
+                if (isAdded) {
+                    if (!list.canScrollVertically(1)) {
+                        loadMore()
+                    }
                 }
             }
-        }
-        viewModel.viewModelScope.launch {
-            isLoading = true
-            handleMixinResponse(
-                invokeNetwork = {
-                    viewModel.getPinLogs()
-                },
-                successBlock = { result ->
-                    hasMore = result.data?.isNotEmpty() == true
-                    empty.isVisible = false
-                    list.isVisible = true
-                    adapter.data.addAll(result.data!!)
-                    adapter.notifyDataSetChanged()
-                    isLoading = false
-                    progress.isVisible = false
-                },
-                defaultExceptionHandle = {
-                    hasMore = false
-                    empty.isVisible = true
-                    list.isVisible = false
-                    isLoading = false
-                    progress.isVisible = false
-                    ErrorHandler.handleError(it)
-                }
-            )
+            viewModel.viewModelScope.launch {
+                isLoading = true
+                handleMixinResponse(
+                    invokeNetwork = {
+                        viewModel.getPinLogs()
+                    },
+                    successBlock = { result ->
+                        hasMore = result.data?.isNotEmpty() == true
+                        empty.isVisible = false
+                        list.isVisible = true
+                        adapter.data.addAll(result.data!!)
+                        adapter.notifyDataSetChanged()
+                        isLoading = false
+                        progress.isVisible = false
+                    },
+                    defaultExceptionHandle = {
+                        hasMore = false
+                        empty.isVisible = true
+                        list.isVisible = false
+                        isLoading = false
+                        progress.isVisible = false
+                        ErrorHandler.handleError(it)
+                    }
+                )
+            }
         }
     }
 
@@ -106,14 +102,16 @@ class PinLogsFragment : BaseFragment() {
         PinAdapter()
     }
 
-    class PinHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class PinHolder(private val itemBinding: ItemPinLogsBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         @SuppressLint("SetTextI18n")
         fun bind(pin: LogResponse) {
             val result = getLogDescription(itemView.context, pin.code)
-            itemView.log_title.text = result.first
-            itemView.log_desc.text = result.second
-            itemView.log_created.text = pin.createdAt.localTime()
-            itemView.log_address.text = pin.ipAddress
+            itemBinding.apply {
+                logTitle.text = result.first
+                logDesc.text = result.second
+                logCreated.text = pin.createdAt.localTime()
+                logAddress.text = pin.ipAddress
+            }
         }
 
         private fun getLogDescription(context: Context, code: String): Pair<String, String> {
@@ -174,11 +172,7 @@ class PinLogsFragment : BaseFragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PinHolder = PinHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.item_pin_logs,
-                parent,
-                false
-            )
+            ItemPinLogsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
     }
 }

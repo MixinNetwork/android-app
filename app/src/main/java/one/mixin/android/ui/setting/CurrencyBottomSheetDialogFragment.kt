@@ -13,14 +13,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_currency_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.item_currency.view.*
-import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.close_iv
-import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.search_et
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.databinding.FragmentCurrencyBottomSheetBinding
+import one.mixin.android.databinding.ItemCurrencyBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.statusBarHeight
@@ -28,7 +26,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.BottomSheetRelativeLayout
 import one.mixin.android.widget.SearchView
 
 @AndroidEntryPoint
@@ -44,33 +41,43 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val currencyAdapter = CurrencyAdapter()
     private val currencies = arrayListOf<Currency>()
 
+    private var _binding: FragmentCurrencyBottomSheetBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        val view = View.inflate(context, R.layout.fragment_currency_bottom_sheet, null) as BottomSheetRelativeLayout
+        _binding = FragmentCurrencyBottomSheetBinding.bind(View.inflate(context, R.layout.fragment_currency_bottom_sheet, null))
         context?.let { c ->
             val topOffset = c.statusBarHeight() + c.appCompatActionBarHeight()
-            view.heightOffset = topOffset
+            binding.root.heightOffset = topOffset
         }
-        contentView = view
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.close_iv.setOnClickListener { dismiss() }
-        contentView.search_et.listener = object : SearchView.OnSearchViewListener {
-            override fun afterTextChanged(s: Editable?) {
-                filter(s.toString())
-            }
+        binding.apply {
+            closeIv.setOnClickListener { dismiss() }
+            searchEt.listener = object : SearchView.OnSearchViewListener {
+                override fun afterTextChanged(s: Editable?) {
+                    filter(s.toString())
+                }
 
-            override fun onSearch() {
+                override fun onSearch() {
+                }
             }
-        }
-        currencyAdapter.currencyListener = object : OnCurrencyListener {
-            override fun onClick(currency: Currency) {
-                savePreference(currency)
+            currencyAdapter.currencyListener = object : OnCurrencyListener {
+                override fun onClick(currency: Currency) {
+                    savePreference(currency)
+                }
             }
+            currencyRv.adapter = currencyAdapter
         }
-        contentView.currency_rv.adapter = currencyAdapter
         setListData()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun savePreference(currency: Currency) = lifecycleScope.launch {
@@ -145,22 +152,24 @@ class CurrencyAdapter : ListAdapter<Currency, CurrencyHolder>(Currency.DIFF_CALL
     var currencyListener: OnCurrencyListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        CurrencyHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_currency, parent, false))
+        CurrencyHolder(ItemCurrencyBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: CurrencyHolder, position: Int) {
         getItem(position)?.let { holder.bind(it, currencyListener) }
     }
 }
 
-class CurrencyHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class CurrencyHolder(private val itemBinding: ItemCurrencyBinding) : RecyclerView.ViewHolder(itemBinding.root) {
     fun bind(currency: Currency, listener: OnCurrencyListener?) {
-        if (currency.name == Session.getFiatCurrency()) {
-            itemView.check_iv.isVisible = true
-        } else {
-            itemView.check_iv.isInvisible = true
+        itemBinding.apply {
+            if (currency.name == Session.getFiatCurrency()) {
+                checkIv.isVisible = true
+            } else {
+                checkIv.isInvisible = true
+            }
+            flagIv.setImageResource(currency.flag)
+            name.text = itemView.context.getString(R.string.wallet_setting_currency_desc, currency.name, currency.symbol)
         }
-        itemView.flag_iv.setImageResource(currency.flag)
-        itemView.name.text = itemView.context.getString(R.string.wallet_setting_currency_desc, currency.name, currency.symbol)
         itemView.setOnClickListener { listener?.onClick(currency) }
     }
 }

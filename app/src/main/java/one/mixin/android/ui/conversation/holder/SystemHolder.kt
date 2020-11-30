@@ -2,14 +2,13 @@ package one.mixin.android.ui.conversation.holder
 
 import android.content.Context
 import android.graphics.Color
-import android.view.View
-import kotlinx.android.synthetic.main.item_chat_system.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.SystemConversationAction
 
-class SystemHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHolder(binding.root) {
 
     var context: Context = itemView.context
     private fun getText(id: Int) = context.getText(id).toString()
@@ -42,7 +41,7 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
 
         when (messageItem.actionName) {
             SystemConversationAction.CREATE.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_create),
                         if (id == messageItem.userId) {
@@ -54,7 +53,7 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
                     )
             }
             SystemConversationAction.ADD.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_add),
                         if (id == messageItem.userId) {
@@ -70,7 +69,7 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
                     )
             }
             SystemConversationAction.REMOVE.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_remove),
                         if (id == messageItem.userId) {
@@ -86,7 +85,7 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
                     )
             }
             SystemConversationAction.JOIN.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_join),
                         if (id == messageItem.participantUserId) {
@@ -97,7 +96,7 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
                     )
             }
             SystemConversationAction.EXIT.name -> {
-                itemView.chat_info.text =
+                binding.chatInfo.text =
                     String.format(
                         getText(R.string.chat_group_exit),
                         if (id == messageItem.participantUserId) {
@@ -108,10 +107,10 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
                     )
             }
             SystemConversationAction.ROLE.name -> {
-                itemView.chat_info.text = getText(R.string.group_role)
+                binding.chatInfo.text = getText(R.string.group_role)
             }
             else -> {
-                itemView.chat_info.text = getText(R.string.chat_not_support)
+                binding.chatInfo.text = getText(R.string.chat_not_support)
             }
         }
     }

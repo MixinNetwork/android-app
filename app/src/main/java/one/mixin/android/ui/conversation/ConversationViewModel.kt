@@ -558,21 +558,21 @@ internal constructor(
         userRepository.suspendFindUserById(userId)
     }
 
-    suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage<ForwardCategory>> {
+    suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {
         return withContext(Dispatchers.IO) {
-            val list = ArrayList<ForwardMessage<ForwardCategory>>()
+            val list = ArrayList<ForwardMessage>()
             val sortMessages = conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
             for (m in sortMessages) {
-                val forwardMessage: ForwardMessage<ForwardCategory>? = when {
+                val forwardMessage: ForwardMessage? = when {
                     m.category.endsWith("_TEXT") ->
-                        m.content.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                        m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
                                 ForwardMessage(ShareCategory.Text, c)
                             },
                             { null }
                         )
                     m.category.endsWith("_IMAGE") ->
-                        m.mediaUrl.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                        m.mediaUrl.notNullWithElse<String, ForwardMessage?>(
                             { url ->
                                 ForwardMessage(
                                     ShareCategory.Image,
@@ -652,21 +652,21 @@ internal constructor(
                         ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData))
                     }
                     m.category.endsWith("_POST") ->
-                        m.content.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                        m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
                                 ForwardMessage(ShareCategory.Post, c)
                             },
                             { null }
                         )
                     m.category.endsWith("_LOCATION") ->
-                        m.content.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                        m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
                                 ForwardMessage(ForwardCategory.Location, GsonHelper.customGson.toJson(toLocationData(c)))
                             },
                             { null }
                         )
                     m.category == MessageCategory.APP_CARD.name ->
-                        m.content.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                        m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
                                 ForwardMessage(ShareCategory.AppCard, c)
                             },

@@ -2,9 +2,7 @@ package one.mixin.android.ui.address
 
 import android.os.Bundle
 import android.text.Editable
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -12,10 +10,9 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_address_management.*
-import kotlinx.android.synthetic.main.item_address.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAddressManagementBinding
+import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -28,12 +25,13 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.SearchView
 
 @AndroidEntryPoint
-class AddressManagementFragment : BaseFragment() {
+class AddressManagementFragment : BaseFragment(R.layout.fragment_address_management) {
 
     private val addressViewModel by viewModels<AddressViewModel>()
 
@@ -45,13 +43,12 @@ class AddressManagementFragment : BaseFragment() {
 
     private val adapter: AddressAdapter by lazy { AddressAdapter(asset, true) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_address_management, container, false)
+    private val binding by viewBinding(FragmentAddressManagementBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.titleView.rightAnimator.setOnClickListener {
             view.navigate(
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {
@@ -59,7 +56,7 @@ class AddressManagementFragment : BaseFragment() {
                 }
             )
         }
-        empty_tv.setOnClickListener {
+        binding.emptyTv.setOnClickListener {
             view.navigate(
                 R.id.action_address_management_to_address_add,
                 Bundle().apply {
@@ -72,11 +69,11 @@ class AddressManagementFragment : BaseFragment() {
             {
                 val list = it?.toMutableList()
                 if (list.isNullOrEmpty()) {
-                    empty_tv.isVisible = true
-                    content_ll.isGone = true
+                    binding.emptyTv.isVisible = true
+                    binding.contentLl.isGone = true
                 } else {
-                    empty_tv.isVisible = false
-                    content_ll.isGone = false
+                    binding.emptyTv.isVisible = false
+                    binding.contentLl.isGone = false
                 }
                 addresses = list
                 adapter.addresses = list
@@ -84,7 +81,7 @@ class AddressManagementFragment : BaseFragment() {
         )
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
             override fun onAddrLongClick(view: View, addr: Address) {
-                val popMenu = PopupMenu(activity!!, view.addr_tv)
+                val popMenu = PopupMenu(requireActivity(), ItemAddressBinding.bind(view).addrTv)
                 popMenu.menuInflater.inflate(R.menu.address_mamangement_item, popMenu.menu)
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {
@@ -127,10 +124,10 @@ class AddressManagementFragment : BaseFragment() {
                     }
                 }
             )
-        ).apply { attachToRecyclerView(addr_rv) }
-        addr_rv.adapter = adapter
+        ).apply { attachToRecyclerView(binding.addrRv) }
+        binding.addrRv.adapter = adapter
         adapter.setAddrListener(addrListener)
-        search_et.listener = object : SearchView.OnSearchViewListener {
+        binding.searchEt.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
                     it.label.contains(s.toString(), ignoreCase = true)

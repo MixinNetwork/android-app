@@ -9,20 +9,20 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_biometric_time.*
-import kotlinx.android.synthetic.main.item_biometric_time.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentBiometricTimeBinding
+import one.mixin.android.databinding.ItemBiometricTimeBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class BiometricTimeFragment : BaseFragment() {
+class BiometricTimeFragment : BaseFragment(R.layout.fragment_biometric_time) {
     companion object {
         const val TAG = "BiometricTimeFragment"
 
@@ -47,32 +47,33 @@ class BiometricTimeFragment : BaseFragment() {
     }
     private val adapter by lazy { TimeAdapter(values) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_biometric_time, container, false)
+    private val binding by viewBinding(FragmentBiometricTimeBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        lv.adapter = adapter
-        val footer = layoutInflater.inflate(R.layout.view_biometric_footer, lv, false)
-        lv.addFooterView(footer)
-        lv.setOnItemClickListener { _, _, i, _ ->
-            if (i >= VALUES.size || adapter.selectedPos == i) return@setOnItemClickListener
+        binding.apply {
+            title.leftIb.setOnClickListener { activity?.onBackPressed() }
+            lv.adapter = adapter
+            val footer = layoutInflater.inflate(R.layout.view_biometric_footer, lv, false)
+            lv.addFooterView(footer)
+            lv.setOnItemClickListener { _, _, i, _ ->
+                if (i >= VALUES.size || adapter.selectedPos == i) return@setOnItemClickListener
 
-            val bottomSheet =
-                PinBiometricsBottomSheetDialogFragment.newInstance(false)
-            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
-                override fun onSuccess() {
-                    val intervalMillis = (VALUES[i] * X_HOUR).toLong()
-                    defaultSharedPreferences.putLong(BIOMETRIC_INTERVAL, intervalMillis)
-                    adapter.selectedPos = i
+                val bottomSheet =
+                    PinBiometricsBottomSheetDialogFragment.newInstance(false)
+                bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
+                    override fun onSuccess() {
+                        val intervalMillis = (VALUES[i] * X_HOUR).toLong()
+                        defaultSharedPreferences.putLong(BIOMETRIC_INTERVAL, intervalMillis)
+                        adapter.selectedPos = i
 
-                    val pinSettingFragment = parentFragmentManager.findFragmentByTag(PinSettingFragment.TAG)
-                    (pinSettingFragment as? PinSettingFragment)?.setTimeDesc()
-                    activity?.onBackPressed()
+                        val pinSettingFragment = parentFragmentManager.findFragmentByTag(PinSettingFragment.TAG)
+                        (pinSettingFragment as? PinSettingFragment)?.setTimeDesc()
+                        activity?.onBackPressed()
+                    }
                 }
+                bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)
             }
-            bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)
         }
         setSelectedPos()
     }
@@ -104,9 +105,10 @@ class BiometricTimeFragment : BaseFragment() {
             var view = contentView
             var vh = TimeHolder()
             if (view == null) {
-                view = LayoutInflater.from(parent.context).inflate(R.layout.item_biometric_time, parent, false) as View
-                vh.timeTv = view.time_tv
-                vh.timeIv = view.time_iv
+                val itemBinding = ItemBiometricTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                view = itemBinding.root
+                vh.timeTv = itemBinding.timeTv
+                vh.timeIv = itemBinding.timeIv
                 view.tag = vh
             } else {
                 vh = view.tag as TimeHolder

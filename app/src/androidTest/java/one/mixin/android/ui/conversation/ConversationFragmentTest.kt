@@ -8,7 +8,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.launchFragmentInHiltContainer
 import one.mixin.android.ui.TestRegistry
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.webrtc.SelectItem
@@ -41,7 +40,7 @@ class ConversationFragmentTest {
         }
         val testRegistry = TestRegistry(expectedResult)
         launchFragmentInHiltContainer(ConversationFragment.newInstance(bundle, testRegistry), R.style.AppTheme_NoActionBar) {
-            val list = arrayListOf(ForwardMessage<ForwardCategory>(ShareCategory.Text, "testGetForwardResult"))
+            val list = arrayListOf(ForwardMessage(ShareCategory.Text, "testGetForwardResult"))
             this.getForwardResult.launch(Pair(list, cid))
 
             val expect = expectedResult.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)?.get(0)

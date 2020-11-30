@@ -19,12 +19,11 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_profile_bottom_sheet_dialog.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.databinding.FragmentProfileBottomSheetDialogBinding
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
@@ -91,6 +90,10 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
     override fun getLayoutId() = R.layout.fragment_profile_bottom_sheet_dialog
 
+    private val binding by lazy {
+        FragmentProfileBottomSheetDialogBinding.bind(contentView)
+    }
+
     override fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int {
         contentView.measure(
             View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
@@ -102,21 +105,21 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView.title.right_iv.setOnClickListener { dismiss() }
+        binding.title.rightIv.setOnClickListener { dismiss() }
         val account = Session.getAccount()
         if (account == null) {
             toast(R.string.error_user_invalid_format)
             return
         }
-        contentView.apply {
-            detail_tv.movementMethod = LinkMovementMethod()
-            detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-            detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-            detail_tv.setAutoLinkOnClickListener { _, url ->
+        binding.apply {
+            detailTv.movementMethod = LinkMovementMethod()
+            detailTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+            detailTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+            detailTv.setAutoLinkOnClickListener { _, url ->
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 dismiss()
             }
-            created_tv.text = getString(R.string.profile_join_in, account.createdAt.dayTime())
+            createdTv.text = getString(R.string.profile_join_in, account.createdAt.dayTime())
             refreshInfo(account)
         }
 
@@ -132,11 +135,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     }
 
     private fun refreshInfo(account: Account) {
-        contentView.apply {
+        binding.apply {
             name.text = account.fullName
             avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
-            id_tv.text = getString(R.string.contact_mixin_id, account.identityNumber)
-            detail_tv.text = account.biography
+            idTv.text = getString(R.string.contact_mixin_id, account.identityNumber)
+            detailTv.text = account.biography
         }
     }
 
@@ -208,7 +211,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         menuListLayout?.removeAllViews()
         list.createMenuLayout(requireContext()).let { layout ->
             menuListLayout = layout
-            contentView.scroll_content.addView(layout, contentView.scroll_content.childCount - 1)
+            binding.scrollContent.addView(layout, binding.scrollContent.childCount - 1)
         }
     }
 

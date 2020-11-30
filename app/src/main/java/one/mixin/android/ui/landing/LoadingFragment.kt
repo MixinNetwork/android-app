@@ -1,9 +1,7 @@
 package one.mixin.android.ui.landing
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,6 +21,7 @@ import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
@@ -33,9 +32,10 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.reportException
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class LoadingFragment : BaseFragment() {
+class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
     companion object {
         const val TAG: String = "LoadingFragment"
@@ -43,12 +43,7 @@ class LoadingFragment : BaseFragment() {
         fun newInstance() = LoadingFragment()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_loading, container, false)
+    private val binding by viewBinding(FragmentLoadingBinding::bind)
 
     private val loadingViewModel by viewModels<LoadingViewModel>()
 

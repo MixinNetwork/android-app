@@ -2,18 +2,16 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.view.View
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_user_list_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.item_user_list.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
-import one.mixin.android.R
-import one.mixin.android.extension.inflate
+import one.mixin.android.databinding.FragmentUserListBottomSheetBinding
+import one.mixin.android.databinding.ItemUserListBinding
 import one.mixin.android.extension.withArgs
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
@@ -42,23 +40,27 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter = UserListAdapter()
 
+    private val binding by viewBinding(FragmentUserListBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_user_list_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title_tv.text = title
-        contentView.recycler_view.layoutManager = LinearLayoutManager(requireContext())
-        contentView.recycler_view.adapter = adapter
+        binding.apply {
+            titleView.rightIv.setOnClickListener { dismiss() }
+            titleView.titleTv.text = title
+            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.adapter = adapter
+        }
         adapter.submitList(userList)
     }
 }
 
 class UserListAdapter : ListAdapter<User, UserHolder>(User.DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        UserHolder(parent.inflate(R.layout.item_user_list, false))
+        UserHolder(ItemUserListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: UserHolder, position: Int) {
         getItem(position)?.let {
@@ -67,10 +69,10 @@ class UserListAdapter : ListAdapter<User, UserHolder>(User.DIFF_CALLBACK) {
     }
 }
 
-class UserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+class UserHolder(val binding: ItemUserListBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(user: User) {
-        itemView.name_tv.text = user.fullName
-        itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-        itemView.number_tv.text = user.identityNumber
+        binding.nameTv.text = user.fullName
+        binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+        binding.numberTv.text = user.identityNumber
     }
 }

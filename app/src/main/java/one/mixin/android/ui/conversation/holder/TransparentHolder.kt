@@ -1,5 +1,5 @@
 package one.mixin.android.ui.conversation.holder
 
-import android.view.View
+import one.mixin.android.databinding.ItemChatTransparentBinding
 
-class TransparentHolder(containerView: View) : BaseViewHolder(containerView)
+class TransparentHolder(binding: ItemChatTransparentBinding) : BaseViewHolder(binding.root)

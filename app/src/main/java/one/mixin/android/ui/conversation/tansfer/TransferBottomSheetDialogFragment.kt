@@ -3,18 +3,16 @@ package one.mixin.android.ui.conversation.tansfer
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.TextUtils
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.nowInUtc
@@ -32,6 +30,7 @@ import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_TRANSACTION_FE
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
 import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
@@ -48,39 +47,43 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     }
 
     private val t: BiometricItem by lazy {
-        requireArguments().getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
     }
 
     var onDestroyListener: OnDestroyListener? = null
 
+    private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_transfer_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
-        when (t) {
-            is TransferBiometricItem -> {
-                (t as TransferBiometricItem).let {
-                    contentView.title.text =
-                        getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
-                    contentView.sub_title.text = "Mixin ID: ${it.user.identityNumber}"
+        binding.apply {
+            when (t) {
+                is TransferBiometricItem -> {
+                    (t as TransferBiometricItem).let {
+                        title.text =
+                            getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
+                        subTitle.text = "Mixin ID: ${it.user.identityNumber}"
+                    }
+                    biometricLayout.payTv.setText(R.string.wallet_pay_with_pwd)
+                    biometricLayout.biometricTv.setText(R.string.wallet_pay_with_biometric)
                 }
-                contentView.pay_tv.setText(R.string.wallet_pay_with_pwd)
-                contentView.biometric_tv.setText(R.string.wallet_pay_with_biometric)
-            }
-            is WithdrawBiometricItem -> {
-                (t as WithdrawBiometricItem).let {
-                    contentView.title.text = getString(R.string.withdrawal_to, it.label)
-                    contentView.sub_title.text = it.displayAddress()
+                is WithdrawBiometricItem -> {
+                    (t as WithdrawBiometricItem).let {
+                        title.text = getString(R.string.withdrawal_to, it.label)
+                        subTitle.text = it.displayAddress()
+                    }
+                    biometricLayout.payTv.setText(R.string.withdrawal_with_pwd)
+                    biometricLayout.biometricTv.setText(R.string.withdrawal_with_biometric)
                 }
-                contentView.pay_tv.setText(R.string.withdrawal_with_pwd)
-                contentView.biometric_tv.setText(R.string.withdrawal_with_biometric)
             }
-        }
-        if (!TextUtils.isEmpty(t.memo)) {
-            contentView.memo.visibility = VISIBLE
-            contentView.memo.text = t.memo
+            if (!TextUtils.isEmpty(t.memo)) {
+                memo.visibility = VISIBLE
+                memo.text = t.memo
+            }
         }
         setBiometricItem()
     }
@@ -88,7 +91,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     override fun checkState(t: BiometricItem) {
         val state = t.state
         if (state == PaymentStatus.paid.name) {
-            contentView.error_btn.visibility = GONE
+            binding.biometricLayout.errorBtn.visibility = GONE
             showErrorInfo(getString(R.string.pay_paid))
         }
     }

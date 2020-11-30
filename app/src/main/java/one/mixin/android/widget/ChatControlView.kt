@@ -44,8 +44,8 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewChatControlBinding
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.openPermissionSetting
@@ -94,6 +94,12 @@ class ChatControlView : LinearLayout {
     lateinit var galleryContainer: FrameLayout
     lateinit var recordTipView: View
 
+    private val _binding: ViewChatControlBinding
+
+    private val binding get() = _binding
+    val chatEt get() = binding.chatEt
+    val replyView get() = binding.replyView
+
     private var controlState: STATUS = STATUS.COLLAPSED
         set(value) {
             if (value == field) return
@@ -104,7 +110,7 @@ class ChatControlView : LinearLayout {
                     menuStatus = MENU_STATUS.EXPANDED
                     stickerStatus = STICKER_STATUS.STICKER
                     keyboardDrawable
-                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    binding.chatImgIv.setImageResource(R.drawable.ic_chat_img)
                     menuContainer.isVisible = true
                     stickerContainer.isVisible = false
                     galleryContainer.isVisible = false
@@ -112,7 +118,7 @@ class ChatControlView : LinearLayout {
                 STATUS.EXPANDED_KEYBOARD -> {
                     menuStatus = MENU_STATUS.COLLAPSED
                     stickerStatus = STICKER_STATUS.STICKER
-                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    binding.chatImgIv.setImageResource(R.drawable.ic_chat_img)
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = false
                     galleryContainer.isVisible = false
@@ -120,7 +126,7 @@ class ChatControlView : LinearLayout {
                 STATUS.EXPANDED_STICKER -> {
                     menuStatus = MENU_STATUS.COLLAPSED
                     stickerStatus = STICKER_STATUS.KEYBOARD
-                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    binding.chatImgIv.setImageResource(R.drawable.ic_chat_img)
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = true
                     galleryContainer.isVisible = false
@@ -128,7 +134,7 @@ class ChatControlView : LinearLayout {
                 STATUS.EXPANDED_GALLERY -> {
                     menuStatus = MENU_STATUS.COLLAPSED
                     stickerStatus = STICKER_STATUS.STICKER
-                    chat_img_iv.setImageResource(R.drawable.ic_chat_img_checked)
+                    binding.chatImgIv.setImageResource(R.drawable.ic_chat_img_checked)
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = false
                     galleryContainer.isVisible = true
@@ -136,7 +142,7 @@ class ChatControlView : LinearLayout {
                 STATUS.COLLAPSED -> {
                     menuStatus = MENU_STATUS.COLLAPSED
                     stickerStatus = STICKER_STATUS.STICKER
-                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    binding.chatImgIv.setImageResource(R.drawable.ic_chat_img)
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = false
                     galleryContainer.isVisible = false
@@ -164,12 +170,13 @@ class ChatControlView : LinearLayout {
 
             field = value
             val anim =
-                chat_menu_iv.animate().rotation(if (value == MENU_STATUS.EXPANDED) 45f else -45f)
+                binding.chatMenuIv.animate()
+                    .rotation(if (value == MENU_STATUS.EXPANDED) 45f else -45f)
             anim.setListener(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator?) {
-                        chat_menu_iv.rotation = 0f
-                        chat_menu_iv.setImageResource(if (value == MENU_STATUS.EXPANDED) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
+                        binding.chatMenuIv.rotation = 0f
+                        binding.chatMenuIv.setImageResource(if (value == MENU_STATUS.EXPANDED) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
                     }
                 }
             )
@@ -232,21 +239,21 @@ class ChatControlView : LinearLayout {
         defStyleAttr
     ) {
         orientation = VERTICAL
-        LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
+        _binding = ViewChatControlBinding.inflate(LayoutInflater.from(context), this)
 
-        chat_et.addTextChangedListener(editTextWatcher)
-        chat_et.setOnKeyListener(keyListener)
-        chat_send_ib.setOnTouchListener(sendOnTouchListener)
-        chat_menu_iv.setOnClickListener(onChatMenuClickListener)
-        chat_sticker_ib.setOnClickListener(onStickerClickListener)
-        chat_img_iv.setOnClickListener(onChatImgClickListener)
-        chat_bot_iv.clicks()
+        binding.chatEt.addTextChangedListener(editTextWatcher)
+        binding.chatEt.setOnKeyListener(keyListener)
+        binding.chatSendIb.setOnTouchListener(sendOnTouchListener)
+        binding.chatMenuIv.setOnClickListener(onChatMenuClickListener)
+        binding.chatStickerIb.setOnClickListener(onStickerClickListener)
+        binding.chatImgIv.setOnClickListener(onChatImgClickListener)
+        binding.chatBotIv.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1, TimeUnit.SECONDS)
             .subscribe {
                 callback.onBotClick()
             }
-        chat_slide.callback = chatSlideCallback
+        binding.chatSlide.callback = chatSlideCallback
 
         remainFocusable()
     }
@@ -268,7 +275,7 @@ class ChatControlView : LinearLayout {
     fun reset() {
         controlState = STATUS.COLLAPSED
         setSend()
-        inputLayout.closeInputArea(chat_et)
+        inputLayout.closeInputArea(binding.chatEt)
         getVisibleContainer()?.isVisible = false
     }
 
@@ -276,22 +283,22 @@ class ChatControlView : LinearLayout {
         removeCallbacks(recordRunnable)
         cleanUp()
         updateRecordCircleAndSendIcon()
-        chat_slide.parent.requestDisallowInterceptTouchEvent(false)
+        binding.chatSlide.parent.requestDisallowInterceptTouchEvent(false)
     }
 
     private var botHide = false
 
     fun hideBot() {
         botHide = true
-        chat_bot_iv.visibility = View.GONE
-        chat_et.hint = context.getString(R.string.end_to_end_encryption)
+        binding.chatBotIv.visibility = View.GONE
+        binding.chatEt.hint = context.getString(R.string.end_to_end_encryption)
         initTransitions()
     }
 
     fun showBot() {
         botHide = false
-        chat_bot_iv.visibility = View.VISIBLE
-        chat_et.hint = context.getString(R.string.type_a_message)
+        binding.chatBotIv.visibility = View.VISIBLE
+        binding.chatEt.hint = context.getString(R.string.type_a_message)
         initTransitions()
     }
 
@@ -300,7 +307,7 @@ class ChatControlView : LinearLayout {
             controlState = STATUS.EXPANDED_KEYBOARD
         } else if (controlState == STATUS.EXPANDED_KEYBOARD) {
             controlState = STATUS.COLLAPSED
-            inputLayout.closeInputArea(chat_et)
+            inputLayout.closeInputArea(binding.chatEt)
         }
         setSend()
     }
@@ -321,17 +328,17 @@ class ChatControlView : LinearLayout {
     // remove focus but remain focusable
     private fun remainFocusable() {
         post {
-            chat_et.isFocusableInTouchMode = false
-            chat_et.isFocusable = false
-            chat_et.isFocusableInTouchMode = true
-            chat_et.isFocusable = true
+            binding.chatEt.isFocusableInTouchMode = false
+            binding.chatEt.isFocusable = false
+            binding.chatEt.isFocusableInTouchMode = true
+            binding.chatEt.isFocusable = true
         }
     }
 
     private fun initTransitions() {
         post {
-            bottom_ll.layoutTransition = createTransitions()
-            edit_ll.layoutTransition = createEditTransitions()
+            binding.bottomLl.layoutTransition = createTransitions()
+            binding.editLl.layoutTransition = createEditTransitions()
         }
     }
 
@@ -343,9 +350,9 @@ class ChatControlView : LinearLayout {
         }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         if (anim) {
-            startScaleAnim(chat_send_ib, d)
+            startScaleAnim(binding.chatSendIb, d)
         } else {
-            chat_send_ib.setImageDrawable(d)
+            binding.chatSendIb.setImageDrawable(d)
         }
     }
 
@@ -355,7 +362,7 @@ class ChatControlView : LinearLayout {
             STICKER_STATUS.KEYBOARD -> keyboardDrawable
         }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
-        startScaleAnim(chat_sticker_ib, d)
+        startScaleAnim(binding.chatStickerIb, d)
     }
 
     private fun startScaleAnim(v: ImageView, d: Drawable?) {
@@ -412,8 +419,8 @@ class ChatControlView : LinearLayout {
                     }
                 )
             }.start()
-            chat_send_ib.animate().setDuration(200).alpha(0f).start()
-            chat_slide.onStart()
+            binding.chatSendIb.animate().setDuration(200).alpha(0f).start()
+            binding.chatSlide.onStart()
         } else {
             ObjectAnimator.ofFloat(recordCircle, "scale", 0f).apply {
                 interpolator = AccelerateInterpolator()
@@ -429,8 +436,8 @@ class ChatControlView : LinearLayout {
                     }
                 )
             }.start()
-            chat_send_ib.animate().setDuration(200).alpha(1f).start()
-            chat_slide.onEnd()
+            binding.chatSendIb.animate().setDuration(200).alpha(1f).start()
+            binding.chatSlide.onEnd()
         }
     }
 
@@ -438,7 +445,7 @@ class ChatControlView : LinearLayout {
 
     @SuppressLint("ObjectAnimatorBinding")
     private fun createTransitions(): LayoutTransition {
-        val scaleDownTransX = chat_send_ib.width
+        val scaleDownTransX = binding.chatSendIb.width
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
             null as Any?,
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
@@ -466,7 +473,8 @@ class ChatControlView : LinearLayout {
 
     @SuppressLint("ObjectAnimatorBinding")
     private fun createEditTransitions(): LayoutTransition {
-        val scaleDownTransX = right - chat_menu_iv.width - chat_send_ib.width - edit_ll.width
+        val scaleDownTransX =
+            right - binding.chatMenuIv.width - binding.chatSendIb.width - binding.editLl.width
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
             null as Any?,
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
@@ -511,7 +519,7 @@ class ChatControlView : LinearLayout {
     private fun clickSend() {
         when (sendStatus) {
             SEND, REPLY -> {
-                chat_et.text?.let {
+                binding.chatEt.text?.let {
                     callback.onSendClick(it.trim().toString())
                 }
             }
@@ -527,33 +535,33 @@ class ChatControlView : LinearLayout {
         }
     }
 
-    private fun isEditEmpty() = chat_et.text.toString().trim().isEmpty()
+    private fun isEditEmpty() = binding.chatEt.text.toString().trim().isEmpty()
 
     private fun realSetSend() {
         sendStatus = if (!isEditEmpty()) {
-            if (!chat_sticker_ib.isGone) {
-                chat_sticker_ib.isGone = true
+            if (!binding.chatStickerIb.isGone) {
+                binding.chatStickerIb.isGone = true
             }
             if (!botHide) {
-                if (!chat_bot_iv.isGone) {
-                    chat_bot_iv.isGone = true
+                if (!binding.chatBotIv.isGone) {
+                    binding.chatBotIv.isGone = true
                 }
             }
-            if (!chat_img_iv.isGone) {
-                chat_img_iv.isGone = true
+            if (!binding.chatImgIv.isGone) {
+                binding.chatImgIv.isGone = true
             }
             SEND
         } else {
-            if (!chat_sticker_ib.isVisible) {
-                chat_sticker_ib.isVisible = true
+            if (!binding.chatStickerIb.isVisible) {
+                binding.chatStickerIb.isVisible = true
             }
             if (!botHide) {
-                if (!chat_bot_iv.isVisible) {
-                    chat_bot_iv.isVisible = true
+                if (!binding.chatBotIv.isVisible) {
+                    binding.chatBotIv.isVisible = true
                 }
             }
-            if (!chat_img_iv.isVisible) {
-                chat_img_iv.isVisible = true
+            if (!binding.chatImgIv.isVisible) {
+                binding.chatImgIv.isVisible = true
             }
             lastSendStatus
         }
@@ -562,10 +570,10 @@ class ChatControlView : LinearLayout {
     private val onChatMenuClickListener = OnClickListener {
         if (controlState == STATUS.EXPANDED_MENU) {
             controlState = STATUS.EXPANDED_KEYBOARD
-            inputLayout.showSoftKey(chat_et)
+            inputLayout.showSoftKey(binding.chatEt)
         } else {
             controlState = STATUS.EXPANDED_MENU
-            inputLayout.openInputArea(chat_et)
+            inputLayout.openInputArea(binding.chatEt)
             callback.onMenuClick()
         }
         remainFocusable()
@@ -574,14 +582,14 @@ class ChatControlView : LinearLayout {
     private val onStickerClickListener = OnClickListener {
         if (controlState == STATUS.EXPANDED_KEYBOARD || controlState == STATUS.COLLAPSED) {
             controlState = STATUS.EXPANDED_STICKER
-            inputLayout.openInputArea(chat_et)
+            inputLayout.openInputArea(binding.chatEt)
             callback.onStickerClick()
         } else if (controlState == STATUS.EXPANDED_STICKER) {
             controlState = STATUS.EXPANDED_KEYBOARD
-            inputLayout.showSoftKey(chat_et)
+            inputLayout.showSoftKey(binding.chatEt)
         } else {
             controlState = STATUS.EXPANDED_STICKER
-            inputLayout.openInputArea(chat_et)
+            inputLayout.openInputArea(binding.chatEt)
             callback.onStickerClick()
         }
         remainFocusable()
@@ -608,10 +616,10 @@ class ChatControlView : LinearLayout {
     private fun clickGallery() {
         if (controlState == STATUS.EXPANDED_GALLERY) {
             controlState = STATUS.COLLAPSED
-            inputLayout.closeInputArea(chat_et)
+            inputLayout.closeInputArea(binding.chatEt)
         } else {
             controlState = STATUS.EXPANDED_GALLERY
-            inputLayout.openInputArea(chat_et)
+            inputLayout.openInputArea(binding.chatEt)
             callback.onGalleryClick()
         }
         remainFocusable()
@@ -655,12 +663,15 @@ class ChatControlView : LinearLayout {
                         ed.removeSpan(span)
                     }
                     val curString = ed.trim()
-                    chat_et.setText(curString)
-                    chat_et.setSelection(curString.length)
+                    binding.chatEt.setText(curString)
+                    binding.chatEt.setSelection(curString.length)
                 }
             }
 
-            chat_et.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (s.isNullOrBlank()) 12f else 14f)
+            binding.chatEt.setTextSize(
+                TypedValue.COMPLEX_UNIT_SP,
+                if (s.isNullOrBlank()) 12f else 14f
+            )
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -786,7 +797,7 @@ class ChatControlView : LinearLayout {
             return@OnTouchListener false
         }
 
-        chat_send_ib.onTouchEvent(event)
+        binding.chatSendIb.onTouchEvent(event)
         when (event.action) {
             ACTION_DOWN -> {
                 if (recordCircle.locked) {
@@ -795,7 +806,7 @@ class ChatControlView : LinearLayout {
 
                 originX = event.rawX
                 startX = event.rawX
-                val w = chat_slide.slideWidth
+                val w = binding.chatSlide.slideWidth
                 if (w > 0) {
                     maxScrollX = w
                 }
@@ -819,18 +830,18 @@ class ChatControlView : LinearLayout {
                         duration = 150
                         interpolator = DecelerateInterpolator()
                     }.start()
-                    chat_slide.toCancel()
+                    binding.chatSlide.toCancel()
                     callback.onRecordLocked()
                     return@OnTouchListener false
                 }
 
                 val moveX = event.rawX
                 if (moveX != 0f) {
-                    chat_slide.slideText(startX - moveX)
+                    binding.chatSlide.slideText(startX - moveX)
                     if (originX - moveX > maxScrollX) {
                         removeRecordRunnable()
                         handleCancelOrEnd(true)
-                        chat_slide.parent.requestDisallowInterceptTouchEvent(false)
+                        binding.chatSlide.parent.requestDisallowInterceptTouchEvent(false)
                         triggeredCancel = true
                         return@OnTouchListener false
                     }
@@ -906,7 +917,7 @@ class ChatControlView : LinearLayout {
             callback.onRecordStart(sendStatus == AUDIO)
             upBeforeGrant = false
             post(checkReadyRunnable)
-            chat_send_ib.parent.requestDisallowInterceptTouchEvent(true)
+            binding.chatSendIb.parent.requestDisallowInterceptTouchEvent(true)
         }
     }
 

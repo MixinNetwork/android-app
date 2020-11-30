@@ -14,13 +14,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_deposit_qr_bottom.view.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentDepositQrBottomBinding
+import one.mixin.android.databinding.ViewBadgeCircleImageBinding
+import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
@@ -56,79 +56,100 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         fun getSize(context: Context) = context.screenWidth() - context.dpToPx(64f)
     }
 
+    private var _binding: FragmentDepositQrBottomBinding? = null
+    private val binding get() = requireNotNull(_binding)
+    private var _titleBinding: ViewRoundTitleBinding? = null
+    private val titleBinding get() = requireNotNull(_titleBinding)
+    private var _badgeBinding: ViewBadgeCircleImageBinding? = null
+    private val badgeBinding get() = requireNotNull(_badgeBinding)
+
     private val asset: AssetItem by lazy { requireArguments().getParcelable(ARGS_ASSET)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_deposit_qr_bottom, null)
+        _binding = FragmentDepositQrBottomBinding.bind(View.inflate(context, R.layout.fragment_deposit_qr_bottom, null))
+        _titleBinding = ViewRoundTitleBinding.bind(binding.title)
+        _badgeBinding = ViewBadgeCircleImageBinding.bind(binding.badgeView)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title.right_iv.setOnClickListener { dismiss() }
-        when (type) {
-            TYPE_TAG -> {
-                contentView.title.title_tv.text = getString(R.string.account_memo)
-                contentView.addr_tv.text = asset.tag
+        binding.apply {
+            titleBinding.rightIv.setOnClickListener { dismiss() }
+            when (type) {
+                TYPE_TAG -> {
+                    titleBinding.titleTv.text = getString(R.string.account_memo)
+                    addrTv.text = asset.tag
+                }
+                else -> {
+                    titleBinding.titleTv.text = getString(R.string.address)
+                    addrTv.text = asset.destination
+                }
             }
-            else -> {
-                contentView.title.title_tv.text = getString(R.string.address)
-                contentView.addr_tv.text = asset.destination
+            badgeBinding.apply {
+                bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+                badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
-        }
-        contentView.badge_view.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        contentView.badge_view.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        contentView.save_iv.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                if (!isAdded) return@launch
-                                contentView.content_ll.capture(requireContext())
-                            }
-                            requireContext().toast(R.string.save_success)
-                        } else {
-                            requireContext().openPermissionSetting()
-                        }
-                    },
-                    {
-                        requireContext().toast(R.string.save_failure)
-                    }
-                )
-        }
-
-        val name = when (type) {
-            TYPE_TAG -> "${BuildConfig.VERSION_CODE}-${asset.tag}"
-            else -> "${BuildConfig.VERSION_CODE}-${asset.destination}"
-        }
-        if (requireContext().isQRCodeFileExists(name)) {
-            contentView.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
-        } else {
-            contentView.qr.post {
-                Observable.create<Bitmap> { e ->
-                    val code = when (type) {
-                        TYPE_TAG -> asset.tag
-                        else -> asset.destination
-                    }
-                    val b = code!!.generateQRCode(getSize(requireContext()))
-                    if (b != null) {
-                        b.saveQRCode(requireContext(), name)
-                        e.onNext(b)
-                    }
-                }.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
+            saveIv.setOnClickListener {
+                RxPermissions(requireActivity())
+                    .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(stopScope)
                     .subscribe(
-                        { r ->
-                            contentView.qr.setImageBitmap(r)
+                        { granted ->
+                            if (granted) {
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    if (!isAdded) return@launch
+                                    contentLl.capture(requireContext())
+                                }
+                                requireContext().toast(R.string.save_success)
+                            } else {
+                                requireContext().openPermissionSetting()
+                            }
                         },
                         {
+                            requireContext().toast(R.string.save_failure)
                         }
                     )
             }
+
+            val name = when (type) {
+                TYPE_TAG -> "${BuildConfig.VERSION_CODE}-${asset.tag}"
+                else -> "${BuildConfig.VERSION_CODE}-${asset.destination}"
+            }
+            if (requireContext().isQRCodeFileExists(name)) {
+                qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
+            } else {
+                qr.post {
+                    Observable.create<Bitmap> { e ->
+                        val code = when (type) {
+                            TYPE_TAG -> asset.tag
+                            else -> asset.destination
+                        }
+                        val b = code!!.generateQRCode(getSize(requireContext()))
+                        if (b != null) {
+                            b.saveQRCode(requireContext(), name)
+                            e.onNext(b)
+                        }
+                    }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { r ->
+                                qr.setImageBitmap(r)
+                            },
+                            {
+                            }
+                        )
+                }
+            }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _titleBinding = null
+        _badgeBinding = null
     }
 }

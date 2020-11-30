@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import androidx.appcompat.widget.LinearLayoutCompat
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.databinding.ViewShadowCircleBinding
 import one.mixin.android.event.BotEvent
 
 class ShadowCircleView : LinearLayoutCompat {
@@ -19,8 +19,14 @@ class ShadowCircleView : LinearLayoutCompat {
         attrs,
         defStyleAttr
     ) {
-        LayoutInflater.from(context).inflate(R.layout.view_shadow_circle, this, true)
+        binding = ViewShadowCircleBinding.inflate(LayoutInflater.from(context), this)
     }
+
+    private val binding: ViewShadowCircleBinding
+    val more get() = binding.more
+    val firstIv get() = binding.firstIv
+    val secondIv get() = binding.secondIv
+    val thirdIv get() = binding.thirdIv
 
     private var disposable: Disposable? = null
     override fun onAttachedToWindow() {

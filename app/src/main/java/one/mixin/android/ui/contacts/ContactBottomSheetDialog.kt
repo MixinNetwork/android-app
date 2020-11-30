@@ -6,9 +6,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import kotlinx.android.synthetic.main.fragment_contact_bottom_sheet.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentContactBottomSheetBinding
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -25,18 +25,29 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val user: User by lazy { requireArguments().getParcelable<User>(ARGS_USER)!! }
+    private val user: User by lazy { requireArguments().getParcelable(ARGS_USER)!! }
+
+    private var _binding: FragmentContactBottomSheetBinding? = null
+    private val binding get() = requireNotNull(_binding)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_contact_bottom_sheet, null)
+        _binding = FragmentContactBottomSheetBinding.bind(View.inflate(context, R.layout.fragment_contact_bottom_sheet, null))
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.index.text = if (user.fullName != null && user.fullName!!.isNotEmpty()) user.fullName!![0].toString() else ""
-        contentView.name.text = user.fullName
-        contentView.mobile_tv.text = getString(R.string.contact_mobile, user.phone)
-        contentView.invite_tv.setOnClickListener { openSms(user.phone) }
+        binding.apply {
+            index.text = if (user.fullName != null && user.fullName!!.isNotEmpty()) user.fullName!![0].toString() else ""
+            name.text = user.fullName
+            mobileTv.text = getString(R.string.contact_mobile, user.phone)
+            inviteTv.setOnClickListener { openSms(user.phone) }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun openSms(mobile: String?) {

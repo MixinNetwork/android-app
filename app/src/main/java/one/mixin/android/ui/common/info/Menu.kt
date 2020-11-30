@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.layout_menu.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutMenuBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.notNullWithElse
@@ -103,10 +103,10 @@ fun MenuList.createMenuLayout(
             orientation = LinearLayout.VERTICAL
         }
         group.menus.forEachIndexed { index, menu ->
-            val menuLayout = LayoutInflater.from(context).inflate(R.layout.layout_menu, null, false)
-            menuLayout.title_tv.text = menu.title
-            menuLayout.subtitle_tv.text = menu.subtitle
-            menuLayout.title_tv.setTextColor(
+            val menuBinding = LayoutMenuBinding.inflate(LayoutInflater.from(context), null, false)
+            menuBinding.titleTv.text = menu.title
+            menuBinding.subtitleTv.text = menu.subtitle
+            menuBinding.titleTv.setTextColor(
                 if (menu.style == MenuStyle.Normal) {
                     context.colorFromAttribute(R.attr.text_primary)
                 } else {
@@ -115,37 +115,37 @@ fun MenuList.createMenuLayout(
             )
             menu.icon.notNullWithElse(
                 {
-                    menuLayout.icon.isVisible = true
-                    menuLayout.icon.setImageResource(it)
+                    menuBinding.icon.isVisible = true
+                    menuBinding.icon.setImageResource(it)
                 },
                 {
-                    menuLayout.icon.isVisible = false
+                    menuBinding.icon.isVisible = false
                 }
             )
             menu.apps.notNullWithElse(
                 {
-                    menuLayout.avatar_group.isVisible = true
-                    menuLayout.avatar_group.setApps(it)
+                    menuBinding.avatarGroup.isVisible = true
+                    menuBinding.avatarGroup.setApps(it)
                 },
                 {
-                    menuLayout.avatar_group.isVisible = false
+                    menuBinding.avatarGroup.isVisible = false
                 }
             )
             menu.circleNames.notNullWithElse(
                 {
-                    menuLayout.flow_layout.isVisible = true
-                    addCirclesLayout(context, it, menuLayout.flow_layout)
+                    menuBinding.flowLayout.isVisible = true
+                    addCirclesLayout(context, it, menuBinding.flowLayout)
                 },
                 {
-                    menuLayout.flow_layout.isVisible = false
+                    menuBinding.flowLayout.isVisible = false
                 }
             )
             val top = index == 0
             val bottom = index == group.menus.size - 1
-            menuLayout.roundTopOrBottom(dp13.toFloat(), top, bottom)
-            menuLayout.setOnClickListener { menu.action?.invoke() }
+            menuBinding.root.roundTopOrBottom(dp13.toFloat(), top, bottom)
+            menuBinding.root.setOnClickListener { menu.action?.invoke() }
             groupLayout.addView(
-                menuLayout,
+                menuBinding.root,
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56)
             )
         }

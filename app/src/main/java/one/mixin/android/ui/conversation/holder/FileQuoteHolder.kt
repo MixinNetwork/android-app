@@ -9,9 +9,8 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.core.widget.TextViewCompat
 import com.google.android.exoplayer2.util.MimeTypes
-import kotlinx.android.synthetic.main.item_chat_file_quote.view.*
-import kotlinx.android.synthetic.main.layout_file_holder_bottom.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
@@ -26,36 +25,36 @@ import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
-class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerView) {
+class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root) {
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            itemView.chat_msg_layout.gravity = Gravity.END
+            binding.chatMsgLayout.gravity = Gravity.END
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
                     R.drawable.chat_bubble_reply_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
                     R.drawable.chat_bubble_reply_me_night
                 )
             }
         } else {
-            itemView.chat_msg_layout.gravity = Gravity.START
+            binding.chatMsgLayout.gravity = Gravity.START
 
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
                     R.drawable.chat_bubble_reply_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
                     R.drawable.chat_bubble_reply_other_night
                 )
@@ -82,25 +81,25 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = itemView.dip(3)
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
+        binding.chatTime.timeAgoClock(messageItem.createdAt)
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
         keyword.notNullWithElse(
             { k ->
@@ -114,23 +113,23 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
                             start + k.length,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
-                        itemView.file_name_tv.text = sp
+                        binding.fileNameTv.text = sp
                     } else {
-                        itemView.file_name_tv.text = messageItem.mediaName
+                        binding.fileNameTv.text = messageItem.mediaName
                     }
                 }
             },
             {
-                itemView.file_name_tv.text = messageItem.mediaName
+                binding.fileNameTv.text = messageItem.mediaName
             }
         )
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
-            itemView.file_size_tv.textResource = R.string.chat_expired
+            binding.bottomLayout.fileSizeTv.textResource = R.string.chat_expired
         } else {
-            itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
+            binding.bottomLayout.fileSizeTv.text = "${messageItem.mediaSize?.fileSize()}"
         }
 
-        itemView.seek_bar.setOnSeekBarChangeListener(
+        binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 }
@@ -150,49 +149,49 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
-                    itemView.file_expired.visibility = View.VISIBLE
-                    itemView.file_progress.visibility = View.INVISIBLE
-                    itemView.chat_layout.setOnClickListener {
+                    binding.fileExpired.visibility = View.VISIBLE
+                    binding.fileProgress.visibility = View.INVISIBLE
+                    binding.chatLayout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.PENDING.name -> {
-                    itemView.file_expired.visibility = View.GONE
-                    itemView.file_progress.visibility = View.VISIBLE
-                    itemView.file_progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                    itemView.file_progress.setBindOnly(messageItem.messageId)
-                    itemView.file_progress.setOnClickListener {
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
+                    binding.fileProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                    binding.fileProgress.setBindOnly(messageItem.messageId)
+                    binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.messageId)
                     }
-                    itemView.chat_layout.setOnClickListener {
+                    binding.chatLayout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
-                    itemView.file_expired.visibility = View.GONE
-                    itemView.file_progress.visibility = View.VISIBLE
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                        itemView.file_progress.setBindOnly(messageItem.messageId)
-                        itemView.bottom_layout.bindId = messageItem.messageId
+                        binding.fileProgress.setBindOnly(messageItem.messageId)
+                        binding.bottomLayout.bindId = messageItem.messageId
                         if (AudioPlayer.isPlay(messageItem.messageId)) {
-                            itemView.file_progress.setPause()
-                            itemView.bottom_layout.showSeekBar()
+                            binding.fileProgress.setPause()
+                            binding.bottomLayout.showSeekBar()
                         } else {
-                            itemView.file_progress.setPlay()
-                            itemView.bottom_layout.showText()
+                            binding.fileProgress.setPlay()
+                            binding.bottomLayout.showText()
                         }
-                        itemView.file_progress.setOnClickListener {
+                        binding.fileProgress.setOnClickListener {
                             onItemListener.onAudioFileClick(messageItem)
                         }
                     } else {
-                        itemView.file_progress.setDone()
-                        itemView.file_progress.setBindId(null)
-                        itemView.bottom_layout.bindId = null
-                        itemView.file_progress.setOnClickListener {
+                        binding.fileProgress.setDone()
+                        binding.fileProgress.setBindId(null)
+                        binding.bottomLayout.bindId = null
+                        binding.fileProgress.setOnClickListener {
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                         }
                     }
-                    itemView.chat_layout.setOnClickListener {
+                    binding.chatLayout.setOnClickListener {
                         if (AudioPlayer.isPlay(messageItem.messageId)) {
                             onItemListener.onAudioFileClick(messageItem)
                         } else {
@@ -201,23 +200,23 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
                     }
                 }
                 MediaStatus.CANCELED.name -> {
-                    itemView.file_expired.visibility = View.GONE
-                    itemView.file_progress.visibility = View.VISIBLE
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
                     if (isMe && messageItem.mediaUrl != null) {
-                        itemView.file_progress.enableUpload()
+                        binding.fileProgress.enableUpload()
                     } else {
-                        itemView.file_progress.enableDownload()
+                        binding.fileProgress.enableDownload()
                     }
-                    itemView.file_progress.setBindId(messageItem.messageId)
-                    itemView.file_progress.setProgress(-1)
-                    itemView.file_progress.setOnClickListener {
+                    binding.fileProgress.setBindId(messageItem.messageId)
+                    binding.fileProgress.setProgress(-1)
+                    binding.fileProgress.setOnClickListener {
                         if (isMe && messageItem.mediaUrl != null) {
                             onItemListener.onRetryUpload(messageItem.messageId)
                         } else {
                             onItemListener.onRetryDownload(messageItem.messageId)
                         }
                     }
-                    itemView.chat_layout.setOnClickListener {
+                    binding.chatLayout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -228,7 +227,7 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        itemView.chat_layout.setOnLongClickListener {
+        binding.chatLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -245,8 +244,8 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
             }
         }
         val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        itemView.chat_quote.bind(quoteMessage)
-        itemView.chat_quote.setOnClickListener {
+        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {

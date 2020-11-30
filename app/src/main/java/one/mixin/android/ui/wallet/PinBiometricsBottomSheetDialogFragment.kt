@@ -2,16 +2,15 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.view.View
 import androidx.core.os.bundleOf
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.databinding.FragmentPinBottomSheetBinding
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -28,15 +27,17 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
     private val fromWalletSetting by lazy { requireArguments().getBoolean(FROM_WALLET_SETTING) }
 
+    private val binding by viewBinding(FragmentPinBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
 
-        contentView.title.setText(getTipTextRes())
-        contentView.biometric_tv.setText(R.string.verify_by_biometric)
+        binding.title.setText(getTipTextRes())
+        binding.biometricLayout.biometricTv.setText(R.string.verify_by_biometric)
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {

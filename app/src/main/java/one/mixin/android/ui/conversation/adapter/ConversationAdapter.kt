@@ -12,10 +12,39 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.databinding.ItemChatActionBinding
+import one.mixin.android.databinding.ItemChatActionCardBinding
+import one.mixin.android.databinding.ItemChatAudioBinding
+import one.mixin.android.databinding.ItemChatAudioQuoteBinding
+import one.mixin.android.databinding.ItemChatBillBinding
+import one.mixin.android.databinding.ItemChatCallBinding
+import one.mixin.android.databinding.ItemChatCardBinding
+import one.mixin.android.databinding.ItemChatContactCardBinding
+import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
+import one.mixin.android.databinding.ItemChatFileBinding
+import one.mixin.android.databinding.ItemChatFileQuoteBinding
+import one.mixin.android.databinding.ItemChatHyperlinkBinding
+import one.mixin.android.databinding.ItemChatImageBinding
+import one.mixin.android.databinding.ItemChatImageQuoteBinding
+import one.mixin.android.databinding.ItemChatLocationBinding
+import one.mixin.android.databinding.ItemChatPostBinding
+import one.mixin.android.databinding.ItemChatRecallBinding
+import one.mixin.android.databinding.ItemChatSecretBinding
+import one.mixin.android.databinding.ItemChatStickerBinding
+import one.mixin.android.databinding.ItemChatStrangerBinding
+import one.mixin.android.databinding.ItemChatSystemBinding
+import one.mixin.android.databinding.ItemChatTextBinding
+import one.mixin.android.databinding.ItemChatTextQuoteBinding
+import one.mixin.android.databinding.ItemChatTimeBinding
+import one.mixin.android.databinding.ItemChatTransparentBinding
+import one.mixin.android.databinding.ItemChatUnknownBinding
+import one.mixin.android.databinding.ItemChatUnreadBinding
+import one.mixin.android.databinding.ItemChatVideoBinding
+import one.mixin.android.databinding.ItemChatVideoQuoteBinding
+import one.mixin.android.databinding.ItemChatWaitingBinding
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
@@ -140,7 +169,7 @@ class ConversationAdapter(
 
     override fun onBindAttachView(view: View) {
         unreadMsgId?.let {
-            view.unread_tv.text = view.context.getString(R.string.unread)
+            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.unread)
         }
     }
 
@@ -158,10 +187,7 @@ class ConversationAdapter(
     )
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
-        TimeHolder(
-            LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_chat_time, parent, false)
-        )
+        TimeHolder(ItemChatTimeBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
         getItem(position)?.let {
@@ -619,149 +645,91 @@ class ConversationAdapter(
     ): RecyclerView.ViewHolder =
         when (viewType) {
             TEXT_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_text, parent, false)
-                TextHolder(item)
+                TextHolder(ItemChatTextBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             TEXT_QUOTE_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_text_quote, parent, false)
-                TextQuoteHolder(item)
+                TextQuoteHolder(ItemChatTextQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             POST_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_post, parent, false)
-                PostHolder(item)
+                PostHolder(ItemChatPostBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             IMAGE_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_image, parent, false)
-                ImageHolder(item)
+                ImageHolder(ItemChatImageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             IMAGE_QUOTE_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_image_quote, parent, false)
-                ImageQuoteHolder(item)
+                ImageQuoteHolder(ItemChatImageQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             SYSTEM_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_system, parent, false)
-                SystemHolder(item)
+                SystemHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             CARD_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_card, parent, false)
-                CardHolder(item)
+                CardHolder(ItemChatCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             BILL_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_bill, parent, false)
-                BillHolder(item)
+                BillHolder(ItemChatBillBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             WAITING_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_waiting, parent, false)
-                WaitingHolder(item, onItemListener)
+                WaitingHolder(ItemChatWaitingBinding.inflate(LayoutInflater.from(parent.context), parent, false), onItemListener)
             }
             STRANGER_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_stranger, parent, false)
-                StrangerHolder(item)
+                StrangerHolder(ItemChatStrangerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             UNKNOWN_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_unknown, parent, false)
-                UnknownHolder(item)
+                UnknownHolder(ItemChatUnknownBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             FILE_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_file, parent, false)
-                FileHolder(item)
+                FileHolder(ItemChatFileBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             FILE_QUOTE_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_file_quote, parent, false)
-                FileQuoteHolder(item)
+                FileQuoteHolder(ItemChatFileQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             AUDIO_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_audio, parent, false)
-                AudioHolder(item)
+                AudioHolder(ItemChatAudioBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             AUDIO_QUOTE_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_audio_quote, parent, false)
-                AudioQuoteHolder(item)
+                AudioQuoteHolder(ItemChatAudioQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             STICKER_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_sticker, parent, false)
-                StickerHolder(item)
+                StickerHolder(ItemChatStickerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             ACTION_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_action, parent, false)
-                ActionHolder(item)
+                ActionHolder(ItemChatActionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             ACTION_CARD_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_action_card, parent, false)
-                ActionCardHolder(item)
+                ActionCardHolder(ItemChatActionCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             LINK_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_hyperlink, parent, false)
-                HyperlinkHolder(item)
+                HyperlinkHolder(ItemChatHyperlinkBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             CONTACT_CARD_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_contact_card, parent, false)
-                ContactCardHolder(item)
+                ContactCardHolder(ItemChatContactCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             CONTACT_CARD_QUOTE_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_contact_card_quote, parent, false)
-                ContactCardQuoteHolder(item)
+                ContactCardQuoteHolder(ItemChatContactCardQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             VIDEO_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_video, parent, false)
-                VideoHolder(item)
+                VideoHolder(ItemChatVideoBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             VIDEO_QUOTE_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_video_quote, parent, false)
-                VideoQuoteHolder(item)
+                VideoQuoteHolder(ItemChatVideoQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             SECRET_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_secret, parent, false)
-                SecretHolder(item)
+                SecretHolder(ItemChatSecretBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             CALL_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_call, parent, false)
-                CallHolder(item)
+                CallHolder(ItemChatCallBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             RECALL_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_recall, parent, false)
-                RecallHolder(item)
+                RecallHolder(ItemChatRecallBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             LOCATION_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_location, parent, false)
-                LocationHolder(item)
+                LocationHolder(ItemChatLocationBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             GROUP_CALL_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_system, parent, false)
-                GroupCallHolder(item)
+                GroupCallHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             else -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_transparent, parent, false)
-                TransparentHolder(item)
+                TransparentHolder(ItemChatTransparentBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
         }
 

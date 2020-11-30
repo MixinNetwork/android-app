@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Checkable
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.view_conversation_check.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewConversationCheckBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.vo.ConversationItem
@@ -16,6 +16,12 @@ import one.mixin.android.vo.showVerifiedOrBot
 
 class ConversationCheckView : LinearLayout, Checkable {
     private var checked = false
+
+    private val binding = ViewConversationCheckBinding.inflate(LayoutInflater.from(context), this, true)
+    val normal get() = binding.normal
+    val avatar get() = binding.avatar
+    val verifiedIv get() = binding.verifiedIv
+    val botIv get() = binding.botIv
 
     constructor(context: Context) : super(context)
 
@@ -28,7 +34,6 @@ class ConversationCheckView : LinearLayout, Checkable {
     )
 
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_conversation_check, this, true)
         setOnClickListener {
             toggle()
         }
@@ -37,11 +42,11 @@ class ConversationCheckView : LinearLayout, Checkable {
     override fun setChecked(b: Boolean) {
         checked = b
         if (b) {
-            check_iv.visibility = View.VISIBLE
-            layout.setBackgroundColor(selectColor)
+            binding.checkIv.visibility = View.VISIBLE
+            binding.layout.setBackgroundColor(selectColor)
         } else {
-            check_iv.visibility = View.GONE
-            layout.setBackgroundColor(defaultColor)
+            binding.checkIv.visibility = View.GONE
+            binding.layout.setBackgroundColor(defaultColor)
         }
     }
 
@@ -71,13 +76,13 @@ class ConversationCheckView : LinearLayout, Checkable {
 
     fun bind(item: ConversationItem, listener: ForwardAdapter.ForwardListener?) {
         if (item.isGroup()) {
-            normal.text = item.groupName
-            avatar.setGroup(item.iconUrl())
+            binding.normal.text = item.groupName
+            binding.avatar.setGroup(item.iconUrl())
         } else {
-            normal.text = item.name
-            avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
+            binding.normal.text = item.name
+            binding.avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
         }
-        bot_iv.visibility = if (item.isBot()) View.VISIBLE else View.GONE
+        binding.botIv.visibility = if (item.isBot()) View.VISIBLE else View.GONE
         setOnClickListener {
             toggle()
             listener?.onConversationItemClick(item)
@@ -85,12 +90,12 @@ class ConversationCheckView : LinearLayout, Checkable {
     }
 
     fun bind(item: User, listener: ForwardAdapter.ForwardListener?) {
-        normal.text = item.fullName
-        avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
+        binding.normal.text = item.fullName
+        binding.avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
         setOnClickListener {
             toggle()
             listener?.onUserItemClick(item)
         }
-        item.showVerifiedOrBot(verified_iv, bot_iv)
+        item.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
     }
 }

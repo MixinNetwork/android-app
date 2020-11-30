@@ -20,8 +20,8 @@ import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewSearchBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
@@ -48,12 +48,20 @@ class MaterialSearchView : FrameLayout {
     private var mSearchViewListener: SearchViewListener? = null
 
     private var disposable: Disposable? = null
+    private var binding: ViewSearchBinding
+    val actionVa get() = binding.actionVa
+    val logo get() = binding.logo
+    val dot get() = binding.dot
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        LayoutInflater.from(context).inflate(R.layout.view_search, this, true)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
+        binding = ViewSearchBinding.inflate(LayoutInflater.from(context), this, true)
         initStyle(attrs, defStyleAttr)
         initSearchView()
     }
@@ -135,22 +143,23 @@ class MaterialSearchView : FrameLayout {
     }
 
     private fun initSearchView() {
-        container_circle.translationY = -containerHeight
-        (container_circle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight = containerHeight.toInt()
-        container_shadow.layoutParams.height = context.screenHeight()
-        container_shadow.setOnClickListener {
+        binding.containerCircle.translationY = -containerHeight
+        (binding.containerCircle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight =
+            containerHeight.toInt()
+        binding.containerShadow.layoutParams.height = context.screenHeight()
+        binding.containerShadow.setOnClickListener {
             hideContainer()
         }
-        search_et.setOnEditorActionListener { _, _, _ ->
+        binding.searchEt.setOnEditorActionListener { _, _, _ ->
             onSubmitQuery()
             true
         }
         Session.getAccount()?.toUser()?.let { u ->
-            avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-            avatar.setTextSize(14f)
+            binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+            binding.avatar.setTextSize(14f)
         }
 
-        disposable = search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        disposable = binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 {
@@ -159,12 +168,12 @@ class MaterialSearchView : FrameLayout {
                 {}
             )
 
-        right_clear.setOnClickListener {
-            if (!search_et.text.isNullOrEmpty()) {
-                search_et.setText("")
+        binding.rightClear.setOnClickListener {
+            if (!binding.searchEt.text.isNullOrEmpty()) {
+                binding.searchEt.setText("")
             }
         }
-        logo_layout.setOnClickListener {
+        binding.logoLayout.setOnClickListener {
             if (containerDisplay) {
                 hideContainer()
             } else {
@@ -175,12 +184,12 @@ class MaterialSearchView : FrameLayout {
 
     fun hideContainer() {
         containerDisplay = false
-        container_shadow.fadeOut()
-        action_va.fadeOut()
-        avatar.fadeIn()
-        search_ib.fadeIn()
-        container_circle.translationY(-containerHeight) {
-            container_circle.isVisible = false
+        binding.containerShadow.fadeOut()
+        binding.actionVa.fadeOut()
+        binding.avatar.fadeIn()
+        binding.searchIb.fadeIn()
+        binding.containerCircle.translationY(-containerHeight) {
+            binding.containerCircle.isVisible = false
         }
         hideAction?.invoke()
     }
@@ -189,12 +198,12 @@ class MaterialSearchView : FrameLayout {
 
     fun showContainer() {
         containerDisplay = true
-        container_circle.isVisible = true
-        container_shadow.fadeIn()
-        action_va.fadeIn()
-        avatar.fadeOut()
-        search_ib.fadeOut()
-        container_circle.translationY(0f) {
+        binding.containerCircle.isVisible = true
+        binding.containerShadow.fadeIn()
+        binding.actionVa.fadeIn()
+        binding.avatar.fadeOut()
+        binding.searchIb.fadeOut()
+        binding.containerCircle.translationY(0f) {
         }
     }
 
@@ -207,21 +216,21 @@ class MaterialSearchView : FrameLayout {
     private var oldSearchWidth = 0
 
     fun dragSearch(progress: Float) {
-        avatar.translationX = context.dpToPx(88f) * progress
-        search_ib.translationX = context.dpToPx(88f) * progress
+        binding.avatar.translationX = context.dpToPx(88f) * progress
+        binding.searchIb.translationX = context.dpToPx(88f) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
-        search_et.isVisible = true
-        search_et.alpha = fastFadeIn
-        search_ib.isVisible = true
-        logo_layout.isVisible = true
-        back_ib.isVisible = true
-        logo_layout.alpha = fastFadeOut
-        back_ib.alpha = fastFadeIn
+        binding.searchEt.isVisible = true
+        binding.searchEt.alpha = fastFadeIn
+        binding.searchIb.isVisible = true
+        binding.logoLayout.isVisible = true
+        binding.backIb.isVisible = true
+        binding.logoLayout.alpha = fastFadeOut
+        binding.backIb.alpha = fastFadeIn
     }
 
     fun openSearch() {
-        logo_layout.animate().apply {
+        binding.logoLayout.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator?) {
@@ -234,24 +243,24 @@ class MaterialSearchView : FrameLayout {
 
                     private fun op() {
                         setListener(null)
-                        logo_layout.isVisible = false
-                        search_et.isVisible = true
-                        search_et.showKeyboard()
-                        search_et.animate().apply {
+                        binding.logoLayout.isVisible = false
+                        binding.searchEt.isVisible = true
+                        binding.searchEt.showKeyboard()
+                        binding.searchEt.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
                                     override fun onAnimationCancel(animation: Animator?) {
-                                        search_et.alpha = 1f
+                                        binding.searchEt.alpha = 1f
                                     }
                                 }
                             )
                         }.setDuration(150L).alpha(1f).start()
-                        back_ib.isVisible = true
-                        back_ib.animate().apply {
+                        binding.backIb.isVisible = true
+                        binding.backIb.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
                                     override fun onAnimationCancel(animation: Animator?) {
-                                        back_ib.alpha = 1f
+                                        binding.backIb.alpha = 1f
                                     }
                                 }
                             )
@@ -261,19 +270,19 @@ class MaterialSearchView : FrameLayout {
             )
         }.alpha(0f).setDuration(150L).start()
 
-        right_clear.visibility = View.GONE
+        binding.rightClear.visibility = View.GONE
 
-        search_et.setText("")
-        oldLeftX = logo_layout.x
-        oldSearchWidth = search_et.measuredWidth
-        avatar.translationX(context.dpToPx(88f).toFloat())
-        search_ib.translationX(context.dpToPx(88f).toFloat())
+        binding.searchEt.setText("")
+        oldLeftX = binding.logoLayout.x
+        oldSearchWidth = binding.searchEt.measuredWidth
+        binding.avatar.translationX(context.dpToPx(88f).toFloat())
+        binding.searchIb.translationX(context.dpToPx(88f).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
 
     fun closeSearch() {
-        search_et.animate().apply {
+        binding.searchEt.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator?) {
@@ -286,12 +295,12 @@ class MaterialSearchView : FrameLayout {
 
                     private fun op() {
                         setListener(null)
-                        search_et.isGone = true
+                        binding.searchEt.isGone = true
                     }
                 }
             )
         }.alpha(0f).setDuration(150L).start()
-        back_ib.animate().apply {
+        binding.backIb.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator?) {
@@ -304,14 +313,14 @@ class MaterialSearchView : FrameLayout {
 
                     private fun op() {
                         setListener(null)
-                        back_ib.isGone = true
-                        logo_layout.alpha = 0f
-                        logo_layout.isVisible = true
-                        logo_layout.animate().apply {
+                        binding.backIb.isGone = true
+                        binding.logoLayout.alpha = 0f
+                        binding.logoLayout.isVisible = true
+                        binding.logoLayout.animate().apply {
                             setListener(
                                 object : AnimatorListenerAdapter() {
                                     override fun onAnimationCancel(animation: Animator?) {
-                                        logo_layout.alpha = 1f
+                                        binding.logoLayout.alpha = 1f
                                     }
                                 }
                             )
@@ -320,30 +329,30 @@ class MaterialSearchView : FrameLayout {
                 }
             )
         }.setDuration(150L).alpha(0f).start()
-        right_clear.visibility = View.GONE
+        binding.rightClear.visibility = View.GONE
 
-        avatar.translationX(0f)
-        search_ib.translationX(0f)
+        binding.avatar.translationX(0f)
+        binding.searchIb.translationX(0f)
         clearFocus()
-        search_et.hideKeyboard()
-        search_et.setText("")
+        binding.searchEt.hideKeyboard()
+        binding.searchEt.setText("")
         mSearchViewListener?.onSearchViewClosed()
         isOpen = false
     }
 
     private fun onTextChanged(newText: CharSequence) {
         mCurrentQuery = newText
-        right_clear.isVisible = newText.isNotEmpty()
+        binding.rightClear.isVisible = newText.isNotEmpty()
         mOnQueryTextListener?.onQueryTextChange(newText.toString())
     }
 
     private fun onSubmitQuery() {
-        val query = search_et.text
+        val query = binding.searchEt.text
 
         if (query != null && TextUtils.getTrimmedLength(query) > 0) {
             if (mOnQueryTextListener == null) {
                 closeSearch()
-                search_et.setText("")
+                binding.searchEt.setText("")
             }
         }
     }
@@ -353,10 +362,10 @@ class MaterialSearchView : FrameLayout {
     }
 
     fun setQuery(query: CharSequence?, submit: Boolean) {
-        search_et.setText(query)
+        binding.searchEt.setText(query)
 
         if (query != null) {
-            search_et.setSelection(search_et.length())
+            binding.searchEt.setSelection(binding.searchEt.length())
             mCurrentQuery = query
         }
 
@@ -366,7 +375,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     fun setSearchBarColor(color: Int) {
-        search_et.setBackgroundColor(color)
+        binding.searchEt.setBackgroundColor(color)
     }
 
     private fun adjustAlpha(color: Int, factor: Float): Int {
@@ -378,53 +387,53 @@ class MaterialSearchView : FrameLayout {
     }
 
     private fun setHint(hint: CharSequence?) {
-        search_et.hint = hint
+        binding.searchEt.hint = hint
     }
 
     fun setCancelIcon(resourceId: Int) {
-        back_ib.setImageResource(resourceId)
+        binding.backIb.setImageResource(resourceId)
     }
 
     fun setBackIcon(resourceId: Int) {
-        search_ib.setImageResource(resourceId)
+        binding.searchIb.setImageResource(resourceId)
     }
 
     fun setInputType(inputType: Int) {
-        search_et.inputType = inputType
+        binding.searchEt.inputType = inputType
     }
 
     fun setSearchBarHeight(height: Int) {
-        search_view.minimumHeight = height
-        search_view.layoutParams.height = height
+        binding.searchView.minimumHeight = height
+        binding.searchView.layoutParams.height = height
     }
 
     fun setOnGroupClickListener(onClickListener: OnClickListener) {
-        avatar.setOnClickListener(onClickListener)
+        binding.avatar.setOnClickListener(onClickListener)
     }
 
     fun setOnAddClickListener(onClickListener: OnClickListener) {
-        add_ib.setOnClickListener(onClickListener)
+        binding.addIb.setOnClickListener(onClickListener)
     }
 
     fun setOnConfirmClickListener(onClickListener: OnClickListener) {
-        confirm_ib.setOnClickListener(onClickListener)
+        binding.confirmIb.setOnClickListener(onClickListener)
     }
 
     fun setOnLeftClickListener(onClickListener: OnClickListener) {
-        search_ib.setOnClickListener(onClickListener)
+        binding.searchIb.setOnClickListener(onClickListener)
     }
 
     var containerDisplay = false
 
     fun setOnBackClickListener(onClickListener: OnClickListener) {
-        back_ib.setOnClickListener(onClickListener)
+        binding.backIb.setOnClickListener(onClickListener)
     }
 
     override fun clearFocus() {
         this.mClearingFocus = true
         hideKeyboard()
         super.clearFocus()
-        search_et.clearFocus()
+        binding.searchEt.clearFocus()
         this.mClearingFocus = false
     }
 

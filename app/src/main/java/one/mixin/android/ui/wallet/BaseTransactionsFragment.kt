@@ -10,10 +10,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.databinding.FragmentTransactionFiltersBinding
+import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.event.RefreshSnapshotEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
@@ -38,38 +38,24 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected lateinit var dataObserver: Observer<C>
     protected var refreshedSnapshots: Boolean = false
 
+    private var _filterBinding: FragmentTransactionFiltersBinding? = null
+    private val filterBinding get() = requireNotNull(_filterBinding)
+    private var _filterTitleBinding: ViewRoundTitleBinding? = null
+    private val filterTitleBinding get() = requireNotNull(_filterTitleBinding)
+
     protected fun showFiltersSheet() {
-        filtersView.sort_flow.setCheckedById(currentOrder)
-        filtersView.filter_flow.setCheckedById(currentType)
-        filtersSheet.show()
+        filterBinding.apply {
+            sortFlow.setCheckedById(currentOrder)
+            filterFlow.setCheckedById(currentType)
+            filtersSheet.show()
+        }
     }
 
     protected val filtersSheet: BottomSheet by lazy {
         val builder = BottomSheet.Builder(requireActivity())
         val bottomSheet = builder.create()
-        builder.setCustomView(filtersView)
+        builder.setCustomView(filterBinding.root)
         bottomSheet
-    }
-
-    private val filtersView: View by lazy {
-        val view = View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null)
-        view.filters_title.right_iv.setOnClickListener { filtersSheet.dismiss() }
-        view.apply_tv.setOnClickListener { onApplyClick() }
-        view.filter_flow.setOnCheckedListener(
-            object : CheckedFlowLayout.OnCheckedListener {
-                override fun onChecked(id: Int) {
-                    currentType = id
-                }
-            }
-        )
-        view.sort_flow.setOnCheckedListener(
-            object : CheckedFlowLayout.OnCheckedListener {
-                override fun onChecked(id: Int) {
-                    currentOrder = id
-                }
-            }
-        )
-        view
     }
 
     private var currentLiveData: LiveData<C>? = null
@@ -113,11 +99,39 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                 }
             }
         )
+
+        _filterBinding = FragmentTransactionFiltersBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null))
+        _filterTitleBinding = ViewRoundTitleBinding.bind(filterBinding.filtersTitle)
+        filterBinding.apply {
+            filterTitleBinding.rightIv.setOnClickListener { filtersSheet.dismiss() }
+            applyTv.setOnClickListener { onApplyClick() }
+            filterFlow.setOnCheckedListener(
+                object : CheckedFlowLayout.OnCheckedListener {
+                    override fun onChecked(id: Int) {
+                        currentType = id
+                    }
+                }
+            )
+            sortFlow.setOnCheckedListener(
+                object : CheckedFlowLayout.OnCheckedListener {
+                    override fun onChecked(id: Int) {
+                        currentOrder = id
+                    }
+                }
+            )
+        }
+        filterBinding.root
     }
 
     override fun onStop() {
         super.onStop()
         initialLoadKey = (transactionsRv?.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _filterBinding = null
+        _filterTitleBinding = null
     }
 
     companion object {

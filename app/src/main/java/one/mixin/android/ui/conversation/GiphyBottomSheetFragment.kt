@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
@@ -14,8 +13,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_giphy_search_bottom_sheet.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentGiphySearchBottomSheetBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.realSize
@@ -26,6 +25,7 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.BottomSheet
@@ -85,32 +85,36 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         super.onDetach()
     }
 
+    private val binding by viewBinding(FragmentGiphySearchBottomSheetBinding::inflate)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_giphy_search_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.sticker_rv.layoutManager = GridLayoutManager(context, COLUMN).apply {
-            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(pos: Int): Int {
-                    return if (pos == adapter.itemCount - 1) {
-                        COLUMN
-                    } else {
-                        1
+        binding.apply {
+            stickerRv.layoutManager = GridLayoutManager(context, COLUMN).apply {
+                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(pos: Int): Int {
+                        return if (pos == adapter.itemCount - 1) {
+                            COLUMN
+                        } else {
+                            1
+                        }
                     }
                 }
             }
-        }
-        val foot = layoutInflater.inflate(R.layout.view_giphy_foot, contentView.sticker_rv, false)
-        adapter.footerView = foot
-        contentView.sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        contentView.sticker_rv.adapter = adapter
-        contentView.sticker_rv.addOnScrollListener(onScrollListener)
-        contentView.search_et.setOnEditorActionListener(onEditorActionListener)
-        contentView.cancel_tv.setOnClickListener {
-            contentView.hideKeyboard()
-            dismiss()
+            val foot = layoutInflater.inflate(R.layout.view_giphy_foot, stickerRv, false)
+            adapter.footerView = foot
+            stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
+            stickerRv.adapter = adapter
+            stickerRv.addOnScrollListener(onScrollListener)
+            searchEt.setOnEditorActionListener(onEditorActionListener)
+            cancelTv.setOnClickListener {
+                contentView.hideKeyboard()
+                dismiss()
+            }
         }
         performSearch()
     }
@@ -124,10 +128,10 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private fun performSearch() {
         fetching = true
         if (offset == 0) {
-            contentView.sticker_va.displayedChild = POS_PB
+            binding.stickerVa.displayedChild = POS_PB
         }
         if (searching) {
-            val query = contentView.search_et.text.toString()
+            val query = binding.searchEt.text.toString()
             bottomViewModel.searchGifs(query, LIMIT, offset)
         } else {
             bottomViewModel.trendingGifs(LIMIT, offset)
@@ -139,9 +143,9 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                         adapter.notifyDataSetChanged()
                     }
                     if (list.isEmpty()) {
-                        contentView.sticker_va.displayedChild = POS_EMPTY
+                        binding.stickerVa.displayedChild = POS_EMPTY
                     } else {
-                        contentView.sticker_va.displayedChild = POS_RV
+                        binding.stickerVa.displayedChild = POS_RV
                         update(list)
                     }
                     if (list.size < LIMIT) {
@@ -151,7 +155,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 },
                 { t ->
                     fetching = false
-                    contentView.sticker_va.displayedChild = POS_EMPTY
+                    binding.stickerVa.displayedChild = POS_EMPTY
                     Timber.d("Search gifs failed, t: ${t.printStackTrace()}")
                     if (t is HttpException && t.code() == 429) {
                         toast("Giphy API rate limit exceeded")
@@ -162,7 +166,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
     private val onScrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-            if (!fetching && !contentView.sticker_rv.canScrollVertically(1)) {
+            if (!fetching && !binding.stickerRv.canScrollVertically(1)) {
                 val cur = System.currentTimeMillis()
                 if (noMore || cur - lastSearchTime < INTERVAL) return
 
@@ -176,12 +180,12 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
             if (!fetching) {
                 offset = 0
-                searching = contentView.search_et.text.toString().trim().isNotEmpty()
+                searching = binding.searchEt.text.toString().trim().isNotEmpty()
                 noMore = false
                 totalGifs.clear()
-                contentView.sticker_rv.scrollToPosition(0)
+                binding.stickerRv.scrollToPosition(0)
                 performSearch()
-                contentView.search_et.hideKeyboard()
+                binding.searchEt.hideKeyboard()
             }
             return@OnEditorActionListener true
         }

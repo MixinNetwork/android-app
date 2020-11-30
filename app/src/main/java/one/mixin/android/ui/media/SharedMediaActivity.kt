@@ -7,9 +7,11 @@ import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class SharedMediaActivity : BaseActivity() {
@@ -22,9 +24,11 @@ class SharedMediaActivity : BaseActivity() {
         }
     }
 
+    private val binding by viewBinding(ActivityContactBinding::inflate)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_contact)
+        setContentView(binding.root)
         val conversationId = intent.getStringExtra(ARGS_CONVERSATION_ID)
         require(conversationId != null)
         replaceFragment(SharedMediaFragment.newInstance(conversationId), R.id.container, SharedMediaFragment.TAG)

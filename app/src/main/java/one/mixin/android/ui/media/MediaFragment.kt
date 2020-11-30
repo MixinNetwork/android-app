@@ -1,26 +1,25 @@
 package one.mixin.android.ui.media
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.LayoutRecyclerViewBinding
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.dip
 
 @AndroidEntryPoint
-class MediaFragment : BaseFragment() {
+class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
     companion object {
         const val TAG = "MediaFragment"
         const val PADDING = 1
@@ -46,12 +45,7 @@ class MediaFragment : BaseFragment() {
     )
 
     private val viewModel by viewModels<SharedMediaViewModel>()
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.layout_recycler_view, container, false)
+    private val binding by viewBinding(LayoutRecyclerViewBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -69,14 +63,14 @@ class MediaFragment : BaseFragment() {
                 }
             }
         }
-        recycler_view.layoutManager = lm
-        recycler_view.itemAnimator = null
-        recycler_view.isVerticalScrollBarEnabled = false
-        recycler_view.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, false))
-        recycler_view.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
-        recycler_view.adapter = adapter
-        empty_iv.setImageResource(R.drawable.ic_empty_media)
-        empty_tv.setText(R.string.no_media)
+        binding.recyclerView.layoutManager = lm
+        binding.recyclerView.itemAnimator = null
+        binding.recyclerView.isVerticalScrollBarEnabled = false
+        binding.recyclerView.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, false))
+        binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
+        binding.recyclerView.adapter = adapter
+        binding.emptyIv.setImageResource(R.drawable.ic_empty_media)
+        binding.emptyTv.setText(R.string.no_media)
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(
             viewLifecycleOwner,
             {

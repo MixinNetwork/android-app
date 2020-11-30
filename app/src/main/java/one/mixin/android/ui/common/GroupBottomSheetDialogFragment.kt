@@ -14,8 +14,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,6 +26,7 @@ import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.databinding.FragmentGroupBottomSheetBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
@@ -101,20 +100,24 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     override fun getLayoutId() = R.layout.fragment_group_bottom_sheet
 
+    private val binding by lazy {
+        FragmentGroupBottomSheetBinding.bind(contentView)
+    }
+
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView.title.right_iv.setOnClickListener { dismiss() }
-        contentView.member_fl.setOnClickListener {
+        binding.title.rightIv.setOnClickListener { dismiss() }
+        binding.memberFl.setOnClickListener {
             GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
             dismiss()
         }
-        contentView.send_fl.setOnClickListener {
+        binding.sendFl.setOnClickListener {
             if (conversationId != MixinApplication.conversationId) {
                 ConversationActivity.show(requireContext(), conversationId)
             }
             dismiss()
         }
-        setDetailsTv(contentView.detail_tv, contentView.scroll_view, conversationId)
+        setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.getConversationById(conversationId).observe(
             this,
             Observer { c ->
@@ -124,9 +127,9 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     c.muteUntil != conversation.muteUntil
                 conversation = c
                 val icon = c.iconUrl
-                contentView.avatar.setGroup(icon)
+                binding.avatar.setGroup(icon)
                 if (BuildConfig.DEBUG) {
-                    contentView.avatar.setOnLongClickListener {
+                    binding.avatar.setOnLongClickListener {
                         context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
                         true
                     }
@@ -134,19 +137,19 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 if (icon == null || !File(icon).exists()) {
                     bottomViewModel.startGenerateAvatar(c.conversationId)
                 }
-                contentView.name.text = c.name
+                binding.name.text = c.name
                 if (c.announcement.isNullOrBlank()) {
-                    contentView.detail_tv.isVisible = false
+                    binding.detailTv.isVisible = false
                 } else {
-                    contentView.detail_tv.isVisible = true
-                    contentView.detail_tv.text = c.announcement
+                    binding.detailTv.isVisible = true
+                    binding.detailTv.text = c.announcement
                 }
                 initParticipant(changeMenu, c)
             }
         )
 
         contentView.post {
-            contentView.detail_tv.maxHeight = requireContext().screenHeight() / 3
+            binding.detailTv.maxHeight = requireContext().screenHeight() / 3
         }
 
         bottomViewModel.refreshConversation(conversationId)
@@ -167,7 +170,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
         if (!isAdded) return@launch
 
-        contentView.count_tv.text = getString(R.string.group_participants_count, participantCount)
+        binding.countTv.text = getString(R.string.group_participants_count, participantCount)
         if (changeMenu || me != localMe) {
             lifecycleScope.launch {
                 val circleNames = bottomViewModel.findCirclesNameByConversationId(conversationId)
@@ -176,16 +179,16 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
         me = localMe
         if (me != null) {
-            contentView.ops_ll.isVisible = true
-            contentView.scroll_view.isEnabled = true
+            binding.opsLl.isVisible = true
+            binding.scrollView.isEnabled = true
         } else {
             val withoutCode = conversation.status == ConversationStatus.QUIT.ordinal
-            contentView.scroll_view.isEnabled = withoutCode
-            contentView.ops_ll.isVisible = withoutCode
+            binding.scrollView.isEnabled = withoutCode
+            binding.opsLl.isVisible = withoutCode
         }
 
         contentView.doOnPreDraw {
-            behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
+            behavior?.peekHeight = binding.title.height + binding.scrollContent.height -
                 (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
         }
     }
@@ -329,22 +332,22 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         )
 
         menuListLayout?.removeAllViews()
-        contentView.scroll_content.removeView(menuListLayout)
+        binding.scrollContent.removeView(menuListLayout)
         list.createMenuLayout(requireContext())
             .let { layout ->
                 menuListLayout = layout
-                contentView.scroll_content.addView(layout)
+                binding.scrollContent.addView(layout)
                 layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     bottomMargin = requireContext().dpToPx(30f)
                 }
-                contentView.more_fl.setOnClickListener {
+                binding.moreFl.setOnClickListener {
                     if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                         behavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        contentView.more_iv.rotationX = 180f
+                        binding.moreIv.rotationX = 180f
                     } else {
                         behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                        contentView.scroll_view.smoothScrollTo(0, 0)
-                        contentView.more_iv.rotationX = 0f
+                        binding.scrollView.smoothScrollTo(0, 0)
+                        binding.moreIv.rotationX = 0f
                     }
                 }
             }
@@ -448,8 +451,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
-            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
+            BottomSheetBehavior.STATE_COLLAPSED -> binding.moreIv.rotationX = 0f
+            BottomSheetBehavior.STATE_EXPANDED -> binding.moreIv.rotationX = 180f
         }
     }
 

@@ -8,10 +8,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
-import kotlinx.android.synthetic.main.layout_player_view.view.*
-import kotlinx.android.synthetic.main.view_player_control.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
@@ -32,10 +30,10 @@ class VideoHolder(
     itemView: View,
     private val mediaPagerAdapterListener: MediaPagerAdapterListener
 ) : MediaPagerHolder(itemView) {
-
+    val binding = ItemPagerVideoLayoutBinding.bind(itemView)
     init {
         itemView.post {
-            itemView.bottom_ll.setPadding(12.dp, 24.dp, 12.dp, 12.dp + itemView.context.navigationBarHeight())
+            binding.playerView.playerControlView.bottomLayout.setPadding(12.dp, 24.dp, 12.dp, 12.dp + itemView.context.navigationBarHeight())
         }
     }
 
@@ -46,20 +44,21 @@ class VideoHolder(
     ) {
         val context = itemView.context
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
-        itemView.close_iv.setOnClickListener {
+
+        binding.playerView.playerControlView.closeIv.setOnClickListener {
             mediaPagerAdapterListener.finishAfterTransition()
         }
-        itemView.pip_iv.setOnClickListener {
-            itemView.player_view.hideController()
+        binding.playerView.playerControlView.pipView.setOnClickListener {
+            binding.playerView.hideController()
             mediaPagerAdapterListener.switchToPin(messageItem, itemView)
         }
-        itemView.fullscreen_iv.setOnClickListener {
+        binding.playerView.playerControlView.fullscreenIv.setOnClickListener {
             mediaPagerAdapterListener.switchFullscreen()
         }
-        itemView.pip_iv.isEnabled = false
-        itemView.pip_iv.alpha = 0.5f
+        binding.playerView.playerControlView.pipView.isEnabled = false
+        binding.playerView.playerControlView.pipView.alpha = 0.5f
 
-        itemView.player_view.apply {
+        binding.playerView.apply {
             currentMessageId = messageItem.messageId
             setPlaybackPrepare {
                 messageItem.loadVideoOrLive { showPb() }
@@ -77,17 +76,17 @@ class VideoHolder(
 
                 override fun onRenderFirstFrame() {
                     if (VideoPlayer.player().mId == messageItem.messageId) {
-                        itemView.video_aspect_ratio.updateLayoutParams {
+                        binding.playerView.videoAspectRatio.updateLayoutParams {
                             width = MATCH_PARENT
                             height = MATCH_PARENT
                         }
-                        itemView.preview_iv.isVisible = false
-                        itemView.pip_iv.isEnabled = true
-                        itemView.pip_iv.alpha = 1f
+                        binding.previewIv.isVisible = false
+                        binding.playerView.playerControlView.pipView.isEnabled = true
+                        binding.playerView.playerControlView.pipView.alpha = 1f
                     } else {
-                        itemView.preview_iv.isVisible = true
-                        itemView.pip_iv.isEnabled = false
-                        itemView.pip_iv.alpha = .5f
+                        binding.previewIv.isVisible = true
+                        binding.playerView.playerControlView.pipView.isEnabled = false
+                        binding.playerView.playerControlView.pipView.alpha = .5f
                     }
                 }
             }
@@ -97,13 +96,13 @@ class VideoHolder(
         itemView.tag = "$PREFIX${messageItem.messageId}"
         if (messageItem.isLive()) {
             circleProgress.isVisible = false
-            itemView.preview_iv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
+            binding.previewIv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
         } else {
             if (messageItem.mediaUrl != null) {
-                itemView.preview_iv.loadVideo(messageItem.mediaUrl)
+                binding.previewIv.loadVideo(messageItem.mediaUrl)
             } else {
                 val imageData = messageItem.thumbImage?.decodeBase64()
-                Glide.with(itemView).load(imageData).into(itemView.preview_iv)
+                Glide.with(itemView).load(imageData).into(binding.previewIv)
             }
             if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
                 maybeLoadVideo(videoStatusCache, messageItem)
@@ -149,8 +148,8 @@ class VideoHolder(
         val w = context.realSize().x
         val h = context.realSize().y
         val deviceRatio = w / h.toFloat()
-        val ratioParams = view.player_view.video_aspect_ratio.layoutParams
-        val previewParams = view.preview_iv.layoutParams
+        val ratioParams = binding.playerView.videoAspectRatio.layoutParams
+        val previewParams = binding.previewIv.layoutParams
         if (deviceRatio > ratio) {
             ratioParams.height = h
             ratioParams.width = (h * ratio).toInt()
@@ -160,7 +159,7 @@ class VideoHolder(
         }
         previewParams.width = ratioParams.width
         previewParams.height = ratioParams.height
-        view.player_view.video_aspect_ratio.layoutParams = ratioParams
-        view.preview_iv.layoutParams = previewParams
+        binding.playerView.videoAspectRatio.layoutParams = ratioParams
+        binding.previewIv.layoutParams = previewParams
     }
 }

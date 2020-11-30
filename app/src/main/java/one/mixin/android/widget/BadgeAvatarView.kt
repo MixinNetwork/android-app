@@ -4,20 +4,19 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import one.mixin.android.R
+import one.mixin.android.databinding.ViewBadgeAvatarBinding
 
 class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
-    init {
-        LayoutInflater.from(context).inflate(R.layout.view_badge_avatar, this, true)
-    }
+    private val binding = ViewBadgeAvatarBinding.inflate(LayoutInflater.from(context), this)
+    val bg get() = binding.bg
+    val badge get() = binding.badge
 
     var pos: Int = START_BOTTOM
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         measureChild(
-            badge,
+            binding.badge,
             MeasureSpec.makeMeasureSpec(measuredWidth / 4, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(measuredHeight / 4, MeasureSpec.EXACTLY)
         )
@@ -27,9 +26,9 @@ class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(cont
         super.onLayout(changed, left, top, right, bottom)
         val i = measuredWidth / 8
         if (pos == START_BOTTOM) {
-            badge.layout(0, 5 * i, 2 * i, 7 * i)
+            binding.badge.layout(0, 5 * i, 2 * i, 7 * i)
         } else if (pos == END_BOTTOM) {
-            badge.layout(6 * i, 6 * i, 8 * i, 8 * i)
+            binding.badge.layout(6 * i, 6 * i, 8 * i, 8 * i)
         }
     }
 

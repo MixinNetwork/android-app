@@ -54,16 +54,6 @@ import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.dialog_delete.view.*
-import kotlinx.android.synthetic.main.fragment_conversation.*
-import kotlinx.android.synthetic.main.fragment_conversation.view.*
-import kotlinx.android.synthetic.main.view_chat_control.*
-import kotlinx.android.synthetic.main.view_chat_control.view.*
-import kotlinx.android.synthetic.main.view_flag.view.*
-import kotlinx.android.synthetic.main.view_reply.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.android.synthetic.main.view_tool.view.*
-import kotlinx.android.synthetic.main.view_url_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -77,6 +67,9 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.databinding.DialogDeleteBinding
+import one.mixin.android.databinding.FragmentConversationBinding
+import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.ExitEvent
@@ -172,7 +165,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
@@ -313,12 +305,12 @@ class ConversationFragment() :
                             ?.getBoolean(conversationId, false) == true
                         ) {
                             chatViewModel.viewModelScope.launch {
-                                group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
-                                group_desc.collapse()
-                                group_desc.requestFocus()
+                                binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
+                                binding.groupDesc.collapse()
+                                binding.groupDesc.requestFocus()
                             }
-                            group_flag.isVisible = true
-                            driver.isVisible = true
+                            binding.groupFlag.isVisible = true
+                            binding.driver.isVisible = true
                         }
                         val position = if (messageId != null) {
                             unreadCount + 1
@@ -326,29 +318,29 @@ class ConversationFragment() :
                             unreadCount
                         }
                         if (position >= itemCount - 1) {
-                            (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                                 itemCount - 1,
                                 0
                             )
                         } else {
-                            (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                                 position,
-                                chat_rv.measuredHeight * 3 / 4
+                                binding.chatRv.measuredHeight * 3 / 4
                             )
                         }
-                        chat_rv.isVisible = true
+                        binding.chatRv.isVisible = true
                     }
                     isBottom -> {
                         if (chatAdapter.currentList != null && chatAdapter.currentList!!.size > oldSize) {
-                            chat_rv.layoutManager?.scrollToPosition(0)
+                            binding.chatRv.layoutManager?.scrollToPosition(0)
                         }
                     }
                     else -> {
                         if (unreadTipCount > 0) {
-                            flag_layout.bottomCountFlag = true
-                            flag_layout.unreadCount = unreadTipCount
+                            binding.flagLayout.bottomCountFlag = true
+                            binding.flagLayout.unreadCount = unreadTipCount
                         } else {
-                            flag_layout.bottomCountFlag = false
+                            binding.flagLayout.bottomCountFlag = false
                         }
                     }
                 }
@@ -385,77 +377,77 @@ class ConversationFragment() :
                 } else {
                     chatAdapter.removeSelect(messageItem)
                 }
-                tool_view.count_tv.text = chatAdapter.selectSet.size.toString()
+                binding.toolView.countTv.text = chatAdapter.selectSet.size.toString()
                 when {
-                    chatAdapter.selectSet.isEmpty() -> tool_view.fadeOut()
+                    chatAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
                     chatAdapter.selectSet.size == 1 -> {
                         try {
                             if (chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_TEXT.name ||
                                 chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_TEXT.name
                             ) {
-                                tool_view.copy_iv.visibility = VISIBLE
+                                binding.toolView.copyIv.visibility = VISIBLE
                             } else {
-                                tool_view.copy_iv.visibility = GONE
+                                binding.toolView.copyIv.visibility = GONE
                             }
                         } catch (e: ArrayIndexOutOfBoundsException) {
-                            tool_view.copy_iv.visibility = GONE
+                            binding.toolView.copyIv.visibility = GONE
                         }
                         if (chatAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
-                            tool_view.add_sticker_iv.visibility = VISIBLE
+                            binding.toolView.addStickerIv.visibility = VISIBLE
                         } else {
-                            tool_view.add_sticker_iv.visibility = GONE
+                            binding.toolView.addStickerIv.visibility = GONE
                         }
                         if (chatAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
-                            tool_view.reply_iv.visibility = GONE
+                            binding.toolView.replyIv.visibility = GONE
                         } else {
-                            tool_view.reply_iv.visibility = VISIBLE
+                            binding.toolView.replyIv.visibility = VISIBLE
                         }
                     }
                     else -> {
-                        tool_view.forward_iv.visibility = VISIBLE
-                        tool_view.reply_iv.visibility = GONE
-                        tool_view.copy_iv.visibility = GONE
-                        tool_view.add_sticker_iv.visibility = GONE
+                        binding.toolView.forwardIv.visibility = VISIBLE
+                        binding.toolView.replyIv.visibility = GONE
+                        binding.toolView.copyIv.visibility = GONE
+                        binding.toolView.addStickerIv.visibility = GONE
                     }
                 }
                 if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
-                    tool_view.forward_iv.visibility = GONE
+                    binding.toolView.forwardIv.visibility = GONE
                 } else {
-                    tool_view.forward_iv.visibility = VISIBLE
+                    binding.toolView.forwardIv.visibility = VISIBLE
                 }
                 chatAdapter.notifyDataSetChanged()
             }
 
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
                 val b = chatAdapter.addSelect(messageItem)
-                tool_view.count_tv.text = chatAdapter.selectSet.size.toString()
+                binding.toolView.countTv.text = chatAdapter.selectSet.size.toString()
                 if (b) {
                     if (messageItem.type == MessageCategory.SIGNAL_TEXT.name ||
                         messageItem.type == MessageCategory.PLAIN_TEXT.name
                     ) {
-                        tool_view.copy_iv.visibility = VISIBLE
+                        binding.toolView.copyIv.visibility = VISIBLE
                     } else {
-                        tool_view.copy_iv.visibility = GONE
+                        binding.toolView.copyIv.visibility = GONE
                     }
 
                     if (messageItem.supportSticker()) {
-                        tool_view.add_sticker_iv.visibility = VISIBLE
+                        binding.toolView.addStickerIv.visibility = VISIBLE
                     } else {
-                        tool_view.add_sticker_iv.visibility = GONE
+                        binding.toolView.addStickerIv.visibility = GONE
                     }
 
                     if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
-                        tool_view.forward_iv.visibility = GONE
+                        binding.toolView.forwardIv.visibility = GONE
                     } else {
-                        tool_view.forward_iv.visibility = VISIBLE
+                        binding.toolView.forwardIv.visibility = VISIBLE
                     }
                     if (chatAdapter.selectSet.find { it.canNotReply() } != null) {
-                        tool_view.reply_iv.visibility = GONE
+                        binding.toolView.replyIv.visibility = GONE
                     } else {
-                        tool_view.reply_iv.visibility = VISIBLE
+                        binding.toolView.replyIv.visibility = VISIBLE
                     }
                     chatAdapter.notifyDataSetChanged()
-                    tool_view.fadeIn()
+                    binding.toolView.fadeIn()
                 }
                 return b
             }
@@ -504,7 +496,7 @@ class ConversationFragment() :
 
             override fun onAudioClick(messageItem: MessageItem) {
                 when {
-                    chat_control.isRecording -> showRecordingAlert()
+                    binding.chatControl.isRecording -> showRecordingAlert()
                     AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
                     else -> {
                         AudioPlayer.play(messageItem) {
@@ -566,7 +558,7 @@ class ConversationFragment() :
             override fun onAudioFileClick(messageItem: MessageItem) {
                 if (!MimeTypes.isAudio(messageItem.mediaMimeType)) return
                 when {
-                    chat_control.isRecording -> showRecordingAlert()
+                    binding.chatControl.isRecording -> showRecordingAlert()
                     AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
                     else -> AudioPlayer.play(messageItem)
                 }
@@ -597,10 +589,11 @@ class ConversationFragment() :
                     R.layout.view_url_bottom,
                     null
                 )
+                val viewBinding = ViewUrlBottomBinding.bind(view)
                 builder.setCustomView(view)
                 val bottomSheet = builder.create()
-                view.url_tv.text = url
-                view.open_tv.setOnClickListener {
+                viewBinding.urlTv.text = url
+                viewBinding.openTv.setOnClickListener {
                     url.openAsUrlOrWeb(
                         requireContext(),
                         conversationId,
@@ -609,7 +602,7 @@ class ConversationFragment() :
                     )
                     bottomSheet.dismiss()
                 }
-                view.copy_tv.setOnClickListener {
+                viewBinding.copyTv.setOnClickListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
                     requireContext().toast(R.string.copy_success)
@@ -777,11 +770,11 @@ class ConversationFragment() :
             object : OnUserClickListener {
                 @SuppressLint("SetTextI18n")
                 override fun onUserClick(user: User) {
-                    val text = chat_control.chat_et.text ?: return
-                    chat_control.chat_et.setText(mentionReplace(text, user))
-                    chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
+                    val text = binding.chatControl.chatEt.text ?: return
+                    binding.chatControl.chatEt.setText(mentionReplace(text, user))
+                    binding.chatControl.chatEt.setSelection(binding.chatControl.chatEt.text!!.length)
                     mentionAdapter.submitList(null)
-                    floating_layout.hideMention()
+                    binding.floatingLayout.hideMention()
                 }
             }
         )
@@ -829,7 +822,7 @@ class ConversationFragment() :
     private var isBottom = true
         set(value) {
             field = value
-            flag_layout.bottomFlag = !value
+            binding.flagLayout.bottomFlag = !value
         }
     private var positionBeforeClickQuote: String? = null
 
@@ -867,7 +860,7 @@ class ConversationFragment() :
     // for testing
     var selectItem: SelectItem? = null
 
-    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage<ForwardCategory>>, String?>>
+    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -886,13 +879,18 @@ class ConversationFragment() :
         recipient = requireArguments().getParcelable(RECIPIENT)
     }
 
+    private var _binding: FragmentConversationBinding? = null
+    private val binding get() = requireNotNull(_binding)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_conversation, container, false)
+    ): View {
+        _binding = FragmentConversationBinding.inflate(inflater, container, false)
+        return binding.root
     }
+
+    override fun getContentView(): View = binding.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -942,10 +940,10 @@ class ConversationFragment() :
             SensorManager.SENSOR_DELAY_NORMAL
         )
         supportsNougat {
-            input_layout.onMultiWindowModeChanged(requireActivity().isInMultiWindowMode)
+            binding.inputLayout.onMultiWindowModeChanged(requireActivity().isInMultiWindowMode)
         }
-        input_layout.setOnKeyboardShownListener(this)
-        input_layout.setOnKeyBoardHiddenListener(this)
+        binding.inputLayout.setOnKeyboardShownListener(this)
+        binding.inputLayout.setOnKeyBoardHiddenListener(this)
         MixinApplication.conversationId = conversationId
         if (isGroup) {
             RxBus.listen(GroupEvent::class.java)
@@ -954,26 +952,26 @@ class ConversationFragment() :
                 .subscribe {
                     if (it.conversationId == conversationId) {
                         chatViewModel.viewModelScope.launch {
-                            group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
-                            group_desc.collapse()
-                            group_desc.requestFocus()
+                            binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
+                            binding.groupDesc.collapse()
+                            binding.groupDesc.requestFocus()
                         }
-                        group_flag.isVisible = true
-                        driver.isVisible = true
+                        binding.groupFlag.isVisible = true
+                        binding.driver.isVisible = true
                     }
                 }
         }
         if (paused) {
             paused = false
-            chat_rv.adapter?.notifyDataSetChanged()
+            binding.chatRv.adapter?.notifyDataSetChanged()
         }
-        if (chat_control.getVisibleContainer() == null) {
-            ViewCompat.getRootWindowInsets(input_area)?.let { windowInsetsCompat ->
+        if (binding.chatControl.getVisibleContainer() == null) {
+            ViewCompat.getRootWindowInsets(binding.inputArea)?.let { windowInsetsCompat ->
                 val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
                 if (imeHeight > 0) {
-                    input_layout.openInputArea(chat_control.chat_et)
+                    binding.inputLayout.openInputArea(binding.chatControl.chatEt)
                 } else {
-                    input_layout.forceClose(chat_control.chat_et)
+                    binding.inputLayout.forceClose(binding.chatControl.chatEt)
                 }
             }
         }
@@ -984,10 +982,10 @@ class ConversationFragment() :
                 if (chatAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
                 }
-                reply_view.messageItem?.let {
+                binding.chatControl.replyView.messageItem?.let {
                     if (it.messageId == event.messageId) {
-                        reply_view.animateHeight(53.dp, 0)
-                        reply_view.messageItem = null
+                        binding.chatControl.replyView.animateHeight(53.dp, 0)
+                        binding.chatControl.replyView.messageItem = null
                     }
                 }
             }
@@ -1003,13 +1001,13 @@ class ConversationFragment() :
         deleteDialog?.dismiss()
         super.onPause()
         paused = true
-        input_layout.setOnKeyboardShownListener(null)
-        input_layout.setOnKeyBoardHiddenListener(null)
-        if (chat_control.getVisibleContainer() == null) {
-            ViewCompat.getRootWindowInsets(input_area)?.let { windowInsetsCompat ->
+        binding.inputLayout.setOnKeyboardShownListener(null)
+        binding.inputLayout.setOnKeyBoardHiddenListener(null)
+        if (binding.chatControl.getVisibleContainer() == null) {
+            ViewCompat.getRootWindowInsets(binding.inputArea)?.let { windowInsetsCompat ->
                 val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
                 if (imeHeight <= 0) {
-                    input_layout.forceClose()
+                    binding.inputLayout.forceClose()
                 }
             }
         }
@@ -1055,15 +1053,15 @@ class ConversationFragment() :
     override fun onStop() {
         markRead()
         AudioPlayer.pause()
-        val draftText = chat_control.chat_et.text
+        val draftText = binding.chatControl.chatEt.text
         if (draftText != null) {
             chatViewModel.saveDraft(conversationId, draftText.toString())
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
         }
-        if (chat_control?.isRecording == true) {
-            chat_control?.cancelExternal()
+        if (binding.chatControl?.isRecording == true) {
+            binding.chatControl?.cancelExternal()
         }
         if (wakeLock.isHeld) {
             wakeLock.release()
@@ -1075,7 +1073,7 @@ class ConversationFragment() :
     }
 
     override fun onDestroyView() {
-        chat_rv?.let { rv ->
+        binding.chatRv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
                 if (vh != null && vh is BaseViewHolder) {
@@ -1086,6 +1084,7 @@ class ConversationFragment() :
         if (isAdded) {
             chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
+        _binding = null
         super.onDestroyView()
     }
 
@@ -1112,7 +1111,7 @@ class ConversationFragment() :
 
     override fun onBackPressed(): Boolean {
         return when {
-            chat_control.isRecording -> {
+            binding.chatControl.isRecording -> {
                 alertDialogBuilder()
                     .setTitle(getString(R.string.chat_audio_discard_warning_title))
                     .setMessage(getString(R.string.chat_audio_discard_warning))
@@ -1126,21 +1125,21 @@ class ConversationFragment() :
                     .show()
                 true
             }
-            tool_view.visibility == VISIBLE -> {
+            binding.toolView.visibility == VISIBLE -> {
                 closeTool()
                 true
             }
-            chat_control.getVisibleContainer()?.isVisible == true -> {
-                chat_control.reset()
+            binding.chatControl.getVisibleContainer()?.isVisible == true -> {
+                binding.chatControl.reset()
                 true
             }
-            chat_control.isRecording -> {
+            binding.chatControl.isRecording -> {
                 OpusAudioRecorder.get(conversationId).stopRecording(false)
-                chat_control.cancelExternal()
+                binding.chatControl.cancelExternal()
                 true
             }
-            reply_view.visibility == VISIBLE -> {
-                reply_view.animateHeight(53.dp, 0)
+            binding.chatControl.replyView.visibility == VISIBLE -> {
+                binding.chatControl.replyView.animateHeight(53.dp, 0)
                 true
             }
             else -> false
@@ -1148,21 +1147,21 @@ class ConversationFragment() :
     }
 
     private fun hideIfShowBottomSheet() {
-        if (sticker_container.isVisible &&
-            menu_container.isVisible &&
-            gallery_container.isVisible
+        if (binding.stickerContainer.isVisible &&
+            binding.menuContainer.isVisible &&
+            binding.galleryContainer.isVisible
         ) {
-            chat_control.reset()
+            binding.chatControl.reset()
         }
-        if (reply_view.isVisible) {
-            reply_view.animateHeight(53.dp, 0)
+        if (binding.chatControl.replyView.isVisible) {
+            binding.chatControl.replyView.animateHeight(53.dp, 0)
         }
     }
 
     private fun closeTool() {
         chatAdapter.selectSet.clear()
         chatAdapter.notifyDataSetChanged()
-        tool_view.fadeOut()
+        binding.toolView.fadeOut()
     }
 
     private fun markRead() {
@@ -1173,26 +1172,26 @@ class ConversationFragment() :
 
     private fun initView() {
         if (requireActivity().booleanFromAttribute(R.attr.flag_night)) {
-            input_layout.backgroundImage =
+            binding.inputLayout.backgroundImage =
                 ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_night)
         } else {
-            input_layout.backgroundImage =
+            binding.inputLayout.backgroundImage =
                 ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat)
         }
-        chat_rv.visibility = INVISIBLE
-        if (chat_rv.adapter == null) {
-            chat_rv.adapter = chatAdapter
+        binding.chatRv.visibility = INVISIBLE
+        if (binding.chatRv.adapter == null) {
+            binding.chatRv.adapter = chatAdapter
             chatAdapter.listen(destroyScope)
         }
-        chat_control.callback = chatControlCallback
-        chat_control.activity = requireActivity()
-        chat_control.inputLayout = input_layout
-        chat_control.stickerContainer = sticker_container
-        chat_control.menuContainer = menu_container
-        chat_control.galleryContainer = gallery_container
-        chat_control.recordTipView = record_tip_tv
-        chat_control.setCircle(record_circle)
-        chat_control.chat_et.setCommitContentListener(
+        binding.chatControl.callback = chatControlCallback
+        binding.chatControl.activity = requireActivity()
+        binding.chatControl.inputLayout = binding.inputLayout
+        binding.chatControl.stickerContainer = binding.stickerContainer
+        binding.chatControl.menuContainer = binding.menuContainer
+        binding.chatControl.galleryContainer = binding.galleryContainer
+        binding.chatControl.recordTipView = binding.recordTipTv
+        binding.chatControl.setCircle(binding.recordCircle)
+        binding.chatControl.chatEt.setCommitContentListener(
             object :
                 ContentEditText.OnCommitContentListener {
                 override fun onCommitContent(
@@ -1209,15 +1208,15 @@ class ConversationFragment() :
                 }
             }
         )
-        chat_rv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
-        chat_rv.addItemDecoration(decoration)
-        chat_rv.itemAnimator = null
+        binding.chatRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
+        binding.chatRv.addItemDecoration(decoration)
+        binding.chatRv.itemAnimator = null
 
-        chat_rv.addOnScrollListener(
+        binding.chatRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
 
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                    firstPosition = (binding.chatRv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                     if (firstPosition > 0) {
                         if (isBottom) {
                             isBottom = false
@@ -1227,14 +1226,14 @@ class ConversationFragment() :
                             isBottom = true
                         }
                         unreadTipCount = 0
-                        flag_layout.bottomCountFlag = false
+                        binding.flagLayout.bottomCountFlag = false
                     }
                 }
             }
         )
-        chat_rv.callback = object : DraggableRecyclerView.Callback {
+        binding.chatRv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
-                val currentContainer = chat_control.getDraggableContainer()
+                val currentContainer = binding.chatControl.getDraggableContainer()
                 if (currentContainer != null) {
                     dragChatControl(dis)
                 }
@@ -1245,11 +1244,11 @@ class ConversationFragment() :
             }
         }
 
-        chat_rv.setScrollingTouchSlop(SWAP_SLOT)
+        binding.chatRv.setScrollingTouchSlop(SWAP_SLOT)
 
         initTouchHelper()
 
-        action_bar.left_ib.setOnClickListener {
+        binding.actionBar.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
 
@@ -1259,9 +1258,9 @@ class ConversationFragment() :
             renderUser(recipient!!)
         }
 
-        flag_layout.down_flag_layout.setOnClickListener {
-            if (chat_rv.scrollState == RecyclerView.SCROLL_STATE_SETTLING) {
-                chat_rv.dispatchTouchEvent(
+        binding.flagLayout.downFlagLayout.setOnClickListener {
+            if (binding.chatRv.scrollState == RecyclerView.SCROLL_STATE_SETTLING) {
+                binding.chatRv.dispatchTouchEvent(
                     MotionEvent.obtain(
                         SystemClock.uptimeMillis(),
                         SystemClock.uptimeMillis(),
@@ -1279,7 +1278,7 @@ class ConversationFragment() :
             } else {
                 scrollTo(0)
                 unreadTipCount = 0
-                flag_layout.bottomCountFlag = false
+                binding.flagLayout.bottomCountFlag = false
             }
         }
         chatViewModel.searchConversationById(conversationId)
@@ -1287,7 +1286,7 @@ class ConversationFragment() :
                 {
                     it?.draft?.let { str ->
                         if (isAdded) {
-                            chat_control.chat_et.setText(str)
+                            binding.chatControl.chatEt.setText(str)
                         }
                     }
                 },
@@ -1295,8 +1294,8 @@ class ConversationFragment() :
                     Timber.e(it)
                 }
             )
-        tool_view.close_iv.setOnClickListener { activity?.onBackPressed() }
-        tool_view.delete_iv.setOnClickListener {
+        binding.toolView.closeIv.setOnClickListener { activity?.onBackPressed() }
+        binding.toolView.deleteIv.setOnClickListener {
             chatAdapter.selectSet.filter { it.type.endsWith("_AUDIO") }.forEach {
                 if (AudioPlayer.isPlay(it.messageId)) {
                     AudioPlayer.pause()
@@ -1305,11 +1304,11 @@ class ConversationFragment() :
             deleteMessage(chatAdapter.selectSet.toList())
             closeTool()
         }
-        reply_view.reply_close_iv.setOnClickListener {
-            reply_view.messageItem = null
-            reply_view.animateHeight(53.dp, 0)
+        binding.chatControl.replyView.replyCloseIv.setOnClickListener {
+            binding.chatControl.replyView.messageItem = null
+            binding.chatControl.replyView.animateHeight(53.dp, 0)
         }
-        tool_view.copy_iv.setOnClickListener {
+        binding.toolView.copyIv.setOnClickListener {
             try {
                 context?.getClipboardManager()?.setPrimaryClip(
                     ClipData.newPlainText(null, chatAdapter.selectSet.valueAt(0)?.content)
@@ -1319,14 +1318,14 @@ class ConversationFragment() :
             }
             closeTool()
         }
-        tool_view.forward_iv.setOnClickListener {
+        binding.toolView.forwardIv.setOnClickListener {
             lifecycleScope.launch {
                 val list = chatViewModel.getSortMessagesByIds(chatAdapter.selectSet)
                 getForwardResult.launch(Pair(list, null))
                 closeTool()
             }
         }
-        tool_view.add_sticker_iv.setOnClickListener {
+        binding.toolView.addStickerIv.setOnClickListener {
             if (chatAdapter.selectSet.isEmpty()) {
                 return@setOnClickListener
             }
@@ -1350,35 +1349,35 @@ class ConversationFragment() :
             }
         }
 
-        tool_view.reply_iv.setOnClickListener {
+        binding.toolView.replyIv.setOnClickListener {
             if (chatAdapter.selectSet.isEmpty()) {
                 return@setOnClickListener
             }
             chatAdapter.selectSet.valueAt(0)?.let {
-                reply_view.bind(it)
+                binding.chatControl.replyView.bind(it)
             }
             displayReplyView()
             closeTool()
         }
 
-        group_desc.movementMethod = LinkMovementMethod()
-        group_desc.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        group_desc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        group_desc.setAutoLinkOnClickListener { _, url ->
+        binding.groupDesc.movementMethod = LinkMovementMethod()
+        binding.groupDesc.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.groupDesc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        binding.groupDesc.setAutoLinkOnClickListener { _, url ->
             url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
         }
-        group_flag.setOnClickListener {
-            group_desc.expand()
+        binding.groupFlag.setOnClickListener {
+            binding.groupDesc.expand()
         }
-        group_desc.setOnClickListener {
-            group_desc.expand()
+        binding.groupDesc.setOnClickListener {
+            binding.groupDesc.expand()
         }
-        group_close.setOnClickListener {
+        binding.groupClose.setOnClickListener {
             requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
-            group_flag.isVisible = false
-            driver.isVisible = false
+            binding.groupFlag.isVisible = false
+            binding.driver.isVisible = false
         }
-        tap_join_view.setOnClickListener {
+        binding.tapJoinView.root.setOnClickListener {
             if (!requireContext().networkConnected()) {
                 toast(R.string.error_network)
                 return@setOnClickListener
@@ -1398,11 +1397,11 @@ class ConversationFragment() :
         callState.observe(
             viewLifecycleOwner,
             { state ->
-                chat_control.calling = state != CallService.CallState.STATE_IDLE
+                binding.chatControl.calling = state != CallService.CallState.STATE_IDLE
                 if (isGroup) {
-                    tap_join_view.isVisible = callState.isPendingGroupCall(conversationId)
+                    binding.tapJoinView.root.isVisible = callState.isPendingGroupCall(conversationId)
                 } else {
-                    tap_join_view.isVisible = false
+                    binding.tapJoinView.root.isVisible = false
                 }
             }
         )
@@ -1417,10 +1416,10 @@ class ConversationFragment() :
                 object : ChatItemCallback.ItemCallbackListener {
                     override fun onSwiped(position: Int) {
                         itemTouchHelper.attachToRecyclerView(null)
-                        itemTouchHelper.attachToRecyclerView(chat_rv)
+                        itemTouchHelper.attachToRecyclerView(binding.chatRv)
                         if (position >= 0) {
                             chatAdapter.getItem(position)?.let {
-                                reply_view.bind(it)
+                                binding.chatControl.replyView.bind(it)
                             }
 
                             displayReplyView()
@@ -1430,7 +1429,7 @@ class ConversationFragment() :
                 }
             )
         itemTouchHelper = ItemTouchHelper(callback)
-        itemTouchHelper.attachToRecyclerView(chat_rv)
+        itemTouchHelper.attachToRecyclerView(binding.chatRv)
     }
 
     private fun addSticker(m: MessageItem) = lifecycleScope.launch(Dispatchers.IO) {
@@ -1469,13 +1468,13 @@ class ConversationFragment() :
         val showRecall = messages.all { item ->
             item.userId == sender.userId && item.status != MessageStatus.SENDING.name && !item.createdAt.lateOneHours() && item.canRecall()
         }
-        val deleteDialogLayout = generateDeleteDialogLayout()
+        val deleteDialogLayoutBinding = generateDeleteDialogLayout()
         deleteDialog = alertDialogBuilder()
             .setMessage(getString(R.string.chat_delete_message, messages.size))
-            .setView(deleteDialogLayout)
+            .setView(deleteDialogLayoutBinding.root)
             .create()
         if (showRecall) {
-            deleteDialogLayout.delete_everyone.setOnClickListener {
+            deleteDialogLayoutBinding.deleteEveryone.setOnClickListener {
                 if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
                     deleteDialog?.dismiss()
                     deleteAlert(messages)
@@ -1485,21 +1484,21 @@ class ConversationFragment() :
                     deleteDialog?.dismiss()
                 }
             }
-            deleteDialogLayout.delete_everyone.visibility = VISIBLE
+            deleteDialogLayoutBinding.deleteEveryone.visibility = VISIBLE
         } else {
-            deleteDialogLayout.delete_everyone.visibility = GONE
+            deleteDialogLayoutBinding.deleteEveryone.visibility = GONE
         }
-        deleteDialogLayout.delete_me.setOnClickListener {
+        deleteDialogLayoutBinding.deleteMe.setOnClickListener {
             chatViewModel.deleteMessages(messages)
             deleteDialog?.dismiss()
         }
         deleteDialog?.show()
     }
 
-    private fun generateDeleteDialogLayout(): View {
-        return LayoutInflater.from(requireActivity()).inflate(R.layout.dialog_delete, null, false)
+    private fun generateDeleteDialogLayout(): DialogDeleteBinding {
+        return DialogDeleteBinding.inflate(LayoutInflater.from(requireActivity()), null, false)
             .apply {
-                this.delete_cancel.setOnClickListener {
+                this.deleteCancel.setOnClickListener {
                     deleteDialog?.dismiss()
                 }
             }
@@ -1580,8 +1579,8 @@ class ConversationFragment() :
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
             { mentionMessages ->
-                flag_layout.mentionCount = mentionMessages.size
-                flag_layout.mention_flag_layout.setOnClickListener {
+                binding.flagLayout.mentionCount = mentionMessages.size
+                binding.flagLayout.mentionFlagLayout.setOnClickListener {
                     lifecycleScope.launch {
                         if (mentionMessages.isEmpty()) {
                             return@launch
@@ -1599,9 +1598,9 @@ class ConversationFragment() :
 
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
-            chat_control.showBot()
+            binding.chatControl.showBot()
         } else {
-            chat_control.hideBot()
+            binding.chatControl.hideBot()
         }
         liveDataAppList()
     }
@@ -1679,7 +1678,7 @@ class ConversationFragment() :
                 isPlainMessage(),
                 previewUrl
             )
-            chat_rv.postDelayed(
+            binding.chatRv.postDelayed(
                 {
                     scrollToDown()
                 },
@@ -1689,7 +1688,7 @@ class ConversationFragment() :
     }
 
     override fun onCancel() {
-        chat_control?.cancelExternal()
+        binding.chatControl?.cancelExternal()
     }
 
     override fun sendAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray) {
@@ -1721,7 +1720,7 @@ class ConversationFragment() :
                 isPlainMessage(),
                 replyMessage = getRelyMessage()
             )
-            chat_rv.postDelayed(
+            binding.chatRv.postDelayed(
                 {
                     scrollToDown()
                 },
@@ -1768,10 +1767,10 @@ class ConversationFragment() :
 
     private fun getRelyMessage(): MessageItem? {
         if (isAdded) {
-            val messageItem = reply_view.messageItem
-            if (reply_view.isVisible) {
-                reply_view.animateHeight(53.dp, 0)
-                reply_view.messageItem = null
+            val messageItem = binding.chatControl.replyView.messageItem
+            if (binding.chatControl.replyView.isVisible) {
+                binding.chatControl.replyView.animateHeight(53.dp, 0)
+                binding.chatControl.replyView.messageItem = null
             }
             return messageItem
         }
@@ -1780,7 +1779,7 @@ class ConversationFragment() :
 
     private fun sendMessage(message: String) {
         if (message.isNotBlank()) {
-            chat_control.chat_et.setText("")
+            binding.chatControl.chatEt.setText("")
             createConversation {
                 chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
                 scrollToDown()
@@ -1798,18 +1797,18 @@ class ConversationFragment() :
     }
 
     private fun sendReplyTextMessage(message: String) {
-        if (message.isNotBlank() && reply_view.messageItem != null) {
-            chat_control.chat_et.setText("")
+        if (message.isNotBlank() && binding.chatControl.replyView.messageItem != null) {
+            binding.chatControl.chatEt.setText("")
             createConversation {
                 chatViewModel.sendReplyTextMessage(
                     conversationId,
                     sender,
                     message,
-                    reply_view.messageItem!!,
+                    binding.chatControl.replyView.messageItem!!,
                     isPlainMessage()
                 )
-                reply_view.animateHeight(53.dp, 0)
-                reply_view.messageItem = null
+                binding.chatControl.replyView.animateHeight(53.dp, 0)
+                binding.chatControl.replyView.messageItem = null
                 scrollToDown()
                 markRead()
             }
@@ -1821,8 +1820,8 @@ class ConversationFragment() :
 
     @SuppressLint("SetTextI18n")
     private fun renderGroup() {
-        action_bar.avatar_iv.visibility = VISIBLE
-        action_bar.avatar_iv.setOnClickListener {
+        binding.actionBar.avatarIv.visibility = VISIBLE
+        binding.actionBar.avatarIv.setOnClickListener {
             showGroupBottomSheet(false)
         }
         chatViewModel.getConversationById(conversationId).observe(
@@ -1830,12 +1829,12 @@ class ConversationFragment() :
             {
                 it?.let {
                     groupName = it.name
-                    action_bar.setSubTitle(
+                    binding.actionBar.setSubTitle(
                         groupName
                             ?: "",
                         getString(R.string.title_participants, groupNumber)
                     )
-                    action_bar.avatar_iv.setGroup(it.iconUrl)
+                    binding.actionBar.avatarIv.setGroup(it.iconUrl)
                 }
             }
         )
@@ -1845,25 +1844,25 @@ class ConversationFragment() :
                 { users ->
                     users?.let { u ->
                         groupNumber = u.size
-                        action_bar.setSubTitle(
+                        binding.actionBar.setSubTitle(
                             groupName ?: "",
                             getString(R.string.title_participants, groupNumber)
                         )
                         val userIds = arrayListOf<String>()
                         users.mapTo(userIds) { it.userId }
                         if (userIds.contains(Session.getAccountId())) {
-                            chat_control.visibility = VISIBLE
-                            bottom_cant_send.visibility = GONE
+                            binding.chatControl.visibility = VISIBLE
+                            binding.bottomCantSend.visibility = GONE
                         } else {
-                            chat_control.visibility = INVISIBLE
-                            bottom_cant_send.visibility = VISIBLE
-                            chat_control.chat_et.hideKeyboard()
+                            binding.chatControl.visibility = INVISIBLE
+                            binding.bottomCantSend.visibility = VISIBLE
+                            binding.chatControl.chatEt.hideKeyboard()
                         }
                     }
                 }
             )
-        mention_rv.adapter = mentionAdapter
-        mention_rv.layoutManager = LinearLayoutManager(context)
+        binding.mentionRv.adapter = mentionAdapter
+        binding.mentionRv.layoutManager = LinearLayoutManager(context)
     }
 
     @Suppress("SameParameterValue")
@@ -1882,11 +1881,11 @@ class ConversationFragment() :
     }
 
     override fun onKeyboardHidden() {
-        chat_control.toggleKeyboard(false)
+        binding.chatControl.toggleKeyboard(false)
     }
 
     override fun onKeyboardShown(height: Int) {
-        chat_control.toggleKeyboard(true)
+        binding.chatControl.toggleKeyboard(true)
     }
 
     private fun renderUser(user: User) {
@@ -1904,12 +1903,12 @@ class ConversationFragment() :
                 }
             }
         )
-        action_bar.avatar_iv.setOnClickListener {
+        binding.actionBar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
             UserBottomSheetDialogFragment.newInstance(user, conversationId)
                 .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
         }
-        bottom_unblock.setOnClickListener {
+        binding.bottomUnblock.setOnClickListener {
             recipient?.let { user ->
                 chatViewModel.updateRelationship(
                     RelationshipRequest(
@@ -1938,39 +1937,39 @@ class ConversationFragment() :
     }
 
     private fun renderUserInfo(user: User) {
-        action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
-        action_bar.avatar_iv.visibility = VISIBLE
-        action_bar.avatar_iv.setTextSize(16f)
-        action_bar.avatar_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
+        binding.actionBar.setSubTitle(user.fullName ?: "", user.identityNumber)
+        binding.actionBar.avatarIv.visibility = VISIBLE
+        binding.actionBar.avatarIv.setTextSize(16f)
+        binding.actionBar.avatarIv.setInfo(user.fullName, user.avatarUrl, user.userId)
         user.let {
             if (it.relationship == UserRelationship.BLOCKING.name) {
-                chat_control.visibility = INVISIBLE
-                bottom_unblock.visibility = VISIBLE
-                chat_control.chat_et.hideKeyboard()
+                binding.chatControl.visibility = INVISIBLE
+                binding.bottomUnblock.visibility = VISIBLE
+                binding.chatControl.chatEt.hideKeyboard()
             } else {
-                chat_control.visibility = VISIBLE
-                bottom_unblock.visibility = GONE
+                binding.chatControl.visibility = VISIBLE
+                binding.bottomUnblock.visibility = GONE
             }
         }
         if (user.isScam == true) {
             val closeScamTime = scamPreferences.getLong(user.userId, 0)
             if (System.currentTimeMillis() > closeScamTime) {
-                scam_flag.isVisible = true
-                driver.isVisible = true
-                warning_close.setOnClickListener {
+                binding.scamFlag.isVisible = true
+                binding.driver.isVisible = true
+                binding.warningClose.setOnClickListener {
                     scamPreferences.putLong(user.userId, System.currentTimeMillis() + INTERVAL_24_HOURS)
-                    scam_flag.isVisible = false
-                    driver.isVisible = false
+                    binding.scamFlag.isVisible = false
+                    binding.driver.isVisible = false
                 }
             } else {
-                scam_flag.isVisible = false
-                driver.isVisible = false
+                binding.scamFlag.isVisible = false
+                binding.driver.isVisible = false
             }
         }
     }
 
     private fun open(url: String, app: App?, appCard: AppCardData? = null) {
-        chat_control.chat_et.hideKeyboard()
+        binding.chatControl.chatEt.hideKeyboard()
         url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app, appCard)
     }
 
@@ -2024,7 +2023,7 @@ class ConversationFragment() :
         }
         galleryAlbumFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
-                val currentContainer = chat_control.getDraggableContainer()
+                val currentContainer = binding.chatControl.getDraggableContainer()
                 if (currentContainer != null) {
                     dragChatControl(dis)
                 }
@@ -2072,7 +2071,7 @@ class ConversationFragment() :
                             )
                     }
                     MenuType.Transfer -> {
-                        chat_control.reset()
+                        binding.chatControl.reset()
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
                                 TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
@@ -2118,7 +2117,7 @@ class ConversationFragment() :
                         }
                     }
                     MenuType.Voice -> {
-                        chat_control.reset()
+                        binding.chatControl.reset()
                         if (callState.isNotIdle()) {
                             if ((recipient != null && callState.user?.userId == recipient?.userId) ||
                                 (recipient == null && callState.conversationId == conversationId)
@@ -2166,7 +2165,7 @@ class ConversationFragment() :
                     }
                     MenuType.App -> {
                         menu.app?.let { app ->
-                            chat_control.chat_et.hideKeyboard()
+                            binding.chatControl.chatEt.hideKeyboard()
                             WebActivity.show(
                                 requireActivity(),
                                 app.homeUri,
@@ -2191,8 +2190,8 @@ class ConversationFragment() :
             object : StickerAlbumFragment.Callback {
                 override fun onStickerClick(stickerId: String) {
                     if (isAdded) {
-                        if (sticker_container.height != input_layout.keyboardHeight) {
-                            input_layout.openInputArea(chat_control.chat_et)
+                        if (binding.stickerContainer.height != binding.inputLayout.keyboardHeight) {
+                            binding.inputLayout.openInputArea(binding.chatControl.chatEt)
                         }
                         sendStickerMessage(stickerId)
                     }
@@ -2207,7 +2206,7 @@ class ConversationFragment() :
         )
         stickerAlbumFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
-                val currentContainer = chat_control.getDraggableContainer()
+                val currentContainer = binding.chatControl.getDraggableContainer()
                 if (currentContainer != null) {
                     dragChatControl(dis)
                 }
@@ -2220,7 +2219,7 @@ class ConversationFragment() :
     }
 
     private fun scrollToDown() {
-        chat_rv.layoutManager?.scrollToPosition(0)
+        binding.chatRv.layoutManager?.scrollToPosition(0)
         if (firstPosition > PAGE_SIZE * 6) {
             chatAdapter.notifyDataSetChanged()
         }
@@ -2232,18 +2231,18 @@ class ConversationFragment() :
         delay: Long = 30,
         action: (() -> Unit)? = null
     ) {
-        chat_rv.postDelayed(
+        binding.chatRv.postDelayed(
             {
                 if (isAdded) {
                     if (position == 0 && offset == 0) {
-                        chat_rv.layoutManager?.scrollToPosition(0)
+                        binding.chatRv.layoutManager?.scrollToPosition(0)
                     } else if (offset == -1) {
-                        (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                        (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                             position,
                             0
                         )
                     } else {
-                        (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                        (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                             position,
                             offset
                         )
@@ -2269,7 +2268,7 @@ class ConversationFragment() :
         if (index == 0) {
             scrollTo(
                 0,
-                chat_rv.measuredHeight * 3 / 4,
+                binding.chatRv.measuredHeight * 3 / 4,
                 action = {
                     requireContext().mainThreadDelayed(
                         {
@@ -2295,7 +2294,7 @@ class ConversationFragment() :
                     }
                 )
             } else {
-                val lm = (chat_rv.layoutManager as LinearLayoutManager)
+                val lm = (binding.chatRv.layoutManager as LinearLayoutManager)
                 val lastPosition = lm.findLastCompletelyVisibleItemPosition()
                 val firstPosition = lm.findFirstVisibleItemPosition()
                 if (index in firstPosition..lastPosition) {
@@ -2308,7 +2307,7 @@ class ConversationFragment() :
                 } else {
                     scrollTo(
                         index + 1,
-                        chat_rv.measuredHeight * 3 / 4,
+                        binding.chatRv.measuredHeight * 3 / 4,
                         action = {
                             requireContext().mainThreadDelayed(
                                 {
@@ -2417,15 +2416,15 @@ class ConversationFragment() :
     }
 
     private fun dragChatControl(dis: Float) {
-        chat_control.getDraggableContainer() ?: return
-        input_layout.drag(dis)
+        binding.chatControl.getDraggableContainer() ?: return
+        binding.inputLayout.drag(dis)
     }
 
     private fun releaseChatControl(fling: Int) {
         if (!isAdded) return
-        chat_control.getDraggableContainer() ?: return
-        input_layout.releaseDrag(fling) {
-            chat_control.reset()
+        binding.chatControl.getDraggableContainer() ?: return
+        binding.inputLayout.releaseDrag(fling) {
+            binding.chatControl.reset()
         }
     }
 
@@ -2545,7 +2544,7 @@ class ConversationFragment() :
         }
 
         override fun onSendClick(text: String) {
-            if (reply_view.isVisible && reply_view.messageItem != null) {
+            if (binding.chatControl.replyView.isVisible && binding.chatControl.replyView.messageItem != null) {
                 sendReplyTextMessage(text)
             } else {
                 sendMessage(text)
@@ -2610,11 +2609,11 @@ class ConversationFragment() :
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
-                if (mention_rv.adapter != null && !s.isNullOrEmpty() && mentionDisplay(s)) {
+                if (binding.mentionRv.adapter != null && !s.isNullOrEmpty() && mentionDisplay(s)) {
                     searchMentionUser(s.toString())
-                    mention_rv.layoutManager?.smoothScrollToPosition(mention_rv, null, 0)
+                    binding.mentionRv.layoutManager?.smoothScrollToPosition(binding.mentionRv, null, 0)
                 } else {
-                    floating_layout.hideMention()
+                    binding.floatingLayout.hideMention()
                 }
             }
         }
@@ -2628,10 +2627,10 @@ class ConversationFragment() :
             val users = chatViewModel.fuzzySearchUser(conversationId, mention)
             mentionAdapter.keyword = mention
             mentionAdapter.submitList(users)
-            if (mention_rv.isGone) {
-                floating_layout.showMention(users.size)
+            if (binding.mentionRv.isGone) {
+                binding.floatingLayout.showMention(users.size)
             } else {
-                floating_layout.animate2RightHeight(users.size)
+                binding.floatingLayout.animate2RightHeight(users.size)
             }
         }
     }
@@ -2651,7 +2650,7 @@ class ConversationFragment() :
 
         val selectItem = selectItems[0]
         this.selectItem = selectItem
-        Snackbar.make(bar_layout, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
+        Snackbar.make(binding.barLayout, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
             .setAction(R.string.chat_go_check) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
@@ -2661,11 +2660,11 @@ class ConversationFragment() :
     }
 
     private fun displayReplyView() {
-        if (!reply_view.isVisible) reply_view.animateHeight(0, 53.dp)
-        if (chat_control.isRecording) {
+        if (!binding.chatControl.replyView.isVisible) binding.chatControl.replyView.animateHeight(0, 53.dp)
+        if (binding.chatControl.isRecording) {
             OpusAudioRecorder.get(conversationId).stopRecording(false)
-            chat_control.cancelExternal()
+            binding.chatControl.cancelExternal()
         }
-        chat_control.chat_et.showKeyboard()
+        binding.chatControl.chatEt.showKeyboard()
     }
 }

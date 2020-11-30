@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import dagger.hilt.android.AndroidEntryPoint
 import io.noties.markwon.recycler.MarkwonAdapter
-import kotlinx.android.synthetic.main.activity_markdown.*
-import kotlinx.android.synthetic.main.view_markdown.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityMarkdownBinding
+import one.mixin.android.databinding.ViewMarkdownBinding
 import one.mixin.android.extension.createPostTemp
 import one.mixin.android.extension.getPublicDocumentPath
 import one.mixin.android.extension.isNightMode
@@ -41,11 +41,13 @@ import org.commonmark.node.FencedCodeBlock
 
 @AndroidEntryPoint
 class MarkdownActivity : BaseActivity() {
+    private lateinit var binding: ActivityMarkdownBinding
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_markdown)
-        control.mode = this.isNightMode()
-        control.callback = object : WebControlView.Callback {
+        binding = ActivityMarkdownBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.control.mode = this.isNightMode()
+        binding.control.callback = object : WebControlView.Callback {
             override fun onMoreClick() {
                 showBottomSheet()
             }
@@ -70,9 +72,9 @@ class MarkdownActivity : BaseActivity() {
                     .textLayoutIsRoot(R.layout.item_markdown_cell)
             }
         ).build()
-        recycler_view.layoutManager = LinearLayoutManager(this)
-        recycler_view.setHasFixedSize(true)
-        recycler_view.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.setHasFixedSize(true)
+        binding.recyclerView.adapter = adapter
         val markwon = MarkwonUtil.getMarkwon(
             this,
             { link ->
@@ -96,14 +98,15 @@ class MarkdownActivity : BaseActivity() {
             R.layout.view_markdown,
             null
         )
+        val viewBinding = ViewMarkdownBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.forward.setOnClickListener {
+        viewBinding.forward.setOnClickListener {
             val markdown = intent.getStringExtra(CONTENT) ?: return@setOnClickListener
             ForwardActivity.show(this, arrayListOf(ForwardMessage(ShareCategory.Post, markdown)), ForwardAction.App.Resultless())
             bottomSheet.dismiss()
         }
-        view.save.setOnClickListener {
+        viewBinding.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe(

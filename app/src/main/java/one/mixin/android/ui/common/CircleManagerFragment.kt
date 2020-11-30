@@ -11,14 +11,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_circle_manager.*
-import kotlinx.android.synthetic.main.item_circle_manager.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
+import one.mixin.android.databinding.FragmentCircleManagerBinding
+import one.mixin.android.databinding.ItemCircleManagerBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -66,28 +65,42 @@ class CircleManagerFragment : BaseFragment() {
 
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_circle_manager, container, false)
+    private var _binding: FragmentCircleManagerBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCircleManagerBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.setSubTitle(getString(R.string.circle_title, name), "")
-        title_view.left_ib.setOnClickListener {
+        binding.titleView.setSubTitle(getString(R.string.circle_title, name), "")
+        binding.titleView.leftIb.setOnClickListener {
             if (!isAdded) return@setOnClickListener
             activity?.onBackPressed()
         }
-        title_view.right_ib.setOnClickListener {
+        binding.titleView.rightIb.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             addCircle()
         }
-        circle_add.setOnClickListener {
+        binding.circleAdd.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             addCircle()
         }
-        circle_manager_rv.adapter = circleAdapter
-        circle_manager_rv.addItemDecoration(SegmentationItemDecoration())
+        binding.circleManagerRv.adapter = circleAdapter
+        binding.circleManagerRv.addItemDecoration(SegmentationItemDecoration())
         loadData()
     }
 
@@ -103,8 +116,8 @@ class CircleManagerFragment : BaseFragment() {
                     Session.getAccountId()!!, userId!!
                 )
             )
-            circle_manager_rv.isVisible = includeCircleItem.isNotEmpty() || otherCircleItem.isNotEmpty()
-            empty.isVisible = includeCircleItem.isEmpty() && otherCircleItem.isEmpty()
+            binding.circleManagerRv.isVisible = includeCircleItem.isNotEmpty() || otherCircleItem.isNotEmpty()
+            binding.empty.isVisible = includeCircleItem.isEmpty() && otherCircleItem.isEmpty()
             circleAdapter.setData(includeCircleItem, otherCircleItem)
         }
     }
@@ -230,7 +243,7 @@ class CircleManagerFragment : BaseFragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CircleHolder =
-            CircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_circle_manager, parent, false))
+            CircleHolder(ItemCircleManagerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
         override fun getItemCount(): Int = (
             includeCircleItem.notEmptyWithElse({ it.size }, 0) +
@@ -283,26 +296,26 @@ class CircleManagerFragment : BaseFragment() {
         }
     }
 
-    class CircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class CircleHolder(val binding: ItemCircleManagerBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             conversationCircleItem: ConversationCircleManagerItem,
             onAddCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null,
             onRemoveCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null
         ) {
             if (onAddCircle != null) {
-                itemView.action_iv.setImageResource(R.drawable.ic_add_circle)
-                itemView.action_iv.setOnClickListener {
+                binding.actionIv.setImageResource(R.drawable.ic_add_circle)
+                binding.actionIv.setOnClickListener {
                     onAddCircle.invoke(conversationCircleItem)
                 }
             } else {
-                itemView.action_iv.setImageResource(R.drawable.ic_remove_circle)
-                itemView.action_iv.setOnClickListener {
+                binding.actionIv.setImageResource(R.drawable.ic_remove_circle)
+                binding.actionIv.setOnClickListener {
                     onRemoveCircle?.invoke(conversationCircleItem)
                 }
             }
-            itemView.circle_title.text = conversationCircleItem.name
-            itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
-            itemView.circle_icon.imageTintList = ColorStateList.valueOf(getCircleColor(conversationCircleItem.circleId))
+            binding.circleTitle.text = conversationCircleItem.name
+            binding.circleSubtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
+            binding.circleIcon.imageTintList = ColorStateList.valueOf(getCircleColor(conversationCircleItem.circleId))
         }
     }
 }

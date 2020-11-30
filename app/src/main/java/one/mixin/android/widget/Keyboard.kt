@@ -8,9 +8,9 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_grid_keyboard.view.*
-import kotlinx.android.synthetic.main.view_keyboard.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemGridKeyboardBinding
+import one.mixin.android.databinding.ViewKeyboardBinding
 
 class Keyboard @JvmOverloads constructor(
     context: Context,
@@ -23,22 +23,21 @@ class Keyboard @JvmOverloads constructor(
 
     private val keyboardAdapter = object : RecyclerView.Adapter<KeyboardHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): KeyboardHolder {
-            return KeyboardHolder(
-                if (viewType == 1) {
-                    LayoutInflater.from(context)
-                        .inflate(R.layout.item_grid_keyboard, parent, false)
-                } else {
+            return if (viewType == 1) {
+                NormalKeyboardHolder(ItemGridKeyboardBinding.inflate(LayoutInflater.from(context), parent, false))
+            } else {
+                KeyboardHolder(
                     LayoutInflater.from(context)
                         .inflate(R.layout.item_grid_keyboard_delete, parent, false)
-                }
-            )
+                )
+            }
         }
 
         override fun getItemCount(): Int = key!!.size
 
         override fun onBindViewHolder(holder: KeyboardHolder, position: Int) {
             if (getItemViewType(position) == 1) {
-                holder.bind(key!![position])
+                (holder as NormalKeyboardHolder).bind(key!![position])
             }
 
             holder.itemView.setOnClickListener { _ ->
@@ -61,21 +60,24 @@ class Keyboard @JvmOverloads constructor(
         }
     }
 
-    class KeyboardHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    open class KeyboardHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    class NormalKeyboardHolder(val binding: ItemGridKeyboardBinding) : KeyboardHolder(binding.root) {
         fun bind(text: String?) {
-            itemView.tv_keyboard_keys.text = text
+            binding.tvKeyboardKeys.text = text
             itemView.isEnabled = !text.isNullOrEmpty()
         }
     }
+
+    private val binding = ViewKeyboardBinding.inflate(LayoutInflater.from(context), this, true)
 
     /**
      * 初始化KeyboardView
      */
     private fun initKeyboardView() {
-        View.inflate(context, R.layout.view_keyboard, this)
-        gv_keyboard.adapter = keyboardAdapter
-        gv_keyboard.layoutManager = GridLayoutManager(context, 3)
-        gv_keyboard.addItemDecoration(SpacesItemDecoration(1))
+        binding.gvKeyboard.adapter = keyboardAdapter
+        binding.gvKeyboard.layoutManager = GridLayoutManager(context, 3)
+        binding.gvKeyboard.addItemDecoration(SpacesItemDecoration(1))
     }
 
     interface OnClickKeyboardListener {

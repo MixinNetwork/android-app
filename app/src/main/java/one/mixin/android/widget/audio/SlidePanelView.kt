@@ -11,8 +11,8 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.view_slide_panel.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewSlidePanelBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.widget.AndroidUtilities
@@ -27,12 +27,13 @@ class SlidePanelView : RelativeLayout {
     private var toCanceled = false
     private var onEnding = false
 
+    private val binding = ViewSlidePanelBinding.inflate(LayoutInflater.from(context), this)
+
     var callback: Callback? = null
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        LayoutInflater.from(context).inflate(R.layout.view_slide_panel, this, true)
         backgroundColor = context.colorFromAttribute(R.attr.bg_white)
         isClickable = true
 
@@ -40,9 +41,9 @@ class SlidePanelView : RelativeLayout {
         blinkingDrawable = BlinkingDrawable(ContextCompat.getColor(context, R.color.color_blink)).apply {
             setBounds(0, 0, blinkSize, blinkSize)
         }
-        time_tv.setCompoundDrawables(blinkingDrawable, null, null, null)
-        cancel_tv.setOnClickListener { callback?.onCancel() }
-        time_tv.text = 0L.formatMillis()
+        binding.timeTv.setCompoundDrawables(blinkingDrawable, null, null, null)
+        binding.cancelTv.setOnClickListener { callback?.onCancel() }
+        binding.timeTv.text = 0L.formatMillis()
     }
 
     fun onStart() {
@@ -69,19 +70,19 @@ class SlidePanelView : RelativeLayout {
 
     val slideWidth by lazy {
         val location = IntArray(2)
-        slide_ll.getLocationOnScreen(location)
+        binding.slideLl.getLocationOnScreen(location)
         location[0] - context.dip(64)
     }
 
     fun slideText(x: Float) {
-        val preX = slide_ll.translationX
+        val preX = binding.slideLl.translationX
         if (preX - x > 0) {
-            slide_ll.translationX = 0f
+            binding.slideLl.translationX = 0f
         } else {
-            slide_ll.translationX -= x * 1.5f
+            binding.slideLl.translationX -= x * 1.5f
         }
-        val alpha = abs(slide_ll.translationX * 1.5f / slide_ll.width)
-        slide_ll.alpha = 1 - alpha
+        val alpha = abs(binding.slideLl.translationX * 1.5f / binding.slideLl.width)
+        binding.slideLl.alpha = 1 - alpha
     }
 
     fun toCancel() {
@@ -92,10 +93,10 @@ class SlidePanelView : RelativeLayout {
             interpolator = DecelerateInterpolator()
         }
         animSet.playTogether(
-            ObjectAnimator.ofFloat(slide_ll, "alpha", 0f),
-            ObjectAnimator.ofFloat(slide_ll, "translationY", AndroidUtilities.dp(20f).toFloat()),
-            ObjectAnimator.ofFloat(cancel_tv, "alpha", 1f),
-            ObjectAnimator.ofFloat(cancel_tv, "translationY", -AndroidUtilities.dp(20f).toFloat(), 0f)
+            ObjectAnimator.ofFloat(binding.slideLl, "alpha", 0f),
+            ObjectAnimator.ofFloat(binding.slideLl, "translationY", AndroidUtilities.dp(20f).toFloat()),
+            ObjectAnimator.ofFloat(binding.cancelTv, "alpha", 1f),
+            ObjectAnimator.ofFloat(binding.cancelTv, "translationY", -AndroidUtilities.dp(20f).toFloat(), 0f)
         )
         animSet.start()
         toCanceled = true
@@ -129,16 +130,16 @@ class SlidePanelView : RelativeLayout {
 
     private fun handleEnd() {
         toCanceled = false
-        cancel_tv.alpha = 0f
-        cancel_tv.translationY = -AndroidUtilities.dp(20f).toFloat()
-        slide_ll.alpha = 1f
-        slide_ll.translationY = 0f
-        slide_ll.translationX = 0f
+        binding.cancelTv.alpha = 0f
+        binding.cancelTv.translationY = -AndroidUtilities.dp(20f).toFloat()
+        binding.slideLl.alpha = 1f
+        binding.slideLl.translationY = 0f
+        binding.slideLl.translationX = 0f
 
         blinkingDrawable?.stopBlinking()
         removeCallbacks(updateTimeRunnable)
         timeValue = 0
-        time_tv.text = 0L.formatMillis()
+        binding.timeTv.text = 0L.formatMillis()
     }
 
     private val updateTimeRunnable: Runnable by lazy {
@@ -149,7 +150,7 @@ class SlidePanelView : RelativeLayout {
             }
 
             timeValue++
-            time_tv.text = (timeValue * 1000L).formatMillis()
+            binding.timeTv.text = (timeValue * 1000L).formatMillis()
             postDelayed(updateTimeRunnable, 1000)
         }
     }

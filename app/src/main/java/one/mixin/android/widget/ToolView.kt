@@ -4,10 +4,15 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
-import one.mixin.android.R
+import one.mixin.android.databinding.ViewToolBinding
 
 class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
-    init {
-        LayoutInflater.from(context).inflate(R.layout.view_tool, this, true)
-    }
+    private val binding = ViewToolBinding.inflate(LayoutInflater.from(context), this, true)
+    val closeIv = binding.closeIv
+    val copyIv = binding.copyIv
+    val countTv = binding.countTv
+    val deleteIv = binding.deleteIv
+    val addStickerIv = binding.addStickerIv
+    val replyIv = binding.replyIv
+    val forwardIv = binding.forwardIv
 }

@@ -1,21 +1,19 @@
 package one.mixin.android.ui.media
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_shared_media.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentSharedMediaBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
-class SharedMediaFragment : BaseFragment() {
+class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
     companion object {
         const val TAG = "SharedMediaFragment"
 
@@ -32,19 +30,15 @@ class SharedMediaFragment : BaseFragment() {
         SharedMediaAdapter(requireActivity(), conversationId)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_shared_media, container, false)
+    private val binding by viewBinding(FragmentSharedMediaBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        view_pager.adapter = adapter
+        binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+        binding.viewPager.adapter = adapter
         TabLayoutMediator(
-            shared_tl,
-            view_pager
+            binding.sharedTl,
+            binding.viewPager
         ) { tab, position ->
             tab.text = getString(
                 when (position) {
@@ -55,9 +49,9 @@ class SharedMediaFragment : BaseFragment() {
                     else -> R.string.files
                 }
             )
-            view_pager.setCurrentItem(tab.position, true)
+            binding.viewPager.setCurrentItem(tab.position, true)
         }.attach()
-        shared_tl.tabMode = TabLayout.MODE_FIXED
-        view_pager.currentItem = 0
+        binding.sharedTl.tabMode = TabLayout.MODE_FIXED
+        binding.viewPager.currentItem = 0
     }
 }

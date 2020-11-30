@@ -22,13 +22,13 @@ class ShareHelper {
             }
     }
 
-    fun generateForwardMessageList(intent: Intent): ArrayList<ForwardMessage<ForwardCategory>>? {
+    fun generateForwardMessageList(intent: Intent): ArrayList<ForwardMessage>? {
         val action = intent.action
         val type = intent.type
         if (action == null || type == null) {
             return null
         }
-        val result = arrayListOf<ForwardMessage<ForwardCategory>>()
+        val result = arrayListOf<ForwardMessage>()
         // TODO handle */*
         if (Intent.ACTION_SEND == action) {
             if ("text/plain" == type) {
@@ -40,7 +40,7 @@ class ShareHelper {
                         }
                     }
                 } else {
-                    ForwardMessage<ForwardCategory>(ShareCategory.Text, text).addTo(result)
+                    ForwardMessage(ShareCategory.Text, text).addTo(result)
                 }
             } else if (type.startsWith("image/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)

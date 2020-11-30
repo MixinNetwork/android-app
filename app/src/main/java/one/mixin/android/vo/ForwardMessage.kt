@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Parcelable
 import androidx.core.net.toUri
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.getAttachment
@@ -14,8 +14,8 @@ import one.mixin.android.websocket.VideoMessagePayload
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-data class ForwardMessage<T : ForwardCategory>(
-    val category: T,
+data class ForwardMessage(
+    val category: ForwardCategory,
     val content: String
 ) : Parcelable
 
@@ -92,16 +92,16 @@ sealed class ForwardAction(
     }
 }
 
-inline fun <reified T : ForwardCategory> ForwardMessage<T>.addTo(list: MutableList<ForwardMessage<T>>) {
+fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {
     list.add(this)
 }
 
-inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(category: T): ForwardMessage<ForwardCategory>? {
+inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(category: T): ForwardMessage? {
     val url = this.getFilePath(MixinApplication.appContext) ?: return null
     return url.systemMediaToMessage(category)
 }
 
-inline fun <reified T : ForwardCategory> String.systemMediaToMessage(category: T): ForwardMessage<ForwardCategory>? =
+inline fun <reified T : ForwardCategory> String.systemMediaToMessage(category: T): ForwardMessage =
     ForwardMessage(
         category,
         GsonHelper.customGson.toJson(

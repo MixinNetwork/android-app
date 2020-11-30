@@ -8,9 +8,9 @@ import androidx.core.view.updateLayoutParams
 import com.jakewharton.rxbinding3.view.clicks
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.item_shared_media_header.view.*
-import kotlinx.android.synthetic.main.item_shared_media_link.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemSharedMediaHeaderBinding
+import one.mixin.android.databinding.ItemSharedMediaLinkBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
@@ -45,7 +45,8 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): MediaHeaderViewHolder {
         val view = parent.inflate(R.layout.item_shared_media_header, false)
-        view.date_tv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        val binding = ItemSharedMediaHeaderBinding.bind(view)
+        binding.dateTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             val margin = parent.context.dpToPx(20f)
             marginStart = margin
             marginEnd = margin
@@ -60,10 +61,11 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
 }
 
 class LinkHolder(itemView: View) : NormalHolder(itemView) {
+    private val binding = ItemSharedMediaLinkBinding.bind(itemView)
 
     @SuppressLint("CheckResult")
     fun bind(item: HyperlinkItem, onClickListener: (url: String) -> Unit) {
-        itemView.link_tv.text = item.hyperlink
+        binding.linkTv.text = item.hyperlink
         itemView.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1, TimeUnit.SECONDS)

@@ -8,8 +8,8 @@ import android.view.View.DRAG_FLAG_OPAQUE
 import android.view.View.DragShadowBuilder
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_bot_manager.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemBotManagerBinding
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.vo.App
@@ -30,21 +30,22 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
         }
 
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
+        val binding = ItemBotManagerBinding.bind(holder.itemView)
         list[position].let { app ->
-            holder.itemView.avatar.renderApp(app)
+            binding.avatar.renderApp(app)
             if (app is App) {
-                holder.itemView.name.text = app.name
+                binding.name.text = app.name
             } else if (app is Bot) {
-                holder.itemView.name.text = app.name
+                binding.name.text = app.name
             }
             holder.itemView.setOnClickListener {
                 botCallBack.invoke(app)
             }
-            holder.itemView.avatar.setOnClickListener {
+            binding.avatar.setOnClickListener {
                 botCallBack.invoke(app)
             }
-            holder.itemView.avatar.tag = position
-            holder.itemView.avatar.setOnLongClickListener(this)
+            binding.avatar.tag = position
+            binding.avatar.setOnLongClickListener(this)
         }
     }
 

@@ -3,7 +3,8 @@ package one.mixin.android.ui.common
 import android.graphics.Point
 import android.os.Bundle
 import android.view.View
-import kotlinx.android.synthetic.main.fragment_verification.*
+import android.widget.TextView
+import androidx.annotation.LayoutRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
@@ -27,7 +28,7 @@ import one.mixin.android.widget.VerificationCodeView
 import org.jetbrains.anko.windowManager
 import java.security.KeyPair
 
-abstract class PinCodeFragment : FabLoadingFragment() {
+abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {
     companion object {
         const val PREF_LOGIN_FROM = "pref_login_from"
 
@@ -35,24 +36,31 @@ abstract class PinCodeFragment : FabLoadingFragment() {
         const val FROM_EMERGENCY = 1
     }
 
+    protected val pinVerificationView: VerificationCodeView by lazy {
+        _contentView.findViewById(R.id.pin_verification_view)
+    }
+    protected val pinVerificationTipTv: TextView by lazy {
+        _contentView.findViewById(R.id.pin_verification_tip_tv)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        back_iv.setOnClickListener { activity?.onBackPressed() }
-        pin_verification_view.setOnCodeEnteredListener(mPinVerificationListener)
-        verification_keyboard.setKeyboardKeys(KEYS)
-        verification_keyboard.setOnClickKeyboardListener(mKeyboardListener)
-        verification_cover.isClickable = true
-        verification_next_fab.setOnClickListener { clickNextFab() }
+        backIv.setOnClickListener { activity?.onBackPressed() }
+        pinVerificationView.setOnCodeEnteredListener(mPinVerificationListener)
+        verificationKeyboard.setKeyboardKeys(KEYS)
+        verificationKeyboard.setOnClickKeyboardListener(mKeyboardListener)
+        verificationCover.isClickable = true
+        verificationNextFab.setOnClickListener { clickNextFab() }
     }
 
     protected fun handleFailure(r: MixinResponse<*>) {
-        pin_verification_view.error()
-        pin_verification_tip_tv.visibility = View.VISIBLE
-        pin_verification_tip_tv.text = getString(R.string.landing_validation_error)
+        pinVerificationView.error()
+        pinVerificationTipTv.visibility = View.VISIBLE
+        pinVerificationTipTv.text = getString(R.string.landing_validation_error)
         if (r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
             r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
         ) {
-            verification_next_fab.visibility = View.INVISIBLE
+            verificationNextFab.visibility = View.INVISIBLE
         }
         ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
     }
@@ -96,7 +104,7 @@ abstract class PinCodeFragment : FabLoadingFragment() {
         Session.storePinToken(key.base64Encode())
         Session.storeAccount(account)
 
-        verification_keyboard.animate().translationY(300f).start()
+        verificationKeyboard.animate().translationY(300f).start()
         MixinApplication.get().onlining.set(true)
 
         hideLoading()
@@ -126,26 +134,26 @@ abstract class PinCodeFragment : FabLoadingFragment() {
         override fun onKeyClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                pin_verification_view?.delete()
+                pinVerificationView.delete()
             } else {
-                pin_verification_view?.append(value)
+                pinVerificationView.append(value)
             }
         }
 
         override fun onLongClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                pin_verification_view?.clear()
+                pinVerificationView.clear()
             } else {
-                pin_verification_view?.append(value)
+                pinVerificationView.append(value)
             }
         }
     }
 
     private val mPinVerificationListener = object : VerificationCodeView.OnCodeEnteredListener {
         override fun onCodeEntered(code: String) {
-            pin_verification_tip_tv.visibility = View.INVISIBLE
-            if (code.isEmpty() || code.length != pin_verification_view.count) {
+            pinVerificationTipTv.visibility = View.INVISIBLE
+            if (code.isEmpty() || code.length != pinVerificationView.count) {
                 if (isAdded) {
                     hideLoading()
                 }

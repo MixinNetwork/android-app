@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_asset_key_bottom.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAssetKeyBottomBinding
+import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -23,6 +23,11 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private var _binding: FragmentAssetKeyBottomBinding? = null
+    private val binding get() = requireNotNull(_binding)
+    private var _titleBinding: ViewRoundTitleBinding? = null
+    private val titleBinding get() = requireNotNull(_titleBinding)
+
     private val asset: AssetItem by lazy {
         requireArguments().getParcelable(ARGS_ASSET)!!
     }
@@ -30,14 +35,26 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_asset_key_bottom, null)
+        _binding = FragmentAssetKeyBottomBinding.bind(View.inflate(context, R.layout.fragment_asset_key_bottom, null))
+        _titleBinding = ViewRoundTitleBinding.bind(binding.titleView)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title_view.title_tv.text = asset.name
-        contentView.title_view.showBadgeCircleView(asset)
-        contentView.symbol_as_tv.text = asset.symbol
-        contentView.chain_as_tv.text = asset.chainName
-        contentView.asset_key_as_tv.text = asset.assetKey
+        titleBinding.apply {
+            rightIv.setOnClickListener { dismiss() }
+            titleTv.text = asset.name
+        }
+        binding.apply {
+            titleView.showBadgeCircleView(asset)
+            symbolAsTv.text = asset.symbol
+            chainAsTv.text = asset.chainName
+            assetKeyAsTv.text = asset.assetKey
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _titleBinding = null
     }
 }

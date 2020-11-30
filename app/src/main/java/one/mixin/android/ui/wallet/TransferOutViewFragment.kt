@@ -15,14 +15,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_transfer_out.view.*
-import kotlinx.android.synthetic.main.layout_empty_transaction.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentTransferOutBinding
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.notNullWithElse
@@ -68,25 +67,34 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     private val userId: String? by lazy { requireArguments().getString(Constants.ARGS_USER_ID) }
     private val avatarUrl: String? by lazy { requireArguments().getString(ARGS_USER_AVATAR_URL) }
     private val symbol: String? by lazy { requireArguments().getString(ARGS_SYMBOL) }
-    private val address: Address? by lazy { requireArguments().getParcelable<Address>(AddressAddFragment.ARGS_ADDRESS) }
+    private val address: Address? by lazy { requireArguments().getParcelable(AddressAddFragment.ARGS_ADDRESS) }
     private val adapter = SnapshotPagedAdapter()
+
+    private var _binding: FragmentTransferOutBinding? = null
+    private val binding get() = requireNotNull(_binding)
+    private var _titleBinding: ViewTitleBinding? = null
+    private val titleBinding get() = requireNotNull(_titleBinding)
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_transfer_out, null)
-        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
-        }
-        contentView.title_view.left_ib.setOnClickListener { dismiss() }
-        contentView.transactions_rv.adapter = adapter
-        contentView.transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        contentView.transactions_rv.setOnScrollChangeListener { list, _, _, _, _ ->
-            if (isAdded) {
-                if (!list.canScrollVertically(1)) {
-                    loadMore()
+        _binding = FragmentTransferOutBinding.bind(View.inflate(context, R.layout.fragment_transfer_out, null))
+        _titleBinding = ViewTitleBinding.bind(binding.titleView)
+        contentView = binding.root
+        binding.apply {
+            ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = requireContext().statusBarHeight()
+            }
+            titleBinding.leftIb.setOnClickListener { dismiss() }
+            transactionsRv.adapter = adapter
+            transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+            transactionsRv.setOnScrollChangeListener { list, _, _, _, _ ->
+                if (isAdded) {
+                    if (!list.canScrollVertically(1)) {
+                        loadMore()
+                    }
                 }
             }
         }
@@ -96,6 +104,12 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         }
         adapter.listener = this
         loadMore()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        _titleBinding = null
     }
 
     private var hasMore = true
@@ -180,20 +194,22 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     }
 
     private fun showEmpty(show: Boolean) {
-        contentView.progress.visibility = GONE
-        if (show) {
-            if (contentView.empty_rl.visibility == GONE) {
-                contentView.empty_rl.visibility = VISIBLE
-            }
-            if (contentView.transactions_rv.visibility == VISIBLE) {
-                contentView.transactions_rv.visibility = GONE
-            }
-        } else {
-            if (contentView.empty_rl.visibility == VISIBLE) {
-                contentView.empty_rl.visibility = GONE
-            }
-            if (contentView.transactions_rv.visibility == GONE) {
-                contentView.transactions_rv.visibility = VISIBLE
+        binding.apply {
+            progress.visibility = GONE
+            if (show) {
+                if (empty.root.visibility == GONE) {
+                    empty.root.visibility = VISIBLE
+                }
+                if (transactionsRv.visibility == VISIBLE) {
+                    transactionsRv.visibility = GONE
+                }
+            } else {
+                if (empty.root.visibility == VISIBLE) {
+                    empty.root.visibility = GONE
+                }
+                if (transactionsRv.visibility == GONE) {
+                    transactionsRv.visibility = VISIBLE
+                }
             }
         }
     }

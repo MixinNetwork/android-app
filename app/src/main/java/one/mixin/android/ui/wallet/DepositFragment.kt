@@ -1,11 +1,14 @@
 package one.mixin.android.ui.wallet
 
 import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.fragment_deposit_key.*
+import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 
 abstract class DepositFragment : Fragment() {
+
+    protected var _titleBinding: ViewTitleBinding? = null
+    protected val titleBinding get() = requireNotNull(_titleBinding)
 
     val asset: AssetItem by lazy {
         requireArguments().getParcelable(ARGS_ASSET)!!
@@ -13,11 +16,16 @@ abstract class DepositFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        title.removeCallbacks(showTipRunnable)
+        titleBinding.root.removeCallbacks(showTipRunnable)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _titleBinding = null
     }
 
     protected fun showTip() {
-        title.post(showTipRunnable)
+        titleBinding.root.post(showTipRunnable)
     }
 
     private val showTipRunnable = Runnable {

@@ -5,9 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
 class SettingActivity : BlazeBaseActivity() {
@@ -18,9 +20,11 @@ class SettingActivity : BlazeBaseActivity() {
         }
     }
 
+    private val binding by viewBinding(ActivityContactBinding::inflate)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_contact)
+        setContentView(binding.root)
         val fragment = SettingFragment.newInstance()
         replaceFragment(fragment, R.id.container, SettingFragment.TAG)
         if (intent.getBooleanExtra(FROM_NOTIFICATION, false)) {

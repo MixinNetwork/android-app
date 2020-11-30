@@ -34,13 +34,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_conversation_list.*
-import kotlinx.android.synthetic.main.item_list_conversation.view.*
-import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
-import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
-import kotlinx.android.synthetic.main.view_empty.*
-import kotlinx.android.synthetic.main.view_empty.view.*
-import kotlinx.android.synthetic.main.view_shadow_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
@@ -52,6 +45,10 @@ import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.databinding.FragmentConversationListBinding
+import one.mixin.android.databinding.ItemListConversationBinding
+import one.mixin.android.databinding.ItemListConversationHeaderBinding
+import one.mixin.android.databinding.ViewConversationBottomBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -60,7 +57,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.inflate
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -104,10 +100,13 @@ import kotlin.math.min
 @AndroidEntryPoint
 class ConversationListFragment : LinkFragment() {
 
-    lateinit var navigationController: NavigationController
+    private lateinit var navigationController: NavigationController
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    private var _binding: FragmentConversationListBinding? = null
+    private val binding get() = requireNotNull(_binding)
 
     private val messagesViewModel by viewModels<ConversationListViewModel>()
 
@@ -123,7 +122,10 @@ class ConversationListFragment : LinkFragment() {
                 super.onItemRangeChanged(positionStart, itemCount)
                 if (scrollTop) {
                     scrollTop = false
-                    (message_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+                    (binding.messageRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                        0,
+                        0
+                    )
                 }
             }
         }
@@ -150,33 +152,42 @@ class ConversationListFragment : LinkFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_conversation_list, container, false)
+    ): View {
+        _binding = FragmentConversationListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun getContentView() = binding.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController(activity as MainActivity)
-        messageAdapter.headerView = message_rv.inflate(R.layout.item_list_conversation_header, false).apply {
-            header_close.setOnClickListener {
-                messageAdapter.setShowHeader(false, message_rv)
-                requireContext().defaultSharedPreferences.putLong(PREF_NOTIFICATION_ON, System.currentTimeMillis())
+        val headerBinding = ItemListConversationHeaderBinding.inflate(layoutInflater)
+        messageAdapter.headerView = headerBinding.root.apply {
+            headerBinding.headerClose.setOnClickListener {
+                messageAdapter.setShowHeader(false, binding.messageRv)
+                requireContext().defaultSharedPreferences.putLong(
+                    PREF_NOTIFICATION_ON,
+                    System.currentTimeMillis()
+                )
             }
-            header_settings.setOnClickListener {
+            headerBinding.headerSettings.setOnClickListener {
                 requireContext().openNotificationSetting()
             }
         }
-        message_rv.adapter = messageAdapter
-        message_rv.itemAnimator = null
-        message_rv.setHasFixedSize(true)
-        message_rv.addOnScrollListener(
+        binding.messageRv.adapter = messageAdapter
+        binding.messageRv.itemAnimator = null
+        binding.messageRv.setHasFixedSize(true)
+        binding.messageRv.addOnScrollListener(
             object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     if (distance < -touchSlop && !shadowVisible) {
-                        shadow_fl.animate().translationY(0f).duration = 200
+                        binding.shadowFl.animate().translationY(0f).duration = 200
                         distance = 0
                         shadowVisible = true
                     } else if (distance > touchSlop && shadowVisible) {
-                        shadow_fl.animate().translationY(shadow_fl.height.toFloat()).duration = 200
+                        binding.shadowFl.animate()
+                            .translationY(binding.shadowFl.height.toFloat()).duration = 200
                         distance = 0
                         shadowVisible = false
                     }
@@ -186,9 +197,9 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         )
-        message_rv.callback = object : DraggableRecyclerView.Callback {
+        binding.messageRv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
-                val topFl = top_fl ?: return
+                val topFl = binding.topFl
 
                 if (topFl.isGone) {
                     topFl.isVisible = true
@@ -219,7 +230,7 @@ class ConversationListFragment : LinkFragment() {
                     requireContext().tapVibrate()
                     vibrated = true
                 }
-                val topFl = top_fl ?: return
+                val topFl = binding.topFl
 
                 val open = (fling == FLING_DOWN && shouldVibrate) || topFl.height >= vibrateDis
                 if (open) {
@@ -235,52 +246,57 @@ class ConversationListFragment : LinkFragment() {
                         vibrated = false
                     }
                 )
-                down_iv.scaleX = 1f
-                down_iv.scaleY = 1f
+                binding.downIv.scaleX = 1f
+                binding.downIv.scaleY = 1f
             }
         }
-        shadow_view.more.setOnClickListener {
+        binding.shadowView.more.setOnClickListener {
             BotManagerBottomSheetDialogFragment()
                 .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
         }
 
-        messageAdapter.onItemListener = object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
-            override fun onNormalLongClick(item: ConversationItem): Boolean {
-                showBottomSheet(item)
-                return true
-            }
+        messageAdapter.onItemListener =
+            object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
+                override fun onNormalLongClick(item: ConversationItem): Boolean {
+                    showBottomSheet(item)
+                    return true
+                }
 
-            override fun onNormalItemClick(item: ConversationItem) {
-                if (item.isGroup() && (
-                    item.status == ConversationStatus.START.ordinal ||
-                        item.status == ConversationStatus.FAILURE.ordinal
-                    )
-                ) {
-                    if (!requireContext().networkConnected()) {
-                        context?.toast(R.string.error_network)
-                        return
-                    }
-                    doAsync { messagesViewModel.createGroupConversation(item.conversationId) }
-                } else {
-                    lifecycleScope.launch {
-                        val user = if (item.isContact()) {
-                            messagesViewModel.suspendFindUserById(item.ownerId)
-                        } else null
-                        val messageId = if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
-                            messagesViewModel.findFirstUnreadMessageId(item.conversationId, item.unseenMessageCount - 1)
-                        } else null
-                        ConversationActivity.fastShow(
-                            requireContext(),
-                            conversationId = item.conversationId,
-                            recipient = user,
-                            initialPositionMessageId = messageId,
-                            unreadCount = item.unseenMessageCount ?: 0
+                override fun onNormalItemClick(item: ConversationItem) {
+                    if (item.isGroup() && (
+                        item.status == ConversationStatus.START.ordinal ||
+                            item.status == ConversationStatus.FAILURE.ordinal
                         )
+                    ) {
+                        if (!requireContext().networkConnected()) {
+                            context?.toast(R.string.error_network)
+                            return
+                        }
+                        doAsync { messagesViewModel.createGroupConversation(item.conversationId) }
+                    } else {
+                        lifecycleScope.launch {
+                            val user = if (item.isContact()) {
+                                messagesViewModel.suspendFindUserById(item.ownerId)
+                            } else null
+                            val messageId =
+                                if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
+                                    messagesViewModel.findFirstUnreadMessageId(
+                                        item.conversationId,
+                                        item.unseenMessageCount - 1
+                                    )
+                                } else null
+                            ConversationActivity.fastShow(
+                                requireContext(),
+                                conversationId = item.conversationId,
+                                recipient = user,
+                                initialPositionMessageId = messageId,
+                                unreadCount = item.unseenMessageCount ?: 0
+                            )
+                        }
                     }
                 }
             }
-        }
-        start_bn.setOnClickListener {
+        binding.emptyView.startBn.setOnClickListener {
             circleId.notNullWithElse(
                 { circleId ->
                     (requireActivity() as MainActivity).openCircleEdit(circleId)
@@ -318,6 +334,7 @@ class ConversationListFragment : LinkFragment() {
             messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
         }
         super.onDestroyView()
+        _binding = null
     }
 
     private val observer by lazy {
@@ -325,18 +342,22 @@ class ConversationListFragment : LinkFragment() {
             messageAdapter.submitList(pagedList)
             if (pagedList == null || pagedList.isEmpty()) {
                 if (circleId == null) {
-                    empty_view.info_tv.setText(R.string.empty_info)
-                    empty_view.start_bn.setText(R.string.empty_start)
+                    binding.emptyView.infoTv.setText(R.string.empty_info)
+                    binding.emptyView.startBn.setText(R.string.empty_start)
                 } else {
-                    empty_view.info_tv.setText(R.string.circle_empty_info)
-                    empty_view.start_bn.setText(R.string.circle_empty_start)
+                    binding.emptyView.infoTv.setText(R.string.circle_empty_info)
+                    binding.emptyView.startBn.setText(R.string.circle_empty_start)
                 }
-                empty_view.visibility = VISIBLE
+                binding.emptyView.root.isVisible = true
             } else {
-                empty_view.visibility = GONE
+                binding.emptyView.root.isVisible = false
                 pagedList
                     .filter { item: ConversationItem? ->
-                        item?.isGroup() == true && (item.iconUrl() == null || !File(item.iconUrl() ?: "").exists())
+                        item?.isGroup() == true && (
+                            item.iconUrl() == null || !File(
+                                item.iconUrl() ?: ""
+                            ).exists()
+                            )
                     }.forEach {
                         jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
                     }
@@ -366,10 +387,10 @@ class ConversationListFragment : LinkFragment() {
         val shouldAnim = if (expand) !expanded else expanded
         if (!shouldAnim) return
 
-        down_iv.animate().apply {
+        binding.downIv.animate().apply {
             interpolator = BounceInterpolator()
         }.scaleX(if (expand) 1.5f else 1f).start()
-        down_iv.animate().apply {
+        binding.downIv.animate().apply {
             interpolator = BounceInterpolator()
         }.scaleY(if (expand) 1.5f else 1f).start()
         expanded = expand
@@ -381,9 +402,9 @@ class ConversationListFragment : LinkFragment() {
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
         val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_conversation_bottom, null)
-        builder.setCustomView(view)
-        view.mute_tv.setText(
+        val viewBinding = ViewConversationBottomBinding.inflate(LayoutInflater.from(ContextThemeWrapper(requireActivity(), R.style.Custom)), null, false)
+        builder.setCustomView(viewBinding.root)
+        viewBinding.muteTv.setText(
             if (isMute) {
                 R.string.un_mute
             } else {
@@ -391,7 +412,7 @@ class ConversationListFragment : LinkFragment() {
             }
         )
         val bottomSheet = builder.create()
-        view.mute_tv.setOnClickListener {
+        viewBinding.muteTv.setOnClickListener {
             if (isMute) {
                 unMute(conversationItem)
             } else {
@@ -399,7 +420,7 @@ class ConversationListFragment : LinkFragment() {
             }
             bottomSheet.dismiss()
         }
-        view.delete_tv.setOnClickListener {
+        viewBinding.deleteTv.setOnClickListener {
             alertDialogBuilder()
                 .setMessage(getString(R.string.conversation_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -407,13 +428,13 @@ class ConversationListFragment : LinkFragment() {
                     bottomSheet.dismiss()
                 }
                 .setPositiveButton(R.string.confirm) { _, _ ->
-                    val lm = message_rv.layoutManager as LinearLayoutManager
+                    val lm = binding.messageRv.layoutManager as LinearLayoutManager
                     val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
                     val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
                     if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
                         lm.findFirstVisibleItemPosition() == 0
                     ) {
-                        shadow_fl.animate().translationY(0f).duration = 200
+                        binding.shadowFl.animate().translationY(0f).duration = 200
                     }
                     messagesViewModel.deleteConversation(conversationId)
                     bottomSheet.dismiss()
@@ -421,15 +442,19 @@ class ConversationListFragment : LinkFragment() {
                 .show()
         }
         if (hasPin) {
-            view.pin_tv.setText(R.string.conversation_pin_clear)
-            view.pin_tv.setOnClickListener {
+            viewBinding.pinTv.setText(R.string.conversation_pin_clear)
+            viewBinding.pinTv.setOnClickListener {
                 messagesViewModel.updateConversationPinTimeById(conversationId, circleId, null)
                 bottomSheet.dismiss()
             }
         } else {
-            view.pin_tv.setText(R.string.conversation_pin)
-            view.pin_tv.setOnClickListener {
-                messagesViewModel.updateConversationPinTimeById(conversationId, circleId, nowInUtc())
+            viewBinding.pinTv.setText(R.string.conversation_pin)
+            viewBinding.pinTv.setOnClickListener {
+                messagesViewModel.updateConversationPinTimeById(
+                    conversationId,
+                    circleId,
+                    nowInUtc()
+                )
                 bottomSheet.dismiss()
             }
         }
@@ -439,19 +464,23 @@ class ConversationListFragment : LinkFragment() {
 
     override fun onResume() {
         super.onResume()
-        val notificationTime = requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
+        val notificationTime =
+            requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
         if (System.currentTimeMillis() - notificationTime > INTERVAL_48_HOURS) {
-            messageAdapter.setShowHeader(!NotificationManagerCompat.from(requireContext()).areNotificationsEnabled(), message_rv)
+            messageAdapter.setShowHeader(
+                !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled(),
+                binding.messageRv
+            )
         } else {
-            messageAdapter.setShowHeader(false, message_rv)
+            messageAdapter.setShowHeader(false, binding.messageRv)
         }
     }
 
     private fun refreshBot() {
         lifecycleScope.launch {
-            shadow_view.first_iv.isGone = true
-            shadow_view.second_iv.isGone = true
-            shadow_view.third_iv.isGone = true
+            binding.shadowView.firstIv.isGone = true
+            binding.shadowView.secondIv.isGone = true
+            binding.shadowView.thirdIv.isGone = true
             requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
                 val bots = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
                 bots.forEachIndexed { index, id ->
@@ -459,13 +488,13 @@ class ConversationListFragment : LinkFragment() {
                     val view: ImageView =
                         when (index) {
                             0 -> {
-                                shadow_view.first_iv
+                                binding.shadowView.firstIv
                             }
                             1 -> {
-                                shadow_view.second_iv
+                                binding.shadowView.secondIv
                             }
                             else -> {
-                                shadow_view.third_iv
+                                binding.shadowView.thirdIv
                             }
                         }
 
@@ -510,7 +539,7 @@ class ConversationListFragment : LinkFragment() {
                 if (bots.size < 3) {
                     val dp88 = 88.dp
                     val dp32 = 32.dp
-                    shadow_view.children.forEach { v ->
+                    binding.shadowView.children.forEach { v ->
                         v.updateLayoutParams<LinearLayoutCompat.LayoutParams> {
                             width = dp88
                             height = dp88
@@ -520,7 +549,7 @@ class ConversationListFragment : LinkFragment() {
                 } else {
                     val dp80 = 80.dp
                     val dp28 = 28.dp
-                    shadow_view.children.forEach { v ->
+                    binding.shadowView.children.forEach { v ->
                         v.updateLayoutParams<LinearLayoutCompat.LayoutParams> {
                             width = dp80
                             height = dp80
@@ -549,8 +578,8 @@ class ConversationListFragment : LinkFragment() {
 
         override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
             MessageHolder(
-                LayoutInflater.from(parent.context).inflate(
-                    R.layout.item_list_conversation,
+                ItemListConversationBinding.inflate(
+                    LayoutInflater.from(parent.context),
                     parent,
                     false
                 )
@@ -566,7 +595,8 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
-    class MessageHolder constructor(containerView: View) : NormalHolder(containerView) {
+    class MessageHolder constructor(val binding: ItemListConversationBinding) :
+        NormalHolder(binding.root) {
         var context: Context = itemView.context
         private fun getText(id: Int) = context.getText(id).toString()
 
@@ -577,15 +607,16 @@ class ConversationListFragment : LinkFragment() {
         ) {
             val id = Session.getAccountId()
             conversationItem.getConversationName().let {
-                itemView.name_tv.text = it
+                binding.nameTv.text = it
             }
-            itemView.group_name_tv.visibility = GONE
-            itemView.mention_flag.isVisible = conversationItem.mentionCount != null && conversationItem.mentionCount > 0
+            binding.groupNameTv.visibility = GONE
+            binding.mentionFlag.isVisible =
+                conversationItem.mentionCount != null && conversationItem.mentionCount > 0
             when {
                 conversationItem.messageStatus == MessageStatus.FAILED.name -> {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)
-                        itemView.msg_tv.setText(R.string.conversation_waiting)
+                        binding.msgTv.setText(R.string.conversation_waiting)
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
                 }
@@ -594,108 +625,116 @@ class ConversationListFragment : LinkFragment() {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)
                         if (conversationItem.mentions != null) {
-                            itemView.msg_tv.renderConversation(it, MentionRenderCache.singleton.getMentionRenderContext(conversationItem.mentions) {})
+                            binding.msgTv.renderConversation(
+                                it,
+                                MentionRenderCache.singleton.getMentionRenderContext(
+                                    conversationItem.mentions
+                                ) {}
+                            )
                         } else {
-                            itemView.msg_tv.text = it
+                            binding.msgTv.text = it
                         }
                     }
                     null
                 }
                 conversationItem.contentType == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
-                    itemView.msg_tv.setText(R.string.conversation_status_transfer)
+                    binding.msgTv.setText(R.string.conversation_status_transfer)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_STICKER.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_STICKER.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_sticker)
+                    binding.msgTv.setText(R.string.conversation_status_sticker)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_stiker)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_IMAGE.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_IMAGE.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_pic)
+                    binding.msgTv.setText(R.string.conversation_status_pic)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_pic)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_VIDEO.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_VIDEO.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_video)
+                    binding.msgTv.setText(R.string.conversation_status_video)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_video)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_LIVE.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_LIVE.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_live)
+                    binding.msgTv.setText(R.string.conversation_status_live)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_live)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_DATA.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_DATA.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_file)
+                    binding.msgTv.setText(R.string.conversation_status_file)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_POST.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_POST.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.text = MarkwonUtil.parseContent(conversationItem.content)
+                    binding.msgTv.text = MarkwonUtil.parseContent(conversationItem.content)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_LOCATION.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_LOCATION.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_location)
+                    binding.msgTv.setText(R.string.conversation_status_location)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_location)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_AUDIO.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_AUDIO.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_audio)
+                    binding.msgTv.setText(R.string.conversation_status_audio)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_audio)
                 }
                 conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
-                    itemView.group_name_tv.visibility = GONE
-                    val buttons = Gson().fromJson(conversationItem.content, Array<AppButtonData>::class.java)
+                    binding.groupNameTv.visibility = GONE
+                    val buttons =
+                        Gson().fromJson(conversationItem.content, Array<AppButtonData>::class.java)
                     var content = ""
                     buttons.map { content += "[" + it.label + "]" }
-                    itemView.msg_tv.text = content
+                    binding.msgTv.text = content
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
                 conversationItem.contentType == MessageCategory.APP_CARD.name -> {
-                    itemView.group_name_tv.visibility = GONE
-                    val cardData = Gson().fromJson(conversationItem.content, AppCardData::class.java)
-                    itemView.msg_tv.text = "[${cardData.title}]"
+                    binding.groupNameTv.visibility = GONE
+                    val cardData =
+                        Gson().fromJson(conversationItem.content, AppCardData::class.java)
+                    binding.msgTv.text = "[${cardData.title}]"
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_CONTACT.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_CONTACT.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_contact)
+                    binding.msgTv.setText(R.string.conversation_status_contact)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact)
                 }
                 conversationItem.isCallMessage() -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_voice)
+                    binding.msgTv.setText(R.string.conversation_status_voice)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
                 conversationItem.isRecall() -> {
                     setConversationName(conversationItem)
                     if (id == conversationItem.senderId) {
-                        itemView.msg_tv.setText(R.string.chat_recall_me)
+                        binding.msgTv.setText(R.string.chat_recall_me)
                     } else {
-                        itemView.msg_tv.text = itemView.context.getString(R.string.chat_recall_delete)
+                        binding.msgTv.text =
+                            itemView.context.getString(R.string.chat_recall_delete)
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_recall)
                 }
                 conversationItem.isGroupVoiceCall() -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_group_call)
+                    binding.msgTv.setText(R.string.conversation_status_group_call)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
                     when (conversationItem.actionName) {
                         SystemConversationAction.CREATE.name -> {
-                            itemView.msg_tv.text =
+                            binding.msgTv.text =
                                 String.format(
                                     getText(R.string.chat_group_create),
                                     if (id == conversationItem.senderId) {
@@ -707,7 +746,7 @@ class ConversationListFragment : LinkFragment() {
                                 )
                         }
                         SystemConversationAction.ADD.name -> {
-                            itemView.msg_tv.text =
+                            binding.msgTv.text =
                                 String.format(
                                     getText(R.string.chat_group_add),
                                     if (id == conversationItem.senderId) {
@@ -723,7 +762,7 @@ class ConversationListFragment : LinkFragment() {
                                 )
                         }
                         SystemConversationAction.REMOVE.name -> {
-                            itemView.msg_tv.text =
+                            binding.msgTv.text =
                                 String.format(
                                     getText(R.string.chat_group_remove),
                                     if (id == conversationItem.senderId) {
@@ -739,7 +778,7 @@ class ConversationListFragment : LinkFragment() {
                                 )
                         }
                         SystemConversationAction.JOIN.name -> {
-                            itemView.msg_tv.text =
+                            binding.msgTv.text =
                                 String.format(
                                     getText(R.string.chat_group_join),
                                     if (id == conversationItem.participantUserId) {
@@ -750,7 +789,7 @@ class ConversationListFragment : LinkFragment() {
                                 )
                         }
                         SystemConversationAction.EXIT.name -> {
-                            itemView.msg_tv.text =
+                            binding.msgTv.text =
                                 String.format(
                                     getText(R.string.chat_group_exit),
                                     if (id == conversationItem.participantUserId) {
@@ -761,27 +800,32 @@ class ConversationListFragment : LinkFragment() {
                                 )
                         }
                         SystemConversationAction.ROLE.name -> {
-                            itemView.msg_tv.text = getText(R.string.group_role)
+                            binding.msgTv.text = getText(R.string.group_role)
                         }
                         else -> {
-                            itemView.msg_tv.text = ""
+                            binding.msgTv.text = ""
                         }
                     }
                     null
                 }
                 else -> {
-                    itemView.msg_tv.text = ""
+                    binding.msgTv.text = ""
                     null
                 }
             }.also {
                 it.notNullWithElse(
                     { drawable ->
-                        drawable.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
-                        itemView.msg_type.setImageDrawable(drawable)
-                        itemView.msg_type.isVisible = true
+                        drawable.setBounds(
+                            0,
+                            0,
+                            itemView.context.dpToPx(12f),
+                            itemView.context.dpToPx(12f)
+                        )
+                        binding.msgType.setImageDrawable(drawable)
+                        binding.msgType.isVisible = true
                     },
                     {
-                        itemView.msg_type.isVisible = false
+                        binding.msgType.isVisible = false
                     }
                 )
             }
@@ -810,64 +854,71 @@ class ConversationListFragment : LinkFragment() {
                         R.drawable.ic_status_read_dark
                     )
                     else -> {
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
+                        AppCompatResources.getDrawable(
+                            itemView.context,
+                            R.drawable.ic_status_sending
+                        )
                     }
                 }.also {
                     it?.setBounds(0, 0, itemView.context.dpToPx(14f), itemView.context.dpToPx(14f))
-                    itemView.msg_status.setImageDrawable(it)
-                    itemView.msg_status.visibility = VISIBLE
+                    binding.msgStatus.setImageDrawable(it)
+                    binding.msgStatus.visibility = VISIBLE
                 }
             } else {
-                itemView.msg_status.visibility = GONE
+                binding.msgStatus.visibility = GONE
             }
             conversationItem.createdAt?.let {
-                itemView.time_tv.timeAgo(it)
+                binding.timeTv.timeAgo(it)
             }
             if (conversationItem.pinTime == null) {
-                itemView.msg_pin.visibility = GONE
+                binding.msgPin.visibility = GONE
                 if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.START.ordinal) {
-                    itemView.pb.visibility = VISIBLE
-                    itemView.unread_tv.visibility = GONE
+                    binding.pb.visibility = VISIBLE
+                    binding.unreadTv.visibility = GONE
                 } else {
-                    itemView.pb.visibility = GONE
+                    binding.pb.visibility = GONE
                     conversationItem.unseenMessageCount.notEmptyWithElse(
-                        { itemView.unread_tv.text = "$it"; itemView.unread_tv.visibility = VISIBLE },
-                        { itemView.unread_tv.visibility = GONE }
+                        {
+                            binding.unreadTv.text = "$it"; binding.unreadTv.visibility = VISIBLE
+                        },
+                        { binding.unreadTv.visibility = GONE }
                     )
 
                     if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.FAILURE.ordinal) {
-                        itemView.msg_tv.text = getText(R.string.group_click_create_tip)
+                        binding.msgTv.text = getText(R.string.group_click_create_tip)
                     }
                 }
             } else {
-                itemView.msg_pin.visibility = VISIBLE
+                binding.msgPin.visibility = VISIBLE
                 if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.START.ordinal) {
-                    itemView.pb.visibility = VISIBLE
-                    itemView.unread_tv.visibility = GONE
+                    binding.pb.visibility = VISIBLE
+                    binding.unreadTv.visibility = GONE
                 } else {
-                    itemView.pb.visibility = GONE
+                    binding.pb.visibility = GONE
                     conversationItem.unseenMessageCount.notEmptyWithElse(
-                        { itemView.unread_tv.text = "$it"; itemView.unread_tv.visibility = VISIBLE; },
-                        { itemView.unread_tv.visibility = GONE }
+                        {
+                            binding.unreadTv.text = "$it"; binding.unreadTv.visibility =
+                                VISIBLE
+                        },
+                        { binding.unreadTv.visibility = GONE }
                     )
                 }
             }
 
-            itemView.mute_iv.visibility = if (conversationItem.isMute()) VISIBLE else GONE
+            binding.muteIv.visibility = if (conversationItem.isMute()) VISIBLE else GONE
             if (conversationItem.isMute()) {
-                itemView.unread_tv.setBackgroundResource(R.drawable.bg_unread_mute)
-                itemView.unread_tv.setTextColor(context.colorFromAttribute(R.attr.badger_text_mute))
+                binding.unreadTv.setBackgroundResource(R.drawable.bg_unread_mute)
+                binding.unreadTv.setTextColor(context.colorFromAttribute(R.attr.badger_text_mute))
             } else {
-                itemView.unread_tv.setBackgroundResource(R.drawable.bg_unread)
-                itemView.unread_tv.setTextColor(context.colorFromAttribute(R.attr.badger_text))
+                binding.unreadTv.setBackgroundResource(R.drawable.bg_unread)
+                binding.unreadTv.setTextColor(context.colorFromAttribute(R.attr.badger_text))
             }
 
-            conversationItem.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
-
+            conversationItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
             if (conversationItem.isGroup()) {
-                itemView.avatar_iv.setGroup(conversationItem.iconUrl())
+                binding.avatarIv.setGroup(conversationItem.iconUrl())
             } else {
-                itemView.avatar_iv.setInfo(
+                binding.avatarIv.setInfo(
                     conversationItem.getConversationName(),
                     conversationItem.iconUrl(),
                     conversationItem.ownerId
@@ -875,17 +926,20 @@ class ConversationListFragment : LinkFragment() {
             }
             itemView.setOnClickListener { onItemClickListener?.onNormalItemClick(conversationItem) }
             itemView.setOnLongClickListener {
-                onItemClickListener.notNullWithElse({ it.onNormalLongClick(conversationItem) }, false)
+                onItemClickListener.notNullWithElse(
+                    { it.onNormalLongClick(conversationItem) },
+                    false
+                )
             }
         }
 
         @SuppressLint("SetTextI18n")
         private fun setConversationName(conversationItem: ConversationItem) {
             if (conversationItem.isGroup() && conversationItem.senderId != Session.getAccountId()) {
-                itemView.group_name_tv.text = "${conversationItem.senderFullName}: "
-                itemView.group_name_tv.visibility = VISIBLE
+                binding.groupNameTv.text = "${conversationItem.senderFullName}: "
+                binding.groupNameTv.visibility = VISIBLE
             } else {
-                itemView.group_name_tv.visibility = GONE
+                binding.groupNameTv.visibility = GONE
             }
         }
     }
@@ -908,9 +962,17 @@ class ConversationListFragment : LinkFragment() {
                 if (conversationItem.isGroup()) {
                     lifecycleScope.launch {
                         handleMixinResponse(
-                            invokeNetwork = { messagesViewModel.mute(duration.toLong(), conversationId = conversationItem.conversationId) },
+                            invokeNetwork = {
+                                messagesViewModel.mute(
+                                    duration.toLong(),
+                                    conversationId = conversationItem.conversationId
+                                )
+                            },
                             successBlock = { response ->
-                                messagesViewModel.updateGroupMuteUntil(conversationItem.conversationId, response.data!!.muteUntil)
+                                messagesViewModel.updateGroupMuteUntil(
+                                    conversationItem.conversationId,
+                                    response.data!!.muteUntil
+                                )
                                 context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
                             }
                         )
@@ -928,7 +990,10 @@ class ConversationListFragment : LinkFragment() {
                                     )
                                 },
                                 successBlock = { response ->
-                                    messagesViewModel.updateMuteUntil(conversationItem.ownerId, response.data!!.muteUntil)
+                                    messagesViewModel.updateMuteUntil(
+                                        conversationItem.ownerId,
+                                        response.data!!.muteUntil
+                                    )
                                     context?.toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
                                 }
                             )
@@ -958,7 +1023,10 @@ class ConversationListFragment : LinkFragment() {
                         messagesViewModel.mute(0, conversationId = conversationItem.conversationId)
                     },
                     successBlock = { response ->
-                        messagesViewModel.updateGroupMuteUntil(conversationItem.conversationId, response.data!!.muteUntil)
+                        messagesViewModel.updateGroupMuteUntil(
+                            conversationItem.conversationId,
+                            response.data!!.muteUntil
+                        )
                         context?.toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
                     }
                 )
@@ -968,10 +1036,17 @@ class ConversationListFragment : LinkFragment() {
                 lifecycleScope.launch {
                     handleMixinResponse(
                         invokeNetwork = {
-                            messagesViewModel.mute(0, senderId = it.userId, recipientId = conversationItem.ownerId)
+                            messagesViewModel.mute(
+                                0,
+                                senderId = it.userId,
+                                recipientId = conversationItem.ownerId
+                            )
                         },
                         successBlock = { response ->
-                            messagesViewModel.updateMuteUntil(conversationItem.ownerId, response.data!!.muteUntil)
+                            messagesViewModel.updateMuteUntil(
+                                conversationItem.ownerId,
+                                response.data!!.muteUntil
+                            )
                             context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
                         }
                     )

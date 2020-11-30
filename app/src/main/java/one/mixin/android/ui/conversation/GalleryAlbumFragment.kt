@@ -5,23 +5,22 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import kotlinx.android.synthetic.main.fragment_gallery_album.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentGalleryAlbumBinding
 import one.mixin.android.ui.conversation.adapter.GalleryAlbumAdapter
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.model.AlbumCollection
 
-class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
+class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCollection.AlbumCallbacks {
 
     companion object {
         const val TAG = "GalleryAlbumFragment"
@@ -41,41 +40,41 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
         GalleryAlbumAdapter(requireActivity())
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_gallery_album, container, false)
+    private val binding by viewBinding(FragmentGalleryAlbumBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view_pager.adapter = albumAdapter
-        TabLayoutMediator(
-            album_tl,
-            view_pager
-        ) { tab, position ->
-            tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
-            view_pager.setCurrentItem(tab.position, true)
-        }.attach()
-        album_tl.tabMode = TabLayout.MODE_SCROLLABLE
-        view_pager.currentItem = 0
-        va.displayedChild = POS_LOADING
-        albumAdapter.callback = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
-                callback?.onItemClick(pos, uri, isVideo)
-            }
+        binding.apply {
+            viewPager.adapter = albumAdapter
+            TabLayoutMediator(
+                albumTl,
+                viewPager
+            ) { tab, position ->
+                tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
+                viewPager.setCurrentItem(tab.position, true)
+            }.attach()
+            albumTl.tabMode = TabLayout.MODE_SCROLLABLE
+            viewPager.currentItem = 0
+            va.displayedChild = POS_LOADING
+            albumAdapter.callback = object : GalleryCallback {
+                override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
+                    callback?.onItemClick(pos, uri, isVideo)
+                }
 
-            override fun onCameraClick() {
-                callback?.onCameraClick()
+                override fun onCameraClick() {
+                    callback?.onCameraClick()
+                }
+            }
+            albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
+                override fun onScroll(dis: Float) {
+                    rvCallback?.onScroll(dis)
+                }
+
+                override fun onRelease(fling: Int) {
+                    rvCallback?.onRelease(fling)
+                }
             }
         }
-        albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
-            override fun onScroll(dis: Float) {
-                rvCallback?.onScroll(dis)
-            }
-
-            override fun onRelease(fling: Int) {
-                rvCallback?.onRelease(fling)
-            }
-        }
-        view_pager.registerOnPageChangeCallback(onPageChangeCallback)
 
         albumCollection.onCreate(this, this)
         albumCollection.onRestoreInstanceState(savedInstanceState)
@@ -94,10 +93,15 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
         albumCollection.onSaveInstanceState(outState)
     }
 
-    override fun onDestroyView() {
-        view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
-        va?.removeCallbacks(restartLoadRunnable)
-        super.onDestroyView()
+    override fun onStart() {
+        super.onStart()
+        binding.viewPager.registerOnPageChangeCallback(onPageChangeCallback)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
+        binding.va.removeCallbacks(restartLoadRunnable)
     }
 
     override fun onDestroy() {
@@ -108,21 +112,23 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     }
 
     override fun onAlbumLoad(cursor: Cursor) {
-        va?.post {
-            val albums = arrayListOf<Album>()
-            va?.displayedChild = POS_CONTENT
-            while (cursor.moveToNext()) {
-                val album = Album.valueOf(cursor)
-                albums.add(album)
-            }
-            if (albums.isNullOrEmpty()) return@post
-
-            if (album_tl != null && album_tl?.tabCount == 0) {
-                albums.forEach { album ->
-                    album_tl?.addTab(album_tl.newTab().setText(album.getDisplayName(requireContext())))
+        binding.apply {
+            va.post {
+                val albums = arrayListOf<Album>()
+                va.displayedChild = POS_CONTENT
+                while (cursor.moveToNext()) {
+                    val album = Album.valueOf(cursor)
+                    albums.add(album)
                 }
+                if (albums.isNullOrEmpty()) return@post
+
+                if (albumTl.tabCount == 0) {
+                    albums.forEach { album ->
+                        albumTl.addTab(albumTl.newTab().setText(album.getDisplayName(requireContext())))
+                    }
+                }
+                albumAdapter.albums = albums
             }
-            albumAdapter.albums = albums
         }
     }
 
@@ -131,20 +137,20 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageScrollStateChanged(state: Int) {
             if (state != ViewPager.SCROLL_STATE_IDLE) {
-                albumAdapter.getFragment(view_pager.currentItem)?.hideBlur()
+                albumAdapter.getFragment(binding.viewPager.currentItem)?.hideBlur()
             }
         }
     }
 
     private val internalObserver = object : ContentObserver(Handler()) {
         override fun onChange(selfChange: Boolean) {
-            va?.postDelayed(restartLoadRunnable, 2000)
+            binding.va.postDelayed(restartLoadRunnable, 2000)
         }
     }
 
     private val externalObserver = object : ContentObserver(Handler()) {
         override fun onChange(selfChange: Boolean) {
-            va?.postDelayed(restartLoadRunnable, 2000)
+            binding.va.postDelayed(restartLoadRunnable, 2000)
         }
     }
 

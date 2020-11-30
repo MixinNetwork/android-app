@@ -29,8 +29,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -45,6 +43,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.databinding.FragmentUserBottomSheetBinding
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.addFragment
@@ -139,19 +138,23 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     override fun getLayoutId() = R.layout.fragment_user_bottom_sheet
 
+    private val binding by lazy {
+        FragmentUserBottomSheetBinding.bind(contentView)
+    }
+
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         user = requireArguments().getParcelable(ARGS_USER)!!
         conversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
-        contentView.title.right_iv.setOnClickListener { dismiss() }
-        contentView.avatar.setOnClickListener {
+        binding.title.rightIv.setOnClickListener { dismiss() }
+        binding.avatar.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             val avatar = user.avatarUrl
             if (avatar.isNullOrBlank()) {
                 return@setOnClickListener
             }
-            AvatarActivity.show(requireActivity(), avatar, contentView.avatar)
+            AvatarActivity.show(requireActivity(), avatar, binding.avatar)
             dismiss()
         }
 
@@ -187,13 +190,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     if (!isAdded) return@doOnPreDraw
 
                     behavior?.peekHeight =
-                        contentView.title.height +
-                        contentView.scroll_content.height -
+                        binding.title.height +
+                        binding.scrollContent.height -
                         (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
                 }
             }
         )
-        contentView.transfer_fl.setOnClickListener {
+        binding.transferFl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
                 TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
                     .showNow(parentFragmentManager, TransferFragment.TAG)
@@ -203,7 +206,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 toast(R.string.transfer_without_pin)
             }
         }
-        contentView.send_fl.setOnClickListener {
+        binding.sendFl.setOnClickListener {
             if (user.userId == Session.getAccountId()) {
                 toast(R.string.cant_talk_self)
                 return@setOnClickListener
@@ -219,12 +222,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
             }
         }
-        setDetailsTv(contentView.detail_tv, contentView.scroll_view, conversationId)
+        setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.refreshUser(user.userId, true)
         lifecycleScope.launch {
             bottomViewModel.loadFavoriteApps(user.userId) { apps ->
-                contentView.avatar_ll.isVisible = !apps.isNullOrEmpty()
-                contentView.avatar_ll.setOnClickListener {
+                binding.avatarLl.isVisible = !apps.isNullOrEmpty()
+                binding.avatarLl.setOnClickListener {
                     if (!apps.isNullOrEmpty()) {
                         AppListBottomSheetDialogFragment.newInstance(
                             apps,
@@ -233,16 +236,16 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     }
                 }
                 if (BuildConfig.DEBUG) {
-                    contentView.avatar.setOnLongClickListener {
+                    binding.avatar.setOnLongClickListener {
                         context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, "mixin://users/${user.userId}"))
                         true
                     }
                 }
                 apps?.let {
-                    contentView.avatar_group.setApps(it)
+                    binding.avatarGroup.setApps(it)
                     contentView.doOnPreDraw {
                         behavior?.peekHeight =
-                            contentView.title.height + contentView.scroll_content.height -
+                            binding.title.height + binding.scrollContent.height -
                             (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
                     }
                 }
@@ -334,8 +337,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         ProfileBottomSheetDialogFragment.newInstance()
                             .showNow(parentFragmentManager, TAG)
                     } else {
-                        UserBottomSheetDialogFragment.newInstance(it)
-                            .showNow(parentFragmentManager, TAG)
+                        newInstance(it).showNow(parentFragmentManager, TAG)
                     }
                 }
                 dismiss()
@@ -553,21 +555,21 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
 
         menuListLayout?.removeAllViews()
-        contentView.scroll_content.removeView(menuListLayout)
+        binding.scrollContent.removeView(menuListLayout)
         list.createMenuLayout(requireContext()).let { layout ->
             menuListLayout = layout
-            contentView.scroll_content.addView(layout)
+            binding.scrollContent.addView(layout)
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 bottomMargin = requireContext().dpToPx(30f)
             }
-            contentView.more_fl.setOnClickListener {
+            binding.moreFl.setOnClickListener {
                 if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                     behavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                    contentView.more_iv.rotationX = 180f
+                    binding.moreIv.rotationX = 180f
                 } else {
                     behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-                    contentView.scroll_view.smoothScrollTo(0, 0)
-                    contentView.more_iv.rotationX = 0f
+                    binding.scrollView.smoothScrollTo(0, 0)
+                    binding.moreIv.rotationX = 0f
                 }
             }
         }
@@ -694,29 +696,29 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private fun updateUserInfo(user: User) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
-        contentView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-        contentView.name.text = user.fullName
-        contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
-        contentView.id_tv.setOnLongClickListener {
+        binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+        binding.name.text = user.fullName
+        binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
+        binding.idTv.setOnLongClickListener {
             context?.getClipboardManager()
                 ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
             context?.toast(R.string.copy_success)
             true
         }
         if (user.biography.isNotEmpty()) {
-            contentView.detail_tv.text = user.biography
-            contentView.detail_tv.visibility = VISIBLE
+            binding.detailTv.text = user.biography
+            binding.detailTv.visibility = VISIBLE
         } else {
-            contentView.detail_tv.visibility = GONE
+            binding.detailTv.visibility = GONE
         }
         updateUserStatus(user.relationship)
-        user.showVerifiedOrBot(contentView.verified_iv, contentView.bot_iv)
-        contentView.op_ll.isVisible = true
+        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+        binding.opLl.isVisible = true
         if (user.isBot()) {
-            contentView.open_fl.visibility = VISIBLE
-            contentView.transfer_fl.visibility = GONE
+            binding.openFl.visibility = VISIBLE
+            binding.transferFl.visibility = GONE
             bottomViewModel.findAppById(user.appId!!)?.let { app ->
-                contentView.open_fl.clicks()
+                binding.openFl.clicks()
                     .observeOn(AndroidSchedulers.mainThread())
                     .throttleFirst(1, TimeUnit.SECONDS)
                     .autoDispose(stopScope).subscribe {
@@ -737,8 +739,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     )
             }
         } else {
-            contentView.open_fl.visibility = GONE
-            contentView.transfer_fl.visibility = VISIBLE
+            binding.openFl.visibility = GONE
+            binding.transferFl.visibility = VISIBLE
         }
     }
 
@@ -753,10 +755,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
-                contentView.add_tv.visibility = VISIBLE
-                contentView.add_tv.text = getString(R.string.contact_other_unblock)
-                contentView.add_tv.setCompoundDrawables(blockDrawable, null, null, null)
-                contentView.add_tv.setOnClickListener {
+                binding.addTv.visibility = VISIBLE
+                binding.addTv.text = getString(R.string.contact_other_unblock)
+                binding.addTv.setCompoundDrawables(blockDrawable, null, null, null)
+                binding.addTv.setOnClickListener {
                     bottomViewModel.updateRelationship(
                         RelationshipRequest(
                             user.userId,
@@ -769,19 +771,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
             }
             UserRelationship.FRIEND.name -> {
-                contentView.add_tv.visibility = GONE
+                binding.addTv.visibility = GONE
             }
             UserRelationship.STRANGER.name -> {
-                contentView.add_tv.visibility = VISIBLE
-                contentView.add_tv.setCompoundDrawables(null, null, null, null)
-                contentView.add_tv.text = getString(
+                binding.addTv.visibility = VISIBLE
+                binding.addTv.setCompoundDrawables(null, null, null, null)
+                binding.addTv.text = getString(
                     if (user.isBot()) {
                         R.string.add_bot
                     } else {
                         R.string.add_contact
                     }
                 )
-                contentView.add_tv.setOnClickListener {
+                binding.addTv.setOnClickListener {
                     updateRelationship(UserRelationship.FRIEND.name)
                     if (user.isBot()) {
                         RxBus.publish(BotEvent())
@@ -959,8 +961,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
-            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
+            BottomSheetBehavior.STATE_COLLAPSED -> binding.moreIv.rotationX = 0f
+            BottomSheetBehavior.STATE_EXPANDED -> binding.moreIv.rotationX = 180f
         }
     }
 }

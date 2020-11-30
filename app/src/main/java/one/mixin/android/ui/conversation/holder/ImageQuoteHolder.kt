@@ -4,16 +4,8 @@ import android.graphics.Color
 import android.view.Gravity
 import android.view.View
 import androidx.core.widget.TextViewCompat
-import kotlinx.android.synthetic.main.item_chat_image.view.*
-import kotlinx.android.synthetic.main.item_chat_image_quote.view.*
-import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_image
-import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_image_layout
-import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_layout
-import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_name
-import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_time
-import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_warning
-import kotlinx.android.synthetic.main.item_chat_image_quote.view.progress
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatImageQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
@@ -28,44 +20,44 @@ import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 import kotlin.math.min
 
-class ImageQuoteHolder constructor(containerView: View) : MediaHolder(containerView) {
+class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : MediaHolder(binding.root) {
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
-        itemView.chat_image_layout.round(radius)
-        itemView.chat_time.round(radius)
+        binding.chatImageLayout.round(radius)
+        binding.chatTime.round(radius)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            itemView.chat_msg_layout.gravity = Gravity.END
+            binding.chatMsgLayout.gravity = Gravity.END
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_me_last,
                     R.drawable.chat_bubble_reply_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_me,
                     R.drawable.chat_bubble_reply_me_night
                 )
             }
         } else {
-            itemView.chat_msg_layout.gravity = Gravity.START
+            binding.chatMsgLayout.gravity = Gravity.START
 
             if (isLast) {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_other_last,
                     R.drawable.chat_bubble_reply_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout,
+                    binding.chatLayout,
                     R.drawable.chat_bubble_reply_other,
                     R.drawable.chat_bubble_reply_other_night
                 )
@@ -92,8 +84,8 @@ class ImageQuoteHolder constructor(containerView: View) : MediaHolder(containerV
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
 
-        itemView.chat_layout.chat_quote_layout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
-        itemView.chat_image_layout.setOnLongClickListener {
+        binding.chatQuoteLayout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
+        binding.chatImageLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -102,7 +94,7 @@ class ImageQuoteHolder constructor(containerView: View) : MediaHolder(containerV
             }
         }
 
-        itemView.chat_layout.setOnLongClickListener {
+        binding.chatLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -111,7 +103,7 @@ class ImageQuoteHolder constructor(containerView: View) : MediaHolder(containerV
             }
         }
 
-        itemView.chat_image_layout.setOnClickListener {
+        binding.chatImageLayout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
@@ -132,86 +124,86 @@ class ImageQuoteHolder constructor(containerView: View) : MediaHolder(containerV
             }
         }
 
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
+        binding.chatTime.timeAgoClock(messageItem.createdAt)
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
-                    itemView.chat_warning.visibility = View.VISIBLE
-                    itemView.progress.visibility = View.GONE
-                    itemView.chat_image.setOnLongClickListener {
+                    binding.chatWarning.visibility = View.VISIBLE
+                    binding.progress.visibility = View.GONE
+                    binding.chatImage.setOnLongClickListener {
                         if (!hasSelect) {
                             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                         } else {
                             true
                         }
                     }
-                    itemView.chat_image.setOnClickListener {
+                    binding.chatImage.setOnClickListener {
                         if (hasSelect) {
                             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                         }
                     }
                 }
                 MediaStatus.PENDING.name -> {
-                    itemView.chat_warning.visibility = View.GONE
-                    itemView.progress.visibility = View.VISIBLE
-                    itemView.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                    itemView.progress.setBindOnly(messageItem.messageId)
-                    itemView.progress.setOnLongClickListener {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.VISIBLE
+                    binding.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                    binding.progress.setBindOnly(messageItem.messageId)
+                    binding.progress.setOnLongClickListener {
                         if (!hasSelect) {
                             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                         } else {
                             false
                         }
                     }
-                    itemView.progress.setOnClickListener {
+                    binding.progress.setOnClickListener {
                         if (hasSelect) {
                             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                         } else {
                             onItemListener.onCancel(messageItem.messageId)
                         }
                     }
-                    itemView.chat_image.setOnClickListener { }
-                    itemView.chat_image.setOnLongClickListener { false }
+                    binding.chatImage.setOnClickListener { }
+                    binding.chatImage.setOnLongClickListener { false }
                 }
                 MediaStatus.DONE.name -> {
-                    itemView.chat_warning.visibility = View.GONE
-                    itemView.progress.visibility = View.GONE
-                    itemView.progress.setBindId(messageItem.messageId)
-                    itemView.progress.setOnClickListener {}
-                    itemView.progress.setOnLongClickListener { false }
-                    itemView.chat_image.setOnLongClickListener {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.GONE
+                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setOnClickListener {}
+                    binding.progress.setOnLongClickListener { false }
+                    binding.chatImage.setOnLongClickListener {
                         if (!hasSelect) {
                             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                         } else {
                             true
                         }
                     }
-                    itemView.chat_image.setOnClickListener {
+                    binding.chatImage.setOnClickListener {
                         if (hasSelect) {
                             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                         } else {
-                            onItemListener.onImageClick(messageItem, itemView.chat_image)
+                            onItemListener.onImageClick(messageItem, binding.chatImage)
                         }
                     }
                 }
                 MediaStatus.CANCELED.name -> {
-                    itemView.chat_warning.visibility = View.GONE
-                    itemView.progress.visibility = View.VISIBLE
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.VISIBLE
                     if (isMe && messageItem.mediaUrl != null) {
-                        itemView.progress.enableUpload()
+                        binding.progress.enableUpload()
                     } else {
-                        itemView.progress.enableDownload()
+                        binding.progress.enableDownload()
                     }
-                    itemView.progress.setBindId(messageItem.messageId)
-                    itemView.progress.setProgress(-1)
-                    itemView.progress.setOnLongClickListener {
+                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setProgress(-1)
+                    binding.progress.setOnLongClickListener {
                         if (!hasSelect) {
                             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                         } else {
                             false
                         }
                     }
-                    itemView.progress.setOnClickListener {
+                    binding.progress.setOnClickListener {
                         if (hasSelect) {
                             onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                         } else {
@@ -222,8 +214,8 @@ class ImageQuoteHolder constructor(containerView: View) : MediaHolder(containerV
                             }
                         }
                     }
-                    itemView.chat_image.setOnClickListener {}
-                    itemView.chat_image.setOnLongClickListener { false }
+                    binding.chatImage.setOnClickListener {}
+                    binding.chatImage.setOnLongClickListener { false }
                 }
             }
         }
@@ -232,46 +224,46 @@ class ImageQuoteHolder constructor(containerView: View) : MediaHolder(containerV
         val dataHeight = messageItem.mediaHeight
         val width = mediaWidth - dp6
         if (dataWidth <= 0 || dataHeight <= 0) {
-            itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height = width
+            binding.chatImage.layoutParams.width = width
+            binding.chatImage.layoutParams.height = width
         } else {
-            itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height =
+            binding.chatImage.layoutParams.width = width
+            binding.chatImage.layoutParams.height =
                 min(width * dataHeight / dataWidth, mediaHeight)
         }
-        itemView.chat_image.loadLongImageMark(messageItem.mediaUrl, null)
+        binding.chatImage.loadLongImageMark(messageItem.mediaUrl, null)
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            binding.chatName.visibility = View.VISIBLE
+            binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatName.compoundDrawablePadding = itemView.dip(3)
             } else {
-                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+                binding.chatName.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
-            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            binding.chatName.visibility = View.GONE
         }
 
         if (messageItem.appId != null) {
-            itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
-            itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.setCompoundDrawables(null, null, botIcon, null)
+            binding.chatName.compoundDrawablePadding = itemView.dip(3)
         } else {
-            itemView.chat_name.setCompoundDrawables(null, null, null, null)
+            binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
         val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        itemView.chat_quote.bind(quoteMessage)
-        itemView.chat_quote.setOnClickListener {
+        binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {

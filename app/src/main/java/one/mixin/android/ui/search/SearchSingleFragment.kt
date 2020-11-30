@@ -13,10 +13,10 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_search_single.*
-import kotlinx.android.synthetic.main.view_head_search_single.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentSearchSingleBinding
+import one.mixin.android.databinding.ViewHeadSearchSingleBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.withArgs
@@ -69,26 +69,37 @@ class SearchSingleFragment : BaseFragment() {
         SearchSingleAdapter(type).apply { query = this@SearchSingleFragment.query }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_search_single, container, false)
+    private var _binding: FragmentSearchSingleBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentSearchSingleBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        back_ib.setOnClickListener {
-            search_et.hideKeyboard()
+        binding.backIb.setOnClickListener {
+            binding.searchEt.hideKeyboard()
             requireActivity().onBackPressed()
         }
-        search_rv.layoutManager = LinearLayoutManager(requireContext())
-        val header = LayoutInflater.from(requireContext()).inflate(R.layout.view_head_search_single, search_rv, false)
+        binding.searchRv.layoutManager = LinearLayoutManager(requireContext())
+        val header = LayoutInflater.from(requireContext()).inflate(R.layout.view_head_search_single, binding.searchRv, false)
+        val headerBinding = ViewHeadSearchSingleBinding.bind(header)
         val text = when (type) {
             TypeAsset -> requireContext().getString(R.string.search_title_assets)
             TypeUser -> requireContext().getText(R.string.search_title_contacts)
             TypeChat -> requireContext().getText(R.string.search_title_chat)
             TypeMessage -> requireContext().getText(R.string.search_title_messages)
         }
-        header.title_tv.text = text
+        headerBinding.titleTv.text = text
         adapter.headerView = header
-        search_rv.adapter = adapter
+        binding.searchRv.adapter = adapter
         adapter.data = data
         adapter.onItemClickListener = object : SearchFragment.OnSearchClickListener {
             override fun onTipClick() {
@@ -99,31 +110,31 @@ class SearchSingleFragment : BaseFragment() {
             }
 
             override fun onMessageClick(message: SearchMessageItem) {
-                search_rv.hideKeyboard()
+                binding.searchRv.hideKeyboard()
                 val f = SearchMessageFragment.newInstance(message, adapter.query)
                 requireActivity().addFragment(this@SearchSingleFragment, f, SearchMessageFragment.TAG, R.id.root_view)
             }
 
             override fun onChatClick(chatMinimal: ChatMinimal) {
-                search_rv.hideKeyboard()
+                binding.searchRv.hideKeyboard()
                 context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
             }
 
             override fun onUserClick(user: User) {
-                search_rv.hideKeyboard()
+                binding.searchRv.hideKeyboard()
                 context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             }
         }
 
-        clear_ib.setOnClickListener { search_et.setText("") }
-        search_et.hint = text
-        search_et.setText(query)
-        search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        binding.clearIb.setOnClickListener { binding.searchEt.setText("") }
+        binding.searchEt.hint = text
+        binding.searchEt.setText(query)
+        binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe(
                 {
-                    clear_ib.isVisible = it.isNotEmpty()
+                    binding.clearIb.isVisible = it.isNotEmpty()
                     if (it == adapter.query) return@subscribe
 
                     adapter.query = it.toString()

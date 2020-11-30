@@ -36,7 +36,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import kotlinx.android.synthetic.main.fragment_capture.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
@@ -120,6 +119,25 @@ abstract class BaseCameraxFragment : VisionFragment() {
         backgroundExecutor = Executors.newSingleThreadExecutor()
     }
 
+    abstract fun getContentView(): View
+    private val _contentView get() = getContentView()
+
+    private val close: View by lazy {
+        _contentView.findViewById(R.id.close)
+    }
+    private val flash: View by lazy {
+        _contentView.findViewById(R.id.flash)
+    }
+    private val galleryIv: View by lazy {
+        _contentView.findViewById(R.id.gallery_iv)
+    }
+    private val viewFinder: PreviewView by lazy {
+        _contentView.findViewById(R.id.view_finder)
+    }
+    private val focusView: FocusView by lazy {
+        _contentView.findViewById(R.id.focus_view)
+    }
+
     @SuppressLint("RestrictedApi", "ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -128,7 +146,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             onFlashClick()
             flash.bounce()
         }
-        gallery_iv.setOnClickListener {
+        galleryIv.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
@@ -146,12 +164,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
         checkFlash()
 
-        displayManager = view_finder.context
+        displayManager = viewFinder.context
             .getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         displayManager.registerDisplayListener(displayListener, null)
 
         setZoomRatio(UNITY_ZOOM_SCALE)
-        view_finder.setOnTouchListener { v, event ->
+        viewFinder.setOnTouchListener { v, event ->
             if (isPinchToZoomEnabled) {
                 pinchToZoomGestureDetector.onTouchEvent(event)
             }
@@ -173,16 +191,16 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
             return@setOnTouchListener true
         }
-        view_finder.post {
-            displayId = view_finder.display.displayId
+        viewFinder.post {
+            displayId = viewFinder.display.displayId
             bindCameraUseCase()
         }
     }
 
     @SuppressLint("RestrictedApi")
     protected fun bindCameraUseCase() {
-        metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
-        val rotation = view_finder.display.rotation
+        metrics = DisplayMetrics().also { viewFinder.display.getRealMetrics(it) }
+        val rotation = viewFinder.display.rotation
 
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
@@ -215,7 +233,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                         imageAnalysis,
                         *otherUseCases
                     )
-                    preview?.setSurfaceProvider(view_finder.surfaceProvider)
+                    preview?.setSurfaceProvider(viewFinder.surfaceProvider)
                 } catch (e: Exception) {
                     reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
                 }
@@ -311,7 +329,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
         )
         upEvent = null
-        focus_view.focusAndMeter(x, y)
+        focusView.focusAndMeter(x, y)
 
         camera?.let { c ->
             val pointFactory = v.meteringPointFactory

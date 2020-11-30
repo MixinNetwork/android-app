@@ -16,10 +16,8 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_search_message.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
-import one.mixin.android.R
+import one.mixin.android.databinding.FragmentSearchMessageBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
@@ -59,41 +57,51 @@ class SearchMessageFragment : BaseFragment() {
     private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_search_message, container, false)
+    private var _binding: FragmentSearchMessageBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentSearchMessageBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
-            search_rv.hideKeyboard()
+        binding.titleView.leftIb.setOnClickListener {
+            binding.searchRv.hideKeyboard()
             requireActivity().onBackPressed()
         }
-        title_view.avatar_iv.visibility = VISIBLE
-        title_view.avatar_iv.setTextSize(16f)
+        binding.titleView.avatarIv.visibility = VISIBLE
+        binding.titleView.avatarIv.setTextSize(16f)
         if (searchMessageItem.conversationCategory == ConversationCategory.CONTACT.name) {
-            title_view.title_tv.text = searchMessageItem.userFullName
-            title_view.avatar_iv.setInfo(
+            binding.titleView.titleTv.text = searchMessageItem.userFullName
+            binding.titleView.avatarIv.setInfo(
                 searchMessageItem.userFullName,
                 searchMessageItem.userAvatarUrl,
                 searchMessageItem.userId
             )
         } else {
-            title_view.title_tv.text = searchMessageItem.conversationName
-            title_view.avatar_iv.setGroup(searchMessageItem.conversationAvatarUrl)
+            binding.titleView.titleTv.text = searchMessageItem.conversationName
+            binding.titleView.avatarIv.setGroup(searchMessageItem.conversationAvatarUrl)
         }
 
-        search_rv.layoutManager = LinearLayoutManager(requireContext())
+        binding.searchRv.layoutManager = LinearLayoutManager(requireContext())
         adapter.callback = object : SearchMessageAdapter.SearchMessageCallback {
             override fun onItemClick(item: SearchMessageDetailItem) {
                 searchViewModel.findConversationById(searchMessageItem.conversationId)
                     .autoDispose(stopScope)
                     .subscribe {
-                        search_et.hideKeyboard()
+                        binding.searchEt.hideKeyboard()
                         ConversationActivity.show(
                             requireContext(),
                             conversationId = searchMessageItem.conversationId,
                             messageId = item.messageId,
-                            keyword = search_et.text.toString()
+                            keyword = binding.searchEt.text.toString()
                         )
                         if (isConversationSearch()) {
                             parentFragmentManager.popBackStack()
@@ -101,30 +109,30 @@ class SearchMessageFragment : BaseFragment() {
                     }
             }
         }
-        search_rv.adapter = adapter
+        binding.searchRv.adapter = adapter
 
-        clear_ib.setOnClickListener { search_et.setText("") }
-        search_et.setText(query)
-        search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        binding.clearIb.setOnClickListener { binding.searchEt.setText("") }
+        binding.searchEt.setText(query)
+        binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe(
                 {
-                    clear_ib.isVisible = it.isNotEmpty()
+                    binding.clearIb.isVisible = it.isNotEmpty()
                     onTextChanged(it.toString())
                 },
                 {}
             )
-        search_et.postDelayed(
+        binding.searchEt.postDelayed(
             {
                 onTextChanged(query)
             },
             50
         )
         if (isConversationSearch()) {
-            search_et.postDelayed(
+            binding.searchEt.postDelayed(
                 {
-                    search_et?.showKeyboard()
+                    binding.searchEt?.showKeyboard()
                 },
                 500
             )

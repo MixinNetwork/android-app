@@ -1,7 +1,7 @@
 package one.mixin.android.ui.common.biometric
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User

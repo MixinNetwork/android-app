@@ -3,15 +3,13 @@ package one.mixin.android.ui.conversation
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.CountDownTimer
-import android.view.View
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_precondition_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.fragment_precondition_bottom_sheet.view.asset_balance
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.databinding.FragmentPreconditionBottomSheetBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -24,6 +22,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
@@ -44,18 +43,20 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireArguments().getParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM)!!
     }
 
+    private val binding by viewBinding(FragmentPreconditionBottomSheetBinding::inflate)
+
     private var mCountDownTimer: CountDownTimer? = null
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_precondition_bottom_sheet, null)
+        contentView = binding.root
         (dialog as BottomSheet).run {
             setCustomView(contentView)
             dismissClickOutside = false
         }
-        contentView.asset_balance.setInfo(t)
-        contentView.cancel_tv.setOnClickListener {
+        binding.assetBalance.setInfo(t)
+        binding.cancelTv.setOnClickListener {
             callback?.onCancel()
             dismiss()
         }
@@ -85,16 +86,16 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 showLargeAmountTip(t)
             } else {
                 callback?.onSuccess()
-                contentView.post { dismiss() }
+                binding.root.post { dismiss() }
             }
             return
         }
 
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
-        contentView.title_tv.text = getString(R.string.transfer_duplicate_title)
-        contentView.warning_tv.text = getString(R.string.wallet_transfer_recent_tip, time, t.user.fullName, amount)
-        contentView.continue_tv.setOnClickListener {
+        binding.titleTv.text = getString(R.string.transfer_duplicate_title)
+        binding.warningTv.text = getString(R.string.wallet_transfer_recent_tip, time, t.user.fullName, amount)
+        binding.continueTv.setOnClickListener {
             if (shouldShowTransferTip(t)) {
                 showLargeAmountTip(t)
             } else {
@@ -112,21 +113,21 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 showFirstWithdrawalTip(t)
             } else {
                 callback?.onSuccess()
-                contentView.post { dismiss() }
+                binding.root.post { dismiss() }
             }
             return
         }
 
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
-        contentView.title_tv.text = getString(R.string.withdraw_duplicate_title)
-        contentView.warning_tv.text = getString(
+        binding.titleTv.text = getString(R.string.withdraw_duplicate_title)
+        binding.warningTv.text = getString(
             R.string.wallet_withdrawal_recent_tip,
             time,
             t.displayAddress().formatPublicKey(),
             amount
         )
-        contentView.continue_tv.setOnClickListener {
+        binding.continueTv.setOnClickListener {
             callback?.onSuccess()
             dismiss()
         }
@@ -134,16 +135,16 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showLargeAmountTip(t: TransferBiometricItem) {
-        contentView.title_tv.text = getString(R.string.wallet_transaction_tip_title)
+        binding.titleTv.text = getString(R.string.wallet_transaction_tip_title)
         val fiatAmount =
             (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
-        contentView.warning_tv.text = getString(
+        binding.warningTv.text = getString(
             R.string.wallet_transaction_tip,
             t.user.fullName,
             "${Fiats.getSymbol()}$fiatAmount",
             t.asset.symbol
         )
-        contentView.continue_tv.setOnClickListener {
+        binding.continueTv.setOnClickListener {
             callback?.onSuccess()
             dismiss()
         }
@@ -151,22 +152,22 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showFirstWithdrawalTip(t: WithdrawBiometricItem) {
-        contentView.title_tv.text = getString(R.string.bottom_withdrawal_title, t.asset.symbol)
-        contentView.warning_tv.text = getString(R.string.bottom_withdrawal_address_tips)
-        contentView.continue_tv.text = getString(R.string.bottom_withdrawal_change_amount)
-        contentView.continue_tv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
-        contentView.continue_tv.setOnClickListener {
+        binding.titleTv.text = getString(R.string.bottom_withdrawal_title, t.asset.symbol)
+        binding.warningTv.text = getString(R.string.bottom_withdrawal_address_tips)
+        binding.continueTv.text = getString(R.string.bottom_withdrawal_change_amount)
+        binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
+        binding.continueTv.setOnClickListener {
             callback?.onCancel()
             dismiss()
         }
-        contentView.cancel_tv.text = getString(R.string.bottom_withdrawal_address_continue)
-        contentView.cancel_tv.setTextColor(resources.getColor(R.color.colorDarkBlue, null))
-        contentView.cancel_tv.setOnClickListener {
+        binding.cancelTv.text = getString(R.string.bottom_withdrawal_address_continue)
+        binding.cancelTv.setTextColor(resources.getColor(R.color.colorDarkBlue, null))
+        binding.cancelTv.setOnClickListener {
             callback?.onSuccess()
             dismiss()
         }
-        contentView.continue_tv.isEnabled = true
-        contentView.cancel_tv.isEnabled = true
+        binding.continueTv.isEnabled = true
+        binding.cancelTv.isEnabled = true
     }
 
     private fun shouldShowWithdrawalTip(t: WithdrawBiometricItem): Boolean {
@@ -192,22 +193,22 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun isDuplicateTransferDisable() = !defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
 
     private fun startCountDown() {
-        contentView.continue_tv.isEnabled = false
-        contentView.continue_tv.textColor = ContextCompat.getColor(requireContext(), R.color.wallet_text_gray)
+        binding.continueTv.isEnabled = false
+        binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.wallet_text_gray)
         mCountDownTimer?.cancel()
         mCountDownTimer = object : CountDownTimer(4000, 1000) {
 
             override fun onTick(l: Long) {
                 if (isAdded) {
-                    contentView.continue_tv.text = getString(R.string.wallet_transaction_continue_count, l / 1000)
+                    binding.continueTv.text = getString(R.string.wallet_transaction_continue_count, l / 1000)
                 }
             }
 
             override fun onFinish() {
                 if (isAdded) {
-                    contentView.continue_tv.text = getString(R.string.common_continue)
-                    contentView.continue_tv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
-                    contentView.continue_tv.isEnabled = true
+                    binding.continueTv.text = getString(R.string.common_continue)
+                    binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
+                    binding.continueTv.isEnabled = true
                 }
             }
         }

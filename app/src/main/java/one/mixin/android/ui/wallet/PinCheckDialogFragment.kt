@@ -11,11 +11,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.android.synthetic.main.fragment_pin_check.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.databinding.FragmentPinCheckBinding
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.updatePinCheck
@@ -36,7 +36,8 @@ class PinCheckDialogFragment : DialogFragment() {
         fun newInstance() = PinCheckDialogFragment()
     }
 
-    private lateinit var contentView: View
+    private var _binding: FragmentPinCheckBinding? = null
+    private val binding get() = requireNotNull(_binding)
 
     private val pinCheckViewModel by viewModels<PinCheckViewModel>()
 
@@ -45,58 +46,64 @@ class PinCheckDialogFragment : DialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_pin_check, null)
-        dialog.setContentView(contentView)
+        _binding = FragmentPinCheckBinding.bind(View.inflate(context, R.layout.fragment_pin_check, null))
+        dialog.setContentView(binding.root)
 
-        contentView.pin.setListener(
-            object : PinView.OnPinListener {
-                override fun onUpdate(index: Int) {
-                    if (index == contentView.pin.getCount()) {
-                        verify(contentView.pin.code())
+        binding.apply {
+            pin.setListener(
+                object : PinView.OnPinListener {
+                    override fun onUpdate(index: Int) {
+                        if (index == pin.getCount()) {
+                            verify(pin.code())
+                        }
                     }
                 }
+            )
+            gotItTv.setOnClickListener { activity?.finish() }
+            keyboard.apply {
+                setKeyboardKeys(KEYS)
+                keyboard.setOnClickKeyboardListener(mKeyboardListener)
+                keyboard.animate().translationY(0f).start()
             }
-        )
-        contentView.got_it_tv.setOnClickListener { activity?.finish() }
-        contentView.keyboard.setKeyboardKeys(KEYS)
-        contentView.keyboard.setOnClickKeyboardListener(mKeyboardListener)
-        contentView.keyboard.animate().translationY(0f).start()
+        }
     }
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
-        contentView.pin_va?.displayedChild = POS_PB
-        handleMixinResponse(
-            invokeNetwork = { pinCheckViewModel.verifyPin(pinCode) },
-            successBlock = {
-                contentView.pin?.clear()
-                contentView.pin_va?.displayedChild = POS_PIN
-                context?.updatePinCheck()
-                dismiss()
-            },
-            exceptionBlock = {
-                contentView.pin?.clear()
-                contentView.pin_va?.displayedChild = POS_PIN
-                return@handleMixinResponse false
-            },
-            failureBlock = { response ->
-                contentView.pin?.clear()
-                if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
-                    val errorCount = pinCheckViewModel.errorCount()
-                    contentView.pin_va?.displayedChild = POS_PIN
-                    contentView.pin?.error(getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount))
-                } else if (response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                    contentView.pin_va?.displayedChild = POS_TIP
-                    contentView.tip_va?.showNext()
-                    val transY = contentView.height / 2 - contentView.top_ll.translationY * 2
-                    contentView.top_ll?.animate()?.translationY(transY)?.start()
-                    contentView.keyboard?.animate()?.translationY(contentView.keyboard.height.toFloat())?.start()
-                } else {
-                    contentView.pin_va?.displayedChild = POS_PIN
-                    contentView.pin?.error(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
+        binding.apply {
+            pinVa.displayedChild = POS_PB
+            handleMixinResponse(
+                invokeNetwork = { pinCheckViewModel.verifyPin(pinCode) },
+                successBlock = {
+                    pin.clear()
+                    pinVa.displayedChild = POS_PIN
+                    context?.updatePinCheck()
+                    dismiss()
+                },
+                exceptionBlock = {
+                    pin.clear()
+                    pinVa.displayedChild = POS_PIN
+                    return@handleMixinResponse false
+                },
+                failureBlock = { response ->
+                    pin.clear()
+                    if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
+                        val errorCount = pinCheckViewModel.errorCount()
+                        pinVa.displayedChild = POS_PIN
+                        pin.error(getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount))
+                    } else if (response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                        pinVa.displayedChild = POS_TIP
+                        tipVa.showNext()
+                        val transY = root.height / 2 - topLl.translationY * 2
+                        topLl.animate()?.translationY(transY)?.start()
+                        keyboard.animate()?.translationY(keyboard.height.toFloat())?.start()
+                    } else {
+                        pinVa.displayedChild = POS_PIN
+                        pin.error(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
+                    }
+                    return@handleMixinResponse false
                 }
-                return@handleMixinResponse false
-            }
-        )
+            )
+        }
     }
 
     override fun onStart() {
@@ -107,13 +114,15 @@ class PinCheckDialogFragment : DialogFragment() {
         dialog?.window?.setGravity(Gravity.BOTTOM)
 
         // reset top layout position
-        contentView.post {
-            val keyboardHeight = contentView.keyboard.height
-            val h = contentView.height
-            val topHeight = contentView.top_ll.height
-            val margin = (h - keyboardHeight - topHeight) / 2
-            if (margin > 0) {
-                contentView.top_ll.translationY = margin.toFloat()
+        binding.apply {
+            root.post {
+                val keyboardHeight = keyboard.height
+                val h = root.height
+                val topHeight = topLl.height
+                val margin = (h - keyboardHeight - topHeight) / 2
+                if (margin > 0) {
+                    topLl.translationY = margin.toFloat()
+                }
             }
         }
     }
@@ -130,6 +139,7 @@ class PinCheckDialogFragment : DialogFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         disposable.dispose()
     }
 
@@ -143,19 +153,23 @@ class PinCheckDialogFragment : DialogFragment() {
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.tapVibrate()
-            if (position == 11) {
-                contentView.pin.delete()
-            } else {
-                contentView.pin.append(value)
+            binding.apply {
+                if (position == 11) {
+                    pin.delete()
+                } else {
+                    pin.append(value)
+                }
             }
         }
 
         override fun onLongClick(position: Int, value: String) {
             context?.tapVibrate()
-            if (position == 11) {
-                contentView.pin.clear()
-            } else {
-                contentView.pin.append(value)
+            binding.apply {
+                if (position == 11) {
+                    pin.clear()
+                } else {
+                    pin.append(value)
+                }
             }
         }
     }

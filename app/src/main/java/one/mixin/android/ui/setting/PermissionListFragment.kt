@@ -14,14 +14,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_permission_list.*
-import kotlinx.android.synthetic.main.item_permission_list.view.*
-import kotlinx.android.synthetic.main.layout_permission_list_foot.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.getScopes
+import one.mixin.android.databinding.FragmentPermissionListBinding
+import one.mixin.android.databinding.ItemPermissionListBinding
+import one.mixin.android.databinding.LayoutPermissionListFootBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.withArgs
@@ -30,12 +29,13 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.convertName
 
 @AndroidEntryPoint
-class PermissionListFragment : BaseFragment() {
+class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     companion object {
         const val TAG = "PermissionListFragment"
         const val ARGS_APP = "args_app"
@@ -57,24 +57,22 @@ class PermissionListFragment : BaseFragment() {
     }
 
     private val viewModel by viewModels<SettingViewModel>()
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_permission_list, container, false)
+    private val binding by viewBinding(FragmentPermissionListBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        permission_rv.layoutManager = LinearLayoutManager(requireContext())
-        val foot = layoutInflater.inflate(R.layout.layout_permission_list_foot, permission_rv, false)
-        foot.revoke_rl.setOnClickListener { showDialog(app) }
-        foot.time_tv.text = getString(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate())
-        val adapter = PermissionListAdapter()
-        permission_rv.adapter = adapter
-        adapter.footerView = foot
-        loadData(adapter)
+        binding.apply {
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            permissionRv.layoutManager = LinearLayoutManager(requireContext())
+            val footBinding = LayoutPermissionListFootBinding.inflate(layoutInflater, permissionRv, false).apply {
+                revokeRl.setOnClickListener { showDialog(app) }
+                timeTv.text = getString(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate())
+            }
+            val adapter = PermissionListAdapter()
+            permissionRv.adapter = adapter
+            adapter.footerView = footBinding.root
+            loadData(adapter)
+        }
     }
 
     private fun loadData(adapter: PermissionListAdapter) = lifecycleScope.launch {
@@ -126,17 +124,19 @@ class PermissionListFragment : BaseFragment() {
 
     class PermissionListAdapter : FooterListAdapter<Scope, RecyclerView.ViewHolder>(Scope.DIFF_CALLBACK) {
         override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
-            ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_permission_list, parent, false))
+            ItemHolder(ItemPermissionListBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, pos: Int) {
             (holder as? ItemHolder)?.bindTo(getItem(pos))
         }
     }
 
-    class ItemHolder(itemView: View) : NormalHolder(itemView) {
+    class ItemHolder(private val itemBinding: ItemPermissionListBinding) : NormalHolder(itemBinding.root) {
         fun bindTo(scope: Scope) {
-            itemView.name_tv.text = scope.convertName(itemView.context)
-            itemView.number_tv.text = scope.desc
+            itemBinding.apply {
+                nameTv.text = scope.convertName(itemView.context)
+                numberTv.text = scope.desc
+            }
         }
     }
 

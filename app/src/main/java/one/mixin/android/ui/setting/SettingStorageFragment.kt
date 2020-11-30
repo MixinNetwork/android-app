@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.CompoundButton
 import androidx.appcompat.app.AlertDialog
 import androidx.collection.ArraySet
 import androidx.fragment.app.viewModels
@@ -19,27 +18,27 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_storage.*
-import kotlinx.android.synthetic.main.item_contact_storage.view.*
-import kotlinx.android.synthetic.main.item_storage_check.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentStorageBinding
+import one.mixin.android.databinding.ItemContactStorageBinding
+import one.mixin.android.databinding.ItemStorageCheckBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
 
 @AndroidEntryPoint
-class SettingStorageFragment : BaseFragment() {
+class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     companion object {
         const val TAG = "SettingStorageFragment"
 
@@ -49,31 +48,31 @@ class SettingStorageFragment : BaseFragment() {
     }
 
     private val viewModel by viewModels<SettingStorageViewModel>()
+    private val binding by viewBinding(FragmentStorageBinding::bind)
 
     private val adapter = StorageAdapter {
         showMenu(it)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_storage, container, false)
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        b_rv.adapter = adapter
-        menuView.adapter = menuAdapter
-        viewModel.getConversationStorageUsage().autoDispose(stopScope)
-            .subscribe(
-                { list ->
-                    if (progress.visibility != View.GONE) {
-                        progress.visibility = View.GONE
+        binding.apply {
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            bRv.adapter = adapter
+            menuView.adapter = menuAdapter
+            viewModel.getConversationStorageUsage().autoDispose(stopScope)
+                .subscribe(
+                    { list ->
+                        if (progress.visibility != View.GONE) {
+                            progress.visibility = View.GONE
+                        }
+                        adapter.setData(list)
+                    },
+                    { error ->
+                        Timber.e(error)
                     }
-                    adapter.setData(list)
-                },
-                { error ->
-                    Timber.e(error)
-                }
-            )
+                )
+        }
     }
 
     private val dialog: Dialog by lazy {
@@ -202,7 +201,7 @@ class SettingStorageFragment : BaseFragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CheckHolder {
-            return CheckHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_storage_check, parent, false), checkAction)
+            return CheckHolder(ItemStorageCheckBinding.inflate(LayoutInflater.from(parent.context), parent, false), checkAction)
         }
 
         override fun getItemCount(): Int = storageUsageList?.size ?: 0
@@ -224,7 +223,7 @@ class SettingStorageFragment : BaseFragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
-            return ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_storage, parent, false))
+            return ItemHolder(ItemContactStorageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
 
         override fun onBindViewHolder(holder: ItemHolder, position: Int) {
@@ -237,38 +236,40 @@ class SettingStorageFragment : BaseFragment() {
         override fun getItemCount(): Int = conversationStorageUsageList?.size ?: 0
     }
 
-    class CheckHolder(itemView: View, private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.ViewHolder(itemView) {
+    class CheckHolder(private val itemBinding: ItemStorageCheckBinding, private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(storageUsage: StorageUsage) {
-            itemView.check_view.setName(
-                when (storageUsage.type) {
-                    IMAGE -> R.string.common_pic
-                    DATA -> R.string.common_file
-                    VIDEO -> R.string.common_video
-                    AUDIO -> R.string.common_audio
-                    else -> R.string.unknown
-                }
-            )
-            itemView.check_view.setSize(storageUsage.mediaSize)
-            itemView.check_view.isChecked = true
-            itemView.check_view.setOnCheckedChangeListener(
-                CompoundButton.OnCheckedChangeListener { _, checked ->
+            itemBinding.apply {
+                checkView.setName(
+                    when (storageUsage.type) {
+                        IMAGE -> R.string.common_pic
+                        DATA -> R.string.common_file
+                        VIDEO -> R.string.common_video
+                        AUDIO -> R.string.common_audio
+                        else -> R.string.unknown
+                    }
+                )
+                checkView.setSize(storageUsage.mediaSize)
+                checkView.isChecked = true
+                checkView.setOnCheckedChangeListener { _, checked ->
                     checkAction(checked, storageUsage)
                 }
-            )
+            }
         }
     }
 
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ItemHolder(private val itemBinding: ItemContactStorageBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(conversationStorageUsage: ConversationStorageUsage, action: ((String) -> Unit)) {
-            if (conversationStorageUsage.category == ConversationCategory.GROUP.name) {
-                itemView.avatar.setGroup(conversationStorageUsage.groupIconUrl)
-                itemView.normal.text = conversationStorageUsage.groupName
-            } else {
-                itemView.normal.text = conversationStorageUsage.name
-                itemView.avatar.setInfo(conversationStorageUsage.name, conversationStorageUsage.avatarUrl, conversationStorageUsage.ownerId)
+            itemBinding.apply {
+                if (conversationStorageUsage.category == ConversationCategory.GROUP.name) {
+                    avatar.setGroup(conversationStorageUsage.groupIconUrl)
+                    normal.text = conversationStorageUsage.groupName
+                } else {
+                    normal.text = conversationStorageUsage.name
+                    avatar.setInfo(conversationStorageUsage.name, conversationStorageUsage.avatarUrl, conversationStorageUsage.ownerId)
+                }
+                storageTv.text = conversationStorageUsage.mediaSize.fileSize()
+                itemView.setOnClickListener { action(conversationStorageUsage.conversationId) }
             }
-            itemView.storage_tv.text = conversationStorageUsage.mediaSize.fileSize()
-            itemView.setOnClickListener { action(conversationStorageUsage.conversationId) }
         }
     }
 }

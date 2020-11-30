@@ -19,8 +19,8 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import kotlinx.android.synthetic.main.activity_avatar.*
 import one.mixin.android.R
+import one.mixin.android.databinding.ActivityAvatarBinding
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.widget.AvatarTransform
 
@@ -45,6 +45,7 @@ class AvatarActivity : BaseActivity() {
 
     private val url: String by lazy { intent.getStringExtra(ARGS_URL) as String }
 
+    private lateinit var binding: ActivityAvatarBinding
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +54,8 @@ class AvatarActivity : BaseActivity() {
         }
         postponeEnterTransition()
         window.statusBarColor = Color.TRANSPARENT
-        setContentView(R.layout.activity_avatar)
+        binding = ActivityAvatarBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         Glide.with(this).asBitmap().load(url).listener(
             object : RequestListener<Bitmap> {
@@ -73,17 +75,17 @@ class AvatarActivity : BaseActivity() {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    avatar.doOnPreDraw {
-                        val avatarTransform = AvatarTransform(resource).apply { addTarget(avatar) }
+                    binding.avatar.doOnPreDraw {
+                        val avatarTransform = AvatarTransform(resource).apply { addTarget(binding.avatar) }
                         window.sharedElementEnterTransition = avatarTransform
                         startPostponedEnterTransition()
                     }
                     return false
                 }
             }
-        ).into(avatar)
+        ).into(binding.avatar)
 
-        root.setOnClickListener { finish() }
+        binding.rootView.setOnClickListener { finish() }
     }
 
     override fun onBackPressed() {
@@ -93,9 +95,9 @@ class AvatarActivity : BaseActivity() {
     override fun finish() {
         AnimatorSet().apply {
             playTogether(
-                ObjectAnimator.ofFloat(avatar, View.SCALE_X, 0f),
-                ObjectAnimator.ofFloat(avatar, View.SCALE_Y, 0f),
-                ObjectAnimator.ofFloat(root, View.ALPHA, 0f)
+                ObjectAnimator.ofFloat(binding.avatar, View.SCALE_X, 0f),
+                ObjectAnimator.ofFloat(binding.avatar, View.SCALE_Y, 0f),
+                ObjectAnimator.ofFloat(binding.rootView, View.ALPHA, 0f)
             )
             duration = 200
             interpolator = DecelerateInterpolator()

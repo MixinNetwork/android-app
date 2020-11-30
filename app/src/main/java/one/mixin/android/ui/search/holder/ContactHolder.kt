@@ -1,20 +1,21 @@
 package one.mixin.android.ui.search.holder
 
-import android.view.View
-import kotlinx.android.synthetic.main.item_search_contact.view.*
+import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
-class ContactHolder constructor(containerView: View) : NormalHolder(containerView) {
+class ContactHolder constructor(
+    val binding: ItemSearchContactBinding
+) : NormalHolder(binding.root) {
     fun bind(user: User, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        itemView.search_name.text = user.fullName
-        itemView.search_name.highLight(target)
-        itemView.search_avatar_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
-        user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
-        itemView.setOnClickListener {
+        binding.searchName.text = user.fullName
+        binding.searchName.highLight(target)
+        binding.searchAvatarIv.setInfo(user.fullName, user.avatarUrl, user.userId)
+        user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
+        binding.root.setOnClickListener {
             onItemClickListener?.onUserClick(user)
         }
     }

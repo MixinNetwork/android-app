@@ -13,11 +13,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_group.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentGroupBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -27,6 +26,7 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.group.adapter.GroupFriendAdapter
 import one.mixin.android.ui.group.adapter.GroupSelectAdapter
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import org.jetbrains.anko.textColor
 
@@ -99,22 +99,24 @@ class GroupFragment : BaseFragment() {
     ): View? =
         inflater.inflate(R.layout.fragment_group, container, false)
 
+    private val binding by viewBinding(FragmentGroupBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener {
             activity?.onBackPressed()
         }
         if (from == TYPE_ADD || from == TYPE_REMOVE) {
-            title_view.right_tv.text = getString(R.string.done)
+            binding.titleView.rightTv.text = getString(R.string.done)
             updateTitle(alreadyUsers?.size ?: 0)
         } else if (from == TYPE_CREATE) {
             updateTitle(0)
         }
-        select_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        select_rv.adapter = groupAdapter
+        binding.selectRv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        binding.selectRv.adapter = groupAdapter
         groupAdapter.checkedUsers = checkedUsers
-        title_view.right_animator.setOnClickListener {
-            search_et.hideKeyboard()
+        binding.titleView.rightAnimator.setOnClickListener {
+            binding.searchEt.hideKeyboard()
             if (from == TYPE_ADD || from == TYPE_REMOVE) {
                 handleAddOrRemove()
             } else {
@@ -125,34 +127,34 @@ class GroupFragment : BaseFragment() {
                 )
             }
         }
-        title_view.right_animator.isEnabled = false
+        binding.titleView.rightAnimator.isEnabled = false
         groupFriendAdapter.setGroupFriendListener(mGroupFriendListener)
         alreadyUsers?.let {
             val alreadyUserIds = mutableListOf<String>()
             it.mapTo(alreadyUserIds) { it.userId }
             groupFriendAdapter.alreadyUserIds = alreadyUserIds
         }
-        group_rv.adapter = groupFriendAdapter
-        group_rv.addItemDecoration(StickyRecyclerHeadersDecoration(groupFriendAdapter))
+        binding.groupRv.adapter = groupFriendAdapter
+        binding.groupRv.addItemDecoration(StickyRecyclerHeadersDecoration(groupFriendAdapter))
 
         if (from == TYPE_ADD || from == TYPE_CREATE) {
             groupViewModel.getFriends().observe(
                 viewLifecycleOwner,
                 Observer {
                     users = it
-                    filterAndSet(search_et.text.toString(), it)
+                    filterAndSet(binding.searchEt.text.toString(), it)
                 }
             )
         } else {
             users = alreadyUsers
-            filterAndSet(search_et.text.toString(), alreadyUsers)
+            filterAndSet(binding.searchEt.text.toString(), alreadyUsers)
         }
-        search_et.addTextChangedListener(mWatcher)
+        binding.searchEt.addTextChangedListener(mWatcher)
 
-        search_et.isFocusableInTouchMode = false
-        search_et.isFocusable = false
-        search_et.post {
-            search_et?.let {
+        binding.searchEt.isFocusableInTouchMode = false
+        binding.searchEt.isFocusable = false
+        binding.searchEt.post {
+            binding.searchEt?.let {
                 it.isFocusableInTouchMode = true
                 it.isFocusable = true
             }
@@ -198,7 +200,7 @@ class GroupFragment : BaseFragment() {
     }
 
     private fun updateTitle(size: Int) {
-        title_view.setSubTitle(
+        binding.titleView.setSubTitle(
             when (from) {
                 TYPE_REMOVE -> getString(R.string.group_info_remove_member)
                 else -> getString(R.string.group_add)
@@ -211,7 +213,7 @@ class GroupFragment : BaseFragment() {
         override fun onItemClick(user: User, checked: Boolean) {
             if (checked) {
                 checkedUsers.add(user)
-                search_et?.text?.clear()
+                binding.searchEt?.text?.clear()
             } else {
                 checkedUsers.remove(user)
             }
@@ -221,13 +223,13 @@ class GroupFragment : BaseFragment() {
                     checkedUsers.size + existCount else existCount - checkedUsers.size
             )
             groupAdapter.notifyDataSetChanged()
-            select_rv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
+            binding.selectRv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
             if (checkedUsers.isEmpty()) {
-                title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
-                title_view.right_animator.isEnabled = false
+                binding.titleView.rightTv.textColor = resources.getColor(R.color.text_gray, null)
+                binding.titleView.rightAnimator.isEnabled = false
             } else {
-                title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
-                title_view.right_animator.isEnabled = true
+                binding.titleView.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
+                binding.titleView.rightAnimator.isEnabled = true
             }
         }
     }

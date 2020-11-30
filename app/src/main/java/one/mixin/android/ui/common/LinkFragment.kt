@@ -3,9 +3,9 @@ package one.mixin.android.ui.common
 import android.os.Bundle
 import android.view.View
 import android.view.View.VISIBLE
+import android.widget.TextView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import kotlinx.android.synthetic.main.view_link_state.*
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.extension.animateHeight
@@ -14,7 +14,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.LinkState
 import javax.inject.Inject
 
-open class LinkFragment : BaseFragment(), Observer<Int> {
+abstract class LinkFragment : BaseFragment(), Observer<Int> {
 
     @Inject
     lateinit var linkState: LinkState
@@ -64,29 +64,41 @@ open class LinkFragment : BaseFragment(), Observer<Int> {
         )
     }
 
+    abstract fun getContentView(): View
+    private val _contentView get() = getContentView()
+    private val stateLayout: View by lazy {
+        _contentView.findViewById(R.id.state_layout)
+    }
+    private val progressBar: View by lazy {
+        _contentView.findViewById(R.id.progressBar)
+    }
+    private val stateTv: TextView by lazy {
+        _contentView.findViewById(R.id.state_tv)
+    }
+
     private fun showBar() {
         if (!barShown) {
-            state_layout.animateHeight(0, requireContext().dpToPx(26f))
+            stateLayout.animateHeight(0, requireContext().dpToPx(26f))
             barShown = true
         }
     }
 
     private fun hiddenBar() {
         if (barShown) {
-            state_layout.animateHeight(requireContext().dpToPx(26f), 0)
+            stateLayout.animateHeight(requireContext().dpToPx(26f), 0)
             barShown = false
         }
     }
 
     private fun setConnecting() {
         progressBar.visibility = VISIBLE
-        state_layout.setBackgroundResource(R.color.colorBlue)
-        state_tv.setText(R.string.state_connecting)
+        stateLayout.setBackgroundResource(R.color.colorBlue)
+        stateTv.setText(R.string.state_connecting)
     }
 
     private fun setSyncing() {
         progressBar.visibility = VISIBLE
-        state_layout.setBackgroundResource(R.color.stateGreen)
-        state_tv.setText(R.string.state_syncing)
+        stateLayout.setBackgroundResource(R.color.stateGreen)
+        stateTv.setText(R.string.state_syncing)
     }
 }

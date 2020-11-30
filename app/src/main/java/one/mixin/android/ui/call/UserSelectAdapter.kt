@@ -1,11 +1,9 @@
 package one.mixin.android.ui.call
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_user_select.view.*
-import one.mixin.android.R
+import one.mixin.android.databinding.ItemUserSelectBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
 
@@ -15,12 +13,12 @@ class UserSelectAdapter(
 
     var checkedUsers = mutableListOf<User>()
 
-    class SelectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class SelectViewHolder(val binding: ItemUserSelectBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SelectViewHolder {
-        val itemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_user_select, parent, false)
-        return SelectViewHolder(itemView)
+        val binding = ItemUserSelectBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return SelectViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
@@ -29,7 +27,7 @@ class UserSelectAdapter(
 
     override fun onBindViewHolder(holder: SelectViewHolder, position: Int) {
         val item = checkedUsers[position]
-        holder.itemView.avatar_view.setInfo(item.fullName, item.avatarUrl, item.userId)
+        holder.binding.avatarView.setInfo(item.fullName, item.avatarUrl, item.userId)
         holder.itemView.setOnClickListener {
             removeItem(item)
         }

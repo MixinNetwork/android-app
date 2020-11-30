@@ -1,9 +1,9 @@
 package one.mixin.android.ui.wallet.adapter
 
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.R
-import one.mixin.android.extension.inflate
+import one.mixin.android.databinding.ItemWalletSearchBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.TopAssetItem
 
@@ -38,11 +38,10 @@ class SearchAdapter : RecyclerView.Adapter<ItemViewHolder>() {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = parent.inflate(R.layout.item_wallet_search, false)
         return if (viewType == TYPE_LOCAL) {
-            AssetHolder(view)
+            AssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else {
-            TopAssetHolder(view)
+            TopAssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
     }
 

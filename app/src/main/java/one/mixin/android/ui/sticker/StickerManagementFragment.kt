@@ -21,9 +21,8 @@ import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_sticker_management.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentStickerManagementBinding
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
@@ -36,6 +35,7 @@ import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.StickerFragment.Companion.ARGS_ALBUM_ID
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColor
@@ -65,26 +65,28 @@ class StickerManagementFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_sticker_management, container, false)
 
+    private val binding by viewBinding(FragmentStickerManagementBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { requireActivity().onBackPressed() }
-        title_view.right_tv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
-        title_view.right_animator.setOnClickListener {
+        binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressed() }
+        binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        binding.titleView.rightAnimator.setOnClickListener {
             if (stickerAdapter.editing) {
-                title_view.right_tv.text = getString(R.string.select)
+                binding.titleView.rightTv.text = getString(R.string.select)
                 if (stickerAdapter.checkedList.isNotEmpty()) {
                     stickerViewModel.removeStickers(stickerAdapter.checkedList)
                 }
             } else {
-                title_view.right_tv.text = getString(R.string.conversation_delete)
+                binding.titleView.rightTv.text = getString(R.string.conversation_delete)
             }
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.notifyDataSetChanged()
         }
-        sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
-        sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
+        binding.stickerRv.layoutManager = GridLayoutManager(context, COLUMN)
+        binding.stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
         stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
-        sticker_rv.adapter = stickerAdapter
+        binding.stickerRv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(
             object : StickerListener {
                 override fun onAddClick() {
@@ -109,7 +111,7 @@ class StickerManagementFragment : BaseFragment() {
                 }
 
                 override fun onDelete() {
-                    title_view.right_tv.text = getString(R.string.conversation_delete)
+                    binding.titleView.rightTv.text = getString(R.string.conversation_delete)
                 }
             }
         )
@@ -136,7 +138,7 @@ class StickerManagementFragment : BaseFragment() {
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.checkedList.clear()
             stickerAdapter.notifyDataSetChanged()
-            title_view.right_tv.text = getString(R.string.select)
+            binding.titleView.rightTv.text = getString(R.string.select)
 
             return true
         }

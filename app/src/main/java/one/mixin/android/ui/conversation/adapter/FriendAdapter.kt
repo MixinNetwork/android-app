@@ -1,10 +1,9 @@
 package one.mixin.android.ui.conversation.adapter
 
-import android.view.View
+import android.view.LayoutInflater
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.item_contact_normal.view.*
-import one.mixin.android.R
-import one.mixin.android.extension.inflate
+import one.mixin.android.databinding.ItemContactNormalBinding
+import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.friends.AbsFriendsAdapter
 import one.mixin.android.ui.common.friends.BaseFriendsViewHolder
 import one.mixin.android.ui.common.friends.FriendsListener
@@ -14,12 +13,19 @@ import one.mixin.android.vo.showVerifiedOrBot
 
 class FriendsAdapter(callback: UserItemCallback) : AbsFriendsAdapter<FriendsViewHolder>(callback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        FriendsViewHolder(parent.inflate(R.layout.item_contact_normal))
+        FriendsViewHolder(ItemContactNormalBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 }
 
-class FriendsViewHolder(itemView: View) : BaseFriendsViewHolder(itemView) {
+class FriendsViewHolder(val binding: ItemContactNormalBinding) : BaseFriendsViewHolder(binding.root) {
     override fun bind(item: User, filter: String, listener: FriendsListener?) {
-        super.bind(item, filter, listener)
-        item.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
+        binding.apply {
+            normal.text = item.fullName
+            normal.highLight(filter)
+            avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
+            item.showVerifiedOrBot(verifiedIv, botIv)
+        }
+        itemView.setOnClickListener {
+            listener?.onItemClick(item)
+        }
     }
 }

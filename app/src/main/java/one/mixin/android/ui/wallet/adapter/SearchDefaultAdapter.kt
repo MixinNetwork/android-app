@@ -1,16 +1,14 @@
 package one.mixin.android.ui.wallet.adapter
 
 import android.annotation.SuppressLint
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_contact_header.view.*
-import kotlinx.android.synthetic.main.item_wallet_search.view.*
-import kotlinx.android.synthetic.main.item_wallet_search.view.symbol_tv
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.inflate
+import one.mixin.android.databinding.ItemContactHeaderBinding
+import one.mixin.android.databinding.ItemWalletSearchBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
@@ -47,8 +45,7 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
     override fun getHeaderId(position: Int): Long = getItemViewType(position).toLong()
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
-        return HeaderViewHolder(view)
+        return HeaderViewHolder(ItemContactHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindHeaderViewHolder(holder: HeaderViewHolder, position: Int) {
@@ -56,11 +53,10 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = parent.inflate(R.layout.item_wallet_search, false)
         return if (viewType == TYPE_RECENT) {
-            AssetHolder(view)
+            AssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         } else {
-            TopAssetHolder(view)
+            TopAssetHolder(ItemWalletSearchBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
     }
 
@@ -84,16 +80,16 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
 
     override fun getItemCount(): Int = (recentAssets?.size ?: 0) + (topAssets?.size ?: 0)
 
-    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(isRecent: Boolean) {
-            itemView.header.text = itemView.context.getString(
+            binding.header.text = itemView.context.getString(
                 if (isRecent) R.string.wallet_recent_search else R.string.wallet_trending
             )
         }
     }
 }
 
-abstract class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
     fun bindView(
         assetId: String,
@@ -105,27 +101,27 @@ abstract class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
         changeUsd: String,
         priceFiat: BigDecimal
     ) {
-        itemView.badge_circle_iv.bg.loadImage(iconUrl, R.drawable.ic_avatar_place_holder)
-        itemView.badge_circle_iv.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
-        itemView.name_tv.text = name
-        itemView.symbol_tv.text = symbol
+        binding.badgeCircleIv.bg.loadImage(iconUrl, R.drawable.ic_avatar_place_holder)
+        binding.badgeCircleIv.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
+        binding.nameTv.text = name
+        binding.symbolTv.text = symbol
         if (priceUsd == "0") {
-            itemView.price_tv.setText(R.string.asset_none)
-            itemView.change_tv.visibility = View.GONE
+            binding.priceTv.setText(R.string.asset_none)
+            binding.changeTv.visibility = View.GONE
         } else {
-            itemView.change_tv.visibility = View.VISIBLE
-            itemView.price_tv.text = "${Fiats.getSymbol()}${priceFiat.priceFormat()}"
+            binding.changeTv.visibility = View.VISIBLE
+            binding.priceTv.text = "${Fiats.getSymbol()}${priceFiat.priceFormat()}"
             if (changeUsd.isNotEmpty()) {
                 val bigChangeUsd = BigDecimal(changeUsd)
                 val isPositive = bigChangeUsd > BigDecimal.ZERO
-                itemView.change_tv.text = "${(bigChangeUsd * BigDecimal(100)).numberFormat2()}%"
-                itemView.change_tv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+                binding.changeTv.text = "${(bigChangeUsd * BigDecimal(100)).numberFormat2()}%"
+                binding.changeTv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
             }
         }
     }
 }
 
-class AssetHolder(itemView: View) : ItemViewHolder(itemView) {
+class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
     fun bind(asset: AssetItem, callback: WalletSearchCallback? = null) {
         bindView(asset.assetId, asset.iconUrl, asset.chainIconUrl, asset.name, asset.symbol, asset.priceUsd, asset.changeUsd, asset.priceFiat())
         itemView.setOnClickListener {
@@ -134,7 +130,7 @@ class AssetHolder(itemView: View) : ItemViewHolder(itemView) {
     }
 }
 
-class TopAssetHolder(itemView: View) : ItemViewHolder(itemView) {
+class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
     fun bind(asset: TopAssetItem, callback: WalletSearchCallback? = null) {
         bindView(asset.assetId, asset.iconUrl, asset.chainIconUrl, asset.name, asset.symbol, asset.priceUsd, asset.changeUsd, asset.priceFiat())
         itemView.setOnClickListener {

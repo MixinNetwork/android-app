@@ -2,15 +2,12 @@ package one.mixin.android.ui.setting
 
 import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_appearance.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
@@ -19,11 +16,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import java.util.Locale
 
 @AndroidEntryPoint
-class AppearanceFragment : BaseFragment() {
+class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
     companion object {
         const val TAG = "AppearanceFragment"
 
@@ -36,84 +34,81 @@ class AppearanceFragment : BaseFragment() {
         fun newInstance() = AppearanceFragment()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? =
-        layoutInflater.inflate(R.layout.fragment_appearance, container, false)
+    private val binding by viewBinding(FragmentAppearanceBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener {
-            activity?.onBackPressed()
-        }
-        night_mode_tv.setText(R.string.setting_theme)
-        val currentId = defaultSharedPreferences.getInt(
-            Constants.Theme.THEME_CURRENT_ID,
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                Constants.Theme.THEME_DEFAULT_ID
-            } else {
-                Constants.Theme.THEME_AUTO_ID
+        binding.apply {
+            titleView.leftIb.setOnClickListener {
+                activity?.onBackPressed()
             }
-        )
-        night_mode_desc_tv.text = resources.getStringArray(R.array.setting_night_array_oreo)[currentId]
-        night_mode_rl.setOnClickListener {
-            singleChoice(
-                resources.getString(R.string.setting_theme),
+            nightModeTv.setText(R.string.setting_theme)
+            val currentId = defaultSharedPreferences.getInt(
+                Constants.Theme.THEME_CURRENT_ID,
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    R.array.setting_night_array
+                    Constants.Theme.THEME_DEFAULT_ID
                 } else {
-                    R.array.setting_night_array_oreo
-                },
-                currentId
-            ) { _, index ->
-                val changed = index != currentId
-                defaultSharedPreferences.putInt(Constants.Theme.THEME_CURRENT_ID, index)
-                AppCompatDelegate.setDefaultNightMode(
-                    when (index) {
-                        Constants.Theme.THEME_DEFAULT_ID -> AppCompatDelegate.MODE_NIGHT_NO
-                        Constants.Theme.THEME_NIGHT_ID -> AppCompatDelegate.MODE_NIGHT_YES
-                        Constants.Theme.THEME_AUTO_ID -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                        else -> AppCompatDelegate.MODE_NIGHT_NO
+                    Constants.Theme.THEME_AUTO_ID
+                }
+            )
+            nightModeDescTv.text = resources.getStringArray(R.array.setting_night_array_oreo)[currentId]
+            nightModeRl.setOnClickListener {
+                singleChoice(
+                    resources.getString(R.string.setting_theme),
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                        R.array.setting_night_array
+                    } else {
+                        R.array.setting_night_array_oreo
+                    },
+                    currentId
+                ) { _, index ->
+                    val changed = index != currentId
+                    defaultSharedPreferences.putInt(Constants.Theme.THEME_CURRENT_ID, index)
+                    AppCompatDelegate.setDefaultNightMode(
+                        when (index) {
+                            Constants.Theme.THEME_DEFAULT_ID -> AppCompatDelegate.MODE_NIGHT_NO
+                            Constants.Theme.THEME_NIGHT_ID -> AppCompatDelegate.MODE_NIGHT_YES
+                            Constants.Theme.THEME_AUTO_ID -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                            else -> AppCompatDelegate.MODE_NIGHT_NO
+                        }
+                    )
+                    if (changed) {
+                        requireActivity().onBackPressed()
+                        requireActivity().recreate()
                     }
-                )
-                if (changed) {
-                    requireActivity().onBackPressed()
-                    requireActivity().recreate()
                 }
             }
-        }
-        val language = Lingver.getInstance().getLanguage()
-        val languageNames = resources.getStringArray(R.array.language_names)
-        language_desc_tv.text = if (Lingver.getInstance().isFollowingSystemLocale()) {
-            getString(R.string.follow_system)
-        } else {
-            when (language) {
-                Locale.SIMPLIFIED_CHINESE.language -> {
-                    languageNames[POS_SIMPLIFY_CHINESE]
-                }
-                Locale.JAPANESE.language -> {
-                    languageNames[POS_JAPANESE]
-                }
-                Constants.Locale.Indonesian.Language -> {
-                    languageNames[POS_INDONESIA]
-                }
-                else -> {
-                    languageNames[POS_ENGLISH]
-                }
-            }
-        }
-        language_rl.setOnClickListener { showLanguageAlert() }
-        current_tv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
-        currency_rl.setOnClickListener {
-            val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
-            currencyBottom.callback = object : CurrencyBottomSheetDialogFragment.Callback {
-                override fun onCurrencyClick(currency: Currency) {
-                    current_tv?.text = getString(R.string.wallet_setting_currency_desc, currency.name, currency.symbol)
+            val language = Lingver.getInstance().getLanguage()
+            val languageNames = resources.getStringArray(R.array.language_names)
+            languageDescTv.text = if (Lingver.getInstance().isFollowingSystemLocale()) {
+                getString(R.string.follow_system)
+            } else {
+                when (language) {
+                    Locale.SIMPLIFIED_CHINESE.language -> {
+                        languageNames[POS_SIMPLIFY_CHINESE]
+                    }
+                    Locale.JAPANESE.language -> {
+                        languageNames[POS_JAPANESE]
+                    }
+                    Constants.Locale.Indonesian.Language -> {
+                        languageNames[POS_INDONESIA]
+                    }
+                    else -> {
+                        languageNames[POS_ENGLISH]
+                    }
                 }
             }
-            currencyBottom.showNow(parentFragmentManager, CurrencyBottomSheetDialogFragment.TAG)
+            languageRl.setOnClickListener { showLanguageAlert() }
+            currentTv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
+            currencyRl.setOnClickListener {
+                val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
+                currencyBottom.callback = object : CurrencyBottomSheetDialogFragment.Callback {
+                    override fun onCurrencyClick(currency: Currency) {
+                        currentTv.text = getString(R.string.wallet_setting_currency_desc, currency.name, currency.symbol)
+                    }
+                }
+                currencyBottom.showNow(parentFragmentManager, CurrencyBottomSheetDialogFragment.TAG)
+            }
         }
     }
 
