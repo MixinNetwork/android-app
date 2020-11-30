@@ -16,9 +16,9 @@ import androidx.fragment.app.FragmentManager
 import com.uber.autodispose.android.lifecycle.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.android.synthetic.main.fragment_preview.view.*
-import kotlinx.android.synthetic.main.fragment_preview_video.view.*
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentPreviewBinding
+import one.mixin.android.databinding.FragmentPreviewVideoBinding
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.loadImage
@@ -79,6 +79,11 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     private var mediaDialogView: View? = null
 
+    private var _videoBinding: FragmentPreviewVideoBinding? = null
+    private val videoBinding get() = requireNotNull(_videoBinding)
+    private var _binding: FragmentPreviewBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -94,50 +99,51 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     dismiss()
                 }
                 mixinPlayer.loadVideo(uri.toString())
-                mixinPlayer.setVideoTextureView(mediaDialogView!!.dialog_video_texture)
-                mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(requireContext()))
+                mixinPlayer.setVideoTextureView(videoBinding.dialogVideoTexture)
+                videoBinding.time.setVideoPath(uri!!.getFilePath(requireContext()))
                 Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
                     .autoDispose(this).subscribe {
                         if (mixinPlayer.duration() != 0 && mixinPlayer.isPlaying()) {
-                            mediaDialogView!!.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
+                            videoBinding.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
                         }
                     }
-                mediaDialogView!!.dialog_ok.setOnClickListener {
+                videoBinding.dialogOk.setOnClickListener {
                     action!!(uri!!)
                     dismiss()
                 }
             } else {
-                mediaDialogView!!.dialog_send_ib.setOnClickListener { action!!(uri!!); dismiss() }
-                mediaDialogView!!.dialog_iv.loadImage(uri)
+                binding.dialogSendIb.setOnClickListener { action!!(uri!!); dismiss() }
+                binding.dialogIv.loadImage(uri)
             }
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mediaDialogView = LayoutInflater.from(context).inflate(
-            if (isVideo) {
-                R.layout.fragment_preview_video
-            } else {
-                R.layout.fragment_preview
-            },
-            null,
-            false
-        )
         if (isVideo) {
-            mediaDialogView!!.dialog_play.setOnCheckedChangeListener { _, isChecked ->
+            _videoBinding = FragmentPreviewVideoBinding.inflate(LayoutInflater.from(context), null, false)
+        } else {
+            _binding = FragmentPreviewBinding.inflate(LayoutInflater.from(context), null, false)
+        }
+        mediaDialogView = if (isVideo) {
+            videoBinding.root
+        } else {
+            binding.root
+        }
+        if (isVideo) {
+            videoBinding.dialogPlay.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
                     mixinPlayer.pause()
                 } else {
                     mixinPlayer.start()
                 }
             }
-            mediaDialogView!!.time.setDelegate(this)
-            mediaDialogView!!.dialog_cancel.setOnClickListener {
+            videoBinding.time.setDelegate(this)
+            videoBinding.dialogCancel.setOnClickListener {
                 dismiss()
             }
         } else {
-            mediaDialogView!!.dialog_close_iv.setOnClickListener {
+            binding.dialogCloseIv.setOnClickListener {
                 dismiss()
             }
         }
@@ -165,7 +171,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
         override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
             val ratio = width / height.toFloat()
-            val lp = mediaDialogView!!.dialog_video_texture.layoutParams
+            val lp = videoBinding.dialogVideoTexture.layoutParams
             val screenWidth = requireContext().screenWidth()
             val screenHeight = requireContext().screenHeight()
             if (screenWidth / ratio > screenHeight) {
@@ -175,7 +181,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                 lp.width = screenWidth
                 lp.height = (screenWidth / ratio).toInt()
             }
-            mediaDialogView!!.dialog_video_texture.layoutParams = lp
+            videoBinding.dialogVideoTexture.layoutParams = lp
         }
     }
 

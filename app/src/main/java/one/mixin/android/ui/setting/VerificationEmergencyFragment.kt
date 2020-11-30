@@ -1,9 +1,7 @@
 package one.mixin.android.ui.setting
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,8 +12,10 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
-import one.mixin.android.crypto.*
-import one.mixin.android.databinding.FragmentVerificationBinding
+import one.mixin.android.crypto.CryptoPreference
+import one.mixin.android.crypto.SignalProtocol
+import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.databinding.FragmentVerificationEmergencyBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
@@ -25,12 +25,13 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import java.security.KeyPair
 
 @AndroidEntryPoint
-class VerificationEmergencyFragment : PinCodeFragment() {
+class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verification_emergency) {
     companion object {
         const val TAG = "VerificationEmergencyFragment"
         const val ARGS_VERIFICATION_ID = "args_verification_id"
@@ -55,7 +56,7 @@ class VerificationEmergencyFragment : PinCodeFragment() {
         }
     }
 
-    private val user: User? by lazy { requireArguments().getParcelable<User>(ARGS_USER) }
+    private val user: User? by lazy { requireArguments().getParcelable(ARGS_USER) }
     private val pin: String? by lazy { requireArguments().getString(ARGS_PIN) }
     private val verificationId by lazy { requireArguments().getString(ARGS_VERIFICATION_ID)!! }
     private val from by lazy { requireArguments().getInt(ARGS_FROM) }
@@ -63,23 +64,14 @@ class VerificationEmergencyFragment : PinCodeFragment() {
 
     private val viewModel by viewModels<EmergencyViewModel>()
 
-    private var _binding: FragmentVerificationBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentVerificationEmergencyBinding::bind)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentVerificationBinding.inflate(layoutInflater, container, false)
-        return binding.root
-    }
+    override fun getContentView() = binding.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.pinVerificationTitleTv.text =
             getString(R.string.setting_emergency_send_code, user?.identityNumber ?: userIdentityNumber)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     override fun clickNextFab() {

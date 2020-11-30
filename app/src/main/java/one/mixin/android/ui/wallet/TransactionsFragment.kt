@@ -23,7 +23,6 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.databinding.ViewTransactionsFragmentHeaderBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.databinding.ViewWalletTransactionsSendBottomBinding
@@ -61,8 +60,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     private var _binding: FragmentTransactionsBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var _titleBinding: ViewTitleBinding? = null
-    private val titleBinding get() = requireNotNull(_titleBinding)
     private var _headBinding: ViewTransactionsFragmentHeaderBinding? = null
     private val headBinding get() = requireNotNull(_headBinding)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
@@ -75,7 +72,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentTransactionsBinding.inflate(layoutInflater, container, false)
-        _titleBinding = ViewTitleBinding.bind(binding.titleView)
         return binding.root
     }
 
@@ -86,7 +82,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.apply {
+        binding.titleView.apply {
             titleTv.text = asset.name
             leftIb.setOnClickListener { activity?.onBackPressed() }
             rightAnimator.setOnClickListener {
@@ -137,7 +133,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 if (!isAdded) return@post
 
                 bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
-                    height = requireContext().screenHeight() - titleBinding.root.height - topLl.height - groupInfoMemberTitleLayout.height
+                    height = requireContext().screenHeight() - binding.titleView.height - topLl.height - groupInfoMemberTitleLayout.height
                 }
             }
         }
@@ -178,7 +174,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _titleBinding = null
         _headBinding = null
         _bottomBinding = null
         _bottomSendBinding = null

@@ -3,7 +3,6 @@ package one.mixin.android.ui.landing
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
@@ -53,7 +52,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
 @AndroidEntryPoint
-class VerificationFragment : PinCodeFragment() {
+class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     companion object {
         const val TAG: String = "VerificationFragment"
         private const val ARGS_ID = "args_id"
@@ -88,8 +87,8 @@ class VerificationFragment : PinCodeFragment() {
     private var hasEmergencyContact = false
 
     private val binding by viewBinding(FragmentVerificationBinding::bind)
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_verification, container, false) as ViewGroup
+
+    override fun getContentView() = binding.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -247,7 +246,7 @@ class VerificationFragment : PinCodeFragment() {
                     } else {
                         hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
                         hideLoading()
-                        binding.pinVerificationView?.clear()
+                        binding.pinVerificationView.clear()
                         startCountDown()
                     }
                 },
@@ -303,6 +302,6 @@ class VerificationFragment : PinCodeFragment() {
         context?.let {
             binding.verificationResendTv.setTextColor(ContextCompat.getColor(it, R.color.colorBlue))
         }
-        binding.verificationNeedHelpTv?.isVisible = true
+        binding.verificationNeedHelpTv.isVisible = true
     }
 }

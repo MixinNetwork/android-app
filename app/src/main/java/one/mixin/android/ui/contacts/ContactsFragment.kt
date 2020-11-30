@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.WorkManager
@@ -17,9 +16,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
-import kotlinx.android.synthetic.main.fragment_contacts.*
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentContactsBinding
 import one.mixin.android.databinding.ViewContactHeaderBinding
 import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.extension.addFragment
@@ -37,6 +36,7 @@ import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.worker.RefreshContactWorker
@@ -44,7 +44,7 @@ import java.util.Collections
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ContactsFragment : BaseFragment() {
+class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -61,31 +61,28 @@ class ContactsFragment : BaseFragment() {
         fun newInstance() = ContactsFragment()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? =
-        inflater.inflate(R.layout.fragment_contacts, container, false)
+    private val binding by viewBinding(FragmentContactsBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        contact_recycler_view.adapter = contactAdapter
-        contact_recycler_view.setHasFixedSize(true)
-        contact_recycler_view.layoutManager = LinearLayoutManager(context)
-        contact_recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
-        val header = ViewContactHeaderBinding.inflate(LayoutInflater.from(context), contact_recycler_view, false)
-        contactAdapter.setHeader(header)
-        val footer = ViewContactListEmptyBinding.inflate(LayoutInflater.from(context), contact_recycler_view, false)
-        contactAdapter.setFooter(footer)
-        if (!hasContactPermission()) {
-            contactAdapter.showEmptyFooter()
-        } else {
-            contactAdapter.hideEmptyFooter()
+        binding.apply {
+            contactRecyclerView.adapter = contactAdapter
+            contactRecyclerView.setHasFixedSize(true)
+            contactRecyclerView.layoutManager = LinearLayoutManager(context)
+            contactRecyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
+            val header = ViewContactHeaderBinding.inflate(LayoutInflater.from(context), contactRecyclerView, false)
+            contactAdapter.setHeader(header)
+            val footer = ViewContactListEmptyBinding.inflate(LayoutInflater.from(context), contactRecyclerView, false)
+            contactAdapter.setFooter(footer)
+            if (!hasContactPermission()) {
+                contactAdapter.showEmptyFooter()
+            } else {
+                contactAdapter.hideEmptyFooter()
+            }
+            contactAdapter.setContactListener(mContactListener)
+            titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
+            titleView.rightAnimator.setOnClickListener { SettingActivity.show(requireContext()) }
         }
-        contactAdapter.setContactListener(mContactListener)
-        title_view.leftIb.setOnClickListener { activity?.onBackPressed() }
-        title_view.rightAnimator.setOnClickListener { SettingActivity.show(requireContext()) }
 
         if (hasContactPermission() &&
             !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)

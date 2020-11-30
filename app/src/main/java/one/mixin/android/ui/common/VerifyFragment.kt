@@ -1,18 +1,16 @@
 package one.mixin.android.ui.common
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_verify_pin.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.databinding.FragmentVerifyPinBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.tapVibrate
@@ -23,12 +21,13 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class VerifyFragment : BaseFragment(), PinView.OnPinListener {
+class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPinListener {
 
     companion object {
         val TAG = VerifyFragment::class.java.simpleName
@@ -48,34 +47,39 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
     @Inject
     lateinit var accountRepository: AccountRepository
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_verify_pin, container, false)
+    private val binding by viewBinding(FragmentVerifyPinBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        close_iv.setOnClickListener { activity?.onBackPressed() }
-        pin.setListener(this)
-        keyboard.setKeyboardKeys(KEYS)
-        keyboard.setOnClickKeyboardListener(keyboardListener)
-        keyboard.animate().translationY(0f).start()
+        binding.apply {
+            closeIv.setOnClickListener { activity?.onBackPressed() }
+            pin.setListener(this@VerifyFragment)
+            keyboard.setKeyboardKeys(KEYS)
+            keyboard.setOnClickKeyboardListener(keyboardListener)
+            keyboard.animate().translationY(0f).start()
+        }
     }
 
     override fun onUpdate(index: Int) {
-        if (index == pin.getCount()) {
-            verify(pin.code())
+        if (index == binding.pin.getCount()) {
+            verify(binding.pin.code())
         }
     }
 
     private fun showLoading() {
-        verify_fab.visibility = VISIBLE
-        verify_fab.show()
-        verify_cover.visibility = VISIBLE
+        binding.apply {
+            verifyFab.visibility = VISIBLE
+            verifyFab.show()
+            verifyCover.visibility = VISIBLE
+        }
     }
 
     private fun hideLoading() {
-        verify_fab?.hide()
-        verify_fab?.visibility = GONE
-        verify_cover?.visibility = GONE
+        binding.apply {
+            verifyFab.hide()
+            verifyFab.visibility = GONE
+            verifyCover.visibility = GONE
+        }
     }
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
@@ -84,7 +88,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
             invokeNetwork = { accountRepository.verifyPin(pinCode) },
             successBlock = {
                 hideLoading()
-                pin?.clear()
+                binding.pin.clear()
                 context?.updatePinCheck()
                 activity?.supportFragmentManager?.inTransaction {
                     remove(this@VerifyFragment)
@@ -97,7 +101,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
                 }
             },
             failureBlock = {
-                pin?.clear()
+                binding.pin.clear()
                 if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                     hideLoading()
                     toast(R.string.error_pin_check_too_many_request)
@@ -113,7 +117,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
             },
             exceptionBlock = {
                 hideLoading()
-                pin?.clear()
+                binding.pin.clear()
                 return@handleMixinResponse false
             }
         )
@@ -123,18 +127,18 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                pin.delete()
+                binding.pin.delete()
             } else {
-                pin.append(value)
+                binding.pin.append(value)
             }
         }
 
         override fun onLongClick(position: Int, value: String) {
             context?.tapVibrate()
             if (position == 11) {
-                pin.clear()
+                binding.pin.clear()
             } else {
-                pin.append(value)
+                binding.pin.append(value)
             }
         }
     }

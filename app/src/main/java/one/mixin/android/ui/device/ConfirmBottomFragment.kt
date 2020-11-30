@@ -12,7 +12,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_confirm.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,6 +22,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.IdentityKeyUtil
 import one.mixin.android.crypto.ProvisionMessage
 import one.mixin.android.crypto.ProvisioningCipher
+import one.mixin.android.databinding.FragmentConfirmBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -114,40 +114,53 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private var _binding: FragmentConfirmBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_confirm, null)
+        _binding = FragmentConfirmBinding.bind(View.inflate(context, R.layout.fragment_confirm, null))
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        contentView.confirm.setOnClickListener {
-            refreshUI(true)
-            isCancelable = false
-            val uri = Uri.parse(url)
-            val ephemeralId = uri.getQueryParameter("id")
-            if (ephemeralId == null) {
-                context?.toast(R.string.setting_desktop_sigin_failed)
-                dismiss()
-                return@setOnClickListener
+        binding.apply {
+            confirm.setOnClickListener {
+                refreshUI(true)
+                isCancelable = false
+                val uri = Uri.parse(url)
+                val ephemeralId = uri.getQueryParameter("id")
+                if (ephemeralId == null) {
+                    context?.toast(R.string.setting_desktop_sigin_failed)
+                    dismiss()
+                    return@setOnClickListener
+                }
+                sanitizer.parseUrl(url)
+                val publicKeyEncoded = sanitizer.getValue("pub_key")
+                authDevice(ephemeralId, publicKeyEncoded)
             }
-            sanitizer.parseUrl(url)
-            val publicKeyEncoded = sanitizer.getValue("pub_key")
-            authDevice(ephemeralId, publicKeyEncoded)
+            close.setOnClickListener {
+                dismiss()
+            }
+            cancel.setOnClickListener {
+                dismiss()
+            }
         }
-        contentView.close.setOnClickListener {
-            dismiss()
-        }
-        contentView.cancel.setOnClickListener {
-            dismiss()
-        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun refreshUI(showPb: Boolean) {
         if (!isAdded) return
-        contentView.progress.isVisible = showPb
-        contentView.confirm.isInvisible = showPb
-        contentView.cancel.isInvisible = showPb
-        contentView.close.isInvisible = showPb
+        binding.apply {
+            progress.isVisible = showPb
+            confirm.isInvisible = showPb
+            cancel.isInvisible = showPb
+            close.isInvisible = showPb
+        }
     }
 
     private suspend fun encryptKey(

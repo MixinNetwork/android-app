@@ -23,7 +23,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,6 +35,7 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
+import one.mixin.android.databinding.FragmentBottomSheetBinding
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
@@ -94,6 +94,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val linkViewModel by viewModels<BottomSheetViewModel>()
 
+    private var _binding: FragmentBottomSheetBinding? = null
+    private val binding get() = requireNotNull(_binding)
+
     private lateinit var code: String
     private lateinit var contentView: View
 
@@ -122,7 +125,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
-        contentView = View.inflate(context, R.layout.fragment_bottom_sheet, null)
+        _binding = FragmentBottomSheetBinding.bind(View.inflate(context, R.layout.fragment_bottom_sheet, null))
+        contentView = binding.root
         dialog.setContentView(contentView)
         val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
@@ -575,6 +579,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     override fun onDetach() {
         super.onDetach()
         if (activity is UrlInterpreterActivity) {
@@ -665,15 +674,19 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun showError(@StringRes errorRes: Int = R.string.link_error) {
-        contentView.link_error_info.setText(errorRes)
-        contentView.link_loading.visibility = GONE
-        contentView.link_error_info.visibility = VISIBLE
+        binding.apply {
+            linkErrorInfo.setText(errorRes)
+            linkLoading.visibility = GONE
+            linkErrorInfo.visibility = VISIBLE
+        }
     }
 
     private fun showError(error: String) {
-        contentView.link_error_info.text = error
-        contentView.link_loading.visibility = GONE
-        contentView.link_error_info.visibility = VISIBLE
+        binding.apply {
+            linkErrorInfo.text = error
+            linkLoading.visibility = GONE
+            linkErrorInfo.visibility = VISIBLE
+        }
     }
 
     private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {

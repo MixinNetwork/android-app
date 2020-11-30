@@ -35,7 +35,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.mention_location.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -136,42 +135,44 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         binding = ActivityLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        if (location != null) {
-            motion.loadLayoutDescription(R.xml.scene_location_none)
-        }
-        MapsInitializer.initialize(MixinApplication.appContext)
-        map_view.onCreate(savedInstanceState)
-        map_view.getMapAsync(this)
-        binding.icBack.setOnClickListener {
-            if (binding.searchVa.displayedChild == 1) {
-                binding.searchVa.showPrevious()
-                binding.searchEt.text = null
-                binding.searchEt.hideKeyboard()
-                location_empty.isVisible = false
-            } else {
-                finish()
+        binding.apply {
+            if (location != null) {
+                mentionLocation.motion.loadLayoutDescription(R.xml.scene_location_none)
             }
-        }
-        binding.icSearch.isVisible = location == null
-        binding.icLocationShared.isVisible = location != null
-        binding.mentionLocation.locationPb.isVisible = location == null
-        binding.locationGo.isVisible = location != null
-        location_recycler.isVisible = location == null
-        binding.icSearch.setOnClickListener {
-            binding.searchVa.showNext()
-            binding.searchEt.requestFocus()
-            binding.searchEt.showKeyboard()
-        }
-        my_location.setOnClickListener {
-            selfPosition?.let { selfPosition ->
-                moveCamera(selfPosition)
+            MapsInitializer.initialize(MixinApplication.appContext)
+            mentionLocation.mapView.onCreate(savedInstanceState)
+            mentionLocation.mapView.getMapAsync(this@LocationActivity)
+            icBack.setOnClickListener {
+                if (searchVa.displayedChild == 1) {
+                    searchVa.showPrevious()
+                    searchEt.text = null
+                    searchEt.hideKeyboard()
+                    mentionLocation.locationEmpty.isVisible = false
+                } else {
+                    finish()
+                }
             }
-        }
-        binding.icClose.setOnClickListener {
-            binding.searchVa.showPrevious()
-            binding.searchEt.text = null
-            binding.searchEt.hideKeyboard()
-            location_empty.isVisible = false
+            icSearch.isVisible = location == null
+            icLocationShared.isVisible = location != null
+            mentionLocation.locationPb.isVisible = location == null
+            locationGo.isVisible = location != null
+            mentionLocation.locationRecycler.isVisible = location == null
+            icSearch.setOnClickListener {
+                searchVa.showNext()
+                searchEt.requestFocus()
+                searchEt.showKeyboard()
+            }
+            mentionLocation.myLocation.setOnClickListener {
+                selfPosition?.let { selfPosition ->
+                    moveCamera(selfPosition)
+                }
+            }
+            icClose.setOnClickListener {
+                searchVa.showPrevious()
+                searchEt.text = null
+                searchEt.hideKeyboard()
+                mentionLocation.locationEmpty.isVisible = false
+            }
         }
         binding.searchEt.addTextChangedListener(textWatcher)
         binding.searchEt.setOnEditorActionListener(
@@ -227,7 +228,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 }
             },
             {
-                location_recycler.adapter = locationAdapter
+                binding.mentionLocation.locationRecycler.adapter = locationAdapter
             }
         )
     }
@@ -237,7 +238,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             binding.searchVa.showPrevious()
             binding.searchEt.text = null
             binding.searchEt.hideKeyboard()
-            location_empty.isVisible = false
+            binding.mentionLocation.locationEmpty.isVisible = false
         } else {
             super.onBackPressed()
         }
@@ -257,7 +258,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 }
             }
         if (mapsInitialized) {
-            map_view.onResume()
+            binding.mentionLocation.mapView.onResume()
         }
     }
 
@@ -288,21 +289,21 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         onResumeCalled = false
         getSystemService<LocationManager>()?.removeUpdates(mLocationListener)
         if (mapsInitialized) {
-            map_view.onPause()
+            binding.mentionLocation.mapView.onPause()
         }
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
         if (mapsInitialized) {
-            map_view.onLowMemory()
+            binding.mentionLocation.mapView.onLowMemory()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if (mapsInitialized) {
-            map_view.onDestroy()
+            binding.mentionLocation.mapView.onDestroy()
         }
     }
 
@@ -335,7 +336,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
         mapsInitialized = true
         if (onResumeCalled) {
-            map_view.onResume()
+            binding.mentionLocation.mapView.onResume()
         }
     }
 
@@ -362,28 +363,28 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
                 val cameraPosition = googleMap.cameraPosition
                 forceUpdate = CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
-                if (!ic_marker.isVisible && !isInit) {
-                    ic_marker.isVisible = true
+                if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
+                    binding.mentionLocation.icMarker.isVisible = true
                     locationSearchAdapter.setMark()
                 }
             }
             markerAnimatorSet?.cancel()
             markerAnimatorSet = AnimatorSet()
-            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(ic_marker, View.TRANSLATION_Y, -8.dp.toFloat()))
+            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, -8.dp.toFloat()))
             markerAnimatorSet?.duration = 200
             markerAnimatorSet?.start()
         }
         googleMap.setOnCameraMoveListener {}
         googleMap.setOnMarkerClickListener { marker ->
             locationSearchAdapter.setMark(marker.zIndex)
-            ic_marker.isVisible = true
+            binding.mentionLocation.icMarker.isVisible = true
             false
         }
 
         googleMap.setOnCameraIdleListener {
             markerAnimatorSet?.cancel()
             markerAnimatorSet = AnimatorSet()
-            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(ic_marker, View.TRANSLATION_Y, 0f))
+            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, 0f))
             markerAnimatorSet?.duration = 200
             markerAnimatorSet?.start()
             googleMap.cameraPosition.target.let { lastLang ->
@@ -399,7 +400,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private var lastSearchJob: Job? = null
     fun search(latlng: LatLng) {
-        location_pb.isVisible = locationAdapter.venues == null
+        binding.mentionLocation.locationPb.isVisible = locationAdapter.venues == null
         if (lastSearchJob != null && lastSearchJob?.isActive == true) {
             lastSearchJob?.cancel()
         }
@@ -409,7 +410,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             result.response?.venues.let { list ->
                 list.let { data ->
                     locationAdapter.venues = data
-                    location_pb.isVisible = data == null
+                    binding.mentionLocation.locationPb.isVisible = data == null
                 }
             }
         }
@@ -421,7 +422,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private var lastSearchQueryJob: Job? = null
     fun search(query: String) {
-        location_pb.isVisible = locationSearchAdapter.venues == null
+        binding.mentionLocation.locationPb.isVisible = locationSearchAdapter.venues == null
         val currentPosition = this.currentPosition ?: return
         if (lastSearchQueryJob != null && lastSearchQueryJob?.isActive == true) {
             lastSearchQueryJob?.cancel()
@@ -430,9 +431,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
             result.response?.venues.let { data ->
                 locationSearchAdapter.venues = data
-                location_empty.isVisible = data.isNullOrEmpty()
-                location_empty_tv.text = getString(R.string.location_empty, query)
-                location_pb.isVisible = data == null
+                binding.mentionLocation.apply {
+                    locationEmpty.isVisible = data.isNullOrEmpty()
+                    locationEmptyTv.text = getString(R.string.location_empty, query)
+                    locationPb.isVisible = data == null
+                }
                 googleMap?.clear()
                 var south: Double? = null
                 var west: Double? = null
@@ -487,13 +490,13 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         override fun afterTextChanged(s: Editable?) {
             s.notEmptyWithElse(
                 { charSequence ->
-                    location_recycler.adapter = locationSearchAdapter
+                    binding.mentionLocation.locationRecycler.adapter = locationSearchAdapter
                     val content = charSequence.toString()
                     locationSearchAdapter.keyword = content
                     search(content)
                 },
                 {
-                    location_recycler.adapter = locationAdapter
+                    binding.mentionLocation.locationRecycler.adapter = locationAdapter
                     if (lastSearchQueryJob?.isActive == true) {
                         lastSearchQueryJob?.cancel()
                     }

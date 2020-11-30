@@ -2,40 +2,61 @@ package one.mixin.android.ui.common
 
 import android.os.Bundle
 import android.view.View
-import kotlinx.android.synthetic.main.fragment_verification.*
+import androidx.annotation.LayoutRes
+import com.github.jorgecastilloprz.FABProgressCircle
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.widget.Keyboard
 
-abstract class FabLoadingFragment : BaseFragment() {
+abstract class FabLoadingFragment : BaseFragment {
+    constructor() : super()
+    constructor(@LayoutRes contentLayoutId: Int) : super(contentLayoutId)
+
+    abstract fun getContentView(): View
+    protected val _contentView get() = getContentView()
+
+    protected val backIv: View by lazy {
+        _contentView.findViewById(R.id.back_iv)
+    }
+    protected val verificationKeyboard: Keyboard by lazy {
+        _contentView.findViewById(R.id.verification_keyboard)
+    }
+    protected val verificationCover: View by lazy {
+        _contentView.findViewById(R.id.verification_cover)
+    }
+    protected val verificationNextFab: FABProgressCircle by lazy {
+        _contentView.findViewById(R.id.verification_next_fab)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        back_iv.setOnClickListener { activity?.onBackPressed() }
-        verification_keyboard.setKeyboardKeys(Constants.KEYS)
-        verification_cover.isClickable = true
+        backIv.setOnClickListener { activity?.onBackPressed() }
+        verificationKeyboard.setKeyboardKeys(Constants.KEYS)
+        verificationCover.isClickable = true
     }
 
     protected fun handleError(t: Throwable) {
         if (!isAdded) return
 
-        verification_next_fab.hide()
-        verification_cover.visibility = View.GONE
+        verificationNextFab.hide()
+        verificationCover.visibility = View.GONE
         ErrorHandler.handleError(t)
     }
 
     protected fun showLoading() {
         if (!isAdded) return
 
-        verification_next_fab.visibility = View.VISIBLE
-        verification_next_fab.show()
-        verification_cover.visibility = View.VISIBLE
+        verificationNextFab.visibility = View.VISIBLE
+        verificationNextFab.show()
+        verificationCover.visibility = View.VISIBLE
     }
 
     protected open fun hideLoading() {
         if (!isAdded) return
 
-        verification_next_fab.hide()
-        verification_next_fab.visibility = View.GONE
-        verification_cover.visibility = View.GONE
+        verificationNextFab.hide()
+        verificationNextFab.visibility = View.GONE
+        verificationCover.visibility = View.GONE
     }
 }

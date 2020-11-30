@@ -3,15 +3,14 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
@@ -22,10 +21,11 @@ import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.FabLoadingFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 
 @AndroidEntryPoint
-class VerificationEmergencyIdFragment : FabLoadingFragment() {
+class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_verification_emergency_id) {
     companion object {
         const val TAG = "VerificationEmergencyIdFragment"
         const val ARGS_PHONE = "args_phone"
@@ -41,13 +41,9 @@ class VerificationEmergencyIdFragment : FabLoadingFragment() {
 
     private val viewModel by viewModels<EmergencyViewModel>()
 
-    private var _binding: FragmentVerificationEmergencyIdBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentVerificationEmergencyIdBinding::bind)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentVerificationEmergencyIdBinding.inflate(layoutInflater, container, false)
-        return binding.root
-    }
+    override fun getContentView() = binding.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

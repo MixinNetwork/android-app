@@ -55,6 +55,7 @@
                 tools:listitem="@layout/item_chat_text" />
 
             <include
+                android:id="@+id/link_view"
                 layout="@layout/view_link_state"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="MissingConstraints" />
