@@ -19,8 +19,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositQrBottomBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
-import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
@@ -58,10 +56,6 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
     private var _binding: FragmentDepositQrBottomBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var _titleBinding: ViewRoundTitleBinding? = null
-    private val titleBinding get() = requireNotNull(_titleBinding)
-    private var _badgeBinding: ViewBadgeCircleImageBinding? = null
-    private val badgeBinding get() = requireNotNull(_badgeBinding)
 
     private val asset: AssetItem by lazy { requireArguments().getParcelable(ARGS_ASSET)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
@@ -70,24 +64,22 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         _binding = FragmentDepositQrBottomBinding.bind(View.inflate(context, R.layout.fragment_deposit_qr_bottom, null))
-        _titleBinding = ViewRoundTitleBinding.bind(binding.title)
-        _badgeBinding = ViewBadgeCircleImageBinding.bind(binding.badgeView)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
         binding.apply {
-            titleBinding.rightIv.setOnClickListener { dismiss() }
+            title.rightIv.setOnClickListener { dismiss() }
             when (type) {
                 TYPE_TAG -> {
-                    titleBinding.titleTv.text = getString(R.string.account_memo)
+                    title.titleTv.text = getString(R.string.account_memo)
                     addrTv.text = asset.tag
                 }
                 else -> {
-                    titleBinding.titleTv.text = getString(R.string.address)
+                    title.titleTv.text = getString(R.string.address)
                     addrTv.text = asset.destination
                 }
             }
-            badgeBinding.apply {
+            badgeView.apply {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
@@ -149,7 +141,5 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _titleBinding = null
-        _badgeBinding = null
     }
 }

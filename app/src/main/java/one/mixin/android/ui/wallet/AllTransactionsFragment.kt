@@ -18,7 +18,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.navigate
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
@@ -37,25 +36,22 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private var _binding: FragmentAllTransactionsBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var _titleBinding: ViewTitleBinding? = null
-    private val titleBinding get() = requireNotNull(_titleBinding)
 
     private val adapter = SnapshotPagedAdapter()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentAllTransactionsBinding.inflate(layoutInflater, container, false)
-        _titleBinding = ViewTitleBinding.bind(binding.titleView)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.apply {
-            leftIb.setOnClickListener { view.findNavController().navigateUp() }
-            rightAnimator.setOnClickListener { showFiltersSheet() }
-        }
         adapter.listener = this
         binding.apply {
+            titleView.apply {
+                leftIb.setOnClickListener { view.findNavController().navigateUp() }
+                rightAnimator.setOnClickListener { showFiltersSheet() }
+            }
             transactionsRv.itemAnimator = null
             transactionsRv.adapter = adapter
             transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
@@ -85,7 +81,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _titleBinding = null
     }
 
     override fun <T> onNormalItemClick(item: T) {

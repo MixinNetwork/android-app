@@ -6,7 +6,6 @@ import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetKeyBottomBinding
-import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -25,8 +24,6 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private var _binding: FragmentAssetKeyBottomBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var _titleBinding: ViewRoundTitleBinding? = null
-    private val titleBinding get() = requireNotNull(_titleBinding)
 
     private val asset: AssetItem by lazy {
         requireArguments().getParcelable(ARGS_ASSET)!!
@@ -36,15 +33,14 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         _binding = FragmentAssetKeyBottomBinding.bind(View.inflate(context, R.layout.fragment_asset_key_bottom, null))
-        _titleBinding = ViewRoundTitleBinding.bind(binding.titleView)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        titleBinding.apply {
-            rightIv.setOnClickListener { dismiss() }
-            titleTv.text = asset.name
-        }
         binding.apply {
+            titleView.apply {
+                rightIv.setOnClickListener { dismiss() }
+                titleTv.text = asset.name
+            }
             titleView.showBadgeCircleView(asset)
             symbolAsTv.text = asset.symbol
             chainAsTv.text = asset.chainName
@@ -55,6 +51,5 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _titleBinding = null
     }
 }
