@@ -49,6 +49,8 @@ class ScanFragment : BaseCameraxFragment() {
 
     private val binding by viewBinding(FragmentScanBinding::bind)
 
+    override fun getContentView(): View = binding.root
+
     @SuppressLint("RestrictedApi")
     override fun onFlashClick() {
         if (camera?.cameraInfo?.hasFlashUnit() == false) {

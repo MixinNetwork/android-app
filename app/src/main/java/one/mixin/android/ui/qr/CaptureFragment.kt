@@ -62,6 +62,8 @@ class CaptureFragment : BaseCameraxFragment() {
 
     private val binding by viewBinding(FragmentCaptureBinding::bind)
 
+    override fun getContentView(): View = binding.root
+
     @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
