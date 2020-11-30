@@ -92,7 +92,7 @@ sealed class ForwardAction(
     }
 }
 
-inline fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {
+fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {
     list.add(this)
 }
 
