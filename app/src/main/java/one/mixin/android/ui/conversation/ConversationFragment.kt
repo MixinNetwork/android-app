@@ -1069,11 +1069,7 @@ class ConversationFragment() :
         if (aodWakeLock.isHeld) {
             aodWakeLock.release()
         }
-        super.onStop()
-    }
-
-    override fun onDestroyView() {
-        binding.chatRv?.let { rv ->
+        binding.chatRv.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
                 if (vh != null && vh is BaseViewHolder) {
@@ -1081,6 +1077,10 @@ class ConversationFragment() :
                 }
             }
         }
+        super.onStop()
+    }
+
+    override fun onDestroyView() {
         if (isAdded) {
             chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
