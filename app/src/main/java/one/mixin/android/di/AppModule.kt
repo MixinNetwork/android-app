@@ -81,6 +81,10 @@ import kotlin.math.abs
 @Module(includes = [(BaseDbModule::class)])
 object AppModule {
 
+    private val xServerTime = "X-Server-Time"
+    private val xRequestId = "X-Request-Id"
+    private val authorization = "Authorization"
+
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
     private val API_UA = (
         "Mixin/" + BuildConfig.VERSION_NAME +
@@ -122,12 +126,14 @@ object AppModule {
         builder.dns(DNS)
 
         builder.addInterceptor { chain ->
+            val requestId = UUID.randomUUID().toString()
             val sourceRequest = chain.request()
             val request = sourceRequest.newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
                 .addHeader("Mixin-Device-Id", getDeviceId(resolver))
-                .addHeader("Authorization", "Bearer ${Session.signToken(Session.getAccount(), sourceRequest)}")
+                .addHeader(xRequestId, requestId)
+                .addHeader(authorization, "Bearer ${Session.signToken(Session.getAccount(), sourceRequest, requestId)}")
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
                 var response = try {
@@ -153,10 +159,12 @@ object AppModule {
                 var jwtResult: JwtResult? = null
                 response.body?.run {
                     val bytes = this.bytes()
-                    val contentType = this.contentType()
-                    val body = bytes.toResponseBody(contentType)
+                    val body = bytes.toResponseBody(this.contentType())
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
+                    if (request.header(xRequestId) != response.header(xRequestId)) {
+                        throw ServerErrorException(response.code)
+                    }
                     val mixinResponse = try {
                         GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
                     } catch (e: JsonSyntaxException) {
@@ -167,7 +175,7 @@ object AppModule {
                         MixinApplication.get().gotoOldVersionAlert()
                         return@run
                     } else if (mixinResponse.errorCode != AUTHENTICATION) return@run
-                    val authorization = response.request.header("Authorization")
+                    val authorization = response.request.header(authorization)
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
                         val jwt = authorization.substring(7)
                         jwtResult = Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)
@@ -178,7 +186,7 @@ object AppModule {
                 }
 
                 if (MixinApplication.get().onlining.get()) {
-                    response.header("X-Server-Time")?.toLong()?.let { serverTime ->
+                    response.header(xServerTime)?.toLong()?.let { serverTime ->
                         val currentTime = System.currentTimeMillis()
                         if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= ALLOW_INTERVAL) {
                             MixinApplication.get().gotoTimeWrong(serverTime)

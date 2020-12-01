@@ -30,7 +30,6 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.security.Key
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
@@ -149,7 +148,7 @@ object Session {
 
     internal val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
 
-    fun signToken(acct: Account?, request: Request, key: Key? = getJwtKey(true)): String {
+    fun signToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getJwtKey(true)): String {
         if (acct == null) {
             return ""
         }
@@ -168,7 +167,7 @@ object Session {
         return Jwts.builder()
             .setClaims(
                 ConcurrentHashMap<String, Any>().apply {
-                    put(Claims.ID, UUID.randomUUID().toString())
+                    put(Claims.ID, xRequestId)
                     put(Claims.EXPIRATION, expire)
                     put(Claims.ISSUED_AT, iat)
                     put("uid", acct.userId)
