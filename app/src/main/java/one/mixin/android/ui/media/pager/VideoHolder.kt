@@ -1,6 +1,7 @@
 package one.mixin.android.ui.media.pager
 
 import android.content.Context
+import android.os.Build
 import android.util.LruCache
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -44,6 +45,10 @@ class VideoHolder(
     ) {
         val context = itemView.context
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+            binding.playerView.playerControlView.fullscreenIv.isVisible = false
+        }
 
         binding.playerView.playerControlView.closeIv.setOnClickListener {
             mediaPagerAdapterListener.finishAfterTransition()
