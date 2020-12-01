@@ -34,7 +34,7 @@ class BackupJob(private val force: Boolean = false) : BaseJob(
         } else {
             PRIORITY_BACKGROUND
         }
-    ).addTags(GROUP).requireNetwork().persist()
+    ).addTags(GROUP).persist()
 ) {
 
     companion object {
