@@ -59,7 +59,6 @@ class SingleFriendSelectFragmentTest {
                 .check(matches(withText(ctx.getString(R.string.transfer_to))))
 
             onView(withId(R.id.search_et))
-                .check(matches(ViewMatchers.isFocused()))
                 .check(matches(ViewMatchers.withHint(ctx.getString(R.string.contact_search_hint))))
                 .check(matches(withText("")))
         }
