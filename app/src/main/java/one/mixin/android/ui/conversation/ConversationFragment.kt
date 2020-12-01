@@ -1765,7 +1765,9 @@ class ConversationFragment() :
         if (isAdded) {
             val messageItem = binding.chatControl.replyView.messageItem
             if (binding.chatControl.replyView.isVisible) {
-                binding.chatControl.replyView.animateHeight(53.dp, 0)
+                lifecycleScope.launch {
+                    binding.chatControl.replyView.animateHeight(53.dp, 0)
+                }
                 binding.chatControl.replyView.messageItem = null
             }
             return messageItem
