@@ -13,7 +13,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentTransactionFiltersBinding
-import one.mixin.android.databinding.ViewRoundTitleBinding
 import one.mixin.android.event.RefreshSnapshotEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
@@ -40,8 +39,6 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
 
     private var _filterBinding: FragmentTransactionFiltersBinding? = null
     private val filterBinding get() = requireNotNull(_filterBinding)
-    private var _filterTitleBinding: ViewRoundTitleBinding? = null
-    private val filterTitleBinding get() = requireNotNull(_filterTitleBinding)
 
     protected fun showFiltersSheet() {
         filterBinding.apply {
@@ -101,9 +98,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         )
 
         _filterBinding = FragmentTransactionFiltersBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null))
-        _filterTitleBinding = ViewRoundTitleBinding.bind(filterBinding.filtersTitle)
         filterBinding.apply {
-            filterTitleBinding.rightIv.setOnClickListener { filtersSheet.dismiss() }
+            filtersTitle.rightIv.setOnClickListener { filtersSheet.dismiss() }
             applyTv.setOnClickListener { onApplyClick() }
             filterFlow.setOnCheckedListener(
                 object : CheckedFlowLayout.OnCheckedListener {
@@ -131,7 +127,6 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _filterBinding = null
-        _filterTitleBinding = null
     }
 
     companion object {

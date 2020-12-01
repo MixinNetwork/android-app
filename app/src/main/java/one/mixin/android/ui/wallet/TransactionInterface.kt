@@ -184,7 +184,7 @@ interface TransactionInterface {
                     receiverTv.text = snapshot.transactionHash
                     transactionStatus.isVisible = true
                     transactionStatusTv.text =
-                        contentBinding.root.context.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
+                        fragment.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
                 }
                 SnapshotType.transfer.name -> {
                     if (isPositive) {

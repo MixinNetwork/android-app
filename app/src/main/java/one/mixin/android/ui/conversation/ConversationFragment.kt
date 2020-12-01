@@ -161,6 +161,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
@@ -879,16 +880,12 @@ class ConversationFragment() :
         recipient = requireArguments().getParcelable(RECIPIENT)
     }
 
-    private var _binding: FragmentConversationBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentConversationBinding::bind)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentConversationBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    ): View = inflater.inflate(R.layout.fragment_conversation, container, false)
 
     override fun getContentView(): View = binding.root
 
@@ -1060,8 +1057,8 @@ class ConversationFragment() :
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
         }
-        if (binding.chatControl?.isRecording == true) {
-            binding.chatControl?.cancelExternal()
+        if (binding.chatControl.isRecording) {
+            binding.chatControl.cancelExternal()
         }
         if (wakeLock.isHeld) {
             wakeLock.release()
@@ -1069,11 +1066,7 @@ class ConversationFragment() :
         if (aodWakeLock.isHeld) {
             aodWakeLock.release()
         }
-        super.onStop()
-    }
-
-    override fun onDestroyView() {
-        binding.chatRv?.let { rv ->
+        binding.chatRv.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
                 if (vh != null && vh is BaseViewHolder) {
@@ -1081,10 +1074,13 @@ class ConversationFragment() :
                 }
             }
         }
+        super.onStop()
+    }
+
+    override fun onDestroyView() {
         if (isAdded) {
             chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
-        _binding = null
         super.onDestroyView()
     }
 
@@ -1769,7 +1765,9 @@ class ConversationFragment() :
         if (isAdded) {
             val messageItem = binding.chatControl.replyView.messageItem
             if (binding.chatControl.replyView.isVisible) {
-                binding.chatControl.replyView.animateHeight(53.dp, 0)
+                lifecycleScope.launch {
+                    binding.chatControl.replyView.animateHeight(53.dp, 0)
+                }
                 binding.chatControl.replyView.messageItem = null
             }
             return messageItem

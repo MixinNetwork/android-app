@@ -21,7 +21,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferOutBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.notNullWithElse
@@ -72,8 +71,6 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
 
     private var _binding: FragmentTransferOutBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var _titleBinding: ViewTitleBinding? = null
-    private val titleBinding get() = requireNotNull(_titleBinding)
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
@@ -81,13 +78,12 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         _binding = FragmentTransferOutBinding.bind(View.inflate(context, R.layout.fragment_transfer_out, null))
-        _titleBinding = ViewTitleBinding.bind(binding.titleView)
         contentView = binding.root
         binding.apply {
             ph.updateLayoutParams<ViewGroup.LayoutParams> {
                 height = requireContext().statusBarHeight()
             }
-            titleBinding.leftIb.setOnClickListener { dismiss() }
+            titleView.leftIb.setOnClickListener { dismiss() }
             transactionsRv.adapter = adapter
             transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
             transactionsRv.setOnScrollChangeListener { list, _, _, _, _ ->
@@ -109,7 +105,6 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _titleBinding = null
     }
 
     private var hasMore = true

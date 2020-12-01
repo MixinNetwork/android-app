@@ -56,7 +56,6 @@ class ItemCallback(private val listener: ItemCallbackListener) :
     ) {
         if (dX > 0 && direction != ItemTouchHelper.START) {
             direction = ItemTouchHelper.START
-            findView(viewHolder.itemView, R.id.background_rl)
             findView(viewHolder.itemView, R.id.background_rl).setBackgroundResource(R.color.colorRed)
             findView(viewHolder.itemView, R.id.delete_icon).isVisible = true
             findView(viewHolder.itemView, R.id.delete_tv).isVisible = true

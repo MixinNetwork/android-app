@@ -15,6 +15,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.widget.SegmentationItemDecoration
 
@@ -28,16 +29,13 @@ class MySharedAppsFragment : BaseFragment() {
     }
 
     private val mySharedAppsViewModel by viewModels<MySharedAppsViewModel>()
-    private val binding get() = baseBinding as FragmentMySharedAppsBinding
+    private val binding by viewBinding(FragmentMySharedAppsBinding::bind)
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        baseBinding = FragmentMySharedAppsBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    ): View = inflater.inflate(R.layout.fragment_my_shared_apps, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

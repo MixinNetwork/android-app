@@ -62,8 +62,8 @@ class PinCheckDialogFragment : DialogFragment() {
             gotItTv.setOnClickListener { activity?.finish() }
             keyboard.apply {
                 setKeyboardKeys(KEYS)
-                keyboard.setOnClickKeyboardListener(mKeyboardListener)
-                keyboard.animate().translationY(0f).start()
+                setOnClickKeyboardListener(mKeyboardListener)
+                animate().translationY(0f).start()
             }
         }
     }

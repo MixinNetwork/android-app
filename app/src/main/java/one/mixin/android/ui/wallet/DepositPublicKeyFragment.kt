@@ -17,8 +17,6 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositKeyBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
@@ -40,28 +38,24 @@ class DepositPublicKeyFragment : DepositFragment() {
 
     private var _binding: FragmentDepositKeyBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var _qrBinding: ViewBadgeCircleImageBinding? = null
-    private val qrBinding get() = requireNotNull(_qrBinding)
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDepositKeyBinding.inflate(layoutInflater, container, false).apply { root.setOnClickListener { } }
-        _titleBinding = ViewTitleBinding.bind(binding.title)
-        _qrBinding = ViewBadgeCircleImageBinding.bind(binding.qrAvatar)
         return binding.root
     }
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.apply {
-            leftIb.setOnClickListener { activity?.onBackPressed() }
-            rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
-        }
         binding.apply {
+            title.apply {
+                leftIb.setOnClickListener { activity?.onBackPressed() }
+                rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
+            }
             title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
-            qrBinding.apply {
+            qrAvatar.apply {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
@@ -108,6 +102,5 @@ class DepositPublicKeyFragment : DepositFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _qrBinding = null
     }
 }

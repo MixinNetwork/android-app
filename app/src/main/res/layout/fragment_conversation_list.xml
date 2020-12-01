@@ -7,7 +7,6 @@
     android:background="?attr/bg_white">
 
     <include
-        android:id="@+id/link_view"
         layout="@layout/view_link_state" />
 
     <FrameLayout

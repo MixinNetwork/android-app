@@ -16,7 +16,7 @@ import org.jetbrains.anko.dip
 class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHolder(binding.root) {
 
     init {
-        binding.time.chatTime.visibility = GONE
+        binding.time.chatFlag.visibility = GONE
     }
 
     fun bind(

@@ -19,8 +19,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositAccountBinding
-import one.mixin.android.databinding.ViewBadgeCircleImageBinding
-import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
@@ -43,36 +41,29 @@ class DepositAccountFragment : DepositFragment() {
 
     private var _binding: FragmentDepositAccountBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var _nameQrBinding: ViewBadgeCircleImageBinding? = null
-    private val nameQrBinding get() = requireNotNull(_nameQrBinding)
-    private var _memoQrBinding: ViewBadgeCircleImageBinding? = null
-    private val memoQrBinding get() = requireNotNull(_memoQrBinding)
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentDepositAccountBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
-        _titleBinding = ViewTitleBinding.bind(binding.title)
-        _nameQrBinding = ViewBadgeCircleImageBinding.bind(binding.accountNameQrAvatar)
-        _memoQrBinding = ViewBadgeCircleImageBinding.bind(binding.accountMemoQrAvatar)
         return binding.root
     }
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        titleBinding.apply {
-            leftIb.setOnClickListener { activity?.onBackPressed() }
-            rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
-        }
         binding.apply {
+            title.apply {
+                leftIb.setOnClickListener { activity?.onBackPressed() }
+                rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
+            }
             title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
-            nameQrBinding.apply {
+            accountNameQrAvatar.apply {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
             accountNameQrAvatar.setBorder()
-            memoQrBinding.apply {
+            accountMemoQrAvatar.apply {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
@@ -111,9 +102,6 @@ class DepositAccountFragment : DepositFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _titleBinding = null
-        _nameQrBinding = null
-        _memoQrBinding = null
     }
 
     private fun showQR(qr: ImageView, name: String, code: String) {

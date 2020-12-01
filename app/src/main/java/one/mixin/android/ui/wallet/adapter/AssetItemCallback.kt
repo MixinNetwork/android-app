@@ -45,12 +45,12 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
     ) {
         viewHolder?.let {
             ItemTouchHelper.Callback.getDefaultUIUtil()
-                .onDrawOver(c, recyclerView, findBackground(it.itemView), dX, dY, actionState, isCurrentlyActive)
+                .onDrawOver(c, recyclerView, findForeground(it.itemView), dX, dY, actionState, isCurrentlyActive)
         }
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-        ItemTouchHelper.Callback.getDefaultUIUtil().clearView(findBackground(viewHolder.itemView))
+        ItemTouchHelper.Callback.getDefaultUIUtil().clearView(findForeground(viewHolder.itemView))
     }
 
     override fun onChildDraw(
@@ -63,7 +63,7 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
         isCurrentlyActive: Boolean
     ) {
         ItemTouchHelper.Callback.getDefaultUIUtil()
-            .onDraw(c, recyclerView, findBackground(viewHolder.itemView), dX, dY, actionState, isCurrentlyActive)
+            .onDraw(c, recyclerView, findForeground(viewHolder.itemView), dX, dY, actionState, isCurrentlyActive)
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -72,6 +72,7 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
     }
 
     private fun findBackground(view: View): View = view.findViewById(R.id.background_rl)
+    private fun findForeground(view: View): View = view.findViewById(R.id.foreground_rl)
 
     interface ItemCallbackListener {
         fun onSwiped(viewHolder: RecyclerView.ViewHolder)
