@@ -7,6 +7,8 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.DefaultControlDispatcher
@@ -19,6 +21,8 @@ import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerControlBinding
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
@@ -99,6 +103,28 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     init {
         playView.setOnClickListener(componentListener)
         timeBar.addListener(componentListener)
+        ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
+            insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
+                if (context.isLandscape()) {
+                    binding.topFl.setPadding(systemInserts.left, 0, systemInserts.right, 0)
+                    binding.bottomLl.setPadding(
+                        12.dp + systemInserts.left,
+                        12.dp,
+                        12.dp + systemInserts.right,
+                        24.dp
+                    )
+                } else {
+                    binding.topFl.setPadding(0, 24.dp + systemInserts.top, 0, 0)
+                    binding.bottomLl.setPadding(
+                        12.dp,
+                        24.dp,
+                        12.dp,
+                        24.dp + systemInserts.bottom
+                    )
+                }
+                WindowInsetsCompat.CONSUMED
+            }
+        }
     }
 
     override fun onFinishInflate() {

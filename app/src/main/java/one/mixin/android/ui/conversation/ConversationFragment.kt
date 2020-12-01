@@ -880,7 +880,7 @@ class ConversationFragment() :
         recipient = requireArguments().getParcelable(RECIPIENT)
     }
 
-    private val binding by viewBinding (FragmentConversationBinding::bind)
+    private val binding by viewBinding(FragmentConversationBinding::bind)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
