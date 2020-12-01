@@ -71,12 +71,6 @@ import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import java.net.ConnectException
-import java.net.NoRouteToHostException
-import java.net.ProtocolException
-import java.net.SocketException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -140,8 +134,7 @@ object AppModule {
                     chain.proceed(request)
                 } catch (e: Exception) {
                     throw e.apply {
-                        if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException
-                            || this is ProtocolException || this is NoRouteToHostException || this is SocketException) {
+                        if (e.isNeedSwitch()) {
                             HostSelectionInterceptor.get().switch(request)
                         }
                     }

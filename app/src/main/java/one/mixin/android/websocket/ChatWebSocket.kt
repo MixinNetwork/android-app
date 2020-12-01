@@ -26,6 +26,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
+import one.mixin.android.di.isNeedSwitch
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.ungzip
@@ -44,9 +45,6 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
-import java.net.ConnectException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -241,7 +239,7 @@ class ChatWebSocket(
 
     @Synchronized
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        if (t is SocketTimeoutException || t is UnknownHostException || t is ConnectException) {
+        if (t.isNeedSwitch()) {
             hostFlag = !hostFlag
         }
         Log.e(TAG, "WebSocket onFailure ", t)
