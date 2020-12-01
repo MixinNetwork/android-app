@@ -716,6 +716,10 @@ class GroupCallService : CallService() {
         Timber.d("$TAG_CALL webSocketChannel $blazeMessage, bm: $bm")
         if (bm == null) {
             Timber.d("$TAG_CALL callExecutor: $callExecutor")
+            if (!chatWebSocket.connected && blazeMessage.action == LIST_KRAKEN_PEERS) {
+                Timber.d("$TAG_CALL chatWebSocket.connected: ${chatWebSocket.connected}")
+                return null
+            }
             SystemClock.sleep(SLEEP_MILLIS)
             blazeMessage.id = UUID.randomUUID().toString()
             return webSocketChannel(blazeMessage)
