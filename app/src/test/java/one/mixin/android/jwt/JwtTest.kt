@@ -17,6 +17,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.security.Security
+import java.util.UUID
 
 class JwtTest {
 
@@ -30,7 +31,7 @@ class JwtTest {
         val token = rsaKey.getPrivateKeyPem()
         val key = getRSAPrivateKeyFromString(token)
         val account = mockAccount()
-        val signToken = Session.signToken(account, mockRequest(), key)
+        val signToken = Session.signToken(account, mockRequest(), UUID.randomUUID().toString(), key)
         val isExpire = Session.requestDelay(account, signToken, DELAY_SECOND, key).isExpire
         assertFalse(isExpire)
         Thread.sleep(2000)
@@ -43,7 +44,7 @@ class JwtTest {
         val token = rsaKey.getPrivateKeyPem()
         val key = getRSAPrivateKeyFromString(token)
         val account = mockAccount()
-        val signToken = Session.signToken(account, mockRequest(), key)
+        val signToken = Session.signToken(account, mockRequest(), UUID.randomUUID().toString(), key)
         val isExpire = Session.requestDelay(account, signToken, DELAY_SECOND, key).isExpire
         assertFalse(isExpire)
         Thread.sleep(2000)
@@ -57,7 +58,7 @@ class JwtTest {
         val privateKey = EdDSAPrivateKey(privateSpec)
         val publicKey = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, Session.ed25519))
         val account = mockAccount()
-        val signToken = Session.signToken(account, mockRequest(), privateKey)
+        val signToken = Session.signToken(account, mockRequest(), UUID.randomUUID().toString(), privateKey)
         val isExpire = Session.requestDelay(account, signToken, DELAY_SECOND, publicKey).isExpire
         assertFalse(isExpire)
         Thread.sleep(2000)
