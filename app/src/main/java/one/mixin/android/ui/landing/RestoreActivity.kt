@@ -109,6 +109,7 @@ class RestoreActivity : BaseActivity() {
                 dialog.dismiss()
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)
+                finish()
             }.create().run {
                 this.setCanceledOnTouchOutside(false)
                 this.show()
