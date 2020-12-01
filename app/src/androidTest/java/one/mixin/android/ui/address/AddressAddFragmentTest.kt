@@ -130,14 +130,19 @@ class AddressAddFragmentTest {
         }
         val testRegistry = TestRegistry(expectedResult)
         var isAddr = false
-        val fragment = AddressAddFragment(testRegistry).withArgs {
-            putParcelable(ARGS_ASSET, mockAsset().toAssetItem())
-        }
-        launchFragmentInHiltContainer(fragment, R.style.AppTheme_NoActionBar) {
-            this.getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true))
+        launchFragmentInHiltContainer(
+            R.style.AppTheme_NoActionBar,
+            {
+                AddressAddFragment(testRegistry).withArgs {
+                    putParcelable(ARGS_ASSET, mockAsset().toAssetItem())
+                }
+            },
+            {
+                this.getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true))
 
-            isAddr = this.isAddr
-        }
+                isAddr = this.isAddr
+            }
+        )
 
         if (isAddr) {
             val expect = if (isIcapAddress("abc")) {

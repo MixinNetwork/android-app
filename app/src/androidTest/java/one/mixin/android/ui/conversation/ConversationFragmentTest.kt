@@ -39,14 +39,20 @@ class ConversationFragmentTest {
             putParcelableArrayListExtra(ARGS_RESULT, arrayListOf(SelectItem(cid, null)))
         }
         val testRegistry = TestRegistry(expectedResult)
-        launchFragmentInHiltContainer(ConversationFragment.newInstance(bundle, testRegistry), R.style.AppTheme_NoActionBar) {
-            val list = arrayListOf(ForwardMessage(ShareCategory.Text, "testGetForwardResult"))
-            this.getForwardResult.launch(Pair(list, cid))
+        launchFragmentInHiltContainer(
+            R.style.AppTheme_NoActionBar,
+            {
+                ConversationFragment.newInstance(bundle, testRegistry)
+            },
+            {
+                val list = arrayListOf(ForwardMessage(ShareCategory.Text, "testGetForwardResult"))
+                this.getForwardResult.launch(Pair(list, cid))
 
-            val expect = expectedResult.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)?.get(0)
-            assertTrue(this.selectItem == expect)
+                val expect = expectedResult.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)?.get(0)
+                assertTrue(this.selectItem == expect)
 
-            requireActivity().finish()
-        }
+                requireActivity().finish()
+            }
+        )
     }
 }

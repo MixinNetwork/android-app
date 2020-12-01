@@ -35,3 +35,29 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
         fragment.action()
     }
 }
+
+inline fun <reified T : Fragment> launchFragmentInHiltContainer(
+    @StyleRes themeResId: Int = R.style.FragmentScenarioEmptyFragmentActivityTheme,
+    crossinline initFragmentAction: () -> T,
+    crossinline action: T.() -> Unit = {}
+) {
+    val startActivityIntent = Intent.makeMainActivity(
+        ComponentName(
+            ApplicationProvider.getApplicationContext(),
+            HiltTestActivity::class.java
+        )
+    ).putExtra(FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY, themeResId)
+
+    ActivityScenario.launch<HiltTestActivity>(startActivityIntent).onActivity { activity ->
+        val fragment = initFragmentAction.invoke()
+        if (fragment is DialogFragment) {
+            fragment.showNow(activity.supportFragmentManager, "")
+        } else {
+            activity.supportFragmentManager
+                .beginTransaction()
+                .add(android.R.id.content, fragment, "")
+                .commitNow()
+        }
+        fragment.action()
+    }
+}
