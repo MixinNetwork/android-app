@@ -347,7 +347,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor??): FoursquareService {
+    fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor?): FoursquareService {
         val client = OkHttpClient.Builder().apply {
             httpLoggingInterceptor?.let { interceptor ->
                 addNetworkInterceptor(interceptor)
