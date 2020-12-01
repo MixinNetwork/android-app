@@ -92,29 +92,29 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     }
                 }
             }
-
-            BackupJob.backupLiveData.observe(
-                viewLifecycleOwner,
-                {
-                    if (it) {
-                        backupBn.visibility = INVISIBLE
-                        progressGroup.visibility = VISIBLE
-                    } else {
-                        backupBn.visibility = VISIBLE
-                        progressGroup.visibility = GONE
-                        when (BackupJob.backupLiveData.result) {
-                            Result.SUCCESS -> findBackUp()
-                            Result.NO_AVAILABLE_MEMORY ->
-                                alertDialogBuilder()
-                                    .setMessage(R.string.backup_no_available_memory)
-                                    .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
-                                    .show()
-                            Result.FAILURE -> toast(R.string.backup_failure_tip)
-                        }
+        }
+        BackupJob.backupLiveData.observe(
+            viewLifecycleOwner,
+            {
+                if (it) {
+                    binding.backupBn.visibility = INVISIBLE
+                    binding.progressGroup.visibility = VISIBLE
+                } else {
+                    binding.backupBn.visibility = VISIBLE
+                    binding.progressGroup.visibility = GONE
+                    when (BackupJob.backupLiveData.result) {
+                        Result.SUCCESS -> findBackUp()
+                        Result.NO_AVAILABLE_MEMORY ->
+                            alertDialogBuilder()
+                                .setMessage(R.string.backup_no_available_memory)
+                                .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
+                                .show()
+                        Result.FAILURE -> toast(R.string.backup_failure_tip)
+                        else -> throw IllegalStateException("Unknown")
                     }
                 }
-            )
-        }
+            }
+        )
     }
 
     private val options by lazy {
