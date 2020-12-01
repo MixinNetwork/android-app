@@ -70,6 +70,7 @@ class ChatWebSocket(
     private val gson = Gson()
     private val accountId = Session.getAccountId()
     private val sessionId = Session.getSessionId()
+    private var homeUrl = Mixin_WS_URL
 
     companion object {
         val TAG = ChatWebSocket::class.java.simpleName
@@ -85,7 +86,7 @@ class ChatWebSocket(
     fun connect() {
         if (client == null) {
             connected = false
-            val homeUrl = if (hostFlag) {
+            homeUrl = if (hostFlag) {
                 Mixin_WS_URL
             } else {
                 WS_URL
@@ -242,7 +243,7 @@ class ChatWebSocket(
         if (t.isNeedSwitch()) {
             hostFlag = !hostFlag
         }
-        Log.e(TAG, "WebSocket onFailure ", t)
+        Log.e(TAG, "WebSocket onFailure $homeUrl", t)
         if (client != null) {
             if (t is ClientErrorException && t.code == AUTHENTICATION) {
                 closeInternal(quitCode)
