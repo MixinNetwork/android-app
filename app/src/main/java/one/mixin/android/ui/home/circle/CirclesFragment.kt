@@ -316,13 +316,12 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
     }
 
     class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val binding by lazy {
-            ItemConversationCircleBinding.bind(itemView)
-        }
-        val circleTitle = binding.circleTitle
         private val shakeAnimator by lazy {
             itemView.shakeAnimator()
         }
+
+        val binding get() =  ItemConversationCircleBinding.bind(itemView)
+        val circleTitle get() = binding.circleTitle
 
         fun bind(sorting: Boolean, currentCircleId: String?, conversationCircleItem: ConversationCircleItem?, allUnread: Int?) {
             if (sorting) {
