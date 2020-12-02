@@ -320,7 +320,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             itemView.shakeAnimator()
         }
 
-        val binding get() =  ItemConversationCircleBinding.bind(itemView)
+        val binding get() = ItemConversationCircleBinding.bind(itemView)
         val circleTitle get() = binding.circleTitle
 
         fun bind(sorting: Boolean, currentCircleId: String?, conversationCircleItem: ConversationCircleItem?, allUnread: Int?) {
