@@ -15,8 +15,6 @@ class FailLoadView(context: Context, attrs: AttributeSet?) : RelativeLayout(cont
     var listener: FailLoadListener? = null
 
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_fail_load, this, true)
-
         binding.reloadTv.setOnClickListener {
             listener?.onReloadClick()
         }
