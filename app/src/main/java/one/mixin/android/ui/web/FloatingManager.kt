@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
+import android.webkit.WebViewClient
 import androidx.annotation.ColorInt
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
@@ -61,12 +62,12 @@ var clips = mutableListOf<WebClip>()
 
 data class WebClip(
     val url: String,
-    val thumb: Bitmap?,
+    @Transient val thumb: Bitmap?,
     val app: App?,
     @ColorInt
     val titleColor: Int,
     val name: String?,
-    val icon: Bitmap?,
+    @Transient val icon: Bitmap?,
     @Transient val webView: MixinWebView?
 )
 
@@ -74,6 +75,8 @@ fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
     if (index < clips.size) {
         if (clips[index].webView != webClip.webView) {
             clips[index].webView?.destroy()
+            clips[index].webView?.webViewClient = object : WebViewClient() {}
+            clips[index].webView?.webChromeClient = null
         }
         clips.removeAt(index)
         clips.add(index, webClip)
@@ -118,6 +121,8 @@ fun refresh(activity: Activity) {
 fun releaseClip(index: Int) {
     if (index < clips.size && index >= 0) {
         clips[index].webView?.destroy()
+        clips[index].webView?.webViewClient = object : WebViewClient() {}
+        clips[index].webView?.webChromeClient = null
         clips.removeAt(index)
         if (clips.isEmpty()) {
             FloatingWebClip.getInstance().hide()
@@ -135,6 +140,8 @@ private fun saveClips(context: Context) {
 fun releaseAll() {
     clips.forEach { clip ->
         clip.webView?.destroy()
+        clip.webView?.webViewClient = object : WebViewClient() {}
+        clip.webView?.webChromeClient = null
     }
     clips.clear()
     saveClips(MixinApplication.appContext)
