@@ -256,6 +256,16 @@ fun ViewGroup.inflate(
     attachToRoot: Boolean = false
 ) = LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)!!
 
+fun View.navigateUp() {
+    try {
+        findNavController().navigateUp()
+    } catch (e: IllegalArgumentException) {
+        // Workaround with https://issuetracker.google.com/issues/128881182
+    } catch (e: IllegalStateException) {
+        Timber.w("View $this does not have a NavController set")
+    }
+}
+
 fun View.navigate(
     resId: Int,
     bundle: Bundle? = null,
