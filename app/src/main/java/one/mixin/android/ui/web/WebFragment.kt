@@ -176,6 +176,7 @@ class WebFragment : BaseFragment() {
     }
     private var index: Int = -1
     private var currentUrl: String? = null
+    private var isFinished: Boolean = false
 
     private val processor = QRCodeProcessor()
 
@@ -284,6 +285,7 @@ class WebFragment : BaseFragment() {
                     binding.iconIv.isVisible = true
                     binding.iconIv.setImageBitmap(icon)
                 }
+                isFinished = clip.isFinished
                 clip.webView ?: MixinWebView(requireContext())
             }
         } else {
@@ -420,6 +422,7 @@ class WebFragment : BaseFragment() {
                 lifecycleScope,
                 { url ->
                     currentUrl = url
+                    isFinished = true
                 },
                 { errorCode, description, failingUrl ->
                     currentUrl = failingUrl
@@ -654,10 +657,13 @@ class WebFragment : BaseFragment() {
         conversationId?.let {
             extraHeaders[Mixin_Conversation_ID_HEADER] = it
         }
-        if (webView.url != null && webView.progress == 100) {
+        if (isFinished) {
             if (index >= 0) {
                 refreshByLuminance(requireContext().isNightMode(), clips[index].titleColor)
             }
+            return
+        } else if (webView.url != null) {
+            webView.reload()
             return
         }
         webView.loadUrl(url, extraHeaders)
@@ -699,7 +705,8 @@ class WebFragment : BaseFragment() {
             titleColor,
             app?.name ?: binding.titleTv.text.toString(),
             icon,
-            webView
+            webView,
+            isFinished
         )
     }
 

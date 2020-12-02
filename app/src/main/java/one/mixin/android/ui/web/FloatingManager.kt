@@ -68,7 +68,8 @@ data class WebClip(
     val titleColor: Int,
     val name: String?,
     @Transient val icon: Bitmap?,
-    @Transient val webView: MixinWebView?
+    @Transient val webView: MixinWebView?,
+    @Transient val isFinished: Boolean = false
 )
 
 fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
