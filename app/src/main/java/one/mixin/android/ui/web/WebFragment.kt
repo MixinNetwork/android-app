@@ -728,8 +728,8 @@ class WebFragment : BaseFragment() {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-        _binding = null
         super.onDestroyView()
+        _binding = null
     }
 
     private fun showBottomSheet() {
