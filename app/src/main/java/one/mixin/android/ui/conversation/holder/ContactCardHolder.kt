@@ -3,17 +3,18 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.showVerifiedOrBot
-import org.jetbrains.anko.dip
 
 class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root) {
 
@@ -41,7 +42,6 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
         )
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
         messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
 
         val isMe = Session.getAccountId() == messageItem.userId
@@ -50,7 +50,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -60,8 +60,8 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             binding.chatName.visibility = View.GONE
         }
 
+        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
             binding.dataWrapper.chatSecret.isVisible = secretIcon != null
@@ -116,8 +116,10 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                 )
             }
             (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
         } else {
             (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,

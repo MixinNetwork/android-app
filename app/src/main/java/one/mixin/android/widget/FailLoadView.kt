@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
-import one.mixin.android.R
 import one.mixin.android.databinding.ViewFailLoadBinding
 
 class FailLoadView(context: Context, attrs: AttributeSet?) : RelativeLayout(context, attrs) {
