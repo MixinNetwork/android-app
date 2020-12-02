@@ -115,9 +115,10 @@
                 android:textColor="@color/gray_50"
                 android:textSize="12sp" />
 
-             <include
+        </RelativeLayout>
+
+        <include
             android:id="@+id/data_wrapper"
             layout="@layout/date_wrapper" />
-        </RelativeLayout>
     </LinearLayout>
 </FrameLayout>

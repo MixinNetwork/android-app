@@ -403,6 +403,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
