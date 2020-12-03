@@ -103,6 +103,7 @@
             android:layout_marginStart="4dp"
             android:layout_marginEnd="@dimen/margin20"
             android:layout_alignParentEnd="true"
+            android:background="@drawable/mixin_ripple"
             tools:ignore="ContentDescription" />
 
         <ViewAnimator
