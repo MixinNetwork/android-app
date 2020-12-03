@@ -6,3 +6,7 @@ import java.util.concurrent.Executors
 val SINGLE_DB_THREAD by lazy {
     Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }
+
+val SINGLE_THREAD by lazy {
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+}

@@ -145,6 +145,11 @@ class WebActivity : BaseActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        saveClips()
+    }
+
     private fun hideWeb() {
         supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.let {
             supportFragmentManager.beginTransaction().hide(it).commit()

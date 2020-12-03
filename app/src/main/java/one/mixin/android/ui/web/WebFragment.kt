@@ -297,7 +297,12 @@ class WebFragment : BaseFragment() {
         }
         registerForContextMenu(webView)
 
-        WebView.setWebContentsDebuggingEnabled(defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false))
+        WebView.setWebContentsDebuggingEnabled(
+            defaultSharedPreferences.getBoolean(
+                Constants.Debug.WEB_DEBUG,
+                false
+            )
+        )
 
         app = requireArguments().getParcelable(ARGS_APP)
 
@@ -707,10 +712,10 @@ class WebFragment : BaseFragment() {
         v.draw(c)
         return WebClip(
             currentUrl,
-            screenshot,
             app,
             titleColor,
             app?.name ?: binding.titleTv.text.toString(),
+            screenshot,
             icon,
             webView,
             isFinished
@@ -732,7 +737,7 @@ class WebFragment : BaseFragment() {
                 webView.webChromeClient = null
             }
             else -> {
-                updateClip(requireActivity(), index, generateWebClip())
+                updateClip(index, generateWebClip())
             }
         }
         unregisterForContextMenu(webView)
