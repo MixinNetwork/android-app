@@ -309,7 +309,7 @@ dependencies {
     })
     androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
     androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
-    stagingImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
+    debugImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
     androidTestImplementation "androidx.navigation:navigation-testing:$navigationVersion"
 
     // Hilt testing
