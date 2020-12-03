@@ -176,6 +176,7 @@ class WebFragment : BaseFragment() {
     }
     private var index: Int = -1
     private var currentUrl: String? = null
+    private var isFinished: Boolean = false
 
     private val processor = QRCodeProcessor()
 
@@ -284,6 +285,7 @@ class WebFragment : BaseFragment() {
                     binding.iconIv.isVisible = true
                     binding.iconIv.setImageBitmap(icon)
                 }
+                isFinished = clip.isFinished
                 clip.webView ?: MixinWebView(requireContext())
             }
         } else {
@@ -331,6 +333,7 @@ class WebFragment : BaseFragment() {
     }
 
     private fun controlSuspiciousView(show: Boolean) {
+        if (!isAdded) return
         binding.suspiciousLinkView.isVisible = show
         if (show) {
             binding.pb.isVisible = false
@@ -419,6 +422,7 @@ class WebFragment : BaseFragment() {
                 lifecycleScope,
                 { url ->
                     currentUrl = url
+                    isFinished = true
                 },
                 { errorCode, description, failingUrl ->
                     currentUrl = failingUrl
@@ -427,9 +431,11 @@ class WebFragment : BaseFragment() {
                         errorCode == ERROR_IO ||
                         errorCode == ERROR_TIMEOUT
                     ) {
-                        binding.failLoadView.webFailDescription.text =
-                            getString(R.string.web_cannot_reached_desc, failingUrl)
-                        binding.failLoadView.isVisible = true
+                        if (isAdded) {
+                            binding.failLoadView.webFailDescription.text =
+                                getString(R.string.web_cannot_reached_desc, failingUrl)
+                            binding.failLoadView.isVisible = true
+                        }
                     }
                     description?.let { reportException(Exception(it)) }
                 }
@@ -446,7 +452,7 @@ class WebFragment : BaseFragment() {
             }
 
             override fun onShowCustomView(view: View, callback: CustomViewCallback?) {
-                if (customView != null) {
+                if (customView != null || !isAdded) {
                     customViewCallback?.onCustomViewHidden()
                     return
                 }
@@ -470,7 +476,7 @@ class WebFragment : BaseFragment() {
             }
 
             override fun onHideCustomView() {
-                if (customView == null)
+                if (customView == null || !isAdded)
                     return
                 binding.customViewContainer.isVisible = false
                 binding.webLl.isVisible = true
@@ -487,14 +493,14 @@ class WebFragment : BaseFragment() {
 
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
-                if (!isBot()) {
+                if (isAdded && !isBot()) {
                     binding.titleTv.text = title
                 }
             }
 
             override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
                 super.onReceivedIcon(view, icon)
-                if (!isBot()) {
+                if (isAdded && !isBot()) {
                     icon?.let {
                         binding.iconIv.isVisible = true
                         binding.iconIv.setImageBitmap(it)
@@ -520,6 +526,7 @@ class WebFragment : BaseFragment() {
                 filePathCallback: ValueCallback<Array<Uri>>?,
                 fileChooserParams: FileChooserParams?
             ): Boolean {
+                if (!isAdded) return false
                 uploadMessage?.onReceiveValue(null)
                 uploadMessage = filePathCallback
                 val intent: Intent? = fileChooserParams?.createIntent()
@@ -617,6 +624,7 @@ class WebFragment : BaseFragment() {
     }
 
     private fun loadWebView() {
+        if (!isAdded) return
         binding.pb.isVisible = false
 
         var immersive = false
@@ -649,10 +657,13 @@ class WebFragment : BaseFragment() {
         conversationId?.let {
             extraHeaders[Mixin_Conversation_ID_HEADER] = it
         }
-        if (webView.url != null && webView.progress == 100) {
+        if (isFinished) {
             if (index >= 0) {
                 refreshByLuminance(requireContext().isNightMode(), clips[index].titleColor)
             }
+            return
+        } else if (webView.url != null) {
+            webView.reload()
             return
         }
         webView.loadUrl(url, extraHeaders)
@@ -694,7 +705,8 @@ class WebFragment : BaseFragment() {
             titleColor,
             app?.name ?: binding.titleTv.text.toString(),
             icon,
-            webView
+            webView,
+            isFinished
         )
     }
 
@@ -723,8 +735,8 @@ class WebFragment : BaseFragment() {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-        _binding = null
         super.onDestroyView()
+        _binding = null
     }
 
     private fun showBottomSheet() {
@@ -938,7 +950,9 @@ class WebFragment : BaseFragment() {
     private fun refresh() {
         webView.clearCache(true)
         webView.reload()
-        binding.failLoadView.isVisible = false
+        if (isAdded) {
+            binding.failLoadView.isVisible = false
+        }
     }
 
     private fun openBot() = lifecycleScope.launch {
