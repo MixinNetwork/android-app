@@ -60,7 +60,7 @@ internal object ImageUtil {
         when (orientation) {
             ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
             ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-            8 -> matrix.postRotate(ORIENTATION_ROTATE_270.toFloat())
+            ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
         }
         scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
         return scaledBitmap
