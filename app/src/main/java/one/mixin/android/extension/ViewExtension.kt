@@ -379,3 +379,10 @@ fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRen
 }
 
 fun isDarkColor(@ColorInt color: Int) = ColorUtils.calculateLuminance(color) < 0.5
+
+@ColorInt
+fun Int.withAlpha(alpha: Float): Int {
+    val result = 255.coerceAtMost(0.coerceAtLeast((alpha * 255).toInt())) shl 24
+    val rgb = 0x00ffffff and this
+    return result + rgb
+}

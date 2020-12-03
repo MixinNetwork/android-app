@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Color
 import android.os.Parcel
@@ -22,6 +23,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewSearchBinding
+import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
@@ -30,10 +32,11 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
-import one.mixin.android.extension.translationY
+import one.mixin.android.extension.withAlpha
 import one.mixin.android.session.Session
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.vo.toUser
+import org.jetbrains.anko.withAlpha
 import org.jetbrains.annotations.NotNull
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -143,7 +146,6 @@ class MaterialSearchView : FrameLayout {
     }
 
     private fun initSearchView() {
-        binding.containerCircle.translationY = -containerHeight
         (binding.containerCircle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight =
             containerHeight.toInt()
         binding.containerShadow.layoutParams.height = context.screenHeight()
@@ -184,13 +186,21 @@ class MaterialSearchView : FrameLayout {
 
     fun hideContainer() {
         containerDisplay = false
-        binding.containerShadow.fadeOut()
-        binding.actionVa.fadeOut()
-        binding.avatar.fadeIn()
         binding.searchIb.fadeIn()
-        binding.containerCircle.translationY(-containerHeight) {
-            binding.containerCircle.isVisible = false
-        }
+        binding.avatar.fadeIn()
+        binding.actionVa.fadeOut()
+        ValueAnimator.ofFloat(1f, 0f).apply {
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    binding.containerShadow.isVisible = false
+                }
+            })
+            addUpdateListener {
+                binding.containerShadow.setBackgroundColor(Color.BLACK.withAlpha(0.6f * it.animatedValue as Float))
+            }
+            duration = ANIMATION_DURATION_SHORT
+        }.start()
+        binding.containerShadow.collapse()
         hideAction?.invoke()
     }
 
@@ -198,13 +208,24 @@ class MaterialSearchView : FrameLayout {
 
     fun showContainer() {
         containerDisplay = true
-        binding.containerCircle.isVisible = true
-        binding.containerShadow.fadeIn()
-        binding.actionVa.fadeIn()
-        binding.avatar.fadeOut()
         binding.searchIb.fadeOut()
-        binding.containerCircle.translationY(0f) {
-        }
+        binding.avatar.fadeOut()
+        binding.actionVa.fadeIn()
+        binding.containerCircle.isVisible = true
+        ValueAnimator.ofFloat(0f, 1f).apply {
+            addListener(object : AnimatorListenerAdapter() {
+
+                override fun onAnimationStart(animation: Animator) {
+                    binding.containerShadow.isVisible = true
+                    binding.containerShadow.setBackgroundColor(Color.TRANSPARENT)
+                }
+            })
+            addUpdateListener {
+                binding.containerShadow.setBackgroundColor(Color.BLACK.withAlpha(0.6f * it.animatedValue as Float))
+            }
+            duration = ANIMATION_DURATION_SHORT
+        }.start()
+        binding.containerShadow.expand()
     }
 
     override fun onDetachedFromWindow() {
