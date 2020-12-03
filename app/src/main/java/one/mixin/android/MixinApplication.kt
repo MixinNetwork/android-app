@@ -39,6 +39,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
+import one.mixin.android.util.MemoryCallback
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -111,6 +112,8 @@ open class MixinApplication :
             Analytics::class.java,
             Crashes::class.java
         )
+
+        registerComponentCallbacks(MemoryCallback())
     }
 
     private fun init() {
