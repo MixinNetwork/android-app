@@ -146,7 +146,7 @@ object Session {
         !MixinApplication.appContext.defaultSharedPreferences
             .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
-    internal val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
+    internal val ed25519 by lazy { EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519) }
 
     fun signToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getJwtKey(true)): String {
         if (acct == null) {
