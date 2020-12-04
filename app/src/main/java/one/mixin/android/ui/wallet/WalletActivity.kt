@@ -79,8 +79,8 @@ class WalletActivity : BlazeBaseActivity() {
             val bundle = Bundle()
             assetItem?.let {
                 bundle.putParcelable(ASSET, assetItem)
-                bundle.putBoolean(BOTTOM_ANIM, bottomAnim)
             }
+            bundle.putBoolean(BOTTOM_ANIM, bottomAnim)
             myIntent.putExtras(bundle)
             activity.startActivity(myIntent)
             if (bottomAnim) {
