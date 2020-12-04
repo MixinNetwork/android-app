@@ -16,6 +16,7 @@ import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
@@ -47,6 +48,9 @@ interface TransactionInterface {
                     if (asset == null || snapshot == null) {
                         fragment.context?.toast(R.string.error_data)
                     } else {
+                        contentBinding.avatar.setOnClickListener {
+                            clickAvatar(fragment, asset)
+                        }
                         updateUI(fragment, contentBinding, asset, snapshot)
                         fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentBinding, asset.assetId, snapshot)
                     }
@@ -55,8 +59,20 @@ interface TransactionInterface {
                 fragment.toast(R.string.error_data)
             }
         } else {
+            contentBinding.avatar.setOnClickListener {
+                clickAvatar(fragment, assetItem)
+            }
             updateUI(fragment, contentBinding, assetItem, snapshotItem)
             fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentBinding, assetItem.assetId, snapshotItem)
+        }
+    }
+
+    private fun clickAvatar(fragment: Fragment, asset: AssetItem) {
+        val curActivity = fragment.requireActivity()
+        if (curActivity is WalletActivity) {
+            fragment.view?.navigateUp()
+        } else {
+            WalletActivity.show(curActivity, asset, false)
         }
     }
 
