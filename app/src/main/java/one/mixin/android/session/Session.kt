@@ -32,6 +32,7 @@ import timber.log.Timber
 import java.security.Key
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
+import kotlin.system.measureTimeMillis
 
 object Session {
     const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
@@ -140,7 +141,15 @@ object Session {
         return account?.sessionId
     }
 
-    fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
+    fun checkToken(): Boolean {
+        var b = false
+        measureTimeMillis {
+            b = getAccount() != null && !getPinToken().isNullOrBlank()
+        }.apply {
+            Timber.d("Time-consuming fuck $this")
+        }
+        return b
+    }
 
     fun shouldUpdateKey() = getEd25519PrivateKey().isNullOrBlank() &&
         !MixinApplication.appContext.defaultSharedPreferences

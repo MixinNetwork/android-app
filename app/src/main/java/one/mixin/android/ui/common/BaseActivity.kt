@@ -6,12 +6,14 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
+import one.mixin.android.MixinApplication.Companion.launchTime
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultThemeId
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.SystemUIManager
+import timber.log.Timber
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity() {
@@ -23,6 +25,7 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Timber.d("Time-consumingB ${System.currentTimeMillis() - launchTime}")
         if (isNightMode()) {
             setTheme(getNightThemeId())
             SystemUIManager.lightUI(window, false)
@@ -33,6 +36,7 @@ open class BaseActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
         }
+        Timber.d("Time-consumingB1 ${System.currentTimeMillis() - launchTime}")
     }
 
     open fun getNightThemeId(): Int {

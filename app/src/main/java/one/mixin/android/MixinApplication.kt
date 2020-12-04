@@ -94,11 +94,14 @@ open class MixinApplication :
         @JvmField
         var conversationId: String? = null
 
+        var launchTime: Long = 0L
+
         fun get(): MixinApplication = appContext as MixinApplication
     }
 
     override fun onCreate() {
         super.onCreate()
+        launchTime = System.currentTimeMillis()
         init()
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
@@ -111,6 +114,7 @@ open class MixinApplication :
             Analytics::class.java,
             Crashes::class.java
         )
+        Timber.d("Time-consuming 0 ${System.currentTimeMillis() - launchTime}")
     }
 
     private fun init() {

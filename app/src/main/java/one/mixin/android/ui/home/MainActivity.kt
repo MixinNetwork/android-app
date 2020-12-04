@@ -54,6 +54,7 @@ import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
+import one.mixin.android.MixinApplication.Companion.launchTime
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
@@ -179,40 +180,44 @@ class MainActivity : BlazeBaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Timber.d("Time-consuming $launchTime")
         super.onCreate(savedInstanceState)
+        Timber.d("Time-consumingAAA ${System.currentTimeMillis() - launchTime}")
         navigationController = NavigationController(this)
-
-        if (!Session.checkToken()) run {
+        Timber.d("Time-consuming0-0 ${System.currentTimeMillis() - launchTime}")
+        if (!Session.checkToken()) {
             startActivity(Intent(this, LandingActivity::class.java))
             finish()
             return
+        } else {
+            Timber.d("Time-consuming0-0-0 ${System.currentTimeMillis() - launchTime}")
         }
-
+        Timber.d("Time-consuming0-1 ${System.currentTimeMillis() - launchTime}")
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
             finish()
             return
         }
-
+        Timber.d("Time-consuming0-2 ${System.currentTimeMillis() - launchTime}")
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
             RestoreActivity.show(this)
             finish()
             return
         }
-
+        Timber.d("Time-consuming0-3 ${System.currentTimeMillis() - launchTime}")
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_WRONG_TIME, false)) {
             InitializeActivity.showWongTime(this)
             finish()
             return
         }
-
+        Timber.d("Time-consuming0-4 ${System.currentTimeMillis() - launchTime}")
         MixinApplication.get().onlining.set(true)
         if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_FTS4_UPGRADE, false)) {
             InitializeActivity.showFts(this)
             finish()
             return
         }
-
+        Timber.d("Time-consuming0-5 ${System.currentTimeMillis() - launchTime}")
         if (!getIsLoaded(this, false) ||
             !getIsSyncSession(this, false)
         ) {
@@ -220,32 +225,32 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
-
+        Timber.d("Time-consuming0-6 ${System.currentTimeMillis() - launchTime}")
         if (Session.shouldUpdateKey()) {
             InitializeActivity.showLoading(this, false)
             finish()
             return
         }
-
+        Timber.d("Time-consuming1-0 ${System.currentTimeMillis() - launchTime}")
         if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
             defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
             delayShowModifyMobile()
         }
-
+        Timber.d("Time-consuming1-1 ${System.currentTimeMillis() - launchTime}")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         if (savedInstanceState == null) {
             navigationController.navigateToMessage()
         }
-
+        Timber.d("Time-consuming1-2 ${System.currentTimeMillis() - launchTime}")
         val account = Session.getAccount()
         Bugsnag.setUser(account?.userId, account?.identityNumber, account?.fullName)
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
             AppCenter.setUserId(it.userId)
         }
-
+        Timber.d("Time-consuming1-3 ${System.currentTimeMillis() - launchTime}")
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
             defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
@@ -273,16 +278,19 @@ class MainActivity : BlazeBaseActivity() {
                 .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
             WorkManager.getInstance(this@MainActivity).pruneWork()
         }
+        Timber.d("Time-consuming2 ${System.currentTimeMillis() - launchTime}")
         checkRoot()
         checkUpdate()
         checkStorage()
+        Timber.d("Time-consuming3 ${System.currentTimeMillis() - launchTime}")
 
         initView()
         handlerCode(intent)
-
+        Timber.d("Time-consuming4 ${System.currentTimeMillis() - launchTime}")
         sendSafetyNetRequest()
         checkBatteryOptimization()
         refreshStickerAlbum()
+        Timber.d("Time-consuming5 ${System.currentTimeMillis() - launchTime}")
     }
 
     override fun onStart() {
