@@ -2,11 +2,13 @@ package one.mixin.android.ui.home.bot
 
 import android.content.ClipData
 import android.os.Build
+import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.DRAG_FLAG_OPAQUE
 import android.view.View.DragShadowBuilder
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemBotManagerBinding
@@ -53,12 +55,13 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
         return list.notEmptyWithElse({ it.size }, 0)
     }
 
-    val dragInstance: BotManagerDragListener?
+    val dragInstance: BotManagerDragListener
         get() = BotManagerDragListener()
 
     class ListViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!)
 
     override fun onLongClick(v: View): Boolean {
+        v.background = null
         val data = ClipData.newPlainText("", "")
         val shadowBuilder = DragShadowBuilder(v)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -66,6 +69,13 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
         } else {
             @Suppress("DEPRECATION")
             v.startDrag(data, shadowBuilder, v, 0)
+        }
+        v.setOnDragListener { view, event ->
+            if (event.action == DragEvent.ACTION_DRAG_ENDED) {
+                val ctx = view.context
+                view.background = ResourcesCompat.getDrawable(ctx.resources, R.drawable.mixin_ripple_large, ctx.theme)
+            }
+            return@setOnDragListener true
         }
         v.alpha = 0.2f
         v.context.tapVibrate()
