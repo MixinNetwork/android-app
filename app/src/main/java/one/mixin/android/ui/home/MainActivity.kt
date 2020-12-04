@@ -234,55 +234,53 @@ class MainActivity : BlazeBaseActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         if (savedInstanceState == null) {
             navigationController.navigateToMessage()
         }
-
-        val account = Session.getAccount()
-        Bugsnag.setUser(account?.userId, account?.identityNumber, account?.fullName)
-        account?.let {
-            FirebaseCrashlytics.getInstance().setUserId(it.userId)
-            AppCenter.setUserId(it.userId)
-        }
-
-        if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
-            jobManager.addJobInBackground(RefreshCircleJob())
-            defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
-        }
-        jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        jobManager.addJobInBackground(BackupJob())
-        if (!defaultSharedPreferences.getBoolean(PREF_ATTACHMENT, false)) {
-            jobManager.addJobInBackground(AttachmentMigrationJob())
-        }
-
-        if (!defaultSharedPreferences.getBoolean(PREF_BACKUP, false)) {
-            jobManager.addJobInBackground(BackupMigrationJob())
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            jobManager.addJobInBackground(RefreshAccountJob())
-
-            if (Fiats.isRateEmpty()) {
-                jobManager.addJobInBackground(RefreshFiatsJob())
+        initView()
+        lifecycleScope.launchWhenCreated {
+            val account = Session.getAccount()
+            Bugsnag.setUser(account?.userId, account?.identityNumber, account?.fullName)
+            account?.let {
+                FirebaseCrashlytics.getInstance().setUserId(it.userId)
+                AppCenter.setUserId(it.userId)
             }
 
-            WorkManager.getInstance(this@MainActivity)
-                .enqueueUniqueOneTimeNetworkWorkRequest<RefreshContactWorker>("RefreshContactWorker")
-            WorkManager.getInstance(this@MainActivity)
-                .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
-            WorkManager.getInstance(this@MainActivity).pruneWork()
+            if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
+                jobManager.addJobInBackground(RefreshCircleJob())
+                defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
+            }
+            jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
+            jobManager.addJobInBackground(BackupJob())
+            if (!defaultSharedPreferences.getBoolean(PREF_ATTACHMENT, false)) {
+                jobManager.addJobInBackground(AttachmentMigrationJob())
+            }
+
+            if (!defaultSharedPreferences.getBoolean(PREF_BACKUP, false)) {
+                jobManager.addJobInBackground(BackupMigrationJob())
+            }
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                jobManager.addJobInBackground(RefreshAccountJob())
+
+                if (Fiats.isRateEmpty()) {
+                    jobManager.addJobInBackground(RefreshFiatsJob())
+                }
+
+                WorkManager.getInstance(this@MainActivity)
+                    .enqueueUniqueOneTimeNetworkWorkRequest<RefreshContactWorker>("RefreshContactWorker")
+                WorkManager.getInstance(this@MainActivity)
+                    .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
+                WorkManager.getInstance(this@MainActivity).pruneWork()
+            }
+            checkRoot()
+            checkUpdate()
+            checkStorage()
+            sendSafetyNetRequest()
+            checkBatteryOptimization()
+            refreshStickerAlbum()
+            handlerCode(intent)
         }
-        checkRoot()
-        checkUpdate()
-        checkStorage()
-
-        initView()
-        handlerCode(intent)
-
-        sendSafetyNetRequest()
-        checkBatteryOptimization()
-        refreshStickerAlbum()
     }
 
     override fun onStart() {
