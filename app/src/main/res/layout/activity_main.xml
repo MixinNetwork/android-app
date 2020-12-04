@@ -7,27 +7,15 @@
     android:fitsSystemWindows="true"
     tools:context="one.mixin.android.ui.home.MainActivity">
 
-    <FrameLayout
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="56dp" />
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="56dp" />
-
-        <one.mixin.android.widget.MaterialSearchView
-            android:id="@+id/search_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/container_password"
+    <one.mixin.android.widget.MaterialSearchView
+        android:id="@+id/search_bar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
+        android:layout_height="wrap_content" />
 </FrameLayout>
 
