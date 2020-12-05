@@ -2,8 +2,12 @@ package one.mixin.android.widget
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.InputType
@@ -11,18 +15,23 @@ import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewSearchBinding
+import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -30,7 +39,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
-import one.mixin.android.extension.translationY
+import one.mixin.android.extension.withAlpha
 import one.mixin.android.session.Session
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.vo.toUser
@@ -142,8 +151,8 @@ class MaterialSearchView : FrameLayout {
         super.onRestoreInstanceState(state)
     }
 
+    @SuppressLint("CheckResult")
     private fun initSearchView() {
-        binding.containerCircle.translationY = -containerHeight
         (binding.containerCircle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight =
             containerHeight.toInt()
         binding.containerShadow.layoutParams.height = context.screenHeight()
@@ -173,24 +182,43 @@ class MaterialSearchView : FrameLayout {
                 binding.searchEt.setText("")
             }
         }
-        binding.logoLayout.setOnClickListener {
-            if (containerDisplay) {
-                hideContainer()
-            } else {
-                showContainer()
+        binding.logoLayout.clicks()
+            .observeOn(AndroidSchedulers.mainThread())
+            .throttleFirst(500, TimeUnit.MILLISECONDS)
+            .subscribe {
+                if (containerDisplay) {
+                    hideContainer()
+                } else {
+                    showContainer()
+                }
             }
-        }
     }
 
     fun hideContainer() {
         containerDisplay = false
-        binding.containerShadow.fadeOut()
-        binding.actionVa.fadeOut()
-        binding.avatar.fadeIn()
         binding.searchIb.fadeIn()
-        binding.containerCircle.translationY(-containerHeight) {
-            binding.containerCircle.isVisible = false
-        }
+        binding.avatar.fadeIn()
+        binding.actionVa.fadeOut()
+        ValueAnimator.ofFloat(1f, 0f).apply {
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    binding.containerShadow.isVisible = false
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        (context as Activity).window.navigationBarColor = context.colorFromAttribute(R.attr.bg_white)
+                    }
+                }
+            })
+            addUpdateListener {
+                val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
+                binding.containerShadow.setBackgroundColor(c)
+                if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    (context as Activity).window.navigationBarColor = c
+                }
+            }
+            interpolator = AccelerateInterpolator()
+            duration = ANIMATION_DURATION_SHORT
+        }.start()
+        binding.containerShadow.collapse()
         hideAction?.invoke()
     }
 
@@ -198,13 +226,28 @@ class MaterialSearchView : FrameLayout {
 
     fun showContainer() {
         containerDisplay = true
-        binding.containerCircle.isVisible = true
-        binding.containerShadow.fadeIn()
-        binding.actionVa.fadeIn()
-        binding.avatar.fadeOut()
         binding.searchIb.fadeOut()
-        binding.containerCircle.translationY(0f) {
-        }
+        binding.avatar.fadeOut()
+        binding.actionVa.fadeIn()
+        binding.containerCircle.isVisible = true
+        ValueAnimator.ofFloat(0f, 1f).apply {
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator) {
+                    binding.containerShadow.isVisible = true
+                    binding.containerShadow.setBackgroundColor(Color.TRANSPARENT)
+                }
+            })
+            addUpdateListener {
+                val c = Color.BLACK.withAlpha(0.32f * it.animatedValue as Float)
+                binding.containerShadow.setBackgroundColor(c)
+                if (c > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    (context as Activity).window.navigationBarColor = c
+                }
+            }
+            interpolator = DecelerateInterpolator()
+            duration = ANIMATION_DURATION_SHORT
+        }.start()
+        binding.containerShadow.expand()
     }
 
     override fun onDetachedFromWindow() {

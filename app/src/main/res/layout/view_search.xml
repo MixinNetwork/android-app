@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <one.mixin.android.widget.animation.ExpandLayout
         android:id="@+id/container_shadow"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -22,7 +22,8 @@
             android:clickable="true"
             android:focusable="true"
             app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </one.mixin.android.widget.animation.ExpandLayout>
 
     <RelativeLayout
         android:id="@+id/search_view"
@@ -39,8 +40,8 @@
             android:layout_centerVertical="true"
             android:layout_gravity="center_vertical|start"
             android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:layout_toStartOf="@+id/avatar"
+            android:layout_marginEnd="42dp"
+            android:layout_alignParentEnd="true"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_search_home"
@@ -101,7 +102,7 @@
             android:layout_height="26dp"
             android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
-            android:layout_marginEnd="@dimen/margin20"
+            android:layout_marginEnd="12dp"
             android:layout_alignParentEnd="true"
             android:background="@drawable/mixin_ripple"
             tools:ignore="ContentDescription" />
