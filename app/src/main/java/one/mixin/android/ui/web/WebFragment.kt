@@ -333,10 +333,11 @@ class WebFragment : BaseFragment() {
     }
 
     private fun controlSuspiciousView(show: Boolean) {
-        if (!isAdded) return
-        binding.suspiciousLinkView.isVisible = show
-        if (show) {
-            binding.pb.isVisible = false
+        _binding?.apply {
+            suspiciousLinkView.isVisible = show
+            if (show) {
+                pb.isVisible = false
+            }
         }
     }
 
@@ -431,10 +432,10 @@ class WebFragment : BaseFragment() {
                         errorCode == ERROR_IO ||
                         errorCode == ERROR_TIMEOUT
                     ) {
-                        if (isAdded) {
-                            binding.failLoadView.webFailDescription.text =
+                        _binding?.apply {
+                            failLoadView.webFailDescription.text =
                                 getString(R.string.web_cannot_reached_desc, failingUrl)
-                            binding.failLoadView.isVisible = true
+                            failLoadView.isVisible = true
                         }
                     }
                     description?.let { reportException(Exception(it)) }
@@ -475,13 +476,17 @@ class WebFragment : BaseFragment() {
                 requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
 
+            @SuppressLint("SourceLockedOrientationActivity")
             override fun onHideCustomView() {
-                if (customView == null || !isAdded)
+                if (customView == null)
                     return
-                binding.customViewContainer.isVisible = false
-                binding.webLl.isVisible = true
-                binding.webControl.isVisible = true
-                binding.customViewContainer.removeView(customView)
+                _binding?.apply {
+                    customViewContainer.isVisible = false
+                    webLl.isVisible = true
+                    webControl.isVisible = true
+                    customViewContainer.removeView(customView)
+                }
+
                 customView = null
 
                 requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
@@ -493,17 +498,19 @@ class WebFragment : BaseFragment() {
 
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
-                if (isAdded && !isBot()) {
-                    binding.titleTv.text = title
+                if (!isBot()) {
+                    _binding?.titleTv?.text = title
                 }
             }
 
             override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
                 super.onReceivedIcon(view, icon)
-                if (isAdded && !isBot()) {
+                if (!isBot()) {
                     icon?.let {
-                        binding.iconIv.isVisible = true
-                        binding.iconIv.setImageBitmap(it)
+                        _binding?.apply {
+                            iconIv.isVisible = true
+                            iconIv.setImageBitmap(it)
+                        }
                         this@WebFragment.icon = it
                     }
                 }
@@ -624,49 +631,49 @@ class WebFragment : BaseFragment() {
     }
 
     private fun loadWebView() {
-        if (!isAdded) return
-        binding.pb.isVisible = false
-
-        var immersive = false
-        app?.capabilities?.let {
-            if (it.contains(AppCap.IMMERSIVE.name)) {
-                immersive = true
+        _binding?.let { binding ->
+            binding.pb.isVisible = false
+            var immersive = false
+            app?.capabilities?.let {
+                if (it.contains(AppCap.IMMERSIVE.name)) {
+                    immersive = true
+                }
             }
-        }
-        app?.name?.let { binding.titleTv.text = it }
-        app?.iconUrl?.let {
-            binding.iconIv.isVisible = true
-            binding.iconIv.loadImage(it)
-            binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                marginStart = requireContext().dpToPx(10f)
+            app?.name?.let { binding.titleTv.text = it }
+            app?.iconUrl?.let {
+                binding.iconIv.isVisible = true
+                binding.iconIv.loadImage(it)
+                binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = requireContext().dpToPx(10f)
+                }
             }
-        }
-        binding.titleLl.isGone = immersive
+            binding.titleLl.isGone = immersive
 
-        webView.addJavascriptInterface(
-            WebAppInterface(
-                requireContext(),
-                conversationId,
-                immersive,
-                reloadThemeAction = { reloadTheme() }
-            ),
-            "MixinContext"
-        )
+            webView.addJavascriptInterface(
+                WebAppInterface(
+                    requireContext(),
+                    conversationId,
+                    immersive,
+                    reloadThemeAction = { reloadTheme() }
+                ),
+                "MixinContext"
+            )
 
-        val extraHeaders = HashMap<String, String>()
-        conversationId?.let {
-            extraHeaders[Mixin_Conversation_ID_HEADER] = it
-        }
-        if (isFinished) {
-            if (index >= 0) {
-                refreshByLuminance(requireContext().isNightMode(), clips[index].titleColor)
+            val extraHeaders = HashMap<String, String>()
+            conversationId?.let {
+                extraHeaders[Mixin_Conversation_ID_HEADER] = it
             }
-            return
-        } else if (webView.url != null) {
-            webView.reload()
-            return
+            if (isFinished) {
+                if (index >= 0) {
+                    refreshByLuminance(requireContext().isNightMode(), clips[index].titleColor)
+                }
+                return
+            } else if (webView.url != null) {
+                webView.reload()
+                return
+            }
+            webView.loadUrl(url, extraHeaders)
         }
-        webView.loadUrl(url, extraHeaders)
     }
 
     private fun reloadTheme() {
@@ -950,9 +957,7 @@ class WebFragment : BaseFragment() {
     private fun refresh() {
         webView.clearCache(true)
         webView.reload()
-        if (isAdded) {
-            binding.failLoadView.isVisible = false
-        }
+        _binding?.failLoadView?.isVisible = false
     }
 
     private fun openBot() = lifecycleScope.launch {
