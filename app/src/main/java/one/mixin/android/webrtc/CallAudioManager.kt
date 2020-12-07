@@ -49,20 +49,15 @@ class CallAudioManager(
             if (selectedAudioDevice !is AudioDevice.BluetoothHeadset) {
                 val bluetoothHeadset = audioDevices.find { it is AudioDevice.BluetoothHeadset }
                 if (bluetoothHeadset != null) {
-                    audioSwitch.deactivate()
                     audioSwitch.selectDevice(bluetoothHeadset)
-                    audioSwitch.safeActivate()
                 } else {
                     if (selectedAudioDevice !is AudioDevice.WiredHeadset) {
                         val wiredHeadset = audioDevices.find { it is AudioDevice.WiredHeadset }
                         if (wiredHeadset != null) {
-                            audioSwitch.deactivate()
                             audioSwitch.selectDevice(wiredHeadset)
-                            audioSwitch.safeActivate()
                         } else {
                             if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
                                 audioSwitch.selectEarpiece()
-                                audioSwitch.safeActivate()
                             }
                         }
                     }
@@ -116,6 +111,7 @@ class CallAudioManager(
             stop()
         }
 
+        audioSwitch.deactivate()
         hasStarted = false
         mediaPlayerStopped = false
         isInitiator = false
