@@ -1,6 +1,8 @@
 package one.mixin.android.db
 
+import android.annotation.SuppressLint
 import android.content.Context
+import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -123,6 +125,8 @@ abstract class MixinDatabase : RoomDatabase() {
         private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
 
+        @Suppress("UNUSED_ANONYMOUS_PARAMETER")
+        @SuppressLint("RestrictedApi")
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
@@ -134,6 +138,11 @@ abstract class MixinDatabase : RoomDatabase() {
                         )
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
+                        .setQueryCallback(
+                            { sqlQuery, bindArgs ->
+                            },
+                            ArchTaskExecutor.getIOThreadExecutor()
+                        )
                         .build()
                 }
                 return INSTANCE as MixinDatabase
@@ -173,6 +182,6 @@ fun runInTransaction(block: () -> Unit) {
     MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
 }
 
-suspend fun withTransaction(block: suspend() -> Unit) {
+suspend fun withTransaction(block: suspend () -> Unit) {
     MixinDatabase.getDatabase(MixinApplication.appContext).withTransaction(block)
 }
