@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -25,6 +24,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 
@@ -41,13 +41,11 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val currencyAdapter = CurrencyAdapter()
     private val currencies = arrayListOf<Currency>()
 
-    private var _binding: FragmentCurrencyBottomSheetBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentCurrencyBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentCurrencyBottomSheetBinding.bind(View.inflate(context, R.layout.fragment_currency_bottom_sheet, null))
         context?.let { c ->
             val topOffset = c.statusBarHeight() + c.appCompatActionBarHeight()
             binding.root.heightOffset = topOffset
@@ -73,11 +71,6 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             currencyRv.adapter = currencyAdapter
         }
         setListData()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun savePreference(currency: Currency) = lifecycleScope.launch {

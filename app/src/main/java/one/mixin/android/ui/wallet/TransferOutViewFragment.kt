@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.LayoutInflater
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -34,6 +33,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
 import one.mixin.android.ui.wallet.adapter.SnapshotHolder
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotItem.Companion.fromSnapshot
@@ -69,15 +69,13 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     private val address: Address? by lazy { requireArguments().getParcelable(AddressAddFragment.ARGS_ADDRESS) }
     private val adapter = SnapshotPagedAdapter()
 
-    private var _binding: FragmentTransferOutBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentTransferOutBinding::inflate)
 
     private val walletViewModel by viewModels<WalletViewModel>()
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentTransferOutBinding.bind(View.inflate(context, R.layout.fragment_transfer_out, null))
         contentView = binding.root
         binding.apply {
             ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -100,11 +98,6 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         }
         adapter.listener = this
         loadMore()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private var hasMore = true

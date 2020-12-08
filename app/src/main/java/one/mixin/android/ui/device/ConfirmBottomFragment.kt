@@ -6,7 +6,6 @@ import android.content.Context
 import android.net.Uri
 import android.net.UrlQuerySanitizer
 import android.text.TextUtils
-import android.view.View
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
@@ -31,6 +30,7 @@ import one.mixin.android.ui.common.AvatarActivity
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import org.whispersystems.libsignal.ecc.Curve
 import javax.inject.Inject
@@ -114,13 +114,11 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private var _binding: FragmentConfirmBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentConfirmBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentConfirmBinding.bind(View.inflate(context, R.layout.fragment_confirm, null))
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
@@ -146,11 +144,6 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun refreshUI(showPb: Boolean) {

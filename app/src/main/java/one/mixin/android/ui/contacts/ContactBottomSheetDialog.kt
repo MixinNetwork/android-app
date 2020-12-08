@@ -5,11 +5,11 @@ import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentContactBottomSheetBinding
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
@@ -27,13 +27,11 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
 
     private val user: User by lazy { requireArguments().getParcelable(ARGS_USER)!! }
 
-    private var _binding: FragmentContactBottomSheetBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentContactBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentContactBottomSheetBinding.bind(View.inflate(context, R.layout.fragment_contact_bottom_sheet, null))
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
@@ -43,11 +41,6 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
             mobileTv.text = getString(R.string.contact_mobile, user.phone)
             inviteTv.setOnClickListener { openSms(user.phone) }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun openSms(mobile: String?) {

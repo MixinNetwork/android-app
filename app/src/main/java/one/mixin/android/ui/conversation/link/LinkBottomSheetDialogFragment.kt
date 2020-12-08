@@ -68,6 +68,7 @@ import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
@@ -94,8 +95,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val linkViewModel by viewModels<BottomSheetViewModel>()
 
-    private var _binding: FragmentBottomSheetBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
     private lateinit var code: String
     private lateinit var contentView: View
@@ -125,7 +125,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
-        _binding = FragmentBottomSheetBinding.bind(View.inflate(context, R.layout.fragment_bottom_sheet, null))
         contentView = binding.root
         dialog.setContentView(contentView)
         val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
@@ -577,11 +576,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } catch (e: IllegalStateException) {
             Timber.w(e)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     override fun onDetach() {

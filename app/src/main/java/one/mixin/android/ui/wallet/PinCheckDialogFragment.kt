@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.Gravity
 import android.view.KeyEvent
-import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
@@ -21,6 +20,7 @@ import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
@@ -36,8 +36,7 @@ class PinCheckDialogFragment : DialogFragment() {
         fun newInstance() = PinCheckDialogFragment()
     }
 
-    private var _binding: FragmentPinCheckBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentPinCheckBinding::inflate)
 
     private val pinCheckViewModel by viewModels<PinCheckViewModel>()
 
@@ -46,7 +45,6 @@ class PinCheckDialogFragment : DialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentPinCheckBinding.bind(View.inflate(context, R.layout.fragment_pin_check, null))
         dialog.setContentView(binding.root)
 
         binding.apply {
@@ -139,7 +137,6 @@ class PinCheckDialogFragment : DialogFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
         disposable.dispose()
     }
 
