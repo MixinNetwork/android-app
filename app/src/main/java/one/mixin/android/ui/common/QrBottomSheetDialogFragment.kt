@@ -32,6 +32,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BadgeCircleImageView.Companion.END_BOTTOM
 import one.mixin.android.widget.BottomSheet
@@ -56,19 +57,12 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val userId: String by lazy { requireArguments().getString(ARGS_USER_ID)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
-    private var _binding: FragmentQrBottomSheetBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    private val binding by viewBinding(FragmentQrBottomSheetBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_qr_bottom_sheet, null)
-        _binding = FragmentQrBottomSheetBinding.bind(contentView)
+        contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
         binding.title.leftIb.setOnClickListener { dismiss() }

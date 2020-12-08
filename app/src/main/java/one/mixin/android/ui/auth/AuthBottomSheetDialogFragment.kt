@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +22,7 @@ import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.Scope.Companion.SCOPES
 import one.mixin.android.vo.convertName
@@ -61,13 +61,11 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private var success = false
 
-    private var _binding: FragmentAuthBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentAuthBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentAuthBinding.bind(View.inflate(context, R.layout.fragment_auth, null))
         contentView = binding.root
         dialog as BottomSheet
         dialog.setCustomView(contentView)
@@ -111,11 +109,6 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 )
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     override fun onDismiss(dialog: DialogInterface) {

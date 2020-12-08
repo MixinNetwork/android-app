@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.view.View
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -31,6 +30,7 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 
@@ -54,8 +54,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         fun getSize(context: Context) = context.screenWidth() - context.dpToPx(64f)
     }
 
-    private var _binding: FragmentDepositQrBottomBinding? = null
-    private val binding get() = requireNotNull(_binding)
+    private val binding by viewBinding(FragmentDepositQrBottomBinding::inflate)
 
     private val asset: AssetItem by lazy { requireArguments().getParcelable(ARGS_ASSET)!! }
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
@@ -63,7 +62,6 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        _binding = FragmentDepositQrBottomBinding.bind(View.inflate(context, R.layout.fragment_deposit_qr_bottom, null))
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
@@ -136,10 +134,5 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }
