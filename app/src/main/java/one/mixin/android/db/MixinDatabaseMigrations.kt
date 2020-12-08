@@ -1,20 +1,14 @@
 package one.mixin.android.db
 
-import android.database.sqlite.SQLiteException
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.MINI_VERSION
-import one.mixin.android.db.MixinDatabaseMigrations.Companion.CRASHLYTICS_ROOM_MIGRATION
-import one.mixin.android.util.reportException
-import timber.log.Timber
 
 class MixinDatabaseMigrations private constructor() {
 
     companion object {
-        const val CRASHLYTICS_ROOM_MIGRATION = "room_migration"
-
-        val MIGRATION_15_16: Migration = object : SafeMigration(MINI_VERSION, 16) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_15_16: Migration = object : Migration(MINI_VERSION, 16) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP TABLE IF EXISTS assets")
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
@@ -29,8 +23,8 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_16_17: Migration = object : SafeMigration(16, 17) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_16_17: Migration = object : Migration(16, 17) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
                         "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
@@ -43,21 +37,21 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_17_18: Migration = object : SafeMigration(17, 18) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_17_18: Migration = object : Migration(17, 18) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
             }
         }
 
-        val MIGRATION_18_19: Migration = object : SafeMigration(18, 19) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_18_19: Migration = object : Migration(18, 19) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
             }
         }
 
-        val MIGRATION_19_20: Migration = object : SafeMigration(19, 20) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_19_20: Migration = object : Migration(19, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP TABLE IF EXISTS top_assets")
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS top_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
@@ -67,26 +61,26 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_20_21: Migration = object : SafeMigration(20, 21) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE assets ADD COLUMN asset_key TEXT")
             }
         }
 
-        val MIGRATION_21_22: Migration = object : SafeMigration(21, 22) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_21_22: Migration = object : Migration(21, 22) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE messages ADD COLUMN thumb_url TEXT")
             }
         }
 
-        val MIGRATION_22_23: Migration = object : SafeMigration(22, 23) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_22_23: Migration = object : Migration(22, 23) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE users ADD COLUMN biography TEXT NOT NULL DEFAULT ''")
             }
         }
 
-        val MIGRATION_23_24: Migration = object : SafeMigration(23, 24) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_23_24: Migration = object : Migration(23, 24) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP TABLE IF EXISTS addresses")
                 database.execSQL(
                     """
@@ -119,8 +113,8 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_24_25: Migration = object : SafeMigration(24, 25) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_24_25: Migration = object : Migration(24, 25) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS participant_session (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))"
                 )
@@ -128,8 +122,8 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_25_26: Migration = object : SafeMigration(25, 26) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_25_26: Migration = object : Migration(25, 26) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS favorite_apps (`app_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`app_id`, `user_id`))"
                 )
@@ -139,8 +133,8 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_26_27: Migration = object : SafeMigration(26, 27) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_26_27: Migration = object : Migration(26, 27) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `new_snapshots` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT, `sender` TEXT, `receiver` TEXT, `memo` TEXT, `confirmations` INTEGER, PRIMARY KEY(`snapshot_id`))
@@ -175,8 +169,8 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_27_28: Migration = object : SafeMigration(27, 28) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_27_28: Migration = object : Migration(27, 28) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS `message_mentions` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))"
                 )
@@ -185,8 +179,8 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_28_29: SafeMigration = object : SafeMigration(28, 29) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_28_29: Migration = object : Migration(28, 29) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP INDEX IF EXISTS index_conversations_created_at")
                 database.execSQL("DROP INDEX IF EXISTS index_conversations_conversation_id")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_snapshots_asset_id` ON `snapshots` (`asset_id`)")
@@ -201,8 +195,8 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_29_30: Migration = object : SafeMigration(29, 30) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_29_30: Migration = object : Migration(29, 30) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS `circles` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `ordered_at` TEXT, PRIMARY KEY(`circle_id`))"
                 )
@@ -212,21 +206,21 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_30_31: Migration = object : SafeMigration(30, 31) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_30_31: Migration = object : Migration(30, 31) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE assets ADD COLUMN reserve TEXT")
                 database.execSQL("ALTER TABLE apps ADD COLUMN category TEXT")
             }
         }
 
-        val MIGRATION_31_32: Migration = object : SafeMigration(31, 32) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_31_32: Migration = object : Migration(31, 32) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE users ADD COLUMN is_scam INTEGER")
             }
         }
 
-        val MIGRATION_32_33: Migration = object : SafeMigration(32, 33) {
-            override fun safeMigrate(database: SupportSQLiteDatabase) {
+        val MIGRATION_32_33: Migration = object : Migration(32, 33) {
+            override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     """
                         CREATE TABLE IF NOT EXISTS `traces` (`trace_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, 
@@ -235,19 +229,6 @@ class MixinDatabaseMigrations private constructor() {
                 """
                 )
             }
-        }
-    }
-}
-
-abstract class SafeMigration(startVersion: Int, endVersion: Int) : Migration(startVersion, endVersion) {
-    abstract fun safeMigrate(database: SupportSQLiteDatabase)
-
-    override fun migrate(database: SupportSQLiteDatabase) {
-        try {
-            safeMigrate(database)
-        } catch (e: SQLiteException) {
-            Timber.e("Room migration exception, $e")
-            reportException("$CRASHLYTICS_ROOM_MIGRATION-Room migration exception,", e)
         }
     }
 }
