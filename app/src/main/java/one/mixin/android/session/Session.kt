@@ -11,6 +11,7 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.Request
+import okio.ByteString.Companion.encode
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.aesEncrypt
@@ -23,9 +24,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
-import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
@@ -174,7 +173,7 @@ object Session {
                     put(Claims.ISSUED_AT, iat)
                     put("uid", acct.userId)
                     put("sid", acct.sessionId)
-                    put("sig", content.sha256().toHex())
+                    put("sig", content.encode().sha256().hex())
                     put("scp", "FULL")
                 }
             )
