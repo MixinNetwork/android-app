@@ -150,11 +150,9 @@ object Session {
     internal val ed25519 by lazy { EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519) }
 
     fun signToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getJwtKey(true)): String {
-        if (acct == null) {
+        if (acct == null || key == null) {
             return ""
         }
-        key ?: return ""
-
         val expire = System.currentTimeMillis() / 1000 + 1800
         val iat = System.currentTimeMillis() / 1000
 
@@ -182,43 +180,39 @@ object Session {
     }
 
     fun requestDelay(acct: Account?, string: String, offset: Int, key: Key? = getJwtKey(false)): JwtResult {
-        if (acct == null) {
+        if (acct == null || key == null) {
             return JwtResult(false)
         }
-        key ?: return JwtResult(false)
-
-        return try {
+        try {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
-            JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
+            return JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
         } catch (e: ExpiredJwtException) {
             Timber.w(e)
             reportException(e)
-            JwtResult(true)
+            return JwtResult(true)
         } catch (e: Exception) {
             Timber.e(e)
             reportException(e)
-            JwtResult(false)
         }
+        return JwtResult(false)
     }
 
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
 
     private fun getJwtKey(isSign: Boolean): Key? {
         val keyBase64 = getEd25519PrivateKey()
-        val isRsa = keyBase64.isNullOrBlank()
-        return if (isRsa) {
+        if (keyBase64.isNullOrBlank()) {
             val token = getToken()
             if (token.isNullOrBlank()) {
                 return null
             }
-            getRSAPrivateKeyFromString(token)
+            return getRSAPrivateKeyFromString(token)
         } else {
             val privateSpec = EdDSAPrivateKeySpec(keyBase64?.decodeBase64(), ed25519)
             if (isSign) {
-                EdDSAPrivateKey(privateSpec)
-            } else {
-                EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+                return EdDSAPrivateKey(privateSpec)
             }
+            return EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
         }
     }
 }

@@ -43,24 +43,11 @@ data class KrakenParam(
 
 data class BlazeMessageParamSession(
     val user_id: String,
-    val session_id: String? = null
+    val session_id: String? = null,
 )
 
 fun createAckParam(message_id: String, status: String) =
     BlazeMessageParam(message_id = message_id, status = status)
-
-fun createAckListParam(messages: List<BlazeAckMessage>) =
-    BlazeMessageParam(messages = messages)
-
-fun createSignalKeyParam(conversationId: String, recipientId: String, cipherText: String) =
-    BlazeMessageParam(
-        conversationId,
-        recipientId,
-        UUID.randomUUID().toString(),
-        MessageCategory.SIGNAL_KEY.name,
-        cipherText,
-        MessageStatus.SENT.name
-    )
 
 fun createPlainJsonParam(conversationId: String, userId: String, encoded: String, sessionId: String? = null) =
     BlazeMessageParam(

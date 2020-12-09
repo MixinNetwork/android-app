@@ -35,13 +35,14 @@ fun generateEd25519KeyPair(): KeyPair {
     return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
 }
 
-fun calculateAgreement(publicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray? =
+fun calculateAgreement(publicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray? {
     try {
-        Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKeyToCurve25519(privateKey.seed))
+        return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKeyToCurve25519(privateKey.seed))
     } catch (t: Throwable) {
         reportException("Calculates an ECDH agreement exception", t)
-        null
     }
+    return null
+}
 
 fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
     val md = MessageDigest.getInstance("SHA-512")
