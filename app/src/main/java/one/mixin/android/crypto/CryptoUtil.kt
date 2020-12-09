@@ -35,9 +35,9 @@ fun generateEd25519KeyPair(): KeyPair {
     return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
 }
 
-fun calculateAgreement(publicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray? {
+fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray? {
     try {
-        return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKeyToCurve25519(privateKey.seed))
+        return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
     } catch (t: Throwable) {
         reportException("Calculates an ECDH agreement exception", t)
     }

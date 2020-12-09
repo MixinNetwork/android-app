@@ -15,7 +15,9 @@ import okio.ByteString.Companion.encode
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.aesEncrypt
+import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
+import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.cutOut
@@ -208,7 +210,7 @@ object Session {
             }
             return getRSAPrivateKeyFromString(token)
         } else {
-            val privateSpec = EdDSAPrivateKeySpec(keyBase64?.decodeBase64(), ed25519)
+            val privateSpec = EdDSAPrivateKeySpec(keyBase64.decodeBase64(), ed25519)
             if (isSign) {
                 return EdDSAPrivateKey(privateSpec)
             }
@@ -223,4 +225,9 @@ fun encryptPin(key: String, code: String?): String? {
     val based = aesEncrypt(key, iterator, pinCode)
     Session.storePinIterator(iterator + 1)
     return based
+}
+
+fun decryptPinToken(serverPublicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray? {
+    val private = privateKeyToCurve25519(privateKey.seed)
+    return calculateAgreement(serverPublicKey, private)
 }

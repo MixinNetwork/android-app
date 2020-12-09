@@ -12,9 +12,9 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.extension.*
 import one.mixin.android.session.Session
+import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
@@ -98,10 +98,9 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
             defaultSharedPreferences.clear()
         }
         val privateKey = sessionKey.private as EdDSAPrivateKey
-        val key = calculateAgreement(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
-
+        val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
         Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-        Session.storePinToken(key.base64Encode())
+        Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
 
         verificationKeyboard.animate().translationY(300f).start()

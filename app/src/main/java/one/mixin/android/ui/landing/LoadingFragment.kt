@@ -19,7 +19,6 @@ import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
-import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
@@ -27,6 +26,7 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.session.Session
+import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
@@ -84,10 +84,9 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                         val account = Session.getAccount()
                         account?.let { acc ->
                             acc.pinToken = r.pinToken
-                            val key = calculateAgreement(r.pinToken.decodeBase64(), privateKey) ?: return
-
+                            val pinToken = decryptPinToken(r.pinToken.decodeBase64(), privateKey) ?: return
                             Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-                            Session.storePinToken(key.base64Encode())
+                            Session.storePinToken(pinToken.base64Encode())
                             Session.storeAccount(acc)
                         }
                         return
