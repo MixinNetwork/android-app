@@ -7,16 +7,18 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.collection.ArrayMap
+import androidx.core.view.isGone
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagedList
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGroupInfoBinding
@@ -32,6 +34,7 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -39,14 +42,16 @@ import one.mixin.android.ui.group.GroupFragment.Companion.MAX_USER
 import one.mixin.android.ui.group.adapter.GroupInfoAdapter
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
+import one.mixin.android.vo.toUser
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class GroupInfoFragment : BaseFragment() {
+class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
     companion object {
         const val TAG = "GroupInfoFragment"
 
@@ -66,21 +71,23 @@ class GroupInfoFragment : BaseFragment() {
     private val groupViewModel by viewModels<GroupViewModel>()
 
     private val adapter by lazy {
-        GroupInfoAdapter()
+        GroupInfoAdapter(self)
     }
 
     private val conversationId: String by lazy {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
-    private var self: User? = null
+
+    private var observer: Observer<PagedList<User>>? = null
+    private var curLiveData: LiveData<PagedList<User>>? = null
+
+    private var conversation: Conversation? = null
+    private val self: User = Session.getAccount()!!.toUser()
     private var participantsMap: ArrayMap<String, Participant> = ArrayMap()
-    private var users = arrayListOf<User>()
     private var dialog: Dialog? = null
     private lateinit var headerBinding: ViewGroupInfoHeaderBinding
 
     private val binding by viewBinding(FragmentGroupInfoBinding::bind)
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        LayoutInflater.from(context).inflate(R.layout.fragment_group_info, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -90,22 +97,17 @@ class GroupInfoFragment : BaseFragment() {
         }
         headerBinding = ViewGroupInfoHeaderBinding.inflate(LayoutInflater.from(context), binding.groupInfoRv, false)
         adapter.headerView = headerBinding.root
+        adapter.setShowHeader(true, binding.groupInfoRv)
         binding.groupInfoRv.adapter = adapter
         adapter.setGroupInfoListener(
             object : GroupInfoAdapter.GroupInfoListener {
-                override fun onAdd() {
-                    modifyMember(true)
-                }
-
                 override fun onClick(name: View, user: User) {
                     val choices = mutableListOf<String>()
                     choices.add(getString(R.string.group_pop_menu_message, user.fullName))
                     choices.add(getString(R.string.group_pop_menu_view, user.fullName))
                     var role: String? = null
-                    self?.let {
-                        val p = participantsMap[it.userId]
-                        p?.let { role = p.role }
-                    }
+                    val p = participantsMap[self.userId]
+                    p?.let { role = p.role }
                     val userRole = (participantsMap[user.userId] as Participant).role
                     if (role == ParticipantRole.OWNER.name) {
                         if (userRole == ParticipantRole.ADMIN.name) {
@@ -137,7 +139,7 @@ class GroupInfoFragment : BaseFragment() {
                                         getString(
                                             R.string.group_info_remove_tip,
                                             user.fullName,
-                                            adapter.conversation?.name
+                                            conversation?.name
                                         ),
                                         TYPE_REMOVE,
                                         user = user
@@ -152,15 +154,13 @@ class GroupInfoFragment : BaseFragment() {
 
                 override fun onLongClick(name: View, user: User): Boolean {
                     val popMenu = PopupMenu(activity!!, name)
-                    val c = adapter.conversation
+                    val c = conversation
                     if (c == null || !c.isGroup()) {
                         return false
                     }
                     var role: String? = null
-                    self?.let {
-                        val p = participantsMap[it.userId]
-                        p?.let { role = p.role }
-                    }
+                    val p = participantsMap[self.userId]
+                    p?.let { role = p.role }
                     val userRole = (participantsMap[user.userId] as Participant).role
                     if (role == ParticipantRole.OWNER.name) {
                         if (userRole == ParticipantRole.ADMIN.name) {
@@ -196,7 +196,7 @@ class GroupInfoFragment : BaseFragment() {
                                     getString(
                                         R.string.group_info_remove_tip,
                                         user.fullName,
-                                        adapter.conversation?.name
+                                        conversation?.name
                                     ),
                                     TYPE_REMOVE,
                                     user = user
@@ -214,57 +214,14 @@ class GroupInfoFragment : BaseFragment() {
             }
         )
 
-        groupViewModel.getGroupParticipantsLiveData(conversationId).observe(
-            viewLifecycleOwner,
-            Observer { u ->
-                u?.let {
-                    var role: String? = null
-                    self?.let { u ->
-                        val p = participantsMap[u.userId]
-                        p?.let { role = p.role }
-                    }
-                    users.clear()
-                    users.addAll(u)
-
-                    headerBinding.addRl.visibility = if (it.isEmpty() || it.size >= MAX_USER || role == null ||
-                        (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name)
-                    )
-                        GONE else VISIBLE
-
-                    lifecycleScope.launch {
-                        if (!isAdded) return@launch
-
-                        val participants = groupViewModel.getRealParticipants(conversationId)
-                        participantsMap.clear()
-                        for (item in it) {
-                            participants.forEach { p ->
-                                if (item.userId == p.userId) {
-                                    participantsMap[item.userId] = p
-                                    return@forEach
-                                }
-                            }
-                        }
-                        adapter.participantsMap = participantsMap
-                        filter()
-                    }
-                }
-            }
-        )
+        filter()
 
         groupViewModel.getConversationById(conversationId).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 it?.let {
-                    adapter.conversation = it
+                    conversation = it
                 }
-            }
-        )
-
-        groupViewModel.findSelf().observe(
-            viewLifecycleOwner,
-            Observer {
-                self = it
-                adapter.self = it
             }
         )
 
@@ -285,17 +242,79 @@ class GroupInfoFragment : BaseFragment() {
 
     private var keyword: String = ""
         set(value) {
+            if (field == value) return
+
             field = value
             filter()
         }
 
-    private fun filter() {
-        adapter.data = if (keyword.isNotBlank()) {
-            users.filter {
-                it.fullName?.contains(keyword, true) == true || it.identityNumber.contains(keyword, true)
-            }.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword }
+    private fun filter() = lifecycleScope.launch {
+        observer?.let {
+            curLiveData?.removeObserver(it)
+        }
+        curLiveData = if (keyword.isNotBlank()) {
+            groupViewModel.fuzzySearchGroupParticipants(conversationId, keyword)
         } else {
-            users
+            groupViewModel.observeGroupParticipants(conversationId)
+        }
+        observer = Observer {
+            if (keyword.isBlank()) {
+                lifecycleScope.launch {
+                    val participants = groupViewModel.getRealParticipants(conversationId)
+                    participantsMap.clear()
+                    for (item in it) {
+                        if (item == null) continue
+
+                        participants.forEach { p ->
+                            if (item.userId == p.userId) {
+                                participantsMap[item.userId] = p
+                                return@forEach
+                            }
+                        }
+                    }
+
+                    adapter.participantsMap = participantsMap
+                    refreshHeader(it)
+                    adapter.submitList(it)
+                }
+            } else {
+                refreshHeader(it)
+                adapter.submitList(it)
+            }
+        }
+        observer?.let {
+            curLiveData?.observe(viewLifecycleOwner, it)
+        }
+    }
+
+    private fun refreshHeader(users: PagedList<User>) = lifecycleScope.launch {
+        var isAdmin = false
+        var inGroup = true
+        val me = withContext(Dispatchers.IO) {
+            groupViewModel.findParticipantById(conversationId, self.userId)
+        }
+        if (me == null) {
+            inGroup = false
+        } else {
+            val role = me.role
+            isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+        }
+
+        headerBinding.apply {
+            addRl.setOnClickListener {
+                modifyMember(true)
+            }
+            if (keyword.isBlank() && isAdmin && users.size < MAX_USER) {
+                addRl.visibility = View.VISIBLE
+                inviteItem.visibility = View.VISIBLE
+            } else {
+                addRl.visibility = View.GONE
+                inviteItem.visibility = View.GONE
+            }
+            groupInfoNotIn.isGone = inGroup
+            inviteItem.setOnClickListener {
+                InviteActivity.show(requireContext(), conversationId)
+            }
         }
     }
 
@@ -318,7 +337,7 @@ class GroupInfoFragment : BaseFragment() {
         dialog?.dismiss()
     }
 
-    private fun showConfirmDialog(message: String, type: Int, user: User? = null) {
+    private fun showConfirmDialog(message: String, @Suppress("SameParameterValue") type: Int, user: User? = null) {
         alertDialogBuilder()
             .setMessage(message)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
@@ -351,9 +370,9 @@ class GroupInfoFragment : BaseFragment() {
         dialog!!.show()
     }
 
-    private fun modifyMember(isAdd: Boolean) {
+    private fun modifyMember(@Suppress("SameParameterValue") isAdd: Boolean) {
         val list = arrayListOf<User>()
-        adapter.data.let {
+        adapter.currentList.let {
             list += it!!
         }
         activity?.addFragment(

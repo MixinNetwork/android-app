@@ -1,14 +1,19 @@
 package one.mixin.android.ui.group
 
 import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantAction
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
@@ -70,13 +75,33 @@ internal constructor(
 
     fun getConversationStatusById(id: String) = conversationRepository.getConversationById(id)
 
-    fun getGroupParticipantsLiveData(conversationId: String) =
-        conversationRepository.getGroupParticipantsLiveData(conversationId)
+    fun observeGroupParticipants(conversationId: String): LiveData<PagedList<User>> {
+        return LivePagedListBuilder(
+            conversationRepository.observeGroupParticipants(conversationId),
+            PagedList.Config.Builder()
+                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
+                .setPageSize(Constants.PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build()
+        )
+            .build()
+    }
+
+    fun fuzzySearchGroupParticipants(conversationId: String, query: String): LiveData<PagedList<User>> {
+        val escapedQuery = query.trim().escapeSql()
+        return LivePagedListBuilder(
+            conversationRepository.fuzzySearchGroupParticipants(conversationId, escapedQuery, escapedQuery),
+            PagedList.Config.Builder()
+                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
+                .setPageSize(Constants.PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build()
+        )
+            .build()
+    }
 
     fun getConversationById(conversationId: String) =
         conversationRepository.getConversationById(conversationId)
-
-    fun findSelf() = userRepository.findSelf()
 
     suspend fun getRealParticipants(conversationId: String) = conversationRepository.getRealParticipants(conversationId)
 
@@ -117,4 +142,7 @@ internal constructor(
             return@withContext false
         }
     }
+
+    fun findParticipantById(conversationId: String, userId: String) =
+        conversationRepository.findParticipantById(conversationId, userId)
 }

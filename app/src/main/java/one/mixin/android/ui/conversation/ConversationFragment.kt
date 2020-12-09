@@ -1836,19 +1836,21 @@ class ConversationFragment() :
                 }
             }
         )
-        chatViewModel.getGroupParticipantsLiveData(conversationId)
+        chatViewModel.observeParticipantsCount(conversationId)
             .observe(
                 viewLifecycleOwner,
-                { users ->
-                    users?.let { u ->
-                        groupNumber = u.size
-                        binding.actionBar.setSubTitle(
-                            groupName ?: "",
-                            getString(R.string.title_participants, groupNumber)
-                        )
-                        val userIds = arrayListOf<String>()
-                        users.mapTo(userIds) { it.userId }
-                        if (userIds.contains(Session.getAccountId())) {
+                { count ->
+                    groupNumber = count
+                    binding.actionBar.setSubTitle(
+                        groupName ?: "",
+                        getString(R.string.title_participants, groupNumber)
+                    )
+
+                    lifecycleScope.launch {
+                        val p = withContext(Dispatchers.IO) {
+                            chatViewModel.findParticipantById(conversationId, Session.getAccountId()!!)
+                        }
+                        if (p != null) {
                             binding.chatControl.visibility = VISIBLE
                             binding.bottomCantSend.visibility = GONE
                         } else {

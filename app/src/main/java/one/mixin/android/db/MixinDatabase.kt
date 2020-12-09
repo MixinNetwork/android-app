@@ -58,7 +58,6 @@ import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
-import timber.log.Timber
 
 @Database(
     entities = [

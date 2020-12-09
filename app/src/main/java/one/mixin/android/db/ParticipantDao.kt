@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
@@ -35,10 +36,27 @@ interface ParticipantDao : BaseDao<Participant> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship, u.app_id, u.is_verified FROM participants p, users u " +
-            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC"
+        """
+            SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship, u.app_id, u.is_verified 
+            FROM participants p, users u
+            WHERE p.conversation_id = :conversationId 
+            AND p.user_id = u.user_id 
+            ORDER BY p.created_at DESC
+        """
     )
-    fun getGroupParticipantsLiveData(conversationId: String): LiveData<List<User>>
+    fun observeGroupParticipants(conversationId: String): DataSource.Factory<Int, User>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """
+            SELECT u.* FROM participants p, users u
+            WHERE p.conversation_id = :conversationId 
+            AND p.user_id = u.user_id
+            AND (u.full_name LIKE '%' || :username || '%' ${BaseDao.ESCAPE_SUFFIX} OR u.identity_number like '%' || :identityNumber || '%' ${BaseDao.ESCAPE_SUFFIX})
+            ORDER BY p.created_at DESC
+        """
+    )
+    fun fuzzySearchGroupParticipants(conversationId: String, username: String, identityNumber: String): DataSource.Factory<Int, User>
 
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
     fun updateParticipantRole(conversationId: String, userId: String, role: String)
@@ -81,7 +99,10 @@ interface ParticipantDao : BaseDao<Participant> {
     fun findParticipantById(conversationId: String, userId: String): Participant?
 
     @Query("SELECT count(*) FROM participants WHERE conversation_id = :conversationId")
-    fun getParticipantsCount(conversationId: String): Int
+    suspend fun getParticipantsCount(conversationId: String): Int
+
+    @Query("SELECT count(*) FROM participants WHERE conversation_id = :conversationId")
+    fun observeParticipantsCount(conversationId: String): LiveData<Int>
 
     @Query("SELECT * FROM participants")
     suspend fun getAllParticipants(): List<Participant>
