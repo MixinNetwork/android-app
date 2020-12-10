@@ -2,10 +2,8 @@
 package one.mixin.android.crypto
 
 import android.os.Build
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.util.reportException
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
@@ -18,6 +16,7 @@ import java.security.SecureRandom
 import java.security.spec.MGF1ParameterSpec
 import java.security.spec.PKCS8EncodedKeySpec
 import javax.crypto.Cipher
+import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
@@ -53,6 +52,51 @@ fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
     return h
 }
 
+private val secureRandom: SecureRandom = SecureRandom()
+private val GCM_IV_LENGTH = 12
+
+fun generateAesKey(): ByteArray {
+    val key = ByteArray(16)
+    secureRandom.nextBytes(key)
+    return key
+}
+
+fun aesGcmEncrypt(plain: ByteArray, key: ByteArray): ByteArray {
+    val iv = ByteArray(GCM_IV_LENGTH)
+    secureRandom.nextBytes(iv)
+    val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+    val parameterSpec = GCMParameterSpec(128, iv) // 128 bit auth tag length
+    val secretKey = SecretKeySpec(key, "AES")
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec)
+    val result = cipher.doFinal(plain)
+    return iv.plus(result)
+}
+
+fun aesGcmDecrypt(cipherMessage: ByteArray, key: ByteArray): ByteArray {
+    val secretKey = SecretKeySpec(key, "AES")
+    val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+    val gcmIv = GCMParameterSpec(128, cipherMessage, 0, GCM_IV_LENGTH)
+    cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmIv)
+    return cipher.doFinal(cipherMessage, GCM_IV_LENGTH, cipherMessage.size - GCM_IV_LENGTH)
+}
+
+fun aesEncrypt(key: ByteArray, plain: ByteArray): ByteArray {
+    val keySpec = SecretKeySpec(key, "AES")
+    val iv = ByteArray(16)
+    secureRandom.nextBytes(iv)
+    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    cipher.init(Cipher.ENCRYPT_MODE, keySpec, IvParameterSpec(iv))
+    val result = cipher.doFinal(plain)
+    return iv.plus(result)
+}
+
+fun aesDecrypt(key: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray {
+    val keySpec = SecretKeySpec(key, "AES")
+    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    cipher.init(Cipher.DECRYPT_MODE, keySpec, IvParameterSpec(iv))
+    return cipher.doFinal(ciphertext)
+}
+
 inline fun KeyPair.getPublicKey(): ByteArray {
     return public.encoded
 }
@@ -60,18 +104,6 @@ inline fun KeyPair.getPublicKey(): ByteArray {
 inline fun KeyPair.getPrivateKeyPem(): String {
     val heldCertificate = HeldCertificate.Builder().keyPair(this).build()
     return heldCertificate.privateKeyPkcs1Pem()
-}
-
-fun aesEncrypt(key: String, iterator: Long, code: String): String? {
-    val keySpec = SecretKeySpec(Base64.decode(key), "AES")
-    val iv = ByteArray(16)
-    SecureRandom().nextBytes(iv)
-
-    val pinByte = code.toByteArray() + (System.currentTimeMillis() / 1000).toLeByteArray() + iterator.toLeByteArray()
-    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-    cipher.init(Cipher.ENCRYPT_MODE, keySpec, IvParameterSpec(iv))
-    val result = cipher.doFinal(pinByte)
-    return iv.plus(result).base64Encode()
 }
 
 fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
