@@ -65,7 +65,7 @@ class KeyboardLayout : LinearLayout {
     var keyboardHeight: Int = PreferenceManager.getDefaultSharedPreferences(context)
         .getInt("keyboard_height_portrait", defaultCustomKeyboardSize)
         private set(value) {
-            if (field != value) {
+            if (field != value && value > 0) {
                 field = value
                 PreferenceManager.getDefaultSharedPreferences(context)
                     .putInt("keyboard_height_portrait", value)
