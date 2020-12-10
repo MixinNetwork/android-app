@@ -189,8 +189,11 @@ internal constructor(
     suspend fun getParticipantsWithoutBot(conversationId: String) =
         participantDao.getParticipantsWithoutBot(conversationId)
 
-    fun getGroupParticipantsLiveData(conversationId: String) =
-        participantDao.getGroupParticipantsLiveData(conversationId)
+    fun observeGroupParticipants(conversationId: String) =
+        participantDao.observeGroupParticipants(conversationId)
+
+    fun fuzzySearchGroupParticipants(conversationId: String, username: String, identityNumber: String) =
+        participantDao.fuzzySearchGroupParticipants(conversationId, username, identityNumber)
 
     suspend fun updateMediaStatusSuspend(status: String, messageId: String) =
         messageDao.updateMediaStatusSuspend(status, messageId)
@@ -226,8 +229,11 @@ internal constructor(
     fun findParticipantById(conversationId: String, userId: String) =
         participantDao.findParticipantById(conversationId, userId)
 
-    fun getParticipantsCount(conversationId: String) =
+    suspend fun getParticipantsCount(conversationId: String) =
         participantDao.getParticipantsCount(conversationId)
+
+    fun observeParticipantsCount(conversationId: String) =
+        participantDao.observeParticipantsCount(conversationId)
 
     fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>> = conversationDao.getConversationStorageUsage()
 

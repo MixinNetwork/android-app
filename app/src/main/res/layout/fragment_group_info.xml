@@ -13,31 +13,31 @@
         app:titleText="@string/group_info_title" />
 
     <EditText
-            android:id="@+id/search_et"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="?attr/bg_white"
-            android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_search"
-            android:singleLine="true"
-            android:imeOptions="actionSearch"
-            android:hint="@string/search"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_assist"
-            android:textSize="14sp" />
+        android:id="@+id/search_et"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="?attr/bg_white"
+        android:drawablePadding="8dp"
+        android:drawableStart="@drawable/ic_search"
+        android:singleLine="true"
+        android:imeOptions="actionSearch"
+        android:hint="@string/search"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:textColor="?attr/text_primary"
+        android:textColorHint="?attr/text_assist"
+        android:textSize="14sp" />
 
     <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="?attr/bg_window" />
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="?attr/bg_window" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/group_info_rv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
-        app:layoutManager="LinearLayoutManager"/>
+        app:layoutManager="LinearLayoutManager" />
 </LinearLayout>

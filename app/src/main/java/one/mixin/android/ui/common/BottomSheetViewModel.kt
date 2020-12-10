@@ -157,7 +157,7 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
         jobManager.addJobInBackground(UpdateRelationshipJob(request, report))
     }
 
-    fun getParticipantsCount(conversationId: String) =
+    suspend fun getParticipantsCount(conversationId: String) =
         conversationRepo.getParticipantsCount(conversationId)
 
     fun getConversationById(id: String) = conversationRepo.getConversationById(id)

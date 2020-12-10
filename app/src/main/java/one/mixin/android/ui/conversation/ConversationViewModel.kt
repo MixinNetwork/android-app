@@ -274,8 +274,11 @@ internal constructor(
         jobManager.addJobInBackground(UpdateRelationshipJob(request))
     }
 
-    fun getGroupParticipantsLiveData(conversationId: String) =
-        conversationRepository.getGroupParticipantsLiveData(conversationId)
+    fun observeParticipantsCount(conversationId: String) =
+        conversationRepository.observeParticipantsCount(conversationId)
+
+    fun findParticipantById(conversationId: String, userId: String): Participant? =
+        conversationRepository.findParticipantById(conversationId, userId)
 
     fun initConversation(conversationId: String, recipient: User, sender: User) {
         val createdAt = nowInUtc()
