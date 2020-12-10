@@ -8,7 +8,6 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
-import androidx.collection.ArrayMap
 import androidx.core.view.isGone
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -44,6 +43,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
@@ -78,12 +78,12 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
 
-    private var observer: Observer<PagedList<User>>? = null
-    private var curLiveData: LiveData<PagedList<User>>? = null
+    private var observer: Observer<PagedList<ParticipantItem>>? = null
+    private var curLiveData: LiveData<PagedList<ParticipantItem>>? = null
 
     private var conversation: Conversation? = null
     private val self: User = Session.getAccount()!!.toUser()
-    private var participantsMap: ArrayMap<String, Participant> = ArrayMap()
+    private var selfParticipant: Participant? = null
     private var dialog: Dialog? = null
     private lateinit var headerBinding: ViewGroupInfoHeaderBinding
 
@@ -101,35 +101,33 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
         binding.groupInfoRv.adapter = adapter
         adapter.setGroupInfoListener(
             object : GroupInfoAdapter.GroupInfoListener {
-                override fun onClick(name: View, user: User) {
+                override fun onClick(name: View, participant: ParticipantItem) {
                     val choices = mutableListOf<String>()
-                    choices.add(getString(R.string.group_pop_menu_message, user.fullName))
-                    choices.add(getString(R.string.group_pop_menu_view, user.fullName))
-                    var role: String? = null
-                    val p = participantsMap[self.userId]
-                    p?.let { role = p.role }
-                    val userRole = (participantsMap[user.userId] as Participant).role
+                    choices.add(getString(R.string.group_pop_menu_message, participant.fullName))
+                    choices.add(getString(R.string.group_pop_menu_view, participant.fullName))
+                    val role = selfParticipant?.role
+                    val userRole = participant.role
                     if (role == ParticipantRole.OWNER.name) {
                         if (userRole == ParticipantRole.ADMIN.name) {
-                            choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
+                            choices.add(getString(R.string.group_pop_menu_remove, participant.fullName))
                             choices.add(getString(R.string.group_pop_menu_dismiss_admin))
                         } else {
-                            choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
+                            choices.add(getString(R.string.group_pop_menu_remove, participant.fullName))
                             choices.add(getString(R.string.group_pop_menu_make_admin))
                         }
                     } else if (role == ParticipantRole.ADMIN.name) {
                         if (userRole != ParticipantRole.OWNER.name && userRole != ParticipantRole.ADMIN.name) {
-                            choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
+                            choices.add(getString(R.string.group_pop_menu_remove, participant.fullName))
                         }
                     }
                     alertDialogBuilder()
                         .setItems(choices.toTypedArray()) { _, which ->
                             when (which) {
                                 0 -> {
-                                    openChat(user)
+                                    openChat(participant.toUser())
                                 }
                                 1 -> {
-                                    UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(
+                                    UserBottomSheetDialogFragment.newInstance(participant.toUser(), conversationId).showNow(
                                         parentFragmentManager,
                                         UserBottomSheetDialogFragment.TAG
                                     )
@@ -138,72 +136,70 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                                     showConfirmDialog(
                                         getString(
                                             R.string.group_info_remove_tip,
-                                            user.fullName,
+                                            participant.fullName,
                                             conversation?.name
                                         ),
                                         TYPE_REMOVE,
-                                        user = user
+                                        user = participant.toUser()
                                     )
                                 }
                                 3 -> {
-                                    handleAdminRole(userRole, user)
+                                    handleAdminRole(userRole, participant.toUser())
                                 }
                             }
                         }.show()
                 }
 
-                override fun onLongClick(name: View, user: User): Boolean {
+                override fun onLongClick(name: View, participant: ParticipantItem): Boolean {
                     val popMenu = PopupMenu(activity!!, name)
                     val c = conversation
                     if (c == null || !c.isGroup()) {
                         return false
                     }
-                    var role: String? = null
-                    val p = participantsMap[self.userId]
-                    p?.let { role = p.role }
-                    val userRole = (participantsMap[user.userId] as Participant).role
+                    val role = selfParticipant?.role
+                    val userRole = participant.role
                     if (role == ParticipantRole.OWNER.name) {
                         if (userRole == ParticipantRole.ADMIN.name) {
                             popMenu.menuInflater.inflate(R.menu.group_item_owner_dismiss, popMenu.menu)
                         } else {
                             popMenu.menuInflater.inflate(R.menu.group_item_owner, popMenu.menu)
                         }
-                        popMenu.menu.findItem(R.id.remove).title = getString(R.string.group_pop_menu_remove, user.fullName)
+                        popMenu.menu.findItem(R.id.remove).title = getString(R.string.group_pop_menu_remove, participant.fullName)
                     } else if (role == ParticipantRole.ADMIN.name) {
                         if (userRole == ParticipantRole.OWNER.name || userRole == ParticipantRole.ADMIN.name) {
                             popMenu.menuInflater.inflate(R.menu.group_item_simple, popMenu.menu)
                         } else {
                             popMenu.menuInflater.inflate(R.menu.group_item_admin, popMenu.menu)
                             popMenu.menu.findItem(R.id.remove).title =
-                                getString(R.string.group_pop_menu_remove, user.fullName)
+                                getString(R.string.group_pop_menu_remove, participant.fullName)
                         }
                     } else {
                         popMenu.menuInflater.inflate(R.menu.group_item_simple, popMenu.menu)
                     }
-                    popMenu.menu.findItem(R.id.message).title = getString(R.string.group_pop_menu_message, user.fullName)
-                    popMenu.menu.findItem(R.id.view).title = getString(R.string.group_pop_menu_view, user.fullName)
+                    popMenu.menu.findItem(R.id.message).title = getString(R.string.group_pop_menu_message, participant.fullName)
+                    popMenu.menu.findItem(R.id.view).title = getString(R.string.group_pop_menu_view, participant.fullName)
                     popMenu.setOnMenuItemClickListener {
                         when (it.itemId) {
                             R.id.message -> {
-                                openChat(user)
+                                openChat(participant.toUser())
                             }
                             R.id.view -> {
-                                UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                UserBottomSheetDialogFragment.newInstance(participant.toUser(), conversationId)
                                     .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                             }
                             R.id.remove -> {
                                 showConfirmDialog(
                                     getString(
                                         R.string.group_info_remove_tip,
-                                        user.fullName,
+                                        participant.fullName,
                                         conversation?.name
                                     ),
                                     TYPE_REMOVE,
-                                    user = user
+                                    user = participant.toUser()
                                 )
                             }
                             R.id.admin -> {
-                                handleAdminRole(userRole, user)
+                                handleAdminRole(userRole, participant.toUser())
                             }
                         }
                         return@setOnMenuItemClickListener true
@@ -258,45 +254,26 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
             groupViewModel.observeGroupParticipants(conversationId)
         }
         observer = Observer {
-            if (keyword.isBlank()) {
-                lifecycleScope.launch {
-                    val participants = groupViewModel.getRealParticipants(conversationId)
-                    participantsMap.clear()
-                    for (item in it) {
-                        if (item == null) continue
-
-                        participants.forEach { p ->
-                            if (item.userId == p.userId) {
-                                participantsMap[item.userId] = p
-                                return@forEach
-                            }
-                        }
-                    }
-
-                    adapter.participantsMap = participantsMap
-                    refreshHeader(it)
-                    adapter.submitList(it)
-                }
-            } else {
-                refreshHeader(it)
-                adapter.submitList(it)
-            }
+            refreshHeader(it.size)
+            adapter.submitList(it)
         }
         observer?.let {
             curLiveData?.observe(viewLifecycleOwner, it)
         }
     }
 
-    private fun refreshHeader(users: PagedList<User>) = lifecycleScope.launch {
+    private fun refreshHeader(participantCount: Int) = lifecycleScope.launch {
         var isAdmin = false
         var inGroup = true
-        val me = withContext(Dispatchers.IO) {
-            groupViewModel.findParticipantById(conversationId, self.userId)
+        if (selfParticipant == null) {
+            selfParticipant = withContext(Dispatchers.IO) {
+                groupViewModel.findParticipantById(conversationId, self.userId)
+            }
         }
-        if (me == null) {
+        if (selfParticipant == null) {
             inGroup = false
         } else {
-            val role = me.role
+            val role = selfParticipant!!.role
             isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
         }
 
@@ -304,7 +281,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
             addRl.setOnClickListener {
                 modifyMember(true)
             }
-            if (keyword.isBlank() && isAdmin && users.size < MAX_USER) {
+            if (keyword.isBlank() && isAdmin && participantCount < MAX_USER) {
                 addRl.visibility = View.VISIBLE
                 inviteItem.visibility = View.VISIBLE
             } else {
@@ -370,10 +347,10 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
         dialog!!.show()
     }
 
-    private fun modifyMember(@Suppress("SameParameterValue") isAdd: Boolean) {
-        val list = arrayListOf<User>()
-        adapter.currentList.let {
-            list += it!!
+    private fun modifyMember(@Suppress("SameParameterValue") isAdd: Boolean) = lifecycleScope.launch {
+        val users = withContext(Dispatchers.IO) { groupViewModel.getGroupParticipants(conversationId) }
+        val list = arrayListOf<User>().apply {
+            addAll(users)
         }
         activity?.addFragment(
             this@GroupInfoFragment,

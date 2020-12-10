@@ -7,10 +7,19 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
 
 @Dao
 interface ParticipantDao : BaseDao<Participant> {
+    companion object {
+        const val PREFIX_PARTICIPANT_ITEM = """
+            SELECT p.conversation_id as conversationId, p.role as role, p.created_at as createdAt, 
+            u.user_id as userId, u.identity_number as identityNumber, u.relationship as relationship, u.biography as biography, u.full_name as fullName, 
+            u.avatar_url as avatarUrl, u.phone as phone, u.is_verified as isVerified, u.created_at as userCreatedAt, u.mute_until as muteUntil,
+            u.has_pin as hasPin, u.app_id as appId, u.is_scam as isScam 
+        """
+    }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -37,26 +46,27 @@ interface ParticipantDao : BaseDao<Participant> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-            SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship, u.app_id, u.is_verified 
+            $PREFIX_PARTICIPANT_ITEM
             FROM participants p, users u
             WHERE p.conversation_id = :conversationId 
             AND p.user_id = u.user_id 
             ORDER BY p.created_at DESC
         """
     )
-    fun observeGroupParticipants(conversationId: String): DataSource.Factory<Int, User>
+    fun observeGroupParticipants(conversationId: String): DataSource.Factory<Int, ParticipantItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-            SELECT u.* FROM participants p, users u
+            $PREFIX_PARTICIPANT_ITEM
+            FROM participants p, users u
             WHERE p.conversation_id = :conversationId 
             AND p.user_id = u.user_id
             AND (u.full_name LIKE '%' || :username || '%' ${BaseDao.ESCAPE_SUFFIX} OR u.identity_number like '%' || :identityNumber || '%' ${BaseDao.ESCAPE_SUFFIX})
             ORDER BY p.created_at DESC
         """
     )
-    fun fuzzySearchGroupParticipants(conversationId: String, username: String, identityNumber: String): DataSource.Factory<Int, User>
+    fun fuzzySearchGroupParticipants(conversationId: String, username: String, identityNumber: String): DataSource.Factory<Int, ParticipantItem>
 
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
     fun updateParticipantRole(conversationId: String, userId: String, role: String)
@@ -70,10 +80,6 @@ interface ParticipantDao : BaseDao<Participant> {
         deleteByConversationId(conversationId)
         insertList(participants)
     }
-
-    @Transaction
-    @Query("SELECT * FROM participants WHERE conversation_id = :conversationId")
-    suspend fun getRealParticipantsSuspend(conversationId: String): List<Participant>
 
     @Query("DELETE FROM participants WHERE conversation_id = :conversationId")
     fun deleteByConversationId(conversationId: String)

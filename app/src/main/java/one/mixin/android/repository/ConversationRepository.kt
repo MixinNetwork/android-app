@@ -207,9 +207,6 @@ internal constructor(
             }
         }
 
-    suspend fun getRealParticipants(conversationId: String) =
-        participantDao.getRealParticipantsSuspend(conversationId)
-
     fun getGroupAppsByConversationId(conversationId: String) =
         appDao.getGroupAppsByConversationId(conversationId)
 

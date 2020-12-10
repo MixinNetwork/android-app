@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
@@ -140,7 +139,7 @@ class GroupFragment : BaseFragment() {
         if (from == TYPE_ADD || from == TYPE_CREATE) {
             groupViewModel.getFriends().observe(
                 viewLifecycleOwner,
-                Observer {
+                {
                     users = it
                     filterAndSet(binding.searchEt.text.toString(), it)
                 }
@@ -154,7 +153,7 @@ class GroupFragment : BaseFragment() {
         binding.searchEt.isFocusableInTouchMode = false
         binding.searchEt.isFocusable = false
         binding.searchEt.post {
-            binding.searchEt?.let {
+            binding.searchEt.let {
                 it.isFocusableInTouchMode = true
                 it.isFocusable = true
             }
@@ -213,7 +212,7 @@ class GroupFragment : BaseFragment() {
         override fun onItemClick(user: User, checked: Boolean) {
             if (checked) {
                 checkedUsers.add(user)
-                binding.searchEt?.text?.clear()
+                binding.searchEt.text?.clear()
             } else {
                 checkedUsers.remove(user)
             }

@@ -26,6 +26,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
 import java.util.UUID
 
@@ -75,7 +76,7 @@ internal constructor(
 
     fun getConversationStatusById(id: String) = conversationRepository.getConversationById(id)
 
-    fun observeGroupParticipants(conversationId: String): LiveData<PagedList<User>> {
+    fun observeGroupParticipants(conversationId: String): LiveData<PagedList<ParticipantItem>> {
         return LivePagedListBuilder(
             conversationRepository.observeGroupParticipants(conversationId),
             PagedList.Config.Builder()
@@ -87,7 +88,7 @@ internal constructor(
             .build()
     }
 
-    fun fuzzySearchGroupParticipants(conversationId: String, query: String): LiveData<PagedList<User>> {
+    fun fuzzySearchGroupParticipants(conversationId: String, query: String): LiveData<PagedList<ParticipantItem>> {
         val escapedQuery = query.trim().escapeSql()
         return LivePagedListBuilder(
             conversationRepository.fuzzySearchGroupParticipants(conversationId, escapedQuery, escapedQuery),
@@ -102,8 +103,6 @@ internal constructor(
 
     fun getConversationById(conversationId: String) =
         conversationRepository.getConversationById(conversationId)
-
-    suspend fun getRealParticipants(conversationId: String) = conversationRepository.getRealParticipants(conversationId)
 
     fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
         conversationRepository.deleteMessageByConversationId(conversationId)
@@ -145,4 +144,7 @@ internal constructor(
 
     fun findParticipantById(conversationId: String, userId: String) =
         conversationRepository.findParticipantById(conversationId, userId)
+
+    fun getGroupParticipants(conversationId: String) =
+        conversationRepository.getGroupParticipants(conversationId)
 }
