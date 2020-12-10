@@ -17,6 +17,7 @@
     <string name="fee">Fee</string>
     <string name="memo">Memo</string>
     <string name="date">Date</string>
+    <string name="trace">Trace</string>
     <string name="label">Label</string>
     <string name="address">Address</string>
     <string name="amount">Amount</string>

@@ -25,6 +25,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.widget.DebugClickListener
 import org.jetbrains.anko.textColorResource
 import java.math.BigDecimal
 
@@ -62,6 +63,14 @@ interface TransactionInterface {
             contentBinding.avatar.setOnClickListener {
                 clickAvatar(fragment, assetItem)
             }
+            contentBinding.transactionIdTitleTv.setOnClickListener(object : DebugClickListener() {
+                override fun onDebugClick() {
+                    contentBinding.traceLl.visibility = View.VISIBLE
+                }
+
+                override fun onSingleClick() {
+                }
+            })
             updateUI(fragment, contentBinding, assetItem, snapshotItem)
             fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentBinding, assetItem.assetId, snapshotItem)
         }
@@ -203,6 +212,7 @@ interface TransactionInterface {
                         fragment.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
                 }
                 SnapshotType.transfer.name -> {
+                    traceTv.text = snapshot.traceId
                     if (isPositive) {
                         senderTv.text = snapshot.opponentFullName
                         receiverTv.text = Session.getAccount()!!.fullName

@@ -93,7 +93,7 @@
                         android:id="@+id/that_va"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="32dp"
+                        android:layout_marginBottom="24dp"
                         android:layout_below="@id/value_as_tv"
                         android:layout_centerHorizontal="true">
 
@@ -249,7 +249,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/margin16"
                     android:orientation="vertical">
-
                     <TextView
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
@@ -258,6 +257,25 @@
 
                     <TextView
                         android:id="@+id/date_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/trace_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:orientation="vertical">
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/trace" />
+
+                    <TextView
+                        android:id="@+id/trace_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
