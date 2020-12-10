@@ -13,10 +13,19 @@ import java.net.ProtocolException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import javax.net.ssl.SSLPeerUnverifiedException
 import kotlin.jvm.Throws
 
 fun Throwable.isNeedSwitch(): Boolean {
-    return (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException || this is ProtocolException || this is NoRouteToHostException || this is SocketException)
+    return (
+        this is SocketTimeoutException ||
+            this is UnknownHostException ||
+            this is ConnectException ||
+            this is ProtocolException ||
+            this is NoRouteToHostException ||
+            this is SocketException ||
+            this is SSLPeerUnverifiedException
+        )
 }
 
 class HostSelectionInterceptor private constructor() : Interceptor {
