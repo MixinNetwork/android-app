@@ -2,6 +2,9 @@
 package one.mixin.android.crypto
 
 import android.os.Build
+import net.i2p.crypto.eddsa.EdDSAPublicKey
+import net.i2p.crypto.eddsa.math.FieldElement
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.util.reportException
@@ -23,6 +26,8 @@ import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 import kotlin.experimental.or
+
+internal val ed25519 by lazy { EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519) }
 
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
@@ -60,6 +65,26 @@ fun generateAesKey(): ByteArray {
     secureRandom.nextBytes(key)
     return key
 }
+
+fun publicKeyToCurve25519(publicKey: EdDSAPublicKey): ByteArray {
+    val groupElement = publicKey.a
+    val x = edwardsToMontgomeryX(groupElement.y)
+    return x.toByteArray()
+}
+
+private fun edwardsToMontgomeryX(y: FieldElement): FieldElement {
+    val field = ed25519.curve.field
+    var oneMinusY = field.ONE
+    oneMinusY = oneMinusY.subtract(y)
+    oneMinusY = oneMinusY.invert()
+
+    var outX = field.ONE
+    outX = outX.add(y)
+
+    outX = oneMinusY.multiply(outX)
+    return outX
+}
+
 
 fun aesGcmEncrypt(plain: ByteArray, key: ByteArray): ByteArray {
     val iv = ByteArray(GCM_IV_LENGTH)
