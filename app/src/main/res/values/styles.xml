@@ -257,7 +257,7 @@
         <item name="android:textColor">?attr/text_minor</item>
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>
-        <item name="android:layout_marginTop">18dp</item>
+        <item name="android:layout_marginTop">12dp</item>
         <item name="android:layout_marginBottom">5dp</item>
     </style>
 
@@ -267,7 +267,7 @@
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>
         <item name="android:layout_marginTop">5dp</item>
-        <item name="android:layout_marginBottom">18dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
     </style>
 
     <style name="ProgressTheme" parent="Widget.AppCompat.ProgressBar.Horizontal">
