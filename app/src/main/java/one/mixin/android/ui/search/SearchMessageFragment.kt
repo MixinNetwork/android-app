@@ -1,10 +1,8 @@
 package one.mixin.android.ui.search
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -17,6 +15,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchMessageBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
@@ -25,13 +24,14 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.search.SearchSingleFragment.Companion.ARGS_QUERY
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
-class SearchMessageFragment : BaseFragment() {
+class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     companion object {
         const val TAG = "SearchMessageFragment"
         const val ARGS_SEARCH_MESSAGE = "args_search_message"
@@ -57,18 +57,7 @@ class SearchMessageFragment : BaseFragment() {
     private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
-    private var _binding: FragmentSearchMessageBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentSearchMessageBinding.inflate(layoutInflater, container, false)
-        return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    private val binding by viewBinding(FragmentSearchMessageBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -132,7 +121,7 @@ class SearchMessageFragment : BaseFragment() {
         if (isConversationSearch()) {
             binding.searchEt.postDelayed(
                 {
-                    binding.searchEt?.showKeyboard()
+                    binding.searchEt.showKeyboard()
                 },
                 500
             )
