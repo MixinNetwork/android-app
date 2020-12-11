@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.WindowManager
 import androidx.annotation.IntRange
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
@@ -21,6 +22,7 @@ inline fun FragmentActivity.editDialog(
     val dialog = EditDialog.newInstance()
     dialog.apply(builder)
     dialog.showNow(supportFragmentManager, EditDialog.TAG)
+    dialog.dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     return dialog
 }
 
@@ -30,6 +32,7 @@ inline fun Fragment.editDialog(
     val dialog = EditDialog.newInstance()
     dialog.apply(builder)
     dialog.showNow(parentFragmentManager, EditDialog.TAG)
+    dialog.dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     return dialog
 }
 
@@ -117,7 +120,6 @@ class EditDialog : MixinBottomSheetDialogFragment() {
 
             setOnShowListener {
                 contentView.post {
-                    binding.editEt.requestFocus()
                     binding.editEt.showKeyboard()
                 }
             }
