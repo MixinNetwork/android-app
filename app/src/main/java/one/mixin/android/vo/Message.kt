@@ -175,6 +175,10 @@ class Message(
         get() = category
 }
 
+fun Message.isEncrypted(): Boolean {
+    return category.startsWith("ENCRYPTED_")
+}
+
 fun Message.isSignal(): Boolean {
     return category.startsWith("SIGNAL_")
 }
