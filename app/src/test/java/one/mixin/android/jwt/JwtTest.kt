@@ -14,11 +14,11 @@ import one.mixin.android.mock.mockAccount
 import one.mixin.android.mock.mockRequest
 import one.mixin.android.session.Session
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
 import java.security.Security
 import java.util.UUID
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class JwtTest {
 
