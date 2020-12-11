@@ -11,6 +11,10 @@ import android.webkit.WebViewClient
 import androidx.annotation.ColorInt
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -18,6 +22,7 @@ import one.mixin.android.extension.initRenderScript
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
 
@@ -62,17 +67,17 @@ var clips = mutableListOf<WebClip>()
 
 data class WebClip(
     val url: String,
-    @Transient val thumb: Bitmap?,
     val app: App?,
     @ColorInt
     val titleColor: Int,
     val name: String?,
-    @Transient val icon: Bitmap?,
+    val thumb: Bitmap?,
+    val icon: Bitmap?,
     @Transient val webView: MixinWebView?,
     @Transient val isFinished: Boolean = false
 )
 
-fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
+fun updateClip(index: Int, webClip: WebClip) {
     if (index < clips.size) {
         if (clips[index].webView != webClip.webView) {
             clips[index].webView?.destroy()
@@ -81,7 +86,6 @@ fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
         }
         clips.removeAt(index)
         clips.add(index, webClip)
-        saveClips(activity)
     }
 }
 
@@ -96,19 +100,25 @@ fun holdClip(activity: Activity, webClip: WebClip) {
         } else {
             clips.add(webClip)
             FloatingWebClip.getInstance().show(activity)
-            saveClips(activity)
         }
     }
 }
 
 private fun initClips(activity: Activity) {
-    val content = activity.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return
-    val type = object : TypeToken<List<WebClip>>() {}.type
-    val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
-    clips.clear()
-    if (list.isEmpty()) return
-    clips.addAll(list)
-    FloatingWebClip.getInstance().show(activity)
+    GlobalScope.launch(SINGLE_THREAD) {
+        val content =
+            activity.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
+        val type = object : TypeToken<List<WebClip>>() {}.type
+        val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
+        clips.clear()
+        if (list.isEmpty()) return@launch
+        clips.addAll(list)
+        MixinApplication.get().currentActivity?.let { activity ->
+            withContext(Dispatchers.Main) {
+                FloatingWebClip.getInstance().show(activity)
+            }
+        }
+    }
 }
 
 fun refresh(activity: Activity) {
@@ -130,12 +140,16 @@ fun releaseClip(index: Int) {
         } else {
             FloatingWebClip.getInstance().reload()
         }
-        saveClips(MixinApplication.appContext)
     }
 }
 
-private fun saveClips(context: Context) {
-    context.defaultSharedPreferences.putString(PREF_FLOATING, GsonHelper.customGson.toJson(clips))
+fun saveClips() {
+    GlobalScope.launch(SINGLE_THREAD) {
+        MixinApplication.appContext.defaultSharedPreferences.putString(
+            PREF_FLOATING,
+            GsonHelper.customGson.toJson(clips)
+        )
+    }
 }
 
 fun releaseAll() {
@@ -145,6 +159,5 @@ fun releaseAll() {
         clip.webView?.webChromeClient = null
     }
     clips.clear()
-    saveClips(MixinApplication.appContext)
     FloatingWebClip.getInstance().hide()
 }
