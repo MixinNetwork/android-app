@@ -230,5 +230,11 @@ class MixinDatabaseMigrations private constructor() {
                 )
             }
         }
+
+        val MIGRATION_33_34: Migration = object : Migration(33, 34) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE participant_session ADD COLUMN public_key TEXT")
+            }
+        }
     }
 }

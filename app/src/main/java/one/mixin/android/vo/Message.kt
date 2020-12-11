@@ -168,6 +168,10 @@ fun Message.isPlain(): Boolean {
     return category.startsWith("PLAIN_")
 }
 
+fun Message.isEncrypted(): Boolean {
+    return category.startsWith("ENCRYPTED_")
+}
+
 fun Message.isSignal(): Boolean {
     return category.startsWith("SIGNAL_")
 }
@@ -253,7 +257,17 @@ enum class MessageCategory {
     KRAKEN_CANCEL,
     KRAKEN_DECLINE,
     KRAKEN_LIST,
-    KRAKEN_RESTART
+    KRAKEN_RESTART,
+    ENCRYPTED_TEXT,
+    ENCRYPTED_IMAGE,
+    ENCRYPTED_VIDEO,
+    ENCRYPTED_STICKER,
+    ENCRYPTED_DATA,
+    ENCRYPTED_CONTACT,
+    ENCRYPTED_AUDIO,
+    ENCRYPTED_LIVE,
+    ENCRYPTED_POST,
+    ENCRYPTED_LOCATION,
 }
 
 fun String.isIllegalMessageCategory(): Boolean {

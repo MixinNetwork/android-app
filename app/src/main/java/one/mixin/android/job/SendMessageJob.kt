@@ -2,9 +2,21 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
+import net.i2p.crypto.eddsa.EdDSAPublicKey
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.RxBus
+import one.mixin.android.api.ChecksumException
+import one.mixin.android.crypto.aesEncrypt
+import one.mixin.android.crypto.aesGcmEncrypt
+import one.mixin.android.crypto.calculateAgreement
+import one.mixin.android.crypto.ed25519
+import one.mixin.android.crypto.generateAesKey
+import one.mixin.android.crypto.privateKeyToCurve25519
+import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.session.Session
@@ -111,6 +123,8 @@ open class SendMessageJob(
         jobManager.saveJob(this)
         if (message.isPlain() || message.isCall() || message.isRecall() || message.category == MessageCategory.APP_CARD.name) {
             sendPlainMessage()
+        } else if (message.isEncrypted()) {
+            sendEncryptedMessage()
         } else {
             sendSignalMessage()
         }
@@ -154,6 +168,51 @@ open class SendMessageJob(
             createParamBlazeMessage(blazeParam)
         }
         deliver(blazeMessage)
+    }
+
+    private fun sendEncryptedMessage() {
+        val conversation = conversationDao.getConversation(message.conversationId) ?: return
+        checkConversationExist(conversation)
+        val participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
+        if (participantSessionKey == null) {
+            syncConversation(message.conversationId)
+            throw ChecksumException()
+        }
+        if (participantSessionKey.publicKey.isNullOrBlank()) {
+            message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
+            sendPlainMessage()
+            return
+        }
+
+        val keyBase64 = Session.getEd25519PrivateKey() ?: return
+        val privateKey = EdDSAPrivateKeySpec(keyBase64.decodeBase64(), ed25519)
+        val aesGcmKey = generateAesKey()
+        val encryptedMessageData = aesGcmEncrypt(message.content!!.toByteArray(), aesGcmKey)
+        val messageKey = getCipherMessage(privateKey.seed, participantSessionKey.publicKey.decodeBase64(), encryptedMessageData) ?: return
+        val messageKeyWithSession = participantSessionKey.sessionId.toByteArray().plus(messageKey)
+        val senderPublicKey = publicKeyToCurve25519(EdDSAPublicKeySpec(privateKey.a, ed25519) as EdDSAPublicKey)
+        val version = byteArrayOf(0x01)
+        val sessionSize = byteArrayOf(0x01)
+        val content = version.plus(sessionSize).plus(senderPublicKey).plus(messageKeyWithSession).plus(encryptedMessageData).base64Encode()
+        val blazeParam = BlazeMessageParam(
+            message.conversationId,
+            recipientId,
+            message.id,
+            message.category,
+            content,
+            quote_message_id = message.quoteMessageId,
+            mentions = getMentionData(message.id),
+            recipient_ids = recipientIds
+        )
+        val blazeMessage = createParamBlazeMessage(blazeParam)
+        deliver(blazeMessage)
+    }
+
+    private fun getCipherMessage(seed: ByteArray, publicKey: ByteArray, aesGcmKey: ByteArray): ByteArray? {
+        val private = privateKeyToCurve25519(seed)
+        val sharedSecret = calculateAgreement(publicKey, private) ?: return null
+        val encryptedMessageKey = aesEncrypt(sharedSecret, aesGcmKey)
+        return encryptedMessageKey
     }
 
     private fun sendSignalMessage() {
