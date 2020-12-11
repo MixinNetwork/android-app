@@ -35,8 +35,14 @@ class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, Searc
 }
 
 class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.ViewHolder(binding.root) {
-    val icon: Drawable? by lazy {
+    private val fileIcon: Drawable? by lazy {
         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file).apply {
+            this?.setBounds(0, 0, itemView.dip(12f), itemView.dip(12f))
+        }
+    }
+
+    private val contactIcon: Drawable? by lazy {
+        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact).apply {
             this?.setBounds(0, 0, itemView.dip(12f), itemView.dip(12f))
         }
     }
@@ -48,10 +54,10 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
     ) {
         binding.searchNameTv.text = message.userFullName
         if (message.type == MessageCategory.SIGNAL_DATA.name || message.type == MessageCategory.PLAIN_DATA.name) {
-            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, icon, null, null, null)
+            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, fileIcon, null, null, null)
             binding.searchMsgTv.text = message.mediaName
         } else if (message.type == MessageCategory.SIGNAL_CONTACT.name || message.type == MessageCategory.PLAIN_CONTACT.name) {
-            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, null, null, null, null)
+            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, contactIcon, null, null, null)
             binding.searchMsgTv.text = message.mediaName
         } else {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, null, null, null, null)

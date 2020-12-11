@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -24,6 +23,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
@@ -31,7 +31,7 @@ import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
-class SearchSingleFragment : BaseFragment() {
+class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
     companion object {
         const val TAG = "SearchSingleFragment"
         const val ARGS_LIST = "args_list"
@@ -69,18 +69,7 @@ class SearchSingleFragment : BaseFragment() {
         SearchSingleAdapter(type).apply { query = this@SearchSingleFragment.query }
     }
 
-    private var _binding: FragmentSearchSingleBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentSearchSingleBinding.inflate(layoutInflater, container, false)
-        return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    private val binding by viewBinding(FragmentSearchSingleBinding::bind)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
