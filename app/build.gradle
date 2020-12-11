@@ -292,6 +292,9 @@ dependencies {
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
+
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "androidx.test:core:${testCoreVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"

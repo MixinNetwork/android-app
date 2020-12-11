@@ -7,7 +7,6 @@ import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.Request
@@ -17,6 +16,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.calculateAgreement
+import one.mixin.android.crypto.ed25519
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
@@ -151,8 +151,6 @@ object Session {
     fun shouldUpdateKey() = getEd25519PrivateKey().isNullOrBlank() &&
         !MixinApplication.appContext.defaultSharedPreferences
             .getBoolean(PREF_TRIED_UPDATE_KEY, false)
-
-    internal val ed25519 by lazy { EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519) }
 
     fun signToken(acct: Account?, request: Request, xRequestId: String, key: Key? = getJwtKey(true)): String {
         if (acct == null || key == null) {

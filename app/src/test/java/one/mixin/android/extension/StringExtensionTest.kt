@@ -1,7 +1,7 @@
 package one.mixin.android.extension
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class StringExtensionTest {
 
