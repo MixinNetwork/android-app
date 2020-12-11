@@ -4,7 +4,7 @@ import android.content.ComponentCallbacks2
 import android.content.res.Configuration
 import timber.log.Timber
 
-class MemoryCallback :ComponentCallbacks2{
+class MemoryCallback : ComponentCallbacks2 {
     override fun onConfigurationChanged(newConfig: Configuration) {
         Timber.w(newConfig.toString())
     }

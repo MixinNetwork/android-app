@@ -85,7 +85,6 @@ private fun edwardsToMontgomeryX(y: FieldElement): FieldElement {
     return outX
 }
 
-
 fun aesGcmEncrypt(plain: ByteArray, key: ByteArray): ByteArray {
     val iv = ByteArray(GCM_IV_LENGTH)
     secureRandom.nextBytes(iv)

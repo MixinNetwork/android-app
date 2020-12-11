@@ -31,8 +31,6 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_DELETE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_DISMISS_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -48,7 +46,6 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.toUser
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
@@ -64,9 +61,6 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
             return fragment
         }
     }
-
-    @Inject
-    lateinit var jobManager: MixinJobManager
 
     private val groupViewModel by viewModels<GroupViewModel>()
 
@@ -232,8 +226,6 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                 }
             }
         )
-
-        jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 
     private var keyword: String = ""
