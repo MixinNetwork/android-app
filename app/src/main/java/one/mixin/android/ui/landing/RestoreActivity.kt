@@ -20,6 +20,7 @@ import one.mixin.android.databinding.ActivityRestoreBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.getBackupPath
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -88,19 +89,23 @@ class RestoreActivity : BaseActivity() {
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun showErrorAlert(error: Result) {
         alertDialogBuilder()
-            .setMessage(
+            .apply {
                 when (error) {
                     Result.FAILURE -> {
-                        R.string.restore_failure
+                        setMessage(
+                            R.string.restore_failure
+                        )
                     }
                     Result.NOT_FOUND -> {
-                        R.string.restore_not_found
+                        setMessage(context.getString(R.string.restore_not_found, context.getBackupPath()?.parentFile?.absoluteFile.toString()))
                     }
                     else -> {
-                        R.string.restore_not_support
+                        setMessage(
+                            R.string.restore_not_support
+                        )
                     }
                 }
-            )
+            }
             .setNegativeButton(R.string.restore_retry) { dialog, _ ->
                 findBackup()
                 dialog.dismiss()

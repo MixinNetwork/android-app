@@ -751,7 +751,7 @@
     <string name="restore_message">メッセージとメディアを外部ストレージにバックアップします。 Mixinを再インストールすると、バックアップを元に復元することができます。メッセージとメディアも携帯電話の内部ストレージにバックアップされます。外部ストレージにある間、バックアップされたメディアとメッセージは、Mixinエンドツーエンド暗号化によって保護されません。</string>
     <string name="restore_size">サイズ: %1$s</string>
     <string name="restore_failure">失敗</string>
-    <string name="restore_not_found">見つかりませんでした</string>
+    <string name="restore_not_found">見つかりませんでした。%1$s</string>
     <string name="restore_not_support">サポートしていない形式です</string>
     <string name="restore_notification_title">復元の進行中</string>
     <string name="restore_notification_content">&#8230;の復元を準備中</string>

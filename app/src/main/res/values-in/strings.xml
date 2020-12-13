@@ -820,7 +820,7 @@
     <string name="restore_message">Cadangkan pesan dan media Anda ke penyimpanan eksternal. Anda dapat memulihkannya saat memasang ulang Mixin. Pesan dan media Anda juga akan dicadangkan ke penyimpanan internal telepon Anda. Media dan pesan yang Anda cadangkan tidak dilindungi oleh enkripsi end-to-end Mixin saat berada di penyimpanan eksternal.</string>
     <string name="restore_size">Ukuran: %1$s</string>
     <string name="restore_failure">Gagal</string>
-    <string name="restore_not_found">Tidak ditemukan</string>
+    <string name="restore_not_found">Tidak ditemukan, %1$s</string>
     <string name="restore_not_support">Tidak didukung</string>
     <string name="restore_notification_title">Pemulihan sedang berlangsung</string>
     <string name="restore_notification_content">Menyiapkan pemulihan…</string>

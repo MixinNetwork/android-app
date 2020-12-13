@@ -146,14 +146,17 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 if (file == null) {
                     backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
                     backupSize.visibility = GONE
+                    backupPath.visibility = GONE
                     deleteBn.visibility = GONE
                 } else {
                     val time = file.lastModified().run {
                         this.getRelativeTimeSpan()
                     }
                     backupInfo.text = getString(R.string.backup_external_storage, time)
+                    backupPath.text = getString(R.string.restore_path, file.parentFile?.parentFile?.absolutePath)
                     backupSize.text = getString(R.string.restore_size, file.length().fileSize())
                     backupSize.visibility = VISIBLE
+                    backupPath.visibility = VISIBLE
                     deleteBn.visibility = VISIBLE
                 }
             }
