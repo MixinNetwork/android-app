@@ -821,8 +821,9 @@
     <string name="restore_authorization">授权</string>
     <string name="restore_message">如果您之前曾备份到外部存储并且现在想要还原备份，请给与 Mixin 相应权限以检查您外部存储里的备份。</string>
     <string name="restore_size">备份大小: %1$s</string>
+    <string name="restore_path">备份路径: %1$s</string>
     <string name="restore_failure">错误</string>
-    <string name="restore_not_found">未找到备份文件</string>
+    <string name="restore_not_found">未找到备份文件，请将备份文件放入 %1$s</string>
     <string name="restore_not_support">不支持备份</string>
     <string name="restore_notification_title">还原正在进行中</string>
     <string name="restore_notification_content">正在准备还原&#8230;</string>
