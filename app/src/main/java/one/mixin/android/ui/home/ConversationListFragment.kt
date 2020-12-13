@@ -162,7 +162,8 @@ class ConversationListFragment : LinkFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController(activity as MainActivity)
-        val headerBinding = ItemListConversationHeaderBinding.inflate(layoutInflater)
+        val headerBinding =
+            ItemListConversationHeaderBinding.inflate(layoutInflater, binding.messageRv, false)
         messageAdapter.headerView = headerBinding.root.apply {
             headerBinding.headerClose.setOnClickListener {
                 messageAdapter.setShowHeader(false, binding.messageRv)
