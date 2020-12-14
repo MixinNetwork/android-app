@@ -130,6 +130,10 @@ class PipVideoView {
             }
             return localInstance!!
         }
+
+        fun release(){
+            Instance?.close(true)
+        }
     }
 
     private lateinit var windowView: FrameLayout

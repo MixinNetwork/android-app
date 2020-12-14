@@ -32,6 +32,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
+import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
@@ -39,6 +40,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
+import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
@@ -179,6 +181,8 @@ open class MixinApplication :
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
             WebStorage.getInstance().deleteAllData()
+            releaseAll()
+            PipVideoView.release()
             doAsync {
                 clearData(sessionId)
 
