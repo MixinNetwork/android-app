@@ -622,10 +622,6 @@ private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
     return null
 }
 
-fun String.decodeBase64(): ByteArray {
-    return Base64.decode(this, Base64.DEFAULT)
-}
-
 fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String? {
     val stream = ByteArrayOutputStream()
     if (mimeType == MimeType.PNG.toString()) {
