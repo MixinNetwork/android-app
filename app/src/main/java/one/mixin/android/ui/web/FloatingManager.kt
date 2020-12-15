@@ -13,6 +13,7 @@ import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -20,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.initRenderScript
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
@@ -143,8 +145,10 @@ fun releaseClip(index: Int) {
     }
 }
 
+var saveJob: Job? = null
 fun saveClips() {
-    GlobalScope.launch(SINGLE_THREAD) {
+    saveJob?.cancel()
+    saveJob = GlobalScope.launch(SINGLE_THREAD) {
         MixinApplication.appContext.defaultSharedPreferences.putString(
             PREF_FLOATING,
             GsonHelper.customGson.toJson(clips)
@@ -152,12 +156,17 @@ fun saveClips() {
     }
 }
 
-fun releaseAll() {
+fun releaseAll(save: Boolean = false) {
     clips.forEach { clip ->
         clip.webView?.destroy()
         clip.webView?.webViewClient = object : WebViewClient() {}
         clip.webView?.webChromeClient = null
     }
     clips.clear()
+    if (save) {
+        saveJob?.cancel()
+        saveJob = null
+        MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
+    }
     FloatingWebClip.getInstance().hide()
 }
