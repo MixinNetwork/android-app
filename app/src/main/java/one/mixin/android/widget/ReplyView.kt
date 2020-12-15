@@ -126,7 +126,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.type.endsWith("_TEXT") -> {
                 if (messageItem.mentions?.isNotBlank() == true) {
-                    val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(messageItem.mentions) { _ -> }
+                    val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(messageItem.mentions)
                     binding.replyViewTv.renderMessage(messageItem.content, mentionRenderContext)
                 } else {
                     binding.replyViewTv.text = messageItem.content

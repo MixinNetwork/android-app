@@ -20,9 +20,6 @@ class MentionNode(val content: String, val normalTextColor: Int, val pressedText
         name = "@$name"
         val sp = SpannableString(name)
         val clickableSpan = object : TouchableSpan(normalTextColor, pressedTextColor, false) {
-            override fun onClick(widget: View) {
-                renderContext.action(number)
-            }
 
             override fun updateDrawState(textPaint: TextPaint) {
                 super.updateDrawState(textPaint)
@@ -30,6 +27,9 @@ class MentionNode(val content: String, val normalTextColor: Int, val pressedText
                 textPaint.color = textColor
                 textPaint.bgColor = if (isPressed) pressedTextColor else Color.TRANSPARENT
                 textPaint.isUnderlineText = isUnderLineEnabled
+            }
+
+            override fun onClick(widget: View) {
             }
         }
 

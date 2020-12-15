@@ -49,7 +49,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             return
         }
 
-        // Todo mention
         val spannableString = makeSpannableString(getSimpleMarkwon(context).toMarkdown(text.toString()))
         if (movementMethod == null) {
             movementMethod = LinkTouchMovementMethod()

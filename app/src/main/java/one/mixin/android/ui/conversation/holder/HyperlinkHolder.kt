@@ -142,9 +142,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
-            ) { identityNumber ->
-                onItemListener.onMentionClick(identityNumber)
-            }
+            )
             binding.chatTv.renderMessage(messageItem.content, mentionRenderContext, keyword)
         } else {
             keyword.notNullWithElse(

@@ -57,7 +57,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 if (quoteMessageItem.mentions != null) {
                     binding.replyContentTv.renderConversation(
                         quoteMessageItem.content,
-                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions) {}
+                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions)
                     )
                 } else {
                     binding.replyContentTv.text = quoteMessageItem.content

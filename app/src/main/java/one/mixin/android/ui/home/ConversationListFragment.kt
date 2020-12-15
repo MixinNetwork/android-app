@@ -630,7 +630,7 @@ class ConversationListFragment : LinkFragment() {
                                 it,
                                 MentionRenderCache.singleton.getMentionRenderContext(
                                     conversationItem.mentions
-                                ) {}
+                                )
                             )
                         } else {
                             binding.msgTv.text = it

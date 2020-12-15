@@ -6,6 +6,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
+import android.text.style.BackgroundColorSpan
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.TextAppearanceSpan
@@ -15,6 +16,10 @@ import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.util.mention.MentionRenderContext
+import one.mixin.android.util.mention.mentionConversationParser
+import one.mixin.android.util.mention.syntax.simple.SimpleRenderer
 import one.mixin.android.widget.NoUnderLineSpan
 
 fun TextView.highlightLinkText(
@@ -114,4 +119,36 @@ fun TextView.timeAgoDate(str: String) {
 
 fun TextView.timeAgoDay(str: String, pattern: String = "dd/MM/yyyy") {
     text = str.timeAgoDay(pattern)
+}
+
+fun TextView.renderConversation(text: CharSequence?, mentionRenderContext: MentionRenderContext?) {
+    if (text == null || mentionRenderContext == null) {
+        this.text = text
+        return
+    }
+    this.text = SimpleRenderer.render(
+        text,
+        parser = mentionConversationParser,
+        renderContext = mentionRenderContext
+    )
+}
+
+fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRenderContext?, keyWord: String? = null) {
+    if (text == null || mentionRenderContext == null) {
+        this.text = text
+        return
+    }
+    val sp = SpannableString(text)
+    if (keyWord != null) {
+        val start = sp.indexOf(keyWord, 0, true)
+        if (start >= 0) {
+            sp.setSpan(
+                BackgroundColorSpan(BaseViewHolder.HIGHLIGHTED),
+                start,
+                start + keyWord.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
+    this.text = sp
 }

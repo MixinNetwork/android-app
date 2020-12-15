@@ -25,7 +25,7 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root) {
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_MENTION)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
         binding.chatTv.setMentionModeColor(LINK_COLOR)
         binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
@@ -92,6 +92,9 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
                 }
+                AutoLinkMode.MODE_MENTION -> {
+                    onItemListener.onMentionClick(matchedText)
+                }
                 else -> {
                 }
             }
@@ -140,9 +143,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
-            ) { identityNumber ->
-                onItemListener.onMentionClick(identityNumber)
-            }
+            )
             binding.chatTv.renderMessage(messageItem.content, mentionRenderContext, keyword)
         } else {
             keyword.notNullWithElse(
@@ -193,7 +194,12 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         }
 
         binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(
+            isMe,
+            messageItem.status,
+            messageItem.isSignal(),
+            isRepresentative
+        ) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
             binding.dataWrapper.chatSecret.isVisible = secretIcon != null
