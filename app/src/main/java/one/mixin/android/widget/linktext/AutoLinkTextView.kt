@@ -60,7 +60,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         val sp = SpannableStringBuilder()
         renderMarkdown(sp, node)
         renderMention(sp, autoLinkItems)
-        matchedRanges(sp,autoLinkItems)
+        matchedRanges(sp, autoLinkItems)
         if (movementMethod == null) {
             movementMethod = LinkTouchMovementMethod()
         }
@@ -80,17 +80,19 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     ): CharSequence {
         val mentionRenderContext = this.mentionRenderContext ?: return text
         val matcher = mentionNumberPattern.matcher(text)
+        var offset = 0
         while (matcher.find()) {
             val name = mentionRenderContext.userMap[matcher.group().substring(1)] ?: continue
-            text.replace(matcher.start() + 1, matcher.end(), name)
+            text.replace(matcher.start() + 1 - offset, matcher.end() - offset, name)
             autoLinkItems.add(
                 AutoLinkItem(
-                    matcher.start(),
-                    matcher.start() + name.length+1,
+                    matcher.start() - offset,
+                    matcher.start() + name.length - offset + 1,
                     matcher.group(),
                     AutoLinkMode.MODE_MENTION
                 )
             )
+            offset += ((matcher.group().length - 1) - name.length)
         }
         return text
     }

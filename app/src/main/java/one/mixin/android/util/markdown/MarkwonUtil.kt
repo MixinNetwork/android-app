@@ -14,7 +14,7 @@ import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.MarkwonVisitor
 import io.noties.markwon.core.CorePlugin
 import io.noties.markwon.core.MarkwonTheme
-import io.noties.markwon.core.SimplePlugin
+import one.mixin.android.widget.markdown.SimplePlugin
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.ext.tasklist.TaskListPlugin
@@ -42,7 +42,7 @@ class MarkwonUtil {
     companion object {
 
         fun getSimpleMarkwon(context: Context): Markwon {
-            return Markwon.builderNoCore(context).usePlugin(SimplePlugin.create()).build()
+            return Markwon.builderNoCore(context).usePlugin(SimplePlugin()).build()
         }
 
         fun getMarkwon(
