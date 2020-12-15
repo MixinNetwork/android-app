@@ -131,7 +131,7 @@ class PipVideoView {
             return localInstance!!
         }
 
-        fun release(){
+        fun release() {
             Instance?.close(true)
         }
     }

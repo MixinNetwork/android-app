@@ -181,7 +181,7 @@ open class MixinApplication :
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
             WebStorage.getInstance().deleteAllData()
-            releaseAll()
+            releaseAll(true)
             PipVideoView.release()
             doAsync {
                 clearData(sessionId)
@@ -219,7 +219,7 @@ open class MixinApplication :
         activityInForeground = true
         if (activity is MediaPagerActivity || activity is CallActivity) {
             FloatingWebClip.getInstance(activity.isNightMode()).hide()
-        } else if (activity !is WebActivity) {
+        } else if (activity !is WebActivity && activity !is LandingActivity && activity !is InitializeActivity) {
             currentActivity = activity
             GlobalScope.launch(Dispatchers.Main) {
                 refresh(activity)
