@@ -35,6 +35,7 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
 import java.math.BigDecimal
+import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.util.Arrays
@@ -253,6 +254,21 @@ inline fun Long.toLeByteArray(): ByteArray {
         num = num shr 8
     }
     return result
+}
+
+@ExperimentalUnsignedTypes
+fun toLeByteArray(v: UInt): ByteArray {
+    val b = ByteArray(2)
+    b[0] = v.toByte()
+    b[1] = (v shr 8).toByte()
+    return b
+}
+
+fun UUID.toByteArray(): ByteArray {
+    val bb = ByteBuffer.wrap(ByteArray(16))
+    bb.putLong(this.mostSignificantBits)
+    bb.putLong(this.leastSignificantBits)
+    return bb.array()
 }
 
 fun String.formatPublicKey(): String {
