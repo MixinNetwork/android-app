@@ -21,6 +21,7 @@ import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.mentionConversationParser
 import one.mixin.android.util.mention.syntax.simple.SimpleRenderer
 import one.mixin.android.widget.NoUnderLineSpan
+import one.mixin.android.widget.linktext.AutoLinkTextView
 
 fun TextView.highlightLinkText(
     source: String,
@@ -137,6 +138,9 @@ fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRen
     if (text == null || mentionRenderContext == null) {
         this.text = text
         return
+    }
+    if (this is AutoLinkTextView) {
+        this.mentionRenderContext = mentionRenderContext
     }
     val sp = SpannableString(text)
     if (keyWord != null) {
