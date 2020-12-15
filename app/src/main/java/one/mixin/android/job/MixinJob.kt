@@ -36,6 +36,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.ParticipantSessionSent
 import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.generateConversationChecksum
@@ -312,7 +313,7 @@ abstract class MixinJob(
 
             val sessionParticipants = response.data!!.participantSessions.let { resp ->
                 resp?.map {
-                    ParticipantSession(conversation.conversationId, it.userId, it.sessionId)
+                    ParticipantSession(conversation.conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
                 }
             }
             sessionParticipants?.let {

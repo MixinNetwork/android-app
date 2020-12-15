@@ -5,6 +5,7 @@ import android.os.Build
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.math.FieldElement
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.util.reportException
@@ -67,11 +68,12 @@ fun generateAesKey(): ByteArray {
 }
 
 fun publicKeyToCurve25519(publicKey: EdDSAPublicKey): ByteArray {
-    val groupElement = publicKey.a
+    val p = publicKey.abyte.map { it.toInt().toByte() }.toByteArray()
+    val public = EdDSAPublicKey(EdDSAPublicKeySpec(p, ed25519))
+    val groupElement = public.a
     val x = edwardsToMontgomeryX(groupElement.y)
     return x.toByteArray()
 }
-
 private fun edwardsToMontgomeryX(y: FieldElement): FieldElement {
     val field = ed25519.curve.field
     var oneMinusY = field.ONE
@@ -81,8 +83,8 @@ private fun edwardsToMontgomeryX(y: FieldElement): FieldElement {
     var outX = field.ONE
     outX = outX.add(y)
 
-    outX = oneMinusY.multiply(outX)
-    return outX
+    println(field.getEncoding())
+    return oneMinusY.multiply(outX)
 }
 
 fun aesGcmEncrypt(plain: ByteArray, key: ByteArray): ByteArray {
