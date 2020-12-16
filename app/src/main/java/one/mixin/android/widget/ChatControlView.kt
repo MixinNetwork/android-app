@@ -14,8 +14,12 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.ActionMode
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_DOWN
@@ -57,7 +61,7 @@ import org.jetbrains.anko.dip
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
-class ChatControlView : LinearLayout {
+class ChatControlView : LinearLayout, ActionMode.Callback {
 
     companion object {
         const val REPLY = -1
@@ -242,6 +246,7 @@ class ChatControlView : LinearLayout {
 
         binding.chatEt.addTextChangedListener(editTextWatcher)
         binding.chatEt.setOnKeyListener(keyListener)
+        binding.chatEt.customSelectionActionModeCallback = this
         binding.chatSendIb.setOnTouchListener(sendOnTouchListener)
         binding.chatMenuIv.setOnClickListener(onChatMenuClickListener)
         binding.chatStickerIb.setOnClickListener(onStickerClickListener)
@@ -891,8 +896,8 @@ class ChatControlView : LinearLayout {
             if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(
                     activity!! as FragmentActivity
                 ).isGranted(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    )
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
             ) {
                 RxPermissions(activity!! as FragmentActivity)
                     .request(
@@ -963,5 +968,45 @@ class ChatControlView : LinearLayout {
         fun onRecordLocked()
         fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int)
         fun onDelete()
+    }
+
+    override fun onCreateActionMode(actionMode: ActionMode, menu: Menu): Boolean {
+        val menuInflater: MenuInflater = actionMode.menuInflater
+        menuInflater.inflate(R.menu.selection_action_menu, menu)
+        return true
+    }
+
+    override fun onPrepareActionMode(actionMode: ActionMode, menu: Menu): Boolean {
+        return false
+    }
+
+    override fun onActionItemClicked(actionMode: ActionMode, item: MenuItem): Boolean {
+        val start = binding.chatEt.selectionStart
+        val end = binding.chatEt.selectionEnd
+        binding.chatEt.text?.let { editable ->
+            val symbol = when (item.itemId) {
+                R.id.bold -> {
+                    "**"
+                }
+                R.id.italic -> {
+                    "_"
+                }
+                R.id.strikethrough -> {
+                    "~~"
+                }
+                R.id.code -> {
+                    "`"
+                }
+                else -> ""
+            }
+
+            editable.insert(end, symbol)
+            editable.insert(start, symbol)
+        }
+
+        return false
+    }
+
+    override fun onDestroyActionMode(actionMode: ActionMode) {
     }
 }
