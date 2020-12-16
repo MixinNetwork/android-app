@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.adapter
 
 import android.annotation.SuppressLint
+import android.content.ClipData
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View.GONE
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -17,6 +19,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder
+import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.textColorResource
@@ -108,6 +111,10 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
             binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
+            debugLongClick(holder.itemView) {
+                holder.itemView.context?.getClipboardManager()
+                    ?.setPrimaryClip(ClipData.newPlainText(null, asset.assetId))
+            }
         }
     }
 

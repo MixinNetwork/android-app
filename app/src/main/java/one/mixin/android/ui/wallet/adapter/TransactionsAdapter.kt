@@ -1,14 +1,17 @@
 package one.mixin.android.ui.wallet.adapter
 
+import android.content.ClipData
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
+import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.SnapshotItem
 import kotlin.math.abs
 
@@ -39,6 +42,10 @@ class TransactionsAdapter :
             val pos = getPos(position)
             getItem(pos)?.let {
                 holder.bind(it, listener)
+                debugLongClick(holder.itemView) {
+                    holder.itemView.context?.getClipboardManager()
+                        ?.setPrimaryClip(ClipData.newPlainText(null, it.snapshotId))
+                }
             }
         }
     }
