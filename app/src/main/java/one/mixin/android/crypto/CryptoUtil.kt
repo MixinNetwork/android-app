@@ -77,7 +77,6 @@ private fun edwardsToMontgomeryX(y: FieldElement): FieldElement {
     var outX = field.ONE
     outX = outX.add(y)
 
-    println(field.getEncoding())
     return oneMinusY.multiply(outX)
 }
 

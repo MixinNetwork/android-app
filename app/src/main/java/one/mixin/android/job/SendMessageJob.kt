@@ -10,7 +10,6 @@ import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.toByteArray
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
@@ -178,6 +177,7 @@ open class SendMessageJob(
 
         val seed = Session.getEd25519PrivateKey()?.decodeBase64() ?: return
         val content = encryptedProtocol.encryptMessage(seed, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId)
+
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             recipientId,
