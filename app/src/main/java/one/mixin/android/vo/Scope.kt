@@ -25,7 +25,9 @@ data class Scope(val name: String, val desc: String) : Parcelable {
             "ASSETS:READ",
             "SNAPSHOTS:READ",
             "APPS:READ",
-            "APPS:WRITE"
+            "APPS:WRITE",
+            "CIRCLES:READ",
+            "CIRCLES:WRITE"
         )
     }
 }
@@ -40,6 +42,8 @@ fun Scope.convertName(ctx: Context): String {
         Scope.SCOPES[5] -> R.string.auth_snapshot_read
         Scope.SCOPES[6] -> R.string.auth_app_read
         Scope.SCOPES[7] -> R.string.auth_apps_write
+        Scope.SCOPES[8] -> R.string.auth_circles_read
+        Scope.SCOPES[9] -> R.string.auth_circles_write
         else -> R.string.auth_public_profile
     }
     return ctx.getString(id)

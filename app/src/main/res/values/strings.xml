@@ -702,6 +702,10 @@
     <string name="auth_messages_represent_description">allow bot to send messages represent of you</string>
     <string name="auth_snapshot_read">Read Snapshots</string>
     <string name="auth_snapshot_read_description">access your snapshots</string>
+    <string name="auth_circles_read">Read Circles</string>
+    <string name="auth_circles_read_description">access your circle list</string>
+    <string name="auth_circles_write">Write Circles</string>
+    <string name="auth_circles_write_description">manage all your circles</string>
 
     <string name="permission_video">Allow to record video?</string>
     <string name="permission_camera">Allow to take pictures?</string>

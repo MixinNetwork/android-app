@@ -687,6 +687,10 @@
     <string name="auth_messages_represent_description">允许机器人代表你发消息</string>
     <string name="auth_snapshot_read">查看转账记录</string>
     <string name="auth_snapshot_read_description">访问你的转账记录</string>
+    <string name="auth_circles_read">查看圈子</string>
+    <string name="auth_circles_read_description">访问你的圈子列表</string>
+    <string name="auth_circles_write">管理圈子</string>
+    <string name="auth_circles_write_description">管理你所有的圈子</string>
 
     <string name="permission_video">要允许拍摄视频吗?</string>
     <string name="permission_camera">要允许拍摄照片吗?</string>
