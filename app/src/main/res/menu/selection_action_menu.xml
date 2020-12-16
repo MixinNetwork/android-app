@@ -4,18 +4,18 @@
     <item
         android:id="@+id/bold"
         android:icon="@drawable/ic_menu_select_bold"
-        android:title="" />
+        android:title="@string/bold" />
     <item
         android:id="@+id/italic"
         android:icon="@drawable/ic_menu_select_italic"
-        android:title="" />
+        android:title="@string/italic" />
     <item
         android:id="@+id/strikethrough"
         android:icon="@drawable/ic_menu_select_strikethrough"
-        android:title="" />
+        android:title="@string/strikethrough" />
     <item
         android:id="@+id/code"
         android:icon="@drawable/ic_menu_select_code"
-        android:title="" />
+        android:title="@string/quote" />
 
 </menu>

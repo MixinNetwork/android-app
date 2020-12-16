@@ -4,11 +4,9 @@ import android.text.Spannable
 import android.text.Spanned
 import android.text.style.StrikethroughSpan
 import android.widget.TextView
-import androidx.annotation.ColorInt
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.MarkwonVisitor
-import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.core.spans.CodeSpan
 import io.noties.markwon.core.spans.EmphasisSpan
 import io.noties.markwon.core.spans.OrderedListItemSpan
@@ -66,5 +64,4 @@ class SimplePlugin : AbstractMarkwonPlugin() {
             TextViewSpan.applyTo(markdown, textView)
         }
     }
-
 }

@@ -127,6 +127,10 @@
     <string name="type_a_message">Type message</string>
     <string name="open_floating">Floating</string>
     <string name="cancel_floating">Cancel Floating</string>
+    <string name="quote">quote</string>
+    <string name="strikethrough">strikethrough</string>
+    <string name="italic">italic</string>
+    <string name="bold">bold</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

@@ -4,5 +4,5 @@ class ReplaceItem(
     val startPoint: Int,
     val endPoint: Int,
     val source: String,
-    val replace:String
+    val replace: String
 )

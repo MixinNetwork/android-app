@@ -14,7 +14,6 @@ import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.MarkwonVisitor
 import io.noties.markwon.core.CorePlugin
 import io.noties.markwon.core.MarkwonTheme
-import one.mixin.android.widget.markdown.SimplePlugin
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.ext.tasklist.TaskListPlugin
@@ -34,6 +33,7 @@ import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.util.markdown.table.TableEntryPlugin
+import one.mixin.android.widget.markdown.SimplePlugin
 import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.Link
 import org.commonmark.node.SoftLineBreak
