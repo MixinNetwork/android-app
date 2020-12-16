@@ -6,18 +6,12 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toLeByteArray
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 class EncryptedProtocol {
-    private val aesGcmKeyMap = ConcurrentHashMap<String, ByteArray>()
 
     fun encryptMessage(seed: ByteArray, plaintext: ByteArray, otherPublicKey: ByteArray, otherSessionId: String): ByteArray {
         val privateKey = EdDSAPrivateKeySpec(seed, ed25519)
-        var aesGcmKey = aesGcmKeyMap[otherSessionId]
-        if (aesGcmKey == null) {
-            aesGcmKey = generateAesKey()
-            aesGcmKeyMap[otherSessionId] = aesGcmKey
-        }
+        val aesGcmKey = generateAesKey()
         val encryptedMessageData = aesGcmEncrypt(plaintext, aesGcmKey)
         val messageKey = encryptCipherMessageKey(seed, otherPublicKey, aesGcmKey)
         val messageKeyWithSession = UUID.fromString(otherSessionId).toByteArray().plus(messageKey)
@@ -39,7 +33,7 @@ class EncryptedProtocol {
         return aesDecrypt(sharedSecret, iv, ciphertext)
     }
 
-    fun decryptMessage(seed: ByteArray, ciphertext: ByteArray, otherSessionId: String): ByteArray {
+    fun decryptMessage(seed: ByteArray, ciphertext: ByteArray): ByteArray {
         val version = ciphertext[0]
         val sessionSize = ciphertext.slice(IntRange(1, 2)).toByteArray()
         val senderPublicKey = ciphertext.slice(IntRange(3, 34)).toByteArray()
@@ -47,12 +41,10 @@ class EncryptedProtocol {
         val messageKey = ciphertext.slice(IntRange(51, 98)).toByteArray()
         val message = ciphertext.slice(IntRange(99, ciphertext.size - 1)).toByteArray()
 
-        val aesGcmKey = aesGcmKeyMap[otherSessionId]
-            ?: throw IllegalStateException("no aesGcmKey for decryption")
+        val iv = messageKey.slice(IntRange(0, 15)).toByteArray()
+        val content = messageKey.slice(IntRange(16, messageKey.size - 1)).toByteArray()
+        val decodedMessageKey = decryptCipherMessageKey(seed, senderPublicKey, iv, content)
 
-        // TODO decrypt messageKey
-        // val decoded = decryptCipherMessageKey(seed, senderPublicKey, aesGcmKey, ciphertext)
-
-        return aesGcmDecrypt(message, aesGcmKey)
+        return aesGcmDecrypt(message, decodedMessageKey)
     }
 }

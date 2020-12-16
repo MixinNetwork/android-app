@@ -24,7 +24,8 @@ class EncryptedProtocolTest {
 
         val encodedContent = encryptedProtocol.encryptMessage(seedByteArray, content, otherPublic, otherSessionId)
 
-        val decryptedContent = encryptedProtocol.decryptMessage(seedByteArray, encodedContent, otherSessionId)
+        val otherSeedByteArray = byteArrayOf()
+        val decryptedContent = encryptedProtocol.decryptMessage(otherSeedByteArray, encodedContent)
 
         assert(decryptedContent.contentEquals(content))
     }
