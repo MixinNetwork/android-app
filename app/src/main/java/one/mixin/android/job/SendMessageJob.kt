@@ -1,20 +1,9 @@
 package one.mixin.android.job
 
-import android.util.Log
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
-import one.mixin.android.crypto.aesEncrypt
-import one.mixin.android.crypto.aesGcmEncrypt
-import one.mixin.android.crypto.calculateAgreement
-import one.mixin.android.crypto.ed25519
-import one.mixin.android.crypto.generateAesKey
-import one.mixin.android.crypto.privateKeyToCurve25519
-import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawUrlDecode
@@ -22,8 +11,6 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.toByteArray
-import one.mixin.android.extension.toHex
-import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
@@ -38,7 +25,6 @@ import one.mixin.android.websocket.createCallMessage
 import one.mixin.android.websocket.createKrakenMessage
 import one.mixin.android.websocket.createParamBlazeMessage
 import java.io.File
-import java.util.UUID
 
 open class SendMessageJob(
     val message: Message,
@@ -190,17 +176,8 @@ open class SendMessageJob(
             return
         }
 
-        val keyBase64 = Session.getEd25519PrivateKey() ?: return
-        val privateKey = EdDSAPrivateKeySpec(keyBase64.decodeBase64(), ed25519)
-        val aesGcmKey = generateAesKey()
-        val encryptedMessageData = aesGcmEncrypt(message.content!!.toByteArray(), aesGcmKey)
-        val messageKey = getCipherMessageKey(privateKey.seed, participantSessionKey.publicKey.base64RawUrlDecode(), aesGcmKey) ?: return
-        val messageKeyWithSession = UUID.fromString(participantSessionKey.sessionId).toByteArray().plus(messageKey)
-        val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateKey.a, ed25519))
-        val senderPublicKey = publicKeyToCurve25519(pub)
-        val version = byteArrayOf(0x01)
-        val content = version.plus(toLeByteArray(1.toUInt())).plus(senderPublicKey).plus(messageKeyWithSession).plus(encryptedMessageData)
-
+        val seed = Session.getEd25519PrivateKey()?.decodeBase64() ?: return
+        val content = encryptedProtocol.encryptMessage(seed, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId)
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             recipientId,
@@ -213,13 +190,6 @@ open class SendMessageJob(
         )
         val blazeMessage = createParamBlazeMessage(blazeParam)
         deliver(blazeMessage)
-    }
-
-
-    private fun getCipherMessageKey(seed: ByteArray, publicKey: ByteArray, aesGcmKey: ByteArray): ByteArray? {
-        val private = privateKeyToCurve25519(seed)
-        val sharedSecret = calculateAgreement(publicKey, private) ?: return null
-        return aesEncrypt(sharedSecret, aesGcmKey)
     }
 
     private fun sendSignalMessage() {

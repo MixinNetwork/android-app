@@ -8,7 +8,6 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.util.reportException
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
 import java.security.KeyFactory
@@ -40,13 +39,8 @@ fun generateEd25519KeyPair(): KeyPair {
     return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
 }
 
-fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray? {
-    try {
-        return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
-    } catch (t: Throwable) {
-        reportException("Calculates an ECDH agreement exception", t)
-    }
-    return null
+fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
+    return Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKey)
 }
 
 fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
