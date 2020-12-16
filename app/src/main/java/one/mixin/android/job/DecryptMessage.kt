@@ -182,6 +182,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 processPlainMessage(data)
             } else if (data.category.startsWith("SIGNAL_")) {
                 processSignalMessage(data)
+            } else if (data.category.startsWith("ENCRYPTED_")) {
+                processEncryptedMessage(data)
             } else if (data.category == MessageCategory.APP_BUTTON_GROUP.name) {
                 processAppButton(data)
             } else if (data.category == MessageCategory.APP_CARD.name) {
@@ -973,6 +975,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
         }
+    }
+
+    private fun processEncryptedMessage(data: BlazeMessageData) {
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {

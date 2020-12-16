@@ -29,7 +29,6 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.ParticipantSessionSent
 import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.generateConversationChecksum
