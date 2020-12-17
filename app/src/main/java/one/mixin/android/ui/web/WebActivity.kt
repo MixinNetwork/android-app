@@ -166,8 +166,9 @@ class WebActivity : BaseActivity() {
         val extras = Bundle()
         val clip = clips[index]
         extras.putString(WebFragment.URL, clip.url)
-        extras.putParcelable(WebFragment.ARGS_APP, clip.app)
+        extras.putString(WebFragment.CONVERSATION_ID, clip.conversationId)
         extras.putInt(WebFragment.ARGS_INDEX, index)
+        extras.putParcelable(WebFragment.ARGS_APP, clip.app)
         isExpand = true
 
         window.statusBarColor = clip.titleColor.apply {

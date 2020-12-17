@@ -717,6 +717,7 @@ class WebFragment : BaseFragment() {
             app?.name ?: binding.titleTv.text.toString(),
             screenshot,
             icon,
+            conversationId,
             webView,
             isFinished
         )

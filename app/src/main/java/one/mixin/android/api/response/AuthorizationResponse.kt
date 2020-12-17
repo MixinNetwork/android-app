@@ -105,6 +105,20 @@ fun AuthorizationResponse.getScopes(
                         ctx.getString(R.string.auth_apps_write_description)
                     )
                 )
+            SCOPES[8] ->
+                scopes.add(
+                    Scope(
+                        s,
+                        ctx.getString(R.string.auth_circles_read_description)
+                    )
+                )
+            SCOPES[9] ->
+                scopes.add(
+                    Scope(
+                        s,
+                        ctx.getString(R.string.auth_circles_write_description)
+                    )
+                )
         }
     }
     return scopes

@@ -521,6 +521,7 @@
     <string name="setting_phone_number">電話番号</string>
     <string name="setting_phone_number_privacy">電話番号であなたを追加できる人</string>
     <string name="setting_transfer_large_summary">%1$s以上の送金時に確認画面を表示する</string>
+    <string name="setting_auth_search_hint">Mixin ID, 名前</string>
     <string-array name="setting_night_array">
         <item>ライト</item>
         <item>ダーク</item>

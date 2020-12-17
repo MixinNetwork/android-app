@@ -1,10 +1,13 @@
 package one.mixin.android.ui.setting
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
@@ -13,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentAuthenticationsBinding
 import one.mixin.android.databinding.ItemAuthBinding
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
@@ -33,26 +37,51 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
     private var list: MutableList<App>? = null
     private var authResponseList: MutableList<AuthorizationResponse>? = null
 
+    private var keyWord: String = ""
+        set(value) {
+            field = value
+            dataChange()
+        }
+
+    private val appCallback = AppItemCallback("")
+
+    private val adapter = AuthenticationAdapter(
+        appCallback,
+        object : OnAppClick {
+            override fun onClick(app: App, position: Int) {
+                val auth = authResponseList?.get(position) ?: return
+                val fragment = PermissionListFragment.newInstance(app, auth)
+                fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
+                    override fun onSuccess() {
+                        list?.removeAt(position)
+                        authResponseList?.removeAt(position)
+                        binding.authRv.adapter?.notifyItemRemoved(position)
+                    }
+                }
+                navTo(fragment, PermissionListFragment.TAG)
+            }
+        }
+    )
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
-        val adapter = AuthenticationAdapter(
-            object : OnAppClick {
-                override fun onClick(app: App, position: Int) {
-                    val auth = authResponseList?.get(position) ?: return
-                    val fragment = PermissionListFragment.newInstance(app, auth)
-                    fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
-                        override fun onSuccess() {
-                            list?.removeAt(position)
-                            authResponseList?.removeAt(position)
-                            binding.authRv.adapter?.notifyItemRemoved(position)
-                        }
-                    }
-                    navTo(fragment, PermissionListFragment.TAG)
-                }
-            }
-        )
+
         binding.apply {
+            searchEt.addTextChangedListener(
+                object : TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+                    override fun afterTextChanged(s: Editable) {
+                        keyWord = s.toString()
+                        adapter.filter = keyWord
+                        appCallback.filter = keyWord
+                    }
+                }
+            )
+
             viewModel.authorizations().autoDispose(stopScope).subscribe(
                 { list ->
                     if (list.isSuccess) {
@@ -68,7 +97,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                         } else {
                             authVa.displayedChild = 1
                         }
-                        adapter.submitList(this@AuthenticationsFragment.list)
+                        dataChange()
 
                         authResponseList = list.data?.toMutableList()
                     } else {
@@ -86,9 +115,23 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
         }
     }
 
-    class AuthenticationAdapter(private val onAppClick: OnAppClick) : ListAdapter<App, ItemHolder>(App.DIFF_CALLBACK) {
+    private fun dataChange() {
+        adapter.submitList(
+            if (keyWord.isNotBlank()) {
+                list?.filter {
+                    it.name.contains(keyWord, true) || it.appNumber.contains(keyWord, true)
+                }?.sortedByDescending { it.name == keyWord || it.appNumber == keyWord }
+            } else {
+                list
+            }
+        )
+    }
+
+    class AuthenticationAdapter(callback: AppItemCallback, private val onAppClick: OnAppClick) : ListAdapter<App, ItemHolder>(callback) {
+        var filter = ""
+
         override fun onBindViewHolder(itemHolder: ItemHolder, pos: Int) {
-            itemHolder.bindTo(getItem(pos), onAppClick)
+            itemHolder.bindTo(getItem(pos), filter, onAppClick)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
@@ -100,15 +143,27 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
     }
 
     class ItemHolder(private val itemBinding: ItemAuthBinding) : RecyclerView.ViewHolder(itemBinding.root) {
-        fun bindTo(app: App, onAppClick: OnAppClick) {
+        fun bindTo(app: App, filter: String, onAppClick: OnAppClick) {
             itemBinding.apply {
                 avatar.setInfo(app.name, app.iconUrl, app.appId)
                 nameTv.text = app.name
+                nameTv.highLight(filter)
                 numberTv.text = app.appNumber
+                numberTv.highLight(filter)
             }
             itemView.setOnClickListener {
                 onAppClick.onClick(app, absoluteAdapterPosition)
             }
         }
+    }
+
+    class AppItemCallback(var filter: String) : DiffUtil.ItemCallback<App>() {
+        override fun areItemsTheSame(oldItem: App, newItem: App) =
+            (
+                oldItem.name.contains(filter, true) == newItem.name.contains(filter, true) &&
+                    oldItem.appNumber.contains(filter, true) == newItem.appNumber.contains(filter, true)
+                )
+
+        override fun areContentsTheSame(oldItem: App, newItem: App) = false
     }
 }

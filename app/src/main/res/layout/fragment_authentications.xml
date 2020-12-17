@@ -12,6 +12,23 @@
         android:layout_height="wrap_content"
         app:titleText="@string/setting_authentications" />
 
+    <EditText
+        android:id="@+id/search_et"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="?attr/bg_white"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="8dp"
+        android:hint="@string/setting_auth_search_hint"
+        android:maxLines="1"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:textColor="?attr/text_primary"
+        android:textColorHint="?attr/text_assist"
+        android:textSize="14sp"/>
+
     <ViewAnimator
         android:id="@+id/auth_va"
         android:layout_width="match_parent"

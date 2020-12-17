@@ -581,6 +581,7 @@
     <string name="setting_phone_number">Nomor Telepon</string>
     <string name="setting_phone_number_privacy">Siapa yang dapat menemukan saya menurut nomor saya</string>
     <string name="setting_transfer_large_summary">Tampilkan dialog konfirmasi saat transfer lebih besar dari atau sama dengan %1$s</string>
+    <string name="setting_auth_search_hint">Mixin ID, Nama</string>
     <string-array name="setting_night_array">
         <item>Cahaya</item>
         <item>Gelap</item>
