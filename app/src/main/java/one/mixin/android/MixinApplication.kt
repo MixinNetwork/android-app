@@ -181,7 +181,7 @@ open class MixinApplication :
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
             WebStorage.getInstance().deleteAllData()
-            releaseAll(true)
+            releaseAll()
             PipVideoView.release()
             doAsync {
                 clearData(sessionId)

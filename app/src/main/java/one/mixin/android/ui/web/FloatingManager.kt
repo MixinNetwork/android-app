@@ -138,6 +138,9 @@ fun releaseClip(index: Int) {
         clips[index].webView?.webChromeClient = null
         clips.removeAt(index)
         if (clips.isEmpty()) {
+            saveJob?.cancel()
+            saveJob = null
+            MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
             FloatingWebClip.getInstance().hide()
         } else {
             FloatingWebClip.getInstance().reload()
@@ -156,17 +159,15 @@ fun saveClips() {
     }
 }
 
-fun releaseAll(save: Boolean = false) {
+fun releaseAll() {
     clips.forEach { clip ->
         clip.webView?.destroy()
         clip.webView?.webViewClient = object : WebViewClient() {}
         clip.webView?.webChromeClient = null
     }
     clips.clear()
-    if (save) {
-        saveJob?.cancel()
-        saveJob = null
-        MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
-    }
+    saveJob?.cancel()
+    saveJob = null
+    MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
     FloatingWebClip.getInstance().hide()
 }
