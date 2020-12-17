@@ -21,7 +21,6 @@ import one.mixin.android.extension.getColorCode
 import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.canNotReply
 
 abstract class BaseViewHolder constructor(containerView: View) :
     RecyclerView.ViewHolder(containerView) {

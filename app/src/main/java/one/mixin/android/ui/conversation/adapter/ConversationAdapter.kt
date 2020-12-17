@@ -91,8 +91,10 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.vo.isCallMessage
+import one.mixin.android.vo.isData
 import one.mixin.android.vo.isGroupCall
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSticker
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -772,18 +774,16 @@ class ConversationAdapter(
                             IMAGE_TYPE
                         }
                     }
-                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
-                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
-                    item.type == MessageCategory.SIGNAL_DATA.name ||
-                        item.type == MessageCategory.PLAIN_DATA.name -> {
+                    item.isSticker() -> STICKER_TYPE
+                    item.isData() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
                             FILE_QUOTE_TYPE
                         } else {
                             FILE_TYPE
                         }
                     }
-                    item.type == MessageCategory.SIGNAL_STICKER.name ||
-                        item.type == MessageCategory.PLAIN_STICKER.name -> STICKER_TYPE
+                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
+                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
                     item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
                     item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
                     item.type == MessageCategory.SIGNAL_CONTACT.name ||

@@ -37,7 +37,7 @@ data class ConversationItem(
     val appId: String?,
     val mentions: String?,
     val mentionCount: Int?
-) {
+) : ICategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationItem>() {
             override fun areItemsTheSame(oldItem: ConversationItem, newItem: ConversationItem) =
@@ -47,6 +47,9 @@ data class ConversationItem(
                 oldItem == newItem
         }
     }
+
+    override val type: String
+        get() = contentType ?: MessageCategory.PLAIN_TEXT.name
 
     fun isGroup() = category == ConversationCategory.GROUP.name
 
@@ -81,18 +84,6 @@ data class ConversationItem(
     fun isBot(): Boolean {
         return category == ConversationCategory.CONTACT.name && appId != null
     }
-
-    fun isCallMessage() =
-        contentType == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
-            contentType == MessageCategory.WEBRTC_AUDIO_DECLINE.name ||
-            contentType == MessageCategory.WEBRTC_AUDIO_END.name ||
-            contentType == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
-            contentType == MessageCategory.WEBRTC_AUDIO_FAILED.name
-
-    fun isRecall() =
-        contentType == MessageCategory.MESSAGE_RECALL.name
-
-    fun isGroupVoiceCall() = contentType?.isGroupCallType() == true
 }
 
 fun ConversationItem.showVerifiedOrBot(verifiedView: View, botView: View) {

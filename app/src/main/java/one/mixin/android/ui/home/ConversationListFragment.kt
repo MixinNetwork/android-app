@@ -644,50 +644,42 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.setText(R.string.conversation_status_transfer)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_STICKER.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_STICKER.name -> {
+                conversationItem.isSticker() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_sticker)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_stiker)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_IMAGE.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_IMAGE.name -> {
+                conversationItem.isImage() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_pic)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_pic)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_VIDEO.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_VIDEO.name -> {
+                conversationItem.isVideo() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_video)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_video)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_LIVE.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_LIVE.name -> {
+                conversationItem.isLive() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_live)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_live)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_DATA.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_DATA.name -> {
+                conversationItem.isData() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_file)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_POST.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_POST.name -> {
+                conversationItem.isPost() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.text = MarkwonUtil.parseContent(conversationItem.content)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_LOCATION.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_LOCATION.name -> {
+                conversationItem.isLocation() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_location)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_location)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_AUDIO.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_AUDIO.name -> {
+                conversationItem.isAudio() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_audio)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_audio)
@@ -708,8 +700,7 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.text = "[${cardData.title}]"
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_CONTACT.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_CONTACT.name -> {
+                conversationItem.isContactCategory() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_contact)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact)
@@ -729,7 +720,7 @@ class ConversationListFragment : LinkFragment() {
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_recall)
                 }
-                conversationItem.isGroupVoiceCall() -> {
+                conversationItem.isGroupCall() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_group_call)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
@@ -837,7 +828,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
                 !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
-                !conversationItem.isGroupVoiceCall()
+                !conversationItem.isGroupCall()
             ) {
                 when (conversationItem.messageStatus) {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(

@@ -27,9 +27,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isData
 import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
@@ -81,7 +81,7 @@ class AudioPlayer private constructor() {
         }
 
         fun audioFilePlaying(): Boolean {
-            return instance?.isFile() == true
+            return instance?.messageItem?.isData() == true
         }
 
         fun isPlay(id: String): Boolean = instance.notNullWithElse({ return it.status == STATUS_PLAY && it.id == id }, false)
@@ -178,10 +178,6 @@ class AudioPlayer private constructor() {
 
     private var autoPlayNext: Boolean = true
     private var continuePlayOnlyToday: Boolean = false
-
-    private fun isFile(): Boolean {
-        return messageItem?.type == MessageCategory.PLAIN_DATA.name || messageItem?.type == MessageCategory.SIGNAL_DATA.name
-    }
 
     interface StatusListener {
         fun onStatusChange(status: Int)
