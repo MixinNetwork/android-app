@@ -174,8 +174,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import one.mixin.android.vo.canNotForward
-import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image

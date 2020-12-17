@@ -11,7 +11,7 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.putInt
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
-import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isContactCategory
 import one.mixin.android.vo.isFtsMessage
 import org.threeten.bp.Instant
 import org.threeten.bp.temporal.ChronoUnit
@@ -83,7 +83,7 @@ object MessageFts4Helper {
     @WorkerThread
     fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
         if (!message.isFtsMessage()) {
-            if (message.isContact() && !extraContent.isNullOrBlank()) {
+            if (message.isContactCategory() && !extraContent.isNullOrBlank()) {
                 insertContact(message.id, extraContent)
             }
             return
