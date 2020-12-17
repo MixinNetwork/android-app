@@ -14,7 +14,7 @@ buildscript {
         ext.supportLibVersion = '1.0.0'
         ext.recyclerViewVersion = '1.2.0-beta01'
         ext.browser_version = '1.3.0'
-        ext.mdcVersion = '1.3.0-alpha04'
+        ext.mdcVersion = '1.3.0-beta01'
         ext.exifinterfaceVersion = '1.3.2'
         ext.preference_version = '1.1.1'
         ext.hiltVersion = '2.30.1-alpha'
