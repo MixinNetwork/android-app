@@ -599,6 +599,7 @@
     <string name="setting_feedback">Feedback</string>
     <string name="setting_share">Share This App</string>
     <string name="setting_share_text">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search %1$s to add me as a friend.</string>
+    <string name="setting_auth_search_hint">Mixin ID, Name</string>
     <string-array name="setting_night_array">
         <item>Light</item>
         <item>Dark</item>

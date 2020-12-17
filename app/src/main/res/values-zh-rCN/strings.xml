@@ -583,6 +583,7 @@
     <string name="setting_feedback">反馈</string>
     <string name="setting_share">分享应用</string>
     <string name="setting_share_text">快来 Mixin 与我聊天！简单、安全好用还支持比特币、以太坊等加密货币，下载 https://mixin.one/messenger 后搜索 %1$s 加我好友。</string>
+    <string name="setting_auth_search_hint">Mixin ID, 昵称</string>
     <string-array name="setting_night_array">
         <item>浅色</item>
         <item>暗黑</item>
