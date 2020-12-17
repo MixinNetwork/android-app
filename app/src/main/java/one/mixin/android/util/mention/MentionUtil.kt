@@ -10,8 +10,6 @@ import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.mention.syntax.node.Node
-import one.mixin.android.util.mention.syntax.parser.Parser
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User
@@ -110,14 +108,6 @@ private val mentionEndPattern by lazy {
 val mentionNumberPattern: Pattern by lazy {
     Pattern.compile("@[\\d]{4,}")
 }
-
-val mentionMessageParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
-    .addRule(MentionRule())
-    .addRule(NormalRule())
-
-val mentionConversationParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
-    .addRule(MentionConversationRule())
-    .addRule(NormalRule())
 
 val MENTION_PRESS_COLOR by lazy { Color.parseColor("#665FA7E4") }
 val MENTION_COLOR by lazy { Color.parseColor("#5FA7E4") }

@@ -64,7 +64,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.renderConversation
+import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
@@ -626,7 +626,7 @@ class ConversationListFragment : LinkFragment() {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)
                         if (conversationItem.mentions != null) {
-                            binding.msgTv.renderConversation(
+                            binding.msgTv.renderMessage(
                                 it,
                                 MentionRenderCache.singleton.getMentionRenderContext(
                                     conversationItem.mentions

@@ -18,8 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderContext
-import one.mixin.android.util.mention.mentionConversationParser
-import one.mixin.android.util.mention.syntax.simple.SimpleRenderer
+import one.mixin.android.util.mention.MentionTextView
 import one.mixin.android.widget.NoUnderLineSpan
 import one.mixin.android.widget.linktext.AutoLinkTextView
 
@@ -122,16 +121,13 @@ fun TextView.timeAgoDay(str: String, pattern: String = "dd/MM/yyyy") {
     text = str.timeAgoDay(pattern)
 }
 
-fun TextView.renderConversation(text: CharSequence?, mentionRenderContext: MentionRenderContext?) {
+fun MentionTextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRenderContext?) {
     if (text == null || mentionRenderContext == null) {
         this.text = text
         return
     }
-    this.text = SimpleRenderer.render(
-        text,
-        parser = mentionConversationParser,
-        renderContext = mentionRenderContext
-    )
+    this.mentionRenderContext = mentionRenderContext
+    this.text = text
 }
 
 fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRenderContext?, keyWord: String? = null) {

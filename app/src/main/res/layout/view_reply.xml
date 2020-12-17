@@ -31,7 +31,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"/>
 
-    <TextView
+    <one.mixin.android.util.mention.MentionTextView
         android:id="@+id/reply_view_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
