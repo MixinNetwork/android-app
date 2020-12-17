@@ -30,6 +30,7 @@ import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
@@ -978,6 +979,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     }
 
     private fun processEncryptedMessage(data: BlazeMessageData) {
+        val seed = Session.getEd25519PrivateKey()?.decodeBase64() ?: return
+        try {
+            val decryptedContent = encryptedProtocol.decryptMessage(seed, data.data.decodeBase64())
+            val plaintext = String(decryptedContent)
+            try {
+                processDecryptSuccess(data, plaintext)
+            } catch (e: JsonSyntaxException) {
+                insertInvalidMessage(data)
+            }
+        } catch (e: Exception) {
+            reportDecryptFailed(data, e, null)
+        }
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
@@ -1024,22 +1037,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "decrypt failed " + data.messageId, e)
-            FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
-            reportException(e)
-            if (e !is NoSessionException) {
-                Bugsnag.beforeNotify {
-                    it.addToTab("Decrypt", "conversation", data.conversationId)
-                    it.addToTab("Decrypt", "message_id", data.messageId)
-                    it.addToTab("Decrypt", "user", data.userId)
-                    it.addToTab("Decrypt", "session", data.sessionId)
-                    it.addToTab("Decrypt", "data", data.data)
-                    it.addToTab("Decrypt", "category", data.category)
-                    it.addToTab("Decrypt", "created_at", data.createdAt)
-                    it.addToTab("Decrypt", "resend_message", resendMessageId ?: "")
-                    true
-                }
-                Bugsnag.notify(e)
-            }
+            reportDecryptFailed(data, e, resendMessageId)
 
             if (resendMessageId != null) {
                 return
@@ -1055,6 +1053,25 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     requestResendKey(data.conversationId, data.userId, data.messageId, data.sessionId)
                 }
             }
+        }
+    }
+
+    private fun reportDecryptFailed(data: BlazeMessageData, e: Exception, resendMessageId: String?) {
+        FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
+        FirebaseCrashlytics.getInstance().recordException(e)
+        if (e !is NoSessionException) {
+            Bugsnag.beforeNotify {
+                it.addToTab("Decrypt", "conversation", data.conversationId)
+                it.addToTab("Decrypt", "message_id", data.messageId)
+                it.addToTab("Decrypt", "user", data.userId)
+                it.addToTab("Decrypt", "session", data.sessionId)
+                it.addToTab("Decrypt", "data", data.data)
+                it.addToTab("Decrypt", "category", data.category)
+                it.addToTab("Decrypt", "created_at", data.createdAt)
+                it.addToTab("Decrypt", "resend_message", resendMessageId ?: "")
+                true
+            }
+            Bugsnag.notify(e)
         }
     }
 
