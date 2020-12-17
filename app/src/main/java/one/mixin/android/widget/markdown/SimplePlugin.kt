@@ -16,6 +16,7 @@ import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.node.Code
 import org.commonmark.node.Emphasis
+import org.commonmark.node.SoftLineBreak
 import org.commonmark.node.StrongEmphasis
 import org.commonmark.node.Text
 import org.commonmark.parser.Parser
@@ -46,6 +47,8 @@ class SimplePlugin : AbstractMarkwonPlugin() {
             visitor.builder()
                 .append(code.literal)
             visitor.setSpansForNodeOptional(code, length)
+        }.on(SoftLineBreak::class.java) { visitor, _ ->
+            visitor.ensureNewLine()
         }
     }
 

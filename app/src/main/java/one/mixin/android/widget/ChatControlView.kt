@@ -896,8 +896,8 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(
                     activity!! as FragmentActivity
                 ).isGranted(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
             ) {
                 RxPermissions(activity!! as FragmentActivity)
                     .request(
