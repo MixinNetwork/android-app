@@ -53,11 +53,9 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             super.setText(text, type)
             return
         }
-
         val autoLinkItems = LinkedList<AutoLinkItem>()
-        val sp = SpannableStringBuilder(text)
-        val node = getSimpleMarkwon(context).parse(text.toString())
-        renderMarkdown(sp, node)
+        val sp = SpannableStringBuilder()
+        renderMarkdown(sp, getSimpleMarkwon(context).parse(text.toString()))
         renderMention(sp, autoLinkItems)
         matchedRanges(sp, autoLinkItems)
         if (movementMethod == null) {
