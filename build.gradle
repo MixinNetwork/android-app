@@ -7,7 +7,7 @@ buildscript {
         ext.appcompatVersion = '1.2.0'
         ext.pagingVersion = '2.1.2'
         ext.collectionx = '1.1.0'
-        ext.roomVersion = '2.3.0-SNAPSHOT'
+        ext.roomVersion = '2.3.0-alpha04'
         ext.navigationVersion = '2.3.2'
         ext.workManagerVersion = '2.5.0-beta02'
         ext.constraintLayoutVersion = '2.0.4'
@@ -103,7 +103,6 @@ buildscript {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven { url 'https://androidx.dev/snapshots/builds/6964664/artifacts/repository/' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.1'
@@ -120,7 +119,6 @@ allprojects {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven { url 'https://androidx.dev/snapshots/builds/7018685/artifacts/repository/' }
     }
 }
 
