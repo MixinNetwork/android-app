@@ -126,19 +126,18 @@ class AttachmentDownloadJob(
                 val originalResponse = chain.proceed(chain.request())
                 originalResponse.newBuilder().body(
                     ProgressResponseBody(
-                        originalResponse.body,
-                        ProgressListener { bytesRead, contentLength, done ->
-                            if (!done) {
-                                val progress = try {
-                                    bytesRead.toFloat() / contentLength.toFloat()
-                                } catch (e: Exception) {
-                                    0f
-                                }
-                                attachmentProcess[message.id] = (progress * 100).toInt()
-                                RxBus.publish(loadingEvent(message.id, progress))
+                        originalResponse.body
+                    ) { bytesRead, contentLength, done ->
+                        if (!done) {
+                            val progress = try {
+                                bytesRead.toFloat() / contentLength.toFloat()
+                            } catch (e: Exception) {
+                                0f
                             }
+                            attachmentProcess[message.id] = (progress * 100).toInt()
+                            RxBus.publish(loadingEvent(message.id, progress))
                         }
-                    )
+                    }
                 ).build()
             }
             .build()

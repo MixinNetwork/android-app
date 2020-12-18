@@ -19,8 +19,10 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
         } else {
             val sp = SpannableStringBuilder()
             renderMarkdown(sp, MarkwonUtil.getSimpleMarkwon(context).parse(text.toString()))
-            mentionRenderContext.notNullWithElse({ super.setText(renderMention(sp), type) },
-                { super.setText(sp, type) })
+            mentionRenderContext.notNullWithElse(
+                { super.setText(renderMention(sp), type) },
+                { super.setText(sp, type) }
+            )
         }
     }
 

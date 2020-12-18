@@ -482,7 +482,7 @@ class DecryptMessage : Injector() {
                     createMediaMessage(
                         data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
-                        data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson()
+                        data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson(), mediaData.caption
                     )
                 }
 

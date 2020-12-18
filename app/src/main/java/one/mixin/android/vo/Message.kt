@@ -157,7 +157,11 @@ class Message(
 
     @SerializedName("quote_content")
     @ColumnInfo(name = "quote_content")
-    val quoteContent: String? = null
+    val quoteContent: String? = null,
+
+    @SerializedName("caption")
+    @ColumnInfo(name = "caption")
+    var caption: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -450,7 +454,8 @@ fun createMediaMessage(
     mediaStatus: MediaStatus,
     status: String,
     quoteMessageId: String? = null,
-    quoteContent: String? = null
+    quoteContent: String? = null,
+    caption: String?=null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)
@@ -464,6 +469,7 @@ fun createMediaMessage(
     .setMediaStatus(mediaStatus.name)
     .setQuoteMessageId(quoteMessageId)
     .setQuoteContent(quoteContent)
+    .setCaption(caption)
     .build()
 
 fun createStickerMessage(

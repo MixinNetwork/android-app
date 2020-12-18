@@ -35,6 +35,7 @@ class MessageBuilder(
     private var mediaWaveform: ByteArray? = null
     private var quoteMessageId: String? = null
     private var quoteContent: String? = null
+    private var caption: String? = null
 
     fun setContent(content: String?): MessageBuilder {
         this.content = content?.maxLimit()
@@ -156,11 +157,16 @@ class MessageBuilder(
         return this
     }
 
+    fun setCaption(caption:String?):MessageBuilder{
+        this.caption = caption
+        return this
+    }
+
     fun build(): Message =
         Message(
             id, conversationId, userId, category, content, mediaUrl,
             mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, thumbUrl, mediaKey, mediaDigest, mediaStatus, status, createdAt,
-            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent
+            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent, caption
         )
 }
