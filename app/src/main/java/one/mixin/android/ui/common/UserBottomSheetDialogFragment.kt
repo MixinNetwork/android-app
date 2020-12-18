@@ -73,6 +73,7 @@ import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ForwardAction
@@ -235,11 +236,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
                     }
                 }
-                if (BuildConfig.DEBUG) {
-                    binding.avatar.setOnLongClickListener {
-                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, "mixin://users/${user.userId}"))
-                        true
-                    }
+                debugLongClick(binding.avatar) {
+                    context?.getClipboardManager()?.setPrimaryClip(
+                        ClipData.newPlainText(
+                            null,
+                            "mixin://users/${user.userId}"
+                        )
+                    )
                 }
                 apps?.let {
                     binding.avatarGroup.setApps(it)

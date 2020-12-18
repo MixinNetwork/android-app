@@ -49,6 +49,7 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
@@ -128,11 +129,9 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 conversation = c
                 val icon = c.iconUrl
                 binding.avatar.setGroup(icon)
-                if (BuildConfig.DEBUG) {
-                    binding.avatar.setOnLongClickListener {
-                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
-                        true
-                    }
+                debugLongClick(binding.avatar) {
+                    context?.getClipboardManager()
+                        ?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
                 }
                 if (icon == null || !File(icon).exists()) {
                     bottomViewModel.startGenerateAvatar(c.conversationId)
