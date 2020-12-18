@@ -33,8 +33,8 @@ class MentionRenderCache private constructor(maxSize: Int) : LruCache<Int, Map<S
         }
     }
 
-    fun getMentionRenderContext(content: String, action: (String) -> Unit): MentionRenderContext? {
+    fun getMentionRenderContext(content: String): MentionRenderContext? {
         val mentionMap = getMentionData(content) ?: return null
-        return MentionRenderContext(mentionMap, action)
+        return MentionRenderContext(mentionMap)
     }
 }

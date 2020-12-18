@@ -15,7 +15,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.renderConversation
+import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderCache
@@ -55,9 +55,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
         when {
             quoteMessageItem.type.endsWith("_TEXT") -> {
                 if (quoteMessageItem.mentions != null) {
-                    binding.replyContentTv.renderConversation(
+                    binding.replyContentTv.renderMessage(
                         quoteMessageItem.content,
-                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions) {}
+                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions)
                     )
                 } else {
                     binding.replyContentTv.text = quoteMessageItem.content

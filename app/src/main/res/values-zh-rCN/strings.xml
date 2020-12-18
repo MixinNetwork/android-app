@@ -119,6 +119,10 @@
     <string name="type_a_message">输入消息</string>
     <string name="open_floating">浮窗</string>
     <string name="cancel_floating">取消浮窗</string>
+    <string name="quote">引用</string>
+    <string name="strikethrough">删除线</string>
+    <string name="italic">斜体</string>
+    <string name="bold">粗体</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

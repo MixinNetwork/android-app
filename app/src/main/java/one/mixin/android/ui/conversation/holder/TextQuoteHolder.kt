@@ -33,6 +33,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
     init {
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
+        binding.chatTv.setMentionModeColor(LINK_COLOR)
         binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
         binding.chatMsgContent.setMaxWidth(itemView.context.maxItemWidth() - dp16)
     }
@@ -108,6 +109,9 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
                 }
+                AutoLinkMode.MODE_MENTION -> {
+                    onItemListener.onMentionClick(matchedText)
+                }
                 else -> {
                 }
             }
@@ -156,9 +160,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
-            ) { identityNumber ->
-                onItemListener.onMentionClick(identityNumber)
-            }
+            )
             binding.chatTv.renderMessage(messageItem.content, mentionRenderContext, keyword)
         } else {
             keyword.notNullWithElse(

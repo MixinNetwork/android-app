@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.TextUtils
 import android.util.AttributeSet
@@ -17,6 +18,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.extension.tapVibrate
+import one.mixin.android.util.markdown.MarkwonUtil.Companion.getSimpleMarkwon
+import one.mixin.android.util.mention.MentionRenderContext
+import one.mixin.android.util.mention.mentionNumberPattern
+import org.commonmark.node.Node
 import java.util.LinkedList
 import java.util.regex.Pattern
 
@@ -41,24 +46,59 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     private var customModeColor = DEFAULT_COLOR
     private var defaultSelectedColor = Color.LTGRAY
     var clickTime: Long = 0
+    var mentionRenderContext: MentionRenderContext? = null
 
     override fun setText(text: CharSequence, type: BufferType) {
         if (TextUtils.isEmpty(text)) {
             super.setText(text, type)
             return
         }
-
-        val spannableString = makeSpannableString(text)
+        val autoLinkItems = LinkedList<AutoLinkItem>()
+        val sp = SpannableStringBuilder()
+        renderMarkdown(sp, getSimpleMarkwon(context).parse(text.toString()))
+        renderMention(sp, autoLinkItems)
+        matchedRanges(sp, autoLinkItems)
         if (movementMethod == null) {
             movementMethod = LinkTouchMovementMethod()
         }
-        super.setText(spannableString as CharSequence, type)
+        super.setText(makeSpannableString(sp, autoLinkItems), type)
+    }
+
+    private fun renderMarkdown(sp: SpannableStringBuilder, node: Node) {
+        sp.append(getSimpleMarkwon(context).render(node))
+        if (node.next != null) {
+            renderMarkdown(sp, node.next)
+        }
+    }
+
+    private fun renderMention(
+        text: SpannableStringBuilder,
+        autoLinkItems: LinkedList<AutoLinkItem>
+    ): CharSequence {
+        val mentionRenderContext = this.mentionRenderContext ?: return text
+        val matcher = mentionNumberPattern.matcher(text)
+        var offset = 0
+        while (matcher.find()) {
+            val name = mentionRenderContext.userMap[matcher.group().substring(1)] ?: continue
+            text.replace(matcher.start() + 1 - offset, matcher.end() - offset, name)
+            autoLinkItems.add(
+                AutoLinkItem(
+                    matcher.start() - offset,
+                    matcher.start() + name.length - offset + 1,
+                    matcher.group(),
+                    AutoLinkMode.MODE_MENTION
+                )
+            )
+            offset += ((matcher.group().length - 1) - name.length)
+        }
+        return text
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         coroutineScope = MainScope()
     }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         coroutineScope?.cancel()
@@ -77,11 +117,13 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
     private fun makeSpannableString(
         text: CharSequence,
-        spannable: SpannableString? = null
+        autoLinkItems: List<AutoLinkItem>
     ): SpannableString {
-        val spannableString = spannable ?: SpannableString(text)
-
-        val autoLinkItems = matchedRanges(text)
+        val spannableString = if (text is SpannableString) {
+            text
+        } else {
+            SpannableString(text)
+        }
 
         for (autoLinkItem in autoLinkItems) {
             val currentColor = getColorByMode(autoLinkItem.autoLinkMode)
@@ -160,9 +202,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         return spannableString
     }
 
-    private fun matchedRanges(text: CharSequence): List<AutoLinkItem> {
-
-        val autoLinkItems = LinkedList<AutoLinkItem>()
+    private fun matchedRanges(
+        text: CharSequence,
+        autoLinkItems: MutableList<AutoLinkItem>
+    ): List<AutoLinkItem> {
 
         if (autoLinkModes == null) {
             throw NullPointerException("Please add at least one mode")
@@ -185,7 +228,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                             )
                         )
                 }
-            } else {
+            } else if (anAutoLinkMode != AutoLinkMode.MODE_MENTION) {
                 while (matcher.find()) {
                     autoLinkItems.add(
                         AutoLinkItem(

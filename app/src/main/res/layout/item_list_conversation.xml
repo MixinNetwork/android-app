@@ -123,7 +123,7 @@
             android:textSize="13sp"
             android:visibility="gone" />
 
-        <TextView
+        <one.mixin.android.util.mention.MentionTextView
                 android:id="@+id/msg_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

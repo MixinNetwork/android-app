@@ -33,12 +33,17 @@ import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.util.markdown.table.TableEntryPlugin
+import one.mixin.android.widget.markdown.SimplePlugin
 import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.Link
 import org.commonmark.node.SoftLineBreak
 
 class MarkwonUtil {
     companion object {
+
+        fun getSimpleMarkwon(context: Context): Markwon {
+            return Markwon.builderNoCore(context).usePlugin(SimplePlugin()).build()
+        }
 
         fun getMarkwon(
             context: Activity,
@@ -62,14 +67,29 @@ class MarkwonUtil {
                     object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
                             builder.headingBreakHeight(0)
-                                .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
+                                .headingTextSizeMultipliers(
+                                    floatArrayOf(
+                                        1.32F,
+                                        1.24F,
+                                        1.18F,
+                                        1.1F,
+                                        1.0F,
+                                        0.9F
+                                    )
+                                )
                         }
 
                         override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
                             val spansFactory = builder.getFactory(Link::class.java)
                             if (spansFactory != null) {
                                 builder.setFactory(Link::class.java) { configuration, props ->
-                                    arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                                    arrayOf(
+                                        RemoveUnderlineSpan(),
+                                        spansFactory.getSpans(
+                                            configuration,
+                                            props
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -126,7 +146,16 @@ class MarkwonUtil {
                             builder.headingBreakHeight(0)
                                 .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
                                 .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                                .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
+                                .headingTextSizeMultipliers(
+                                    floatArrayOf(
+                                        1.32F,
+                                        1.24F,
+                                        1.18F,
+                                        1.1F,
+                                        1.0F,
+                                        0.9F
+                                    )
+                                )
                         }
 
                         override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
@@ -137,7 +166,13 @@ class MarkwonUtil {
                             val spansFactory = builder.getFactory(Link::class.java)
                             if (spansFactory != null) {
                                 builder.setFactory(Link::class.java) { configuration, props ->
-                                    arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                                    arrayOf(
+                                        RemoveUnderlineSpan(),
+                                        spansFactory.getSpans(
+                                            configuration,
+                                            props
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -166,22 +201,24 @@ class MarkwonUtil {
         }
 
         fun parseContent(content: String?): String {
-            content ?: return MixinApplication.appContext.getString(R.string.conversation_status_post)
+            content
+                ?: return MixinApplication.appContext.getString(R.string.conversation_status_post)
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
 
-        private fun createGlidePlugin(context: Context): GlideImagesPlugin = GlideImagesPlugin.create(
-            object : GlideStore {
-                override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
-                    if (context.isActivityNotDestroyed()) {
-                        Glide.with(context).clear(target)
+        private fun createGlidePlugin(context: Context): GlideImagesPlugin =
+            GlideImagesPlugin.create(
+                object : GlideStore {
+                    override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
+                        if (context.isActivityNotDestroyed()) {
+                            Glide.with(context).clear(target)
+                        }
+                    }
+
+                    override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
+                        return Glide.with(context).load(drawable.destination)
                     }
                 }
-
-                override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                    return Glide.with(context).load(drawable.destination)
-                }
-            }
-        )
+            )
     }
 }
