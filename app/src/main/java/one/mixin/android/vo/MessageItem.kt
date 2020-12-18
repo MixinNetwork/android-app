@@ -114,28 +114,24 @@ fun create(type: String, createdAt: String? = null) = MessageItem(
     null, null, null, null, null, null, null, null, null, null
 )
 
-fun MessageItem.isMedia(): Boolean = this.type == MessageCategory.SIGNAL_IMAGE.name ||
-    this.type == MessageCategory.PLAIN_IMAGE.name ||
-    this.type == MessageCategory.SIGNAL_DATA.name ||
-    this.type == MessageCategory.PLAIN_DATA.name ||
-    this.type == MessageCategory.SIGNAL_VIDEO.name ||
-    this.type == MessageCategory.PLAIN_VIDEO.name
+fun MessageItem.isMedia(): Boolean = isFile() || isImage() || isVideo()
+
+fun MessageItem.isAttachment(): Boolean = isFile() || isImage() || isVideo() || isAudio()
+
+fun MessageItem.unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isFile() || isImage() || isVideo() || isAudio())
 
 fun MessageItem.canNotForward() = this.type == MessageCategory.APP_BUTTON_GROUP.name ||
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
     this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-    (!mediaDownloaded(this.mediaStatus) && this.isMedia()) ||
+    unfinishedAttachment() ||
     isCallMessage() || isRecall()
 
-fun MessageItem.supportSticker(): Boolean = this.type == MessageCategory.SIGNAL_STICKER.name ||
-    this.type == MessageCategory.PLAIN_STICKER.name ||
-    this.type == MessageCategory.SIGNAL_IMAGE.name ||
-    this.type == MessageCategory.PLAIN_IMAGE.name
+fun MessageItem.supportSticker(): Boolean = isSticker() || isImage()
 
 fun MessageItem.canNotReply() =
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        (!mediaDownloaded(this.mediaStatus) && this.isMedia()) ||
+        unfinishedAttachment() ||
         isCallMessage() || isRecall()
 
 fun MessageItem.isCallMessage() =
@@ -153,21 +149,23 @@ fun String.isGroupCallType() =
         this == MessageCategory.KRAKEN_CANCEL.name ||
         this == MessageCategory.KRAKEN_INVITE.name
 
-fun MessageItem.isLive() = type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name
+fun MessageItem.isText() = type == MessageCategory.PLAIN_TEXT.name || type == MessageCategory.SIGNAL_TEXT.name || type == MessageCategory.ENCRYPTED_TEXT.name
 
-fun MessageItem.isImage() = type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.SIGNAL_IMAGE.name
+fun MessageItem.isLive() = type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name
 
-fun MessageItem.isVideo() = type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.PLAIN_VIDEO.name
+fun MessageItem.isImage() = type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.SIGNAL_IMAGE.name || type == MessageCategory.ENCRYPTED_IMAGE.name
 
-fun MessageItem.isPost() = type == MessageCategory.SIGNAL_POST.name || type == MessageCategory.SIGNAL_POST.name
+fun MessageItem.isVideo() = type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.PLAIN_VIDEO.name || type == MessageCategory.ENCRYPTED_VIDEO.name
 
-fun MessageItem.isAudio() =
-    type == MessageCategory.PLAIN_AUDIO.name ||
-        type == MessageCategory.SIGNAL_AUDIO.name
+fun MessageItem.isSticker() = type == MessageCategory.SIGNAL_STICKER.name || type == MessageCategory.PLAIN_STICKER.name || type == MessageCategory.ENCRYPTED_STICKER.name
 
-fun MessageItem.isFile() =
-    type == MessageCategory.SIGNAL_DATA.name ||
-        type == MessageCategory.PLAIN_DATA.name
+fun MessageItem.isPost() = type == MessageCategory.SIGNAL_POST.name || type == MessageCategory.SIGNAL_POST.name || type == MessageCategory.ENCRYPTED_POST.name
+
+fun MessageItem.isAudio() = type == MessageCategory.PLAIN_AUDIO.name || type == MessageCategory.SIGNAL_AUDIO.name || type == MessageCategory.ENCRYPTED_AUDIO.name
+
+fun MessageItem.isFile() = type == MessageCategory.SIGNAL_DATA.name || type == MessageCategory.PLAIN_DATA.name || type == MessageCategory.ENCRYPTED_DATA.name
+
+fun MessageItem.isLocation() = type == MessageCategory.SIGNAL_LOCATION.name || type == MessageCategory.PLAIN_LOCATION.name || type == MessageCategory.ENCRYPTED_LOCATION.name
 
 fun MessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
 

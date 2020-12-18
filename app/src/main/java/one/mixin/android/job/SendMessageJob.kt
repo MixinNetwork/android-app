@@ -3,8 +3,11 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
 import one.mixin.android.RxBus
+import one.mixin.android.api.ChecksumException
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.session.Session
@@ -111,6 +114,8 @@ open class SendMessageJob(
         jobManager.saveJob(this)
         if (message.isPlain() || message.isCall() || message.isRecall() || message.category == MessageCategory.APP_CARD.name) {
             sendPlainMessage()
+        } else if (message.isEncrypted()) {
+            sendEncryptedMessage()
         } else {
             sendSignalMessage()
         }
@@ -153,6 +158,37 @@ open class SendMessageJob(
         } else {
             createParamBlazeMessage(blazeParam)
         }
+        deliver(blazeMessage)
+    }
+
+    private fun sendEncryptedMessage() {
+        val conversation = conversationDao.getConversation(message.conversationId) ?: return
+        checkConversationExist(conversation)
+        val participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
+        if (participantSessionKey == null) {
+            syncConversation(message.conversationId)
+            throw ChecksumException()
+        }
+        if (participantSessionKey.publicKey.isNullOrBlank()) {
+            message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
+            sendPlainMessage()
+            return
+        }
+
+        val seed = Session.getEd25519PrivateKey()?.decodeBase64() ?: return
+        val content = encryptedProtocol.encryptMessage(seed, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId)
+
+        val blazeParam = BlazeMessageParam(
+            message.conversationId,
+            recipientId,
+            message.id,
+            message.category,
+            content.base64Encode(),
+            quote_message_id = message.quoteMessageId,
+            mentions = getMentionData(message.id),
+            recipient_ids = recipientIds
+        )
+        val blazeMessage = createParamBlazeMessage(blazeParam)
         deliver(blazeMessage)
     }
 

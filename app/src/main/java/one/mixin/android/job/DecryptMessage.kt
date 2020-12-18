@@ -28,6 +28,7 @@ import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
@@ -105,7 +106,6 @@ import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
 import org.threeten.bp.ZonedDateTime
-import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
@@ -159,6 +159,8 @@ class DecryptMessage : Injector() {
                 processPlainMessage(data)
             } else if (data.category.startsWith("SIGNAL_")) {
                 processSignalMessage(data)
+            } else if (data.category.startsWith("ENCRYPTED_")) {
+                processEncryptedMessage(data)
             } else if (data.category == MessageCategory.APP_BUTTON_GROUP.name) {
                 processAppButton(data)
             } else if (data.category == MessageCategory.APP_CARD.name) {
@@ -741,6 +743,21 @@ class DecryptMessage : Injector() {
         }
     }
 
+    private fun processEncryptedMessage(data: BlazeMessageData) {
+        val seed = Session.getEd25519PrivateKey()?.decodeBase64() ?: return
+        try {
+            val decryptedContent = encryptedProtocol.decryptMessage(seed, data.data.decodeBase64())
+            val plaintext = String(decryptedContent)
+            try {
+                processDecryptSuccess(data, plaintext)
+            } catch (e: JsonSyntaxException) {
+                insertInvalidMessage(data)
+            }
+        } catch (e: Exception) {
+            reportDecryptFailed(data, e, null)
+        }
+    }
+
     private fun processSignalMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -757,27 +774,26 @@ class DecryptMessage : Injector() {
                 keyType,
                 cipherText,
                 data.category,
-                data.sessionId,
-                DecryptionCallback {
-                    if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
-                        RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
-                    }
-                    if (data.category != MessageCategory.SIGNAL_KEY.name) {
-                        val plaintext = String(it)
-                        if (resendMessageId != null) {
-                            processRedecryptMessage(data, resendMessageId, plaintext)
-                            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-                            messageHistoryDao.insert(MessageHistory(data.messageId))
-                        } else {
-                            try {
-                                processDecryptSuccess(data, plaintext)
-                            } catch (e: JsonSyntaxException) {
-                                insertInvalidMessage(data)
-                            }
+                data.sessionId
+            ) {
+                if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
+                    RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
+                }
+                if (data.category != MessageCategory.SIGNAL_KEY.name) {
+                    val plaintext = String(it)
+                    if (resendMessageId != null) {
+                        processRedecryptMessage(data, resendMessageId, plaintext)
+                        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                        messageHistoryDao.insert(MessageHistory(data.messageId))
+                    } else {
+                        try {
+                            processDecryptSuccess(data, plaintext)
+                        } catch (e: JsonSyntaxException) {
+                            insertInvalidMessage(data)
                         }
                     }
                 }
-            )
+            }
 
             val address = SignalProtocolAddress(data.userId, deviceId)
             val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
@@ -786,22 +802,7 @@ class DecryptMessage : Injector() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "decrypt failed " + data.messageId, e)
-            FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
-            FirebaseCrashlytics.getInstance().recordException(e)
-            if (e !is NoSessionException) {
-                Bugsnag.beforeNotify {
-                    it.addToTab("Decrypt", "conversation", data.conversationId)
-                    it.addToTab("Decrypt", "message_id", data.messageId)
-                    it.addToTab("Decrypt", "user", data.userId)
-                    it.addToTab("Decrypt", "session", data.sessionId)
-                    it.addToTab("Decrypt", "data", data.data)
-                    it.addToTab("Decrypt", "category", data.category)
-                    it.addToTab("Decrypt", "created_at", data.createdAt)
-                    it.addToTab("Decrypt", "resend_message", resendMessageId ?: "")
-                    true
-                }
-                Bugsnag.notify(e)
-            }
+            reportDecryptFailed(data, e, resendMessageId)
 
             if (resendMessageId != null) {
                 return
@@ -817,6 +818,25 @@ class DecryptMessage : Injector() {
                     requestResendKey(data.conversationId, data.userId, data.messageId, data.sessionId)
                 }
             }
+        }
+    }
+
+    private fun reportDecryptFailed(data: BlazeMessageData, e: Exception, resendMessageId: String?) {
+        FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
+        FirebaseCrashlytics.getInstance().recordException(e)
+        if (e !is NoSessionException) {
+            Bugsnag.beforeNotify {
+                it.addToTab("Decrypt", "conversation", data.conversationId)
+                it.addToTab("Decrypt", "message_id", data.messageId)
+                it.addToTab("Decrypt", "user", data.userId)
+                it.addToTab("Decrypt", "session", data.sessionId)
+                it.addToTab("Decrypt", "data", data.data)
+                it.addToTab("Decrypt", "category", data.category)
+                it.addToTab("Decrypt", "created_at", data.createdAt)
+                it.addToTab("Decrypt", "resend_message", resendMessageId ?: "")
+                true
+            }
+            Bugsnag.notify(e)
         }
     }
 
