@@ -4,6 +4,8 @@ import android.content.Context
 import android.text.SpannableStringBuilder
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
+import one.mixin.android.util.markdown.MarkwonUtil
+import org.commonmark.node.Node
 
 class MentionTextView(context: Context, attrs: AttributeSet?) :
     AppCompatTextView(context, attrs) {
@@ -14,7 +16,17 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
             super.setText(text, type)
             return
         } else {
-            super.setText(renderMention(text), type)
+            val sp = SpannableStringBuilder()
+            renderMarkdown(sp, MarkwonUtil.getSimpleMarkwon(context).parse(text.toString()))
+
+            super.setText(renderMention(sp), type)
+        }
+    }
+
+    private fun renderMarkdown(sp: SpannableStringBuilder, node: Node) {
+        sp.append(MarkwonUtil.getSimpleMarkwon(context).render(node))
+        if (node.next != null) {
+            renderMarkdown(sp, node.next)
         }
     }
 

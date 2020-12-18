@@ -33,6 +33,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
     init {
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
+        binding.chatTv.setMentionModeColor(LINK_COLOR)
         binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
         binding.chatMsgContent.setMaxWidth(itemView.context.maxItemWidth() - dp16)
     }
