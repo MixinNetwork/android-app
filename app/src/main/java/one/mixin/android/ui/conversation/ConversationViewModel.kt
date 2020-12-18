@@ -76,7 +76,7 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
-import one.mixin.android.vo.isGroup
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
@@ -719,7 +719,7 @@ internal constructor(
             if (selectItem.conversationId != null) {
                 val conversation = conversationRepository.getConversation(selectItem.conversationId)
                 if (conversation != null) {
-                    if (conversation.isGroup()) {
+                    if (conversation.isGroupConversation()) {
                         withContext(Dispatchers.Main) {
                             callback(conversation.conversationId, false)
                         }

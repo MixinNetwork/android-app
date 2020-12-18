@@ -266,7 +266,7 @@ class ConversationListFragment : LinkFragment() {
                 }
 
                 override fun onNormalItemClick(item: ConversationItem) {
-                    if (item.isGroup() && (
+                    if (item.isGroupConversation() && (
                         item.status == ConversationStatus.START.ordinal ||
                             item.status == ConversationStatus.FAILURE.ordinal
                         )
@@ -278,7 +278,7 @@ class ConversationListFragment : LinkFragment() {
                         doAsync { messagesViewModel.createGroupConversation(item.conversationId) }
                     } else {
                         lifecycleScope.launch {
-                            val user = if (item.isContact()) {
+                            val user = if (item.isContactConversation()) {
                                 messagesViewModel.suspendFindUserById(item.ownerId)
                             } else null
                             val messageId =
@@ -356,7 +356,7 @@ class ConversationListFragment : LinkFragment() {
                 binding.emptyView.root.isVisible = false
                 pagedList
                     .filter { item: ConversationItem? ->
-                        item?.isGroup() == true && (
+                        item?.isGroupConversation() == true && (
                             item.iconUrl() == null || !File(
                                 item.iconUrl() ?: ""
                             ).exists()
@@ -623,8 +623,7 @@ class ConversationListFragment : LinkFragment() {
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
                 }
-                conversationItem.contentType == MessageCategory.SIGNAL_TEXT.name ||
-                    conversationItem.contentType == MessageCategory.PLAIN_TEXT.name -> {
+                conversationItem.isText() -> {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)
                         if (conversationItem.mentions != null) {
@@ -700,7 +699,7 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.text = "[${cardData.title}]"
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
-                conversationItem.isContactCategory() -> {
+                conversationItem.isContact() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_contact)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact)
@@ -866,7 +865,7 @@ class ConversationListFragment : LinkFragment() {
             }
             if (conversationItem.pinTime == null) {
                 binding.msgPin.visibility = GONE
-                if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.START.ordinal) {
+                if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.START.ordinal) {
                     binding.pb.visibility = VISIBLE
                     binding.unreadTv.visibility = GONE
                 } else {
@@ -878,13 +877,13 @@ class ConversationListFragment : LinkFragment() {
                         { binding.unreadTv.visibility = GONE }
                     )
 
-                    if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.FAILURE.ordinal) {
+                    if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.FAILURE.ordinal) {
                         binding.msgTv.text = getText(R.string.group_click_create_tip)
                     }
                 }
             } else {
                 binding.msgPin.visibility = VISIBLE
-                if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.START.ordinal) {
+                if (conversationItem.isGroupConversation() && conversationItem.status == ConversationStatus.START.ordinal) {
                     binding.pb.visibility = VISIBLE
                     binding.unreadTv.visibility = GONE
                 } else {
@@ -909,7 +908,7 @@ class ConversationListFragment : LinkFragment() {
             }
 
             conversationItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
-            if (conversationItem.isGroup()) {
+            if (conversationItem.isGroupConversation()) {
                 binding.avatarIv.setGroup(conversationItem.iconUrl())
             } else {
                 binding.avatarIv.setInfo(
@@ -929,7 +928,7 @@ class ConversationListFragment : LinkFragment() {
 
         @SuppressLint("SetTextI18n")
         private fun setConversationName(conversationItem: ConversationItem) {
-            if (conversationItem.isGroup() && conversationItem.senderId != Session.getAccountId()) {
+            if (conversationItem.isGroupConversation() && conversationItem.senderId != Session.getAccountId()) {
                 binding.groupNameTv.text = "${conversationItem.senderFullName}: "
                 binding.groupNameTv.visibility = VISIBLE
             } else {
@@ -953,7 +952,7 @@ class ConversationListFragment : LinkFragment() {
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.confirm) { dialog, _ ->
-                if (conversationItem.isGroup()) {
+                if (conversationItem.isGroupConversation()) {
                     lifecycleScope.launch {
                         handleMixinResponse(
                             invokeNetwork = {
@@ -1010,7 +1009,7 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private fun unMute(conversationItem: ConversationItem) {
-        if (conversationItem.isGroup()) {
+        if (conversationItem.isGroupConversation()) {
             lifecycleScope.launch {
                 handleMixinResponse(
                     invokeNetwork = {

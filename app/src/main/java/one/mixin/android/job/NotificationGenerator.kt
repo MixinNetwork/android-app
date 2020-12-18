@@ -32,7 +32,18 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isData
+import one.mixin.android.vo.isGroupConversation
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRepresentativeMessage
+import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isText
+import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.notificationManager
 
 const val KEY_REPLY = "key_reply"
@@ -70,7 +81,7 @@ object NotificationGenerator : Injector() {
             .putIntent(context, message.conversationId)
 
         val notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (conversation.isGroup()) {
+            if (conversation.isGroupConversation()) {
                 NotificationCompat.Builder(context, ChannelManager.getChannelId(true))
             } else {
                 NotificationCompat.Builder(context, ChannelManager.getChannelId(false))
@@ -118,9 +129,9 @@ object NotificationGenerator : Injector() {
             notificationBuilder.addAction(readAction)
         }
 
-        when (message.category) {
-            MessageCategory.SIGNAL_TEXT.name, MessageCategory.PLAIN_TEXT.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+        when {
+            message.isText() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_text_message, user.fullName)
@@ -132,8 +143,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(rendMentionContent(message.content, userMap))
                 }
             }
-            MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isImage() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_image_message, user.fullName)
                     )
@@ -147,8 +158,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_image_message))
                 }
             }
-            MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isVideo() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_video_message, user.fullName)
                     )
@@ -162,8 +173,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_video_message))
                 }
             }
-            MessageCategory.SIGNAL_LIVE.name, MessageCategory.PLAIN_LIVE.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isLive() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_live_message, user.fullName)
                     )
@@ -177,8 +188,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_live_message))
                 }
             }
-            MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isData() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_data_message, user.fullName)
                     )
@@ -192,8 +203,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_data_message))
                 }
             }
-            MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isAudio() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_audio_message, user.fullName)
                     )
@@ -207,8 +218,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_audio_message))
                 }
             }
-            MessageCategory.SIGNAL_STICKER.name, MessageCategory.PLAIN_STICKER.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isSticker() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_sticker_message, user.fullName)
                     )
@@ -222,8 +233,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_sticker_message))
                 }
             }
-            MessageCategory.SIGNAL_CONTACT.name, MessageCategory.PLAIN_CONTACT.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isContact() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_contact_message, user.fullName)
                     )
@@ -237,8 +248,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_contact_message))
                 }
             }
-            MessageCategory.SIGNAL_LOCATION.name, MessageCategory.PLAIN_LOCATION.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isLocation() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_location_message, user.fullName)
                     )
@@ -252,8 +263,8 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_location_message))
                 }
             }
-            MessageCategory.SIGNAL_POST.name, MessageCategory.PLAIN_POST.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.isPost() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_post_message, user.fullName)
                     )
@@ -265,15 +276,16 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText("${user.fullName}: ${rendMentionContent(message.content, userMap)}")
                 }
             }
-            MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
+            message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
                 if (message.action == SnapshotType.transfer.name) {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))
                     notificationBuilder.setContentTitle(user.fullName)
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_transfer_message))
                 }
             }
-            MessageCategory.APP_BUTTON_GROUP.name, MessageCategory.APP_CARD.name -> {
-                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+            message.type == MessageCategory.APP_BUTTON_GROUP.name ||
+                message.type == MessageCategory.APP_CARD.name -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_text_message, user.fullName)
@@ -285,10 +297,10 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_text_message))
                 }
             }
-            MessageCategory.SYSTEM_CONVERSATION.name -> {
+            message.type == MessageCategory.SYSTEM_CONVERSATION.name -> {
                 notificationBuilder.setContentTitle(context.getString(R.string.app_name))
             }
-            MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
+            message.type == MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
                 notificationBuilder.setContentTitle(user.fullName)
                 notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_audio_call_message))
             }

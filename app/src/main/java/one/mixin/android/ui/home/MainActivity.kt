@@ -129,7 +129,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
-import one.mixin.android.vo.isGroup
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
@@ -601,7 +601,7 @@ class MainActivity : BlazeBaseActivity() {
                         }
                     }
                 }
-                if (conversation?.isGroup() == true) {
+                if (conversation?.isGroupConversation() == true) {
                     innerIntent = ConversationActivity.putIntent(this, conversationId)
                 } else {
                     var user = userDao.findPlainUserByConversationId(conversationId)

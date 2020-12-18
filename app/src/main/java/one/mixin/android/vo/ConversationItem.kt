@@ -37,7 +37,7 @@ data class ConversationItem(
     val appId: String?,
     val mentions: String?,
     val mentionCount: Int?
-) : ICategory {
+) : ICategory, IConversationCategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationItem>() {
             override fun areItemsTheSame(oldItem: ConversationItem, newItem: ConversationItem) =
@@ -51,31 +51,30 @@ data class ConversationItem(
     override val type: String
         get() = contentType ?: MessageCategory.PLAIN_TEXT.name
 
-    fun isGroup() = category == ConversationCategory.GROUP.name
-
-    fun isContact() = category == ConversationCategory.CONTACT.name
+    override val conversationCategory: String
+        get() = category ?: ConversationCategory.CONTACT.name
 
     fun getConversationName(): String {
         return when {
-            isContact() -> name
-            isGroup() -> groupName!!
+            isContactConversation() -> name
+            isGroupConversation() -> groupName!!
             else -> ""
         }
     }
 
     fun iconUrl(): String? {
         return when {
-            isContact() -> avatarUrl
-            isGroup() -> groupIconUrl
+            isContactConversation() -> avatarUrl
+            isGroupConversation() -> groupIconUrl
             else -> null
         }
     }
 
     fun isMute(): Boolean {
-        if (isContact() && ownerMuteUntil != null) {
+        if (isContactConversation() && ownerMuteUntil != null) {
             return Instant.now().isBefore(Instant.parse(ownerMuteUntil))
         }
-        if (isGroup() && muteUntil != null) {
+        if (isGroupConversation() && muteUntil != null) {
             return Instant.now().isBefore(Instant.parse(muteUntil))
         }
         return false

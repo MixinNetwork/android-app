@@ -44,7 +44,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
-import one.mixin.android.vo.isGroup
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.toUser
 
 @AndroidEntryPoint
@@ -147,7 +147,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                 override fun onLongClick(name: View, participant: ParticipantItem): Boolean {
                     val popMenu = PopupMenu(activity!!, name)
                     val c = conversation
-                    if (c == null || !c.isGroup()) {
+                    if (c == null || !c.isGroupConversation()) {
                         return false
                     }
                     val role = selfParticipant?.role

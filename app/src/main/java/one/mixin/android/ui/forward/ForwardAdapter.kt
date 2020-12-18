@@ -7,9 +7,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
-import one.mixin.android.extension.inflate
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.ConversationCheckView
 
 class ForwardAdapter(private val disableCheck: Boolean = false) :
@@ -39,14 +39,14 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
     fun changeData() {
         if (!keyword.isNullOrBlank()) {
             conversations = sourceConversations?.filter {
-                if (it.isGroup()) {
+                if (it.isGroupConversation()) {
                     it.groupName != null && (it.groupName.contains(keyword.toString(), ignoreCase = true))
                 } else {
                     it.name.contains(keyword.toString(), ignoreCase = true) ||
                         it.ownerIdentityNumber.startsWith(keyword.toString(), ignoreCase = true)
                 }
             }?.sortedByDescending {
-                if (it.isGroup()) {
+                if (it.isGroupConversation()) {
                     it.groupName == keyword
                 } else {
                     it.name == keyword || it.ownerIdentityNumber == keyword
