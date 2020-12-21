@@ -23,7 +23,7 @@ class MessageProvider {
                         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
                         m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
                         m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, m.quote_message_id as quoteId,
-                        m.quote_content as quoteContent, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
+                        m.quote_content as quoteContent, m.caption as caption, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
                         s.snapshot_id AS snapshotId, s.type AS snapshotType, s.amount AS snapshotAmount, a.symbol AS assetSymbol, s.asset_id AS assetId,
                         a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
@@ -75,6 +75,7 @@ class MessageProvider {
                             val cursorIndexOfMediaUrl = cursor.getColumnIndexOrThrow("mediaUrl")
                             val cursorIndexOfMediaDuration = cursor.getColumnIndexOrThrow("mediaDuration")
                             val cursorIndexOfQuoteId = cursor.getColumnIndexOrThrow("quoteId")
+                            val cursorIndexOfCaption = cursor.getColumnIndexOrThrow("caption")
                             val cursorIndexOfQuoteContent = cursor.getColumnIndexOrThrow("quoteContent")
                             val cursorIndexOfParticipantFullName = cursor.getColumnIndexOrThrow("participantFullName")
                             val cursorIndexOfActionName = cursor.getColumnIndexOrThrow("actionName")
@@ -141,6 +142,7 @@ class MessageProvider {
                                 val tmpMediaUrl: String? = cursor.getString(cursorIndexOfMediaUrl)
                                 val tmpMediaDuration: String? = cursor.getString(cursorIndexOfMediaDuration)
                                 val tmpQuoteId: String? = cursor.getString(cursorIndexOfQuoteId)
+                                val tmpCaption: String? = cursor.getString(cursorIndexOfCaption)
                                 val tmpQuoteContent: String? = cursor.getString(cursorIndexOfQuoteContent)
                                 val tmpParticipantFullName: String? = cursor.getString(cursorIndexOfParticipantFullName)
                                 val tmpActionName: String? = cursor.getString(cursorIndexOfActionName)
@@ -196,7 +198,7 @@ class MessageProvider {
                                     tmpSnapshotType, tmpSnapshotAmount, tmpAssetId, tmpAssetType, tmpAssetSymbol, tmpAssetIcon, tmpAssetUrl, tmpAssetHeight, tmpAssetWidth,
                                     null, tmpStickerId, tmpAssetName, tmpAppId, tmpSiteName, tmpSiteTitle, tmpSiteDescription, tmpSiteImage, tmpSharedUserId,
                                     tmpSharedUserFullName, tmpSharedUserIdentityNumber, tmpSharedUserAvatarUrl, tmpSharedUserIsVerified, tmpSharedUserAppId,
-                                    tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead
+                                    tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead, tmpCaption
                                 )
                                 res.add(item)
                             }

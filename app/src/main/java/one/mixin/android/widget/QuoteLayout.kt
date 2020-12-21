@@ -65,18 +65,24 @@ class QuoteLayout : ViewGroup {
         )
         if (childCount >= 3) {
             val thirdView = getChildAt(2)
-
             measureChild(
                 thirdView,
                 MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.AT_MOST),
                 heightMeasureSpec
             )
         }
+        if (childCount >= 3 && getChildAt(2) is MessageLayout) {
+            setMeasuredDimension(
+                secondView.measuredWidth + offset * 2,
+                firstView.measuredHeight + secondView.measuredHeight + getChildAt(2).measuredHeight + offset * 3
+            )
+        } else {
 
-        setMeasuredDimension(
-            secondView.measuredWidth + offset * 2,
-            firstView.measuredHeight + secondView.measuredHeight + offset * 3
-        )
+            setMeasuredDimension(
+                secondView.measuredWidth + offset * 2,
+                firstView.measuredHeight + secondView.measuredHeight + offset * 3
+            )
+        }
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
@@ -92,12 +98,21 @@ class QuoteLayout : ViewGroup {
         if (childCount >= 3) {
             val thirdView = getChildAt(2)
             val lp = thirdView.layoutParams as MarginLayoutParams
-            thirdView.layout(
-                width - thirdView.measuredWidth - offset - lp.marginEnd,
-                height - thirdView.measuredHeight - offset - lp.bottomMargin,
-                width - offset - lp.marginEnd,
-                height - offset - lp.bottomMargin
-            )
+            if (thirdView is MessageLayout) {
+                thirdView.layout(
+                    width - thirdView.measuredWidth - offset - lp.marginEnd,
+                    height - thirdView.measuredHeight - offset - lp.bottomMargin,
+                    width - offset - lp.marginEnd,
+                    height - offset - lp.bottomMargin
+                )
+            } else {
+                thirdView.layout(
+                    width - thirdView.measuredWidth - offset - lp.marginEnd,
+                    height - thirdView.measuredHeight - offset - lp.bottomMargin,
+                    width - offset - lp.marginEnd,
+                    height - offset - lp.bottomMargin
+                )
+            }
         }
     }
 

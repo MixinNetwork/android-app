@@ -28,6 +28,7 @@ import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.databinding.ItemChatHyperlinkBinding
 import one.mixin.android.databinding.ItemChatImageBinding
+import one.mixin.android.databinding.ItemChatImageCaptionBinding
 import one.mixin.android.databinding.ItemChatImageQuoteBinding
 import one.mixin.android.databinding.ItemChatLocationBinding
 import one.mixin.android.databinding.ItemChatPostBinding
@@ -66,6 +67,7 @@ import one.mixin.android.ui.conversation.holder.FileHolder
 import one.mixin.android.ui.conversation.holder.FileQuoteHolder
 import one.mixin.android.ui.conversation.holder.GroupCallHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
+import one.mixin.android.ui.conversation.holder.ImageCaptionHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
 import one.mixin.android.ui.conversation.holder.LocationHolder
@@ -256,6 +258,17 @@ class ConversationAdapter(
                 }
                 IMAGE_QUOTE_TYPE -> {
                     (holder as ImageQuoteHolder).bind(
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        isRepresentative(it),
+                        onItemListener
+                    )
+                }
+                IMAGE_CAPTION_TYPE -> {
+                    (holder as ImageCaptionHolder).bind(
                         it,
                         isLast(position),
                         isFirst(position),
@@ -669,6 +682,9 @@ class ConversationAdapter(
             IMAGE_QUOTE_TYPE -> {
                 ImageQuoteHolder(ItemChatImageQuoteBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+            IMAGE_CAPTION_TYPE -> {
+                ImageCaptionHolder(ItemChatImageCaptionBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
             SYSTEM_TYPE -> {
                 SystemHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
@@ -786,7 +802,9 @@ class ConversationAdapter(
                         }
                     }
                     item.isImage() -> {
-                        if (!item.quoteId.isNullOrEmpty()) {
+                        if(!item.caption.isNullOrEmpty()){
+                            IMAGE_CAPTION_TYPE
+                        }else if (!item.quoteId.isNullOrEmpty()) {
                             IMAGE_QUOTE_TYPE
                         } else {
                             IMAGE_TYPE
@@ -829,35 +847,37 @@ class ConversationAdapter(
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
 
     companion object {
-        const val NULL_TYPE = 99
-        const val UNKNOWN_TYPE = 0
-        const val TEXT_TYPE = 1
-        const val TEXT_QUOTE_TYPE = -1
-        const val IMAGE_TYPE = 2
-        const val IMAGE_QUOTE_TYPE = -2
-        const val LINK_TYPE = 3
-        const val VIDEO_TYPE = 4
-        const val VIDEO_QUOTE_TYPE = -4
-        const val AUDIO_TYPE = 5
-        const val AUDIO_QUOTE_TYPE = -5
-        const val FILE_TYPE = 6
-        const val FILE_QUOTE_TYPE = -6
-        const val STICKER_TYPE = 7
-        const val CONTACT_CARD_TYPE = 8
-        const val CONTACT_CARD_QUOTE_TYPE = -8
-        const val CARD_TYPE = 9
-        const val BILL_TYPE = 10
-        const val POST_TYPE = 11
-        const val ACTION_TYPE = 12
-        const val ACTION_CARD_TYPE = 13
-        const val SYSTEM_TYPE = 14
-        const val WAITING_TYPE = 15
-        const val STRANGER_TYPE = 16
-        const val SECRET_TYPE = 17
-        const val CALL_TYPE = 18
-        const val RECALL_TYPE = 19
-        const val LOCATION_TYPE = 20
-        const val GROUP_CALL_TYPE = 21
+        const val NULL_TYPE = 0
+        const val UNKNOWN_TYPE = 1
+        const val TEXT_TYPE = 2
+        const val TEXT_QUOTE_TYPE = 3
+        const val IMAGE_TYPE = 4
+        const val IMAGE_QUOTE_TYPE = 5
+        const val IMAGE_CAPTION_TYPE = 6
+        const val LINK_TYPE = 7
+        const val VIDEO_TYPE = 8
+        const val VIDEO_QUOTE_TYPE = 9
+        const val AUDIO_TYPE = 10
+        const val AUDIO_QUOTE_TYPE = 11
+        const val FILE_TYPE = 12
+        const val FILE_QUOTE_TYPE = 13
+        const val STICKER_TYPE = 14
+        const val CONTACT_CARD_TYPE = 15
+        const val CONTACT_CARD_QUOTE_TYPE = 16
+        const val CARD_TYPE = 17
+        const val BILL_TYPE = 18
+        const val POST_TYPE = 19
+        const val ACTION_TYPE = 20
+        const val ACTION_CARD_TYPE = 21
+        const val SYSTEM_TYPE = 22
+        const val WAITING_TYPE = 23
+        const val STRANGER_TYPE = 24
+        const val SECRET_TYPE = 25
+        const val CALL_TYPE = 26
+        const val RECALL_TYPE = 27
+        const val LOCATION_TYPE = 28
+        const val GROUP_CALL_TYPE = 29
+
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
