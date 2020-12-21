@@ -748,7 +748,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun processEncryptedMessage(data: BlazeMessageData) {
-        val seed = Session.getEd25519PrivateKey()?.decodeBase64() ?: return
+        val seed = Session.getEd25519Seed()?.decodeBase64() ?: return
         try {
             val decryptedContent = encryptedProtocol.decryptMessage(seed, data.data.decodeBase64())
             val plaintext = String(decryptedContent)

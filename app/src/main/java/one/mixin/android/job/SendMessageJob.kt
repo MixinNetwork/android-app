@@ -175,7 +175,7 @@ open class SendMessageJob(
             return
         }
 
-        val seed = Session.getEd25519PrivateKey()?.decodeBase64() ?: return
+        val seed = Session.getEd25519Seed()?.decodeBase64() ?: return
         val content = encryptedProtocol.encryptMessage(seed, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId)
 
         val blazeParam = BlazeMessageParam(
