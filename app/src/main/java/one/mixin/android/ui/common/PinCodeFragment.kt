@@ -99,7 +99,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         }
         val privateKey = sessionKey.private as EdDSAPrivateKey
         val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
-        Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
+        Session.storeEd25519Seed(privateKey.seed.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
 

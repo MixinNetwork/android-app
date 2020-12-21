@@ -167,9 +167,9 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
                     override fun updateDrawState(textPaint: TextPaint) {
                         super.updateDrawState(textPaint)
-                        val textColor = if (isPressed) pressedTextColor else normalTextColor
+                        val textColor = normalTextColor
                         textPaint.color = textColor
-                        textPaint.bgColor = Color.TRANSPARENT
+                        textPaint.bgColor = if (isPressed) pressedTextColor else Color.TRANSPARENT
                         textPaint.isUnderlineText = isUnderLineEnabled
                     }
                 }
@@ -183,9 +183,9 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
                     override fun updateDrawState(textPaint: TextPaint) {
                         super.updateDrawState(textPaint)
-                        val textColor = if (isPressed) pressedTextColor else normalTextColor
+                        val textColor = normalTextColor
                         textPaint.color = textColor
-                        textPaint.bgColor = Color.TRANSPARENT
+                        textPaint.bgColor = if (isPressed) pressedTextColor else Color.TRANSPARENT
                         textPaint.isUnderlineText = isUnderLineEnabled
                     }
                 }

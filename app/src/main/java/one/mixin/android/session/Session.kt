@@ -42,6 +42,11 @@ object Session {
     const val PREF_SESSION = "pref_session"
 
     private var self: Account? = null
+
+    private var seed: String? = null
+    private var edPrivateKey: EdDSAPrivateKey? = null
+    private var edPublicKey: EdDSAPublicKey? = null
+
     private const val PREF_PIN_ITERATOR = "pref_pin_iterator"
     private const val PREF_PIN_TOKEN = "pref_pin_token"
     private const val PREF_NAME_ACCOUNT = "pref_name_account"
@@ -74,14 +79,51 @@ object Session {
         preference.clear()
     }
 
-    fun storeEd25519PrivateKey(token: String) {
+    fun storeEd25519Seed(token: String) {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_ED25519_PRIVATE_KEY, token)
+        seed = token
+        edPrivateKey = null
+        edPublicKey = null
+        initEdKeypair(token)
     }
 
-    fun getEd25519PrivateKey(): String? {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        return preference.getString(PREF_ED25519_PRIVATE_KEY, null)
+    fun getEd25519Seed(): String? {
+        if (seed != null) {
+            return seed
+        } else {
+            val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+            seed = preference.getString(PREF_ED25519_PRIVATE_KEY, null)
+            return seed
+        }
+    }
+
+    fun getEd25519PrivateKey(): EdDSAPrivateKey? {
+        if (edPrivateKey != null) {
+            return edPrivateKey
+        } else {
+            val seed = getEd25519Seed() ?: return null
+
+            initEdKeypair(seed)
+            return edPrivateKey
+        }
+    }
+
+    fun getEd25519PublicKey(): EdDSAPublicKey? {
+        if (edPublicKey != null) {
+            return edPublicKey
+        } else {
+            val seed = getEd25519Seed() ?: return null
+
+            initEdKeypair(seed)
+            return edPublicKey
+        }
+    }
+
+    private fun initEdKeypair(seed: String) {
+        val privateSpec = EdDSAPrivateKeySpec(seed.decodeBase64(), ed25519)
+        edPrivateKey = EdDSAPrivateKey(privateSpec)
+        edPublicKey = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
     }
 
     fun storeToken(token: String) {
@@ -148,7 +190,7 @@ object Session {
 
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
-    fun shouldUpdateKey() = getEd25519PrivateKey().isNullOrBlank() &&
+    fun shouldUpdateKey() = getEd25519Seed().isNullOrBlank() &&
         !MixinApplication.appContext.defaultSharedPreferences
             .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
@@ -203,19 +245,18 @@ object Session {
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
 
     private fun getJwtKey(isSign: Boolean): Key? {
-        val keyBase64 = getEd25519PrivateKey()
-        if (keyBase64.isNullOrBlank()) {
+        val edPrivateKey = getEd25519PrivateKey()
+        if (edPrivateKey == null) {
             val token = getToken()
             if (token.isNullOrBlank()) {
                 return null
             }
             return getRSAPrivateKeyFromString(token)
         } else {
-            val privateSpec = EdDSAPrivateKeySpec(keyBase64.decodeBase64(), ed25519)
             if (isSign) {
-                return EdDSAPrivateKey(privateSpec)
+                return edPrivateKey
             }
-            return EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+            return getEd25519PublicKey()
         }
     }
 }

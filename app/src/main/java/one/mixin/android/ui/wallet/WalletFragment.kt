@@ -19,7 +19,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
@@ -63,7 +62,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     lateinit var jobManager: MixinJobManager
 
     private var _headBinding: ViewWalletFragmentHeaderBinding? = null
-    private val headBinding get() = requireNotNull(_headBinding)
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
@@ -85,7 +83,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             searchIb.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
             _headBinding = ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false))
-            assetsAdapter.headerView = headBinding.root
+            assetsAdapter.headerView = _headBinding!!.root
             (coinsRv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
             coinsRv.setHasFixedSize(true)
             ItemTouchHelper(
@@ -125,9 +123,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             } else {
                 assets = it
                 assetsAdapter.setAssetList(it)
-                lifecycleScope.launch(Dispatchers.IO) {
-                    renderPie(assets)
-                }
+                renderPie(assets)
             }
         }
         checkPin()
@@ -139,57 +135,55 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _bottomBinding = null
     }
 
-    private suspend fun renderPie(assets: List<AssetItem>) {
+    private fun renderPie(assets: List<AssetItem>) {
         var totalBTC = BigDecimal.ZERO
         var totalFiat = BigDecimal.ZERO
         assets.map {
             totalBTC = totalBTC.add(it.btc())
             totalFiat = totalFiat.add(it.fiat())
         }
-        withContext(Dispatchers.Main) {
-            headBinding.apply {
-                totalAsTv.text = try {
-                    if (totalBTC.numberFormat8().toFloat() == 0f) {
-                        "0.00"
-                    } else {
-                        totalBTC.numberFormat8()
-                    }
-                } catch (ignored: NumberFormatException) {
+        _headBinding?.apply {
+            totalAsTv.text = try {
+                if (totalBTC.numberFormat8().toFloat() == 0f) {
+                    "0.00"
+                } else {
                     totalBTC.numberFormat8()
                 }
-                totalTv.text = try {
-                    if (totalFiat.numberFormat2().toFloat() == 0f) {
-                        "0.00"
-                    } else {
-                        totalFiat.numberFormat2()
-                    }
-                } catch (ignored: NumberFormatException) {
+            } catch (ignored: NumberFormatException) {
+                totalBTC.numberFormat8()
+            }
+            totalTv.text = try {
+                if (totalFiat.numberFormat2().toFloat() == 0f) {
+                    "0.00"
+                } else {
                     totalFiat.numberFormat2()
                 }
-                symbol.text = Fiats.getSymbol()
-
-                if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
-                    pieItemContainer.visibility = GONE
-                    percentView.visibility = GONE
-                    btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
-                        bottomMargin = requireContext().dpToPx(32f)
-                    }
-                    return@withContext
-                }
-
-                btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
-                    bottomMargin = requireContext().dpToPx(16f)
-                }
-                pieItemContainer.visibility = VISIBLE
-                percentView.visibility = VISIBLE
-                setPieView(assets, totalFiat)
+            } catch (ignored: NumberFormatException) {
+                totalFiat.numberFormat2()
             }
+            symbol.text = Fiats.getSymbol()
+
+            if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
+                pieItemContainer.visibility = GONE
+                percentView.visibility = GONE
+                btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
+                    bottomMargin = requireContext().dpToPx(32f)
+                }
+                return
+            }
+
+            btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
+                bottomMargin = requireContext().dpToPx(16f)
+            }
+            pieItemContainer.visibility = VISIBLE
+            percentView.visibility = VISIBLE
+            setPieView(assets, totalFiat)
         }
     }
 
     @SuppressLint("SetTextI18n")
     private fun setEmpty() {
-        headBinding.apply {
+        _headBinding?.apply {
             pieItemContainer.visibility = GONE
             percentView.visibility = GONE
             assetsAdapter.setAssetList(emptyList())
@@ -204,10 +198,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             PercentView.PercentItem(it.symbol, p)
         }.toMutableList()
         if (list.isNotEmpty()) {
-            headBinding.pieItemContainer.removeAllViews()
+            _headBinding?.pieItemContainer?.removeAllViews()
             list.sortWith { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() }
             context?.mainThread {
-                headBinding.percentView.setPercents(list)
+                _headBinding?.percentView?.setPercents(list)
             }
             when {
                 list.size == 1 -> {
@@ -242,11 +236,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     val other = (100 - pre) / 100f
                     val item = PercentItemView(requireContext())
                     item.setPercentItem(PercentView.PercentItem(getString(R.string.other), other), 2)
-                    headBinding.pieItemContainer.addView(item)
+                    _headBinding?.pieItemContainer?.addView(item)
                 }
             }
 
-            headBinding.pieItemContainer.visibility = VISIBLE
+            _headBinding?.pieItemContainer?.visibility = VISIBLE
         }
     }
 
@@ -268,7 +262,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private fun addItem(p: PercentView.PercentItem, index: Int) {
         val item = PercentItemView(requireContext())
         item.setPercentItem(p, index)
-        headBinding.pieItemContainer.addView(item)
+        _headBinding?.pieItemContainer?.addView(item)
     }
 
     @SuppressLint("InflateParams")
