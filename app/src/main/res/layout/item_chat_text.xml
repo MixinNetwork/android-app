@@ -36,7 +36,7 @@
         app:layout_constraintVertical_bias="0"
         app:layout_goneMarginBottom="0dp">
 
-        <one.mixin.android.widget.linktext.AutoLinkTextView
+        <one.mixin.android.widget.linktext.GestureAutoLinkTextView
             android:id="@+id/chat_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

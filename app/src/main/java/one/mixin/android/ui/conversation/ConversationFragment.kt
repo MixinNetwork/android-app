@@ -149,6 +149,7 @@ import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.wallet.TransactionFragment
@@ -758,6 +759,10 @@ class ConversationFragment() :
                             }
                         )
                 }
+            }
+
+            override fun onTextDoubleClick(messageItem: MessageItem) {
+                TextPreviewActivity.show(requireContext(), messageItem)
             }
         }
     }
