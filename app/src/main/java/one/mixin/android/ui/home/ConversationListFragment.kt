@@ -231,24 +231,26 @@ class ConversationListFragment : LinkFragment() {
                     requireContext().tapVibrate()
                     vibrated = true
                 }
-                val topFl = binding.topFl
+                val topFl = _binding?.topFl
 
-                val open = (fling == FLING_DOWN && shouldVibrate) || topFl.height >= vibrateDis
+                val open = (fling == FLING_DOWN && shouldVibrate) || topFl?.height ?: 0 >= vibrateDis
                 if (open) {
                     (requireActivity() as MainActivity).openSearch()
                 } else {
                     (requireActivity() as MainActivity).closeSearch()
                 }
 
-                topFl.animateHeight(
+                topFl?.animateHeight(
                     topFl.height,
                     0,
                     onEndAction = {
                         vibrated = false
                     }
                 )
-                binding.downIv.scaleX = 1f
-                binding.downIv.scaleY = 1f
+                _binding?.downIv?.apply {
+                    scaleX = 1f
+                    scaleY = 1f
+                }
             }
         }
         binding.shadowView.more.setOnClickListener {
