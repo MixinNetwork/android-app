@@ -10,7 +10,7 @@ import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.dip
 import kotlin.math.max
 
-class MessageLayout : ViewGroup {
+open class MessageLayout : ViewGroup {
     private val offset: Int
     private var lastLineWidth: Float = 0.toFloat()
     private var isRtl: Boolean = false

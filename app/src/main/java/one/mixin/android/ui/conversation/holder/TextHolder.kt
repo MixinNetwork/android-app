@@ -124,7 +124,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             }
         }
 
-        binding.chatTv.listener = object : GestureDetector.SimpleOnGestureListener() {
+        binding.chatLayout.listener = object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(e: MotionEvent?): Boolean {
                 onItemListener.onTextDoubleClick(messageItem)
                 return true
