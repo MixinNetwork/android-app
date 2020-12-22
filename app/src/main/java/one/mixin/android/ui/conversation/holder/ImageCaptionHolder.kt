@@ -3,11 +3,10 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.view.View
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageCaptionBinding
-import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
@@ -26,14 +25,13 @@ import kotlin.math.min
 
 class ImageCaptionHolder constructor(val binding: ItemChatImageCaptionBinding) :
     MediaHolder(binding.root) {
-    private val dp16 = itemView.context.dpToPx(16f)
+    private val radius = 6.dp
 
     init {
-        val radius = itemView.context.dpToPx(4f).toFloat()
-        binding.chatImageLayout.round(radius)
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_MENTION)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
         binding.chatTv.setMentionModeColor(LINK_COLOR)
+        binding.chatTv.setSelectedStateColor(SELECT_COLOR)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -90,10 +88,6 @@ class ImageCaptionHolder constructor(val binding: ItemChatImageCaptionBinding) :
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
-            dimensionRatio =
-                "${messageItem.mediaWidth}:${messageItem.mediaHeight}"
-        }
         binding.chatImageLayout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
@@ -132,7 +126,6 @@ class ImageCaptionHolder constructor(val binding: ItemChatImageCaptionBinding) :
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-
 
         binding.chatTv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
@@ -308,8 +301,10 @@ class ImageCaptionHolder constructor(val binding: ItemChatImageCaptionBinding) :
         }
         if (messageItem.quoteContent.isNullOrEmpty()) {
             binding.chatQuote.isVisible = false
+            binding.chatImageLayout.round(radius)
         } else {
             binding.chatQuote.isVisible = true
+            binding.chatImageLayout.clipToOutline = false
             val quoteMessage = GsonHelper.customGson.fromJson(
                 messageItem.quoteContent,
                 QuoteMessageItem::class.java

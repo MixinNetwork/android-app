@@ -41,91 +41,86 @@
             android:textColor="#19BEF1"
             android:textSize="14sp" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <FrameLayout
             android:id="@+id/chat_layout"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp">
 
-            <one.mixin.android.widget.QuoteView
-                android:id="@+id/chat_quote"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" />
-
-            <FrameLayout
-                app:layout_constraintTop_toBottomOf="@id/chat_quote"
-                app:layout_constraintStart_toStartOf="@id/chat_quote"
-                app:layout_constraintEnd_toEndOf="@id/chat_quote"
-                app:layout_constraintBottom_toBottomOf="@id/chat_quote"
-                android:id="@+id/chat_image_layout"
-                android:layout_width="0dp"
+            <one.mixin.android.widget.CaptionLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-                <ImageView
-                    android:id="@+id/chat_image"
+                <one.mixin.android.widget.QuoteView
+                    android:id="@+id/chat_quote"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:contentDescription="@null" />
+                    android:layout_height="wrap_content" />
 
-                <one.mixin.android.widget.CircleProgress
-                    android:id="@+id/progress"
+                <FrameLayout
+                    android:id="@+id/chat_image_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    app:progressColor="@color/white"
-                    app:progressWidth="1.5dp"
-                    app:shadowColor="@color/black_70"
-                    app:size="40dp" />
-
-                <LinearLayout
-                    android:id="@+id/chat_warning"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical"
-                    tools:ignore="UseCompoundDrawables">
+                    android:layout_height="wrap_content">
 
                     <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_expired"
+                        android:id="@+id/chat_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:contentDescription="@null" />
 
-                    <TextView
+                    <one.mixin.android.widget.CircleProgress
+                        android:id="@+id/progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        app:progressColor="@color/white"
+                        app:progressWidth="1.5dp"
+                        app:shadowColor="@color/black_70"
+                        app:size="40dp" />
+
+                    <LinearLayout
+                        android:id="@+id/chat_warning"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        tools:ignore="UseCompoundDrawables">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_expired"
+                            android:contentDescription="@null" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="@string/chat_expired"
+                            android:textColor="@color/text_white" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <one.mixin.android.widget.MessageLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <one.mixin.android.widget.linktext.AutoLinkTextView
+                        android:id="@+id/chat_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="@string/chat_expired"
-                        android:textColor="@color/text_white" />
-                </LinearLayout>
-            </FrameLayout>
+                        android:layout_gravity="start"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="14sp" />
 
-            <one.mixin.android.widget.MessageLayout
-                app:layout_constraintTop_toBottomOf="@id/chat_image_layout"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content">
+                    <include
+                        android:id="@+id/data_wrapper"
+                        layout="@layout/date_wrapper" />
 
-                <one.mixin.android.widget.linktext.AutoLinkTextView
-                    android:id="@+id/chat_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="start"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="14sp" />
-
-                <include
-                    android:id="@+id/data_wrapper"
-                    layout="@layout/date_wrapper" />
-
-            </one.mixin.android.widget.MessageLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                </one.mixin.android.widget.MessageLayout>
+            </one.mixin.android.widget.CaptionLayout>
+        </FrameLayout>
     </LinearLayout>
 </FrameLayout>

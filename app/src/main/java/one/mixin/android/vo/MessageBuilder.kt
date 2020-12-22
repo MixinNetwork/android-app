@@ -157,7 +157,7 @@ class MessageBuilder(
         return this
     }
 
-    fun setCaption(caption:String?):MessageBuilder{
+    fun setCaption(caption: String?): MessageBuilder {
         this.caption = caption
         return this
     }

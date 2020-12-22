@@ -30,7 +30,6 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
-import one.mixin.android.util.okhttp.ProgressListener
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message

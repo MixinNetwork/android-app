@@ -469,7 +469,7 @@ fun createMediaMessage(
     status: String,
     quoteMessageId: String? = null,
     quoteContent: String? = null,
-    caption: String?=null
+    caption: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)

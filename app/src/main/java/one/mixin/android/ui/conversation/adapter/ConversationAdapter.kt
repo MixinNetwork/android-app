@@ -802,9 +802,9 @@ class ConversationAdapter(
                         }
                     }
                     item.isImage() -> {
-                        if(!item.caption.isNullOrEmpty()){
+                        if (!item.caption.isNullOrEmpty()) {
                             IMAGE_CAPTION_TYPE
-                        }else if (!item.quoteId.isNullOrEmpty()) {
+                        } else if (!item.quoteId.isNullOrEmpty()) {
                             IMAGE_QUOTE_TYPE
                         } else {
                             IMAGE_TYPE
@@ -877,7 +877,6 @@ class ConversationAdapter(
         const val RECALL_TYPE = 27
         const val LOCATION_TYPE = 28
         const val GROUP_CALL_TYPE = 29
-
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {

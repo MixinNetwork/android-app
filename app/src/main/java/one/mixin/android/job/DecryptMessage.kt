@@ -484,11 +484,17 @@ class DecryptMessage : Injector() {
                     createMediaMessage(
                         data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
-                        data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson(), """
-                            _斜体_ **粗体** @26832 @26832 @26832
-                            https://mixin.one test @26832 @26832
-                            ~~删除~~ `引用` @26832
-                        """
+                        data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson(), mediaData.caption
+                    )
+                }
+                mediaData.caption?.let { caption ->
+                    parseMentionData(
+                        caption,
+                        data.messageId,
+                        data.conversationId,
+                        userDao,
+                        messageMentionDao,
+                        data.userId
                     )
                 }
 
