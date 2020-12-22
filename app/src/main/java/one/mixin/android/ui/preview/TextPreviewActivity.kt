@@ -5,17 +5,24 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
+import android.view.ActionMode
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.R
 import one.mixin.android.databinding.ActivityPreviewTextBinding
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.renderMessage
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.linktext.AutoLinkMode
@@ -30,6 +37,9 @@ class TextPreviewActivity : BlazeBaseActivity() {
     }
 
     private val viewModel by viewModels<TextPreviewViewModel>()
+
+    private var actionMode: ActionMode? = null
+    private var dismissWhenClickText = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +59,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
                     matchedText.openAsUrlOrWeb(this, messageItem.conversationId, supportFragmentManager, lifecycleScope)
                 }
                 AutoLinkMode.MODE_MENTION -> {
+                    dismissWhenClickText = false
                     lifecycleScope.launch {
                         viewModel.findUserByIdentityNumberSuspend(matchedText.substring(1))?.let { user ->
                             UserBottomSheetDialogFragment.newInstance(user, messageItem.conversationId)
@@ -63,11 +74,56 @@ class TextPreviewActivity : BlazeBaseActivity() {
         val mention = messageItem.mentions
         if (mention?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(mention)
-            binding.text.renderMessage(messageItem.content, mentionRenderContext)
+            binding.text.renderMessage(messageItem.content, null, mentionRenderContext)
         } else {
-            binding.text.text = messageItem.content
+            binding.text.renderMessage(messageItem.content, null)
         }
-        binding.root.setOnClickListener { finish() }
+        binding.text.customSelectionActionModeCallback = object : ActionMode.Callback {
+            override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+                val menuInflater: MenuInflater = mode.menuInflater
+                menuInflater.inflate(R.menu.text_preview_selection_action_menu, menu)
+                actionMode = mode
+                dismissWhenClickText = false
+                return true
+            }
+
+            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+                return true
+            }
+
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                binding.text.text?.let { editable ->
+                    when (item.itemId) {
+                        android.R.id.copy -> {
+                            toast(R.string.copy_success)
+                        }
+                        R.id.forward -> {
+                            ForwardActivity.show(this@TextPreviewActivity, editable.toString())
+                        }
+                        else -> ""
+                    }
+                }
+                dismissWhenClickText = true
+                return false
+            }
+
+            override fun onDestroyActionMode(mode: ActionMode?) {
+                actionMode = null
+            }
+        }
+        binding.text.setOnClickListener {
+            if (actionMode == null && dismissWhenClickText) {
+                finish()
+            }
+            dismissWhenClickText = true
+        }
+        binding.root.setOnClickListener {
+            if (actionMode == null) {
+                finish()
+            } else {
+                actionMode?.finish()
+            }
+        }
     }
 
     override fun onResume() {
