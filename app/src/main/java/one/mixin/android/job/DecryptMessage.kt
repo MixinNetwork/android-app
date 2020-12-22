@@ -111,6 +111,7 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.io.File
 import java.util.UUID
+import kotlin.system.measureTimeMillis
 
 class DecryptMessage : Injector() {
 
@@ -124,7 +125,9 @@ class DecryptMessage : Injector() {
 
     fun onRun(data: BlazeMessageData) {
         if (!isExistMessage(data.messageId)) {
-            processMessage(data)
+            measureTimeMillis { processMessage(data) }.let {
+                Timber.d("process message $it")
+            }
         } else {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
@@ -440,9 +443,24 @@ class DecryptMessage : Injector() {
                         )
                     }
                 }
-                val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                database.insertAndNotifyConversation(message)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                val (mentions, mentionMe) = parseMentionData(
+                    plain,
+                    data.messageId,
+                    data.conversationId,
+                    userDao,
+                    messageMentionDao,
+                    data.userId
+                )
+                measureTimeMillis {
+                    database.insertAndNotifyConversation(message)
+                }.let {
+                    Timber.d("insert message $it")
+                }
+                measureTimeMillis {
+                    MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                }.let {
+                    Timber.d("insert fts $it")
+                }
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
             }
