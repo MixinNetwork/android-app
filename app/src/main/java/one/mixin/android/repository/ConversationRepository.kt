@@ -57,6 +57,7 @@ import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -252,6 +253,7 @@ internal constructor(
     }
 
     fun insertList(it: List<Job>) {
+        Timber.d("ConversationRepo insertList")
         jobDao.insertList(it)
     }
 
@@ -333,6 +335,7 @@ internal constructor(
     suspend fun markMentionRead(messageId: String, conversationId: String) {
         messageMentionDao.suspendMarkMentionRead(messageId)
         withContext(Dispatchers.IO) {
+            Timber.d("markMentionRead messageId: $messageId")
             jobDao.insert(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
         }
     }

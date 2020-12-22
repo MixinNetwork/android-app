@@ -24,6 +24,7 @@ import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createMessage
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
+import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
@@ -80,6 +81,7 @@ class SendService : IntentService("SendService") {
                 }
                 Session.getExtensionSessionId()?.let {
                     list.map { createAckJob(CREATE_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name), conversationId) }.let {
+                        Timber.d("SendService findUnreadMessagesSync")
                         jobDao.insertList(it)
                     }
                 }
