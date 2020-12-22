@@ -950,6 +950,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
+        Timber.d("updateRemoteMessageStatus messageId: $messageId")
         jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
