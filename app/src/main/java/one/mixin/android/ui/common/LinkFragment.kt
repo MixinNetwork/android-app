@@ -12,6 +12,7 @@ import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.LinkState
+import timber.log.Timber
 import javax.inject.Inject
 
 abstract class LinkFragment : BaseFragment(), Observer<Int> {
@@ -52,6 +53,7 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
         t.notNullWithElse(
             {
                 if (it > 500) {
+                    Timber.d("syncing $it")
                     setSyncing()
                     showBar()
                 } else {
