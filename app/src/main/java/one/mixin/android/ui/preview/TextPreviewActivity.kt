@@ -6,9 +6,11 @@ import android.os.Build
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.ActionMode
+import android.view.GestureDetector
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -56,6 +58,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
         binding.text.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
+                    dismissWhenClickText = false
                     matchedText.openAsUrlOrWeb(this, messageItem.conversationId, supportFragmentManager, lifecycleScope)
                 }
                 AutoLinkMode.MODE_MENTION -> {
@@ -111,11 +114,14 @@ class TextPreviewActivity : BlazeBaseActivity() {
                 actionMode = null
             }
         }
-        binding.text.setOnClickListener {
-            if (actionMode == null && dismissWhenClickText) {
-                finish()
+        binding.text.listener = object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                if (actionMode == null && dismissWhenClickText) {
+                    finish()
+                }
+                dismissWhenClickText = true
+                return true
             }
-            dismissWhenClickText = true
         }
         binding.root.setOnClickListener {
             if (actionMode == null) {

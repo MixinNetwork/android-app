@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="?attr/bg_translucence">
 
-    <one.mixin.android.widget.linktext.AutoLinkTextView
+    <one.mixin.android.widget.linktext.GestureAutoLinkTextView
         android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
