@@ -90,7 +90,7 @@ buildscript {
         ext.svgVersion = '1.4'
         ext.startupVersion ='1.0.0'
         ext.dnsVersion = '2.1.9'
-        ext.appCenterSdkVersion = '4.0.0'
+        ext.appCenterSdkVersion = '4.1.0'
         ext.audioSwitchVersion = '1.1.1'
         ext.balloonVersion = '1.2.5'
 

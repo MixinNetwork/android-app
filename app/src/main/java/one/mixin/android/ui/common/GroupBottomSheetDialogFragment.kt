@@ -351,7 +351,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
     }
 
-    private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
+    private fun startSearchConversation() = lifecycleScope.launch {
         bottomViewModel.getConversation(conversationId)?.let {
             val searchMessageItem = SearchMessageItem(
                 it.conversationId,

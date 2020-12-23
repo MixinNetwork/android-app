@@ -1,9 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.BackgroundColorSpan
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
@@ -13,7 +10,6 @@ import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -145,30 +141,9 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
             )
-            binding.chatTv.renderMessage(messageItem.content, mentionRenderContext, keyword)
+            binding.chatTv.renderMessage(messageItem.content, keyword, mentionRenderContext)
         } else {
-            keyword.notNullWithElse(
-                { k ->
-                    messageItem.content?.let { str ->
-                        val start = str.indexOf(k, 0, true)
-                        if (start >= 0) {
-                            val sp = SpannableString(str)
-                            sp.setSpan(
-                                BackgroundColorSpan(HIGHLIGHTED),
-                                start,
-                                start + k.length,
-                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                            )
-                            binding.chatTv.text = sp
-                        } else {
-                            binding.chatTv.text = str
-                        }
-                    }
-                },
-                {
-                    binding.chatTv.text = messageItem.content
-                }
-            )
+            binding.chatTv.renderMessage(messageItem.content, keyword)
         }
 
         val isMe = meId == messageItem.userId

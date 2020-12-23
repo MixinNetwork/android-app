@@ -5,8 +5,10 @@ import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.text.Spanned
 import android.text.TextPaint
 import android.text.TextUtils
+import android.text.style.BackgroundColorSpan
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorInt
@@ -18,6 +20,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.extension.tapVibrate
+import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.getSimpleMarkwon
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.mentionNumberPattern
@@ -47,6 +50,12 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     private var defaultSelectedColor = Color.LTGRAY
     var clickTime: Long = 0
     var mentionRenderContext: MentionRenderContext? = null
+    var keyWord: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+            }
+        }
 
     override fun setText(text: CharSequence, type: BufferType) {
         if (TextUtils.isEmpty(text)) {
@@ -57,6 +66,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         val sp = SpannableStringBuilder()
         renderMarkdown(sp, getSimpleMarkwon(context).parse(text.toString()))
         renderMention(sp, autoLinkItems)
+        renderKeyWord(sp)
         matchedRanges(sp, autoLinkItems)
         if (movementMethod == null) {
             movementMethod = LinkTouchMovementMethod()
@@ -68,6 +78,20 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         sp.append(getSimpleMarkwon(context).render(node))
         if (node.next != null) {
             renderMarkdown(sp, node.next)
+        }
+    }
+
+    private fun renderKeyWord(sp: SpannableStringBuilder) {
+        keyWord?.let { keyWord ->
+            val start = sp.indexOf(keyWord, 0, true)
+            if (start >= 0) {
+                sp.setSpan(
+                    BackgroundColorSpan(BaseViewHolder.HIGHLIGHTED),
+                    start,
+                    start + keyWord.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
         }
     }
 
