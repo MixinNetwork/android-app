@@ -3,7 +3,7 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 
 class AttachmentMigration(
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = "message_id")
     val messageId: String,
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,

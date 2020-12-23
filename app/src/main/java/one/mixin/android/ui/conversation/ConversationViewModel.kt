@@ -313,14 +313,14 @@ internal constructor(
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId,
                                 it.userId,
                                 Uri.parse(it.mediaUrl),
                                 it.category.startsWith("PLAIN"),
-                                it.id,
+                                it.messageId,
                                 it.createdAt
                             )
                         )
@@ -334,7 +334,7 @@ internal constructor(
                         jobManager.addJobInBackground(
                             SendGiphyJob(
                                 it.conversationId, it.userId, it.mediaUrl!!,
-                                it.mediaWidth!!, it.mediaHeight!!, category, it.id,
+                                it.mediaWidth!!, it.mediaHeight!!, category, it.messageId,
                                 it.thumbImage
                                     ?: "",
                                 it.createdAt
@@ -344,7 +344,7 @@ internal constructor(
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.messageId)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }

@@ -48,7 +48,7 @@ class AttachmentDownloadJob(
 ) : MixinJob(
     Params(PRIORITY_RECEIVE_MESSAGE)
         .groupBy("attachment_download").requireNetwork().persist(),
-    message.id
+    message.messageId
 ) {
 
     private val TAG = AttachmentDownloadJob::class.java.simpleName
@@ -74,8 +74,8 @@ class AttachmentDownloadJob(
                 it.cancel()
             }
         }
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-        attachmentProcess.remove(message.id)
+        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        attachmentProcess.remove(message.messageId)
         removeJob()
     }
 
@@ -99,22 +99,22 @@ class AttachmentDownloadJob(
         } else {
             removeJob()
             Log.e(TAG, "get attachment url failed")
-            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-            attachmentProcess.remove(message.id)
+            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+            attachmentProcess.remove(message.messageId)
         }
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         super.onCancel(cancelReason, throwable)
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-        attachmentProcess.remove(message.id)
+        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        attachmentProcess.remove(message.messageId)
         removeJob()
     }
 
     override fun onAdded() {
         super.onAdded()
-        messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.id)
-        RxBus.publish(loadingEvent(message.id, 0f))
+        messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.messageId)
+        RxBus.publish(loadingEvent(message.messageId, 0f))
     }
 
     private fun decryptAttachment(url: String): Boolean {
@@ -134,8 +134,8 @@ class AttachmentDownloadJob(
                                 } catch (e: Exception) {
                                     0f
                                 }
-                                attachmentProcess[message.id] = (progress * 100).toInt()
-                                RxBus.publish(loadingEvent(message.id, progress))
+                                attachmentProcess[message.messageId] = (progress * 100).toInt()
+                                RxBus.publish(loadingEvent(message.messageId, progress))
                             }
                         }
                     )
@@ -151,13 +151,13 @@ class AttachmentDownloadJob(
         val response = try {
             call!!.execute()
         } catch (e: Exception) {
-            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-            attachmentProcess.remove(message.id)
+            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+            attachmentProcess.remove(message.messageId)
             return false
         }
         if (response.code == 404) {
-            messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.id)
-            attachmentProcess.remove(message.id)
+            messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.messageId)
+            attachmentProcess.remove(message.messageId)
             return true
         } else if (response.isSuccessful && !isCancelled && response.body != null) {
             val sink = destination.sink().buffer()
@@ -171,26 +171,26 @@ class AttachmentDownloadJob(
                 }
                 val imageFile = when {
                     message.mediaMimeType?.isImageSupport() == false -> {
-                        MixinApplication.get().getImagePath().createEmptyTemp(message.conversationId, message.id)
+                        MixinApplication.get().getImagePath().createEmptyTemp(message.conversationId, message.messageId)
                     }
                     message.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
-                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.id, ".png")
+                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.messageId, ".png")
                     }
                     message.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
-                        MixinApplication.get().getImagePath().createGifTemp(message.conversationId, message.id)
+                        MixinApplication.get().getImagePath().createGifTemp(message.conversationId, message.messageId)
                     }
                     message.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
-                        MixinApplication.get().getImagePath().createWebpTemp(message.conversationId, message.id)
+                        MixinApplication.get().getImagePath().createWebpTemp(message.conversationId, message.messageId)
                     }
                     else -> {
-                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.id, ".jpg")
+                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.messageId, ".jpg")
                     }
                 }
                 imageFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
-                messageDao.updateMediaSize(imageFile.length(), message.id)
-                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                attachmentProcess.remove(message.id)
+                messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.messageId)
+                messageDao.updateMediaSize(imageFile.length(), message.messageId)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+                attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_DATA")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_DATA.name) {
                     AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
@@ -199,12 +199,12 @@ class AttachmentDownloadJob(
                 }
                 val extensionName = message.name?.getExtensionName()
                 val dataFile = MixinApplication.get().getDocumentPath()
-                    .createDocumentTemp(message.conversationId, message.id, extensionName)
+                    .createDocumentTemp(message.conversationId, message.messageId, extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(MixinApplication.appContext.getUriForFile(dataFile).toString(), message.id)
-                messageDao.updateMediaSize(dataFile.length(), message.id)
-                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                attachmentProcess.remove(message.id)
+                messageDao.updateMediaMessageUrl(MixinApplication.appContext.getUriForFile(dataFile).toString(), message.messageId)
+                messageDao.updateMediaSize(dataFile.length(), message.messageId)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+                attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_VIDEO")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_VIDEO.name) {
                     AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
@@ -215,12 +215,12 @@ class AttachmentDownloadJob(
                     it ?: "mp4"
                 }
                 val videoFile = MixinApplication.get().getVideoPath()
-                    .createVideoTemp(message.conversationId, message.id, extensionName)
+                    .createVideoTemp(message.conversationId, message.messageId, extensionName)
                 videoFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(videoFile).toString(), message.id)
-                messageDao.updateMediaSize(videoFile.length(), message.id)
-                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                attachmentProcess.remove(message.id)
+                messageDao.updateMediaMessageUrl(Uri.fromFile(videoFile).toString(), message.messageId)
+                messageDao.updateMediaSize(videoFile.length(), message.messageId)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+                attachmentProcess.remove(message.messageId)
             } else if (message.category.endsWith("_AUDIO")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_AUDIO.name) {
                     AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
@@ -228,17 +228,17 @@ class AttachmentDownloadJob(
                     FileInputStream(destination)
                 }
                 val audioFile = MixinApplication.get().getAudioPath()
-                    .createAudioTemp(message.conversationId, message.id, "ogg")
+                    .createAudioTemp(message.conversationId, message.messageId, "ogg")
                 audioFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(audioFile).toString(), message.id)
-                messageDao.updateMediaSize(audioFile.length(), message.id)
-                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                attachmentProcess.remove(message.id)
+                messageDao.updateMediaMessageUrl(Uri.fromFile(audioFile).toString(), message.messageId)
+                messageDao.updateMediaSize(audioFile.length(), message.messageId)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+                attachmentProcess.remove(message.messageId)
             }
             return true
         } else {
-            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-            attachmentProcess.remove(message.id)
+            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+            attachmentProcess.remove(message.messageId)
             return false
         }
     }

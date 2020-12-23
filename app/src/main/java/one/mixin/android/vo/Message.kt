@@ -29,9 +29,9 @@ import java.io.Serializable
 )
 class Message(
     @PrimaryKey
-    @SerializedName("id")
-    @ColumnInfo(name = "id")
-    var id: String,
+    @SerializedName("message_id")
+    @ColumnInfo(name = "message_id")
+    var messageId: String,
 
     @SerializedName("conversation_id")
     @ColumnInfo(name = "conversation_id")

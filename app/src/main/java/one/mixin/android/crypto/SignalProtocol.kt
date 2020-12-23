@@ -201,7 +201,7 @@ class SignalProtocol(ctx: Context) {
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             recipientId,
-            message.id,
+            message.messageId,
             message.category,
             data,
             quote_message_id = message.quoteMessageId,
@@ -226,7 +226,7 @@ class SignalProtocol(ctx: Context) {
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             null,
-            message.id,
+            message.messageId,
             message.category,
             data,
             quote_message_id = message.quoteMessageId,

@@ -31,7 +31,7 @@ import java.net.SocketTimeoutException
 
 class SendAttachmentMessageJob(
     val message: Message
-) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_media_job").requireNetwork().persist(), message.id) {
+) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_media_job").requireNetwork().persist(), message.messageId) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -42,8 +42,8 @@ class SendAttachmentMessageJob(
 
     override fun cancel() {
         isCancelled = true
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-        attachmentProcess.remove(message.id)
+        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        attachmentProcess.remove(message.messageId)
         disposable?.let {
             if (!it.isDisposed) {
                 it.dispose()
@@ -55,14 +55,14 @@ class SendAttachmentMessageJob(
     override fun onAdded() {
         super.onAdded()
         if (message.isVideo()) {
-            val mId = messageDao.findMessageIdById(message.id)
+            val mId = messageDao.findMessageIdById(message.messageId)
             if (mId != null) {
                 messageDao.updateMediaSize(message.mediaSize ?: 0, mId)
             } else {
                 messageDao.insert(message)
             }
         } else if (message.isData()) {
-            val mId = messageDao.findMessageIdById(message.id)
+            val mId = messageDao.findMessageIdById(message.messageId)
             if (mId == null) {
                 messageDao.insert(message)
             }
@@ -73,8 +73,8 @@ class SendAttachmentMessageJob(
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         super.onCancel(cancelReason, throwable)
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-        attachmentProcess.remove(message.id)
+        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+        attachmentProcess.remove(message.messageId)
         removeJob()
     }
 
@@ -98,20 +98,20 @@ class SendAttachmentMessageJob(
         }.subscribe(
             {
                 if (it) {
-                    messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                    attachmentProcess.remove(message.id)
+                    messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
+                    attachmentProcess.remove(message.messageId)
                     removeJob()
                 } else {
-                    messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-                    attachmentProcess.remove(message.id)
+                    messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+                    attachmentProcess.remove(message.messageId)
                     removeJob()
                 }
             },
             {
                 Timber.e("upload attachment error, ${it.getStackTraceString()}")
                 reportException(it)
-                messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-                attachmentProcess.remove(message.id)
+                messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+                attachmentProcess.remove(message.messageId)
                 removeJob()
             }
         )
@@ -151,8 +151,8 @@ class SendAttachmentMessageJob(
                 } catch (e: Exception) {
                     0f
                 }
-                attachmentProcess[message.id] = (pg * 100).toInt()
-                RxBus.publish(loadingEvent(message.id, pg))
+                attachmentProcess[message.messageId] = (pg * 100).toInt()
+                RxBus.publish(loadingEvent(message.messageId, pg))
             }
         val digest = try {
             if (isPlain()) {
@@ -168,8 +168,8 @@ class SendAttachmentMessageJob(
                     MixinApplication.get().toast(R.string.upload_timeout)
                 }
             }
-            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-            attachmentProcess.remove(message.id)
+            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
+            attachmentProcess.remove(message.messageId)
             removeJob()
             reportException(e)
             return false
@@ -194,7 +194,7 @@ class SendAttachmentMessageJob(
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
-        messageDao.updateMessageContent(encoded, message.id)
+        messageDao.updateMessageContent(encoded, message.messageId)
         jobManager.addJobInBackground(SendMessageJob(message, null, true))
         return true
     }

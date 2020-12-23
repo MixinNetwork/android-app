@@ -31,7 +31,7 @@ open class SendMessageJob(
     private val recallMessageId: String? = null,
     private val krakenParam: KrakenParam? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
-) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.id) {
+) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.messageId) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -60,8 +60,8 @@ open class SendMessageJob(
             } else {
                 if (message.isText()) {
                     message.content?.let { content ->
-                        content.findLastUrl()?.let { parsHyperlink(it, message.id, hyperlinkDao, messageDao) }
-                        parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
+                        content.findLastUrl()?.let { parsHyperlink(it, message.messageId, hyperlinkDao, messageDao) }
+                        parseMentionData(content, message.messageId, message.conversationId, userDao, messageMentionDao, message.userId)
                     }
                 }
 
@@ -77,8 +77,8 @@ open class SendMessageJob(
         messageDao.recallMessage(recallMessageId!!)
         messageMentionDao.deleteMessage(recallMessageId)
         messageDao.findMessageById(recallMessageId)?.let { msg ->
-            RxBus.publish(RecallEvent(msg.id))
-            messageDao.recallFailedMessage(msg.id)
+            RxBus.publish(RecallEvent(msg.messageId))
+            messageDao.recallFailedMessage(msg.messageId)
             messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
             msg.mediaUrl?.getFilePath()?.let {
                 File(it).let { file ->
@@ -87,14 +87,14 @@ open class SendMessageJob(
                     }
                 }
             }
-            messageDao.findMessageItemById(message.conversationId, msg.id)?.let { quoteMsg ->
+            messageDao.findMessageItemById(message.conversationId, msg.messageId)?.let { quoteMsg ->
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
-                    msg.id,
+                    msg.messageId,
                     GsonHelper.customGson.toJson(quoteMsg)
                 )
             }
-            jobManager.cancelJobByMixinJobId(msg.id)
+            jobManager.cancelJobByMixinJobId(msg.messageId)
         }
     }
 
@@ -134,11 +134,11 @@ open class SendMessageJob(
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             recipientId,
-            message.id,
+            message.messageId,
             message.category,
             content,
             quote_message_id = message.quoteMessageId,
-            mentions = getMentionData(message.id),
+            mentions = getMentionData(message.messageId),
             recipient_ids = recipientIds
         )
         val blazeMessage = if (message.isCall()) {
@@ -177,10 +177,10 @@ open class SendMessageJob(
                 resendData.userId,
                 resendData.messageId,
                 resendData.sessionId,
-                getMentionData(message.id)
+                getMentionData(message.messageId)
             )
         } else {
-            signalProtocol.encryptGroupMessage(message, getMentionData(message.id))
+            signalProtocol.encryptGroupMessage(message, getMentionData(message.messageId))
         }
     }
 

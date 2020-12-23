@@ -170,6 +170,7 @@ abstract class MixinDatabase : RoomDatabase() {
 
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
+                db.setForeignKeyConstraintsEnabled(false)
                 supportSQLiteDatabase = db
                 db.execSQL(
                     "CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id WHERE conversation_id = new.conversation_id; END"

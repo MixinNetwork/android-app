@@ -132,7 +132,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
                             it.userId,
                             Uri.parse(it.mediaUrl),
                             it.category.startsWith("PLAIN"),
-                            it.id,
+                            it.messageId,
                             it.createdAt
                         )
                     )
@@ -146,7 +146,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
                     jobManager.addJobInBackground(
                         SendGiphyJob(
                             it.conversationId, it.userId, it.mediaUrl!!,
-                            it.mediaWidth!!, it.mediaHeight!!, category, it.id,
+                            it.mediaWidth!!, it.mediaHeight!!, category, it.messageId,
                             it.thumbImage
                                 ?: "",
                             it.createdAt

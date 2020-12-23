@@ -430,7 +430,7 @@ class VoiceCallService : CallService() {
             }
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 val msg = createCallMessage(
-                    m.id, m.conversationId, uId, m.category, m.content,
+                    m.messageId, m.conversationId, uId, m.category, m.content,
                     m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration
                 )
                 database.insertAndNotifyConversation(msg)

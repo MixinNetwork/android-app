@@ -126,7 +126,7 @@ class DecryptMessage : Injector() {
     fun onRun(data: BlazeMessageData) {
         if (!isExistMessage(data.messageId)) {
             measureTimeMillis { processMessage(data) }.let {
-                Timber.d("process message $it")
+                Timber.d("Opt process message $it")
             }
         } else {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
@@ -285,10 +285,10 @@ class DecryptMessage : Injector() {
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
-                RxBus.publish(RecallEvent(msg.id))
-                messageDao.recallFailedMessage(msg.id)
-                messageDao.recallMessage(msg.id)
-                messageMentionDao.deleteMessage(msg.id)
+                RxBus.publish(RecallEvent(msg.messageId))
+                messageDao.recallFailedMessage(msg.messageId)
+                messageDao.recallMessage(msg.messageId)
+                messageMentionDao.deleteMessage(msg.messageId)
                 messageDao.takeUnseen(accountId, msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
@@ -299,11 +299,11 @@ class DecryptMessage : Injector() {
                         }
                     }
                 }
-                messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
-                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
+                messageDao.findMessageItemById(data.conversationId, msg.messageId)?.let { quoteMsg ->
+                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.messageId, gson.toJson(quoteMsg))
                 }
 
-                jobManager.cancelJobByMixinJobId(msg.id)
+                jobManager.cancelJobByMixinJobId(msg.messageId)
                 notificationManager.cancel(msg.userId.hashCode())
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -388,7 +388,7 @@ class DecryptMessage : Injector() {
             if (pCreatedAt.isAfter(mCreatedAt)) {
                 continue
             }
-            needResendMessage.id = UUID.randomUUID().toString()
+            needResendMessage.messageId = UUID.randomUUID().toString()
             jobManager.addJobInBackground(
                 SendMessageJob(
                     needResendMessage,
@@ -452,14 +452,14 @@ class DecryptMessage : Injector() {
                     data.userId
                 )
                 measureTimeMillis {
-                    database.insertAndNotifyConversation(message)
+                    messageDao.insert(message)
                 }.let {
-                    Timber.d("insert message $it")
+                    Timber.d("Opt insert message $it")
                 }
                 measureTimeMillis {
                     MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 }.let {
-                    Timber.d("insert fts $it")
+                    Timber.d("Opt insert fts $it")
                 }
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
@@ -593,7 +593,11 @@ class DecryptMessage : Injector() {
                         mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt
                     )
                 }
-                database.insertAndNotifyConversation(message)
+                measureTimeMillis {
+                    messageDao.insert(message)
+                }.let {
+                    Timber.d("Opt insert message $it")
+                }
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_CONTACT") -> {
@@ -949,9 +953,21 @@ class DecryptMessage : Injector() {
         ratchetSenderKeyDao.delete(conversationId, SignalProtocolAddress(userId, sessionId.getDeviceId()).toString())
     }
 
-    private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
-        Timber.d("updateRemoteMessageStatus messageId: $messageId")
-        jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
+    private fun updateRemoteMessageStatus(
+        messageId: String,
+        status: MessageStatus = MessageStatus.DELIVERED
+    ) {
+
+        measureTimeMillis {
+            jobDao.insert(
+                createAckJob(
+                    ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                    BlazeAckMessage(messageId, status.name)
+                )
+            )
+        }.let {
+            Timber.d("Opt updateRemoteMessageStatus messageId: $messageId $it")
+        }
     }
 
     private fun refreshSignalKeys(conversationId: String) {
@@ -974,7 +990,7 @@ class DecryptMessage : Injector() {
         val bm = createSyncSignalKeys(createSyncSignalKeysParam(RefreshOneTimePreKeysJob.generateKeys()))
         val result = signalKeysChannel(bm)
         if (result == null) {
-            Log.w(TAG, "Registering new pre keys...")
+            Timber.w("Registering new pre keys...")
         }
     }
 

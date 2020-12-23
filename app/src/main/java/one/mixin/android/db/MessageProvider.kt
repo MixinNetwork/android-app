@@ -18,7 +18,7 @@ class MessageProvider {
                 override fun create(): DataSource<Int, MessageItem> {
                     val sql =
                         """
-                        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+                        SELECT m.message_id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
                         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
                         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
                         m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
@@ -39,7 +39,7 @@ class MessageProvider {
                         LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
                         LEFT JOIN users su ON m.shared_user_id = su.user_id
                         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-                        LEFT JOIN message_mentions mm ON m.id = mm.message_id
+                        LEFT JOIN message_mentions mm ON m.message_id = mm.message_id
                         WHERE m.conversation_id = ? 
                         ORDER BY m.created_at DESC 
                     """
@@ -456,10 +456,10 @@ class MessageProvider {
                 override fun create(): DataSource<Int, SearchMessageDetailItem> {
                     val sql =
                         """
-                            SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
+                            SELECT m.message_id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
                             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
                             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
+                            WHERE m.message_id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
                             AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST', 'SIGNAL_CONTACT', 'PLAIN_CONTACT') 
                             AND m.conversation_id = ?
                             AND m.status != 'FAILED'
@@ -469,7 +469,7 @@ class MessageProvider {
                         """
                             SELECT count(*) FROM messages m 
                             INNER JOIN users u ON m.user_id = u.user_id 
-                            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
+                            WHERE m.message_id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
                             AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST', 'SIGNAL_CONTACT', 'PLAIN_CONTACT') 
                             AND m.conversation_id = ?
                         """

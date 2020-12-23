@@ -91,7 +91,7 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
         notificationBuilder.setContentIntent(
             PendingIntent.getActivities(
                 context,
-                message.id.hashCode(),
+                message.messageId.hashCode(),
                 arrayOf(mainIntent, conversationIntent),
                 PendingIntent.FLAG_UPDATE_CURRENT
             )

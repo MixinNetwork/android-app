@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import androidx.room.Transaction
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -77,7 +78,10 @@ fun CircleConversationDao.insertUpdate(
     circleConversation: CircleConversation
 ) {
     runInTransaction {
-        val c = findCircleConversationByCircleId(circleConversation.circleId, circleConversation.conversationId)
+        val c = findCircleConversationByCircleId(
+            circleConversation.circleId,
+            circleConversation.conversationId
+        )
         if (c == null) {
             insert(circleConversation)
         } else {
@@ -161,21 +165,20 @@ fun MixinDatabase.deleteMessage(id: String) {
     }
 }
 
+@Transaction
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
-    runInTransaction {
-        measureTimeMillis {
-            messageDao().insert(message)
-        }.let {
-            Timber.d("insert message $it")
-        }
+    measureTimeMillis {
+        messageDao().insert(message)
+    }.let {
+        Timber.d("insert message $it")
+    }
 
-        val userId = Session.getAccountId()
-        if (userId != message.userId) {
-            measureTimeMillis {
-                conversationDao().unseenMessageCount(message.conversationId, userId)
-            }.let {
-                Timber.d("unseenMessageCount $it")
-            }
+    val userId = Session.getAccountId()
+    if (userId != message.userId) {
+        measureTimeMillis {
+            conversationDao().unseenMessageCount(message.conversationId, userId)
+        }.let {
+            Timber.d("unseenMessageCount $it")
         }
     }
 }
