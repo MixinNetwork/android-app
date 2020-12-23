@@ -154,7 +154,7 @@ class ImageCaptionHolder constructor(val binding: ItemChatImageCaptionBinding) :
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
             )
-            binding.chatTv.renderMessage(messageItem.caption, mentionRenderContext, null)
+            binding.chatTv.renderMessage(messageItem.caption, null, mentionRenderContext)
         } else {
             binding.chatTv.text = messageItem.caption
         }
