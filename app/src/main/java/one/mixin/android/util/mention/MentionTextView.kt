@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.markdown.MarkwonUtil
+import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import org.commonmark.node.Node
 
 class MentionTextView(context: Context, attrs: AttributeSet?) :
@@ -18,7 +19,7 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
             return
         } else {
             val sp = SpannableStringBuilder()
-            renderMarkdown(sp, MarkwonUtil.getSimpleMarkwon(context).parse(text.toString()))
+            renderMarkdown(sp, simpleMarkwon.parse(text.toString()))
             mentionRenderContext.notNullWithElse(
                 { super.setText(renderMention(sp), type) },
                 { super.setText(sp, type) }
@@ -27,7 +28,7 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
     }
 
     private fun renderMarkdown(sp: SpannableStringBuilder, node: Node) {
-        sp.append(MarkwonUtil.getSimpleMarkwon(context).render(node))
+        sp.append(simpleMarkwon.render(node))
         if (node.next != null) {
             renderMarkdown(sp, node.next)
         }

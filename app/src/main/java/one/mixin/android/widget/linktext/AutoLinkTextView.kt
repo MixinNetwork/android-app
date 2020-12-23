@@ -21,7 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.util.markdown.MarkwonUtil.Companion.getSimpleMarkwon
+import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.mentionNumberPattern
 import org.commonmark.node.Node
@@ -64,7 +64,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         }
         val autoLinkItems = LinkedList<AutoLinkItem>()
         val sp = SpannableStringBuilder()
-        renderMarkdown(sp, getSimpleMarkwon(context).parse(text.toString()))
+        renderMarkdown(sp, simpleMarkwon.parse(text.toString()))
         renderMention(sp, autoLinkItems)
         renderKeyWord(sp)
         matchedRanges(sp, autoLinkItems)
@@ -75,7 +75,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     }
 
     private fun renderMarkdown(sp: SpannableStringBuilder, node: Node) {
-        sp.append(getSimpleMarkwon(context).render(node))
+        sp.append(simpleMarkwon.render(node))
         if (node.next != null) {
             renderMarkdown(sp, node.next)
         }
