@@ -7,6 +7,7 @@ import android.widget.TextView
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.MarkwonVisitor
+import io.noties.markwon.core.CoreProps
 import io.noties.markwon.core.spans.CodeSpan
 import io.noties.markwon.core.spans.EmphasisSpan
 import io.noties.markwon.core.spans.OrderedListItemSpan
@@ -16,6 +17,10 @@ import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.node.Code
 import org.commonmark.node.Emphasis
+import org.commonmark.node.HardLineBreak
+import org.commonmark.node.ListBlock
+import org.commonmark.node.Node
+import org.commonmark.node.Paragraph
 import org.commonmark.node.SoftLineBreak
 import org.commonmark.node.StrongEmphasis
 import org.commonmark.node.Text
@@ -47,9 +52,34 @@ class SimplePlugin : AbstractMarkwonPlugin() {
             visitor.builder()
                 .append(code.literal)
             visitor.setSpansForNodeOptional(code, length)
-        }.on(SoftLineBreak::class.java) { visitor, _ ->
+        }.on(HardLineBreak::class.java) { visitor, _ ->
             visitor.ensureNewLine()
+        }.on(SoftLineBreak::class.java) { visitor, _ ->
+            visitor.builder().append(' ')
+        }.on(Paragraph::class.java) { visitor, paragraph ->
+            val inTightList = isInTightList(paragraph)
+            if (!inTightList) {
+                visitor.blockStart(paragraph)
+            }
+            val length = visitor.length()
+            visitor.visitChildren(paragraph)
+            CoreProps.PARAGRAPH_IS_IN_TIGHT_LIST[visitor.renderProps()] = inTightList
+            visitor.setSpansForNodeOptional(paragraph, length)
+            if (!inTightList) {
+                visitor.blockEnd(paragraph)
+            }
         }
+    }
+
+    private fun isInTightList(paragraph: Paragraph): Boolean {
+        val parent: Node? = paragraph.parent
+        if (parent != null) {
+            val gramps = parent.parent
+            if (gramps is ListBlock) {
+                return gramps.isTight
+            }
+        }
+        return false
     }
 
     override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {

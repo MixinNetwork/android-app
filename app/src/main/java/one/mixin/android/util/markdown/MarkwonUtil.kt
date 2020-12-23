@@ -41,8 +41,8 @@ import org.commonmark.node.SoftLineBreak
 class MarkwonUtil {
     companion object {
 
-        fun getSimpleMarkwon(context: Context): Markwon {
-            return Markwon.builderNoCore(context).usePlugin(SimplePlugin()).build()
+        val simpleMarkwon by lazy {
+            Markwon.builderNoCore(MixinApplication.appContext).usePlugin(SimplePlugin()).build()
         }
 
         fun getMarkwon(
