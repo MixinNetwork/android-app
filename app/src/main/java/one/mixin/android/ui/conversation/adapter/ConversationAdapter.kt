@@ -936,6 +936,8 @@ class ConversationAdapter(
         open fun onSayHi() {}
 
         open fun onLocationClick(messageItem: MessageItem) {}
+
+        open fun onTextDoubleClick(messageItem: MessageItem) {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {
