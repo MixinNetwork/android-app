@@ -14,6 +14,7 @@ import java.io.Serializable
     indices = [
         Index(value = arrayOf("conversation_id", "created_at")),
         Index(value = arrayOf("conversation_id", "user_id", "status", "created_at")),
+        Index(value = arrayOf("conversation_id", "user_id", "status", "category")),
         Index(value = arrayOf("conversation_id", "status", "user_id"))
     ],
     foreignKeys = [
