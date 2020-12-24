@@ -32,6 +32,7 @@ class SnowLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout(con
     private val freeParticles = ArrayList<SnowParticle>()
     private var color = 0
     private val accelerateInterpolator = AccelerateInterpolator()
+    private val display = System.currentTimeMillis() <= 1609689600000L // Easter Egg
 
     init {
         setWillNotDraw(false)
@@ -39,7 +40,9 @@ class SnowLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout(con
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        drawSnow(canvas)
+        if (display) {
+            drawSnow(canvas)
+        }
     }
 
     private fun updateColors() {
@@ -120,7 +123,7 @@ class SnowLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout(con
 
     init {
         updateColors()
-        repeat(24) {
+        repeat(20) {
             freeParticles.add(SnowParticle(particlePaint, particleThinPaint, angleDiff))
         }
     }
