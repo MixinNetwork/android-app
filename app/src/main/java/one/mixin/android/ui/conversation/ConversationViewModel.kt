@@ -375,7 +375,7 @@ internal constructor(
                 list.map {
                     createAckJob(
                         ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                        BlazeAckMessage(it.id, MessageStatus.READ.name)
+                        BlazeAckMessage(it.messageId, MessageStatus.READ.name)
                     )
                 }.let {
                     conversationRepository.insertList(it)
@@ -472,7 +472,7 @@ internal constructor(
             list.map {
                 createAckJob(
                     CREATE_MESSAGE,
-                    BlazeAckMessage(it.id, MessageStatus.READ.name),
+                    BlazeAckMessage(it.messageId, MessageStatus.READ.name),
                     conversationId
                 )
             }.let {

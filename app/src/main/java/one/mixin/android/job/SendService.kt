@@ -73,14 +73,14 @@ class SendService : IntentService("SendService") {
                 GlobalScope.launch(Dispatchers.IO) {
                     messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().createdAt)
                 }
-                list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
+                list.map { BlazeAckMessage(it.messageId, MessageStatus.READ.name) }.let { messages ->
                     val chunkList = messages.chunked(100)
                     for (item in chunkList) {
                         jobManager.addJobInBackground(SendAckMessageJob(item))
                     }
                 }
                 Session.getExtensionSessionId()?.let {
-                    list.map { createAckJob(CREATE_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name), conversationId) }.let {
+                    list.map { createAckJob(CREATE_MESSAGE, BlazeAckMessage(it.messageId, MessageStatus.READ.name), conversationId) }.let {
                         Timber.d("SendService findUnreadMessagesSync")
                         jobDao.insertList(it)
                     }

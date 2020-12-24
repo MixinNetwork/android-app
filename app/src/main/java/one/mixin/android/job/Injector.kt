@@ -34,6 +34,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
@@ -44,58 +45,83 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
+import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 
 open class Injector {
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var messageDao: MessageDao
+
     @Inject
     lateinit var messageHistoryDao: MessageHistoryDao
+
     @Inject
     lateinit var userDao: UserDao
+
     @Inject
     lateinit var appDao: AppDao
+
     @Inject
     lateinit var jobDao: JobDao
+
     @Inject
     lateinit var conversationDao: ConversationDao
+
     @Inject
     lateinit var participantDao: ParticipantDao
+
     @Inject
     lateinit var participantSessionDao: ParticipantSessionDao
+
     @Inject
     lateinit var snapshotDao: SnapshotDao
+
     @Inject
     lateinit var assetDao: AssetDao
+
     @Inject
     lateinit var circleDao: CircleDao
+
     @Inject
     lateinit var circleConversationDao: CircleConversationDao
+
     @Inject
     lateinit var traceDao: TraceDao
+
     @Inject
     lateinit var circleService: CircleService
+
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
+
     @Inject
     lateinit var stickerDao: StickerDao
+
     @Inject
     lateinit var messageMentionDao: MessageMentionDao
+
     @Inject
     lateinit var signalProtocol: SignalProtocol
+
     @Inject
     lateinit var ratchetSenderKeyDao: RatchetSenderKeyDao
+
     @Inject
     lateinit var resendMessageDao: ResendSessionMessageDao
+
     @Inject
     lateinit var hyperlinkDao: HyperlinkDao
+
     @Inject
     lateinit var userApi: UserService
+
     @Inject
     lateinit var conversationService: ConversationService
+
     @Inject
     lateinit var database: MixinDatabase
 
@@ -106,7 +132,10 @@ open class Injector {
     }
 
     init {
-        val entryPoint = EntryPointAccessors.fromApplication(MixinApplication.get().applicationContext, InjectorEntryPoint::class.java)
+        val entryPoint = EntryPointAccessors.fromApplication(
+            MixinApplication.get().applicationContext,
+            InjectorEntryPoint::class.java
+        )
         entryPoint.inject(this)
     }
 
@@ -153,8 +182,18 @@ open class Injector {
         }
         var conversation = conversationDao.getConversation(data.conversationId)
         if (conversation == null) {
-            conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
-            conversationDao.insert(conversation)
+            conversation = createConversation(
+                data.conversationId,
+                null,
+                data.userId,
+                ConversationStatus.START.ordinal
+            )
+            try {
+                Timber.d(GsonHelper.customGson.toJson(conversation))
+                conversationDao.insert(conversation)
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
             refreshConversation(data.conversationId)
         }
         if (conversation.status == ConversationStatus.START.ordinal) {
@@ -174,14 +213,16 @@ open class Injector {
             val response = call.body()
             if (response != null && response.isSuccess) {
                 response.data?.let { conversationData ->
-                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
-                        ConversationStatus.SUCCESS.ordinal
-                    } else {
-                        ConversationStatus.QUIT.ordinal
-                    }
+                    val status =
+                        if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
+                            ConversationStatus.SUCCESS.ordinal
+                        } else {
+                            ConversationStatus.QUIT.ordinal
+                        }
                     var ownerId: String = conversationData.creatorId
                     if (conversationData.category == ConversationCategory.CONTACT.name) {
-                        ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
+                        ownerId =
+                            conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
                     } else if (conversationData.category == ConversationCategory.GROUP.name) {
                         syncUser(conversationData.creatorId)
                     }
@@ -205,7 +246,8 @@ open class Injector {
                         circles.forEach {
                             val circle = circleDao.findCircleById(it.circleId)
                             if (circle == null) {
-                                val circleResponse = circleService.getCircle(it.circleId).execute().body()
+                                val circleResponse =
+                                    circleService.getCircle(it.circleId).execute().body()
                                 if (circleResponse?.isSuccess == true) {
                                     circleResponse.data?.let { item ->
                                         circleDao.insert(item)
