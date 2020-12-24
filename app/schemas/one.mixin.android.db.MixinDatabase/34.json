@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 34,
-    "identityHash": "6b97ac30cf0773aadcb9a36e0c2ded80",
+    "identityHash": "e3cf47f7fb94c218be2adde55bee057a",
     "entities": [
       {
         "tableName": "users",
@@ -442,14 +442,6 @@
               "user_id"
             ],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id` ON `${TABLE_NAME}` (`conversation_id`, `status`, `user_id`)"
-          },
-          {
-            "name": "index_messages_user_id",
-            "unique": false,
-            "columnNames": [
-              "user_id"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_user_id` ON `${TABLE_NAME}` (`user_id`)"
           }
         ],
         "foreignKeys": [
@@ -1813,7 +1805,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6b97ac30cf0773aadcb9a36e0c2ded80')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e3cf47f7fb94c218be2adde55bee057a')"
     ]
   }
 }
