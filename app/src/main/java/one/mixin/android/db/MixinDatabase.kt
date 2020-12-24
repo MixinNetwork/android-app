@@ -177,6 +177,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 db.execSQL(
                     "CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END"
                 )
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
             }
         }
     }
