@@ -7,6 +7,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_FTS4_UPGRADE
@@ -63,7 +64,10 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
             lifecycleScope.launch {
                 binding.pb.isIndeterminate = true
                 withContext(Dispatchers.IO) {
-                    runInTransaction { }
+                    delay(3000) // Test don't merge
+                    runInTransaction {
+
+                    }
                 }
                 MainActivity.show(requireContext())
                 activity?.finish()
