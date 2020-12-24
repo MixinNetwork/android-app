@@ -5,7 +5,6 @@ import android.text.SpannableStringBuilder
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import org.commonmark.node.Node
 

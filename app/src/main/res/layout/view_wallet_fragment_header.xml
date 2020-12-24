@@ -5,10 +5,9 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <LinearLayout
+    <one.mixin.android.widget.snow.SnowLinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/bg_white"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -90,7 +89,7 @@
             android:layout_marginBottom="32dp"
             android:orientation="horizontal"
             android:visibility="gone" />
-    </LinearLayout>
+    </one.mixin.android.widget.snow.SnowLinearLayout>
 
     <View
         android:layout_width="match_parent"
