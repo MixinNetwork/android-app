@@ -364,12 +364,12 @@ internal constructor(
         GlobalScope.launch(SINGLE_DB_THREAD) {
             notificationManager.cancel(conversationId.hashCode())
             while (true) {
-                val list = conversationRepository.getUnreadMessage(conversationId, accountId, 100)
+                val list = conversationRepository.getUnreadMessage(conversationId, accountId, 500)
                 if (list.isEmpty()) return@launch
                 conversationRepository.batchMarkReadAndTake(
                     conversationId,
                     accountId,
-                    list.last().createdAt
+                    list.last().rowId
                 )
 
                 list.map {
@@ -381,7 +381,7 @@ internal constructor(
                     conversationRepository.insertList(it)
                 }
                 createReadSessionMessage(list, conversationId)
-                if (list.size < 100) {
+                if (list.size < 500) {
                     return@launch
                 }
             }

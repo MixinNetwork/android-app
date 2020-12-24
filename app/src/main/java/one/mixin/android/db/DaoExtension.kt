@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import androidx.room.Transaction
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -75,7 +76,10 @@ fun CircleConversationDao.insertUpdate(
     circleConversation: CircleConversation
 ) {
     runInTransaction {
-        val c = findCircleConversationByCircleId(circleConversation.circleId, circleConversation.conversationId)
+        val c = findCircleConversationByCircleId(
+            circleConversation.circleId,
+            circleConversation.conversationId
+        )
         if (c == null) {
             insert(circleConversation)
         } else {
@@ -143,10 +147,10 @@ fun MixinDatabase.clearParticipant(
 suspend fun MessageDao.batchMarkReadAndTake(
     conversationId: String,
     userId: String,
-    createdAt: String
+    rowid: String
 ) {
     withTransaction {
-        batchMarkRead(conversationId, userId, createdAt)
+        batchMarkRead(conversationId, userId, rowid)
         updateConversationUnseen(userId, conversationId)
     }
 }
@@ -159,13 +163,12 @@ fun MixinDatabase.deleteMessage(id: String) {
     }
 }
 
+@Transaction
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
-    runInTransaction {
-        messageDao().insert(message)
-        val userId = Session.getAccountId()
-        if (userId != message.userId) {
-            conversationDao().unseenMessageCount(message.conversationId, userId)
-        }
+    messageDao().insert(message)
+    val userId = Session.getAccountId()
+    if (userId != message.userId) {
+        conversationDao().unseenMessageCount(message.conversationId, userId)
     }
 }
 
