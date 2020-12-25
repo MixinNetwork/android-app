@@ -155,7 +155,11 @@ class DecryptMessage : Injector() {
             if (data.category != MessageCategory.SYSTEM_CONVERSATION.name) {
                 syncConversation(data)
             }
-            checkSession(data)
+            measureTimeMillis {
+                checkSession(data)
+            }.let {
+                Timber.d("checkSession $it ms")
+            }
             if (data.category.startsWith("SYSTEM_")) {
                 processSystemMessage(data)
             } else if (data.category.startsWith("PLAIN_")) {
@@ -413,7 +417,11 @@ class DecryptMessage : Injector() {
     }
 
     private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
-        syncUser(data.userId)
+        measureTimeMillis {
+            syncUser(data.userId)
+        }.let {
+            Timber.d("syncUser $it ms")
+        }
         when {
             data.category.endsWith("_TEXT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
@@ -788,7 +796,11 @@ class DecryptMessage : Injector() {
                             messageHistoryDao.insert(MessageHistory(data.messageId))
                         } else {
                             try {
-                                processDecryptSuccess(data, plaintext)
+                                measureTimeMillis {
+                                    processDecryptSuccess(data, plaintext)
+                                }.let {
+                                    Timber.d("processDecryptSuccess $it ms")
+                                }
                             } catch (e: JsonSyntaxException) {
                                 insertInvalidMessage(data)
                             }
