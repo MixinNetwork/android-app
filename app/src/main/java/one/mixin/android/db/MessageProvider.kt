@@ -23,7 +23,7 @@ class MessageProvider {
                         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
                         m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
                         m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, m.quote_message_id as quoteId,
-                        m.quote_content as quoteContent, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
+                        m.quote_content as quoteContent, m.caption as caption, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
                         s.snapshot_id AS snapshotId, s.type AS snapshotType, s.amount AS snapshotAmount, a.symbol AS assetSymbol, s.asset_id AS assetId,
                         a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
@@ -238,7 +238,7 @@ class MessageProvider {
                     DESC
                 """
                     val statement = RoomSQLiteQuery.acquire(sql, 0)
-                    val countSql = "SELECT COUNT(*) FROM conversations WHERE category IS NOT NULL"
+                    val countSql = "SELECT COUNT(*) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE category IS NOT NULL"
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
                     return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "conversations", "users", "messages", "snapshots") {
                         override fun convertRows(cursor: Cursor): List<ConversationItem> {

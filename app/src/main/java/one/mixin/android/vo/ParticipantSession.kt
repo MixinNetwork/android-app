@@ -19,7 +19,9 @@ data class ParticipantSession(
     @ColumnInfo(name = "sent_to_server")
     val sentToServer: Int? = null,
     @ColumnInfo(name = "created_at")
-    val createdAt: String? = nowInUtc()
+    val createdAt: String? = nowInUtc(),
+    @ColumnInfo(name = "public_key")
+    val publicKey: String? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         return when (other) {

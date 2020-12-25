@@ -4,6 +4,7 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import androidx.room.Transaction
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.HyperlinkItem
@@ -25,7 +26,7 @@ interface MessageDao : BaseDao<Message> {
                 m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
                 m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
                 m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, m.quote_message_id as quoteId,
-                m.quote_content as quoteContent, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
+                m.quote_content as quoteContent, m.caption as caption, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
                 s.snapshot_id AS snapshotId, s.type AS snapshotType, s.amount AS snapshotAmount, a.symbol AS assetSymbol, s.asset_id AS assetId,
                 a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
                 st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
@@ -280,11 +281,11 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-            SELECT id, created_at FROM messages
+            SELECT rowid, id FROM messages
             WHERE conversation_id = :conversationId 
             AND status IN ('SENT', 'DELIVERED') 
             AND user_id != :userId 
-            ORDER BY created_at ASC
+            ORDER BY rowid ASC
             LIMIT :limit
             """
     )
@@ -363,8 +364,8 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-            SELECT id, created_at FROM messages WHERE conversation_id = :conversationId
-            AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC
+            SELECT rowid, id FROM messages WHERE conversation_id = :conversationId
+            AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY rowid ASC
         """
     )
     fun findUnreadMessagesSync(
@@ -388,14 +389,14 @@ interface MessageDao : BaseDao<Message> {
     ): List<MediaMessageMinimal>?
 
     @Query(
-        "UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
-            "AND status IN ('SENT', 'DELIVERED') AND created_at <= :createdAt"
+        """UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId 
+        AND status IN ('SENT', 'DELIVERED') AND rowid <= :rowid AND user_id != :userId"""
     )
-    suspend fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
+    suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
 
     @Query(
-        "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId " +
-            "AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId "
+        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
+        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId"""
     )
     suspend fun updateConversationUnseen(userId: String, conversationId: String)
 
@@ -474,7 +475,7 @@ interface MessageDao : BaseDao<Message> {
     fun getLastMessageRowid(): Long
 
     // DELETE COUNT
-    @Query("SELECT count(id) FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory)")
+    @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory)")
     fun countDeleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String): Int
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId")
@@ -485,10 +486,18 @@ interface MessageDao : BaseDao<Message> {
     fun deleteMessage(id: String)
 
     @Query(
-        "DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory) LIMIT :limit)"
+        "DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE  conversation_id = :conversationId AND  media_status = 'DONE' AND category IN (:signalCategory, :plainCategory) LIMIT :limit)"
     )
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, limit: Int)
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
+
+    @Transaction
+    fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
+        insert(message)
+        if (userId != message.userId) {
+            conversationDao.unseenMessageCount(message.conversationId, userId)
+        }
+    }
 }

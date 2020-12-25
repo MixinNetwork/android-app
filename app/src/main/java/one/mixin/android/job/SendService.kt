@@ -70,7 +70,7 @@ class SendService : IntentService("SendService") {
         messageDao.findUnreadMessagesSync(conversationId, accountId)?.let { list ->
             if (list.isNotEmpty()) {
                 GlobalScope.launch(Dispatchers.IO) {
-                    messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().createdAt)
+                    messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().rowId)
                 }
                 list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
                     val chunkList = messages.chunked(100)

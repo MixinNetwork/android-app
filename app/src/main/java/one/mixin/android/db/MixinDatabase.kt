@@ -30,6 +30,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_29_30
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_30_31
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_31_32
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_32_33
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_33_34
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -135,7 +136,7 @@ abstract class MixinDatabase : RoomDatabase() {
                         .addMigrations(
                             MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21,
                             MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28,
-                            MIGRATION_28_29, MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33
+                            MIGRATION_28_29, MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34
                         )
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
@@ -177,6 +178,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 db.execSQL(
                     "CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END"
                 )
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
             }
         }
     }

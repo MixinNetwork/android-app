@@ -75,7 +75,10 @@ fun CircleConversationDao.insertUpdate(
     circleConversation: CircleConversation
 ) {
     runInTransaction {
-        val c = findCircleConversationByCircleId(circleConversation.circleId, circleConversation.conversationId)
+        val c = findCircleConversationByCircleId(
+            circleConversation.circleId,
+            circleConversation.conversationId
+        )
         if (c == null) {
             insert(circleConversation)
         } else {
@@ -143,10 +146,10 @@ fun MixinDatabase.clearParticipant(
 suspend fun MessageDao.batchMarkReadAndTake(
     conversationId: String,
     userId: String,
-    createdAt: String
+    rowid: String
 ) {
     withTransaction {
-        batchMarkRead(conversationId, userId, createdAt)
+        batchMarkRead(conversationId, userId, rowid)
         updateConversationUnseen(userId, conversationId)
     }
 }
