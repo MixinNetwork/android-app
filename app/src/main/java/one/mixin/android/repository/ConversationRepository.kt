@@ -244,8 +244,8 @@ internal constructor(
     fun findUnreadMessagesSync(conversationId: String, accountId: String) =
         messageDao.findUnreadMessagesSync(conversationId, accountId)
 
-    suspend fun batchMarkReadAndTake(conversationId: String, userId: String, createdAt: String) {
-        messageDao.batchMarkReadAndTake(conversationId, userId, createdAt)
+    suspend fun batchMarkReadAndTake(conversationId: String, userId: String, rowId: String) {
+        messageDao.batchMarkReadAndTake(conversationId, userId, rowId)
     }
 
     fun findContactConversationByOwnerId(ownerId: String): Conversation? {

@@ -4,6 +4,7 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import androidx.room.Transaction
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.HyperlinkItem
@@ -280,11 +281,11 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-            SELECT id, created_at FROM messages
+            SELECT rowid, id FROM messages
             WHERE conversation_id = :conversationId 
             AND status IN ('SENT', 'DELIVERED') 
             AND user_id != :userId 
-            ORDER BY created_at ASC
+            ORDER BY rowid ASC
             LIMIT :limit
             """
     )
@@ -363,8 +364,8 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-            SELECT id, created_at FROM messages WHERE conversation_id = :conversationId
-            AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC
+            SELECT rowid, id FROM messages WHERE conversation_id = :conversationId
+            AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY rowid ASC
         """
     )
     fun findUnreadMessagesSync(
@@ -388,14 +389,14 @@ interface MessageDao : BaseDao<Message> {
     ): List<MediaMessageMinimal>?
 
     @Query(
-        "UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
-            "AND status IN ('SENT', 'DELIVERED') AND created_at <= :createdAt"
+        """UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId 
+        AND status IN ('SENT', 'DELIVERED') AND rowid <= :rowid AND user_id != :userId"""
     )
-    suspend fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
+    suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
 
     @Query(
-        "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId " +
-            "AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId "
+        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
+        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId"""
     )
     suspend fun updateConversationUnseen(userId: String, conversationId: String)
 
@@ -491,4 +492,12 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
+
+    @Transaction
+    fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
+        insert(message)
+        if (userId != message.userId) {
+            conversationDao.unseenMessageCount(message.conversationId, userId)
+        }
+    }
 }
