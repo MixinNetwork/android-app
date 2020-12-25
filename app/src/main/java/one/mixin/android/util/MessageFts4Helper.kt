@@ -8,6 +8,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.joinWhiteSpace
+import one.mixin.android.extension.measureTimeMillis
 import one.mixin.android.extension.putInt
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
@@ -16,7 +17,6 @@ import one.mixin.android.vo.isFtsMessage
 import org.threeten.bp.Instant
 import org.threeten.bp.temporal.ChronoUnit
 import timber.log.Timber
-import kotlin.system.measureTimeMillis
 
 data class QueryMessage(
     @ColumnInfo(name = "message_id")
@@ -90,20 +90,20 @@ object MessageFts4Helper {
             return
         }
 
-        measureTimeMillis {
+        measureTimeMillis("insert fts message") {
             val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
             val name = message.name.joinWhiteSpace()
             val content = message.content.joinWhiteSpace()
             messageFts4Dao.insert(MessageFts4(message.id, name + content))
-        }.let {  Timber.d("insert fts message $it") }
+        }
     }
 
     @WorkerThread
     private fun insertContact(messageId: String, text: String) {
-        measureTimeMillis {
+        measureTimeMillis("insert fts message") {
             val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
             val content = text.joinWhiteSpace()
             messageFts4Dao.insert(MessageFts4(messageId, content))
-        }.let { Timber.d("insert fts message $it") }
+        }
     }
 }

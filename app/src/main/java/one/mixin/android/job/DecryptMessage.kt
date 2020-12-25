@@ -32,6 +32,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.measureTimeMillis
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
@@ -111,7 +112,6 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.io.File
 import java.util.UUID
-import kotlin.system.measureTimeMillis
 
 class DecryptMessage : Injector() {
 
@@ -127,9 +127,7 @@ class DecryptMessage : Injector() {
 
     fun onRun(data: BlazeMessageData) {
         if (!isExistMessage(data.messageId)) {
-            measureTimeMillis { processMessage(data) }.let {
-                Timber.d("process message $it")
-            }
+            measureTimeMillis("process message") { processMessage(data) }
         } else {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
@@ -157,10 +155,8 @@ class DecryptMessage : Injector() {
             if (data.category != MessageCategory.SYSTEM_CONVERSATION.name) {
                 syncConversation(data)
             }
-            measureTimeMillis {
+            measureTimeMillis("checkSession") {
                 checkSession(data)
-            }.let {
-                Timber.d("checkSession $it ms")
             }
             if (data.category.startsWith("SYSTEM_")) {
                 processSystemMessage(data)
@@ -419,10 +415,8 @@ class DecryptMessage : Injector() {
     }
 
     private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
-        measureTimeMillis {
+        measureTimeMillis("syncUser") {
             syncUser(data.userId)
-        }.let {
-            Timber.d("syncUser $it ms")
         }
         when {
             data.category.endsWith("_TEXT") -> {
@@ -453,16 +447,12 @@ class DecryptMessage : Injector() {
                         )
                     }
                 }
-                val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                measureTimeMillis {
+                val (mentions, mentionMe) = measureTimeMillis("parseMentionData") { parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId) }
+                measureTimeMillis("insert message") {
                     messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                }.let {
-                    Timber.d("insert message $it")
                 }
-                measureTimeMillis {
+                measureTimeMillis("insert fts") {
                     MessageFts4Helper.insertOrReplaceMessageFts4(message)
-                }.let {
-                    Timber.d("insert fts $it")
                 }
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
@@ -791,10 +781,8 @@ class DecryptMessage : Injector() {
                             messageHistoryDao.insert(MessageHistory(data.messageId))
                         } else {
                             try {
-                                measureTimeMillis {
+                                measureTimeMillis("processDecryptSuccess") {
                                     processDecryptSuccess(data, plaintext)
-                                }.let {
-                                    Timber.d("processDecryptSuccess $it ms")
                                 }
                             } catch (e: JsonSyntaxException) {
                                 insertInvalidMessage(data)

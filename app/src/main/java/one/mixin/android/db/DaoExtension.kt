@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import one.mixin.android.extension.measureTimeMillis
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -8,7 +9,6 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import timber.log.Timber
-import kotlin.system.measureTimeMillis
 
 fun UserDao.insertUpdate(
     user: User,
@@ -166,18 +166,14 @@ fun MixinDatabase.deleteMessage(id: String) {
 
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
-        measureTimeMillis {
+        measureTimeMillis("insert message") {
             messageDao().insert(message)
-        }.let {
-            Timber.d("insert message $it")
         }
 
         val userId = Session.getAccountId()
         if (userId != message.userId) {
-            measureTimeMillis {
+            measureTimeMillis("unseenMessageCount"){
                 conversationDao().unseenMessageCount(message.conversationId, userId)
-            }.let {
-                Timber.d("unseenMessageCount $it")
             }
         }
     }
