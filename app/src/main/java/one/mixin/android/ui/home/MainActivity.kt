@@ -312,7 +312,7 @@ class MainActivity : BlazeBaseActivity() {
         } catch (e: IOException) {
             0
         }
-        if (CURRENT_VERSION > currentVersion) {
+        if (CURRENT_VERSION != currentVersion) {
             return true
         }
         return false
