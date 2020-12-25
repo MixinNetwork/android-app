@@ -159,6 +159,7 @@ object Constants {
     val KEYS = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
 
     const val BATCH_SIZE = 700
+    const val MARK_LIMIT = 10000
 
     const val PAGE_SIZE = 15
     const val CONVERSATION_PAGE_SIZE = 15

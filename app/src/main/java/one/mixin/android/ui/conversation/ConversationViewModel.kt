@@ -22,6 +22,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.MARK_LIMIT
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.RelationshipRequest
@@ -364,7 +365,7 @@ internal constructor(
         GlobalScope.launch(SINGLE_DB_THREAD) {
             notificationManager.cancel(conversationId.hashCode())
             while (true) {
-                val list = conversationRepository.getUnreadMessage(conversationId, accountId, 500)
+                val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)
                 if (list.isEmpty()) return@launch
                 conversationRepository.batchMarkReadAndTake(
                     conversationId,
@@ -381,7 +382,7 @@ internal constructor(
                     conversationRepository.insertList(it)
                 }
                 createReadSessionMessage(list, conversationId)
-                if (list.size < 500) {
+                if (list.size < MARK_LIMIT) {
                     return@launch
                 }
             }
