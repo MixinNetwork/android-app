@@ -1,6 +1,5 @@
 package one.mixin.android.db
 
-import androidx.room.Transaction
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -163,12 +162,13 @@ fun MixinDatabase.deleteMessage(id: String) {
     }
 }
 
-@Transaction
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
-    messageDao().insert(message)
-    val userId = Session.getAccountId()
-    if (userId != message.userId) {
-        conversationDao().unseenMessageCount(message.conversationId, userId)
+    runInTransaction {
+        messageDao().insert(message)
+        val userId = Session.getAccountId()
+        if (userId != message.userId) {
+            conversationDao().unseenMessageCount(message.conversationId, userId)
+        }
     }
 }
 
