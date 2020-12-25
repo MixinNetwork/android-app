@@ -19,6 +19,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.room.util.DBUtil
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.google.android.gms.common.ConnectionResult
@@ -51,6 +52,8 @@ import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
+import one.mixin.android.Constants.DataBase.CURRENT_VERSION
+import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
@@ -130,6 +133,7 @@ import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import timber.log.Timber
+import java.io.IOException
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -209,6 +213,12 @@ class MainActivity : BlazeBaseActivity() {
         MixinApplication.get().onlining.set(true)
         if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_FTS4_UPGRADE, false)) {
             InitializeActivity.showFts(this)
+            finish()
+            return
+        }
+
+        if (checkNeedGo2MigrationPage()) {
+            InitializeActivity.showDBUpgrade(this)
             finish()
             return
         }
@@ -293,6 +303,19 @@ class MainActivity : BlazeBaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         appUpdateManager.unregisterListener(updatedListener)
+    }
+
+    @SuppressLint("RestrictedApi")
+    private fun checkNeedGo2MigrationPage(): Boolean {
+        val currentVersion = try {
+            DBUtil.readVersion(getDatabasePath(DB_NAME))
+        } catch (e: IOException) {
+            0
+        }
+        if (CURRENT_VERSION > currentVersion) {
+            return true
+        }
+        return false
     }
 
     @SuppressLint("BatteryLife")
