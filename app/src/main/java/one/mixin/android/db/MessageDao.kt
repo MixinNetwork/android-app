@@ -475,7 +475,7 @@ interface MessageDao : BaseDao<Message> {
     fun getLastMessageRowid(): Long
 
     // DELETE COUNT
-    @Query("SELECT count(id) FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory)")
+    @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory)")
     fun countDeleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String): Int
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId")
@@ -486,7 +486,7 @@ interface MessageDao : BaseDao<Message> {
     fun deleteMessage(id: String)
 
     @Query(
-        "DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory) LIMIT :limit)"
+        "DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE  conversation_id = :conversationId AND  media_status = 'DONE' AND category IN (:signalCategory, :plainCategory) LIMIT :limit)"
     )
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, limit: Int)
 
