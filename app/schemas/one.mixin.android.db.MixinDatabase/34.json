@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 34,
-    "identityHash": "e3cf47f7fb94c218be2adde55bee057a",
+    "identityHash": "6c6aaa45aef3bf74c44cfd84ade8c6b1",
     "entities": [
       {
         "tableName": "users",
@@ -217,7 +217,7 @@
       },
       {
         "tableName": "messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `content` TEXT, `media_url` TEXT, `media_mime_type` TEXT, `media_size` INTEGER, `media_duration` TEXT, `media_width` INTEGER, `media_height` INTEGER, `media_hash` TEXT, `thumb_image` TEXT, `thumb_url` TEXT, `media_key` BLOB, `media_digest` BLOB, `media_status` TEXT, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `action` TEXT, `participant_id` TEXT, `snapshot_id` TEXT, `hyperlink` TEXT, `name` TEXT, `album_id` TEXT, `sticker_id` TEXT, `shared_user_id` TEXT, `media_waveform` BLOB, `media_mine_type` TEXT, `quote_message_id` TEXT, `quote_content` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`conversation_id`) REFERENCES `conversations`(`conversation_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `content` TEXT, `media_url` TEXT, `media_mime_type` TEXT, `media_size` INTEGER, `media_duration` TEXT, `media_width` INTEGER, `media_height` INTEGER, `media_hash` TEXT, `thumb_image` TEXT, `thumb_url` TEXT, `media_key` BLOB, `media_digest` BLOB, `media_status` TEXT, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `action` TEXT, `participant_id` TEXT, `snapshot_id` TEXT, `hyperlink` TEXT, `name` TEXT, `album_id` TEXT, `sticker_id` TEXT, `shared_user_id` TEXT, `media_waveform` BLOB, `media_mine_type` TEXT, `quote_message_id` TEXT, `quote_content` TEXT, `caption` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`conversation_id`) REFERENCES `conversations`(`conversation_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -404,6 +404,12 @@
             "columnName": "quote_content",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "caption",
+            "columnName": "caption",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -528,7 +534,7 @@
       },
       {
         "tableName": "participant_session",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, `public_key` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))",
         "fields": [
           {
             "fieldPath": "conversationId",
@@ -557,6 +563,12 @@
           {
             "fieldPath": "createdAt",
             "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "publicKey",
+            "columnName": "public_key",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -1805,7 +1817,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e3cf47f7fb94c218be2adde55bee057a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6c6aaa45aef3bf74c44cfd84ade8c6b1')"
     ]
   }
 }
