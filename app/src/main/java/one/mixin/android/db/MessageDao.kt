@@ -281,7 +281,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-            SELECT rowid, id, created_at FROM messages
+            SELECT rowid, id FROM messages
             WHERE conversation_id = :conversationId 
             AND status IN ('SENT', 'DELIVERED') 
             AND user_id != :userId 
@@ -364,8 +364,8 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-            SELECT rowid, id, created_at FROM messages WHERE conversation_id = :conversationId
-            AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC
+            SELECT rowid, id FROM messages WHERE conversation_id = :conversationId
+            AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY rowid ASC
         """
     )
     fun findUnreadMessagesSync(
