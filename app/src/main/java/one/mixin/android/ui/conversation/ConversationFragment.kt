@@ -6,8 +6,10 @@ import android.annotation.TargetApi
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -94,6 +96,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
@@ -394,6 +397,13 @@ class ConversationFragment() :
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             binding.toolView.copyIv.visibility = GONE
                         }
+                        if (chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_DATA.name ||
+                            chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_DATA.name
+                        ) {
+                            binding.toolView.shareIv.visibility = VISIBLE
+                        } else {
+                            binding.toolView.shareIv.visibility = GONE
+                        }
                         if (chatAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
                             binding.toolView.addStickerIv.visibility = VISIBLE
                         } else {
@@ -410,6 +420,7 @@ class ConversationFragment() :
                         binding.toolView.replyIv.visibility = GONE
                         binding.toolView.copyIv.visibility = GONE
                         binding.toolView.addStickerIv.visibility = GONE
+                        binding.toolView.shareIv.visibility = GONE
                     }
                 }
                 if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
@@ -430,6 +441,13 @@ class ConversationFragment() :
                         binding.toolView.copyIv.visibility = VISIBLE
                     } else {
                         binding.toolView.copyIv.visibility = GONE
+                    }
+                    if (messageItem.type == MessageCategory.SIGNAL_DATA.name ||
+                        messageItem.type == MessageCategory.PLAIN_DATA.name
+                    ) {
+                        binding.toolView.shareIv.visibility = VISIBLE
+                    } else {
+                        binding.toolView.shareIv.visibility = GONE
                     }
 
                     if (messageItem.supportSticker()) {
@@ -1358,6 +1376,40 @@ class ConversationFragment() :
                 binding.chatControl.replyView.bind(it)
             }
             displayReplyView()
+            closeTool()
+        }
+        binding.toolView.shareIv.setOnClickListener {
+            val messageItem = chatAdapter.selectSet.valueAt(0)
+            Intent().apply {
+                var uri: Uri? = try {
+                    messageItem?.mediaUrl?.toUri()
+                } catch (e: NullPointerException) {
+                    null
+                }
+                if (messageItem == null || uri == null || uri.path == null) {
+                    closeTool()
+                    return@setOnClickListener
+                }
+                if (ContentResolver.SCHEME_CONTENT != uri.scheme) {
+                    uri = requireContext().getUriForFile(File(uri.path!!))
+                }
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
+                putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
+                type = "application/*"
+
+                val resInfoList = requireContext().packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
+                for (resolveInfo in resInfoList) {
+                    val packageName = resolveInfo.activityInfo.packageName
+                    requireContext().grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                try {
+                    startActivity(Intent.createChooser(this, messageItem.mediaName))
+                } catch (ignored: ActivityNotFoundException) {
+                }
+            }
             closeTool()
         }
 

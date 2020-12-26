@@ -15,4 +15,5 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
     val addStickerIv = binding.addStickerIv
     val replyIv = binding.replyIv
     val forwardIv = binding.forwardIv
+    val shareIv = binding.shareIv
 }
