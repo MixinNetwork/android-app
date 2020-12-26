@@ -88,7 +88,7 @@
         android:layout_centerVertical="true"
         android:layout_toStartOf="@id/reply_iv"
         android:background="@drawable/mixin_ripple"
-        android:padding="16dp"
+        android:padding="17dp"
         android:src="@drawable/ic_share"
         tools:ignore="ContentDescription" />
 </RelativeLayout>
