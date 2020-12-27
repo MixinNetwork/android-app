@@ -18,6 +18,7 @@ import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.node.Code
 import org.commonmark.node.Emphasis
 import org.commonmark.node.HardLineBreak
+import org.commonmark.node.HtmlBlock
 import org.commonmark.node.ListBlock
 import org.commonmark.node.Node
 import org.commonmark.node.Paragraph
@@ -34,6 +35,9 @@ class SimplePlugin : AbstractMarkwonPlugin() {
     override fun configureVisitor(builder: MarkwonVisitor.Builder) {
         builder.on(Text::class.java) { visitor, text ->
             val literal = text.literal
+            visitor.builder().append(literal)
+        }.on(HtmlBlock::class.java) { visitor, hmlBlock ->
+            val literal = hmlBlock.literal
             visitor.builder().append(literal)
         }.on(StrongEmphasis::class.java) { visitor, strongEmphasis ->
             val length = visitor.length()
