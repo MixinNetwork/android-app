@@ -4,6 +4,7 @@ import android.text.Spannable
 import android.text.Spanned
 import android.text.style.StrikethroughSpan
 import android.widget.TextView
+import androidx.collection.arraySetOf
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.MarkwonVisitor
@@ -15,9 +16,14 @@ import io.noties.markwon.core.spans.StrongEmphasisSpan
 import io.noties.markwon.core.spans.TextViewSpan
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
+import org.commonmark.node.BlockQuote
 import org.commonmark.node.Code
 import org.commonmark.node.Emphasis
+import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.HardLineBreak
+import org.commonmark.node.Heading
+import org.commonmark.node.HtmlBlock
+import org.commonmark.node.IndentedCodeBlock
 import org.commonmark.node.ListBlock
 import org.commonmark.node.Node
 import org.commonmark.node.Paragraph
@@ -29,11 +35,16 @@ import org.commonmark.parser.Parser
 class SimplePlugin : AbstractMarkwonPlugin() {
     override fun configureParser(builder: Parser.Builder) {
         builder.extensions(setOf(StrikethroughExtension.create()))
+            .enabledBlockTypes(emptySet())
+            .build()
     }
 
     override fun configureVisitor(builder: MarkwonVisitor.Builder) {
         builder.on(Text::class.java) { visitor, text ->
             val literal = text.literal
+            visitor.builder().append(literal)
+        }.on(HtmlBlock::class.java) { visitor, hmlBlock ->
+            val literal = hmlBlock.literal
             visitor.builder().append(literal)
         }.on(StrongEmphasis::class.java) { visitor, strongEmphasis ->
             val length = visitor.length()
