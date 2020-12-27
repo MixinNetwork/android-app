@@ -20,6 +20,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     val rightTv = binding.rightTv
     val rightAnimator = binding.rightAnimator
     val avatarIv = binding.avatarIv
+    val titleContainer = binding.titleContainer
 
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.TitleView)
