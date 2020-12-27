@@ -55,7 +55,7 @@ class SimplePlugin : AbstractMarkwonPlugin() {
         }.on(HardLineBreak::class.java) { visitor, _ ->
             visitor.ensureNewLine()
         }.on(SoftLineBreak::class.java) { visitor, _ ->
-            visitor.builder().append(' ')
+            visitor.forceNewLine()
         }.on(Paragraph::class.java) { visitor, paragraph ->
             val inTightList = isInTightList(paragraph)
             if (!inTightList) {
