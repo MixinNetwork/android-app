@@ -54,6 +54,7 @@ import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
+import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
@@ -312,7 +313,7 @@ class MainActivity : BlazeBaseActivity() {
         } catch (e: IOException) {
             0
         }
-        if (CURRENT_VERSION != currentVersion) {
+        if (currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion) {
             return true
         }
         return false
