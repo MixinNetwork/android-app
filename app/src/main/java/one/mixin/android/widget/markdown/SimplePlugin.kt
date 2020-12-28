@@ -27,8 +27,12 @@ import org.commonmark.node.Text
 import org.commonmark.parser.Parser
 
 class SimplePlugin : AbstractMarkwonPlugin() {
+
     override fun configureParser(builder: Parser.Builder) {
         builder.extensions(setOf(StrikethroughExtension.create()))
+            .inlineParserFactory { inlineParserContext -> SimpleInlineParser(inlineParserContext) }
+            .enabledBlockTypes(emptySet())
+            .build()
     }
 
     override fun configureVisitor(builder: MarkwonVisitor.Builder) {
@@ -55,7 +59,7 @@ class SimplePlugin : AbstractMarkwonPlugin() {
         }.on(HardLineBreak::class.java) { visitor, _ ->
             visitor.ensureNewLine()
         }.on(SoftLineBreak::class.java) { visitor, _ ->
-            visitor.builder().append(' ')
+            visitor.forceNewLine()
         }.on(Paragraph::class.java) { visitor, paragraph ->
             val inTightList = isInTightList(paragraph)
             if (!inTightList) {
