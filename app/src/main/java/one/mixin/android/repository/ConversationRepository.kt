@@ -81,7 +81,8 @@ internal constructor(
 ) {
 
     @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, appDatabase)
+    fun getMessages(conversationId: String, unreadCount: Int, countable: Boolean) =
+        MessageProvider.getMessages(conversationId, appDatabase, unreadCount, countable)
 
     fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
         MessageProvider.getConversations(appDatabase)

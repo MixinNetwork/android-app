@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationManager
 import android.content.SharedPreferences
@@ -107,9 +108,10 @@ internal constructor(
     private val messenger: SendMessageHelper
 ) : ViewModel() {
 
-    fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
+    @SuppressLint("RestrictedApi")
+    fun getMessages(id: String, initialLoadKey: Int = 0, countable: Boolean): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(
-            conversationRepository.getMessages(id),
+            conversationRepository.getMessages(id, initialLoadKey, countable),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
