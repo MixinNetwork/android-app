@@ -162,6 +162,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -202,6 +203,7 @@ import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
+import one.mixin.android.widget.DebugClickListener
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MixinHeadersDecoration
@@ -1458,6 +1460,10 @@ class ConversationFragment() :
                 }
             }
         )
+        debugLongClick(binding.actionBar.titleContainer) {
+            requireContext().getClipboardManager()
+                .setPrimaryClip(ClipData.newPlainText(null, conversationId))
+        }
         bindData()
     }
 
