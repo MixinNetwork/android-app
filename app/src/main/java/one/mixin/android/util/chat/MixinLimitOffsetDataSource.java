@@ -11,6 +11,7 @@ import androidx.room.InvalidationTracker;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
+import timber.log.Timber;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +49,7 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
             }
         };
         db.getInvalidationTracker().addWeakObserver(mObserver);
+        Timber.d(mCountQuery.toString());
     }
 
     /**
@@ -55,10 +57,13 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
      */
     @SuppressWarnings("WeakerAccess")
     public int countItems() {
+        Long begin = System.currentTimeMillis();
         Cursor cursor = mDb.query(mCountQuery);
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getInt(0);
+                int result = cursor.getInt(0);
+                Timber.d("%ld ms %d", System.currentTimeMillis() - begin, result);
+                return result;
             }
             return 0;
         } finally {
