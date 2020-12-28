@@ -49,7 +49,6 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
             }
         };
         db.getInvalidationTracker().addWeakObserver(mObserver);
-        Timber.d(mCountQuery.toString());
     }
 
     /**
@@ -62,7 +61,7 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
         try {
             if (cursor.moveToFirst()) {
                 int result = cursor.getInt(0);
-                Timber.d("%ld ms %d", System.currentTimeMillis() - begin, result);
+                Timber.d("%d ms %d", System.currentTimeMillis() - begin, result);
                 return result;
             }
             return 0;

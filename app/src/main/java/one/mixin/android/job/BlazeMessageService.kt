@@ -215,6 +215,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
         try {
             messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
+            Timber.d("Delete ack job")
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
@@ -237,6 +238,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val encoded = plainText.toByteArray().base64Encode()
             val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
             jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
+            Timber.d("DELETE job")
             jobDao.deleteList(jobs)
         }
     }
