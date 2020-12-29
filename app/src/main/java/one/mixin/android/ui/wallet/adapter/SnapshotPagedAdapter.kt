@@ -2,17 +2,17 @@ package one.mixin.android.ui.wallet.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.PagedListAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotItem.Companion.DIFF_CALLBACK
 import kotlin.math.abs
 
 class SnapshotPagedAdapter :
-    SafePagedListAdapter<SnapshotItem, SnapshotHolder>(DIFF_CALLBACK),
+    PagedListAdapter<SnapshotItem, SnapshotHolder>(DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
     var listener: OnSnapshotListener? = null

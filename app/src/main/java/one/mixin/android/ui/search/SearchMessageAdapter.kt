@@ -5,17 +5,17 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.widget.TextViewCompat
+import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchMessageBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.timeAgoDate
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import org.jetbrains.anko.dip
 
-class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, SearchMessageHolder>(SearchMessageDetailItem.DIFF_CALLBACK) {
+class SearchMessageAdapter : PagedListAdapter<SearchMessageDetailItem, SearchMessageHolder>(SearchMessageDetailItem.DIFF_CALLBACK) {
     var query: String = ""
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =

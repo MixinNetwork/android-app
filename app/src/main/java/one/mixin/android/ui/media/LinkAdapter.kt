@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import androidx.paging.PagedListAdapter
 import com.jakewharton.rxbinding3.view.clicks
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -15,13 +16,12 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.HyperlinkItem
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
-    SafePagedListAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
+    PagedListAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         LinkHolder(

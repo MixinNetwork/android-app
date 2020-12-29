@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.updateLayoutParams
+import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.shizhefei.view.largeimage.LargeImageView
 import one.mixin.android.Constants.BIG_IMAGE_SIZE
@@ -15,7 +16,6 @@ import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.CircleProgress
@@ -28,7 +28,7 @@ class MediaPagerAdapter(
     private val context: Context,
     private val onDismissListener: DismissFrameLayout.OnDismissListener,
     private val onMediaPagerAdapterListener: MediaPagerAdapterListener
-) : SafePagedListAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
+) : PagedListAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
 
     var initialPos: Int = 0
 

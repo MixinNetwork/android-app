@@ -6,7 +6,7 @@ import androidx.paging.PagedList
 import androidx.viewpager.widget.PagerAdapter
 import java.util.TreeMap
 
-abstract class PagedListPagerAdapter<T> : PagerAdapter() {
+abstract class PagedListPagerAdapter<T:Any> : PagerAdapter() {
     var pagedList: PagedList<T>? = null
         private set
     private var callback = PagerCallback()
