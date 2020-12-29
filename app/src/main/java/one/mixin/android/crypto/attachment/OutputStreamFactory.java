@@ -6,6 +6,7 @@ import java.io.OutputStream;
 
 public interface OutputStreamFactory {
 
-  public DigestingOutputStream createFor(OutputStream wrap) throws IOException;
+    DigestingOutputStream createFor(OutputStream wrap) throws IOException;
 
+    long getCipherTextLength(long plaintextLength);
 }
