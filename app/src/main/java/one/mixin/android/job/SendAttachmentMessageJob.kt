@@ -61,13 +61,11 @@ class SendAttachmentMessageJob(
             } else {
                 messageDao.insert(message)
             }
-        } else if (message.isData()) {
+        } else {
             val mId = messageDao.findMessageIdById(message.id)
             if (mId == null) {
                 messageDao.insert(message)
             }
-        } else {
-            messageDao.insert(message)
         }
     }
 

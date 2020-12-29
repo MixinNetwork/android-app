@@ -60,7 +60,10 @@ class ConvertVideoJob(
         )
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video
-        messageDao.insert(message)
+        val mId = messageDao.findMessageIdById(message.id)
+        if (mId == null) {
+            messageDao.insert(message)
+        }
     }
 
     override fun onRun() {
