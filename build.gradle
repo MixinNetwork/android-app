@@ -5,7 +5,7 @@ buildscript {
         ext.fragmentVersion = '1.3.0-rc01'
         ext.lifecycle_version = '2.3.0-rc01'
         ext.appcompatVersion = '1.2.0'
-        ext.pagingVersion = '3.0.0-alpha03'
+        ext.pagingVersion = '3.0.0-alpha11'
         ext.collectionx = '1.1.0'
         ext.roomVersion = '2.3.0-alpha04'
         ext.navigationVersion = '2.3.2'

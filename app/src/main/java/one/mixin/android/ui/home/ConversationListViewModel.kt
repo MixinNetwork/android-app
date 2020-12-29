@@ -1,12 +1,13 @@
 package one.mixin.android.ui.home
 
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
@@ -42,15 +43,10 @@ internal constructor(
     private val jobManager: MixinJobManager
 ) : ViewModel() {
 
-    fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
-        return LivePagedListBuilder(
-            messageRepository.conversations(circleId),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
-                .setPageSize(CONVERSATION_PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build()
-        ).build()
+    fun observeConversations(circleId: String?): Flow<PagingData<ConversationItem>> {
+        return Pager(PagingConfig(pageSize = CONVERSATION_PAGE_SIZE, enablePlaceholders = true)) {
+            messageRepository.conversations(circleId)
+        }.flow
     }
 
     fun createGroupConversation(conversationId: String) {

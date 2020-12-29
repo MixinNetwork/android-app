@@ -3,9 +3,9 @@ package one.mixin.android.repository
 import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
-import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.paging.PagingSource
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
@@ -82,10 +82,10 @@ internal constructor(
     @SuppressLint("RestrictedApi")
     fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, appDatabase)
 
-    fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
-        MessageProvider.getConversations(appDatabase)
+    fun conversations(circleId: String?): PagingSource<Int, ConversationItem> = if (circleId == null) {
+        conversationDao.conversationList()
     } else {
-        MessageProvider.observeConversationsByCircleId(circleId, appDatabase)
+        conversationDao.conversationListByCircleId(circleId)
     }
 
     suspend fun successConversationList(): List<ConversationItem> = conversationDao.successConversationList()

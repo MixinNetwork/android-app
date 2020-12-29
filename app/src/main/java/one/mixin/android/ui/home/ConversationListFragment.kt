@@ -15,7 +15,6 @@ import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -23,10 +22,8 @@ import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -34,6 +31,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
@@ -61,14 +59,11 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
-import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.LinkFragment
@@ -93,7 +88,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
-import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -164,18 +158,18 @@ class ConversationListFragment : LinkFragment() {
         navigationController = NavigationController(activity as MainActivity)
         val headerBinding =
             ItemListConversationHeaderBinding.inflate(layoutInflater, binding.messageRv, false)
-        messageAdapter.headerView = headerBinding.root.apply {
-            headerBinding.headerClose.setOnClickListener {
-                messageAdapter.setShowHeader(false, binding.messageRv)
-                requireContext().defaultSharedPreferences.putLong(
-                    PREF_NOTIFICATION_ON,
-                    System.currentTimeMillis()
-                )
-            }
-            headerBinding.headerSettings.setOnClickListener {
-                requireContext().openNotificationSetting()
-            }
-        }
+        // messageAdapter.headerView = headerBinding.root.apply {
+        //     headerBinding.headerClose.setOnClickListener {
+        //         messageAdapter.setShowHeader(false, binding.messageRv)
+        //         requireContext().defaultSharedPreferences.putLong(
+        //             PREF_NOTIFICATION_ON,
+        //             System.currentTimeMillis()
+        //         )
+        //     }
+        //     headerBinding.headerSettings.setOnClickListener {
+        //         requireContext().openNotificationSetting()
+        //     }
+        // }
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -340,35 +334,34 @@ class ConversationListFragment : LinkFragment() {
         _binding = null
     }
 
-    private val observer by lazy {
-        Observer<PagedList<ConversationItem>> { pagedList ->
-            messageAdapter.submitList(pagedList)
-            if (pagedList == null || pagedList.isEmpty()) {
-                if (circleId == null) {
-                    binding.emptyView.infoTv.setText(R.string.empty_info)
-                    binding.emptyView.startBn.setText(R.string.empty_start)
-                } else {
-                    binding.emptyView.infoTv.setText(R.string.circle_empty_info)
-                    binding.emptyView.startBn.setText(R.string.circle_empty_start)
-                }
-                binding.emptyView.root.isVisible = true
-            } else {
-                binding.emptyView.root.isVisible = false
-                pagedList
-                    .filter { item: ConversationItem? ->
-                        item?.isGroup() == true && (
-                            item.iconUrl() == null || !File(
-                                item.iconUrl() ?: ""
-                            ).exists()
-                            )
-                    }.forEach {
-                        jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
-                    }
-            }
-        }
-    }
+    // private val observer by lazy {
+    //     Observer<PagedList<ConversationItem>> { pagedList ->
+    //         messageAdapter.submitList(pagedList)
+    //         if (pagedList == null || pagedList.isEmpty()) {
+    //             if (circleId == null) {
+    //                 binding.emptyView.infoTv.setText(R.string.empty_info)
+    //                 binding.emptyView.startBn.setText(R.string.empty_start)
+    //             } else {
+    //                 binding.emptyView.infoTv.setText(R.string.circle_empty_info)
+    //                 binding.emptyView.startBn.setText(R.string.circle_empty_start)
+    //             }
+    //             binding.emptyView.root.isVisible = true
+    //         } else {
+    //             binding.emptyView.root.isVisible = false
+    //             pagedList
+    //                 .filter { item: ConversationItem? ->
+    //                     item?.isGroup() == true && (
+    //                         item.iconUrl() == null || !File(
+    //                             item.iconUrl() ?: ""
+    //                         ).exists()
+    //                         )
+    //                 }.forEach {
+    //                     jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
+    //                 }
+    //         }
+    //     }
+    // }
 
-    private var liveData: LiveData<PagedList<ConversationItem>>? = null
     var circleId: String? = null
         set(value) {
             if (field != value) {
@@ -379,11 +372,13 @@ class ConversationListFragment : LinkFragment() {
 
     private var scrollTop = false
     private fun selectCircle(circleId: String?) {
-        liveData?.removeObserver(observer)
-        val liveData = messagesViewModel.observeConversations(circleId)
-        liveData.observe(viewLifecycleOwner, observer)
+        // Todo
+        lifecycleScope.launch {
+            messagesViewModel.observeConversations(circleId).collectLatest {
+                messageAdapter.submitData(it)
+            }
+        }
         scrollTop = true
-        this.liveData = liveData
     }
 
     private fun animDownIcon(expand: Boolean) {
@@ -470,12 +465,12 @@ class ConversationListFragment : LinkFragment() {
         val notificationTime =
             requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
         if (System.currentTimeMillis() - notificationTime > INTERVAL_48_HOURS) {
-            messageAdapter.setShowHeader(
-                !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled(),
-                binding.messageRv
-            )
+            // messageAdapter.setShowHeader(
+            //     !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled(),
+            //     binding.messageRv
+            // )
         } else {
-            messageAdapter.setShowHeader(false, binding.messageRv)
+            // messageAdapter.setShowHeader(false, binding.messageRv)
         }
     }
 
@@ -577,23 +572,22 @@ class ConversationListFragment : LinkFragment() {
             }
     }
 
-    class MessageAdapter : PagedHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {
+    class MessageAdapter : PagingDataAdapter<ConversationItem, MessageHolder>(ConversationItem.DIFF_CALLBACK) {
+        var onItemListener: PagedHeaderAdapter.OnItemListener<ConversationItem>? = null
 
-        override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
-            MessageHolder(
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder {
+            return MessageHolder(
                 ItemListConversationBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
                     false
                 )
             )
+        }
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            if (holder is MessageHolder) {
-                val pos = getPos(position)
-                getItem(pos)?.let {
-                    holder.bind(onItemListener, it)
-                }
+        override fun onBindViewHolder(holder: MessageHolder, position: Int) {
+            getItem(position)?.let {
+                holder.bind(onItemListener, it)
             }
         }
     }
