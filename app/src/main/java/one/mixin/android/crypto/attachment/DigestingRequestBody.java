@@ -6,6 +6,7 @@ import okhttp3.RequestBody;
 import okio.BufferedSink;
 import org.whispersystems.libsignal.util.guava.Preconditions;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -47,7 +48,12 @@ public class DigestingRequestBody extends RequestBody {
 
   @Override
   public void writeTo(BufferedSink sink) throws IOException {
-    DigestingOutputStream outputStream = outputStreamFactory.createFor(new SkippingOutputStream(contentStart, sink.outputStream()));
+    FilterOutputStream outputStream;
+    if (outputStreamFactory == null) {
+      outputStream = new SkippingOutputStream(0, sink.outputStream());
+    } else {
+      outputStream = outputStreamFactory.createFor(new SkippingOutputStream(contentStart, sink.outputStream()));
+    }
     byte[]                buffer       = new byte[8192];
 
     int read;
@@ -67,7 +73,9 @@ public class DigestingRequestBody extends RequestBody {
     }
 
     outputStream.flush();
-    digest = outputStream.getTransmittedDigest();
+    if (outputStreamFactory != null) {
+      digest =  ((DigestingOutputStream) outputStream).getTransmittedDigest();
+    }
   }
 
   @Override

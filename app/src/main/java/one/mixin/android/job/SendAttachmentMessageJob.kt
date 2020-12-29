@@ -22,7 +22,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
-import one.mixin.android.vo.isData
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
