@@ -375,6 +375,7 @@ class ConversationListFragment : LinkFragment() {
         // Todo
         lifecycleScope.launch {
             messagesViewModel.observeConversations(circleId).collectLatest {
+                binding.emptyView.root.isVisible = false
                 messageAdapter.submitData(it)
             }
         }
