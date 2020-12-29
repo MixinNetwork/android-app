@@ -48,11 +48,9 @@ public class DigestingRequestBody extends RequestBody {
 
   @Override
   public void writeTo(BufferedSink sink) throws IOException {
-    FilterOutputStream outputStream;
-    if (outputStreamFactory == null) {
-      outputStream = new SkippingOutputStream(0, sink.outputStream());
-    } else {
-      outputStream = outputStreamFactory.createFor(new SkippingOutputStream(contentStart, sink.outputStream()));
+    FilterOutputStream outputStream = new SkippingOutputStream(contentStart, sink.outputStream());
+    if (outputStreamFactory != null) {
+      outputStream = outputStreamFactory.createFor(outputStream);
     }
     byte[]                buffer       = new byte[8192];
 
