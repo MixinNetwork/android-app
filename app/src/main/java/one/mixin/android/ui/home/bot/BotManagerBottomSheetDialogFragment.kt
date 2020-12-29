@@ -88,7 +88,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe {
-                safeDismiss()
+                dismissAllowingStateLoss()
             }
         RxBus.listen(BotEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -125,7 +125,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
 
     private fun initView() {
         binding.botClose.setOnClickListener {
-            safeDismiss()
+            dismiss()
         }
         binding.botDock.setOnDragListener(bottomListAdapter.dragInstance)
         binding.botRv.layoutManager = GridLayoutManager(requireContext(), 4)
@@ -212,15 +212,15 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                             .addToBackStack(null)
                             .commitAllowingStateLoss()
                     }
-                    safeDismiss()
+                    dismissAllowingStateLoss()
                 }
                 INTERNAL_CAMERA_ID -> {
                     openCamera(false)
-                    safeDismiss()
+                    dismissAllowingStateLoss()
                 }
                 INTERNAL_SCAN_ID -> {
                     openCamera(true)
-                    safeDismiss()
+                    dismissAllowingStateLoss()
                 }
             }
         }
@@ -237,24 +237,6 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                     context?.openPermissionSetting()
                 }
             }
-    }
-
-    private fun safeDismiss() {
-        if (isAdded) {
-            dialog?.dismiss()
-            // Prevent dialog slide animation end
-            dialog?.setOnDismissListener {
-                try {
-                    super.dismissAllowingStateLoss()
-                } catch (e: IllegalStateException) {
-                }
-            }
-        } else {
-            try {
-                super.dismissAllowingStateLoss()
-            } catch (e: IllegalStateException) {
-            }
-        }
     }
 
     private fun saveTopApps(apps: List<BotInterface>) {
