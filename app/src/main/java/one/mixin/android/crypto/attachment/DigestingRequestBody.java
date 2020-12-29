@@ -4,6 +4,7 @@ package one.mixin.android.crypto.attachment;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
+import org.whispersystems.libsignal.util.guava.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,7 @@ public class DigestingRequestBody extends RequestBody {
   private final long                contentLength;
   private final PushAttachmentData.ProgressListener progressListener;
   private final CancelationSignal   cancelationSignal;
-
+  private final long                contentStart;
 
   private byte[] digest;
 
@@ -24,15 +25,19 @@ public class DigestingRequestBody extends RequestBody {
                               OutputStreamFactory outputStreamFactory,
                               String contentType, long contentLength,
                               PushAttachmentData.ProgressListener listener,
-                              CancelationSignal cancelationSignal)
+                              CancelationSignal cancelationSignal,
+							  long contentStart)
   {
+    Preconditions.checkArgument(contentLength >= contentStart);
+    Preconditions.checkArgument(contentStart >= 0);
+
     this.inputStream         = inputStream;
     this.outputStreamFactory = outputStreamFactory;
     this.contentType         = contentType;
     this.contentLength       = contentLength;
     this.progressListener    = listener;
     this.cancelationSignal   = cancelationSignal;
-
+    this.contentStart        = contentStart;
   }
 
   @Override
@@ -42,7 +47,7 @@ public class DigestingRequestBody extends RequestBody {
 
   @Override
   public void writeTo(BufferedSink sink) throws IOException {
-    DigestingOutputStream outputStream = outputStreamFactory.createFor(sink.outputStream());
+    DigestingOutputStream outputStream = outputStreamFactory.createFor(new SkippingOutputStream(contentStart, sink.outputStream()));
     byte[]                buffer       = new byte[8192];
 
     int read;
@@ -67,7 +72,7 @@ public class DigestingRequestBody extends RequestBody {
 
   @Override
   public long contentLength() {
-    if (contentLength > 0) return contentLength;
+    if (contentLength > 0) return contentLength - contentStart;
     else                   return -1;
   }
 

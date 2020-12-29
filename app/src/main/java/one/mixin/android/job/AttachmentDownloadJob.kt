@@ -37,7 +37,6 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
-import org.whispersystems.libsignal.util.guava.Optional
 import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
@@ -165,7 +164,7 @@ class AttachmentDownloadJob(
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {
-                    AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
+                    AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
                 }
@@ -193,7 +192,7 @@ class AttachmentDownloadJob(
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_DATA")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_DATA.name) {
-                    AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
+                    AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
                 }
@@ -207,7 +206,7 @@ class AttachmentDownloadJob(
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_VIDEO")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_VIDEO.name) {
-                    AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
+                    AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
                 }
@@ -223,7 +222,7 @@ class AttachmentDownloadJob(
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_AUDIO")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_AUDIO.name) {
-                    AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
+                    AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
                 }
