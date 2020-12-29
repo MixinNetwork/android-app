@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.Util
+import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
@@ -202,6 +203,7 @@ class SendAttachmentMessageJob(
     }
 
     private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
-        return Util.uploadAttachment(url, attachment.data, attachment.dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
+        val dataSize = AttachmentCipherOutputStream.getCiphertextLength(attachment.dataSize)
+        return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }
 }
