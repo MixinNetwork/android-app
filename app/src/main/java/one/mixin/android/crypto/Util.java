@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import one.mixin.android.crypto.attachment.CancelationSignal;
+import one.mixin.android.crypto.attachment.DigestingRequestBody;
 import one.mixin.android.crypto.attachment.OutputStreamFactory;
 import one.mixin.android.crypto.attachment.PushAttachmentData;
 
@@ -90,7 +91,7 @@ public class Util {
 
     public static byte[] uploadAttachment(String url, InputStream data, long dataSize, OutputStreamFactory outputStreamFactory, PushAttachmentData.ProgressListener listener, CancelationSignal cancelationSignal) throws IOException {
         OkHttpClient client = new OkHttpClient.Builder().build();
-        DigestingRequestBody requestBody = new DigestingRequestBody(data, outputStreamFactory, "application/octet-stream", dataSize, listener, cancelationSignal);
+        DigestingRequestBody requestBody = new DigestingRequestBody(data, outputStreamFactory, "application/octet-stream", dataSize, listener, cancelationSignal, 0);
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("x-amz-acl", "public-read")

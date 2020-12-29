@@ -141,7 +141,7 @@ class SendAttachmentMessageJob(
                 if (isPlain()) {
                     null
                 } else {
-                    AttachmentCipherOutputStreamFactory(key)
+                    AttachmentCipherOutputStreamFactory(key, null)
                 }
             ) { total, progress ->
                 val pg = try {
@@ -202,7 +202,6 @@ class SendAttachmentMessageJob(
     }
 
     private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
-        val dataSize = attachment.outputStreamFactory.getCipherTextLength(attachment.dataSize)
-        return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
+        return Util.uploadAttachment(url, attachment.data, attachment.dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }
 }

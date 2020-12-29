@@ -203,7 +203,6 @@ import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
-import one.mixin.android.widget.DebugClickListener
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MixinHeadersDecoration
