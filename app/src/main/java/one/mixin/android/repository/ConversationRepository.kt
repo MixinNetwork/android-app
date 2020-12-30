@@ -31,6 +31,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.batchMarkReadAndTake
+import one.mixin.android.db.datasource.ConversationItemPagingSource
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.replaceQuotationMark
@@ -76,16 +77,17 @@ internal constructor(
     private val jobDao: JobDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
-    private val jobManager: MixinJobManager
+    private val jobManager: MixinJobManager,
+    private val conversationItemPagingSource: ConversationItemPagingSource
 ) {
 
     @SuppressLint("RestrictedApi")
     fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, appDatabase)
 
     fun conversations(circleId: String?): PagingSource<Int, ConversationItem> = if (circleId == null) {
-        conversationDao.conversationList()
+        conversationItemPagingSource
     } else {
-        conversationDao.conversationListByCircleId(circleId)
+        conversationItemPagingSource
     }
 
     suspend fun successConversationList(): List<ConversationItem> = conversationDao.successConversationList()

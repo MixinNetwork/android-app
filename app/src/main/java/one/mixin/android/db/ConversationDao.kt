@@ -53,6 +53,21 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun conversationList(): PagingSource<Int, ConversationItem>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """$PREFIX_CONVERSATION_ITEM
+        WHERE c.category IS NOT NULL 
+        ORDER BY c.pin_time DESC, 
+            CASE 
+                WHEN m.created_at is NULL THEN c.created_at
+                ELSE m.created_at 
+            END 
+            DESC
+        LIMIT :limit OFFSET :offset
+        """
+    )
+    suspend fun conversationList(offset: Int, limit: Int): List<ConversationItem>
+
     @Query(
         """SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
                 c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,

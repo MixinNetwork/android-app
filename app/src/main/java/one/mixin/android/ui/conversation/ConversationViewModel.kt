@@ -27,6 +27,7 @@ import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.db.datasource.ConversationItemPagingSource
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getFilePath
