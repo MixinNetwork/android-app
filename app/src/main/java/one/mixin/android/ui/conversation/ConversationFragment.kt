@@ -1460,8 +1460,33 @@ class ConversationFragment() :
             }
         )
         debugLongClick(binding.actionBar.titleContainer) {
-            requireContext().getClipboardManager()
-                .setPrimaryClip(ClipData.newPlainText(null, conversationId))
+            val logFile = FileLogTree.getLogFile()
+            if (logFile == null || logFile.length() <= 0) {
+                toast(R.string.error_file_exists)
+                return@debugLongClick
+            }
+            val attachment = Attachment(logFile.toUri(), logFile.name, "text/plain", logFile.length())
+            alertDialogBuilder()
+                .setMessage(
+                    if (isGroup) {
+                        requireContext().getString(
+                            R.string.send_file_group,
+                            attachment.filename,
+                            groupName
+                        )
+                    } else {
+                        requireContext().getString(
+                            R.string.send_file,
+                            attachment.filename,
+                            recipient?.fullName
+                        )
+                    }
+                )
+                .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                .setPositiveButton(R.string.send) { dialog, _ ->
+                    sendAttachmentMessage(attachment)
+                    dialog.dismiss()
+                }.show()
         }
         bindData()
     }
