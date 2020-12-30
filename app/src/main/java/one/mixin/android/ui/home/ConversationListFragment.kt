@@ -104,8 +104,8 @@ class ConversationListFragment : LinkFragment() {
 
     private val messagesViewModel by viewModels<ConversationListViewModel>()
 
-    private val messageAdapter by lazy {
-        MessageAdapter().apply {
+    private val conversationAdapter by lazy {
+        ConversationAdapter().apply {
             registerAdapterDataObserver(messageAdapterDataObserver)
         }
     }
@@ -170,7 +170,7 @@ class ConversationListFragment : LinkFragment() {
         //         requireContext().openNotificationSetting()
         //     }
         // }
-        binding.messageRv.adapter = messageAdapter
+        binding.messageRv.adapter = conversationAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
         binding.messageRv.addOnScrollListener(
@@ -227,7 +227,8 @@ class ConversationListFragment : LinkFragment() {
                 }
                 val topFl = _binding?.topFl
 
-                val open = (fling == FLING_DOWN && shouldVibrate) || topFl?.height ?: 0 >= vibrateDis
+                val open =
+                    (fling == FLING_DOWN && shouldVibrate) || topFl?.height ?: 0 >= vibrateDis
                 if (open) {
                     (requireActivity() as MainActivity).openSearch()
                 } else {
@@ -252,7 +253,7 @@ class ConversationListFragment : LinkFragment() {
                 .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
         }
 
-        messageAdapter.onItemListener =
+        conversationAdapter.onItemListener =
             object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
                 override fun onNormalLongClick(item: ConversationItem): Boolean {
                     showBottomSheet(item)
@@ -328,7 +329,7 @@ class ConversationListFragment : LinkFragment() {
 
     override fun onDestroyView() {
         if (isAdded) {
-            messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
+            conversationAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
         }
         super.onDestroyView()
         _binding = null
@@ -376,7 +377,7 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             messagesViewModel.observeConversations(circleId).collectLatest {
                 binding.emptyView.root.isVisible = false
-                messageAdapter.submitData(it)
+                conversationAdapter.submitData(it)
             }
         }
         scrollTop = true
@@ -401,7 +402,15 @@ class ConversationListFragment : LinkFragment() {
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
         val builder = BottomSheet.Builder(requireActivity())
-        val viewBinding = ViewConversationBottomBinding.inflate(LayoutInflater.from(ContextThemeWrapper(requireActivity(), R.style.Custom)), null, false)
+        val viewBinding = ViewConversationBottomBinding.inflate(
+            LayoutInflater.from(
+                ContextThemeWrapper(
+                    requireActivity(),
+                    R.style.Custom
+                )
+            ),
+            null, false
+        )
         builder.setCustomView(viewBinding.root)
         viewBinding.muteTv.setText(
             if (isMute) {
@@ -430,7 +439,7 @@ class ConversationListFragment : LinkFragment() {
                     val lm = binding.messageRv.layoutManager as LinearLayoutManager
                     val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
                     val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
-                    if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
+                    if (lastCompleteVisibleItem - firstCompleteVisibleItem <= conversationAdapter.itemCount &&
                         lm.findFirstVisibleItemPosition() == 0
                     ) {
                         binding.shadowFl.animate().translationY(0f).duration = 200
@@ -573,11 +582,12 @@ class ConversationListFragment : LinkFragment() {
             }
     }
 
-    class MessageAdapter : PagingDataAdapter<ConversationItem, MessageHolder>(ConversationItem.DIFF_CALLBACK) {
+    class ConversationAdapter :
+        PagingDataAdapter<ConversationItem, ConversationHolder>(ConversationItem.DIFF_CALLBACK) {
         var onItemListener: PagedHeaderAdapter.OnItemListener<ConversationItem>? = null
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder {
-            return MessageHolder(
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationHolder {
+            return ConversationHolder(
                 ItemListConversationBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
@@ -586,14 +596,14 @@ class ConversationListFragment : LinkFragment() {
             )
         }
 
-        override fun onBindViewHolder(holder: MessageHolder, position: Int) {
+        override fun onBindViewHolder(holder: ConversationHolder, position: Int) {
             getItem(position)?.let {
                 holder.bind(onItemListener, it)
             }
         }
     }
 
-    class MessageHolder constructor(val binding: ItemListConversationBinding) :
+    class ConversationHolder constructor(val binding: ItemListConversationBinding) :
         NormalHolder(binding.root) {
         var context: Context = itemView.context
         private fun getText(id: Int) = context.getText(id).toString()
