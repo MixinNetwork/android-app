@@ -40,7 +40,7 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
         mSourceQuery = query;
         mInTransaction = inTransaction;
         mCountQuery = countQuery;
-        mLimitOffsetQuery = "SELECT * FROM ( " + mSourceQuery.getSql() + " ) LIMIT ? OFFSET ?";
+        mLimitOffsetQuery = mSourceQuery.getSql() + " LIMIT ? OFFSET ?";
         mObserver = new InvalidationTracker.Observer(tables) {
             @Override
             public void onInvalidated(@NonNull Set<String> tables) {
