@@ -96,9 +96,10 @@ interface ConversationDao : BaseDao<Conversation> {
                     ELSE m.created_at 
                 END 
                 DESC
+                LIMIT :limit OFFSET :offset
         """
     )
-    fun conversationListByCircleId(circleId: String): PagingSource<Int, ConversationItem>
+    fun conversationListByCircleId(circleId: String, offset: Int, limit: Int): List<ConversationItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(

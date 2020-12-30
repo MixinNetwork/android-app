@@ -78,17 +78,13 @@ internal constructor(
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager,
-    private val conversationItemPagingSource: ConversationItemPagingSource
 ) {
 
     @SuppressLint("RestrictedApi")
     fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, appDatabase)
 
-    fun conversations(circleId: String?): PagingSource<Int, ConversationItem> = if (circleId == null) {
-        conversationItemPagingSource
-    } else {
-        conversationItemPagingSource
-    }
+    fun conversations(circleId: String?): PagingSource<Int, ConversationItem> =
+        ConversationItemPagingSource(conversationDao, appDatabase, circleId)
 
     suspend fun successConversationList(): List<ConversationItem> = conversationDao.successConversationList()
 
