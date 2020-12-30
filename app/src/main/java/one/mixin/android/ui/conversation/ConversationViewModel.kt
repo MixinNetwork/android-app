@@ -112,12 +112,10 @@ internal constructor(
             conversationRepository.getMessages(id),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
+                .setInitialLoadSizeHint(PAGE_SIZE * 3)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .build()
-        )
-            .setInitialLoadKey(initialLoadKey)
-            .build()
+                .build()).setInitialLoadKey(initialLoadKey).build()
     }
 
     suspend fun indexUnread(conversationId: String) =

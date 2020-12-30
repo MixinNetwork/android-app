@@ -7,7 +7,7 @@ import androidx.paging.PositionalDataSource
 import androidx.room.InvalidationTracker
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import androidx.sqlite.db.SupportSQLiteQuery
+import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
@@ -19,27 +19,19 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
     private val mLimitOffsetQuery: String = mSourceQuery.sql + " LIMIT ? OFFSET ?"
     private val mObserver: InvalidationTracker.Observer
 
-    protected constructor(
-        db: RoomDatabase, query: SupportSQLiteQuery?,
-        countQuery: RoomSQLiteQuery?,
-        inTransaction: Boolean, vararg tables: String?
-    ) : this(
-        db,
-        RoomSQLiteQuery.copyFrom(query),
-        RoomSQLiteQuery.copyFrom(countQuery),
-        inTransaction,
-        *tables
-    ) {
-    }
-
     /**
      * Count number of rows query can return
      */
     fun countItems(): Int {
+        Timber.d("@@@3 ${System.currentTimeMillis()}")
         val cursor = mDb.query(mCountQuery)
         return try {
             if (cursor.moveToFirst()) {
-                cursor.getInt(0)
+                Timber.d("@@@4 ${System.currentTimeMillis()}")
+                Thread.sleep(1000)
+                cursor.getInt(0).apply {
+                    Timber.d("@@@5 ${System.currentTimeMillis()}")
+                }
             } else 0
         } finally {
             cursor.close()
@@ -62,7 +54,7 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
         val firstLoadPosition = computeInitialLoadPosition(params, totalCount)
         val firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount)
         val list = loadRange(firstLoadPosition, firstLoadSize)
-        if (list != null && list.size == firstLoadSize) {
+        if (list.size == firstLoadSize) {
             callback.onResult(list, firstLoadPosition, totalCount)
         } else {
             // null list, or size doesn't match request - DB modified between count and load
@@ -75,17 +67,13 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
         callback: LoadRangeCallback<T>
     ) {
         val list = loadRange(params.startPosition, params.loadSize)
-        if (list != null) {
-            callback.onResult(list)
-        } else {
-            invalidate()
-        }
+        callback.onResult(list)
     }
 
     /**
      * Return the rows from startPos to startPos + loadCount
      */
-    fun loadRange(startPosition: Int, loadCount: Int): List<T>? {
+    fun loadRange(startPosition: Int, loadCount: Int): List<T> {
         val sqLiteQuery = RoomSQLiteQuery.acquire(
             mLimitOffsetQuery,
             mSourceQuery.argCount + 2

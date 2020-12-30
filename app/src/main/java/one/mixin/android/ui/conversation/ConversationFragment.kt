@@ -1581,10 +1581,12 @@ class ConversationFragment() :
 
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
+        Timber.d("@@@ ${System.currentTimeMillis()}")
         chatViewModel.getMessages(conversationId, unreadCount)
             .observe(
                 viewLifecycleOwner,
                 { list ->
+                    Timber.d("@@@1 ${System.currentTimeMillis()}")
                     if (oldCount == -1) {
                         oldCount = list.size
                     } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
