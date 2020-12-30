@@ -51,6 +51,10 @@ interface MessageDao : BaseDao<Message> {
     @Query("$PREFIX_MESSAGE_ITEM ORDER BY m.created_at DESC")
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
+
+    @Query("$PREFIX_MESSAGE_ITEM ORDER BY m.created_at DESC LIMIT :limit OFFSET :offset")
+    suspend fun messages(conversationId: String, limit: Int, offset: Int): List<MessageItem>
+
     @Query(
         """SELECT count(*) FROM messages WHERE conversation_id = :conversationId
             AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)"""

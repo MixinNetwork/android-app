@@ -32,6 +32,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.datasource.ConversationItemPagingSource
+import one.mixin.android.db.datasource.MessageItemPagingSource
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.replaceQuotationMark
@@ -81,7 +82,8 @@ internal constructor(
 ) {
 
     @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, appDatabase)
+    fun getMessages(conversationId: String): PagingSource<Int, MessageItem> =
+        MessageItemPagingSource(conversationId, messageDao, appDatabase)
 
     fun conversations(circleId: String?): PagingSource<Int, ConversationItem> =
         ConversationItemPagingSource(conversationDao, appDatabase, circleId)

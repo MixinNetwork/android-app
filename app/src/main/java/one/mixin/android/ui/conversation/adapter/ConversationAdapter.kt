@@ -6,16 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.paging.PagedList
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.ScopeProvider
-import com.uber.autodispose.autoDispose
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.databinding.ItemChatAudioBinding
@@ -46,7 +42,6 @@ import one.mixin.android.databinding.ItemChatUnreadBinding
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.databinding.ItemChatWaitingBinding
-import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
@@ -94,8 +89,6 @@ import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isGroupCall
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
-import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 class ConversationAdapter(
@@ -105,7 +98,7 @@ class ConversationAdapter(
     private val isGroup: Boolean,
     private val isSecret: Boolean = true,
     private val isBot: Boolean = false
-) : PagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
+) : PagingDataAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
     var unreadMsgId: String? = null
@@ -140,28 +133,21 @@ class ConversationAdapter(
         pagingList?.loadAround(index)
     }
 
-    override fun submitList(pagedList: PagedList<MessageItem>?) {
-        if (pagedList == null) {
-            super.submitList(null)
-        } else {
-            publisher.onNext(pagedList)
-        }
-        this.pagingList = pagedList
-    }
+
 
     fun listen(scopeProvider: ScopeProvider) {
-        publisher.throttleLast(120, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(AndroidSchedulers.mainThread())
-            .autoDispose(scopeProvider)
-            .subscribe(
-                {
-                    super.submitList(it)
-                },
-                {
-                    Timber.e(it)
-                }
-            )
+        // publisher.throttleLast(120, TimeUnit.MILLISECONDS)
+        //     .observeOn(AndroidSchedulers.mainThread())
+        //     .subscribeOn(AndroidSchedulers.mainThread())
+        //     .autoDispose(scopeProvider)
+        //     .subscribe(
+        //         {
+        //             super.submitList(it)
+        //         },
+        //         {
+        //             Timber.e(it)
+        //         }
+        //     )
     }
 
     override fun onCreateAttach(parent: ViewGroup): View =
@@ -553,92 +539,96 @@ class ConversationAdapter(
         }
     }
 
-    override fun onCurrentListChanged(
-        previousList: PagedList<MessageItem>?,
-        currentList: PagedList<MessageItem>?
-    ) {
-        super.onCurrentListChanged(previousList, currentList)
-        if (currentList != null && previousList != null && previousList.size != 0) {
-            val changeCount = currentList.size - previousList.size
-            when {
-                abs(changeCount) >= PAGE_SIZE -> notifyDataSetChanged()
-                changeCount > 0 ->
-                    for (i in 1 until changeCount + 1)
-                        getItem(i)?.let {
-                            RxBus.publish(BlinkEvent(it.messageId, isLast(i)))
-                        }
-                changeCount < 0 -> notifyDataSetChanged()
-            }
-        }
-    }
+    // override fun onCurrentListChanged(
+    //     previousList: PagedList<MessageItem>?,
+    //     currentList: PagedList<MessageItem>?
+    // ) {
+    //     super.onCurrentListChanged(previousList, currentList)
+    //     if (currentList != null && previousList != null && previousList.size != 0) {
+    //         val changeCount = currentList.size - previousList.size
+    //         when {
+    //             abs(changeCount) >= PAGE_SIZE -> notifyDataSetChanged()
+    //             changeCount > 0 ->
+    //                 for (i in 1 until changeCount + 1)
+    //                     getItem(i)?.let {
+    //                         RxBus.publish(BlinkEvent(it.messageId, isLast(i)))
+    //                     }
+    //             changeCount < 0 -> notifyDataSetChanged()
+    //         }
+    //     }
+    // }
 
-    override fun getItemCount(): Int {
-        return super.getItemCount() + if (hasBottomView && isSecret) {
-            2
-        } else if (hasBottomView || isSecret) {
-            1
-        } else {
-            0
-        }
+    // override fun getItemCount(): Int {
+    //     return super.getItemCount() + if (hasBottomView && isSecret) {
+    //         2
+    //     } else if (hasBottomView || isSecret) {
+    //         1
+    //     } else {
+    //         0
+    //     }
+    // }
+
+    fun getMsgItem(position: Int): MessageItem? {
+        return super.getItem(position)
     }
 
     fun getRealItemCount(): Int {
         return super.getItemCount()
     }
 
-    public override fun getItem(position: Int): MessageItem? {
-        return if (position > itemCount - 1) {
-            null
-        } else if (isSecret && hasBottomView) {
-            when (position) {
-                0 -> create(
-                    MessageCategory.STRANGER.name,
-                    if (super.getItemCount() > 0) {
-                        super.getItem(0)?.createdAt
-                    } else {
-                        null
-                    }
-                )
-                itemCount - 1 -> create(
-                    MessageCategory.SECRET.name,
-                    if (super.getItemCount() > 0) {
-                        super.getItem(super.getItemCount() - 1)?.createdAt
-                    } else {
-                        null
-                    }
-                )
-                else -> super.getItem(position - 1)
-            }
-        } else if (isSecret) {
-            if (position == itemCount - 1) {
-                create(
-                    MessageCategory.SECRET.name,
-                    if (super.getItemCount() > 0) {
-                        super.getItem(super.getItemCount() - 1)?.createdAt
-                    } else {
-                        null
-                    }
-                )
-            } else {
-                super.getItem(position)
-            }
-        } else if (hasBottomView) {
-            if (position == 0) {
-                create(
-                    MessageCategory.STRANGER.name,
-                    if (super.getItemCount() > 0) {
-                        super.getItem(0)?.createdAt
-                    } else {
-                        null
-                    }
-                )
-            } else {
-                super.getItem(position - 1)
-            }
-        } else {
-            super.getItem(position)
-        }
-    }
+    // fun getMsgItem(position: Int): MessageItem? {
+    //     return if (position > itemCount - 1) {
+    //         null
+    //     } else if (isSecret && hasBottomView) {
+    //         when (position) {
+    //             0 -> create(
+    //                 MessageCategory.STRANGER.name,
+    //                 if (super.getItemCount() > 0) {
+    //                     super.getItem(0)?.createdAt
+    //                 } else {
+    //                     null
+    //                 }
+    //             )
+    //             itemCount - 1 -> create(
+    //                 MessageCategory.SECRET.name,
+    //                 if (super.getItemCount() > 0) {
+    //                     super.getItem(super.getItemCount() - 1)?.createdAt
+    //                 } else {
+    //                     null
+    //                 }
+    //             )
+    //             else -> super.getItem(position - 1)
+    //         }
+    //     } else if (isSecret) {
+    //         if (position == itemCount - 1) {
+    //             create(
+    //                 MessageCategory.SECRET.name,
+    //                 if (super.getItemCount() > 0) {
+    //                     super.getItem(super.getItemCount() - 1)?.createdAt
+    //                 } else {
+    //                     null
+    //                 }
+    //             )
+    //         } else {
+    //             super.getItem(position)
+    //         }
+    //     } else if (hasBottomView) {
+    //         if (position == 0) {
+    //             create(
+    //                 MessageCategory.STRANGER.name,
+    //                 if (super.getItemCount() > 0) {
+    //                     super.getItem(0)?.createdAt
+    //                 } else {
+    //                     null
+    //                 }
+    //             )
+    //         } else {
+    //             super.getItem(position - 1)
+    //         }
+    //     } else {
+    //         super.getItem(position)
+    //     }
+    // }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,

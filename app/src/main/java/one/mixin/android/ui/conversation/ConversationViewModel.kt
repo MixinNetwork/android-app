@@ -14,11 +14,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.liveData
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -58,6 +64,7 @@ import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -108,17 +115,16 @@ internal constructor(
     private val messenger: SendMessageHelper
 ) : ViewModel() {
 
-    fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
-        return LivePagedListBuilder(
-            conversationRepository.getMessages(id),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build()
-        )
-            .setInitialLoadKey(initialLoadKey)
-            .build()
+    fun getMessages(id: String, initialLoadKey: Int = 0): Flow<PagingData<MessageItem>> {
+        return Pager(
+            PagingConfig(
+                pageSize = Constants.CONVERSATION_PAGE_SIZE,
+                enablePlaceholders = true,
+                initialLoadSize = initialLoadKey
+            )
+        ) {
+            conversationRepository.getMessages(id)
+        }.flow
     }
 
     suspend fun indexUnread(conversationId: String) =
@@ -162,7 +168,13 @@ internal constructor(
         messenger.sendReplyTextMessage(conversationId, sender, content, replyMessage, isPlain)
     }
 
-    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean, replyMessage: MessageItem? = null) {
+    fun sendAttachmentMessage(
+        conversationId: String,
+        sender: User,
+        attachment: Attachment,
+        isPlain: Boolean,
+        replyMessage: MessageItem? = null
+    ) {
         messenger.sendAttachmentMessage(conversationId, sender, attachment, isPlain, replyMessage)
     }
 
@@ -176,7 +188,16 @@ internal constructor(
         isPlain: Boolean,
         replyMessage: MessageItem? = null
     ) {
-        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage)
+        messenger.sendAudioMessage(
+            conversationId,
+            messageId,
+            sender,
+            file,
+            duration,
+            waveForm,
+            isPlain,
+            replyMessage
+        )
     }
 
     fun sendAudioMessage(
@@ -190,7 +211,16 @@ internal constructor(
         val file = File(audioMessagePayload.url)
         val duration = audioMessagePayload.duration
         val waveForm = audioMessagePayload.waveForm
-        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage)
+        messenger.sendAudioMessage(
+            conversationId,
+            messageId,
+            sender,
+            file,
+            duration,
+            waveForm,
+            isPlain,
+            replyMessage
+        )
     }
 
     fun sendStickerMessage(
@@ -202,10 +232,23 @@ internal constructor(
         messenger.sendStickerMessage(conversationId, sender, transferStickerData, isPlain)
     }
 
-    fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean, replyMessage: MessageItem? = null) {
+    fun sendContactMessage(
+        conversationId: String,
+        sender: User,
+        shareUserId: String,
+        isPlain: Boolean,
+        replyMessage: MessageItem? = null
+    ) {
         viewModelScope.launch {
             val user = userRepository.suspendFindUserById(shareUserId)
-            messenger.sendContactMessage(conversationId, sender, shareUserId, user?.fullName, isPlain, replyMessage)
+            messenger.sendContactMessage(
+                conversationId,
+                sender,
+                shareUserId,
+                user?.fullName,
+                isPlain,
+                replyMessage
+            )
         }
     }
 
@@ -218,7 +261,15 @@ internal constructor(
         createdAt: String? = null,
         replyMessage: MessageItem? = null
     ) {
-        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage)
+        messenger.sendVideoMessage(
+            conversationId,
+            senderId,
+            uri,
+            isPlain,
+            messageId,
+            createdAt,
+            replyMessage
+        )
     }
 
     fun sendVideoMessage(
@@ -231,7 +282,15 @@ internal constructor(
         val uri = videoMessagePayload.url.toUri()
         val messageId = videoMessagePayload.messageId
         val createdAt = videoMessagePayload.createdAt
-        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage)
+        messenger.sendVideoMessage(
+            conversationId,
+            senderId,
+            uri,
+            isPlain,
+            messageId,
+            createdAt,
+            replyMessage
+        )
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -257,7 +316,12 @@ internal constructor(
         messenger.sendGiphyMessage(conversationId, senderId, image, isPlain, previewUrl)
     }
 
-    fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, isPlain: Boolean) {
+    fun sendLocationMessage(
+        conversationId: String,
+        senderId: String,
+        location: LocationPayload,
+        isPlain: Boolean
+    ) {
         messenger.sendLocationMessage(conversationId, senderId, location, isPlain)
     }
 
@@ -366,7 +430,8 @@ internal constructor(
         GlobalScope.launch(SINGLE_DB_THREAD) {
             notificationManager.cancel(conversationId.hashCode())
             while (true) {
-                val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)
+                val list =
+                    conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)
                 if (list.isEmpty()) return@launch
                 conversationRepository.batchMarkReadAndTake(
                     conversationId,
@@ -566,7 +631,8 @@ internal constructor(
     suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {
         return withContext(Dispatchers.IO) {
             val list = ArrayList<ForwardMessage>()
-            val sortMessages = conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
+            val sortMessages =
+                conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
             for (m in sortMessages) {
                 val forwardMessage: ForwardMessage? = when {
                     m.category.endsWith("_TEXT") ->
@@ -599,7 +665,10 @@ internal constructor(
                             m.mediaMimeType,
                             m.mediaSize
                         )
-                        ForwardMessage(ForwardCategory.Data, GsonHelper.customGson.toJson(dataMessagePayload))
+                        ForwardMessage(
+                            ForwardCategory.Data,
+                            GsonHelper.customGson.toJson(dataMessagePayload)
+                        )
                     }
                     m.category.endsWith("_VIDEO") -> {
                         if (m.mediaUrl == null || !m.mediaUrl.fileExists()) {
@@ -610,19 +679,28 @@ internal constructor(
                             UUID.randomUUID().toString(),
                             nowInUtc()
                         )
-                        ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData))
+                        ForwardMessage(
+                            ForwardCategory.Video,
+                            GsonHelper.customGson.toJson(videoData)
+                        )
                     }
                     m.category.endsWith("_CONTACT") -> {
                         val shareUserId = m.sharedUserId ?: continue
                         val contactData = ContactMessagePayload(shareUserId)
-                        ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData))
+                        ForwardMessage(
+                            ShareCategory.Contact,
+                            GsonHelper.customGson.toJson(contactData)
+                        )
                     }
                     m.category.endsWith("_STICKER") -> {
                         val stickerData = StickerMessagePayload(
                             name = m.name,
                             stickerId = m.stickerId
                         )
-                        ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData))
+                        ForwardMessage(
+                            ForwardCategory.Sticker,
+                            GsonHelper.customGson.toJson(stickerData)
+                        )
                     }
                     m.category.endsWith("_AUDIO") -> {
                         val url = m.mediaUrl?.getFilePath() ?: continue
@@ -637,7 +715,10 @@ internal constructor(
                             duration,
                             waveForm
                         )
-                        ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData))
+                        ForwardMessage(
+                            ForwardCategory.Audio,
+                            GsonHelper.customGson.toJson(audioData)
+                        )
                     }
                     m.category.endsWith("_LIVE") -> {
                         if (m.mediaWidth == null ||
@@ -666,7 +747,10 @@ internal constructor(
                     m.category.endsWith("_LOCATION") ->
                         m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
-                                ForwardMessage(ForwardCategory.Location, GsonHelper.customGson.toJson(toLocationData(c)))
+                                ForwardMessage(
+                                    ForwardCategory.Location,
+                                    GsonHelper.customGson.toJson(toLocationData(c))
+                                )
                             },
                             { null }
                         )
@@ -685,7 +769,8 @@ internal constructor(
         }
     }
 
-    suspend fun getAnnouncementByConversationId(conversationId: String) = conversationRepository.getAnnouncementByConversationId(conversationId)
+    suspend fun getAnnouncementByConversationId(conversationId: String) =
+        conversationRepository.getAnnouncementByConversationId(conversationId)
 
     private val searchControlledRunner = ControlledRunner<List<User>>()
 
@@ -701,9 +786,11 @@ internal constructor(
         }
     }
 
-    suspend fun findUserByIdentityNumberSuspend(identityNumber: String) = userRepository.findUserByIdentityNumberSuspend(identityNumber)
+    suspend fun findUserByIdentityNumberSuspend(identityNumber: String) =
+        userRepository.findUserByIdentityNumberSuspend(identityNumber)
 
-    fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
+    fun getUnreadMentionMessageByConversationId(conversationId: String) =
+        conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
 
     suspend fun markMentionRead(messageId: String, conversationId: String) {
         conversationRepository.markMentionRead(messageId, conversationId)
@@ -712,7 +799,13 @@ internal constructor(
     suspend fun conversationZeroClear(conversationId: String) =
         conversationRepository.conversationZeroClear(conversationId)
 
-    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
+    suspend fun findLatestTrace(
+        opponentId: String?,
+        destination: String?,
+        tag: String?,
+        amount: String,
+        assetId: String
+    ) =
         assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 
     suspend fun checkData(selectItem: SelectItem, callback: suspend (String, Boolean) -> Unit) {
@@ -725,19 +818,22 @@ internal constructor(
                             callback(conversation.conversationId, false)
                         }
                     } else {
-                        userRepository.findContactByConversationId(selectItem.conversationId)?.let { user ->
-                            withContext(Dispatchers.Main) {
-                                callback(conversation.conversationId, user.isBot())
+                        userRepository.findContactByConversationId(selectItem.conversationId)
+                            ?.let { user ->
+                                withContext(Dispatchers.Main) {
+                                    callback(conversation.conversationId, user.isBot())
+                                }
                             }
-                        }
                     }
                 }
             } else if (selectItem.userId != null) {
                 userRepository.getUserById(selectItem.userId)?.let { user ->
-                    val conversation = conversationRepository.findContactConversationByOwnerId(user.userId)
+                    val conversation =
+                        conversationRepository.findContactConversationByOwnerId(user.userId)
                     if (conversation == null) {
                         val createdAt = nowInUtc()
-                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
+                        val conversationId =
+                            generateConversationId(Session.getAccountId()!!, user.userId)
                         val participants = arrayListOf(
                             Participant(conversationId, Session.getAccountId()!!, "", createdAt),
                             Participant(conversationId, user.userId, "", createdAt)
