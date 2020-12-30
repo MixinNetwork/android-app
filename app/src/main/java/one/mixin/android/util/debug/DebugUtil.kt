@@ -7,11 +7,17 @@ import timber.log.Timber
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-fun debugLongClick(view: View, action: () -> Unit) {
+fun debugLongClick(view: View, debugAction: () -> Unit, releaseAction: (() -> Unit)? = null) {
     if (BuildConfig.DEBUG) {
         view.setOnLongClickListener {
             view.context.tapVibrate()
-            action.invoke()
+            debugAction.invoke()
+            true
+        }
+    } else {
+        view.setOnLongClickListener {
+            view.context.tapVibrate()
+            releaseAction?.invoke()
             true
         }
     }
