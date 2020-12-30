@@ -241,7 +241,8 @@ class MessageProvider {
                     val countSql = "SELECT COUNT(*) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE category IS NOT NULL"
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
                     return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "conversations", "users", "messages", "snapshots") {
-                        override fun convertRows(cursor: Cursor): List<ConversationItem> {
+                        override fun convertRows(cursor: Cursor?): List<ConversationItem> {
+                            cursor ?: return ArrayList()
                             val cursorIndexOfConversationId = CursorUtil.getColumnIndexOrThrow(cursor, "conversationId")
                             val cursorIndexOfGroupIconUrl = CursorUtil.getColumnIndexOrThrow(cursor, "groupIconUrl")
                             val cursorIndexOfCategory = CursorUtil.getColumnIndexOrThrow(cursor, "category")
@@ -368,7 +369,8 @@ class MessageProvider {
                     """
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
                     return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "circle_conversations", "conversations", "circles", "users", "messages", "snapshots") {
-                        override fun convertRows(cursor: Cursor): List<ConversationItem> {
+                        override fun convertRows(cursor: Cursor?): List<ConversationItem> {
+                            cursor ?: return ArrayList()
                             val cursorIndexOfConversationId = CursorUtil.getColumnIndexOrThrow(cursor, "conversationId")
                             val cursorIndexOfGroupIconUrl = CursorUtil.getColumnIndexOrThrow(cursor, "groupIconUrl")
                             val cursorIndexOfCategory = CursorUtil.getColumnIndexOrThrow(cursor, "category")
@@ -492,7 +494,8 @@ class MessageProvider {
                         countStatement.bindString(argIndex, conversationId)
                     }
                     return object : MixinLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
-                        override fun convertRows(cursor: Cursor): MutableList<SearchMessageDetailItem> {
+                        override fun convertRows(cursor: Cursor?): MutableList<SearchMessageDetailItem> {
+                            cursor ?: return ArrayList()
                             val cursorIndexOfMessageId = CursorUtil.getColumnIndexOrThrow(cursor, "messageId")
                             val cursorIndexOfUserId = CursorUtil.getColumnIndexOrThrow(cursor, "userId")
                             val cursorIndexOfUserAvatarUrl = CursorUtil.getColumnIndexOrThrow(cursor, "userAvatarUrl")
