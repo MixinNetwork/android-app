@@ -8,7 +8,6 @@ import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.MarkwonVisitor
 import io.noties.markwon.core.CoreProps
-import io.noties.markwon.core.spans.CodeSpan
 import io.noties.markwon.core.spans.EmphasisSpan
 import io.noties.markwon.core.spans.OrderedListItemSpan
 import io.noties.markwon.core.spans.StrongEmphasisSpan
@@ -91,7 +90,11 @@ class SimplePlugin : AbstractMarkwonPlugin() {
             .setFactory(StrongEmphasis::class.java) { _, _ -> StrongEmphasisSpan() }
             .setFactory(Emphasis::class.java) { _, _ -> EmphasisSpan() }
             .setFactory(Strikethrough::class.java) { _, _ -> StrikethroughSpan() }
-            .setFactory(Code::class.java) { configuration, _ -> CodeSpan(configuration.theme()) }
+            .setFactory(Code::class.java) { configuration, _ ->
+                RoundedBackgroundSpan(
+                    configuration.theme()
+                )
+            }
     }
 
     override fun beforeSetText(textView: TextView, markdown: Spanned) {
