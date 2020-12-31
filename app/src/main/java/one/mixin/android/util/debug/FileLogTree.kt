@@ -1,6 +1,8 @@
 package one.mixin.android.util.debug
+
 import android.util.Log
 import one.mixin.android.MixinApplication
+import one.mixin.android.extension.copy
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -17,9 +19,13 @@ class FileLogTree : Timber.Tree() {
                 if (!directory.exists())
                     directory.mkdirs()
 
-                val file = File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
+                val file = File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
                 file.createNewFile()
                 if (file.exists()) {
+                    if (file.length() >= MAX_SIZE) {
+                        file.deleteOnExit()
+                        file.createNewFile()
+                    }
                     val fos = FileOutputStream(file, true)
                     fos.write("$message\n".toByteArray(Charsets.UTF_8))
                     fos.close()
@@ -31,12 +37,16 @@ class FileLogTree : Timber.Tree() {
     }
 
     companion object {
+        private const val LOG_LOCAL_FILE_NAME = "mixin"
         private const val LOG_FILE_NAME = "mixin.log"
+        private const val MAX_SIZE = 500 * 1024
         fun getLogFile(): File? {
             val directory = MixinApplication.appContext.cacheDir
-            val file = File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
+            val file = File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
             return if (file.exists()) {
-                file
+                val result = File("${directory.absolutePath}${File.separator}$LOG_FILE_NAME")
+                file.copyTo(result, true)
+                result
             } else {
                 null
             }

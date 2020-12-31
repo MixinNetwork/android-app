@@ -235,14 +235,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
                     }
                 }
-                debugLongClick(binding.avatar) {
+                debugLongClick(binding.avatar, {
                     context?.getClipboardManager()?.setPrimaryClip(
                         ClipData.newPlainText(
                             null,
                             "mixin://users/${user.userId}"
                         )
                     )
-                }
+                })
                 apps?.let {
                     binding.avatarGroup.setApps(it)
                     contentView.doOnPreDraw {

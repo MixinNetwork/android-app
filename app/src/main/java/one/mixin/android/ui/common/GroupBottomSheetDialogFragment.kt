@@ -128,10 +128,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 conversation = c
                 val icon = c.iconUrl
                 binding.avatar.setGroup(icon)
-                debugLongClick(binding.avatar) {
+                debugLongClick(binding.avatar, {
                     context?.getClipboardManager()
                         ?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
-                }
+                })
                 if (icon == null || !File(icon).exists()) {
                     bottomViewModel.startGenerateAvatar(c.conversationId)
                 }

@@ -1467,6 +1467,10 @@ class ConversationFragment() :
                     .setPrimaryClip(ClipData.newPlainText(null, conversationId))
             },
             {
+                if (recipient?.identityNumber !in arrayOf("26832", "31911", "47762")) {
+                    return@debugLongClick
+                }
+
                 val logFile = FileLogTree.getLogFile()
                 if (logFile == null || logFile.length() <= 0) {
                     toast(R.string.error_file_exists)
