@@ -61,6 +61,9 @@ constructor(
     suspend fun fuzzySearchGroupUser(conversationId: String, query: String): List<User> =
         userDao.fuzzySearchGroupUser(conversationId, query, query, Session.getAccountId() ?: "")
 
+    suspend fun fuzzySearchBotGroupUser(conversationId: String, query: String): List<User> =
+        userDao.fuzzySearchBotGroupUser(conversationId, query, query, Session.getAccountId() ?: "")
+
     suspend fun suspendGetGroupParticipants(conversationId: String): List<User> =
         userDao.suspendGetGroupParticipants(conversationId, Session.getAccountId() ?: "")
 
