@@ -21,6 +21,7 @@ import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
+import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -62,7 +63,7 @@ constructor(
         userDao.fuzzySearchGroupUser(conversationId, query, query, Session.getAccountId() ?: "")
 
     suspend fun fuzzySearchBotGroupUser(conversationId: String, query: String): List<User> =
-        userDao.fuzzySearchBotGroupUser(conversationId, query, query, Session.getAccountId() ?: "")
+        userDao.fuzzySearchBotGroupUser(conversationId, query, query, Session.getAccountId() ?: "", oneWeekAgo())
 
     suspend fun suspendGetGroupParticipants(conversationId: String): List<User> =
         userDao.suspendGetGroupParticipants(conversationId, Session.getAccountId() ?: "")

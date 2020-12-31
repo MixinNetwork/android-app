@@ -85,13 +85,13 @@ interface UserDao : BaseDao<User> {
 
     @Query(
         """SELECT u.* FROM users u 
-        WHERE u.user_id in (SELECT m.user_id FROM messages m WHERE conversation_id = :conversationId)
+        WHERE u.user_id in (SELECT m.user_id FROM messages m WHERE conversation_id = :conversationId AND m.created_at > :createdAt)
         AND u.user_id != :id
         AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC
         """
     )
-    suspend fun fuzzySearchBotGroupUser(conversationId: String, username: String, identityNumber: String, id: String): List<User>
+    suspend fun fuzzySearchBotGroupUser(conversationId: String, username: String, identityNumber: String, id: String, createdAt:String): List<User>
 
     @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.user_id != :id")
     suspend fun suspendGetGroupParticipants(conversationId: String, id: String): List<User>
