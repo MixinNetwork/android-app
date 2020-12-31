@@ -23,7 +23,7 @@ class FileLogTree : Timber.Tree() {
                 file.createNewFile()
                 if (file.exists()) {
                     if (file.length() >= MAX_SIZE) {
-                        file.deleteOnExit()
+                        file.delete()
                         file.createNewFile()
                     }
                     val fos = FileOutputStream(file, true)
