@@ -13,6 +13,7 @@ import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.mention.MentionRenderCache
@@ -128,6 +129,22 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             override fun onDoubleTap(e: MotionEvent?): Boolean {
                 onItemListener.onTextDoubleClick(messageItem)
                 return true
+            }
+
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                if (hasSelect) {
+                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                }
+                return true
+            }
+
+            override fun onLongPress(e: MotionEvent?) {
+                if (!hasSelect) {
+                    onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+                    itemView.context.tapVibrate()
+                } else {
+                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                }
             }
         }
 
