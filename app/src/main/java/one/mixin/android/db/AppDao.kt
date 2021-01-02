@@ -63,7 +63,7 @@ interface AppDao : BaseDao<App> {
     suspend fun getUnfavoriteApps(userId: String): List<App>
 
     @Query(
-        "SELECT a.* FROM apps a LEFT JOIN users u ON a.app_id = u.app_id WHERE a.app_id NOT IN (:appIds) AND u.relationship = 'FRIEND' ORDER BY u.full_name ASC"
+        "SELECT a.* FROM apps a LEFT JOIN users u ON a.app_id = u.app_id WHERE u.relationship = 'FRIEND' AND  a.app_id NOT IN (:appIds) ORDER BY u.full_name ASC"
     )
     suspend fun getNotTopApps(appIds: List<String>): List<App>
 }
