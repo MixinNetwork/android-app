@@ -40,7 +40,7 @@
             android:textColor="#19BEF1"
             android:textSize="14sp"/>
 
-        <FrameLayout
+        <one.mixin.android.widget.GestureFrameLayout
             android:id="@+id/chat_content_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -68,6 +68,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
             </one.mixin.android.widget.MessageLayout>
-        </FrameLayout>
+        </one.mixin.android.widget.GestureFrameLayout>
     </LinearLayout>
 </FrameLayout>

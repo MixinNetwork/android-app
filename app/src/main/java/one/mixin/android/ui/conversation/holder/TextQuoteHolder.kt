@@ -1,7 +1,9 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
+import android.view.GestureDetector
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
@@ -135,6 +137,13 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
         binding.chatTv.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
+        }
+
+        binding.chatContentLayout.listener = object : GestureDetector.SimpleOnGestureListener() {
+            override fun onDoubleTap(e: MotionEvent?): Boolean {
+                onItemListener.onTextDoubleClick(messageItem)
+                return true
             }
         }
 
