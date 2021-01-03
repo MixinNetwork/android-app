@@ -193,7 +193,7 @@ fun MessageItem.canRecall(): Boolean {
         this.type == MessageCategory.PLAIN_AUDIO.name ||
         this.type == MessageCategory.PLAIN_LIVE.name ||
         this.type == MessageCategory.PLAIN_POST.name ||
-        this.type == MessageCategory.PLAIN_LOCATION.name||
+        this.type == MessageCategory.PLAIN_LOCATION.name ||
         this.type == MessageCategory.APP_CARD.name
 }
 
