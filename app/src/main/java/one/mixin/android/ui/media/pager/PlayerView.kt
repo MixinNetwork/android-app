@@ -18,6 +18,7 @@ import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPlayerViewBinding
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.reportException
 import one.mixin.android.widget.AspectRatioFrameLayout
 
 class PlayerView(context: Context, attributeSet: AttributeSet) :
@@ -263,6 +264,8 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             if (VideoPlayer.player().mId == currentMessageId) {
                 binding.pbView.isVisible = false
                 updateRefreshViewVisibility(true)
+
+                reportException("PlayerView onPlayerError type: ${error.type}, cause: ${error.cause}", error)
             }
         }
 
