@@ -809,7 +809,10 @@ class WebFragment : BaseFragment() {
                         lifecycleScope.launch {
                             val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
                             if (app.matchResourcePattern(currentUrl)) {
-                                val webTitle = webView.title ?: app.name
+                                var webTitle = webView.title
+                                if (webTitle.isNullOrBlank()) {
+                                    webTitle = app.name
+                                }
                                 val appCardData = AppCardData(
                                     app.appId,
                                     app.iconUrl,
