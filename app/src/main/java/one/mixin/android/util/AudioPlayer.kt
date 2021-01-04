@@ -159,6 +159,8 @@ class AudioPlayer private constructor() {
                     }
                     stopTimber()
                     it.stop()
+
+                    reportException("AudioPlayer onPlayerError type: ${error.type}, cause: ${error.cause}", error)
                 }
             }
         )

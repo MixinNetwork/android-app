@@ -29,6 +29,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
+import one.mixin.android.util.reportException
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import kotlin.math.max
@@ -241,6 +242,8 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         mId?.let {
             onMediaPlayerListener?.onPlayerError(it, error)
         }
+
+        reportException("MixinPlayer onPlayerError type: ${error.type}, cause: ${error.cause}", error)
     }
 
     override fun onPositionDiscontinuity(reason: Int) {
