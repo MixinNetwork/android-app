@@ -12,6 +12,14 @@
         android:layout_margin="@dimen/activity_vertical_margin"
         tools:ignore="ContentDescription"/>
 
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:visibility="gone"
+        android:layout_margin="@dimen/activity_vertical_margin"
+        tools:ignore="ContentDescription"/>
+
     <TextView
         android:id="@+id/balance"
         android:layout_width="match_parent"

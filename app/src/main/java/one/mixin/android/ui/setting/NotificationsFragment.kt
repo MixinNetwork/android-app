@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
+import one.mixin.android.Constants.Account.PREF_STRANGER_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -61,6 +62,11 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
             duplicateTransferSc.isChecked = defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
             duplicateTransferSc.setOnCheckedChangeListener { _, isChecked ->
                 defaultSharedPreferences.putBoolean(PREF_DUPLICATE_TRANSFER, isChecked)
+            }
+
+            strangerTransferSc.isChecked = defaultSharedPreferences.getBoolean(PREF_STRANGER_TRANSFER, true)
+            strangerTransferSc.setOnCheckedChangeListener { _, isChecked ->
+                defaultSharedPreferences.putBoolean(PREF_STRANGER_TRANSFER, isChecked)
             }
 
             supportsOreo {

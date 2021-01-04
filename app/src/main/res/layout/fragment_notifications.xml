@@ -1,63 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:background="?attr/bg_window"
-    android:orientation="vertical">
+    android:background="?attr/bg_window">
 
-    <one.mixin.android.widget.TitleView
-        android:id="@+id/title_view"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_notification_confirmation" />
+        android:orientation="vertical">
 
-    <RelativeLayout
-        android:id="@+id/transfer_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleText="@string/setting_notification_confirmation" />
+
+        <RelativeLayout
+            android:id="@+id/transfer_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:background="?attr/bg_white"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/setting_notification_transfer" />
+
+            <TextView
+                android:id="@+id/transfer_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:textColor="?attr/text_minor" />
+        </RelativeLayout>
 
         <TextView
-            style="@style/NormalTextStyle"
+            android:id="@+id/transfer_desc_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_notification_transfer" />
-
-        <TextView
-            android:id="@+id/transfer_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="?attr/text_minor"/>
-    </RelativeLayout>
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/setting_notification_transfer_desc"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp" />
 
-    <TextView
-        android:id="@+id/transfer_desc_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:text="@string/setting_notification_transfer_desc"
-        android:textColor="?attr/text_minor"
-        android:textSize="12sp"/>
-
-    <RelativeLayout
+        <RelativeLayout
             android:id="@+id/large_amount_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground">
 
-        <TextView
+            <TextView
                 style="@style/NormalTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -65,17 +69,17 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:text="@string/wallet_transaction_tip_title" />
 
-        <TextView
+            <TextView
                 android:id="@+id/large_amount_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor"/>
-    </RelativeLayout>
+                android:textColor="?attr/text_minor" />
+        </RelativeLayout>
 
-    <TextView
+        <TextView
             android:id="@+id/large_amount_desc_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -85,77 +89,114 @@
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_transfer_large_summary"
             android:textColor="?attr/text_minor"
-            android:textSize="12sp"/>
+            android:textSize="12sp" />
 
-    <RelativeLayout
-        android:id="@+id/duplicate_transfer_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        <RelativeLayout
+            android:id="@+id/duplicate_transfer_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:background="?attr/bg_white"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/transfer_duplicate_title" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/duplicate_transfer_sc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                tools:ignore="RelativeOverlap" />
+        </RelativeLayout>
 
         <TextView
-            style="@style/NormalTextStyle"
+            android:id="@+id/duplicate_transfer_desc_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/transfer_duplicate_title" />
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/setting_duplicate_transfer_desc"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp" />
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/duplicate_transfer_sc"
+        <RelativeLayout
+            android:id="@+id/stranger_transfer_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:background="?attr/bg_white"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/transfer_stranger_title" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/stranger_transfer_sc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                tools:ignore="RelativeOverlap" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/stranger_transfer_desc_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            tools:ignore="RelativeOverlap"/>
-    </RelativeLayout>
-
-    <TextView
-        android:id="@+id/duplicate_transfer_desc_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:text="@string/setting_duplicate_transfer_desc"
-        android:textColor="?attr/text_minor"
-        android:textSize="12sp"/>
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/setting_stranger_transfer_desc"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp" />
 
 
-    <RelativeLayout
+        <RelativeLayout
             android:id="@+id/system_notification"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground">
 
-        <TextView
+            <TextView
                 style="@style/NormalTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:text="@string/setting_notification_system" />
-    </RelativeLayout>
+        </RelativeLayout>
 
-    <RelativeLayout
-        android:id="@+id/notification_reset"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
-        android:visibility="gone">
+        <RelativeLayout
+            android:id="@+id/notification_reset"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:background="?attr/bg_white"
+            android:foreground="?attr/selectableItemBackground"
+            android:visibility="gone">
 
-        <TextView
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_notification_reset" />
-    </RelativeLayout>
-
-</LinearLayout>
+            <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/setting_notification_reset" />
+        </RelativeLayout>
+    </LinearLayout>
+</ScrollView>
