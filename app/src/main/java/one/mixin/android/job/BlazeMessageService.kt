@@ -99,6 +99,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onCreate() {
         super.onCreate()
+        Timber.d("blaze onCreate")
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
         startFloodJob()
@@ -124,6 +125,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         stopAckJob()
         stopFloodJob()
         webSocket.disconnect()
+        Timber.d("blaze onDestroy")
     }
 
     override fun onNetworkChange(networkStatus: Int) {
@@ -178,10 +180,13 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun startAckJob() {
+        Timber.e("startAckJob")
         database.invalidationTracker.addObserver(ackObserver)
+        Timber.e("startAckJob observer end")
     }
 
     private fun stopAckJob() {
+        Timber.e("stopAckJob")
         database.invalidationTracker.removeObserver(ackObserver)
     }
 
@@ -195,36 +200,48 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Synchronized
     private fun runAckJob() {
         try {
+            Timber.e("runAckJob")
             if (ackJob?.isActive == true || !networkConnected()) {
+                Timber.e("runAckJob return ${ackJob?.isActive} ${networkConnected()}")
                 return
             }
+            Timber.e("runAckJob launch job")
             ackJob = lifecycleScope.launch(Dispatchers.IO) {
+                Timber.e("processAck prefix")
                 processAck()
+                Timber.e("processAck suffix")
                 Session.getExtensionSessionId()?.let {
                     syncMessageStatusToExtension(it)
                 }
+                Timber.e("getExtensionSessionId suffix")
             }
         } catch (e: Exception) {
-            Timber.e(e)
+            Timber.e(e, "runAckJob exception")
         }
     }
 
     private tailrec suspend fun processAck(): Boolean {
+        Timber.e("processAck ${jobDao.findAckJobsCount()}")
         val ackMessages = jobDao.findAckJobs()
+        Timber.e("processAck ackMessages ${ackMessages.size}")
         if (ackMessages.isEmpty()) {
             return false
         }
         try {
+            Timber.e("processAck acknowledgements")
             messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
+            Timber.e("processAck deleteList prefix")
             jobDao.deleteList(ackMessages)
+            Timber.e("processAck deleteList suffix")
         } catch (e: Exception) {
-            Timber.e(e, "Send ack exception")
+            Timber.e(e, "Send ack exception ${e.message}")
         }
         return processAck()
     }
 
     private suspend fun syncMessageStatusToExtension(sessionId: String) {
         val jobs = jobDao.findCreateMessageJobs()
+        Timber.e("syncMessageStatusToExtension ${jobDao.findCreateMessageJobsCount()}")
         if (jobs.isEmpty() || accountId == null) {
             return
         }
@@ -277,6 +294,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
+        Timber.e("floodMessage ${floodMessageDao.getFloodMessageCountSuspend()}")
         return if (!messages.isNullOrEmpty()) {
             messages.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)

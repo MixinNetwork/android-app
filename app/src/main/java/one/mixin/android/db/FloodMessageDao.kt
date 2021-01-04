@@ -13,4 +13,7 @@ interface FloodMessageDao : BaseDao<FloodMessage> {
 
     @Query("select count(1) from flood_messages")
     fun getFloodMessageCount(): LiveData<Int>
+
+    @Query("select count(1) from flood_messages")
+    suspend fun getFloodMessageCountSuspend(): Int
 }

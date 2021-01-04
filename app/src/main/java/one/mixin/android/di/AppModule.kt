@@ -71,6 +71,7 @@ import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -139,6 +140,7 @@ object AppModule {
                 var response = try {
                     chain.proceed(request)
                 } catch (e: Exception) {
+                    Timber.e("http: ${e.message}")
                     throw e.apply {
                         if (e.isNeedSwitch()) {
                             HostSelectionInterceptor.get().switch(request)

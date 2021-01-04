@@ -26,7 +26,7 @@ class FileLogTree : Timber.Tree() {
                         file.createNewFile()
                     }
                     val fos = FileOutputStream(file, true)
-                    fos.write("$message\n".toByteArray(Charsets.UTF_8))
+                    fos.write("${System.currentTimeMillis()} $message\n".toByteArray(Charsets.UTF_8))
                     fos.close()
                 }
             } catch (e: IOException) {
@@ -37,8 +37,8 @@ class FileLogTree : Timber.Tree() {
 
     companion object {
         private const val LOG_LOCAL_FILE_NAME = "mixin"
-        private const val LOG_FILE_NAME = "mixin.log"
-        private const val MAX_SIZE = 500 * 1024
+        private const val LOG_FILE_NAME = "mixin.txt"
+        private const val MAX_SIZE = 1024 * 1024 * 5
         fun getLogFile(): File? {
             val directory = MixinApplication.appContext.cacheDir
             val file = File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
