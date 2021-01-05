@@ -13,6 +13,9 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.*
+import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.saveQRCode
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
@@ -70,7 +73,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         val ctx = MixinApplication.appContext
         ctx.windowManager.defaultDisplay?.getSize(p)
         val size = minOf(p.x, p.y)
-        val b = account.codeUrl.generateQRCode(size)
+        val b = account.codeUrl.generateQRCode(size, requireContext().isNightMode())
         b?.saveQRCode(ctx, account.userId)
     }
 

@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.session.Session
@@ -32,7 +33,7 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
                 val p = Point()
                 MixinApplication.appContext.windowManager.defaultDisplay?.getSize(p)
                 val size = minOf(p.x, p.y)
-                val b = account.codeUrl.generateQRCode(size)
+                val b = account.codeUrl.generateQRCode(size, MixinApplication.get().isNightMode())
                 b?.saveQRCode(MixinApplication.appContext, account.userId)
             }
 

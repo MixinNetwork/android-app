@@ -23,6 +23,7 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
@@ -110,7 +111,7 @@ class DepositAccountFragment : DepositFragment() {
         } else {
             qr.post {
                 Observable.create<Bitmap> { e ->
-                    val b = code.generateQRCode(DepositQrBottomFragment.getSize(requireContext()))
+                    val b = code.generateQRCode(DepositQrBottomFragment.getSize(requireContext()), requireContext().isNightMode())
                     if (b != null) {
                         b.saveQRCode(requireContext(), name)
                         e.onNext(b)

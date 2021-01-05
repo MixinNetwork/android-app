@@ -9,6 +9,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.repository.UserRepository
@@ -36,7 +37,7 @@ class RefreshAccountWorker @WorkerInject constructor(
                 val p = Point()
                 MixinApplication.appContext.windowManager.defaultDisplay?.getSize(p)
                 val size = minOf(p.x, p.y)
-                val b = account.codeUrl.generateQRCode(size)
+                val b = account.codeUrl.generateQRCode(size, MixinApplication.appContext.isNightMode())
                 b?.saveQRCode(MixinApplication.appContext, account.userId)
             }
 
