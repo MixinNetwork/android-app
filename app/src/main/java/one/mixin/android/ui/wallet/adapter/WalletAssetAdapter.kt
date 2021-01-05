@@ -111,10 +111,13 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
             binding.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             binding.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
-            debugLongClick(holder.itemView, {
-                holder.itemView.context?.getClipboardManager()
-                    ?.setPrimaryClip(ClipData.newPlainText(null, asset.assetId))
-            })
+            debugLongClick(
+                holder.itemView,
+                {
+                    holder.itemView.context?.getClipboardManager()
+                        ?.setPrimaryClip(ClipData.newPlainText(null, asset.assetId))
+                }
+            )
         }
     }
 

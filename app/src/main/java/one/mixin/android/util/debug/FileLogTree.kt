@@ -2,7 +2,6 @@ package one.mixin.android.util.debug
 
 import android.util.Log
 import one.mixin.android.MixinApplication
-import one.mixin.android.extension.copy
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream

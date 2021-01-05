@@ -465,7 +465,7 @@ private fun File.newTempFile(name: String, type: String, noMedia: Boolean): File
     if (noMedia) {
         createNoMediaDir()
     }
-    return createTempFile(name, type, this)
+    return File.createTempFile(name, type, this)
 }
 
 fun File.processing(to: File) {
