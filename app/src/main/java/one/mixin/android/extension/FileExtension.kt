@@ -345,7 +345,7 @@ fun Context.getQRCodePath(name: String): File {
         "$root${File.separator}$name${if (isNightMode()) {
             "_night"
         } else {
-            ""
+            "_light"
         }}.png"
     )
     if (!file.exists()) {
