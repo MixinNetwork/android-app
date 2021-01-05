@@ -10,7 +10,6 @@ import android.graphics.Canvas
 import android.graphics.Outline
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Property
 import android.view.LayoutInflater
 import android.view.View
@@ -274,18 +273,12 @@ fun View.navigate(
 
 @Throws(IOException::class)
 fun View.capture(context: Context): String? {
-    val outFile = context.getPublicPicturePath().createImageTemp(false)
+    val outFile = context.getPublicPicturePath().createImagePngTemp(false)
     val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val c = Canvas(b)
     draw(c)
     b.save(outFile)
     return try {
-        MediaStore.Images.Media.insertImage(
-            context.contentResolver,
-            outFile.absolutePath,
-            outFile.name,
-            null
-        )
         context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
         outFile.absolutePath
     } catch (e: FileNotFoundException) {
