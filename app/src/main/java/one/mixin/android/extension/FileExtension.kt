@@ -383,6 +383,11 @@ fun File.createImageTemp(noMedia: Boolean = true): File {
     return newTempFile("IMAGE_$time", ".jpg", noMedia)
 }
 
+fun File.createImagePngTemp(noMedia: Boolean = true): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    return newTempFile("IMAGE_$time", ".png", noMedia)
+}
+
 fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return if (prefix != null) {

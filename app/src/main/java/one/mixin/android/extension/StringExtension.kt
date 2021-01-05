@@ -42,7 +42,7 @@ import kotlin.collections.set
 import kotlin.jvm.Throws
 import kotlin.math.abs
 
-fun String.generateQRCode(size: Int, isNight: Boolean, padding: Float = 20.dp.toFloat()): Bitmap? {
+fun String.generateQRCode(size: Int, isNight: Boolean, padding: Float = 32.dp.toFloat()): Bitmap? {
     val result: QRCode
     try {
         val hints = HashMap<EncodeHintType, Any>()
