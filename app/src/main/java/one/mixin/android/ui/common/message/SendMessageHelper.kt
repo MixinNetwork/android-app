@@ -379,13 +379,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             }
             temp
         } else {
-            // Compressor()
-            //     .setCompressFormat(Bitmap.CompressFormat.JPEG)
-            //     .compressToFile(
-            //         temp,
-            //         temp.absolutePath
-            //     )
-            temp
+            Compressor().compressToFile(temp)
         }
         val imageUrl = Uri.fromFile(temp).toString()
         val length = imageFile.length()
