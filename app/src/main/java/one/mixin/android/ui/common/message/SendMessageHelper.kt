@@ -8,6 +8,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.crypto.Util.copy
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
@@ -60,6 +61,7 @@ import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.util.UUID
 import javax.inject.Inject
 
@@ -367,21 +369,23 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         }
 
         val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
-        val path = uri.getFilePath(MixinApplication.get()) ?: return -1
+        val inputStream = MixinApplication.appContext.contentResolver.openInputStream(uri)
+        copy(inputStream,FileOutputStream(temp))
         val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
-            val source = ImageDecoder.createSource(File(path))
+            val source = ImageDecoder.createSource(temp)
             val bitmap = ImageDecoder.decodeBitmap(source)
             temp.outputStream().use {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
             }
             temp
         } else {
-            Compressor()
-                .setCompressFormat(Bitmap.CompressFormat.JPEG)
-                .compressToFile(
-                    File(path),
-                    temp.absolutePath
-                )
+            // Compressor()
+            //     .setCompressFormat(Bitmap.CompressFormat.JPEG)
+            //     .compressToFile(
+            //         temp,
+            //         temp.absolutePath
+            //     )
+            temp
         }
         val imageUrl = Uri.fromFile(temp).toString()
         val length = imageFile.length()

@@ -3,12 +3,10 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Parcelable
-import androidx.core.net.toUri
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.getAttachment
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.websocket.VideoMessagePayload
 
@@ -96,20 +94,15 @@ fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {
     list.add(this)
 }
 
-inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(category: T): ForwardMessage? {
-    val url = this.getFilePath(MixinApplication.appContext) ?: return null
-    return url.systemMediaToMessage(category)
-}
-
-inline fun <reified T : ForwardCategory> String.systemMediaToMessage(category: T): ForwardMessage =
+inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(category: T): ForwardMessage =
     ForwardMessage(
         category,
         GsonHelper.customGson.toJson(
             when (category) {
-                ShareCategory.Image -> ShareImageData(this)
-                ForwardCategory.Video -> VideoMessagePayload(this)
+                ShareCategory.Image -> ShareImageData(this.toString())
+                ForwardCategory.Video -> VideoMessagePayload(this.toString())
                 ForwardCategory.Data -> {
-                    val attachment = MixinApplication.get().getAttachment(this.toUri())
+                    val attachment = MixinApplication.get().getAttachment(this)
                     attachment?.toDataMessagePayload()
                 }
                 else -> null

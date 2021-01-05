@@ -54,14 +54,14 @@ internal object ImageUtil {
 
         var scaledBitmap = BitmapFactory.decodeFile(imageFile.absolutePath, options)
 
-        val exif = ExifInterface(imageFile.absolutePath)
-        val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0)
+        // val exif = ExifInterface(imageFile.absolutePath)
+        // val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0)
         val matrix = Matrix()
-        when (orientation) {
-            ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-            ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-            ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-        }
+        // when (orientation) {
+        //     ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+        //     ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+        //     ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+        // }
         scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
         return scaledBitmap
     }
