@@ -42,6 +42,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
+import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -121,6 +122,8 @@ open class MixinApplication :
     private fun init() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
+        } else {
+            Timber.plant(FileLogTree())
         }
     }
 

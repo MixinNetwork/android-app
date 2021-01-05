@@ -42,10 +42,10 @@ class TransactionsAdapter :
             val pos = getPos(position)
             getItem(pos)?.let {
                 holder.bind(it, listener)
-                debugLongClick(holder.itemView) {
+                debugLongClick(holder.itemView, {
                     holder.itemView.context?.getClipboardManager()
                         ?.setPrimaryClip(ClipData.newPlainText(null, it.snapshotId))
-                }
+                })
             }
         }
     }
