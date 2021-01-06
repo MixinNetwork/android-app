@@ -391,6 +391,7 @@
     <string name="wallet_transaction_that_time_value_tip">historical value at the time of transaction</string>
     <string name="transfer_duplicate_title">Duplicate Transfer Confirmation</string>
     <string name="withdraw_duplicate_title">Duplicate Withdraw Confirmation</string>
+    <string name="transfer_stranger_title">Stranger Transfer Confirmation</string>
     <string name="wallet_transaction_tip_title_with_symbol">Large Amount Confirmation(%1$s)</string>
     <string name="wallet_transaction_tip">Are you sure you want to transfer %3$s worth %2$s to %1$s ？</string>
     <string name="wallet_transfer_recent_tip">You have already transferred %3$s to %2$s %1$s. Do you want to transfer it again?</string>
@@ -600,6 +601,7 @@
     <string name="setting_phone_number_privacy">Who can find me by my number</string>
     <string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s</string>
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours</string>
+    <string name="setting_stranger_transfer_desc">Display confirmation dialog when you transfer to stranger</string>
     <string name="setting_feedback">Feedback</string>
     <string name="setting_share">Share This App</string>
     <string name="setting_share_text">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search %1$s to add me as a friend.</string>
@@ -798,6 +800,7 @@
     <string name="bottom_deposit_tip_btc">This address only supports BTC and Omni USDT.</string>
     <string name="bottom_deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens, such as TRX, BTT, USDT-TRON, etc.</string>
     <string name="bottom_deposit_tip_common">This address only supports %1$s.</string>
+    <string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chosen is correct. If you transfer to the wrong person, your assets will be lost!</string>
     <!--sticker-->
     <string name="sticker_manager">Manager Sticker</string>
     <string name="sticker_add">Add Sticker</string>

@@ -374,6 +374,7 @@
     <string name="wallet_transaction_that_time_value_tip">交易时的价值</string>
     <string name="transfer_duplicate_title">重复转账确认</string>
     <string name="withdraw_duplicate_title">重复提现确认</string>
+    <string name="transfer_stranger_title">陌生人转账确认</string>
     <string name="wallet_transaction_tip_title_with_symbol">大额转账确认(%1$s)</string>
     <string name="wallet_transaction_tip">确定给 %1$s 转价值 %2$s 的 %3$s ？</string>
     <string name="wallet_transfer_recent_tip">你已经在 %1$s 给 %2$s 转账了 %3$s，确认还要再转一次吗？</string>
@@ -584,6 +585,7 @@
     <string name="setting_phone_number_privacy">谁可以通过手机号找到你</string>
     <string name="setting_transfer_large_summary">当转账金额大于或等于 %1$s 时显示确认弹窗</string>
     <string name="setting_duplicate_transfer_desc">当你在 6 个小时内给相同的人转相同的金额时显示确认弹窗</string>
+    <string name="setting_stranger_transfer_desc">当你给陌生人转账时显示确认弹窗</string>
     <string name="setting_feedback">反馈</string>
     <string name="setting_share">分享应用</string>
     <string name="setting_share_text">快来 Mixin 与我聊天！简单、安全好用还支持比特币、以太坊等加密货币，下载 https://mixin.one/messenger 后搜索 %1$s 加我好友。</string>
@@ -782,6 +784,7 @@
     <string name="bottom_deposit_tip_btc">该充值地址仅支持 BTC 和 Omni USDT。</string>
     <string name="bottom_deposit_tip_trx">该充值地址支持 TRX 和所有符合 TRC-10 TRC-20 标准的代币，例如 TRX、BTT、USDT-TRON 等。</string>
     <string name="bottom_deposit_tip_common">该充值地址仅支持 %1$s。</string>
+    <string name="bottom_transfer_stranger_tip">Mixin ID %1$s 不是您的联系人，请确认收款人是否正确。如果您转错了人资产将无法追回！</string>
     <!--sticker-->
     <string name="sticker_manager">管理贴纸</string>
     <string name="sticker_add">添加贴纸</string>

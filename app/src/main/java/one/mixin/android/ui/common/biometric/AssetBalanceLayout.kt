@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutAssetBalanceBinding
 import one.mixin.android.extension.loadImage
@@ -27,6 +28,8 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
         val asset = t.asset
         val amount = t.amount
         binding.apply {
+            assetIcon.isVisible = true
+            avatar.isVisible = false
             assetIcon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             val balanceText = amount.numberFormat() + " " + asset.symbol
@@ -38,6 +41,17 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
             } else {
                 balanceAs.text = getValueText(amount, asset.priceFiat())
             }
+        }
+    }
+
+    fun setInfoWithUser(t: TransferBiometricItem) {
+        binding.apply {
+            avatar.isVisible = true
+            assetIcon.isVisible = false
+            val u = t.user
+            avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+            balance.text = u.fullName
+            balanceAs.text = context.getString(R.string.contact_mixin_id, u.identityNumber)
         }
     }
 
