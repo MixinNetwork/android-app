@@ -48,6 +48,7 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.ui.search.SearchMessageFragment.Companion.ARGS_FROM_QUERY_CHAT
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
@@ -66,7 +67,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         private var instant: GroupBottomSheetDialogFragment? = null
         fun newInstance(
             conversationId: String,
-            expand: Boolean = false
+            expand: Boolean = false,
+            fromQueryChat: Boolean = false
         ): GroupBottomSheetDialogFragment {
             try {
                 instant?.dismiss()
@@ -77,6 +79,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 arguments = Bundle().apply {
                     putString(ARGS_CONVERSATION_ID, conversationId)
                     putBoolean(ARGS_EXPAND, expand)
+                    putBoolean(ARGS_FROM_QUERY_CHAT, fromQueryChat)
                 }
                 instant = this
             }
@@ -93,6 +96,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     private val conversationId: String by lazy {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
+    private val fromQueryChat by lazy { requireArguments().getBoolean(ARGS_FROM_QUERY_CHAT) }
     private lateinit var conversation: Conversation
     private var me: Participant? = null
 
@@ -365,7 +369,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             )
             activity?.addFragment(
                 this@GroupBottomSheetDialogFragment,
-                SearchMessageFragment.newInstance(searchMessageItem, ""),
+                SearchMessageFragment.newInstance(searchMessageItem, "", fromQueryChat),
                 SearchMessageFragment.TAG
             )
         }

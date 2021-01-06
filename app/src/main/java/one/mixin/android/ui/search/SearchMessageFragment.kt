@@ -35,13 +35,16 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     companion object {
         const val TAG = "SearchMessageFragment"
         const val ARGS_SEARCH_MESSAGE = "args_search_message"
+        const val ARGS_FROM_QUERY_CHAT = "args_from_query_chat"
 
         fun newInstance(
             searchMessageItem: SearchMessageItem,
-            query: String
+            query: String,
+            fromQueryChat: Boolean = false,
         ) = SearchMessageFragment().withArgs {
             putParcelable(ARGS_SEARCH_MESSAGE, searchMessageItem)
             putString(ARGS_QUERY, query)
+            putBoolean(ARGS_FROM_QUERY_CHAT, fromQueryChat)
         }
     }
 
@@ -51,6 +54,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         requireArguments().getParcelable(ARGS_SEARCH_MESSAGE)!!
     }
     private val query by lazy { requireArguments().getString(ARGS_QUERY)!! }
+    private val fromQueryChat by lazy { requireArguments().getBoolean(ARGS_FROM_QUERY_CHAT) }
 
     private val adapter by lazy { SearchMessageAdapter() }
 
@@ -90,9 +94,10 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                             requireContext(),
                             conversationId = searchMessageItem.conversationId,
                             messageId = item.messageId,
-                            keyword = binding.searchEt.text.toString()
+                            keyword = binding.searchEt.text.toString(),
+                            fromQueryChat = fromQueryChat,
                         )
-                        if (isConversationSearch()) {
+                        if (fromQueryChat) {
                             parentFragmentManager.popBackStack()
                         }
                     }
@@ -102,6 +107,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
         binding.clearIb.setOnClickListener { binding.searchEt.setText("") }
         binding.searchEt.setText(query)
+        binding.searchEt.setSelection(binding.searchEt.length())
         binding.searchEt.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)

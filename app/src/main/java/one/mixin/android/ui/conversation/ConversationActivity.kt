@@ -3,6 +3,8 @@ package one.mixin.android.ui.conversation
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.os.Bundle
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
@@ -138,6 +140,7 @@ class ConversationActivity : BlazeBaseActivity() {
                         putBoolean(ARGS_FAST_SHOW, true)
                     }
                 )
+                flags = FLAG_ACTIVITY_SINGLE_TOP
             }.run {
                 context.startActivity(this)
             }
@@ -145,7 +148,7 @@ class ConversationActivity : BlazeBaseActivity() {
 
         fun getShortcutIntent(context: Context, conversationId: String, recipientId: String? = null): Intent {
             return putIntent(context, conversationId, recipientId = recipientId).apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_CLEAR_TASK)
+                addFlags(FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_CLEAR_TASK or FLAG_ACTIVITY_SINGLE_TOP)
                 addCategory(Intent.CATEGORY_LAUNCHER)
                 putExtra(ARGS_SHORTCUT, true)
                 action = Intent.ACTION_VIEW
@@ -158,7 +161,8 @@ class ConversationActivity : BlazeBaseActivity() {
             recipientId: String? = null,
             messageId: String? = null,
             keyword: String? = null,
-            unreadCount: Int? = null
+            unreadCount: Int? = null,
+            fromQueryChat: Boolean = false,
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -172,6 +176,9 @@ class ConversationActivity : BlazeBaseActivity() {
                         unreadCount
                     )
                 )
+                if (fromQueryChat) {
+                    flags = FLAG_ACTIVITY_SINGLE_TOP
+                }
             }.run {
                 context.startActivity(this)
             }
@@ -195,6 +202,7 @@ class ConversationActivity : BlazeBaseActivity() {
                         keyword,
                     )
                 )
+                flags = FLAG_ACTIVITY_SINGLE_TOP
             }
         }
 
@@ -206,7 +214,7 @@ class ConversationActivity : BlazeBaseActivity() {
             keyword: String? = null
         ) {
             val mainIntent = Intent(context, ConversationActivity::class.java)
-            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            mainIntent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
             val conversationIntent = putIntent(context, conversationId, recipientId, messageId, keyword)
             context.startActivities(arrayOf(mainIntent, conversationIntent))
         }

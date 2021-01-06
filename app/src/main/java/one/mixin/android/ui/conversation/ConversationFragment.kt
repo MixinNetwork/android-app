@@ -237,7 +237,7 @@ class ConversationFragment() :
         const val MESSAGE_ID = "message_id"
         const val INITIAL_POSITION_MESSAGE_ID = "initial_position_message_id"
         const val UNREAD_COUNT = "unread_count"
-        private const val KEY_WORD = "key_word"
+        const val KEY_WORD = "key_word"
 
         fun putBundle(
             conversationId: String?,
@@ -589,7 +589,7 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
+                            UserBottomSheetDialogFragment.newInstance(it, conversationId, inQueryChat())
                                 .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                     },
@@ -635,7 +635,7 @@ class ConversationFragment() :
             override fun onMentionClick(identityNumber: String) {
                 chatViewModel.viewModelScope.launch {
                     chatViewModel.findUserByIdentityNumberSuspend(identityNumber.substring(1))?.let { user ->
-                        UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                        UserBottomSheetDialogFragment.newInstance(user, conversationId, inQueryChat())
                             .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
                 }
@@ -702,7 +702,7 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
+                            UserBottomSheetDialogFragment.newInstance(it, conversationId, inQueryChat())
                                 .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                     },
@@ -1932,7 +1932,8 @@ class ConversationFragment() :
         hideIfShowBottomSheet()
         val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(
             conversationId = conversationId,
-            expand = expand
+            expand = expand,
+            fromQueryChat = inQueryChat()
         )
         bottomSheetDialogFragment.showNow(parentFragmentManager, GroupBottomSheetDialogFragment.TAG)
         bottomSheetDialogFragment.callback = object : GroupBottomSheetDialogFragment.Callback {
@@ -1967,7 +1968,7 @@ class ConversationFragment() :
         )
         binding.actionBar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
-            UserBottomSheetDialogFragment.newInstance(user, conversationId)
+            UserBottomSheetDialogFragment.newInstance(user, conversationId, inQueryChat())
                 .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
         }
         binding.bottomUnblock.setOnClickListener {
@@ -2696,6 +2697,8 @@ class ConversationFragment() :
             }
         }
     }
+
+    private fun inQueryChat() = !keyword.isNullOrBlank()
 
     private fun checkPeerIfNeeded() = lifecycleScope.launch {
         if (!isGroup) return@launch
