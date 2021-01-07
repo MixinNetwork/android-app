@@ -205,6 +205,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 }
             }
         } catch (e: Exception) {
+            Timber.e(e)
         }
     }
 
@@ -268,6 +269,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             try {
                 processFloodMessage()
             } catch (e: Exception) {
+                Timber.e(e)
                 runFloodJob()
             }
         }
