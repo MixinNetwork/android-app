@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -16,6 +17,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentContactsBinding
@@ -24,6 +26,7 @@ import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UploadContactsJob
@@ -39,6 +42,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.widget.DebugClickListener
 import one.mixin.android.worker.RefreshContactWorker
 import java.util.Collections
 import javax.inject.Inject
@@ -81,7 +85,24 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             }
             contactAdapter.setContactListener(mContactListener)
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
-            titleView.rightAnimator.setOnClickListener { SettingActivity.show(requireContext()) }
+            titleView.rightAnimator.setOnClickListener(object : DebugClickListener(){
+                override fun onDebugClick() {
+                    lifecycleScope.launch {
+                        val dialog = indeterminateProgressDialog(
+                            message = R.string.pb_dialog_message,
+                        ).apply {
+                            setCancelable(false)
+                        }
+                        dialog.show()
+                        contactsViewModel.clearAckJobs()
+                        dialog.dismiss()
+                    }
+                }
+
+                override fun onSingleClick() {
+                    SettingActivity.show(requireContext())
+                }
+            })
         }
 
         if (hasContactPermission() &&

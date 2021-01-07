@@ -9,6 +9,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -67,6 +68,12 @@ internal constructor(
                     type = TYPE_MUTE
                 )
             )
+        }
+    }
+
+    suspend fun clearAckJobs() {
+        return withContext(Dispatchers.IO) {
+            conversationRepository.clearAckJobs()
         }
     }
 }

@@ -410,4 +410,8 @@ internal constructor(
 
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
+
+    suspend fun clearAckJobs() {
+        jobDao.clearAckJobs()
+    }
 }
