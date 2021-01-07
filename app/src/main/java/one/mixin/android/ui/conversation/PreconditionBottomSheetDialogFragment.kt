@@ -224,12 +224,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (isStrangerTransferDisable()) {
             return false
         }
-        if (t.user.relationship != UserRelationship.STRANGER.name) {
-            return false
-        }
-        val price = t.asset.priceUsd.toDoubleOrNull() ?: return false
-        val amount = BigDecimal(t.amount).toDouble() * price
-        return amount >= 10
+        return t.user.relationship in arrayOf(UserRelationship.STRANGER.name, UserRelationship.BLOCKING.name)
     }
 
     private fun isDuplicateTransferDisable() = !defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
