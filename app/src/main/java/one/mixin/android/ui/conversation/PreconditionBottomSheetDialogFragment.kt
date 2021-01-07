@@ -221,10 +221,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun shouldShowStrangerTransferTip(t: TransferBiometricItem): Boolean {
-        if (isStrangerTransferDisable()) {
-            return false
-        }
-        return t.user.relationship in arrayOf(UserRelationship.STRANGER.name, UserRelationship.BLOCKING.name)
+        return !isStrangerTransferDisable() && t.user.relationship != UserRelationship.FRIEND.name
     }
 
     private fun isDuplicateTransferDisable() = !defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
