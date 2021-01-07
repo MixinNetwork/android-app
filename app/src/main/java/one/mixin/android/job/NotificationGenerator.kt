@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
@@ -11,14 +10,15 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
-import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.mainThread
@@ -27,65 +27,56 @@ import one.mixin.android.extension.supportsNougat
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager
-import one.mixin.android.util.ChannelManager.Companion.CHANNEL_MESSAGE
-import one.mixin.android.util.ChannelManager.Companion.getChannelId
 import one.mixin.android.util.mention.rendMentionContent
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.isRepresentativeMessage
 import org.jetbrains.anko.notificationManager
 
-class NotificationJob(val message: Message, private val userMap: Map<String, String>? = null, private val force: Boolean = false) : BaseJob(
-    Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")
-) {
+const val KEY_REPLY = "key_reply"
+const val CONVERSATION_ID = "conversation_id"
+const val IS_PLAIN = "is_plain"
 
-    companion object {
-        private const val serialVersionUID = 1L
-        const val KEY_REPLY = "key_reply"
-        const val CONVERSATION_ID = "conversation_id"
-        const val IS_PLAIN = "is_plain"
-    }
-
-    override fun onRun() {
-        ChannelManager.updateChannelSound(MixinApplication.appContext)
-        notifyMessage(message)
-    }
-
-    private lateinit var notificationBuilder: NotificationCompat.Builder
+object NotificationGenerator : Injector() {
 
     private val notificationManager: NotificationManager by lazy {
         MixinApplication.appContext.notificationManager
     }
 
-    @SuppressLint("NewApi")
-    private fun notifyMessage(message: Message) {
+    fun generate(
+        lifecycleScope: CoroutineScope,
+        message: Message,
+        userMap: Map<String, String>? = null,
+        force: Boolean = false,
+    ) = lifecycleScope.launch(Dispatchers.IO) {
+        ChannelManager.updateChannelSound(MixinApplication.appContext)
+
         val context = MixinApplication.appContext
-        val user = syncUser(message.userId) ?: return
+        val user = syncUser(message.userId) ?: return@launch
         if (user.relationship == UserRelationship.BLOCKING.name) {
-            return
+            return@launch
         }
-        val conversation = conversationDao.getConversationItem(message.conversationId) ?: return
+        val conversation = conversationDao.getConversationItem(message.conversationId) ?: return@launch
         if (conversation.category == null) {
-            return
+            return@launch
         }
         if (!force && conversation.isMute()) {
-            return
+            return@launch
         }
         val mainIntent = MainActivity.getSingleIntent(context)
         val conversationIntent = ConversationActivity
             .putIntent(context, message.conversationId)
 
-        notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (conversation.isGroup()) {
-                NotificationCompat.Builder(context, getChannelId(true))
+                NotificationCompat.Builder(context, ChannelManager.getChannelId(true))
             } else {
-                NotificationCompat.Builder(context, getChannelId(false))
+                NotificationCompat.Builder(context, ChannelManager.getChannelId(false))
             }
         } else {
-            NotificationCompat.Builder(context, CHANNEL_MESSAGE)
+            NotificationCompat.Builder(context, ChannelManager.CHANNEL_MESSAGE)
         }
 
         notificationBuilder.setContentIntent(
@@ -303,7 +294,7 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
             }
             else -> {
                 // No support
-                return
+                return@launch
             }
         }
         notificationBuilder.setSmallIcon(R.drawable.ic_msg_default)
@@ -360,24 +351,5 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
                 notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
             }
         )
-    }
-
-    private fun syncUser(userId: String): User? {
-        val u = userDao.findUser(userId)
-        if (u == null) {
-            val response = userService.getUsers(arrayListOf(userId)).execute().body()
-            if (response != null && response.isSuccess) {
-                response.data?.let { data ->
-                    for (user in data) {
-                        runBlocking { userRepo.upsert(user) }
-                    }
-                }
-            }
-        }
-        return u
-    }
-
-    private fun syncContactUser(conversationId: String): User? {
-        return userDao.findContactByConversationId(conversationId)
     }
 }
