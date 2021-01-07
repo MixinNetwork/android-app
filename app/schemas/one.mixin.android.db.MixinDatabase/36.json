@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 36,
-    "identityHash": "4eda2ecf77bf96a370f3dfdea3734342",
+    "identityHash": "ad07ecb23b91b806c4d95cf30b7d9235",
     "entities": [
       {
         "tableName": "users",
@@ -101,6 +101,15 @@
               "full_name"
             ],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_users_full_name` ON `${TABLE_NAME}` (`full_name`)"
+          },
+          {
+            "name": "index_users_relationship_full_name",
+            "unique": false,
+            "columnNames": [
+              "relationship",
+              "full_name"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_users_relationship_full_name` ON `${TABLE_NAME}` (`relationship`, `full_name`)"
           }
         ],
         "foreignKeys": []
@@ -1838,7 +1847,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4eda2ecf77bf96a370f3dfdea3734342')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ad07ecb23b91b806c4d95cf30b7d9235')"
     ]
   }
 }
