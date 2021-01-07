@@ -221,15 +221,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun shouldShowStrangerTransferTip(t: TransferBiometricItem): Boolean {
-        if (isStrangerTransferDisable()) {
-            return false
-        }
-        if (t.user.relationship != UserRelationship.STRANGER.name) {
-            return false
-        }
-        val price = t.asset.priceUsd.toDoubleOrNull() ?: return false
-        val amount = BigDecimal(t.amount).toDouble() * price
-        return amount >= 10
+        return !isStrangerTransferDisable() && t.user.relationship != UserRelationship.FRIEND.name
     }
 
     private fun isDuplicateTransferDisable() = !defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
