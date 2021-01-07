@@ -5,10 +5,8 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ScaleXSpan
 import android.util.AttributeSet
-import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
-import one.mixin.android.BuildConfig
 import one.mixin.android.R
 
 /**
@@ -48,11 +46,6 @@ class KerningTextView : AppCompatTextView {
         } finally {
             originalTypedArray.recycle()
             currentTypedArray.recycle()
-        }
-
-        if (BuildConfig.DEBUG) {
-            Log.d(TAG, String.format("Kerning Factor: %s", kerningFactor))
-            Log.d(TAG, String.format("Original Text: %s", originalText))
         }
 
         applyKerning()

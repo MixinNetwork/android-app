@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
@@ -34,10 +35,10 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.toSnapshot
 import one.mixin.android.vo.toTopAssetItem
 
 class WalletViewModel @ViewModelInject
@@ -134,13 +135,21 @@ internal constructor(
                 .setInitialLoadKey(initialLoadKey)
                 .build()
 
-    suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) = withContext(Dispatchers.IO) {
-        assetRepository.pendingDeposits(asset, destination, tag)
+    suspend fun refreshPendingDeposits(asset: AssetItem) {
+        handleMixinResponse(
+            invokeNetwork = {
+                assetRepository.pendingDeposits(asset.assetId, asset.destination, asset.tag)
+            },
+            successBlock = { list ->
+                assetRepository.clearPendingDepositsByAssetId(asset.assetId)
+                list.data?.map {
+                    it.toSnapshot(asset.assetId)
+                }?.let {
+                    assetRepository.insertPendingDeposit(it)
+                }
+            }
+        )
     }
-
-    fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
-
-    suspend fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 
     suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {
         assetRepository.asset(assetId)
@@ -289,4 +298,13 @@ internal constructor(
     }
 
     suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
+
+    suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
+        return withContext(Dispatchers.IO) {
+            assetRepository.refreshAndGetSnapshot(snapshotId)
+        }
+    }
+
+    suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
+        assetRepository.findSnapshotById(snapshotId)
 }

@@ -42,12 +42,10 @@ import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.differentProcess
 import one.mixin.android.vo.toAssetItem
-import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -70,7 +68,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     private val adapter = TransactionsAdapter()
     lateinit var asset: AssetItem
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTransactionsBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -179,14 +177,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         _bottomSendBinding = null
     }
 
-    private fun updateData(list: List<Snapshot>?) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            list?.let { it ->
-                walletViewModel.insertPendingDeposit(it)
-            }
-        }
-    }
-
     @SuppressLint("SetTextI18n")
     private fun updateHeader(asset: AssetItem) {
         headBinding.apply {
@@ -220,15 +210,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         lifecycleScope.launch {
             if (asset.destination.isNotEmpty()) {
                 walletViewModel.refreshAsset(asset.assetId)
-                handleMixinResponse(
-                    invokeNetwork = {
-                        walletViewModel.pendingDeposits(asset.assetId, asset.destination, asset.tag)
-                    },
-                    successBlock = { list ->
-                        walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                        updateData(list.data?.map { it.toSnapshot(asset.assetId) })
-                    }
-                )
+                walletViewModel.refreshPendingDeposits(asset)
             } else {
                 headBinding.apply {
                     receiveTv.visibility = GONE
