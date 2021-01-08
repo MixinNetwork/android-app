@@ -41,18 +41,13 @@ open class Conversation(
     val draft: String? = null,
     @ColumnInfo(name = "mute_until")
     val muteUntil: String? = null
-)
+) : IConversationCategory {
+    override val conversationCategory: String
+        get() = category ?: ConversationCategory.CONTACT.name
+}
 
 enum class ConversationCategory { CONTACT, GROUP }
 enum class ConversationStatus { START, FAILURE, SUCCESS, QUIT }
-
-fun Conversation.isGroup(): Boolean {
-    return category == ConversationCategory.GROUP.name
-}
-
-fun Conversation.isContact(): Boolean {
-    return category == ConversationCategory.CONTACT.name
-}
 
 fun createConversation(conversationId: String, category: String?, recipientId: String, status: Int) =
     ConversationBuilder(conversationId, nowInUtc(), status)

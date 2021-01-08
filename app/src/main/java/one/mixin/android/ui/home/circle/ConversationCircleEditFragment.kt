@@ -32,6 +32,7 @@ import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.isContactConversation
 import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
@@ -198,7 +199,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         selectAdapter.checkedItems.addAll(conversationItems)
         val set = ArraySet<String>()
         conversations.forEach { item ->
-            if (item.isContact()) {
+            if (item.isContactConversation()) {
                 set.add(item.ownerId)
             }
         }
@@ -250,7 +251,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                 conversationRequests.add(
                     CircleConversationPayload(
                         item.conversationId,
-                        if (item.isContact()) item.ownerId else null
+                        if (item.isContactConversation()) item.ownerId else null
                     )
                 )
             }

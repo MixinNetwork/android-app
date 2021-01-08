@@ -9,6 +9,7 @@ import one.mixin.android.databinding.ItemGroupSelectBinding
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.isGroupConversation
 
 class ConversationCircleSelectAdapter(
     val removeItem: (Any) -> Unit
@@ -35,7 +36,7 @@ class ConversationCircleSelectAdapter(
             binding.nameTv.text = item.fullName
         } else if (item is ConversationItem) {
             holder.itemView.apply {
-                if (item.isGroup()) {
+                if (item.isGroupConversation()) {
                     binding.avatarView.setGroup(item.groupIconUrl)
                     binding.nameTv.text = item.groupName
                 } else {

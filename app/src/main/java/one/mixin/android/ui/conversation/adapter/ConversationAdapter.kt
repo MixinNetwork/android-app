@@ -90,9 +90,19 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
+import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isData
 import one.mixin.android.vo.isGroupCall
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isText
+import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -755,7 +765,7 @@ class ConversationAdapter(
                     item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
                     item.type == MessageCategory.SECRET.name -> SECRET_TYPE
                     item.status == MessageStatus.FAILED.name -> WAITING_TYPE
-                    item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
+                    item.isText() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
                             TEXT_QUOTE_TYPE
                         } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
@@ -764,60 +774,50 @@ class ConversationAdapter(
                             TEXT_TYPE
                         }
                     }
-                    item.type == MessageCategory.SIGNAL_IMAGE.name ||
-                        item.type == MessageCategory.PLAIN_IMAGE.name -> {
+                    item.isImage() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
                             IMAGE_QUOTE_TYPE
                         } else {
                             IMAGE_TYPE
                         }
                     }
-                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
-                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
-                    item.type == MessageCategory.SIGNAL_DATA.name ||
-                        item.type == MessageCategory.PLAIN_DATA.name -> {
+                    item.isSticker() -> STICKER_TYPE
+                    item.isData() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
                             FILE_QUOTE_TYPE
                         } else {
                             FILE_TYPE
                         }
                     }
-                    item.type == MessageCategory.SIGNAL_STICKER.name ||
-                        item.type == MessageCategory.PLAIN_STICKER.name -> STICKER_TYPE
+                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
+                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
                     item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
                     item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
-                    item.type == MessageCategory.SIGNAL_CONTACT.name ||
-                        item.type == MessageCategory.PLAIN_CONTACT.name -> {
+                    item.isContact() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
                             CONTACT_CARD_QUOTE_TYPE
                         } else {
                             CONTACT_CARD_TYPE
                         }
                     }
-                    item.type == MessageCategory.SIGNAL_VIDEO.name ||
-                        item.type == MessageCategory.PLAIN_VIDEO.name ||
-                        item.type == MessageCategory.SIGNAL_LIVE.name ||
-                        item.type == MessageCategory.PLAIN_LIVE.name -> {
+                    item.isVideo() or item.isLive() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
                             VIDEO_QUOTE_TYPE
                         } else {
                             VIDEO_TYPE
                         }
                     }
-                    item.type == MessageCategory.SIGNAL_AUDIO.name ||
-                        item.type == MessageCategory.PLAIN_AUDIO.name -> {
+                    item.isAudio() -> {
                         if (!item.quoteId.isNullOrEmpty()) {
                             AUDIO_QUOTE_TYPE
                         } else {
                             AUDIO_TYPE
                         }
                     }
-                    item.type == MessageCategory.PLAIN_POST.name ||
-                        item.type == MessageCategory.SIGNAL_POST.name -> POST_TYPE
+                    item.isPost() -> POST_TYPE
                     item.isCallMessage() -> CALL_TYPE
                     item.isRecall() -> RECALL_TYPE
-                    item.type == MessageCategory.PLAIN_LOCATION.name ||
-                        item.type == MessageCategory.SIGNAL_LOCATION.name -> LOCATION_TYPE
+                    item.isLocation() -> LOCATION_TYPE
                     item.isGroupCall() -> GROUP_CALL_TYPE
                     else -> UNKNOWN_TYPE
                 }

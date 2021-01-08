@@ -52,6 +52,8 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.isContactConversation
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.AudioMessagePayload
@@ -113,7 +115,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         for (i in adapter.selectItem.size - 1 downTo 0) {
             adapter.selectItem[i].let {
                 if (it is ConversationItem) {
-                    if (it.isGroup()) {
+                    if (it.isGroupConversation()) {
                         str.append(it.groupName)
                     } else {
                         str.append(it.name)
@@ -207,7 +209,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         adapter.sourceConversations = conversations
         val set = ArraySet<String>()
         conversations.forEach { item ->
-            if (item.isContact()) {
+            if (item.isContactConversation()) {
                 set.add(item.ownerId)
             }
         }

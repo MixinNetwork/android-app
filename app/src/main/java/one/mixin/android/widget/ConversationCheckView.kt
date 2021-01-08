@@ -12,6 +12,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.showVerifiedOrBot
 
 class ConversationCheckView : LinearLayout, Checkable {
@@ -75,7 +76,7 @@ class ConversationCheckView : LinearLayout, Checkable {
     private var checkEnabled: Boolean = true
 
     fun bind(item: ConversationItem, listener: ForwardAdapter.ForwardListener?) {
-        if (item.isGroup()) {
+        if (item.isGroupConversation()) {
             binding.normal.text = item.groupName
             binding.avatar.setGroup(item.iconUrl())
         } else {

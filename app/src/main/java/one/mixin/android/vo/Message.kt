@@ -162,14 +162,13 @@ class Message(
     @SerializedName("caption")
     @ColumnInfo(name = "caption")
     var caption: String? = null,
-) : Serializable {
+) : Serializable, ICategory {
     companion object {
         private const val serialVersionUID: Long = 1L
     }
-}
 
-fun Message.isPlain(): Boolean {
-    return category.startsWith("PLAIN_")
+    override val type: String
+        get() = category
 }
 
 fun Message.isSignal(): Boolean {
@@ -179,33 +178,6 @@ fun Message.isSignal(): Boolean {
 fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
     return conversation.category == ConversationCategory.CONTACT.name && conversation.ownerId != userId
 }
-
-fun Message.isCall() = category.startsWith("WEBRTC_") || category.startsWith("KRAKEN_")
-
-fun Message.isKraken() = category.startsWith("KRAKEN_")
-
-fun Message.isRecall() = category == MessageCategory.MESSAGE_RECALL.name
-
-fun Message.isText() =
-    category == MessageCategory.PLAIN_TEXT.name || category == MessageCategory.SIGNAL_TEXT.name
-
-fun Message.isVideo() =
-    category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
-
-fun Message.isAudio() =
-    category == MessageCategory.PLAIN_AUDIO.name || category == MessageCategory.SIGNAL_AUDIO.name
-
-fun Message.isImage() =
-    category == MessageCategory.PLAIN_IMAGE.name || category == MessageCategory.SIGNAL_IMAGE.name
-
-fun Message.isFtsMessage() =
-    category.endsWith("_TEXT") || category.endsWith("_DATA") || category.endsWith("_POST")
-
-fun Message.isData() =
-    category == MessageCategory.PLAIN_DATA.name || category == MessageCategory.SIGNAL_DATA.name
-
-fun Message.isContact() =
-    category == MessageCategory.PLAIN_CONTACT.name || category == MessageCategory.SIGNAL_CONTACT.name
 
 enum class MessageCategory {
     SIGNAL_KEY,
@@ -257,7 +229,17 @@ enum class MessageCategory {
     KRAKEN_CANCEL,
     KRAKEN_DECLINE,
     KRAKEN_LIST,
-    KRAKEN_RESTART
+    KRAKEN_RESTART,
+    ENCRYPTED_TEXT,
+    ENCRYPTED_IMAGE,
+    ENCRYPTED_VIDEO,
+    ENCRYPTED_STICKER,
+    ENCRYPTED_DATA,
+    ENCRYPTED_CONTACT,
+    ENCRYPTED_AUDIO,
+    ENCRYPTED_LIVE,
+    ENCRYPTED_POST,
+    ENCRYPTED_LOCATION
 }
 
 fun String.isIllegalMessageCategory(): Boolean {

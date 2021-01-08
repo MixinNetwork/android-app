@@ -38,7 +38,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.generateConversationChecksum
-import one.mixin.android.vo.isGroup
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.BlazeMessageParamSession
@@ -292,7 +292,7 @@ abstract class MixinJob(
 
     protected fun checkConversation(conversationId: String) {
         val conversation = conversationDao.getConversation(conversationId) ?: return
-        if (conversation.isGroup()) {
+        if (conversation.isGroupConversation()) {
             syncConversation(conversation.conversationId)
         } else {
             checkConversationExist(conversation)

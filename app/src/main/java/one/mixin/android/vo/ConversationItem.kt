@@ -37,7 +37,7 @@ data class ConversationItem(
     val appId: String?,
     val mentions: String?,
     val mentionCount: Int?
-) {
+) : ICategory, IConversationCategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationItem>() {
             override fun areItemsTheSame(oldItem: ConversationItem, newItem: ConversationItem) =
@@ -48,31 +48,33 @@ data class ConversationItem(
         }
     }
 
-    fun isGroup() = category == ConversationCategory.GROUP.name
+    override val type: String
+        get() = contentType ?: MessageCategory.PLAIN_TEXT.name
 
-    fun isContact() = category == ConversationCategory.CONTACT.name
+    override val conversationCategory: String
+        get() = category ?: ConversationCategory.CONTACT.name
 
     fun getConversationName(): String {
         return when {
-            isContact() -> name
-            isGroup() -> groupName!!
+            isContactConversation() -> name
+            isGroupConversation() -> groupName!!
             else -> ""
         }
     }
 
     fun iconUrl(): String? {
         return when {
-            isContact() -> avatarUrl
-            isGroup() -> groupIconUrl
+            isContactConversation() -> avatarUrl
+            isGroupConversation() -> groupIconUrl
             else -> null
         }
     }
 
     fun isMute(): Boolean {
-        if (isContact() && ownerMuteUntil != null) {
+        if (isContactConversation() && ownerMuteUntil != null) {
             return Instant.now().isBefore(Instant.parse(ownerMuteUntil))
         }
-        if (isGroup() && muteUntil != null) {
+        if (isGroupConversation() && muteUntil != null) {
             return Instant.now().isBefore(Instant.parse(muteUntil))
         }
         return false
@@ -81,18 +83,6 @@ data class ConversationItem(
     fun isBot(): Boolean {
         return category == ConversationCategory.CONTACT.name && appId != null
     }
-
-    fun isCallMessage() =
-        contentType == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
-            contentType == MessageCategory.WEBRTC_AUDIO_DECLINE.name ||
-            contentType == MessageCategory.WEBRTC_AUDIO_END.name ||
-            contentType == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
-            contentType == MessageCategory.WEBRTC_AUDIO_FAILED.name
-
-    fun isRecall() =
-        contentType == MessageCategory.MESSAGE_RECALL.name
-
-    fun isGroupVoiceCall() = contentType?.isGroupCallType() == true
 }
 
 fun ConversationItem.showVerifiedOrBot(verifiedView: View, botView: View) {
