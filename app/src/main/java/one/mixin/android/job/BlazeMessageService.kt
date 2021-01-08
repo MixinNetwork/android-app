@@ -242,7 +242,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private val messageDecrypt by lazy { DecryptMessage() }
+    private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
 
     private fun startFloodJob() {

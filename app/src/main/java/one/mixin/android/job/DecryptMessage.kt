@@ -7,6 +7,7 @@ import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonSyntaxException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -112,7 +113,7 @@ import timber.log.Timber
 import java.io.File
 import java.util.UUID
 
-class DecryptMessage : Injector() {
+class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     companion object {
         val TAG = DecryptMessage::class.java.simpleName
@@ -201,7 +202,7 @@ class DecryptMessage : Injector() {
         }
         messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
-        sendNotificationJob(message, data.source)
+        generateNotification(message, data.source)
     }
 
     private fun processAppCard(data: BlazeMessageData) {
@@ -242,7 +243,7 @@ class DecryptMessage : Injector() {
         }
         messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
-        sendNotificationJob(message, data.source)
+        generateNotification(message, data.source)
     }
 
     private fun processSystemMessage(data: BlazeMessageData) {
@@ -446,7 +447,7 @@ class DecryptMessage : Injector() {
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
-                sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
+                generateNotification(message, data.source, userMap, quoteMe || mentionMe)
             }
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
@@ -462,14 +463,14 @@ class DecryptMessage : Injector() {
                 )
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
-                sendNotificationJob(message, data.source)
+                generateNotification(message, data.source)
             }
             data.category.endsWith("_LOCATION") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_LOCATION.name) String(Base64.decode(plainText)) else plainText
                 if (checkLocationData(plain)) {
                     val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
                     messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                    sendNotificationJob(message, data.source)
+                    generateNotification(message, data.source)
                 }
             }
             data.category.endsWith("_IMAGE") -> {
@@ -493,7 +494,7 @@ class DecryptMessage : Injector() {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
 
-                sendNotificationJob(message, data.source)
+                generateNotification(message, data.source)
             }
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
@@ -517,7 +518,7 @@ class DecryptMessage : Injector() {
                 MixinApplication.appContext.autoDownload(autoDownloadVideo) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
-                sendNotificationJob(message, data.source)
+                generateNotification(message, data.source)
             }
             data.category.endsWith("_DATA") -> {
                 val decoded = Base64.decode(plainText)
@@ -537,7 +538,7 @@ class DecryptMessage : Injector() {
                 MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
-                sendNotificationJob(message, data.source)
+                generateNotification(message, data.source)
             }
             data.category.endsWith("_AUDIO") -> {
                 val decoded = Base64.decode(plainText)
@@ -552,7 +553,7 @@ class DecryptMessage : Injector() {
                 }
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
-                sendNotificationJob(message, data.source)
+                generateNotification(message, data.source)
             }
             data.category.endsWith("_STICKER") -> {
                 val decoded = Base64.decode(plainText)
@@ -578,7 +579,7 @@ class DecryptMessage : Injector() {
                     )
                 }
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                sendNotificationJob(message, data.source)
+                generateNotification(message, data.source)
             }
             data.category.endsWith("_CONTACT") -> {
                 val decoded = Base64.decode(plainText)
@@ -596,7 +597,7 @@ class DecryptMessage : Injector() {
                 if (!fullName.isNullOrBlank()) {
                     MessageFts4Helper.insertOrReplaceMessageFts4(message, fullName)
                 }
-                sendNotificationJob(message, data.source)
+                generateNotification(message, data.source)
             }
             data.category.endsWith("_LIVE") -> {
                 val decoded = Base64.decode(plainText)
@@ -610,7 +611,7 @@ class DecryptMessage : Injector() {
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt
                 )
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                sendNotificationJob(message, data.source)
+                generateNotification(message, data.source)
             }
         }
     }
@@ -649,7 +650,7 @@ class DecryptMessage : Injector() {
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
-            sendNotificationJob(message, data.source)
+            generateNotification(message, data.source)
         }
     }
 
@@ -961,7 +962,7 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun sendNotificationJob(message: Message, source: String, userMap: Map<String, String>? = null, force: Boolean = false) {
+    private fun generateNotification(message: Message, source: String, userMap: Map<String, String>? = null, force: Boolean = false) {
         if (source == LIST_PENDING_MESSAGES) {
             return
         }
@@ -971,6 +972,6 @@ class DecryptMessage : Injector() {
         if (message.userId == Session.getAccountId()) {
             return
         }
-        jobManager.addJobInBackground(NotificationJob(message, userMap, force))
+        NotificationGenerator.generate(lifecycleScope, message, userMap, force)
     }
 }
