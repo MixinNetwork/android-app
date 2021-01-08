@@ -6,6 +6,7 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextBinding
@@ -125,28 +126,18 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             }
         }
 
-        binding.chatLayout.listener = object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent?): Boolean {
-                onItemListener.onTextDoubleClick(messageItem)
-                return true
-            }
-
-            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-                if (hasSelect) {
-                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-                }
-                return true
-            }
-
-            override fun onLongPress(e: MotionEvent?) {
-                if (!hasSelect) {
-                    onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-                    itemView.context.tapVibrate()
-                } else {
-                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-                }
+        if (textGestureListener == null) {
+            textGestureListener = TextGestureListener(messageItem, hasSelect, isSelect, onItemListener, absoluteAdapterPosition)
+        } else {
+            textGestureListener?.apply {
+                this.messageItem = messageItem
+                this.hasSelect = hasSelect
+                this.isSelect = isSelect
+                this.onItemListener = onItemListener
+                this.absoluteAdapterPosition = this@TextHolder.absoluteAdapterPosition
             }
         }
+        binding.chatLayout.listener = textGestureListener
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
@@ -216,6 +207,37 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             }
         } else {
             null
+        }
+    }
+
+    private var textGestureListener: TextGestureListener? = null
+
+    private class TextGestureListener(
+        var messageItem: MessageItem,
+        var hasSelect: Boolean = false,
+        var isSelect: Boolean = false,
+        var onItemListener: ConversationAdapter.OnItemListener,
+        var absoluteAdapterPosition: Int = 0
+    ) : GestureDetector.SimpleOnGestureListener() {
+        override fun onDoubleTap(e: MotionEvent?): Boolean {
+            onItemListener.onTextDoubleClick(messageItem)
+            return true
+        }
+
+        override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
+            return true
+        }
+
+        override fun onLongPress(e: MotionEvent?) {
+            if (!hasSelect) {
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+                MixinApplication.appContext.tapVibrate()
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
         }
     }
 }

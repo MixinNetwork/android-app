@@ -140,12 +140,15 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
             }
         }
 
-        binding.chatContentLayout.listener = object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent?): Boolean {
-                onItemListener.onTextDoubleClick(messageItem)
-                return true
+        if (textQuoteGestureListener == null) {
+            textQuoteGestureListener = TextQuoteGestureListener(messageItem, onItemListener)
+        } else {
+            textQuoteGestureListener?.apply {
+                this.messageItem = messageItem
+                this.onItemListener = onItemListener
             }
         }
+        binding.chatContentLayout.listener = textQuoteGestureListener
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
@@ -226,6 +229,18 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
             }
         } else {
             null
+        }
+    }
+
+    private var textQuoteGestureListener: TextQuoteGestureListener? = null
+
+    private class TextQuoteGestureListener(
+        var messageItem: MessageItem,
+        var onItemListener: ConversationAdapter.OnItemListener,
+    ) : GestureDetector.SimpleOnGestureListener() {
+        override fun onDoubleTap(e: MotionEvent?): Boolean {
+            onItemListener.onTextDoubleClick(messageItem)
+            return true
         }
     }
 }
