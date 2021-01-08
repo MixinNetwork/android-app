@@ -191,11 +191,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) ||
             url.startsWith(Scheme.PAY, true)
         ) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
-            }
+            if (checkHasPin()) return
+
             lifecycleScope.launch {
                 if (!showTransfer(url)) {
                     showError(R.string.bottom_sheet_invalid_payment)
@@ -284,6 +281,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         }
                         QrCodeType.multisig_request.name -> {
+                            if (checkHasPin()) return@subscribe
+
                             val multisigs = result.second as MultisigsResponse
                             lifecycleScope.launch {
                                 var asset = linkViewModel.findAssetItemById(multisigs.assetId)
@@ -313,6 +312,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         }
                         QrCodeType.payment.name -> {
+                            if (checkHasPin()) return@subscribe
+
                             val paymentCodeResponse = result.second as PaymentCodeResponse
                             lifecycleScope.launch {
                                 var asset = linkViewModel.findAssetItemById(paymentCodeResponse.assetId)
@@ -347,11 +348,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             )
         } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true) || url.startsWith(Scheme.ADDRESS, true)) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
-            }
+            if (checkHasPin()) return
+
             val uri = Uri.parse(url)
             val action = uri.getQueryParameter("action")
             if (action != null && action == "delete") {
@@ -427,11 +425,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         } else if (url.startsWith(Scheme.SNAPSHOTS, true)) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
-            }
+            if (checkHasPin()) return
+
             val uri = Uri.parse(url)
             val traceId = uri.getQueryParameter("trace")
             if (!traceId.isNullOrEmpty() && traceId.isUUID()) {
@@ -463,13 +458,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         } else if (url.startsWith(Scheme.HTTPS_WITHDRAWAL, true) || url.startsWith(Scheme.WITHDRAWAL, true)) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
-            }
-            val uri = Uri.parse(url)
+            if (checkHasPin()) return
 
+            val uri = Uri.parse(url)
             val assetId = uri.getQueryParameter("asset")
             val amount = uri.getQueryParameter("amount")
             val memo = uri.getQueryParameter("memo")?.run {
@@ -530,11 +521,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         } else if (url.isDonateUrl()) {
-            if (Session.getAccount()?.hasPin == false) {
-                MainActivity.showWallet(requireContext())
-                dismiss()
-                return
-            }
+            if (checkHasPin()) return
+
             lifecycleScope.launch {
                 val newUrl = url.replaceFirst(":", "://")
                 if (!showTransfer(newUrl)) {
@@ -558,6 +546,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else {
             showError()
         }
+    }
+
+    private fun checkHasPin(): Boolean {
+        if (Session.getAccount()?.hasPin == false) {
+            MainActivity.showWallet(requireContext())
+            dismiss()
+            return true
+        }
+        return false
     }
 
     override fun dismiss() {
