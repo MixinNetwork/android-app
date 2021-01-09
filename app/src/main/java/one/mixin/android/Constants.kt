@@ -73,7 +73,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 35
+        const val CURRENT_VERSION = 34
     }
 
     object Storage {
