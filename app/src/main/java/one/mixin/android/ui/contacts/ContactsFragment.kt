@@ -85,7 +85,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             }
             contactAdapter.setContactListener(mContactListener)
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
-            titleView.rightAnimator.setOnClickListener(object : DebugClickListener(){
+            titleView.rightAnimator.setOnClickListener(object : DebugClickListener() {
                 override fun onDebugClick() {
                     lifecycleScope.launch {
                         val dialog = indeterminateProgressDialog(

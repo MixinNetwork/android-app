@@ -11,10 +11,12 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.websocket.BlazeAckMessage
 import java.util.UUID
 
-@Entity(tableName = "jobs",
-indices = [
-    Index(value = arrayOf("action")),
-])
+@Entity(
+    tableName = "jobs",
+    indices = [
+        Index(value = arrayOf("action")),
+    ]
+)
 data class Job(
     @PrimaryKey
     @SerializedName("job_id")
