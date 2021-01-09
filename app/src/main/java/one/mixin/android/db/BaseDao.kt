@@ -12,11 +12,17 @@ interface BaseDao<T> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertListSuspend(obj: List<T>)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insertAbort(vararg obj: T)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg obj: T)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertList(obj: List<T>)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insertListAbort(obj: List<T>)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(vararg obj: T)

@@ -252,7 +252,7 @@ internal constructor(
     }
 
     fun insertList(it: List<Job>) {
-        jobDao.insertList(it)
+        jobDao.insertListAbort(it)
     }
 
     fun refreshConversation(conversationId: String): Boolean {
@@ -333,7 +333,7 @@ internal constructor(
     suspend fun markMentionRead(messageId: String, conversationId: String) {
         messageMentionDao.suspendMarkMentionRead(messageId)
         withContext(Dispatchers.IO) {
-            jobDao.insert(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
+            jobDao.insertAbort(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
         }
     }
 
