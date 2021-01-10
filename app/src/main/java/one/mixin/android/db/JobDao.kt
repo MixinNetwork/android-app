@@ -18,7 +18,7 @@ interface JobDao : BaseDao<Job> {
     @Query("SELECT * FROM jobs WHERE `action` = 'CREATE_MESSAGE' ORDER BY rowid ASC LIMIT 100")
     suspend fun findCreateMessageJobs(): List<Job>
 
-    @Query("DELETE FROM jobs WHERE job_id IN (SELECT job_id FROM jobs LIMIT 10000)")
+    @Query("DELETE FROM jobs WHERE job_id IN (SELECT job_id FROM jobs LIMIT 999)")
     suspend fun clearAckJobs()
 
     @Query("SELECT count(1) FROM jobs")
