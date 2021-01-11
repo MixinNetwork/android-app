@@ -49,7 +49,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ConversationStorageUsage
-import one.mixin.android.vo.Job
+import one.mixin.android.vo.JobShadow
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageMinimal
@@ -254,7 +254,7 @@ internal constructor(
         return conversationDao.findContactConversationByOwnerId(ownerId)
     }
 
-    fun insertList(it: List<Job>) {
+    fun insertList(it: List<JobShadow>) {
         jobDao.insertListNoReplace(it)
     }
 
