@@ -49,6 +49,16 @@ class JobDeleteJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist())
             Timber.e("clear job 10000")
             jobManager.addJob(JobDeleteJob())
         } else {
+            val message = createMessage(
+                UUID.randomUUID().toString(),
+                "c1183ad8-e47a-34d4-a7bd-6313dd936bce",
+                "639ec50a-d4f1-4135-8624-3c71189dcdcc",
+                MessageCategory.PLAIN_TEXT.name,
+                "Done!!!",
+                nowInUtc(),
+                MessageStatus.SENDING.name
+            )
+            jobManager.addJob(SendMessageJob(message))
             preferences.putBoolean(JOBS_DELETE, true)
         }
     }
