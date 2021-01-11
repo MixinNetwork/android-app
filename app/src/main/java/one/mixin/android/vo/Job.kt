@@ -50,17 +50,17 @@ data class Job(
     @ColumnInfo(name = "run_count")
     var runCount: Int = 0
 )
-//
-// fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =
-//     Job(
-//         UUID.nameUUIDFromBytes("${ackMessage.message_id}${ackMessage.status}$action".toByteArray()).toString(),
-//         action,
-//         nowInUtc(),
-//         null,
-//         PRIORITY_ACK_MESSAGE,
-//         null,
-//         GsonHelper.customGson.toJson(ackMessage),
-//         conversationId,
-//         null,
-//         0
-//     )
+
+fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =
+    Job(
+        UUID.nameUUIDFromBytes("${ackMessage.message_id}${ackMessage.status}$action".toByteArray()).toString(),
+        action,
+        nowInUtc(),
+        null,
+        PRIORITY_ACK_MESSAGE,
+        null,
+        GsonHelper.customGson.toJson(ackMessage),
+        conversationId,
+        null,
+        0
+    )

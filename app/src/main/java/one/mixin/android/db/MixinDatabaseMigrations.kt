@@ -252,10 +252,10 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_35_36: Migration = object : Migration(35, 36) {
+        val MIGRATION_36_35: Migration = object : Migration(36, 35) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `jobs_shadow` (`job_id` TEXT NOT NULL, `action` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_id` INTEGER, `priority` INTEGER NOT NULL, `user_id` TEXT, `blaze_message` TEXT, `conversation_id` TEXT, `resend_message_id` TEXT, `run_count` INTEGER NOT NULL, PRIMARY KEY(`job_id`))")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_jobs_shadow_action` ON `jobs_shadow` (`action`)")
+                database.execSQL("DROP TABLE IF  EXISTS `jobs_shadow`")
+                database.execSQL("DROP INDEX IF EXISTS `index_jobs_shadow_action`")
             }
         }
     }

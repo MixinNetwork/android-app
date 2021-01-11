@@ -191,7 +191,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private var ackJob: Job? = null
-    private val ackObserver = object : InvalidationTracker.Observer("jobs_shadow") {
+    private val ackObserver = object : InvalidationTracker.Observer("jobs") {
         override fun onInvalidated(tables: MutableSet<String>) {
             runAckJob()
         }

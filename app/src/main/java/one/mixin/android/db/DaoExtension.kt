@@ -4,7 +4,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
-import one.mixin.android.vo.JobShadow
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
@@ -156,7 +156,7 @@ suspend fun MessageDao.batchMarkReadAndTake(
     }
 }
 
-fun JobDao.insertNoReplace(job: JobShadow) {
+fun JobDao.insertNoReplace(job: Job) {
     if (findJobById(job.jobId) == null) {
         insert(job)
         Timber.e("insert ${job.jobId}")
@@ -165,7 +165,7 @@ fun JobDao.insertNoReplace(job: JobShadow) {
     }
 }
 
-fun JobDao.insertListNoReplace(jobs: List<JobShadow>) {
+fun JobDao.insertListNoReplace(jobs: List<Job>) {
     jobs.asSequence().forEach { job ->
         insert(job)
     }
