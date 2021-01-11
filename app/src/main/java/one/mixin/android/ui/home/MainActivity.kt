@@ -85,6 +85,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.BackupMigrationJob
+import one.mixin.android.job.JobDeleteJob
+import one.mixin.android.job.JobDeleteJob.Companion.JOBS_DELETE
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
@@ -269,6 +271,10 @@ class MainActivity : BlazeBaseActivity() {
 
         if (!defaultSharedPreferences.getBoolean(PREF_BACKUP, false)) {
             jobManager.addJobInBackground(BackupMigrationJob())
+        }
+
+        if (!defaultSharedPreferences.getBoolean(JOBS_DELETE, false)) {
+            jobManager.addJobInBackground(JobDeleteJob())
         }
 
         lifecycleScope.launch(Dispatchers.IO) {

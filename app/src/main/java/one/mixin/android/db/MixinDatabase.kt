@@ -44,6 +44,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Hyperlink
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.JobShadow
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
@@ -88,6 +89,7 @@ import one.mixin.android.vo.User
         (TopAsset::class),
         (FavoriteApp::class),
         (JobShadow::class),
+        (Job::class),
         (MessageMention::class),
         (MessageFts4::class),
         (Circle::class),

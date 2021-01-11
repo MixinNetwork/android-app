@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 36,
-    "identityHash": "afaa90ba510e080c46a8b3417b6f0a02",
+    "identityHash": "753fa4634af0c33823e067855f8e0827",
     "entities": [
       {
         "tableName": "users",
@@ -1593,6 +1593,89 @@
         "foreignKeys": []
       },
       {
+        "tableName": "jobs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`job_id` TEXT NOT NULL, `action` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_id` INTEGER, `priority` INTEGER NOT NULL, `user_id` TEXT, `blaze_message` TEXT, `conversation_id` TEXT, `resend_message_id` TEXT, `run_count` INTEGER NOT NULL, PRIMARY KEY(`job_id`))",
+        "fields": [
+          {
+            "fieldPath": "jobId",
+            "columnName": "job_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "action",
+            "columnName": "action",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "created_at",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderId",
+            "columnName": "order_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "blazeMessage",
+            "columnName": "blaze_message",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "conversationId",
+            "columnName": "conversation_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "resendMessageId",
+            "columnName": "resend_message_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "runCount",
+            "columnName": "run_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "job_id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_jobs_action",
+            "unique": false,
+            "columnNames": [
+              "action"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_jobs_action` ON `${TABLE_NAME}` (`action`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
         "tableName": "message_mentions",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))",
         "fields": [
@@ -1826,7 +1909,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'afaa90ba510e080c46a8b3417b6f0a02')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '753fa4634af0c33823e067855f8e0827')"
     ]
   }
 }
