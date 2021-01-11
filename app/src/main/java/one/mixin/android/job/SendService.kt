@@ -13,6 +13,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.batchMarkReadAndTake
+import one.mixin.android.db.insertListNoReplace
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageCategory
@@ -77,7 +78,7 @@ class SendService : IntentService("SendService") {
                 }
                 Session.getExtensionSessionId()?.let {
                     list.map { createAckJob(CREATE_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name), conversationId) }.let {
-                        jobDao.insertList(it)
+                        jobDao.insertListNoReplace(it)
                     }
                 }
             }

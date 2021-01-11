@@ -2,6 +2,7 @@ package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.extension.nowInUtc
@@ -10,7 +11,12 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.websocket.BlazeAckMessage
 import java.util.UUID
 
-@Entity(tableName = "jobs")
+@Entity(
+    tableName = "jobs",
+    indices = [
+        Index(value = arrayOf("action")),
+    ]
+)
 data class Job(
     @PrimaryKey
     @SerializedName("job_id")
