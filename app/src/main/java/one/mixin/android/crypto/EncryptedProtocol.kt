@@ -1,7 +1,7 @@
 package one.mixin.android.crypto
 
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toLeByteArray
@@ -9,11 +9,10 @@ import java.util.UUID
 
 class EncryptedProtocol {
 
-    fun encryptMessage(seed: ByteArray, plaintext: ByteArray, otherPublicKey: ByteArray, otherSessionId: String): ByteArray {
-        val privateKey = EdDSAPrivateKeySpec(seed, ed25519)
+    fun encryptMessage(privateKey: EdDSAPrivateKey, plaintext: ByteArray, otherPublicKey: ByteArray, otherSessionId: String): ByteArray {
         val aesGcmKey = generateAesKey()
         val encryptedMessageData = aesGcmEncrypt(plaintext, aesGcmKey)
-        val messageKey = encryptCipherMessageKey(seed, otherPublicKey, aesGcmKey)
+        val messageKey = encryptCipherMessageKey(privateKey.seed, otherPublicKey, aesGcmKey)
         val messageKeyWithSession = UUID.fromString(otherSessionId).toByteArray().plus(messageKey)
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateKey.a, ed25519))
         val senderPublicKey = publicKeyToCurve25519(pub)
@@ -33,7 +32,7 @@ class EncryptedProtocol {
         return aesDecrypt(sharedSecret, iv, ciphertext)
     }
 
-    fun decryptMessage(seed: ByteArray, ciphertext: ByteArray): ByteArray {
+    fun decryptMessage(privateKey: EdDSAPrivateKey, ciphertext: ByteArray): ByteArray {
         val version = ciphertext[0]
         val sessionSize = ciphertext.slice(IntRange(1, 2)).toByteArray()
         val senderPublicKey = ciphertext.slice(IntRange(3, 34)).toByteArray()
@@ -43,7 +42,7 @@ class EncryptedProtocol {
 
         val iv = messageKey.slice(IntRange(0, 15)).toByteArray()
         val content = messageKey.slice(IntRange(16, messageKey.size - 1)).toByteArray()
-        val decodedMessageKey = decryptCipherMessageKey(seed, senderPublicKey, iv, content)
+        val decodedMessageKey = decryptCipherMessageKey(privateKey.seed, senderPublicKey, iv, content)
 
         return aesGcmDecrypt(message, decodedMessageKey)
     }

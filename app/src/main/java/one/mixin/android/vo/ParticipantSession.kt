@@ -16,8 +16,6 @@ data class ParticipantSession(
     val userId: String,
     @ColumnInfo(name = "session_id")
     val sessionId: String,
-    @ColumnInfo(name = "public_key")
-    val publicKey: String? = null,
     @ColumnInfo(name = "sent_to_server")
     val sentToServer: Int? = null,
     @ColumnInfo(name = "created_at")

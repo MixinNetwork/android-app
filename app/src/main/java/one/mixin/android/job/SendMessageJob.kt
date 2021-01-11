@@ -7,7 +7,6 @@ import one.mixin.android.api.ChecksumException
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawUrlDecode
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.session.Session
@@ -197,8 +196,8 @@ open class SendMessageJob(
             return
         }
 
-        val seed = Session.getEd25519PrivateKey()?.decodeBase64() ?: return
-        val content = encryptedProtocol.encryptMessage(seed, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId)
+        val privateKey = Session.getEd25519PrivateKey() ?: return
+        val content = encryptedProtocol.encryptMessage(privateKey, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId)
 
         val blazeParam = BlazeMessageParam(
             message.conversationId,

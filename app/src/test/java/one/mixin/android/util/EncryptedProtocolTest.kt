@@ -19,17 +19,15 @@ class EncryptedProtocolTest {
 
         val senderKeyPair = generateEd25519KeyPair()
         val senderPrivateKey = senderKeyPair.private as EdDSAPrivateKey
-        val senderSeed = senderPrivateKey.seed
 
         val receiverKeyPair = generateEd25519KeyPair()
         val receiverPrivateKey = receiverKeyPair.private as EdDSAPrivateKey
-        val receiverSeed = receiverPrivateKey.seed
         val receiverPublicKey = receiverKeyPair.public as EdDSAPublicKey
         val receiverCurvePublicKey = publicKeyToCurve25519(receiverPublicKey)
 
-        val encodedContent = encryptedProtocol.encryptMessage(senderSeed, content, receiverCurvePublicKey, otherSessionId)
+        val encodedContent = encryptedProtocol.encryptMessage(senderPrivateKey, content, receiverCurvePublicKey, otherSessionId)
 
-        val decryptedContent = encryptedProtocol.decryptMessage(receiverSeed, encodedContent)
+        val decryptedContent = encryptedProtocol.decryptMessage(receiverPrivateKey, encodedContent)
 
         assert(decryptedContent.contentEquals(content))
     }

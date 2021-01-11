@@ -341,7 +341,7 @@ abstract class MixinJob(
     protected fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
         participantSessionDao.deleteByStatus(conversationId)
         val remote = data.map {
-            ParticipantSession(conversationId, it.userId, it.sessionId, it.publicKey)
+            ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
         }
         if (remote.isEmpty()) {
             participantSessionDao.deleteByConversationId(conversationId)
