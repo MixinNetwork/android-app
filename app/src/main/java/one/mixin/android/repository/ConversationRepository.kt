@@ -414,12 +414,7 @@ internal constructor(
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
 
-    suspend fun clearAckJobs() {
-        while (jobDao.getJobsCount().apply {
-            Timber.e("clear count: $this")
-        } > 10000
-        ) {
-            jobDao.clearAckJobs()
-        }
+    suspend fun getJobsCount(): Int {
+      return jobDao.getJobsCount()
     }
 }

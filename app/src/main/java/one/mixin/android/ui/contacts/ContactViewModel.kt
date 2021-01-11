@@ -71,9 +71,7 @@ internal constructor(
         }
     }
 
-    suspend fun clearAckJobs() {
-        return withContext(Dispatchers.IO) {
-            conversationRepository.clearAckJobs()
-        }
+    suspend fun getJobsCount(): Int {
+        return conversationRepository.getJobsCount()
     }
 }

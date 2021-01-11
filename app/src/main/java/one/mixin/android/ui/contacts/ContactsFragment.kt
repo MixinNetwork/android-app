@@ -14,10 +14,13 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentContactsBinding
@@ -28,6 +31,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.ui.common.BaseFragment
@@ -88,14 +92,10 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             titleView.rightAnimator.setOnClickListener(object : DebugClickListener() {
                 override fun onDebugClick() {
                     lifecycleScope.launch {
-                        val dialog = indeterminateProgressDialog(
-                            message = R.string.pb_dialog_message,
-                        ).apply {
-                            setCancelable(false)
+                        val count = withContext(Dispatchers.IO) {
+                            contactsViewModel.getJobsCount()
                         }
-                        dialog.show()
-                        contactsViewModel.clearAckJobs()
-                        dialog.dismiss()
+                        toast("Jobs count: $count")
                     }
                 }
 
