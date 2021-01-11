@@ -82,7 +82,8 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_IMAGE.name,
-                        MessageCategory.PLAIN_IMAGE.name
+                        MessageCategory.PLAIN_IMAGE.name,
+                        MessageCategory.ENCRYPTED_IMAGE.name
                     )
                 }
                 VIDEO -> {
@@ -90,7 +91,8 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_VIDEO.name,
-                        MessageCategory.PLAIN_VIDEO.name
+                        MessageCategory.PLAIN_VIDEO.name,
+                        MessageCategory.ENCRYPTED_VIDEO.name
                     )
                 }
                 AUDIO -> {
@@ -98,7 +100,8 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_AUDIO.name,
-                        MessageCategory.PLAIN_AUDIO.name
+                        MessageCategory.PLAIN_AUDIO.name,
+                        MessageCategory.ENCRYPTED_AUDIO.name
                     )
                 }
                 DATA -> {
@@ -106,7 +109,8 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_DATA.name,
-                        MessageCategory.PLAIN_DATA.name
+                        MessageCategory.PLAIN_DATA.name,
+                        MessageCategory.ENCRYPTED_DATA.name
                     )
                 }
                 TRANSCRIPT -> {
@@ -119,18 +123,18 @@ internal constructor(
             }
         } else {
             when (type) {
-                IMAGE -> clear(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name)
-                VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
-                AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
-                DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
-                TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name)
+                IMAGE -> clear(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name, MessageCategory.ENCRYPTED_IMAGE.name)
+                VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name, MessageCategory.ENCRYPTED_VIDEO.name)
+                AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name, MessageCategory.ENCRYPTED_AUDIO.name)
+                DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name, MessageCategory.ENCRYPTED_DATA.name)
+                TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name, MessageCategory.ENCRYPTED_TRANSCRIPT.name)
             }
         }
         conversationRepository.refreshConversationById(conversationId)
     }
 
-    private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
-        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name) {
+    private fun clear(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String) {
+        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name && plainCategory == MessageCategory.ENCRYPTED_TRANSCRIPT.name) {
             viewModelScope.launch(SINGLE_DB_THREAD) {
                 val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
                 if (ids.isEmpty()) {
@@ -140,7 +144,7 @@ internal constructor(
             }
             return
         }
-        conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)
+        conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
             ?.let { list ->
                 list.forEach { item ->
                     conversationRepository.deleteMessage(item.messageId, item.mediaUrl)

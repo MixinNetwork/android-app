@@ -111,7 +111,17 @@ fun ICategory.canRecall(): Boolean {
         type == MessageCategory.PLAIN_POST.name ||
         type == MessageCategory.PLAIN_LOCATION.name ||
         type == MessageCategory.PLAIN_TRANSCRIPT.name ||
-        type == MessageCategory.APP_CARD.name
+        type == MessageCategory.ENCRYPTED_TEXT.name ||
+        type == MessageCategory.ENCRYPTED_IMAGE.name ||
+        type == MessageCategory.ENCRYPTED_VIDEO.name ||
+        type == MessageCategory.ENCRYPTED_STICKER.name ||
+        type == MessageCategory.ENCRYPTED_DATA.name ||
+        type == MessageCategory.ENCRYPTED_CONTACT.name ||
+        type == MessageCategory.ENCRYPTED_AUDIO.name ||
+        type == MessageCategory.ENCRYPTED_LIVE.name ||
+        type == MessageCategory.ENCRYPTED_POST.name ||
+        type == MessageCategory.ENCRYPTED_LOCATION.name ||
+        type == MessageCategory.ENCRYPTED_TRANSCRIPT.name
 }
 
 private val mediaPath by lazy {

@@ -146,7 +146,6 @@ android {
         }
         staging {
             initWith debug
-            applicationIdSuffix ".test"
         }
     }
 
