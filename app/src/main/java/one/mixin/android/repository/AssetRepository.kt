@@ -81,7 +81,7 @@ constructor(
 
     fun insertAsset(asset: Asset) = assetDao.insert(asset)
 
-    fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertList(snapshot)
+    suspend fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertListSuspend(snapshot)
 
     fun snapshotsFromDb(
         id: String,
@@ -189,7 +189,21 @@ constructor(
 
     suspend fun findSnapshotByTraceId(traceId: String) = snapshotDao.findSnapshotByTraceId(traceId)
 
-    suspend fun getSnapshotById(snapshotId: String) = assetService.getSnapshotById(snapshotId)
+    suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
+        var result: SnapshotItem? = null
+        handleMixinResponse(
+            invokeNetwork = {
+                assetService.getSnapshotById(snapshotId)
+            },
+            successBlock = { response ->
+                response.data?.let {
+                    snapshotDao.insert(it)
+                    result = snapshotDao.findSnapshotById(snapshotId)
+                }
+            }
+        )
+        return result
+    }
 
     suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
         assetService.getSnapshots(assetId, offset, limit, opponent, destination, tag)

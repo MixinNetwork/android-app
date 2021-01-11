@@ -54,6 +54,7 @@ interface TransactionInterface {
                         }
                         updateUI(fragment, contentBinding, asset, snapshot)
                         fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentBinding, asset.assetId, snapshot)
+                        refreshNoTransactionHashWithdrawal(fragment, contentBinding, lifecycleScope, walletViewModel, snapshot, asset)
                     }
                 }
             } else {
@@ -73,6 +74,7 @@ interface TransactionInterface {
             })
             updateUI(fragment, contentBinding, assetItem, snapshotItem)
             fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentBinding, assetItem.assetId, snapshotItem)
+            refreshNoTransactionHashWithdrawal(fragment, contentBinding, lifecycleScope, walletViewModel, snapshotItem, assetItem)
         }
     }
 
@@ -230,6 +232,23 @@ interface TransactionInterface {
                     senderTitle.text = fragment.getString(R.string.transaction_hash)
                     senderTv.text = snapshot.transactionHash
                     receiverTv.text = snapshot.receiver
+                }
+            }
+        }
+    }
+
+    private fun refreshNoTransactionHashWithdrawal(
+        fragment: Fragment,
+        contentBinding: FragmentTransactionBinding,
+        lifecycleScope: CoroutineScope,
+        walletViewModel: WalletViewModel,
+        snapshot: SnapshotItem,
+        asset: AssetItem,
+    ) {
+        if (snapshot.type == SnapshotType.withdrawal.name && snapshot.transactionHash.isNullOrBlank()) {
+            lifecycleScope.launch {
+                walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
+                    updateUI(fragment, contentBinding, asset, snapshot)
                 }
             }
         }

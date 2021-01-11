@@ -307,19 +307,7 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
 
     suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
         return withContext(Dispatchers.IO) {
-            var result: SnapshotItem? = null
-            handleMixinResponse(
-                invokeNetwork = {
-                    assetRepository.getSnapshotById(snapshotId)
-                },
-                successBlock = { response ->
-                    response.data?.let {
-                        assetRepository.insertSnapshot(it)
-                        result = assetRepository.findSnapshotById(snapshotId)
-                    }
-                }
-            )
-            result
+            assetRepository.refreshAndGetSnapshot(snapshotId)
         }
     }
 
@@ -458,8 +446,6 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
     }
 
     suspend fun findSnapshotById(snapshotId: String) = assetRepository.findSnapshotById(snapshotId)
-
-    suspend fun getSnapshotById(snapshotId: String) = assetRepository.getSnapshotById(snapshotId)
 
     fun insertSnapshot(snapshot: Snapshot) = assetRepository.insertSnapshot(snapshot)
 
