@@ -84,7 +84,7 @@ interface MessageDao : BaseDao<Message> {
         WHERE m.id = :messageId AND m.conversation_id = :conversationId
         """
     )
-    suspend fun getMediaMessage(conversationId: String, messageId: String): MessageItem
+    suspend fun getMediaMessage(conversationId: String, messageId: String): MessageItem?
 
     @Query(
         """

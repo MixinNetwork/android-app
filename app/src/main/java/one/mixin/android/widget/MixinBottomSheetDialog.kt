@@ -43,6 +43,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
             super.show()
         } catch (ignored: Exception) {
         }
+        if (!::sheetContainer.isInitialized) return
 
         sheetContainer.measure(
             View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, View.MeasureSpec.AT_MOST),

@@ -236,7 +236,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     @SuppressLint("RestrictedApi")
     private fun loadData() = lifecycleScope.launch {
-        val messageItem = viewModel.getMediaMessage(conversationId, messageId)
+        val messageItem = viewModel.getMediaMessage(conversationId, messageId) ?: return@launch
         val pagedConfig = PagedList.Config.Builder()
             .setInitialLoadSizeHint(1)
             .setPageSize(1)

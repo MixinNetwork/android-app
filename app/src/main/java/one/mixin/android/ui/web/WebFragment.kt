@@ -291,6 +291,9 @@ class WebFragment : BaseFragment() {
         } else {
             MixinWebView(requireContext())
         }
+        if (webView.parent != null) {
+            (webView.parent as? ViewGroup)?.removeView(webView)
+        }
         binding.webLl.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         binding.webControl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = requireContext().dpToPx(6f)

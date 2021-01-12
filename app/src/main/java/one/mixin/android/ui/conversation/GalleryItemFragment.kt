@@ -114,8 +114,8 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
         albumMediaCollection.onDestroy()
     }
 
-    override fun onAlbumMediaLoad(cursor: Cursor) {
-        if (cursor.isClosed) return
+    override fun onAlbumMediaLoad(cursor: Cursor?) {
+        if (cursor == null || cursor.isClosed) return
 
         binding.rv.post {
             val itemList = arrayListOf<Item>()

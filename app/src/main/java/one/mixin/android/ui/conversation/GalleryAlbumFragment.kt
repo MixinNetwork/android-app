@@ -50,8 +50,10 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
                 albumTl,
                 viewPager
             ) { tab, position ->
-                tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
-                viewPager.setCurrentItem(tab.position, true)
+                context?.let {
+                    tab.text = albumAdapter.albums?.get(position)?.getDisplayName(it)
+                    viewPager.setCurrentItem(tab.position, true)
+                }
             }.attach()
             albumTl.tabMode = TabLayout.MODE_SCROLLABLE
             viewPager.currentItem = 0
