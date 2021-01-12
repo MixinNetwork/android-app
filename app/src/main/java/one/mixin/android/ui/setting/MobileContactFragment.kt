@@ -115,6 +115,8 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     }
 
     private fun deleteContacts() = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         binding.opPb.isVisible = true
         handleMixinResponse(
             invokeNetwork = { viewModel.deleteContacts() },
@@ -133,6 +135,8 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     }
 
     private fun updateContacts(contacts: List<Contact>) = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         binding.opPb.isVisible = true
         val mutableList = createContactsRequests(contacts)
         if (!isAdded) return@launch

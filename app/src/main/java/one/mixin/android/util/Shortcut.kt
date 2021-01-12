@@ -38,13 +38,18 @@ fun addPinShortcut(context: Context, conversationId: String, name: String, icon:
     ShortcutManagerCompat.requestPinShortcut(context, shortcut, successCallback.intentSender)
 }
 
-fun generateDynamicShortcut(context: Context, shortcutInfo: ShortcutInfo) =
-    ShortcutInfoCompat.Builder(context, shortcutInfo.conversationId)
-        .setShortLabel(shortcutInfo.name)
+fun generateDynamicShortcut(context: Context, shortcutInfo: ShortcutInfo): ShortcutInfoCompat {
+    var shortcutName = shortcutInfo.name
+    if (shortcutName.isEmpty()) {
+        shortcutName = "Mixin-${shortcutInfo.conversationId}"
+    }
+    return ShortcutInfoCompat.Builder(context, shortcutInfo.conversationId)
+        .setShortLabel(shortcutName)
         .setIntent(shortcutInfo.intent)
         .setIcon(IconCompat.createWithBitmap(shortcutInfo.icon))
         .setCategories(shareCategories)
         .build()
+}
 
 data class ShortcutInfo(
     var conversationId: String,

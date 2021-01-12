@@ -1508,6 +1508,8 @@ class ConversationFragment() :
                 requireContext(),
                 object : ChatItemCallback.ItemCallbackListener {
                     override fun onSwiped(position: Int) {
+                        if (binding.chatRv.itemAnimator?.isRunning == true) return
+
                         itemTouchHelper.attachToRecyclerView(null)
                         itemTouchHelper.attachToRecyclerView(binding.chatRv)
                         if (position >= 0) {
@@ -1620,6 +1622,8 @@ class ConversationFragment() :
             .observe(
                 viewLifecycleOwner,
                 { list ->
+                    if (Session.getAccount() == null) return@observe
+
                     if (oldCount == -1) {
                         oldCount = list.size
                     } else if (!isFirstLoad && !isBottom && list.size > oldCount) {

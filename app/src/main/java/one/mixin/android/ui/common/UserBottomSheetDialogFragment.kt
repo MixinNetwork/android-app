@@ -225,6 +225,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.refreshUser(user.userId, true)
         lifecycleScope.launch {
+            if (!isAdded) return@launch
+
             bottomViewModel.loadFavoriteApps(user.userId) { apps ->
                 binding.avatarLl.isVisible = !apps.isNullOrEmpty()
                 binding.avatarLl.setOnClickListener {
@@ -259,6 +261,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private fun initMenu(u: User, circleNames: List<String>) {
+        if (!isAdded) return
+
         val clearMenu = menu {
             title = getString(R.string.group_info_clear_chat)
             style = MenuStyle.Danger
