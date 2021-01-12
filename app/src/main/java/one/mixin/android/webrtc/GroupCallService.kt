@@ -573,8 +573,11 @@ class GroupCallService : CallService() {
         }
     }
 
-    override fun onPeerConnectionError(description: String) {
-        callExecutor.execute { handleLocalEnd() }
+    override fun onPeerConnectionError(errorMsg: String) {
+        super.onPeerConnectionError(errorMsg)
+        callExecutor.execute {
+            handleLocalEnd()
+        }
     }
 
     override fun onTimeout() {
