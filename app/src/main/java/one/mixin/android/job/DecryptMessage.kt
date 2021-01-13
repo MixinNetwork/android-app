@@ -130,6 +130,7 @@ import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import java.util.UUID
 
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
@@ -517,7 +518,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         syncUser(data.userId)
         when {
             data.category.endsWith("_TEXT") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
+                val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_TEXT.name, plainText)
                 var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
@@ -554,7 +555,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
             data.category.endsWith("_POST") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
+                val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_POST.name, plainText)
                 val message = createPostMessage(
                     data.messageId,
                     data.conversationId,
@@ -570,7 +571,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_LOCATION") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_LOCATION.name) String(Base64.decode(plainText)) else plainText
+                val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_LOCATION.name, plainText)
                 if (checkLocationData(plain)) {
                     val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
                     messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
@@ -1224,6 +1225,15 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             Log.w(TAG, "Registering new pre keys...")
         }
     }
+
+    private fun tryDecodePlain(isPlain: Boolean, plainText: String) =
+        if (isPlain) {
+            try {
+                String(Base64.decode(plainText))
+            } catch (e: IOException) {
+                plainText
+            }
+        } else plainText
 
     private fun generateNotification(message: Message, data: BlazeMessageData, userMap: Map<String, String>? = null, force: Boolean = false) {
         if (data.source == LIST_PENDING_MESSAGES) {
