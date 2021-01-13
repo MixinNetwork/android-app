@@ -684,7 +684,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                dismissAllowingStateLoss()
+                try {
+                    dismissAllowingStateLoss()
+                } catch (e: IllegalStateException) {
+                    Timber.w(e)
+                }
             }
         }
 

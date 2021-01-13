@@ -179,6 +179,9 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
         }
         me = localMe
+
+        if (!isAdded) return@launch
+
         if (me != null) {
             binding.opsLl.isVisible = true
             binding.scrollView.isEnabled = true
@@ -195,6 +198,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     }
 
     private fun initMenu(me: Participant?, circleNames: List<String>) {
+        if (!isAdded) return
+
         val list = menuList {
             menuGroup {
                 menu {

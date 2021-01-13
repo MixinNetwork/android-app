@@ -154,7 +154,9 @@ class GalleryActivity :
     override fun onNothingSelected(parent: AdapterView<*>) {
     }
 
-    override fun onAlbumLoad(cursor: Cursor) {
+    override fun onAlbumLoad(cursor: Cursor?) {
+        if (cursor == null || cursor.isClosed) return
+
         mAlbumsAdapter.swapCursor(cursor)
         val handler = Handler(Looper.getMainLooper())
         handler.post {

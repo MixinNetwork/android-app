@@ -60,12 +60,14 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
                 try {
                     super.dismissAllowingStateLoss()
                 } catch (e: IllegalStateException) {
+                    Timber.w(e)
                 }
             }
         } else {
             try {
                 super.dismissAllowingStateLoss()
             } catch (e: IllegalStateException) {
+                Timber.w(e)
             }
         }
     }

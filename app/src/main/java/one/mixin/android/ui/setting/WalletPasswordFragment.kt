@@ -224,6 +224,8 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                 dialog.setCancelable(false)
                 dialog.show()
 
+                if (!isAdded) return
+
                 walletViewModel.updatePin(binding.pin.code(), oldPassword)
                     .autoDispose(stopScope).subscribe(
                         { r: MixinResponse<Account> ->

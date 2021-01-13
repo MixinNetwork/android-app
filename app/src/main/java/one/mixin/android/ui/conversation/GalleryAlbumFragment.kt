@@ -113,7 +113,9 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         albumCollection.onDestroy()
     }
 
-    override fun onAlbumLoad(cursor: Cursor) {
+    override fun onAlbumLoad(cursor: Cursor?) {
+        if (cursor == null || cursor.isClosed) return
+
         binding.apply {
             va.post {
                 val albums = arrayListOf<Album>()
