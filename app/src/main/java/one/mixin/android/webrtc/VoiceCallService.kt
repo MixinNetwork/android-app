@@ -309,7 +309,8 @@ class VoiceCallService : CallService() {
         }
     }
 
-    override fun onPeerConnectionError(description: String) {
+    override fun onPeerConnectionError(errorMsg: String) {
+        super.onPeerConnectionError(errorMsg)
         callExecutor.execute { handleCallLocalFailed() }
     }
 

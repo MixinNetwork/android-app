@@ -2,7 +2,6 @@ package one.mixin.android.webrtc
 
 import android.content.Context
 import androidx.collection.arrayMapOf
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import one.mixin.android.session.Session
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
@@ -318,24 +317,27 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
     fun getPeerConnection() = peerConnection
 
-    private fun reportError(error: String) {
-        Timber.d("$TAG_CALL reportError: $error")
+    fun getPCMessage(error: String? = null): String {
+        val msgBuilder = StringBuilder().append("$TAG_CALL WebRTC peer connection").appendLine()
+        if (!error.isNullOrBlank()) {
+            msgBuilder.append("error: $error").appendLine()
+        }
         peerConnection?.let { pc ->
             val localSdp = "{ localDescription: { description: ${pc.localDescription?.description}, type: ${pc.localDescription?.type} }"
             val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription?.description}, type: ${pc.remoteDescription?.type} }"
+            msgBuilder.append(localSdp).appendLine().append(remoteSdp).appendLine()
+
             pc.getStats { report ->
-                FirebaseCrashlytics.getInstance().log(
-                    "WebRTC peer connection error " +
-                        """
-                        { stats: $report },
-                        $localSdp,
-                        $remoteSdp
-                    """
-                )
+                msgBuilder.append("{ stats: $report }").appendLine()
             }
         }
+        return msgBuilder.toString()
+    }
+
+    private fun reportError(error: String) {
+        val msg = getPCMessage(error)
         if (!isError) {
-            events.onPeerConnectionError(error)
+            events.onPeerConnectionError(msg)
             isError = true
         }
     }
@@ -550,7 +552,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         /**
          * Callback fired once peer connection error happened.
          */
-        fun onPeerConnectionError(description: String)
+        fun onPeerConnectionError(errorMsg: String)
 
         fun getSenderPublicKey(userId: String, sessionId: String): ByteArray?
     }

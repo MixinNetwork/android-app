@@ -75,6 +75,7 @@ import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.acceptInvite
 import one.mixin.android.webrtc.answerCall
+import one.mixin.android.webrtc.logCallState
 import one.mixin.android.webrtc.muteAudio
 import one.mixin.android.webrtc.speakerPhone
 import one.mixin.android.widget.CallButton
@@ -229,6 +230,14 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         )
+        binding.voiceCb.setOnLongClickListener {
+            if (callState.isGroupCall()) {
+                logCallState<GroupCallService>(this@CallActivity)
+            } else {
+                logCallState<VoiceCallService>(this@CallActivity)
+            }
+            return@setOnLongClickListener true
+        }
         updateUI()
 
         callState.observe(

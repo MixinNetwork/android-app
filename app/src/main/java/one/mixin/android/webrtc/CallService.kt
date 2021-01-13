@@ -18,6 +18,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallNotificationBuilder
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.TurnServer
@@ -30,6 +31,7 @@ import org.webrtc.PeerConnectionFactory
 import org.webrtc.StatsReport
 import timber.log.Timber
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
@@ -38,7 +40,7 @@ import javax.inject.Inject
 abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvents {
 
     protected val callExecutor: ThreadPoolExecutor = Executors.newFixedThreadPool(1) as ThreadPoolExecutor
-    protected val timeoutExecutor = Executors.newScheduledThreadPool(1)
+    protected val timeoutExecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
     protected var timeoutFuture: ScheduledFuture<*>? = null
 
     protected val peerConnectionClient: PeerConnectionClient by lazy {
@@ -110,6 +112,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                     ACTION_CALL_DISCONNECT -> disconnect()
                     ACTION_MUTE_AUDIO -> handleMuteAudio(intent)
                     ACTION_SPEAKERPHONE -> handleSpeakerphone(intent)
+                    ACTION_LOG_CALL_STATE -> handleLogCallState()
                 }
             }
         }
@@ -178,6 +181,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     override fun onIceDisconnected() {
     }
 
+    override fun onPeerConnectionError(errorMsg: String) {
+        val callAudioMsg = audioManager.getMsg()
+        val fullMsg = StringBuilder().append(errorMsg).appendLine().append(callAudioMsg).toString()
+        reportException(IllegalStateException(fullMsg))
+    }
+
     private fun handleConnected() {
         Timber.d("$TAG_CALL callState: ${callState.state}")
         if (callState.isIdle()) return
@@ -218,6 +227,15 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         audioManager.isSpeakerOn = speakerphone
     }
 
+    private fun handleLogCallState() {
+        if (callState.isIdle()) return
+
+        val pcMsg = peerConnectionClient.getPCMessage()
+        val callAudioMsg = audioManager.getMsg()
+        val fullMsg = StringBuilder().append(pcMsg).appendLine().append(callAudioMsg).toString()
+        Timber.e(fullMsg)
+    }
+
     private fun handleCheckTimeout() {
         if (callState.isIdle() || callState.isConnected()) return
 
@@ -244,18 +262,20 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 action.invoke(genIceServerList(array))
             },
             exceptionBlock = {
-                handleFetchTurnError()
+                handleFetchTurnError(it.message)
                 return@handleMixinResponse false
             },
             failureBlock = {
-                handleFetchTurnError()
+                handleFetchTurnError(it.error?.toString())
                 return@handleMixinResponse true
             }
         )
     }
 
-    private fun handleFetchTurnError() {
-        Timber.d("$TAG_CALL handleFetchTurnError")
+    private fun handleFetchTurnError(message: String?) {
+        val error = "$TAG_CALL handleFetchTurnError $message"
+        Timber.w(error)
+        reportException(IllegalStateException(error))
         callExecutor.execute { onTurnServerError() }
     }
 
@@ -304,6 +324,8 @@ const val ACTION_CALL_DISCONNECT = "call_disconnect"
 const val ACTION_MUTE_AUDIO = "mute_audio"
 const val ACTION_SPEAKERPHONE = "speakerphone"
 
+const val ACTION_LOG_CALL_STATE = "report"
+
 const val EXTRA_CONVERSATION_ID = "conversation_id"
 const val EXTRA_USERS = "users"
 const val EXTRA_USER_ID = "user_id"
@@ -335,6 +357,8 @@ inline fun <reified T : CallService> startService(
     }
     ctx.startService(intent)
 }
+
+inline fun <reified T : CallService> logCallState(ctx: Context) = startService<T>(ctx, ACTION_LOG_CALL_STATE) {}
 
 fun anyCallServiceRunning(context: Context) = isVoiceCallServiceRunning(context) || isGroupCallServiceRunning(context)
 

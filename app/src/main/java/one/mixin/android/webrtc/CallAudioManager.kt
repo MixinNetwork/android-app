@@ -123,6 +123,18 @@ class CallAudioManager(
         audioSwitch.safeStop()
     }
 
+    fun getMsg(): String {
+        return """
+            $TAG_AUDIO CallAudioManager message
+            isInitiator: $isInitiator
+            playRingtone: $playRingtone
+            hasStarted: $hasStarted
+            mediaPlayerStopped: $mediaPlayerStopped
+            isSpeakerOn: $isSpeakerOn
+            audioSwitch selectedAudioDevice: ${audioSwitch.selectedAudioDevice}, availableAudioDevices: ${audioSwitch.availableAudioDevices}
+        """.trimIndent()
+    }
+
     private fun setSpeaker(enable: Boolean) {
         val isBluetoothHeadsetOrWiredHeadset = audioSwitch.isBluetoothHeadsetOrWiredHeadset()
         Timber.d("$TAG_AUDIO setSpeaker enable: $enable, isBluetoothHeadsetOrWiredHeadset: $isBluetoothHeadsetOrWiredHeadset")
@@ -132,7 +144,6 @@ class CallAudioManager(
             audioSwitch.selectSpeakerphone()
         } else {
             audioSwitch.selectEarpiece()
-            audioSwitch.safeActivate()
         }
     }
 
