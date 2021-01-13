@@ -23,6 +23,8 @@ import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
+import java.lang.IndexOutOfBoundsException
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -120,25 +122,30 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
                 val editable = searchEt.text
                 val start = searchEt.selectionStart
                 val end = searchEt.selectionEnd
-                if (position == 11) {
-                    if (editable.isEmpty()) return
 
-                    if (start == end) {
-                        if (start == 0) {
-                            searchEt.text.delete(0, end)
+                try {
+                    if (position == 11) {
+                        if (editable.isEmpty()) return
+
+                        if (start == end) {
+                            if (start == 0) {
+                                searchEt.text.delete(0, end)
+                            } else {
+                                searchEt.text.delete(start - 1, end)
+                            }
+                            if (start > 0) {
+                                searchEt.setSelection(start - 1)
+                            }
                         } else {
-                            searchEt.text.delete(start - 1, end)
-                        }
-                        if (start > 0) {
-                            searchEt.setSelection(start - 1)
+                            searchEt.text.delete(start, end)
+                            searchEt.setSelection(start)
                         }
                     } else {
-                        searchEt.text.delete(start, end)
-                        searchEt.setSelection(start)
+                        searchEt.text = editable.insert(start, value)
+                        searchEt.setSelection(start + 1)
                     }
-                } else {
-                    searchEt.text = editable.insert(start, value)
-                    searchEt.setSelection(start + 1)
+                } catch (e: IndexOutOfBoundsException) {
+                    Timber.w(e)
                 }
             }
         }

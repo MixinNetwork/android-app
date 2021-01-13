@@ -39,6 +39,8 @@ import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
+import java.lang.IndexOutOfBoundsException
 
 @AndroidEntryPoint
 class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
@@ -258,25 +260,29 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 val editable = mobileEt.text
                 val start = mobileEt.selectionStart
                 val end = mobileEt.selectionEnd
-                if (position == 11) {
-                    if (editable.isNullOrEmpty()) return
+                try {
+                    if (position == 11) {
+                        if (editable.isNullOrEmpty()) return
 
-                    if (start == end) {
-                        if (start == 0) {
-                            mobileEt.text?.delete(0, end)
+                        if (start == end) {
+                            if (start == 0) {
+                                mobileEt.text?.delete(0, end)
+                            } else {
+                                mobileEt.text?.delete(start - 1, end)
+                            }
+                            if (start > 0) {
+                                mobileEt.setSelection(start - 1)
+                            }
                         } else {
-                            mobileEt.text?.delete(start - 1, end)
-                        }
-                        if (start > 0) {
-                            mobileEt.setSelection(start - 1)
+                            mobileEt.text?.delete(start, end)
+                            mobileEt.setSelection(start)
                         }
                     } else {
-                        mobileEt.text?.delete(start, end)
-                        mobileEt.setSelection(start)
+                        mobileEt.text = editable?.insert(start, value)
+                        mobileEt.setSelection(start + 1)
                     }
-                } else {
-                    mobileEt.text = editable?.insert(start, value)
-                    mobileEt.setSelection(start + 1)
+                } catch (e: IndexOutOfBoundsException) {
+                    Timber.w(e)
                 }
             }
         }

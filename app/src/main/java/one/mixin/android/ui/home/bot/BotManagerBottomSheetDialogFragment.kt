@@ -46,6 +46,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
+import timber.log.Timber
 
 @AndroidEntryPoint
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener {
@@ -120,6 +121,14 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             if (realFragmentCount <= 0) {
                 activity?.finish()
             }
+        }
+    }
+
+    override fun dismissAllowingStateLoss() {
+        try {
+            super.dismissAllowingStateLoss()
+        } catch (e: IllegalStateException) {
+            Timber.w(e)
         }
     }
 

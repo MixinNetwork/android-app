@@ -11,6 +11,7 @@ import org.threeten.bp.LocalTime
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
+import timber.log.Timber
 import java.util.Date
 
 private val LocaleZone by lazy {
@@ -128,8 +129,12 @@ fun String.timeAgoDay(patten: String = "dd/MM/yyyy"): String {
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
     if (timeAgoDate == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
-        timeAgoDate = date.format(DateTimeFormatter.ofPattern(patten).withZone(LocaleZone))
-        TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
+        try {
+            timeAgoDate = date.format(DateTimeFormatter.ofPattern(patten).withZone(LocaleZone))
+            TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
+        } catch (e: IllegalArgumentException) {
+            Timber.w(e)
+        }
     }
     return timeAgoDate as String
 }

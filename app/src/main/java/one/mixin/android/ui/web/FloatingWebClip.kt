@@ -19,6 +19,7 @@ import android.widget.FrameLayout
 import androidx.annotation.Keep
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getPixelsInCM
@@ -96,6 +97,8 @@ class FloatingWebClip(private var isNightMode: Boolean) {
     }
 
     fun show(activity: Activity, force: Boolean = true) {
+        if (!activity.checkInlinePermissions()) return
+
         if (isNightMode != activity.isNightMode()) {
             recreate(activity.isNightMode()).show(activity, true)
         } else {
