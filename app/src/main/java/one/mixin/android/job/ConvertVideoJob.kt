@@ -38,7 +38,7 @@ class ConvertVideoJob(
     }
 
     private val video: VideoEditedInfo? = getVideoModel(uri)
-    private val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+    private val category = MessageCategory.PLAIN_VIDEO.name
     private val createdAt: String = createdAt ?: nowInUtc()
     override fun onAdded() {
         val mimeType = getMimeType(uri)

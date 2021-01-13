@@ -66,8 +66,7 @@ import javax.inject.Inject
 class SendMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository) {
 
     fun sendTextMessage(scope: CoroutineScope, conversationId: String, sender: User, content: String, isPlain: Boolean) {
-        val category =
-            if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        val category = MessageCategory.PLAIN_TEXT.name
         val message = createMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -97,8 +96,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         replyMessage: MessageItem,
         isPlain: Boolean
     ) {
-        val category =
-            if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        val category = MessageCategory.PLAIN_TEXT.name
         val message = createReplyTextMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -114,8 +112,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
     }
 
     fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
-        val category =
-            if (isPlain) MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
+        val category = MessageCategory.PLAIN_POST.name
         val message = createPostMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -142,7 +139,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
     }
 
     fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean, replyMessage: MessageItem? = null) {
-        val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
+        val category = MessageCategory.PLAIN_DATA.name 
         val message = createAttachmentMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
@@ -162,7 +159,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         isPlain: Boolean,
         replyMessage: MessageItem? = null
     ) {
-        val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+        val category = MessageCategory.PLAIN_AUDIO.name
         val message = createAudioMessage(
             messageId, conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
@@ -177,8 +174,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         transferStickerData: StickerMessagePayload,
         isPlain: Boolean
     ) {
-        val category =
-            if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
+        val category = MessageCategory.PLAIN_STICKER.name 
         val encoded = GsonHelper.customGson.toJson(transferStickerData).base64Encode()
         transferStickerData.stickerId?.let {
             val message = createStickerMessage(
@@ -205,7 +201,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         isPlain: Boolean,
         replyMessage: MessageItem? = null
     ) {
-        val category = if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
+        val category = MessageCategory.PLAIN_CONTACT.name
         val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
         val message = createContactMessage(
@@ -256,8 +252,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         transferLiveData: LiveMessagePayload,
         isPlain: Boolean
     ) {
-        val category =
-            if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
+        val category = MessageCategory.PLAIN_LIVE.name 
         val encoded =
             GsonHelper.customGson.toJson(transferLiveData).base64Encode()
         val message = createLiveMessage(
@@ -283,8 +278,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         isPlain: Boolean,
         previewUrl: String
     ) {
-        val category =
-            if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+        val category = MessageCategory.PLAIN_IMAGE.name 
         jobManager.addJobInBackground(
             SendGiphyJob(
                 conversationId, senderId, image.url, image.width, image.height, image.size.toLong(),
@@ -294,7 +288,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
     }
 
     fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, isPlain: Boolean) {
-        val category = if (isPlain) MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
+        val category = MessageCategory.PLAIN_LOCATION.name 
         jobManager.addJobInBackground(
             SendMessageJob(
                 createLocationMessage(
@@ -325,8 +319,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         mime: String? = null,
         replyMessage: MessageItem? = null
     ): Int {
-        val category =
-            if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+        val category = MessageCategory.PLAIN_IMAGE.name 
         var mimeType = mime
         if (mimeType == null) {
             mimeType = getMimeType(uri, true)
