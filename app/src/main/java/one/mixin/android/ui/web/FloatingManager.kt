@@ -9,7 +9,6 @@ import android.graphics.Paint
 import android.view.View
 import android.webkit.WebViewClient
 import androidx.annotation.ColorInt
-import androidx.core.view.doOnLayout
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -34,28 +33,28 @@ var screenshot: Bitmap? = null
 fun expand(context: Context) {
     MixinApplication.get().currentActivity?.let { activity ->
         val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
-        rootView.doOnLayout {
-            val screenBitmap = rootView.drawToBitmap()
-            val resultBitmap = Bitmap.createScaledBitmap(
-                screenBitmap,
-                screenBitmap.width / 3,
-                screenBitmap.height / 3,
-                false
-            )
+        if (!rootView.isLaidOut) return@let
 
-            val cv = Canvas(resultBitmap)
-            cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
-            cv.drawRect(
-                0f,
-                0f,
-                screenBitmap.width.toFloat(),
-                screenBitmap.height.toFloat(),
-                Paint().apply {
-                    color = Color.parseColor("#CC1C1C1C")
-                }
-            )
-            screenshot = resultBitmap
-        }
+        val screenBitmap = rootView.drawToBitmap()
+        val resultBitmap = Bitmap.createScaledBitmap(
+            screenBitmap,
+            screenBitmap.width / 3,
+            screenBitmap.height / 3,
+            false
+        )
+
+        val cv = Canvas(resultBitmap)
+        cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
+        cv.drawRect(
+            0f,
+            0f,
+            screenBitmap.width.toFloat(),
+            screenBitmap.height.toFloat(),
+            Paint().apply {
+                color = Color.parseColor("#CC1C1C1C")
+            }
+        )
+        screenshot = resultBitmap
     }
     initRenderScript(context)
     WebActivity.show(context)
