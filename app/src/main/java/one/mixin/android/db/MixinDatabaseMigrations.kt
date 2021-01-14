@@ -245,6 +245,5 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_jobs_action` ON `jobs` (`action`)")
             }
         }
-
     }
 }

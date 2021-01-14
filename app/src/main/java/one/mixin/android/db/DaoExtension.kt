@@ -8,7 +8,6 @@ import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
-import timber.log.Timber
 
 fun UserDao.insertUpdate(
     user: User,
