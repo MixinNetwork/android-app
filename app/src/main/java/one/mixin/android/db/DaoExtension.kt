@@ -162,14 +162,6 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-fun JobDao.insertListNoReplace(jobs: List<Job>) {
-    jobs.filter { job ->
-        findJobById(job.jobId) == null
-    }.apply {
-        insertList(this)
-    }
-}
-
 fun MixinDatabase.deleteMessage(id: String) {
     runInTransaction {
         messageDao().deleteMessage(id)

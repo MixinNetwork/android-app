@@ -78,7 +78,7 @@ class SendService : IntentService("SendService") {
                 }
                 Session.getExtensionSessionId()?.let {
                     list.map { createAckJob(CREATE_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name), conversationId) }.let {
-                        jobDao.insertListNoReplace(it)
+                        jobDao.insertList(it)
                     }
                 }
             }

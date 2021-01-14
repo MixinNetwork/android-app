@@ -255,7 +255,7 @@ internal constructor(
     }
 
     fun insertList(it: List<Job>) {
-        jobDao.insertListNoReplace(it)
+        jobDao.insertList(it)
     }
 
     fun refreshConversation(conversationId: String): Boolean {
