@@ -31,6 +31,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_30_31
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_31_32
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_32_33
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_33_34
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_34_35
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -136,7 +137,7 @@ abstract class MixinDatabase : RoomDatabase() {
                         .addMigrations(
                             MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21,
                             MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28,
-                            MIGRATION_28_29, MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34
+                            MIGRATION_28_29, MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35
                         )
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)

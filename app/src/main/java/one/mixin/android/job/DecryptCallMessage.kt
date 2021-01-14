@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.insertAndNotifyConversation
+import one.mixin.android.db.insertNoReplace
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
@@ -378,7 +379,7 @@ class DecryptCallMessage(
     }
 
     private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
-        jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
+        jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
     private fun saveCallMessage(

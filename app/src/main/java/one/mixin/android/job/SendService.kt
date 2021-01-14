@@ -13,6 +13,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.batchMarkReadAndTake
+import one.mixin.android.db.insertListNoReplace
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageCategory

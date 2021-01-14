@@ -34,6 +34,7 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -213,6 +214,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val ackMessages = jobDao.findAckJobs()
         if (ackMessages.isEmpty()) {
             return false
+        } else if (ackMessages.size == 100) {
+            jobDao.getJobsCount().apply {
+                if (this >= 10000) {
+                    reportException("ack job count: $this", Exception())
+                }
+            }
         }
         try {
             messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
