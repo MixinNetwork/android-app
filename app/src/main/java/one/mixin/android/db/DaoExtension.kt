@@ -163,8 +163,10 @@ fun JobDao.insertNoReplace(job: Job) {
 }
 
 fun JobDao.insertListNoReplace(jobs: List<Job>) {
-    jobs.asSequence().forEach { job ->
-        insert(job)
+    jobs.filter { job ->
+        findJobById(job.jobId) == null
+    }.apply {
+        insertList(this)
     }
 }
 
