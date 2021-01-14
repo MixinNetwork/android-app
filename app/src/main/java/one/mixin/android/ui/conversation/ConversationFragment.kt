@@ -720,6 +720,7 @@ class ConversationFragment() :
             }
 
             override fun onPostClick(view: View, messageItem: MessageItem) {
+                binding.chatControl.chatEt.hideKeyboard()
                 MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
             }
 
