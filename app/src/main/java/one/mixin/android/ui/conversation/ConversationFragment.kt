@@ -2211,6 +2211,7 @@ class ConversationFragment() :
                                     FriendsFragment.newInstance(conversationId).apply {
                                         setOnFriendClick {
                                             sendContactMessage(it.userId)
+                                            parentFragmentManager.popBackStackImmediate()
                                         }
                                     },
                                     FriendsFragment.TAG
