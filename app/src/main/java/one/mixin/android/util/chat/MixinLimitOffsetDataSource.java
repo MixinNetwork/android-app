@@ -2,7 +2,6 @@ package one.mixin.android.util.chat;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
@@ -11,6 +10,7 @@ import androidx.room.InvalidationTracker;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
+import timber.log.Timber;
 
 import java.util.Collections;
 import java.util.List;
@@ -91,7 +91,12 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
 
         List<T> list = loadRange(firstLoadPosition, firstLoadSize);
         if (list != null && list.size() == firstLoadSize) {
-            callback.onResult(list, firstLoadPosition, totalCount);
+            try {
+                callback.onResult(list, firstLoadPosition, totalCount);
+            } catch (IllegalArgumentException e) {
+                // workaround with paging incorrect tiling
+                Timber.w(e);
+            }
         } else {
             // null list, or size doesn't match request - DB modified between count and load
             invalidate();
