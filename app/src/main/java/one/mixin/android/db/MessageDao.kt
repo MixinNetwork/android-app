@@ -215,8 +215,6 @@ interface MessageDao : BaseDao<Message> {
 			INNER JOIN users u ON c.owner_id = u.user_id
             INNER JOIN conversations c ON c.conversation_id = m.conversation_id
             WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) 
-            AND m.category IN('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST', 'SIGNAL_CONTACT', 'PLAIN_CONTACT') 
-            AND m.status != 'FAILED'
             GROUP BY m.conversation_id
             ORDER BY max(m.created_at) DESC
             LIMIT :limit
@@ -230,9 +228,7 @@ interface MessageDao : BaseDao<Message> {
             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
             WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) 
-            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST', 'SIGNAL_CONTACT', 'PLAIN_CONTACT') 
             AND m.conversation_id = :conversationId
-            AND m.status != 'FAILED'
             ORDER BY m.created_at DESC
         """
     )
