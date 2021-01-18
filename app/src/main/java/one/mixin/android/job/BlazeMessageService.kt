@@ -210,13 +210,15 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
+    private var lastAckPendingCount = 0
     private tailrec suspend fun processAck(): Boolean {
         val ackMessages = jobDao.findAckJobs()
         if (ackMessages.isEmpty()) {
             return false
         } else if (ackMessages.size == 100) {
             jobDao.getJobsCount().apply {
-                if (this >= 10000) {
+                if (this >= 10000 && this - lastAckPendingCount >= 10000) {
+                    lastAckPendingCount = this
                     reportException("ack job count: $this", Exception())
                 }
             }
