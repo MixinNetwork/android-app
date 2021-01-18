@@ -89,6 +89,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.config
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -2774,9 +2775,11 @@ class ConversationFragment() :
             .setAction(R.string.chat_go_check) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                view.setBackgroundResource(R.color.call_btn_icon_checked)
                 (view.findViewById<TextView>(R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-            }.show()
+            }.apply {
+                config(binding.barLayout.context)
+            }
+            .show()
     }
 
     private fun displayReplyView() {

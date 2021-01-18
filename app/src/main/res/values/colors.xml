@@ -7,6 +7,7 @@
     <color name="colorDarkBlue">#1987FF</color>
     <color name="colorLightBlue">#0D94FC</color>
     <color name="colorGray">#9B9B9B</color>
+    <color name="colorOnSurface">#212121</color>
 
     <color name="textPrimary">#333333</color>
     <color name="textMinor">#bbbbbb</color>

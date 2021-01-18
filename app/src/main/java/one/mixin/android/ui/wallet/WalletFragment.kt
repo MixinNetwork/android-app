@@ -26,7 +26,9 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
+import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
@@ -49,6 +51,7 @@ import one.mixin.android.widget.PercentView
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
+import kotlin.math.abs
 
 @AndroidEntryPoint
 class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnItemListener {
@@ -69,6 +72,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private val binding by viewBinding(FragmentWalletBinding::bind)
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
+
+    private var distance = 0
+    private var snackbar: Snackbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,17 +103,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                                 walletViewModel.updateAssetHidden(asset.assetId, true)
                                 val anchorView = coinsRv
 
-                                Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
+                                snackbar = Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 30_000)
                                     .setAction(R.string.undo_capital) {
                                         assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                         lifecycleScope.launch(Dispatchers.IO) {
                                             walletViewModel.updateAssetHidden(asset.assetId, false)
                                         }
                                     }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                        this.view.setBackgroundResource(R.color.call_btn_icon_checked)
                                         (this.view.findViewById(R.id.snackbar_text) as TextView)
                                             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                    }.show()
+                                    }.apply {
+                                        snackbar?.config(anchorView.context)
+                                    }
+                                snackbar?.show()
+                                distance = 0
                             }
                         }
                     }
@@ -115,6 +124,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             ).apply { attachToRecyclerView(coinsRv) }
             assetsAdapter.onItemListener = this@WalletFragment
             coinsRv.adapter = assetsAdapter
+            coinsRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    if (abs(distance) > 50.dp && snackbar?.isShown == true) {
+                        snackbar?.dismiss()
+                        distance = 0
+                    }
+                    distance += dy
+                }
+            })
         }
 
         walletViewModel.assetItems().observe(viewLifecycleOwner) {
