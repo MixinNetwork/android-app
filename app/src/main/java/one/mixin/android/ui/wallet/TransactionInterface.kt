@@ -115,6 +115,8 @@ interface TransactionInterface {
                         fragment.context?.let { c ->
                             setTextColor(c.colorFromAttribute(R.attr.text_minor))
                             setOnClickListener {
+                                if (!fragment.isAdded) return@setOnClickListener
+
                                 val balloon = createBalloon(c) {
                                     setArrowSize(10)
                                     setHeight(45)

@@ -1515,8 +1515,13 @@ class ConversationFragment() :
                     override fun onSwiped(position: Int) {
                         if (binding.chatRv.itemAnimator?.isRunning == true) return
 
-                        itemTouchHelper.attachToRecyclerView(null)
-                        itemTouchHelper.attachToRecyclerView(binding.chatRv)
+                        try {
+                            itemTouchHelper.attachToRecyclerView(null)
+                            itemTouchHelper.attachToRecyclerView(binding.chatRv)
+                        } catch (e: IllegalStateException) {
+                            // workaround with RecyclerView.assertNotInLayoutOrScroll
+                            Timber.w(e)
+                        }
                         if (position >= 0) {
                             chatAdapter.getItem(position)?.let {
                                 binding.chatControl.replyView.bind(it)
@@ -1635,7 +1640,6 @@ class ConversationFragment() :
 
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?, countable: Boolean) {
         var oldCount: Int = -1
-        val start = System.currentTimeMillis()
         messageObserver = Observer { list ->
             if (Session.getAccount() == null) return@Observer
 
@@ -1804,7 +1808,7 @@ class ConversationFragment() :
     }
 
     override fun onCancel() {
-        binding.chatControl?.cancelExternal()
+        binding.chatControl.cancelExternal()
     }
 
     override fun sendAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray) {

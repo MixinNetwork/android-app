@@ -155,9 +155,12 @@ var saveJob: Job? = null
 fun saveClips() {
     saveJob?.cancel()
     saveJob = GlobalScope.launch(SINGLE_THREAD) {
+        val localClips = mutableListOf<WebClip>().apply {
+            addAll(clips)
+        }
         MixinApplication.appContext.defaultSharedPreferences.putString(
             PREF_FLOATING,
-            GsonHelper.customGson.toJson(clips)
+            GsonHelper.customGson.toJson(localClips)
         )
     }
 }
