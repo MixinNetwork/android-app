@@ -171,6 +171,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         binding.viewPager.registerOnPageChangeCallback(onPageChangeCallback)
         VideoPlayer.player().setCycle(false)
 
+        // workaround with ViewPager2 restore state bug
+        binding.viewPager.isSaveEnabled = false
+
         binding.lockTv.setOnClickListener(onLockClickListener)
 
         SensorOrientationChangeNotifier.init(this, requestedOrientation)
@@ -197,12 +200,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         super.onDestroy()
         processor.close()
         SensorOrientationChangeNotifier.reset()
-        binding.viewPager?.unregisterOnPageChangeCallback(onPageChangeCallback)
+        binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         val enable = ev?.pointerCount ?: 0 < 2
-        binding.viewPager?.isUserInputEnabled = enable
+        binding.viewPager.isUserInputEnabled = enable
         return super.dispatchTouchEvent(ev)
     }
 
