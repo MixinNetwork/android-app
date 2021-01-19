@@ -104,7 +104,6 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.language.Lingver
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
@@ -446,7 +445,6 @@ class WebFragment : BaseFragment() {
                             failLoadView.isVisible = true
                         }
                     }
-                    description?.let { reportException(Exception(it)) }
                 }
             )
 
