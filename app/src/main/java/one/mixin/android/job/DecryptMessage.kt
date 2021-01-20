@@ -406,7 +406,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         data: BlazeMessageData,
         generator: (QuoteMessageItem?) -> Message
     ): Message {
-        val quoteMessageId = data.quoteMessageId ?: return generator(null)
+        val quoteMessageId = data.quoteMessageId
+        if (quoteMessageId.isNullOrBlank()) {
+            return generator(null)
+        }
         val quoteMessageItem =
             messageDao.findMessageItemById(data.conversationId, quoteMessageId)
                 ?: return generator(null)

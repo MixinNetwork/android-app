@@ -390,7 +390,8 @@ class DecryptCallMessage(
         status: String? = null
     ) {
         val accountId = Session.getAccountId() ?: return
-        if (data.userId == accountId || data.quoteMessageId == null) {
+        val mId = data.quoteMessageId
+        if (data.userId == accountId || mId.isNullOrBlank()) {
             return
         }
         var messageStatus = data.status
@@ -399,7 +400,7 @@ class DecryptCallMessage(
         }
         val realCategory = category ?: data.category
         val message = createCallMessage(
-            data.quoteMessageId,
+            mId,
             data.conversationId,
             userId,
             realCategory,
