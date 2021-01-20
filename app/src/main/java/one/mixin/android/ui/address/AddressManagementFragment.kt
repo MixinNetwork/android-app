@@ -41,7 +41,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
     }
     private var addresses: List<Address>? = null
 
-    private val adapter: AddressAdapter by lazy { AddressAdapter(asset, true) }
+    private val adapter: AddressAdapter by lazy { AddressAdapter() }
 
     private val binding by viewBinding(FragmentAddressManagementBinding::bind)
 

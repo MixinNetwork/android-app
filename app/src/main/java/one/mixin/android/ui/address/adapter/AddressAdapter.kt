@@ -2,18 +2,14 @@ package one.mixin.android.ui.address.adapter
 
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.displayAddress
 
-class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean = false) :
-    RecyclerView.Adapter<AddressAdapter.ItemHolder>() {
+class AddressAdapter : RecyclerView.Adapter<AddressAdapter.ItemHolder>() {
     var addresses: MutableList<Address>? = null
         set(value) {
             field = value
@@ -31,7 +27,6 @@ class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean
         }
         val addr = addresses!![position]
         holder.itemBinding.apply {
-            backgroundRl.visibility = if (canSwipe) VISIBLE else GONE
             nameTv.text = addr.label
             addrTv.text = addr.displayAddress()
             createdTv.text = addr.updatedAt.timeAgo(holder.itemView.context)
