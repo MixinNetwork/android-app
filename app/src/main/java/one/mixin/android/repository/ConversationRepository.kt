@@ -37,6 +37,7 @@ import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MessageDeleteJob
+import one.mixin.android.job.MessageFtsDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -385,8 +386,14 @@ internal constructor(
             jobManager.addJobInBackground(MessageDeleteJob(conversationId, deleteConversation = deleteConversation))
         } else {
             val deleteTimes = deleteCount / DB_DELETE_LIMIT + 1
+            jobManager.addJobInBackground(
+                MessageFtsDeleteJob(
+                    messageDao.getMessageIdsByConversationId(
+                        conversationId
+                    )
+                )
+            )
             repeat(deleteTimes) {
-                messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
                 if (!deleteConversation) {
                     messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
                 }

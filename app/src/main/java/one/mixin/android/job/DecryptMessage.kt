@@ -107,7 +107,6 @@ import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
 import org.threeten.bp.ZonedDateTime
-import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
@@ -761,27 +760,26 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 keyType,
                 cipherText,
                 data.category,
-                data.sessionId,
-                DecryptionCallback {
-                    if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
-                        RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
-                    }
-                    if (data.category != MessageCategory.SIGNAL_KEY.name) {
-                        val plaintext = String(it)
-                        if (resendMessageId != null) {
-                            processRedecryptMessage(data, resendMessageId, plaintext)
-                            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-                            messageHistoryDao.insert(MessageHistory(data.messageId))
-                        } else {
-                            try {
-                                processDecryptSuccess(data, plaintext)
-                            } catch (e: JsonSyntaxException) {
-                                insertInvalidMessage(data)
-                            }
+                data.sessionId
+            ) {
+                if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
+                    RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
+                }
+                if (data.category != MessageCategory.SIGNAL_KEY.name) {
+                    val plaintext = String(it)
+                    if (resendMessageId != null) {
+                        processRedecryptMessage(data, resendMessageId, plaintext)
+                        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                        messageHistoryDao.insert(MessageHistory(data.messageId))
+                    } else {
+                        try {
+                            processDecryptSuccess(data, plaintext)
+                        } catch (e: JsonSyntaxException) {
+                            insertInvalidMessage(data)
                         }
                     }
                 }
-            )
+            }
 
             val address = SignalProtocolAddress(data.userId, deviceId)
             val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
