@@ -443,12 +443,13 @@ class VoiceCallService : CallService() {
         }
     }
 
-    private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
-        createCallMessage(
-            callState.trackId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
-                ?: UUID.randomUUID().toString(),
-            m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration
-        )
+    private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus): Message {
+        var mId = callState.trackId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
+        if (mId.isNullOrBlank()) {
+            mId = UUID.randomUUID().toString()
+        }
+        return createCallMessage(mId, m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration)
+    }
 
     companion object {
         const val TAG = "VoiceCallService"

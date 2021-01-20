@@ -1,111 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/user_info_rl"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/transfer_item_height">
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/transfer_item_height">
 
-    <RelativeLayout
-        android:id="@+id/background_rl"
+<!--  wrap this layout to workaround with wrap_content does NOT work inside RecyclerView  -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorRed"
-        android:visibility="gone">
-
-        <ImageView
-            android:id="@+id/delete_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:contentDescription="@null"
-            android:src="@drawable/ic_delete_white" />
-
-        <TextView
-            android:id="@+id/delete_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="8dp"
-            android:layout_toEndOf="@id/delete_icon"
-            android:text="@string/conversation_delete"
-            android:textColor="@color/white" />
-
-        <ImageView
-            android:id="@+id/delete_icon_copy"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:contentDescription="@null"
-            android:src="@drawable/ic_delete_white" />
-
-        <TextView
-            android:id="@+id/delete_tv_copy"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
-            android:layout_toStartOf="@id/delete_icon_copy"
-            android:text="@string/conversation_delete"
-            android:textColor="@color/white" />
-    </RelativeLayout>
-
-
-    <LinearLayout
-        android:id="@+id/foreground_rl"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
-        android:orientation="vertical">
+        tools:ignore="UselessParent">
 
         <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:id="@+id/background_rl"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorRed">
 
-            <TextView
-                android:id="@+id/created_tv"
-                style="@style/DescTextStyle"
+            <ImageView
+                android:id="@+id/delete_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignBottom="@id/name_tv"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_delete_white" />
+
+            <TextView
+                android:id="@+id/delete_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="8dp"
+                android:layout_toEndOf="@id/delete_icon"
+                android:text="@string/conversation_delete"
+                android:textColor="@color/white" />
+
+            <ImageView
+                android:id="@+id/delete_icon_copy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="@dimen/margin20"
-                android:maxLines="1"
-                tools:ignore="RelativeOverlap" />
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_delete_white" />
 
             <TextView
-                android:id="@+id/name_tv"
+                android:id="@+id/delete_tv_copy"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="@dimen/margin20"
-                android:layout_marginTop="8dp"
+                android:layout_centerVertical="true"
                 android:layout_marginEnd="8dp"
-                android:layout_marginBottom="4dp"
-                android:layout_toStartOf="@id/created_tv"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="?attr/text_primary"
-                android:textSize="18sp"
-                tools:ignore="RelativeOverlap" />
-
+                android:layout_toStartOf="@id/delete_icon_copy"
+                android:text="@string/conversation_delete"
+                android:textColor="@color/white" />
         </RelativeLayout>
 
-        <TextView
-            android:id="@+id/addr_tv"
-            style="@style/DescTextStyle"
+        <LinearLayout
+            android:id="@+id/foreground_rl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="@dimen/margin20"
-            android:layout_marginEnd="@dimen/margin20"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textSize="12sp" />
-    </LinearLayout>
-</RelativeLayout>
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white"
+            android:foreground="?attr/selectableItemBackground"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/created_tv"
+                    style="@style/DescTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@id/name_tv"
+                    android:layout_alignParentEnd="true"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="@dimen/margin20"
+                    android:maxLines="1"
+                    tools:ignore="RelativeOverlap" />
+
+                <TextView
+                    android:id="@+id/name_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/margin20"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_toStartOf="@id/created_tv"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="18sp"
+                    tools:ignore="RelativeOverlap" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/addr_tv"
+                style="@style/DescTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/margin20"
+                android:layout_marginEnd="@dimen/margin20"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

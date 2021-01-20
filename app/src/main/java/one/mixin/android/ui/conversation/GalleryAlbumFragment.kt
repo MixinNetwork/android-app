@@ -120,7 +120,7 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
             va.post {
                 val albums = arrayListOf<Album>()
                 va.displayedChild = POS_CONTENT
-                while (cursor.moveToNext()) {
+                while (!cursor.isClosed && cursor.moveToNext()) {
                     val album = Album.valueOf(cursor)
                     albums.add(album)
                 }
