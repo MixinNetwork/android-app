@@ -15,7 +15,7 @@ class MessageFtsDeleteJob(private val messageIds: List<String>) :
     }
 
     override fun onRun() = runBlocking {
-        messageIds.windowed(100).forEach {
+        messageIds.chunked(100).forEach {
             messageFts4Dao.deleteByMessageIds(it)
         }
     }
