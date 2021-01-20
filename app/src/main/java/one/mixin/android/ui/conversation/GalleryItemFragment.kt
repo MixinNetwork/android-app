@@ -119,7 +119,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
 
         binding.rv.post {
             val itemList = arrayListOf<Item>()
-            while (cursor.moveToNext()) {
+            while (!cursor.isClosed && cursor.moveToNext()) {
                 val item = Item.valueOf(cursor)
                 itemList.add(item)
             }
