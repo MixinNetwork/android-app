@@ -12,6 +12,7 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.Message
 
 @Dao
 interface ConversationDao : BaseDao<Conversation> {
@@ -210,4 +211,10 @@ interface ConversationDao : BaseDao<Conversation> {
     // DELETE
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)
+
+    @Query("SELECT last_message_id FROM conversations WHERE conversation_id = :conversationId")
+    suspend fun findLastMessageIdById(conversationId: String): String?
+
+    @Query("SELECT * FROM messages WHERE id = :messageId")
+    suspend fun findMessageById(messageId: String): Message?
 }

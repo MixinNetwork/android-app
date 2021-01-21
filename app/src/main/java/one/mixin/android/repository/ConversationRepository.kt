@@ -34,6 +34,7 @@ import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.extension.joinStar
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MessageDeleteJob
@@ -58,6 +59,7 @@ import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -412,4 +414,16 @@ internal constructor(
 
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
+
+    suspend fun test(conversationId:String) {
+        val lastMessageId = conversationDao.findLastMessageIdById(conversationId)
+        Timber.e("lastMessageId: $lastMessageId $conversationId")
+        lastMessageId?:return
+        val message = conversationDao.findMessageById(lastMessageId)
+        message.notNullWithElse({ msg ->
+            Timber.e("laset message: ${msg.id} ${msg.conversationId}")
+        }, {
+            Timber.e("laset message: null")
+        })
+    }
 }

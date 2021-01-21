@@ -760,4 +760,8 @@ internal constructor(
             }
         }
     }
+
+    fun test(conversationId:String) = viewModelScope.launch {
+        conversationRepository.test(conversationId)
+    }
 }

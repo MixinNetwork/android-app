@@ -1723,6 +1723,7 @@ class ConversationFragment() :
             binding.chatControl.hideBot()
         }
         liveDataAppList()
+        chatViewModel.test(conversationId)
     }
 
     private fun liveDataAppList() {

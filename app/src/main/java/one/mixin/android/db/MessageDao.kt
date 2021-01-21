@@ -15,6 +15,7 @@ import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
+import timber.log.Timber
 
 @Dao
 interface MessageDao : BaseDao<Message> {
@@ -492,6 +493,7 @@ interface MessageDao : BaseDao<Message> {
     @Transaction
     fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
         insert(message)
+        Timber.e("insert message: ${message.conversationId} ${message.id}")
         if (userId != message.userId) {
             conversationDao.unseenMessageCount(message.conversationId, userId)
         }
