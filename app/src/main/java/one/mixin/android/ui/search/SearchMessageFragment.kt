@@ -14,11 +14,11 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchMessageBinding
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.observeOnce
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -59,6 +59,8 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
     private val binding by viewBinding(FragmentSearchMessageBinding::bind)
+
+    private var searchJob: Job? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -109,13 +111,14 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             .subscribe(
                 {
                     binding.clearIb.isVisible = it.isNotEmpty()
-                    onTextChanged(it.toString())
+                    searchJob?.cancel()
+                    searchJob = onTextChanged(it.toString())
                 },
                 {}
             )
         binding.searchEt.postDelayed(
             {
-                onTextChanged(query)
+                searchJob = onTextChanged(query)
             },
             50
         )
@@ -132,18 +135,28 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private fun isConversationSearch() = searchMessageItem.messageCount == 0
 
     private fun onTextChanged(s: String) = lifecycleScope.launch {
-        if (s == adapter.query) return@launch
+        if (s == adapter.query) {
+            binding.progress.isVisible = false
+            return@launch
+        }
 
         adapter.query = s
         if (s.isEmpty()) {
+            observer?.let {
+                curLiveData?.removeObserver(it)
+            }
             observer = null
             curLiveData = null
+            binding.progress.isVisible = false
             adapter.submitList(null)
             return@launch
         }
 
         binding.progress.isVisible = true
 
+        observer?.let {
+            curLiveData?.removeObserver(it)
+        }
         curLiveData =
             searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId)
         observer = Observer {
@@ -151,7 +164,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             adapter.submitList(it)
         }
         observer?.let {
-            curLiveData?.observeOnce(viewLifecycleOwner, it)
+            curLiveData?.observe(viewLifecycleOwner, it)
         }
     }
 }
