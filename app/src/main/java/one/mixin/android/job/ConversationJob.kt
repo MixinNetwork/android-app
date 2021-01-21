@@ -131,7 +131,7 @@ class ConversationJob(
         if (r != null && r.isSuccess && r.data != null) {
             val cr = r.data!!
             if (type == TYPE_CREATE) {
-                insertOrUpdateConversation(cr)
+                conversationRepo.insertOrUpdateConversation(cr)
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) {
                     Participant(cr.conversationId, it.userId, it.role, cr.createdAt)

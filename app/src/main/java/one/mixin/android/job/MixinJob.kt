@@ -7,7 +7,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
-import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.SignalKey
@@ -15,21 +14,15 @@ import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
-import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.UserSession
-import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.vo.Conversation
-import one.mixin.android.vo.ConversationBuilder
-import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
@@ -366,49 +359,6 @@ abstract class MixinJob(
         }
         if (add.isNotEmpty()) {
             participantSessionDao.insertList(add)
-        }
-    }
-
-    protected fun insertOrUpdateConversation(data: ConversationResponse) {
-        var ownerId: String = data.creatorId
-        if (data.category == ConversationCategory.CONTACT.name) {
-            ownerId = data.participants.find { it.userId != Session.getAccountId() }!!.userId
-        }
-        var c = conversationDao.findConversationById(data.conversationId)
-        if (c == null) {
-            val builder = ConversationBuilder(data.conversationId, data.createdAt, ConversationStatus.SUCCESS.ordinal)
-            c = builder.setOwnerId(ownerId)
-                .setCategory(data.category)
-                .setName(data.name)
-                .setIconUrl(data.iconUrl)
-                .setAnnouncement(data.announcement)
-                .setMuteUntil(data.muteUntil)
-                .setCodeUrl(data.codeUrl).build()
-            conversationDao.insert(c)
-            if (!c.announcement.isNullOrBlank()) {
-                RxBus.publish(GroupEvent(data.conversationId))
-                applicationContext.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)
-            }
-        } else {
-            val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
-                ConversationStatus.SUCCESS.ordinal
-            } else {
-                ConversationStatus.QUIT.ordinal
-            }
-            conversationDao.updateConversation(
-                data.conversationId,
-                ownerId,
-                data.category,
-                data.name,
-                data.announcement,
-                data.muteUntil,
-                data.createdAt,
-                status
-            )
-            if (!data.announcement.isBlank() && c.announcement != data.announcement) {
-                RxBus.publish(GroupEvent(data.conversationId))
-                applicationContext.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)
-            }
         }
     }
 

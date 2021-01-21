@@ -12,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.Constants.DB_DELETE_THRESHOLD
+import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
@@ -33,17 +35,22 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
+import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
@@ -263,33 +270,56 @@ internal constructor(
             val response = call.body()
             if (response != null && response.isSuccess) {
                 response.data?.let { conversationData ->
-                    val status =
-                        if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
-                            ConversationStatus.SUCCESS.ordinal
-                        } else {
-                            ConversationStatus.QUIT.ordinal
-                        }
-                    var ownerId: String = conversationData.creatorId
-                    if (conversationData.category == ConversationCategory.CONTACT.name) {
-                        ownerId =
-                            conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
-                    }
-                    conversationDao.updateConversation(
-                        conversationData.conversationId,
-                        ownerId,
-                        conversationData.category,
-                        conversationData.name,
-                        conversationData.announcement,
-                        conversationData.muteUntil,
-                        conversationData.createdAt,
-                        status
-                    )
+                    insertOrUpdateConversation(conversationData)
                     return true
                 }
             }
             return false
         } catch (e: Exception) {
             return false
+        }
+    }
+
+    fun insertOrUpdateConversation(data: ConversationResponse) {
+        var ownerId: String = data.creatorId
+        if (data.category == ConversationCategory.CONTACT.name) {
+            ownerId = data.participants.find { it.userId != Session.getAccountId() }!!.userId
+        }
+        var c = conversationDao.findConversationById(data.conversationId)
+        if (c == null) {
+            val builder = ConversationBuilder(data.conversationId, data.createdAt, ConversationStatus.SUCCESS.ordinal)
+            c = builder.setOwnerId(ownerId)
+                .setCategory(data.category)
+                .setName(data.name)
+                .setIconUrl(data.iconUrl)
+                .setAnnouncement(data.announcement)
+                .setMuteUntil(data.muteUntil)
+                .setCodeUrl(data.codeUrl).build()
+            conversationDao.insert(c)
+            if (!c.announcement.isNullOrBlank()) {
+                RxBus.publish(GroupEvent(data.conversationId))
+                MixinApplication.appContext.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)
+            }
+        } else {
+            val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
+                ConversationStatus.SUCCESS.ordinal
+            } else {
+                ConversationStatus.QUIT.ordinal
+            }
+            conversationDao.updateConversation(
+                data.conversationId,
+                ownerId,
+                data.category,
+                data.name,
+                data.announcement,
+                data.muteUntil,
+                data.createdAt,
+                status
+            )
+            if (data.announcement.isNotBlank() && c.announcement != data.announcement) {
+                RxBus.publish(GroupEvent(data.conversationId))
+                MixinApplication.appContext.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)
+            }
         }
     }
 

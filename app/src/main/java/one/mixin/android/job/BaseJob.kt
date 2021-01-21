@@ -51,6 +51,7 @@ import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.repository.AssetRepository
+import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
@@ -126,6 +127,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var chatWebSocket: ChatWebSocket
+    @Inject
+    @Transient
+    lateinit var conversationRepo: ConversationRepository
     @Inject
     @Transient
     lateinit var userRepo: UserRepository
