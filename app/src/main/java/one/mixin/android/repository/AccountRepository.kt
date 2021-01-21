@@ -25,6 +25,7 @@ import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
+import one.mixin.android.api.service.GithubService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.FavoriteAppDao
@@ -42,6 +43,7 @@ import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
+import one.mixin.android.vo.github.Latest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -60,6 +62,7 @@ constructor(
     private val stickerAlbumDao: StickerAlbumDao,
     private val stickerRelationshipDao: StickerRelationshipDao,
     private val giphyService: GiphyService,
+    private val githubService: GithubService,
     private val emergencyService: EmergencyService
 ) {
 
@@ -225,4 +228,6 @@ constructor(
     }
 
     suspend fun modifySessionSecret(request: SessionSecretRequest) = accountService.modifySessionSecret(request)
+
+    suspend fun latest(): Latest = githubService.latest()
 }

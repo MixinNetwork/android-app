@@ -1093,4 +1093,9 @@
     <string name="network_operator">NetworkOperator</string>
     <string name="parse_dns_result">Parse DNS result: </string>
     <string name="diagnosis_complete">Diagnosis Complete</string>
+
+    <!-- version check -->
+    <string name="version_title">New version</string>
+    <string name="version_content">There is a new version update</string>
+    <string name="version_update">Update</string>
 </resources>

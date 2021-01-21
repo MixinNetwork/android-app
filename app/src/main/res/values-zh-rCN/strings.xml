@@ -1072,4 +1072,9 @@
     <string name="network_operator">网络运营商</string>
     <string name="parse_dns_result">解析 DNS 结果</string>
     <string name="diagnosis_complete">诊断完成</string>
+
+    <!-- version check -->
+    <string name="version_title">新版本</string>
+    <string name="version_content">发现新版本更新</string>
+    <string name="version_update">更新</string>
 </resources>
