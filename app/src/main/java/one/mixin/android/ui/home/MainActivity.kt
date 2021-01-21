@@ -723,6 +723,14 @@ class MainActivity : BlazeBaseActivity() {
         binding.searchBar.dragSearch(progress)
     }
 
+    fun showSearchLoading() {
+        binding.searchBar.showLoading()
+    }
+
+    fun hideSearchLoading() {
+        binding.searchBar.hideLoading()
+    }
+
     fun selectCircle(name: String?, circleId: String?) {
         setCircleName(name)
         defaultSharedPreferences.putString(CIRCLE_NAME, name)

@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
@@ -381,6 +382,18 @@ class MaterialSearchView : FrameLayout {
         binding.searchEt.setText("")
         mSearchViewListener?.onSearchViewClosed()
         isOpen = false
+    }
+
+    fun showLoading() {
+        if (!isOpen) return
+
+        binding.pb.isVisible = true
+    }
+
+    fun hideLoading() {
+        if (!isOpen) return
+
+        binding.pb.isInvisible = true
     }
 
     private fun onTextChanged(newText: CharSequence) {

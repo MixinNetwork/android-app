@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -136,12 +137,16 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
     private fun onTextChanged(s: String) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
+        binding.pb.isVisible = true
+
         val list: List<Parcelable>? = when (type) {
             TypeAsset -> searchViewModel.fuzzySearch<AssetItem>(s)
             TypeUser -> searchViewModel.fuzzySearch<User>(s)
             TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(s)
             TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(s, -1)
         }
+
+        binding.pb.isInvisible = true
 
         adapter.data = list
         adapter.notifyDataSetChanged()
