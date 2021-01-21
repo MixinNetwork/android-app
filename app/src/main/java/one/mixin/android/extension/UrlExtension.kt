@@ -170,7 +170,12 @@ fun String.checkUserOrApp(
             if (isOpenApp && user.appId != null) {
                 val app = appDao.findAppById(user.appId!!)
                 if (app != null) {
-                    WebActivity.show(context, app.homeUri, null, app)
+                    val url = try {
+                        app.homeUri.appendQueryParamsFromOtherUri(uri)
+                    } catch (e: Exception) {
+                        app.homeUri
+                    }
+                    WebActivity.show(context, url, null, app)
                     return@launch
                 }
             }
