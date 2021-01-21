@@ -2,11 +2,17 @@ package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import one.mixin.android.extension.nowInUtc
 import java.util.UUID
 
-@Entity(tableName = "conversations")
+@Entity(
+    tableName = "conversations",
+    indices = [
+        Index(value = arrayOf("category", "status", "pin_time", "created_at"))
+    ],
+)
 open class Conversation(
     @PrimaryKey
     @ColumnInfo(name = "conversation_id")
