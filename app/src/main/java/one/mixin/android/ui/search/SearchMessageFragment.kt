@@ -3,7 +3,6 @@ package one.mixin.android.ui.search
 import android.os.Bundle
 import android.view.View
 import android.view.View.VISIBLE
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -30,7 +29,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -155,6 +153,5 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         observer?.let {
             curLiveData?.observeOnce(viewLifecycleOwner, it)
         }
-
     }
 }
