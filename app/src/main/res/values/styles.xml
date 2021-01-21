@@ -7,6 +7,7 @@
         <item name="colorPrimaryDark">?attr/color_primary_dark</item>
         <item name="colorAccent">?attr/color_accent</item>
         <item name="colorSurface">?attr/color_primary</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">@font/roboto_regular</item>
         <item name="android:windowBackground">?attr/colorPrimary</item>
@@ -63,6 +64,8 @@
         <item name="map_default">@drawable/ic_map_default_night</item>
 
         <item name="android:colorControlHighlight">@color/highlight</item>
+
+        <item name="snackbarStyle">@style/Snackbar</item>
     </style>
 
 
@@ -276,5 +279,8 @@
     <style name="AppTheme.MaterialButton">
         <item name="android:background">@drawable/bg_round_blue_btn</item>
         <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="Snackbar" parent="Widget.MaterialComponents.Snackbar">
     </style>
 </resources>
