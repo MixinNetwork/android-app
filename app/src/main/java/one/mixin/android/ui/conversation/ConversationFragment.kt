@@ -1095,6 +1095,7 @@ class ConversationFragment() :
         if (aodWakeLock.isHeld) {
             aodWakeLock.release()
         }
+        snackbar?.dismiss()
         binding.chatRv.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
@@ -2769,21 +2770,22 @@ class ConversationFragment() :
         checkPeers(requireContext(), conversationId)
     }
 
+    private var snackbar: Snackbar? = null
     private fun callbackForward(data: Intent?) {
         val selectItems = data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)
         if (selectItems.isNullOrEmpty()) return
 
         val selectItem = selectItems[0]
         this.selectItem = selectItem
-        Snackbar.make(binding.barLayout, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
+        snackbar = Snackbar.make(binding.barLayout, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
             .setAction(R.string.chat_go_check) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                 (view.findViewById<TextView>(R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
             }.apply {
-                config(binding.barLayout.context)
+                snackbar?.config(binding.barLayout.context)
             }
-            .show()
+        snackbar?.show()
     }
 
     private fun displayReplyView() {

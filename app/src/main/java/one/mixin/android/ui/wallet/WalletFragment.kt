@@ -147,6 +147,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         checkPin()
     }
 
+    override fun onStop() {
+        super.onStop()
+        snackbar?.dismiss()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _headBinding = null
