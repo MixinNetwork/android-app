@@ -3,6 +3,7 @@ package one.mixin.android.ui.search
 import android.os.Bundle
 import android.view.View
 import android.view.View.VISIBLE
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -143,20 +144,17 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             return@launch
         }
 
-        val start = System.currentTimeMillis()
-        binding.pb.isVisible = true
-        Timber.d("@@@ isVisible ${binding.pb.visibility},  thread: ${Thread.currentThread()}")
+        binding.progress.isVisible = true
 
-        curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId)
+        curLiveData =
+            searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId)
         observer = Observer {
-            binding.pb.isVisible = false
-            Timber.d("@@@ isInvisible cost: ${System.currentTimeMillis() - start}, thread: ${Thread.currentThread()}")
+            binding.progress.isVisible = false
             adapter.submitList(it)
         }
         observer?.let {
             curLiveData?.observeOnce(viewLifecycleOwner, it)
         }
 
-        Timber.d("@@@ launch cost: ${System.currentTimeMillis() - start}")
     }
 }
