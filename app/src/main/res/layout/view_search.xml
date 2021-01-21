@@ -117,7 +117,7 @@
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:alpha="0"
-            android:visibility="gone">
+            android:visibility="gone" >
 
             <ImageButton
                 android:id="@+id/add_ib"
@@ -145,7 +145,7 @@
             android:layout_centerVertical="true"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
-            android:layout_toStartOf="@+id/right_clear"
+            android:layout_toStartOf="@+id/pb"
             android:layout_toEndOf="@+id/back_ib"
             android:background="@null"
             android:drawablePadding="6dp"
@@ -157,7 +157,18 @@
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_minor"
             android:textSize="14sp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:id="@+id/pb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="48dp"
+            android:visibility="invisible"/>
 
         <ImageButton
             android:id="@+id/right_clear"

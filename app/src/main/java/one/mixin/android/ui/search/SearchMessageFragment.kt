@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchMessageBinding
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.observeOnce
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -28,6 +29,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -130,33 +132,31 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
     private fun isConversationSearch() = searchMessageItem.messageCount == 0
 
-    private fun onTextChanged(s: String) {
-        if (s == adapter.query) return
+    private fun onTextChanged(s: String) = lifecycleScope.launch {
+        if (s == adapter.query) return@launch
 
         adapter.query = s
         if (s.isEmpty()) {
-            observer?.let {
-                curLiveData?.removeObserver(it)
-            }
             observer = null
             curLiveData = null
             adapter.submitList(null)
-            return
+            return@launch
         }
 
-        lifecycleScope.launch {
-            if (!isAdded) return@launch
+        val start = System.currentTimeMillis()
+        binding.pb.isVisible = true
+        Timber.d("@@@ isVisible ${binding.pb.visibility},  thread: ${Thread.currentThread()}")
 
-            observer?.let {
-                curLiveData?.removeObserver(it)
-            }
-            curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId)
-            observer = Observer {
-                adapter.submitList(it)
-            }
-            observer?.let {
-                curLiveData?.observe(viewLifecycleOwner, it)
-            }
+        curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId)
+        observer = Observer {
+            binding.pb.isVisible = false
+            Timber.d("@@@ isInvisible cost: ${System.currentTimeMillis() - start}, thread: ${Thread.currentThread()}")
+            adapter.submitList(it)
         }
+        observer?.let {
+            curLiveData?.observeOnce(viewLifecycleOwner, it)
+        }
+
+        Timber.d("@@@ launch cost: ${System.currentTimeMillis() - start}")
     }
 }

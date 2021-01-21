@@ -59,10 +59,12 @@ internal constructor(
     suspend fun fuzzySearchMessageDetailAsync(
         query: String,
         conversationId: String
-    ): LiveData<PagedList<SearchMessageDetailItem>> = withContext(Dispatchers.IO) {
+    ): LiveData<PagedList<SearchMessageDetailItem>> {
         val escapedQuery = query.trim().escapeSql()
-        return@withContext LivePagedListBuilder(
-            conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId),
+        return LivePagedListBuilder(
+            withContext(Dispatchers.IO) {
+                conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId)
+            },
             PagedList.Config.Builder()
                 .setPageSize(30)
                 .setEnablePlaceholders(true)

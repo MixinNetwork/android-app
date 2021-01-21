@@ -242,6 +242,8 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     private fun fuzzySearch(keyword: String?) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
+        (requireActivity() as MainActivity).showSearchLoading()
+
         searchAdapter.setData(null, null, null)
         val assetItems = searchViewModel.fuzzySearch<AssetItem>(keyword) as List<AssetItem>?
         val users = searchViewModel.fuzzySearch<User>(keyword) as List<User>?
@@ -251,6 +253,8 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         (searchViewModel.fuzzySearch<SearchMessageItem>(keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
             searchAdapter.setMessageData(searchMessageItems)
         }
+
+        (requireActivity() as MainActivity).hideSearchLoading()
     }
 
     internal class AppAdapter : ListAdapter<App, AppHolder>(App.DIFF_CALLBACK) {
