@@ -29,8 +29,10 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashDecoder
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.StorageUsage
 import one.mixin.android.widget.gallery.MimeType
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -487,6 +489,7 @@ fun String.getFilePath(): String? = Uri.parse(this).getFilePath()
 fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
     val scheme = this.scheme
     var data: String? = null
+    var reportException: Exception? = null
     when (scheme) {
         null -> data = this.toString()
         ContentResolver.SCHEME_FILE -> data = this.path
@@ -500,20 +503,28 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
                         if (index > -1) {
                             data = cursor.getString(index)
                             if (data == null) {
-                                return copyFileUrlWithAuthority(context)
+                                data = copyFileUrlWithAuthority(context)
                             }
                         } else if (index == -1) {
-                            return copyFileUrlWithAuthority(context)
+                            data = copyFileUrlWithAuthority(context)
                         }
                     }
                 } else {
-                    return copyFileUrlWithAuthority(context)
+                    data = copyFileUrlWithAuthority(context)
                 }
-            } catch (ignored: SecurityException) {
+            } catch (e: SecurityException) {
+                Timber.w(e)
+                reportException = e
             } finally {
                 cursor?.close()
             }
         }
+    }
+    if (data == null) {
+        if (reportException == null) {
+            reportException = IllegalStateException("Uri.getFilePath data == null")
+        }
+        reportException("Uri.getFilePath uri: $this", reportException)
     }
     return data
 }
@@ -529,7 +540,8 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
                 outFile.copyFromInputStream(input)
             }
             outFile.absolutePath
-        } catch (ignored: Exception) {
+        } catch (e: Exception) {
+            reportException("Uri.copyFileUrlWithAuthority name: $name", e)
             null
         } finally {
             input?.closeSilently()
