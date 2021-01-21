@@ -106,6 +106,11 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        snackbar?.dismiss()
+    }
+
     override fun <T> onNormalItemClick(item: T) {
         item as AssetItem
         view?.navigate(
