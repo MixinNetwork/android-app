@@ -138,8 +138,8 @@ internal constructor(
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem> =
         messageDao.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit)
 
-    fun fuzzySearchMessageDetail(query: String, conversationId: String) =
-        MessageProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase)
+    fun fuzzySearchMessageDetail(query: String, conversationId: String, countable: Boolean) =
+        MessageProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, countable)
 
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal> =
         conversationDao.fuzzySearchChat(query)

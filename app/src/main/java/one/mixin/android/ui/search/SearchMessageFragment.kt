@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchMessageBinding
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.observeOnce
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -152,19 +153,32 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             return@launch
         }
 
-        binding.progress.isVisible = true
+        bindAndSearch(s, false)
+    }
+
+    private fun bindAndSearch(s: String, countable: Boolean) {
+        if (!countable) {
+            binding.progress.isVisible = true
+        }
 
         observer?.let {
             curLiveData?.removeObserver(it)
         }
-        curLiveData =
-            searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId)
+        curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId, countable)
         observer = Observer {
             binding.progress.isVisible = false
-            adapter.submitList(it)
+            adapter.submitList(it) {
+                if (countable) return@submitList
+
+                bindAndSearch(s, true)
+            }
         }
         observer?.let {
-            curLiveData?.observe(viewLifecycleOwner, it)
+            if (countable) {
+                curLiveData?.observe(viewLifecycleOwner, it)
+            } else {
+                curLiveData?.observeOnce(viewLifecycleOwner, it)
+            }
         }
     }
 }

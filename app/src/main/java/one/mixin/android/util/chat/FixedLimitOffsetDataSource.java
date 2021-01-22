@@ -49,15 +49,13 @@ public abstract class FixedLimitOffsetDataSource<T> extends PositionalDataSource
     @SuppressWarnings("WeakerAccess")
     protected abstract List<T> convertRows(Cursor cursor);
 
-    private List<T> initialList;
-
     @Override
     public void loadInitial(@NonNull LoadInitialParams params,
                             @NonNull LoadInitialCallback<T> callback) {
         final int firstLoadPosition = computeInitialLoadPosition(params, mTotalCount);
         final int firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, mTotalCount);
 
-        initialList = loadRange(firstLoadPosition, firstLoadSize);
+        List<T> initialList = loadRange(firstLoadPosition, firstLoadSize);
         if (initialList != null) {
             try {
                 callback.onResult(initialList, firstLoadPosition, mTotalCount);
