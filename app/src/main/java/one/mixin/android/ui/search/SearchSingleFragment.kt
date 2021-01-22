@@ -13,6 +13,7 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchSingleBinding
@@ -72,6 +73,8 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
     private val binding by viewBinding(FragmentSearchSingleBinding::bind)
 
+    private var searchJob: Job? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.backIb.setOnClickListener {
@@ -125,10 +128,14 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
             .subscribe(
                 {
                     binding.clearIb.isVisible = it.isNotEmpty()
-                    if (it == adapter.query) return@subscribe
+                    if (it == adapter.query) {
+                        binding.pb.isInvisible = true
+                        return@subscribe
+                    }
 
                     adapter.query = it.toString()
-                    onTextChanged(it.toString())
+                    searchJob?.cancel()
+                    searchJob = onTextChanged(it.toString())
                 },
                 {}
             )

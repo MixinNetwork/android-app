@@ -374,6 +374,7 @@ class MaterialSearchView : FrameLayout {
             )
         }.setDuration(150L).alpha(0f).start()
         binding.rightClear.visibility = View.GONE
+        hideLoading()
 
         binding.avatar.translationX(0f)
         binding.searchIb.translationX(0f)
