@@ -19,6 +19,7 @@ import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_LIKE
@@ -102,7 +103,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                 )
             } else {
                 lifecycleScope.launch {
-                    if (!isAdded) return@launch
+                    if (viewDestroyed()) return@launch
 
                     personalAlbumId = stickerViewModel.getPersonalAlbums()?.albumId
                     if (personalAlbumId == null) { // not add any personal sticker yet
@@ -165,7 +166,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
 
     @Synchronized
     private fun updateStickers(list: List<Sticker>) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         stickers.clear()
         stickers.addAll(list)
         stickerAdapter.notifyDataSetChanged()

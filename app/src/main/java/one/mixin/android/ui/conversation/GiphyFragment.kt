@@ -20,6 +20,7 @@ import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
@@ -102,7 +103,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                 .autoDispose(stopScope)
                 .subscribe(
                     { list ->
-                        if (!isAdded) return@subscribe
+                        if (viewDestroyed()) return@subscribe
                         giphyAdapter.data = list
                         giphyAdapter.notifyDataSetChanged()
                         stickerProgress.visibility = View.GONE

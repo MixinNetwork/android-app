@@ -21,6 +21,7 @@ import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.editDialog
@@ -156,7 +157,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
 
     @SuppressLint("SetTextI18n")
     private fun refreshNotification(threshold: Double) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         binding.apply {
             transferTv.text = "$accountSymbol$threshold"
             transferDescTv.text = getString(
@@ -168,7 +169,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
 
     @SuppressLint("SetTextI18n")
     private fun refreshLargeAmount(largeAmount: Double) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         binding.apply {
             largeAmountTv.text = "$accountSymbol$largeAmount"
             largeAmountDescTv.text = getString(

@@ -32,6 +32,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
@@ -141,7 +142,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
 
         binding.mobileFab.show()
         binding.mobileCover.visibility = VISIBLE
@@ -253,7 +254,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.tapVibrate()
-            if (!isAdded) {
+            if (viewDestroyed()) {
                 return
             }
             binding.apply {
@@ -289,7 +290,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
         override fun onLongClick(position: Int, value: String) {
             context?.tapVibrate()
-            if (!isAdded) {
+            if (viewDestroyed()) {
                 return
             }
             binding.apply {

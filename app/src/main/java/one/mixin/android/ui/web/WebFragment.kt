@@ -91,6 +91,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.supportsQ
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -324,7 +325,7 @@ class WebFragment : BaseFragment() {
     }
 
     private fun checkAppCard(appCard: AppCardData) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         if (appCard.appId != null) {
             app = bottomViewModel.getAppAndCheckUser(appCard.appId, appCard.updatedAt)
@@ -539,7 +540,7 @@ class WebFragment : BaseFragment() {
                 filePathCallback: ValueCallback<Array<Uri>>?,
                 fileChooserParams: FileChooserParams?
             ): Boolean {
-                if (!isAdded) return false
+                if (viewDestroyed()) return false
                 uploadMessage?.onReceiveValue(null)
                 uploadMessage = filePathCallback
                 val intent: Intent? = fileChooserParams?.createIntent()
@@ -683,7 +684,7 @@ class WebFragment : BaseFragment() {
     }
 
     private fun reloadTheme() {
-        if (!isAdded) return
+        if (viewDestroyed()) return
 
         lifecycleScope.launch {
             webView.evaluateJavascript(themeColorScript) {
@@ -754,7 +755,7 @@ class WebFragment : BaseFragment() {
     }
 
     private fun showBottomSheet() {
-        if (!isAdded) return
+        if (viewDestroyed()) return
 
         val builder = BottomSheet.Builder(requireActivity())
 
@@ -971,7 +972,7 @@ class WebFragment : BaseFragment() {
     }
 
     private fun openBot() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         if (app?.appId != null) {
             val u = bottomViewModel.suspendFindUserById(app?.appId!!)
@@ -999,7 +1000,7 @@ class WebFragment : BaseFragment() {
     }
 
     private fun saveImageFromUrl(url: String?) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .autoDispose(stopScope)
@@ -1065,7 +1066,7 @@ class WebFragment : BaseFragment() {
         dark: Boolean,
         color: Int
     ) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
 
         requireActivity().window.statusBarColor = color
         requireActivity().window.decorView.let {

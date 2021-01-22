@@ -35,6 +35,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -128,7 +129,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
             binding.transactionsRv.adapter = adapter
             root.post {
-                if (!isAdded) return@post
+                if (viewDestroyed()) return@post
 
                 bottomRl.updateLayoutParams<ViewGroup.LayoutParams> {
                     height = requireContext().screenHeight() - binding.titleView.height - topLl.height - groupInfoMemberTitleLayout.height

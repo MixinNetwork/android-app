@@ -30,6 +30,7 @@ import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.StickerFragment.Companion.ARGS_ALBUM_ID
@@ -160,7 +161,7 @@ class StickerManagementFragment : BaseFragment() {
 
     @Synchronized
     private fun updateStickers(list: List<Sticker>) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         stickers.clear()
         stickers.addAll(list)
         stickerAdapter.notifyDataSetChanged()

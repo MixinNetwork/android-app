@@ -36,6 +36,7 @@ import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CameraOpView
@@ -68,7 +69,7 @@ class CaptureFragment : BaseCameraxFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.op.post {
-            if (!isAdded) return@post
+            if (viewDestroyed()) return@post
 
             val b = binding.bottomLl.bottom
             val hasNavigationBar = requireContext().hasNavigationBar(b)

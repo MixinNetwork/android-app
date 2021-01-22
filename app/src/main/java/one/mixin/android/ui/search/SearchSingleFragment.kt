@@ -20,6 +20,7 @@ import one.mixin.android.databinding.FragmentSearchSingleBinding
 import one.mixin.android.databinding.ViewHeadSearchSingleBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -142,7 +143,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
     }
 
     private fun onTextChanged(s: String) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         binding.pb.isVisible = true
 

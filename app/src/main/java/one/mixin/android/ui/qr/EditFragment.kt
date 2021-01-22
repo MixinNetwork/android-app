@@ -40,6 +40,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.GsonHelper
@@ -201,7 +202,7 @@ class EditFragment : VisionFragment() {
     }
 
     private fun scan() = lifecycleScope.launch(Dispatchers.IO) {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
         try {
@@ -211,7 +212,7 @@ class EditFragment : VisionFragment() {
                     val content = result.firstOrNull()?.rawValue
                     if (!content.isNullOrBlank()) {
                         lifecycleScope.launch innerLaunch@{
-                            if (!isAdded) return@innerLaunch
+                            if (viewDestroyed()) return@innerLaunch
                             if (fromScan) {
                                 handleResult(content)
                             } else {
@@ -220,7 +221,7 @@ class EditFragment : VisionFragment() {
                         }
                     } else {
                         lifecycleScope.launch innerLaunch@{
-                            if (!isAdded) return@innerLaunch
+                            if (viewDestroyed()) return@innerLaunch
                             if (fromScan) {
                                 showNoResultDialog()
                             }
@@ -268,7 +269,7 @@ class EditFragment : VisionFragment() {
     }
 
     private fun save() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val outFile = if (isVideo) {
             requireContext().getPublicPicturePath().createVideoTemp("mp4", false)

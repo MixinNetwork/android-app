@@ -53,6 +53,7 @@ import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
@@ -390,7 +391,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     abstract fun fromScan(): Boolean
 
     private fun handleAnalysis(analysisResult: String) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
 
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
         if (forScanResult) {
@@ -475,7 +476,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             if (result != null) {
                 alreadyDetected = true
                 lifecycleScope.launch(Dispatchers.Main) {
-                    if (!isAdded) return@launch
+                    if (viewDestroyed()) return@launch
                     handleAnalysis(result)
                 }
             }
@@ -488,7 +489,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             if (result != null) {
                 alreadyDetected = true
                 lifecycleScope.launch(Dispatchers.Main) {
-                    if (!isAdded) return@launch
+                    if (viewDestroyed()) return@launch
                     handleAnalysis(result)
                 }
             }
