@@ -27,6 +27,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
@@ -138,7 +139,7 @@ class WalletSearchFragment : BaseFragment() {
     }
 
     private fun loadDefaultRvData() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         viewModel.observeTopAssets().observe(
             viewLifecycleOwner,
@@ -168,7 +169,7 @@ class WalletSearchFragment : BaseFragment() {
     private fun search(query: String) {
         currentSearch?.cancel()
         currentSearch = lifecycleScope.launch {
-            if (!isAdded) return@launch
+            if (viewDestroyed()) return@launch
 
             searchAdapter.clear()
             binding.pb.isVisible = true

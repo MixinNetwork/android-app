@@ -26,6 +26,7 @@ import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
@@ -141,7 +142,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     private fun findBackUp() = lifecycleScope.launch(Dispatchers.IO) {
         val file = findBackup(requireContext(), coroutineContext)
         withContext(Dispatchers.Main) {
-            if (!isAdded) return@withContext
+            if (viewDestroyed()) return@withContext
             binding.apply {
                 if (file == null) {
                     backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))

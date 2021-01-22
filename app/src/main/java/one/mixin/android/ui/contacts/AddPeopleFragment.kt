@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddPeopleBinding
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -115,7 +116,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.tapVibrate()
-            if (!isAdded) {
+            if (viewDestroyed()) {
                 return
             }
             binding.apply {
@@ -152,7 +153,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
 
         override fun onLongClick(position: Int, value: String) {
             context?.tapVibrate()
-            if (!isAdded) {
+            if (viewDestroyed()) {
                 return
             }
             binding.apply {
@@ -178,7 +179,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
         }
 
         override fun afterTextChanged(s: Editable?) {
-            if (!isAdded) return
+            if (viewDestroyed()) return
 
             binding.searchAnimator.visibility = if (valid(s.toString())) VISIBLE else GONE
         }

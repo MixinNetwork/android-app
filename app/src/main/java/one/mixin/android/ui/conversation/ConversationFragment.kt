@@ -128,6 +128,7 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
@@ -300,7 +301,7 @@ class ConversationFragment() :
             }
 
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                if (!isAdded) return
+                if (viewDestroyed()) return
 
                 when {
                     isFirstLoad -> {
@@ -1021,7 +1022,7 @@ class ConversationFragment() :
     override fun onPause() {
         sensorManager.unregisterListener(this)
         lifecycleScope.launch {
-            if (!isAdded) return@launch
+            if (viewDestroyed()) return@launch
             lastReadMessage = chatViewModel.findLastMessage(conversationId)
         }
         deleteDialog?.dismiss()
@@ -1540,7 +1541,7 @@ class ConversationFragment() :
     }
 
     private fun addSticker(m: MessageItem) = lifecycleScope.launch(Dispatchers.IO) {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val request = StickerAddRequest(stickerId = m.stickerId)
         val r = try {
@@ -2051,7 +2052,7 @@ class ConversationFragment() :
     }
 
     private fun renderBot(user: User) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         app = chatViewModel.findAppById(user.appId!!)
         if (app != null && app!!.creatorId == Session.getAccountId()) {
@@ -2387,7 +2388,7 @@ class ConversationFragment() :
         messageId: String,
         findMessageAction: ((index: Int) -> Unit)? = null
     ) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
         findMessageAction?.invoke(index)
@@ -2547,7 +2548,7 @@ class ConversationFragment() :
     }
 
     private fun releaseChatControl(fling: Int) {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         binding.chatControl.getDraggableContainer() ?: return
         binding.inputLayout.releaseDrag(fling) {
             binding.chatControl.reset()

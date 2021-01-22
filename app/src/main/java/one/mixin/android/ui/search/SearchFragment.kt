@@ -32,6 +32,7 @@ import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -196,7 +197,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     private fun loadRecentUsedApps() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val apps = withContext(Dispatchers.IO) {
             var botsList = defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
@@ -240,7 +241,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     @Suppress("UNCHECKED_CAST")
     private fun fuzzySearch(keyword: String?) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         (requireActivity() as MainActivity).showSearchLoading()
 

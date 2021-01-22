@@ -41,6 +41,7 @@ import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toPNGBytes
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.ErrorHandler
@@ -105,7 +106,7 @@ class StickerAddFragment : BaseFragment() {
     }
 
     private fun loadImage() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val w = withContext(Dispatchers.IO) {
             try {
@@ -137,7 +138,7 @@ class StickerAddFragment : BaseFragment() {
     }
 
     private fun addSticker() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         val request = try {
             val uri = url.toUri()
@@ -254,7 +255,7 @@ class StickerAddFragment : BaseFragment() {
     }
 
     private fun handleBack(toastRes: Int? = null) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         dialog?.dismiss()
         toastRes?.let { requireContext().toast(it) }

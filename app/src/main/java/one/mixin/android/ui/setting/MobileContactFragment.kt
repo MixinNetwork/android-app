@@ -22,6 +22,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.textColorResource
@@ -68,7 +69,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     }
 
     private fun setDelete() {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         binding.apply {
             opTv.setText(R.string.setting_mobile_contact_delete)
             opTv.textColorResource = R.color.colorRed
@@ -86,7 +87,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     }
 
     private fun setUpdate() {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         binding.apply {
             opTv.setText(R.string.setting_mobile_contact_upload)
             opTv.textColorResource = R.color.colorDarkBlue
@@ -115,7 +116,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     }
 
     private fun deleteContacts() = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         binding.opPb.isVisible = true
         handleMixinResponse(
@@ -135,11 +136,10 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     }
 
     private fun updateContacts(contacts: List<Contact>) = lifecycleScope.launch {
-        if (!isAdded) return@launch
+        if (viewDestroyed()) return@launch
 
         binding.opPb.isVisible = true
         val mutableList = createContactsRequests(contacts)
-        if (!isAdded) return@launch
         if (mutableList.isEmpty()) {
             binding.opPb.isVisible = false
             toast(R.string.setting_mobile_contact_empty)

@@ -18,6 +18,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.databinding.FragmentVerificationEmergencyIdBinding
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.FabLoadingFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
@@ -79,7 +80,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
     }
 
     override fun hideLoading() {
-        if (!isAdded) return
+        if (viewDestroyed()) return
         binding.verificationNextFab.hide()
         binding.verificationCover.visibility = View.GONE
     }

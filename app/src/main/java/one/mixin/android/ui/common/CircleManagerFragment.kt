@@ -21,6 +21,7 @@ import one.mixin.android.databinding.ItemCircleManagerBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
@@ -86,16 +87,16 @@ class CircleManagerFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.setSubTitle(getString(R.string.circle_title, name), "")
         binding.titleView.leftIb.setOnClickListener {
-            if (!isAdded) return@setOnClickListener
+            if (viewDestroyed()) return@setOnClickListener
             activity?.onBackPressed()
         }
         binding.titleView.rightIb.setOnClickListener {
-            if (!isAdded) return@setOnClickListener
+            if (viewDestroyed()) return@setOnClickListener
 
             addCircle()
         }
         binding.circleAdd.setOnClickListener {
-            if (!isAdded) return@setOnClickListener
+            if (viewDestroyed()) return@setOnClickListener
 
             addCircle()
         }

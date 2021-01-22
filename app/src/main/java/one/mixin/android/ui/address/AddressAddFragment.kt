@@ -24,6 +24,7 @@ import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
@@ -79,7 +80,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.rightAnimator.isEnabled = false
         binding.titleView.leftIb.setOnClickListener {
-            if (!isAdded) return@setOnClickListener
+            if (viewDestroyed()) return@setOnClickListener
 
             if (binding.labelEt.isFocused) binding.labelEt.hideKeyboard()
             if (binding.addrEt.isFocused) binding.addrEt.hideKeyboard()
@@ -229,7 +230,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         }
 
         override fun afterTextChanged(s: Editable) {
-            if (!isAdded) return
+            if (viewDestroyed()) return
             updateSaveButton()
         }
     }

@@ -19,6 +19,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -90,7 +91,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 walletViewModel.simpleAssetItem(snapshot.assetId)
             }
             a?.let {
-                if (!isAdded) return@launch
+                if (viewDestroyed()) return@launch
 
                 view?.navigate(
                     R.id.action_all_transactions_fragment_to_transaction_fragment,

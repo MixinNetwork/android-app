@@ -16,6 +16,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -224,7 +225,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                 dialog.setCancelable(false)
                 dialog.show()
 
-                if (!isAdded) return
+                if (viewDestroyed()) return
 
                 walletViewModel.updatePin(binding.pin.code(), oldPassword)
                     .autoDispose(stopScope).subscribe(
