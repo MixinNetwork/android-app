@@ -55,10 +55,13 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
      */
     @SuppressWarnings("WeakerAccess")
     public int countItems() {
+        long start = System.currentTimeMillis();
         Cursor cursor = mDb.query(mCountQuery);
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getInt(0);
+                int count = cursor.getInt(0);
+                Timber.d("%d ms",(System.currentTimeMillis()-start));
+                return count;
             }
             return 0;
         } finally {
