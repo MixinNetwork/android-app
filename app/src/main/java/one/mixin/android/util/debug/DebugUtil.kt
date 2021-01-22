@@ -29,6 +29,6 @@ inline fun <T> measureTimeMillis(tag: String, block: () -> T): T {
     }
     val start = System.currentTimeMillis()
     val result = block()
-    Timber.d("tag ${System.currentTimeMillis() - start}")
+    Timber.d("$tag ${System.currentTimeMillis() - start}")
     return result
 }
