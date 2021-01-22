@@ -31,7 +31,7 @@ class RefreshConversationJob(val conversationId: String) :
         val response = call.body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
-                insertOrUpdateConversation(data)
+                conversationRepo.insertOrUpdateConversation(data)
                 val participants = mutableListOf<Participant>()
                 val userIdList = mutableListOf<String>()
                 for (p in data.participants) {
