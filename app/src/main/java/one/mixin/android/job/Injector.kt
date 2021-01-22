@@ -126,7 +126,7 @@ open class Injector {
         return bm.data
     }
 
-    protected fun syncUser(userId: String): User? {
+    protected fun syncUser(userId: String, conversationId: String? = null): User? {
         var user = userDao.findUser(userId)
         if (user == null) {
             try {
@@ -142,7 +142,7 @@ open class Injector {
             }
         }
         if (user == null) {
-            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId), conversationId = conversationId))
         }
         return user
     }

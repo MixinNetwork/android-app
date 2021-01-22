@@ -678,10 +678,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             } else if (systemMessage.participantId != accountId && signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
                 jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.ADD_PARTICIPANT, systemMessage.participantId))
-                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
+                syncUser(systemMessage.participantId, data.conversationId)
             } else {
                 jobManager.addJobInBackground(RefreshSessionJob(data.conversationId, arrayListOf(systemMessage.participantId)))
-                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
+                syncUser(systemMessage.participantId, data.conversationId)
             }
         } else if (systemMessage.action == SystemConversationAction.REMOVE.name || systemMessage.action == SystemConversationAction.EXIT.name) {
             if (systemMessage.participantId == accountId) {
