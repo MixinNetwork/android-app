@@ -10,7 +10,9 @@ import androidx.paging.PagedList
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.repository.AccountRepository
@@ -56,17 +58,18 @@ internal constructor(
 
     fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
 
-    suspend fun fuzzySearchMessageDetailAsync(
+    fun fuzzySearchMessageDetailAsync(
         query: String,
-        conversationId: String
+        conversationId: String,
+        countable: Boolean,
     ): LiveData<PagedList<SearchMessageDetailItem>> {
         val escapedQuery = query.trim().escapeSql()
+        val searchResult = conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId, countable)
         return LivePagedListBuilder(
-            withContext(Dispatchers.IO) {
-                conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId)
-            },
+            searchResult,
             PagedList.Config.Builder()
-                .setPageSize(30)
+                .setPrefetchDistance(PAGE_SIZE * 2)
+                .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
                 .build()
         )
