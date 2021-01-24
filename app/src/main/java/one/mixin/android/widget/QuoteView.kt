@@ -17,6 +17,7 @@ import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageCategory
@@ -71,7 +72,13 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 setIcon()
             }
             quoteMessageItem.type == MessageCategory.MESSAGE_RECALL.name -> {
-                binding.replyContentTv.setText(R.string.chat_recall_me)
+                binding.replyContentTv.setText(
+                    if (quoteMessageItem.userId == Session.getAccountId()) {
+                        R.string.chat_recall_me
+                    } else {
+                        R.string.chat_recall_delete
+                    }
+                )
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
