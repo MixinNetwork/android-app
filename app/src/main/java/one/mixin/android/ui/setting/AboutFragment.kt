@@ -7,6 +7,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAboutBinding
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
@@ -50,6 +51,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
             checkUpdates.setOnClickListener { context?.openMarket() }
+            database.setOnClickListener { navTo(DatabaseDebugFragment.newInstance(), DatabaseDebugFragment.TAG) }
         }
     }
 }
