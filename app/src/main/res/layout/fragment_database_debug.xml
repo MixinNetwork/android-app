@@ -13,29 +13,25 @@
         android:layout_height="wrap_content"
         app:titleText="@string/app_name" />
 
-    <LinearLayout
-        android:padding="4dp"
+    <EditText
+        style="@style/NormalTextStyle"
+        android:id="@+id/sql"
+        android:layout_width="match_parent"
+        android:padding="12dp"
+        android:layout_margin="8dp"
+        android:background="@drawable/bg_input"
+        android:hint="insert raw sql"
+        android:layout_height="wrap_content"
+        tools:ignore="Autofill,HardcodedText,TextFields" />
+
+    <Button
+        android:id="@+id/run_bn"
+        android:layout_margin="8dp"
+        android:text="run"
+        style="@style/AppTheme.MaterialButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical">
-
-        <EditText
-            style="@style/NormalTextStyle"
-            android:id="@+id/sql"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:padding="8dp"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_input"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/run_bn"
-            android:text="run"
-            style="@style/AppTheme.MaterialButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+        tools:ignore="HardcodedText" />
 
     <TextView
         style="@style/NormalTextStyle"
