@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.database.Cursor
 import android.util.ArrayMap
 import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.room.Database
@@ -162,8 +163,9 @@ abstract class MixinDatabase : RoomDatabase() {
 
         fun query(query: String): String? {
             val start = System.currentTimeMillis()
+            var cursor: Cursor? = null
             try {
-                val cursor =
+                cursor =
                     supportSQLiteDatabase?.query(query) ?: return null
                 cursor.moveToFirst()
                 val result = ArrayList<ArrayMap<String, String>>()
@@ -177,6 +179,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 return "${GsonHelper.customGson.toJson(result)} ${System.currentTimeMillis() - start}ms"
             } catch (e: Exception) {
                 return e.message
+            } finally {
+                cursor?.close()
             }
         }
 
