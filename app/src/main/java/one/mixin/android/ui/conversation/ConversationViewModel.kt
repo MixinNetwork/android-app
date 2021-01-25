@@ -132,11 +132,6 @@ internal constructor(
         return keyLivePagedListBuilder!!.build()
     }
 
-    override fun onCleared() {
-        keyLivePagedListBuilder = null
-        super.onCleared()
-    }
-
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
 

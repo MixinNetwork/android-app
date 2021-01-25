@@ -1111,6 +1111,7 @@ class ConversationFragment() :
     }
 
     override fun onDestroyView() {
+        chatViewModel.keyLivePagedListBuilder = null
         if (isAdded) {
             chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
