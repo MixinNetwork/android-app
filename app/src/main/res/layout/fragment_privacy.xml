@@ -163,6 +163,18 @@
         android:layout_height="@dimen/setting_divider"
         android:background="?attr/bg_window" />
 
+    <one.mixin.android.widget.SwitchView
+        android:id="@+id/incognito"
+        android:layout_width="match_parent"
+        android:background="?attr/bg_white"
+        android:layout_height="@dimen/item_contact_height"/>
+
+    <View
+        android:id="@+id/incognito_follower"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/setting_divider"
+        android:background="?attr/bg_window" />
+
     <RelativeLayout
         android:id="@+id/auth_rl"
         android:layout_width="match_parent"

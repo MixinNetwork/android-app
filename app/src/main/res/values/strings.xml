@@ -530,9 +530,10 @@
     <string name="conversation_status_location">[Location]</string>
     <string name="conversation_status_live">[Live]</string>
     <string name="conversation_status_group_call">[Group Call]</string>
+    <string name="setting_incognito">Incognito Keyboard</string>
     <string name="setting_no_blocked">No blocked users</string>
-    <string name="setting_no_auth_app">No auth app</string>
     <string name="setting_authentications">Authorizations</string>
+    <string name="setting_no_auth_app">No auth app</string>
     <string name="setting_permissions">Permissions</string>
     <string name="setting_no_authentications">No RESULT</string>
     <string name="setting_emergency">Emergency Contact</string>
