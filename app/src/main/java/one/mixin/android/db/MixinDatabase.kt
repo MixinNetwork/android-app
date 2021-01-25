@@ -9,7 +9,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.google.gson.Gson
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -36,6 +35,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_33_34
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_34_35
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -161,6 +161,7 @@ abstract class MixinDatabase : RoomDatabase() {
         }
 
         fun query(query: String): String? {
+            val start = System.currentTimeMillis()
             try {
                 val cursor =
                     supportSQLiteDatabase?.query(query) ?: return null
@@ -173,7 +174,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     }
                     result.add(map)
                 } while (cursor.moveToNext())
-                return GsonHelper.customGson.toJson(result)
+                return "${GsonHelper.customGson.toJson(result)} ${System.currentTimeMillis() - start}ms"
             } catch (e: Exception) {
                 return e.message
             }
