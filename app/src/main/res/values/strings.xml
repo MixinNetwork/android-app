@@ -938,5 +938,8 @@
     <string name="web_close">close</string>
     <string name="web_debug_enable">Enable web debug</string>
     <string name="web_debug_disable">Disable web debug</string>
+    <!-- debug -->
+    <string name="db_debug_enable">Enable db debug</string>
+    <string name="db_debug_disable">Disable db debug</string>
 </resources>
 

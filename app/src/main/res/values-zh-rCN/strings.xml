@@ -919,4 +919,7 @@
     <string name="web_close">关闭</string>
     <string name="web_debug_enable">已开启 Web 调试</string>
     <string name="web_debug_disable">已关闭 Web 调试</string>
+    <!-- debug -->
+    <string name="db_debug_enable">已开启 db 调试</string>
+    <string name="db_debug_disable">已关闭 db 调试</string>
 </resources>

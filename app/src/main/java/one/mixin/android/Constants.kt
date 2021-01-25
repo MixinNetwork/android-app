@@ -138,6 +138,7 @@ object Constants {
 
     object Debug {
         const val WEB_DEBUG = "web_debug"
+        const val DB_DEBUG = "db_debug"
     }
 
     const val SLEEP_MILLIS: Long = 1000
