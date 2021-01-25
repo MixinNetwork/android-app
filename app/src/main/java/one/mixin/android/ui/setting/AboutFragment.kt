@@ -53,7 +53,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                 override fun onSingleClick() {}
             })
 
-            checkUpdates.setOnClickListener(object : DebugClickListener() {
+            titleView.titleContainer.setOnClickListener(object : DebugClickListener() {
                 override fun onDebugClick() {
                     if (defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)) {
                         defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, false)
@@ -67,7 +67,6 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                 }
 
                 override fun onSingleClick() {
-                    context?.openMarket()
                 }
             })
             twitter.setOnClickListener { context?.openUrl("https://twitter.com/MixinMessenger") }
@@ -75,6 +74,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
+            checkUpdates.setOnClickListener { context?.openMarket() }
             database.isVisible = defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
             database.setOnClickListener {
                 navTo(
