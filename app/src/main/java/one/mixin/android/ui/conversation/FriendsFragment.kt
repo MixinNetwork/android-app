@@ -54,6 +54,11 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
         this.friendClick = friendClick
     }
 
+    override fun onBackPressed(): Boolean {
+        parentFragmentManager.popBackStackImmediate()
+        return true
+    }
+
     override fun onItemClick(user: User) {
         if (friendClick != null) {
             friendClick!!(user)
