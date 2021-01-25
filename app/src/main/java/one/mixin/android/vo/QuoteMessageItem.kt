@@ -50,7 +50,7 @@ data class QuoteMessageItem(
         messageItem.userId,
         messageItem.userFullName,
         messageItem.userIdentityNumber,
-        messageItem.type,
+        messageItem.type!!,
         messageItem.content,
         messageItem.createdAt,
         messageItem.status,

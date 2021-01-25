@@ -1,29 +1,29 @@
 package one.mixin.android.vo
 
 interface ICategory {
-    val type: String
+    val type: String?
 }
 
 fun ICategory.isPlain(): Boolean {
-    return type.startsWith("PLAIN_")
+    return type?.startsWith("PLAIN_") == true
 }
 
 fun ICategory.isEncrypted(): Boolean {
-    return type.startsWith("ENCRYPTED_")
+    return type?.startsWith("ENCRYPTED_") == true
 }
 
 fun ICategory.isSignal(): Boolean {
-    return type.startsWith("SIGNAL_")
+    return type?.startsWith("SIGNAL_") == true
 }
 
-fun ICategory.isCall() = type.startsWith("WEBRTC_") || type.startsWith("KRAKEN_")
+fun ICategory.isCall() = type?.startsWith("WEBRTC_") == true || type?.startsWith("KRAKEN_") == true
 
-fun ICategory.isKraken() = type.startsWith("KRAKEN_")
+fun ICategory.isKraken() = type?.startsWith("KRAKEN_") == true
 
 fun ICategory.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
 
 fun ICategory.isFtsMessage() =
-    type.endsWith("_TEXT") || type.endsWith("_DATA") || type.endsWith("_POST")
+    type?.endsWith("_TEXT") == true || type?.endsWith("_DATA") == true || type?.endsWith("_POST") == true
 
 fun ICategory.isText() =
     type == MessageCategory.SIGNAL_TEXT.name || type == MessageCategory.PLAIN_TEXT.name || type == MessageCategory.ENCRYPTED_TEXT.name
@@ -59,7 +59,7 @@ fun ICategory.isMedia(): Boolean = isData() || isImage() || isVideo()
 
 fun ICategory.isAttachment(): Boolean = isData() || isImage() || isVideo() || isAudio()
 
-fun ICategory.isGroupCall() = type.isGroupCallType()
+fun ICategory.isGroupCall() = type?.isGroupCallType() == true
 
 fun ICategory.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
