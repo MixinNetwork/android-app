@@ -33,9 +33,14 @@
         android:layout_height="wrap_content"
         tools:ignore="HardcodedText" />
 
-    <TextView
-        style="@style/NormalTextStyle"
-        android:id="@+id/logs"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <TextView
+            style="@style/NormalTextStyle"
+            android:id="@+id/logs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
 </LinearLayout>
