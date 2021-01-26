@@ -48,11 +48,11 @@ data class ConversationItem(
         }
     }
 
-    override val type: String
-        get() = contentType ?: MessageCategory.PLAIN_TEXT.name
+    override val type: String?
+        get() = contentType
 
-    override val conversationCategory: String
-        get() = category ?: ConversationCategory.CONTACT.name
+    override val conversationCategory: String?
+        get() = category
 
     fun getConversationName(): String {
         return when {

@@ -38,7 +38,7 @@ data class MessageItem(
     val userId: String,
     val userFullName: String,
     val userIdentityNumber: String,
-    override val type: String,
+    override val type: String?,
     val content: String?,
     val createdAt: String,
     val status: String,
@@ -141,7 +141,7 @@ fun MessageItem.isCallMessage() =
         type == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
         type == MessageCategory.WEBRTC_AUDIO_FAILED.name
 
-fun MessageItem.isGroupCall() = type.isGroupCallType()
+fun MessageItem.isGroupCall() = type?.isGroupCallType() == true
 
 fun MessageItem.supportSticker(): Boolean = isSticker() || isImage()
 
@@ -154,13 +154,6 @@ fun String.isGroupCallType() =
 fun MessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
 
 fun MessageItem.mediaDownloaded() = mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name
-
-fun MessageItem.toMessage() = Message(
-    messageId, conversationId, userId, type, content, mediaUrl, mediaMimeType, mediaSize,
-    mediaDuration, mediaWidth, mediaHeight, null, thumbImage, thumbUrl, null, null, mediaStatus, status,
-    createdAt, actionName, participantUserId, snapshotId, hyperlink = null, name = mediaName, albumId = null, stickerId = stickerId,
-    sharedUserId = sharedUserId, mediaWaveform = mediaWaveform, mediaMineType = null, quoteMessageId = quoteId, quoteContent = quoteContent
-)
 
 fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     when {

@@ -189,7 +189,9 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
@@ -1323,7 +1325,7 @@ class ConversationFragment() :
             )
         binding.toolView.closeIv.setOnClickListener { activity?.onBackPressed() }
         binding.toolView.deleteIv.setOnClickListener {
-            chatAdapter.selectSet.filter { it.type.endsWith("_AUDIO") }.forEach {
+            chatAdapter.selectSet.filter { it.isAudio() }.forEach {
                 if (AudioPlayer.isPlay(it.messageId)) {
                     AudioPlayer.pause()
                 }
@@ -1358,7 +1360,7 @@ class ConversationFragment() :
             }
             val messageItem = chatAdapter.selectSet.valueAt(0)
             messageItem?.let { m ->
-                val isSticker = messageItem.type.endsWith("STICKER")
+                val isSticker = messageItem.isSticker()
                 if (isSticker && m.stickerId != null) {
                     addSticker(m)
                 } else {

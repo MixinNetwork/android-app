@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
 interface IConversationCategory {
-    val conversationCategory: String
+    val conversationCategory: String?
 }
 
 fun IConversationCategory.isGroupConversation() = conversationCategory == ConversationCategory.GROUP.name

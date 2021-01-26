@@ -20,6 +20,16 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isData
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isText
+import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.dip
 
 class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
@@ -51,7 +61,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
         binding.replyStartView.setBackgroundColor(BaseViewHolder.getColorById(messageItem.userId))
         binding.replyNameTv.setTextColor(BaseViewHolder.getColorById(messageItem.userId))
         when {
-            messageItem.type.endsWith("_IMAGE") -> {
+            messageItem.isImage() -> {
                 binding.replyViewTv.setText(R.string.photo)
                 setIcon(R.drawable.ic_type_pic)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
@@ -59,7 +69,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
             }
-            messageItem.type.endsWith("_VIDEO") -> {
+            messageItem.isVideo() -> {
                 binding.replyViewTv.setText(R.string.video)
                 setIcon(R.drawable.ic_type_video)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
@@ -67,7 +77,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
             }
-            messageItem.type.endsWith("_LIVE") -> {
+            messageItem.isLive() -> {
                 binding.replyViewTv.setText(R.string.live)
                 setIcon(R.drawable.ic_type_live)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.thumbUrl, R.drawable.image_holder)
@@ -75,7 +85,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
             }
-            messageItem.type.endsWith("_STICKER") -> {
+            messageItem.isSticker() -> {
                 binding.replyViewTv.setText(R.string.sticker)
                 setIcon(R.drawable.ic_type_stiker)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.assetUrl, R.drawable.image_holder)
@@ -83,7 +93,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyViewIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
             }
-            messageItem.type.endsWith("_CONTACT") -> {
+            messageItem.isContact() -> {
                 binding.replyViewTv.setText(R.string.contact)
                 setIcon(R.drawable.ic_type_contact)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
@@ -96,35 +106,35 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.VISIBLE
                 binding.replyViewIv.visibility = View.INVISIBLE
             }
-            messageItem.type.endsWith("_DATA") -> {
+            messageItem.isData() -> {
                 binding.replyViewTv.setText(R.string.document)
                 setIcon(R.drawable.ic_type_file)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
-            messageItem.type.endsWith("_POST") -> {
+            messageItem.isPost() -> {
                 binding.replyViewTv.setText(R.string.post)
                 setIcon(R.drawable.ic_type_file)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
-            messageItem.type.endsWith("_AUDIO") -> {
+            messageItem.isAudio() -> {
                 binding.replyViewTv.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
                 setIcon(R.drawable.ic_type_audio)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
-            messageItem.type.endsWith("_LOCATION") -> {
+            messageItem.isLocation() -> {
                 binding.replyViewTv.setText(R.string.location)
                 setIcon(R.drawable.ic_type_location)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
-            messageItem.type.endsWith("_TEXT") -> {
+            messageItem.isText() -> {
                 if (messageItem.mentions?.isNotBlank() == true) {
                     val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(messageItem.mentions)
                     binding.replyViewTv.renderMessage(messageItem.content, mentionRenderContext)
