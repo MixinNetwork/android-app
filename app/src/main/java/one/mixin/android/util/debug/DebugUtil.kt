@@ -44,13 +44,14 @@ inline fun <T> measureTimeMillis(tag: String, block: () -> T): T {
 
 fun Cursor.getContent(columnIndex: Int): String {
     return try {
-        (getStringOrNull(columnIndex)
-            ?: getIntOrNull(columnIndex)
-            ?: getBlobOrNull(columnIndex)?.contentToString()
-            ?: getFloatOrNull(columnIndex)
-            ?: getDoubleOrNull(columnIndex)
-            ?: getShortOrNull(columnIndex)
-            ?: getLongOrNull(columnIndex) ?: ""
+        (
+            getStringOrNull(columnIndex)
+                ?: getIntOrNull(columnIndex)
+                ?: getBlobOrNull(columnIndex)?.contentToString()
+                ?: getFloatOrNull(columnIndex)
+                ?: getDoubleOrNull(columnIndex)
+                ?: getShortOrNull(columnIndex)
+                ?: getLongOrNull(columnIndex) ?: ""
             ).toString()
     } catch (e: Exception) {
         ""

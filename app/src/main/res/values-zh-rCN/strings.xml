@@ -922,4 +922,5 @@
     <!-- debug -->
     <string name="db_debug_enable">已开启 db 调试</string>
     <string name="db_debug_disable">已关闭 db 调试</string>
+    <string name="db_debug_warning">注意：如果执行了有侵害性的 SQL，结果不可逆！</string>
 </resources>

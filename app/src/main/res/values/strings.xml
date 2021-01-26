@@ -941,5 +941,6 @@
     <!-- debug -->
     <string name="db_debug_enable">Enable db debug</string>
     <string name="db_debug_disable">Disable db debug</string>
+    <string name="db_debug_warning">Attention: If a harmful SQL statement is executed, the result is irreversible!</string>
 </resources>
 

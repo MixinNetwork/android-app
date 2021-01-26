@@ -7,12 +7,16 @@ import android.view.View
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDatabaseDebugBinding
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.WarningBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -41,5 +45,29 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
             requireContext().toast(R.string.copy_success)
             true
         }
+
+        showWarning()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        view?.removeCallbacks(showWarningRunnable)
+    }
+
+    private fun showWarning() {
+        val showWarning = defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG_WARNING, true)
+        if (showWarning) {
+            view?.post(showWarningRunnable)
+        }
+    }
+
+    private val showWarningRunnable = Runnable {
+        val bottom = WarningBottomSheetDialogFragment.newInstance(getString(R.string.db_debug_warning), 5)
+        bottom.callback = object : WarningBottomSheetDialogFragment.Callback {
+            override fun onContinue() {
+                defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG_WARNING, false)
+            }
+        }
+        bottom.showNow(parentFragmentManager, WarningBottomSheetDialogFragment.TAG)
     }
 }

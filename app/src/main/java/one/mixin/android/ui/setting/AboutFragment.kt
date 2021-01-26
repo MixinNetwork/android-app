@@ -57,6 +57,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                 override fun onDebugClick() {
                     if (defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)) {
                         defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, false)
+                        defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG_WARNING, true)
                         database.isVisible = false
                         toast(R.string.db_debug_disable)
                     } else {

@@ -36,7 +36,6 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_33_34
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_34_35
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
-import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -65,7 +64,6 @@ import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
-import timber.log.Timber
 
 @Database(
     entities = [
