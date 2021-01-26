@@ -8,11 +8,15 @@ import android.os.Bundle
 import android.text.Spanned
 import android.util.AttributeSet
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
 import android.view.inputmethod.InputConnection
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.core.view.inputmethod.InputContentInfoCompat
+import one.mixin.android.Constants
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.supportsOreo
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.markdown.MarkdownEditText
 
@@ -22,7 +26,25 @@ class ContentEditText : MarkdownEditText {
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    )
+
+    init {
+        supportsOreo {
+            val incognitoKeyboardEnabled = context.defaultSharedPreferences.getBoolean(
+                Constants.Account.PREF_INCOGNITO_KEYBOARD,
+                false
+            )
+            imeOptions = if (incognitoKeyboardEnabled) {
+                imeOptions or IME_FLAG_NO_PERSONALIZED_LEARNING
+            } else {
+                imeOptions and IME_FLAG_NO_PERSONALIZED_LEARNING.inv()
+            }
+        }
+    }
 
     var listener: OnCommitContentListener? = null
 
@@ -70,30 +92,35 @@ class ContentEditText : MarkdownEditText {
         }
 
         EditorInfoCompat.setContentMimeTypes(editorInfo, mimeTypes)
-        val callback = InputConnectionCompat.OnCommitContentListener { inputContentInfo, flags, opts ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && (flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0)) {
-                try {
-                    inputContentInfo.requestPermission()
-                } catch (e: Exception) {
+        val callback =
+            InputConnectionCompat.OnCommitContentListener { inputContentInfo, flags, opts ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && (flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0)) {
+                    try {
+                        inputContentInfo.requestPermission()
+                    } catch (e: Exception) {
+                        return@OnCommitContentListener false
+                    }
+                }
+
+                var supported = false
+                for (mimeType in mimeTypes) {
+                    if (inputContentInfo.description.hasMimeType(mimeType)) {
+                        supported = true
+                        break
+                    }
+                }
+                if (!supported) {
                     return@OnCommitContentListener false
                 }
-            }
-
-            var supported = false
-            for (mimeType in mimeTypes) {
-                if (inputContentInfo.description.hasMimeType(mimeType)) {
-                    supported = true
-                    break
+                if (this.listener != null) {
+                    return@OnCommitContentListener this.listener!!.onCommitContent(
+                        inputContentInfo,
+                        flags,
+                        opts
+                    )
                 }
-            }
-            if (!supported) {
                 return@OnCommitContentListener false
             }
-            if (this.listener != null) {
-                return@OnCommitContentListener this.listener!!.onCommitContent(inputContentInfo, flags, opts)
-            }
-            return@OnCommitContentListener false
-        }
         return InputConnectionCompat.createWrapper(ic, editorInfo, callback)
     }
 
@@ -102,6 +129,10 @@ class ContentEditText : MarkdownEditText {
     }
 
     interface OnCommitContentListener {
-        fun onCommitContent(inputContentInfo: InputContentInfoCompat?, flags: Int, opts: Bundle?): Boolean
+        fun onCommitContent(
+            inputContentInfo: InputContentInfoCompat?,
+            flags: Int,
+            opts: Bundle?
+        ): Boolean
     }
 }

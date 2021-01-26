@@ -2,11 +2,16 @@ package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants.Account.PREF_INCOGNITO_KEYBOARD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPrivacyBinding
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.supportsOreo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
@@ -55,6 +60,20 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
             authRl.setOnClickListener {
                 navTo(AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
             }
+            supportsOreo({
+                incognito.isVisible = true
+                incognitoFollower.isVisible = true
+                incognito.setContent(R.string.setting_incognito)
+                incognito.isChecked =
+                    defaultSharedPreferences.getBoolean(PREF_INCOGNITO_KEYBOARD, false)
+                incognito.setOnCheckedChangeListener { _, isChecked ->
+                    defaultSharedPreferences.putBoolean(PREF_INCOGNITO_KEYBOARD, isChecked)
+                }
+            }, {
+                incognito.isVisible = false
+                incognitoFollower.isVisible = false
+            })
+
             logsRl.setOnClickListener {
                 navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
             }

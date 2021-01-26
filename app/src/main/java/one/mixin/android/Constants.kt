@@ -47,6 +47,7 @@ object Constants {
         const val PREF_DUPLICATE_TRANSFER = "pref_duplicate_transfer"
         const val PREF_STRANGER_TRANSFER = "pref_stranger_transfer"
         const val PREF_RECENT_SEARCH_ASSETS = "pref_recent_search_assets"
+        const val PREF_INCOGNITO_KEYBOARD = "pref_incognito_keyboard"
     }
 
     object Scheme {

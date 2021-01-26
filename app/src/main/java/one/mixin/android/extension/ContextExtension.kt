@@ -638,6 +638,14 @@ inline fun supportsOreo(code: () -> Unit) {
     }
 }
 
+fun supportsOreo(code: () -> Unit, elseAction: (() -> Unit)) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        code()
+    } else {
+        elseAction.invoke()
+    }
+}
+
 inline fun supportsNougat(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         code()
