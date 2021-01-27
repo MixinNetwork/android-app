@@ -491,12 +491,7 @@ fun String.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "
     this.toUri().appendQueryParamsFromOtherUri(otherUri, exclusiveKey)
 
 fun Uri.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "action"): String {
-    val builder = Uri.Builder()
-        .scheme(scheme)
-        .authority(authority)
-        .path(path)
-        .query(query)
-        .fragment(fragment)
+    val builder = this.buildUpon()
     otherUri.queryParameterNames
         .filter { it != exclusiveKey }
         .forEach { key ->
