@@ -60,19 +60,22 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
             authRl.setOnClickListener {
                 navTo(AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
             }
-            supportsOreo({
-                incognito.isVisible = true
-                incognitoFollower.isVisible = true
-                incognito.setContent(R.string.setting_incognito)
-                incognito.isChecked =
-                    defaultSharedPreferences.getBoolean(PREF_INCOGNITO_KEYBOARD, false)
-                incognito.setOnCheckedChangeListener { _, isChecked ->
-                    defaultSharedPreferences.putBoolean(PREF_INCOGNITO_KEYBOARD, isChecked)
+            supportsOreo(
+                {
+                    incognito.isVisible = true
+                    incognitoFollower.isVisible = true
+                    incognito.setContent(R.string.setting_incognito)
+                    incognito.isChecked =
+                        defaultSharedPreferences.getBoolean(PREF_INCOGNITO_KEYBOARD, false)
+                    incognito.setOnCheckedChangeListener { _, isChecked ->
+                        defaultSharedPreferences.putBoolean(PREF_INCOGNITO_KEYBOARD, isChecked)
+                    }
+                },
+                {
+                    incognito.isVisible = false
+                    incognitoFollower.isVisible = false
                 }
-            }, {
-                incognito.isVisible = false
-                incognitoFollower.isVisible = false
-            })
+            )
 
             logsRl.setOnClickListener {
                 navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)

@@ -20,7 +20,7 @@
         android:padding="12dp"
         android:layout_margin="8dp"
         android:background="@drawable/bg_input"
-        android:hint="insert raw sql"
+        android:hint="type raw sql"
         android:layout_height="wrap_content"
         tools:ignore="Autofill,HardcodedText,TextFields" />
 
