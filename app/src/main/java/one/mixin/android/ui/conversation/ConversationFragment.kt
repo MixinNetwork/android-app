@@ -1111,6 +1111,7 @@ class ConversationFragment() :
     }
 
     override fun onDestroyView() {
+        chatViewModel.keyLivePagedListBuilder = null
         if (isAdded) {
             chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
@@ -1245,6 +1246,7 @@ class ConversationFragment() :
             object : RecyclerView.OnScrollListener() {
 
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    setVisibleKey(recyclerView)
                     firstPosition = (binding.chatRv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                     if (firstPosition > 0) {
                         if (isBottom) {
@@ -1257,6 +1259,10 @@ class ConversationFragment() :
                         unreadTipCount = 0
                         binding.flagLayout.bottomCountFlag = false
                     }
+                }
+
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    setVisibleKey(recyclerView)
                 }
             }
         )
@@ -2799,5 +2805,12 @@ class ConversationFragment() :
             binding.chatControl.cancelExternal()
         }
         binding.chatControl.chatEt.showKeyboard()
+    }
+
+    private fun setVisibleKey(rv: RecyclerView, unreadCount: Int = 0) {
+        val lm = rv.layoutManager as LinearLayoutManager
+        val firstVisiblePosition: Int = lm.findFirstVisibleItemPosition()
+        val firstKeyToLoad: Int = if (unreadCount <= 0) firstVisiblePosition else unreadCount
+        chatViewModel.keyLivePagedListBuilder?.setFirstKeyToLoad(firstKeyToLoad)
     }
 }

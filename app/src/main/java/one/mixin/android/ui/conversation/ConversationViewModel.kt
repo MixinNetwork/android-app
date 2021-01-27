@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationManager
 import android.content.SharedPreferences
@@ -53,6 +52,7 @@ import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.KeyLivePagedListBuilder
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
@@ -108,18 +108,28 @@ internal constructor(
     private val messenger: SendMessageHelper
 ) : ViewModel() {
 
-    @SuppressLint("RestrictedApi")
-    fun getMessages(id: String, initialLoadKey: Int = 0, countable: Boolean): LiveData<PagedList<MessageItem>> {
-        return LivePagedListBuilder(
-            conversationRepository.getMessages(id, initialLoadKey, countable),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build()
-        )
-            .setInitialLoadKey(initialLoadKey)
+    var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
+
+    fun getMessages(id: String, firstKeyToLoad: Int = 0, countable: Boolean): LiveData<PagedList<MessageItem>> {
+        val pagedListConfig = PagedList.Config.Builder()
+            .setPrefetchDistance(PAGE_SIZE * 2)
+            .setPageSize(PAGE_SIZE)
+            .setEnablePlaceholders(true)
             .build()
+        if (!countable) {
+            return LivePagedListBuilder(
+                conversationRepository.getMessages(id, firstKeyToLoad, countable),
+                pagedListConfig
+            ).setInitialLoadKey(firstKeyToLoad)
+                .build()
+        }
+        if (keyLivePagedListBuilder == null) {
+            keyLivePagedListBuilder = KeyLivePagedListBuilder(
+                conversationRepository.getMessages(id, firstKeyToLoad, countable),
+                pagedListConfig
+            ).setFirstKeyToLoad(firstKeyToLoad)
+        }
+        return keyLivePagedListBuilder!!.build()
     }
 
     suspend fun indexUnread(conversationId: String) =
