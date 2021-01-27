@@ -23,6 +23,7 @@ class SendGiphyJob(
     private val url: String,
     private val width: Int,
     private val height: Int,
+    private val size: Long,
     private val category: String,
     private val messageId: String,
     private val previewUrl: String,
@@ -37,7 +38,7 @@ class SendGiphyJob(
     override fun onAdded() {
         val message = createMediaMessage(
             messageId, conversationId, senderId, category, null, url,
-            MimeType.GIF.toString(), 0, width, height, previewUrl, null, null,
+            MimeType.GIF.toString(), size, width, height, previewUrl, null, null,
             time, MediaStatus.PENDING, MessageStatus.SENDING.name
         )
         messageDao.insert(message)
@@ -55,6 +56,7 @@ class SendGiphyJob(
             MimeType.GIF.toString(), file.length(), width, height, thumbnail, null, null,
             time, MediaStatus.PENDING, MessageStatus.SENDING.name
         )
+        messageDao.insert(message)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 }

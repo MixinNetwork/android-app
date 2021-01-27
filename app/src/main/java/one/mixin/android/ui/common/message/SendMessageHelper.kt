@@ -287,7 +287,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         jobManager.addJobInBackground(
             SendGiphyJob(
-                conversationId, senderId, image.url, image.width, image.height,
+                conversationId, senderId, image.url, image.width, image.height, image.size.toLong(),
                 category, UUID.randomUUID().toString(), previewUrl, nowInUtc()
             )
         )
