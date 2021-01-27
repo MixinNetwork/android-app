@@ -79,6 +79,7 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
     @Override
     public void loadInitial(@NonNull LoadInitialParams params,
                             @NonNull LoadInitialCallback<T> callback) {
+        long start = System.currentTimeMillis();
         int totalCount = countItems();
         if (totalCount == 0) {
             callback.onResult(Collections.emptyList(), 0, 0);
@@ -90,6 +91,7 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
         final int firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount);
 
         List<T> list = loadRange(firstLoadPosition, firstLoadSize);
+        Timber.d("@@@ loadInitial cost: " + (System.currentTimeMillis() - start));
         if (list != null && list.size() == firstLoadSize) {
             try {
                 callback.onResult(list, firstLoadPosition, totalCount);
@@ -140,10 +142,13 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
                 sqLiteQuery.release();
             }
         } else {
+            long start = System.currentTimeMillis();
             Cursor cursor = mDb.query(sqLiteQuery);
             //noinspection TryFinallyCanBeTryWithResources
             try {
-                return convertRows(cursor);
+                List<T> list = convertRows(cursor);
+                Timber.d("@@@ loadRange cost: " + (System.currentTimeMillis() - start) + ", startPosition: " + startPosition + ", loadCount: " + loadCount);
+                return list;
             } finally {
                 cursor.close();
                 sqLiteQuery.release();

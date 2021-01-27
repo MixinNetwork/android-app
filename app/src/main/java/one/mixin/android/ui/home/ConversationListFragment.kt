@@ -42,6 +42,7 @@ import one.mixin.android.Constants.Mute.MUTE_1_HOUR
 import one.mixin.android.Constants.Mute.MUTE_1_WEEK
 import one.mixin.android.Constants.Mute.MUTE_1_YEAR
 import one.mixin.android.Constants.Mute.MUTE_8_HOURS
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
@@ -93,6 +94,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -160,6 +162,7 @@ class ConversationListFragment : LinkFragment() {
     override fun getContentView() = binding.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Timber.d("@@@ onViewCreated ${System.currentTimeMillis() - MixinApplication.start}")
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController(activity as MainActivity)
         val headerBinding =
@@ -330,6 +333,7 @@ class ConversationListFragment : LinkFragment() {
             .subscribe {
                 refreshBot()
             }
+        Timber.d("@@@ onViewCreated end ${System.currentTimeMillis() - MixinApplication.start}")
     }
 
     override fun onDestroyView() {
@@ -342,6 +346,7 @@ class ConversationListFragment : LinkFragment() {
 
     private val observer by lazy {
         Observer<PagedList<ConversationItem>> { pagedList ->
+            Timber.d("@@@ observer ${System.currentTimeMillis() - MixinApplication.start}")
             messageAdapter.submitList(pagedList)
             if (pagedList == null || pagedList.isEmpty()) {
                 if (circleId == null) {

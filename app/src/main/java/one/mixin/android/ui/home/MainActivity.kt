@@ -184,32 +184,40 @@ class MainActivity : BlazeBaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Timber.d("@@@ onCreate ${System.currentTimeMillis() - MixinApplication.start}")
+        MixinApplication.start = System.currentTimeMillis()
+        val start = System.currentTimeMillis()
         super.onCreate(savedInstanceState)
         navigationController = NavigationController(this)
+        Timber.d("@@@ navigationController ${System.currentTimeMillis() - start}")
 
         if (!Session.checkToken()) run {
             startActivity(Intent(this, LandingActivity::class.java))
             finish()
             return
         }
+        Timber.d("@@@ checkToken ${System.currentTimeMillis() - start}")
 
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
             finish()
             return
         }
+        Timber.d("@@@ fullName ${System.currentTimeMillis() - start}")
 
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
             RestoreActivity.show(this)
             finish()
             return
         }
+        Timber.d("@@@ restore ${System.currentTimeMillis() - start}")
 
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_WRONG_TIME, false)) {
             InitializeActivity.showWongTime(this)
             finish()
             return
         }
+        Timber.d("@@@ wrong time ${System.currentTimeMillis() - start}")
 
         MixinApplication.get().onlining.set(true)
         if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_FTS4_UPGRADE, false)) {
@@ -217,12 +225,14 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
+        Timber.d("@@@ fts4 ${System.currentTimeMillis() - start}")
 
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
             finish()
             return
         }
+        Timber.d("@@@ migration ${System.currentTimeMillis() - start}")
 
         if (!getIsLoaded(this, false) ||
             !getIsSyncSession(this, false)
@@ -231,20 +241,24 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
+        Timber.d("@@@ isLoaded ${System.currentTimeMillis() - start}")
 
         if (Session.shouldUpdateKey()) {
             InitializeActivity.showLoading(this, false)
             finish()
             return
         }
+        Timber.d("@@@ shouldUpdateKey ${System.currentTimeMillis() - start}")
 
         if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
             defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
             delayShowModifyMobile()
         }
+        Timber.d("@@@ emergency ${System.currentTimeMillis() - start}")
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Timber.d("@@@ setView ${System.currentTimeMillis() - start}")
 
         if (savedInstanceState == null) {
             navigationController.navigateToMessage()
@@ -252,24 +266,29 @@ class MainActivity : BlazeBaseActivity() {
 
         val account = Session.getAccount()
         Bugsnag.setUser(account?.userId, account?.identityNumber, account?.fullName)
+        Timber.d("@@@ bugsnag ${System.currentTimeMillis() - start}")
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
             AppCenter.setUserId(it.userId)
         }
+        Timber.d("@@@ firebase appcenter ${System.currentTimeMillis() - start}")
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
             defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
         }
+        Timber.d("@@@ sync circle ${System.currentTimeMillis() - start}")
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(BackupJob())
         if (!defaultSharedPreferences.getBoolean(PREF_ATTACHMENT, false)) {
             jobManager.addJobInBackground(AttachmentMigrationJob())
         }
+        Timber.d("@@@ attachment ${System.currentTimeMillis() - start}")
 
         if (!defaultSharedPreferences.getBoolean(PREF_BACKUP, false)) {
             jobManager.addJobInBackground(BackupMigrationJob())
         }
+        Timber.d("@@@ backup ${System.currentTimeMillis() - start}")
 
         lifecycleScope.launch(Dispatchers.IO) {
             jobManager.addJobInBackground(RefreshAccountJob())
@@ -285,15 +304,25 @@ class MainActivity : BlazeBaseActivity() {
             WorkManager.getInstance(this@MainActivity).pruneWork()
         }
         checkRoot()
+        Timber.d("@@@ checkroot ${System.currentTimeMillis() - start}")
         checkUpdate()
+        Timber.d("@@@ checkupdate ${System.currentTimeMillis() - start}")
         checkStorage()
+        Timber.d("@@@ checkStorage ${System.currentTimeMillis() - start}")
 
         initView()
+        Timber.d("@@@ initView ${System.currentTimeMillis() - start}")
         handlerCode(intent)
+        Timber.d("@@@ handle code ${System.currentTimeMillis() - start}")
 
         sendSafetyNetRequest()
+        Timber.d("@@@ send safety net request ${System.currentTimeMillis() - start}")
         checkBatteryOptimization()
+        Timber.d("@@@ check battery ${System.currentTimeMillis() - start}")
         refreshStickerAlbum()
+        Timber.d("@@@ refresh sticker ${System.currentTimeMillis() - start}")
+
+        Timber.d("@@@ onCreate end ${System.currentTimeMillis() - MixinApplication.start}")
     }
 
     override fun onStart() {

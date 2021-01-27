@@ -99,9 +99,12 @@ open class MixinApplication :
         var conversationId: String? = null
 
         fun get(): MixinApplication = appContext as MixinApplication
+
+        var start: Long = 0
     }
 
     override fun onCreate() {
+        start = System.currentTimeMillis()
         super.onCreate()
         init()
         registerActivityLifecycleCallbacks(this)
@@ -117,6 +120,8 @@ open class MixinApplication :
         )
 
         registerComponentCallbacks(MemoryCallback())
+
+        Timber.d("@@@ onCreate cost: ${System.currentTimeMillis() - start}")
     }
 
     private fun init() {
