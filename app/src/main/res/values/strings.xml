@@ -234,6 +234,7 @@
     <string name="landing_check_updates">Version Update</string>
     <string name="update_mixin">Update Mixin</string>
     <string name="update_mixin_description">The current version (%1$s) is no longer avaliable!\nPlease click "Update" below to update to the latest version from the Google Play.</string>
+    <string name="database_debug">Debug database</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">New Group Chat</string>
     <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
@@ -938,5 +939,9 @@
     <string name="web_close">close</string>
     <string name="web_debug_enable">Enable web debug</string>
     <string name="web_debug_disable">Disable web debug</string>
+    <!-- debug -->
+    <string name="db_debug_enable">Enable db debug</string>
+    <string name="db_debug_disable">Disable db debug</string>
+    <string name="db_debug_warning">Attention: If a harmful SQL statement is executed, the result is irreversible!</string>
 </resources>
 

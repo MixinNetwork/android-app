@@ -2,6 +2,8 @@ package one.mixin.android.db
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.database.Cursor
+import android.util.ArrayMap
 import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.room.Database
 import androidx.room.Room
@@ -32,6 +34,8 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_31_32
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_32_33
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_33_34
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_34_35
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.debug.getContent
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -152,6 +156,29 @@ abstract class MixinDatabase : RoomDatabase() {
                     INSTANCE = builder.build()
                 }
                 return INSTANCE as MixinDatabase
+            }
+        }
+
+        fun query(query: String): String? {
+            val start = System.currentTimeMillis()
+            var cursor: Cursor? = null
+            try {
+                cursor =
+                    supportSQLiteDatabase?.query(query) ?: return null
+                cursor.moveToFirst()
+                val result = ArrayList<ArrayMap<String, String>>()
+                do {
+                    val map = ArrayMap<String, String>()
+                    for (i in 0 until cursor.columnCount) {
+                        map[cursor.getColumnName(i)] = cursor.getContent(i)
+                    }
+                    result.add(map)
+                } while (cursor.moveToNext())
+                return "${GsonHelper.customGson.toJson(result)} ${System.currentTimeMillis() - start}ms"
+            } catch (e: Exception) {
+                return e.message
+            } finally {
+                cursor?.close()
             }
         }
 

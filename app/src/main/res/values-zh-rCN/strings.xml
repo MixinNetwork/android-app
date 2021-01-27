@@ -920,4 +920,8 @@
     <string name="web_close">关闭</string>
     <string name="web_debug_enable">已开启 Web 调试</string>
     <string name="web_debug_disable">已关闭 Web 调试</string>
+    <!-- debug -->
+    <string name="db_debug_enable">已开启 db 调试</string>
+    <string name="db_debug_disable">已关闭 db 调试</string>
+    <string name="db_debug_warning">注意：如果执行了有侵害性的 SQL，结果不可逆！</string>
 </resources>
