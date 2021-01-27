@@ -7,7 +7,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.net.Uri
 import android.text.Editable
+import androidx.core.net.toUri
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -39,7 +41,6 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import kotlin.collections.set
-import kotlin.jvm.Throws
 import kotlin.math.abs
 
 fun String.generateQRCode(size: Int, isNight: Boolean, padding: Float = 32.dp.toFloat()): Bitmap? {
@@ -485,3 +486,17 @@ fun String.joinWithCharacter(char: Char): String {
 }
 
 private fun Char.isAlphabet() = this in 'a'..'z' || this in 'A'..'Z'
+
+fun String.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "action"): String =
+    this.toUri().appendQueryParamsFromOtherUri(otherUri, exclusiveKey)
+
+fun Uri.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "action"): String {
+    val builder = this.buildUpon()
+    otherUri.queryParameterNames
+        .filter { it != exclusiveKey }
+        .forEach { key ->
+            val value = otherUri.getQueryParameter(key)
+            builder.appendQueryParameter(key, value)
+        }
+    return builder.build().toString()
+}

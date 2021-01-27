@@ -146,6 +146,12 @@ android {
         ktlint
     }
 
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
     configurations.all {
         resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
     }
@@ -299,6 +305,8 @@ dependencies {
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "androidx.test:core:${testCoreVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+
+    testImplementation "org.robolectric:robolectric:${robolectricVersion}"
 
     // for jwt unit test
     testImplementation "org.bouncycastle:bcprov-jdk16:${bcVersion}"
