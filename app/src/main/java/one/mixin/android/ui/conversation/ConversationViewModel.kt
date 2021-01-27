@@ -336,11 +336,8 @@ internal constructor(
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId, it.userId, it.mediaUrl!!,
-                                it.mediaWidth!!, it.mediaHeight!!, category, it.id,
-                                it.thumbImage
-                                    ?: "",
-                                it.createdAt
+                                it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
+                                it.mediaSize, category, it.id, it.thumbImage ?: "", it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
