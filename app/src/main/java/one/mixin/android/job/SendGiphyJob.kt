@@ -51,12 +51,14 @@ class SendGiphyJob(
         file.copyFromInputStream(FileInputStream(f))
         val size = getImageSize(file)
         val thumbnail = file.blurThumbnail(size)?.bitmap2String()
+        val url = Uri.fromFile(file).toString()
+        val mediaSize = file.length()
         val message = createMediaMessage(
-            messageId, conversationId, senderId, category, null, Uri.fromFile(file).toString(),
-            MimeType.GIF.toString(), file.length(), width, height, thumbnail, null, null,
+            messageId, conversationId, senderId, category, null, url,
+            MimeType.GIF.toString(), mediaSize, width, height, thumbnail, null, null,
             time, MediaStatus.PENDING, MessageStatus.SENDING.name
         )
-        messageDao.insert(message)
+        messageDao.updateGiphyMessage(messageId, url, mediaSize, thumbnail)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 }
