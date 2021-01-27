@@ -81,13 +81,8 @@ class MessageProvider {
                     LEFT JOIN users mu ON mu.user_id = m.user_id
                     LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
                     LEFT JOIN users pu ON pu.user_id = m.participant_id 
-                    WHERE c.category IS NOT NULL 
-                    ORDER BY c.pin_time DESC, 
-                    CASE 
-                        WHEN m.created_at is NULL THEN c.created_at
-                        ELSE m.created_at 
-                    END 
-                    DESC
+                    WHERE c.category IN ('CONTACT', 'GROUP')
+                    ORDER BY c.pin_time DESC, c.last_message_created_at DESC
                 """
                     val statement = RoomSQLiteQuery.acquire(sql, 0)
                     val countSql = "SELECT COUNT(*) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE category IS NOT NULL"

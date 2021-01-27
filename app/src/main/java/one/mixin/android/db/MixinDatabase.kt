@@ -34,9 +34,9 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_31_32
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_32_33
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_33_34
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_34_35
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_35_36
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
-import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_35_36
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset

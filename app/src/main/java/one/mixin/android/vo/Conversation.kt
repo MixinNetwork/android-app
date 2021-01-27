@@ -10,7 +10,7 @@ import java.util.UUID
 @Entity(
     tableName = "conversations",
     indices = [
-        Index(value = arrayOf("category", "status", "pin_time", "created_at"))
+        Index(value = arrayOf("pin_time", "last_message_created_at"))
     ],
 )
 open class Conversation(
@@ -46,7 +46,9 @@ open class Conversation(
     @ColumnInfo(name = "draft")
     val draft: String? = null,
     @ColumnInfo(name = "mute_until")
-    val muteUntil: String? = null
+    val muteUntil: String? = null,
+    @ColumnInfo(name = "last_message_created_at")
+    val lastMessageCreatedAt: String? = null,
 ) : IConversationCategory {
     override val conversationCategory: String
         get() = category ?: ConversationCategory.CONTACT.name

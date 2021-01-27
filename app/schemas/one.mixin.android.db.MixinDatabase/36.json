@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 36,
-    "identityHash": "ad07ecb23b91b806c4d95cf30b7d9235",
+    "identityHash": "0e1abcd31aac08daf2424bc8d33e531c",
     "entities": [
       {
         "tableName": "users",
@@ -116,7 +116,7 @@
       },
       {
         "tableName": "conversations",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `owner_id` TEXT, `category` TEXT, `name` TEXT, `icon_url` TEXT, `announcement` TEXT, `code_url` TEXT, `pay_type` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, `last_message_id` TEXT, `last_read_message_id` TEXT, `unseen_message_count` INTEGER, `status` INTEGER NOT NULL, `draft` TEXT, `mute_until` TEXT, PRIMARY KEY(`conversation_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `owner_id` TEXT, `category` TEXT, `name` TEXT, `icon_url` TEXT, `announcement` TEXT, `code_url` TEXT, `pay_type` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, `last_message_id` TEXT, `last_read_message_id` TEXT, `unseen_message_count` INTEGER, `status` INTEGER NOT NULL, `draft` TEXT, `mute_until` TEXT, `last_message_created_at` TEXT, PRIMARY KEY(`conversation_id`))",
         "fields": [
           {
             "fieldPath": "conversationId",
@@ -213,6 +213,12 @@
             "columnName": "mute_until",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "lastMessageCreatedAt",
+            "columnName": "last_message_created_at",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -223,15 +229,13 @@
         },
         "indices": [
           {
-            "name": "index_conversations_category_status_pin_time_created_at",
+            "name": "index_conversations_pin_time_last_message_created_at",
             "unique": false,
             "columnNames": [
-              "category",
-              "status",
               "pin_time",
-              "created_at"
+              "last_message_created_at"
             ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_conversations_category_status_pin_time_created_at` ON `${TABLE_NAME}` (`category`, `status`, `pin_time`, `created_at`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_conversations_pin_time_last_message_created_at` ON `${TABLE_NAME}` (`pin_time`, `last_message_created_at`)"
           }
         ],
         "foreignKeys": []
@@ -1847,7 +1851,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ad07ecb23b91b806c4d95cf30b7d9235')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0e1abcd31aac08daf2424bc8d33e531c')"
     ]
   }
 }
