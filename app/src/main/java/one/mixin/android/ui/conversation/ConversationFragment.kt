@@ -222,6 +222,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
+import java.lang.Integer.min
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -2365,33 +2366,37 @@ class ConversationFragment() :
         position: Int,
         offset: Int = -1,
         delay: Long = 30,
-        action: (() -> Unit)? = null
+        action: (() -> Unit)? = null,
+        delayScroll: Long = 0
     ) {
         binding.chatRv.postDelayed(
             {
                 if (isAdded) {
                     if (position == 0 && offset == 0) {
                         binding.chatRv.layoutManager?.scrollToPosition(0)
+                        action?.let { it() }
                     } else if (offset == -1) {
                         lifecycleScope.launch {
                             binding.chatRv.scrollToPosition(position)
-                            delay(20)
+                            delay(delayScroll)
                             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                                 position,
                                 0
                             )
+                            action?.let { it() }
                         }
                     } else {
                         lifecycleScope.launch {
                             binding.chatRv.scrollToPosition(position)
-                            delay(20)
+                            Timber.e("$delayScroll")
+                            delay(delayScroll)
                             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                                 position,
                                 offset
                             )
+                            action?.let { it() }
                         }
                     }
-                    action?.let { it() }
                     if (abs(firstPosition - position) > PAGE_SIZE * 6) {
                         chatAdapter.notifyDataSetChanged()
                     }
@@ -2459,7 +2464,8 @@ class ConversationFragment() :
                                 },
                                 60
                             )
-                        }
+                        },
+                        delayScroll = 10L + min(abs(firstPosition - index) / 10, 100)
                     )
                 }
             }
