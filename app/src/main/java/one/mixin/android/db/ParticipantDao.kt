@@ -104,10 +104,10 @@ interface ParticipantDao : BaseDao<Participant> {
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
     fun findParticipantById(conversationId: String, userId: String): Participant?
 
-    @Query("SELECT count(*) FROM participants WHERE conversation_id = :conversationId")
+    @Query("SELECT count(1) FROM participants WHERE conversation_id = :conversationId")
     suspend fun getParticipantsCount(conversationId: String): Int
 
-    @Query("SELECT count(*) FROM participants WHERE conversation_id = :conversationId")
+    @Query("SELECT count(1) FROM participants WHERE conversation_id = :conversationId")
     fun observeParticipantsCount(conversationId: String): LiveData<Int>
 
     @Query("SELECT * FROM participants")

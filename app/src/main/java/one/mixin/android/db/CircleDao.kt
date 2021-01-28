@@ -79,7 +79,7 @@ interface CircleDao : BaseDao<Circle> {
         m.user_id AS senderId, m.`action` AS actionName, m.status AS messageStatus,
         mu.full_name AS senderFullName, s.type AS snapshotType,
         pu.full_name AS participantFullName, pu.user_id AS participantUserId,
-        (SELECT count(*) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
+        (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
         mm.mentions AS mentions 
         FROM circle_conversations cc
         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
@@ -91,12 +91,7 @@ interface CircleDao : BaseDao<Circle> {
         LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
         LEFT JOIN users pu ON pu.user_id = m.participant_id 
         WHERE c.category IS NOT NULL AND cc.circle_id = :circleId
-        ORDER BY cc.pin_time DESC, 
-            CASE 
-                WHEN m.created_at is NULL THEN c.created_at
-                ELSE m.created_at 
-            END 
-            DESC
+        ORDER BY cc.pin_time DESC, c.last_message_created_at DESC
     """
     )
     fun observeConversationsByCircleId(circleId: String): DataSource.Factory<Int, ConversationItem>
@@ -121,7 +116,7 @@ interface CircleDao : BaseDao<Circle> {
         m.user_id AS senderId, m.`action` AS actionName, m.status AS messageStatus,
         mu.full_name AS senderFullName, s.type AS snapshotType,
         pu.full_name AS participantFullName, pu.user_id AS participantUserId,
-        (SELECT count(*) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
+        (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
         mm.mentions AS mentions 
         FROM circle_conversations cc
         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id

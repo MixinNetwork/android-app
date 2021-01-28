@@ -23,7 +23,7 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     fun getMentionData(messageId: String): String?
 
     // DELETE COUNT
-    @Query("SELECT count(*) FROM message_mentions WHERE conversation_id = :conversationId")
+    @Query("SELECT count(1) FROM message_mentions WHERE conversation_id = :conversationId")
     suspend fun countDeleteMessageByConversationId(conversationId: String): Int
 
     // DELETE

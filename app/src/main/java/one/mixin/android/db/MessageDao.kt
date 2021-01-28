@@ -52,7 +52,7 @@ interface MessageDao : BaseDao<Message> {
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
     @Query(
-        """SELECT count(*) FROM messages WHERE conversation_id = :conversationId
+        """SELECT count(1) FROM messages WHERE conversation_id = :conversationId
             AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)"""
     )
     suspend fun findMessageIndex(conversationId: String, messageId: String): Int
@@ -88,7 +88,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-            SELECT count(*) FROM messages WHERE conversation_id = :conversationId
+            SELECT count(1) FROM messages WHERE conversation_id = :conversationId
             AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
             AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
             ORDER BY created_at ASC, rowid ASC
@@ -113,7 +113,7 @@ interface MessageDao : BaseDao<Message> {
     fun getMediaMessagesExcludeLive(conversationId: String): DataSource.Factory<Int, MessageItem>
 
     @Query(
-        """SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
+        """SELECT count(1) FROM messages WHERE conversation_id = :conversationId 
         AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
         AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
         ORDER BY created_at DESC, rowid DESC
