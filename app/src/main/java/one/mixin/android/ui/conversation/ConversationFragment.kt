@@ -2373,15 +2373,23 @@ class ConversationFragment() :
                     if (position == 0 && offset == 0) {
                         binding.chatRv.layoutManager?.scrollToPosition(0)
                     } else if (offset == -1) {
-                        (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                            position,
-                            0
-                        )
+                        lifecycleScope.launch {
+                            binding.chatRv.scrollToPosition(position)
+                            delay(20)
+                            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                                position,
+                                0
+                            )
+                        }
                     } else {
-                        (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                            position,
-                            offset
-                        )
+                        lifecycleScope.launch {
+                            binding.chatRv.scrollToPosition(position)
+                            delay(20)
+                            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                                position,
+                                offset
+                            )
+                        }
                     }
                     action?.let { it() }
                     if (abs(firstPosition - position) > PAGE_SIZE * 6) {
