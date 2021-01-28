@@ -4,7 +4,11 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 
-class MessageDeleteJob(private val conversationId: String, private val deleteMention: Boolean = false, private val deleteConversation: Boolean = false) :
+class MessageDeleteJob(
+    private val conversationId: String,
+    private val deleteMention: Boolean = false,
+    private val deleteConversation: Boolean = false
+) :
     BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("message_delete").persist()) {
 
     private val TAG = MessageDeleteJob::class.java.simpleName
@@ -16,14 +20,21 @@ class MessageDeleteJob(private val conversationId: String, private val deleteMen
 
     override fun onRun() = runBlocking {
         if (deleteMention) {
-            val deleteTimes = messageMentionDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
+            val deleteTimes =
+                messageMentionDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
             repeat(deleteTimes) {
                 messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
             }
         } else {
-            val deleteTimes = messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
+            val deleteTimes =
+                messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
             repeat(deleteTimes) {
-                messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+                messageFts4Dao.deleteByMessageIds(
+                    messageDao.getMessageIdsByConversationId(
+                        conversationId,
+                        DB_DELETE_LIMIT
+                    )
+                )
                 messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
             }
         }

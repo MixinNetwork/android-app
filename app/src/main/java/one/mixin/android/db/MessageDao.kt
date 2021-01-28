@@ -455,6 +455,12 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
 
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId")
+    suspend fun getMessageIdsByConversationId(conversationId: String): List<String>
+
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY rowid LIMIT :limit")
+    suspend fun getMessageIdsByConversationId(conversationId: String, limit: Int): List<String>
+
     @Query(
         """
         SELECT id as message_id, content, name FROM messages 
