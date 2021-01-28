@@ -2,11 +2,17 @@ package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import one.mixin.android.extension.nowInUtc
 import java.util.UUID
 
-@Entity(tableName = "conversations")
+@Entity(
+    tableName = "conversations",
+    indices = [
+        Index(value = arrayOf("pin_time", "last_message_created_at"))
+    ],
+)
 open class Conversation(
     @PrimaryKey
     @ColumnInfo(name = "conversation_id")
@@ -40,7 +46,9 @@ open class Conversation(
     @ColumnInfo(name = "draft")
     val draft: String? = null,
     @ColumnInfo(name = "mute_until")
-    val muteUntil: String? = null
+    val muteUntil: String? = null,
+    @ColumnInfo(name = "last_message_created_at")
+    val lastMessageCreatedAt: String? = null,
 ) : IConversationCategory {
     override val conversationCategory: String
         get() = category ?: ConversationCategory.CONTACT.name

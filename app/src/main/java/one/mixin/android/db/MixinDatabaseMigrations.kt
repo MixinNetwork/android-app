@@ -245,5 +245,15 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_jobs_action` ON `jobs` (`action`)")
             }
         }
+
+        val MIGRATION_35_36: Migration = object : Migration(35, 36) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE conversations ADD COLUMN last_message_created_at TEXT")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_conversations_pin_time_last_message_created_at` ON `conversations` (`pin_time`, `last_message_created_at`)")
+                database.execSQL("UPDATE conversations SET last_message_created_at = (SELECT created_at FROM messages WHERE id = conversations.last_message_id)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_users_relationship_full_name` ON `users` (`relationship`, `full_name`)")
+                database.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
+            }
+        }
     }
 }
