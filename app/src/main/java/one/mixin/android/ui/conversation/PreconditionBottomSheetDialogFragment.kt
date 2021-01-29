@@ -38,16 +38,21 @@ import java.math.BigDecimal
 class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PreconditionBottomSheetDialogFragment"
+        const val ARGS_FROM = "args_from"
+        const val FROM_LINK = 0
+        const val FROM_TRANSFER = 1
 
-        inline fun <reified T : BiometricItem> newInstance(t: T) =
+        inline fun <reified T : BiometricItem> newInstance(t: T, from: Int) =
             PreconditionBottomSheetDialogFragment().withArgs {
                 putParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM, t)
+                putInt(ARGS_FROM, from)
             }
     }
 
     private val t: BiometricItem by lazy {
         requireArguments().getParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM)!!
     }
+    private val from: Int by lazy { requireArguments().getInt(ARGS_FROM, FROM_LINK) }
 
     private val binding by viewBinding(FragmentPreconditionBottomSheetBinding::inflate)
 
@@ -221,7 +226,8 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun shouldShowStrangerTransferTip(t: TransferBiometricItem): Boolean {
-        return !isStrangerTransferDisable() && t.user.relationship != UserRelationship.FRIEND.name
+        return from == FROM_TRANSFER &&
+            !isStrangerTransferDisable() && t.user.relationship != UserRelationship.FRIEND.name
     }
 
     private fun isDuplicateTransferDisable() = !defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
