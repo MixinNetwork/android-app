@@ -72,6 +72,7 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
@@ -553,7 +554,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
         binding.continueVa?.displayedChild = POST_TEXT
 
-        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem)
+        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_TRANSFER)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 showTransferBottom(biometricItem)

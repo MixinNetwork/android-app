@@ -62,6 +62,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -656,7 +657,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun showPreconditionBottom(biometricItem: BiometricItem) {
-        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem)
+        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_LINK)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
