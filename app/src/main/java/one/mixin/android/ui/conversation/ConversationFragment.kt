@@ -2390,7 +2390,7 @@ class ConversationFragment() :
                                 offset
                             )
                             action?.let { it() }
-                        }, 100)
+                        }, 160)
                     } else {
                         action?.let { it() }
                     }
