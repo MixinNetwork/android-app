@@ -44,6 +44,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parsHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.CircleConversation
@@ -792,7 +793,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } catch (e: Exception) {
             Log.e(TAG, "decrypt failed " + data.messageId, e)
             FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
-            FirebaseCrashlytics.getInstance().recordException(e)
+            reportException(e)
             if (e !is NoSessionException) {
                 Bugsnag.beforeNotify {
                     it.addToTab("Decrypt", "conversation", data.conversationId)
