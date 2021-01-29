@@ -2383,9 +2383,16 @@ class ConversationFragment() :
                             offset
                         )
                     }
-                    action?.let { it() }
-                    if (abs(firstPosition - position) > PAGE_SIZE * 6) {
-                        chatAdapter.notifyDataSetChanged()
+                    if (abs(firstPosition - position) > PAGE_SIZE * 3) {
+                        binding.chatRv.postDelayed({
+                            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                                position,
+                                offset
+                            )
+                            action?.let { it() }
+                        }, 100)
+                    } else {
+                        action?.let { it() }
                     }
                 }
             },
