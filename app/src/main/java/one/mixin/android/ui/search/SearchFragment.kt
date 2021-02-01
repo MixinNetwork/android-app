@@ -86,10 +86,12 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     }
 
     private var searchJob: Job? = null
+    private var messageSearchJob: Job? = null
 
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
         searchJob?.cancel()
+        messageSearchJob?.cancel()
         searchJob = fuzzySearch(keyword)
     }
 
@@ -246,7 +248,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         (requireActivity() as MainActivity).showSearchLoading()
         searchAdapter.clear()
 
-        val messageJob = launch {
+        messageSearchJob = launch {
             (searchViewModel.fuzzySearch<SearchMessageItem>(keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
                 searchAdapter.setMessageData(searchMessageItems)
             }
@@ -257,7 +259,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         decoration.invalidateHeaders()
         searchAdapter.setData(assetItems, users, chatMinimals)
 
-        messageJob.join()
+        messageSearchJob?.join()
         (requireActivity() as MainActivity).hideSearchLoading()
     }
 
