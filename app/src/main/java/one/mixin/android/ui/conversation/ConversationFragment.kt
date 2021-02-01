@@ -2384,13 +2384,16 @@ class ConversationFragment() :
                         )
                     }
                     if (abs(firstPosition - position) > PAGE_SIZE * 3) {
-                        binding.chatRv.postDelayed({
-                            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                                position,
-                                offset
-                            )
-                            action?.let { it() }
-                        }, 160)
+                        binding.chatRv.postDelayed(
+                            {
+                                (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                                    position,
+                                    offset
+                                )
+                                action?.let { it() }
+                            },
+                            160
+                        )
                     } else {
                         action?.let { it() }
                     }

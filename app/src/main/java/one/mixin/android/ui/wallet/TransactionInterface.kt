@@ -9,6 +9,7 @@ import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionBinding
@@ -19,6 +20,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.vo.AssetItem
@@ -110,7 +112,12 @@ interface TransactionInterface {
                             fragment.getString(R.string.wallet_transaction_that_time_no_value)
                         } else {
                             val amount = (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).priceFormat()
-                            fragment.getString(R.string.wallet_transaction_that_time_value, "${Fiats.getSymbol()}$amount")
+                            val pricePerUnit = if (BuildConfig.DEBUG) {
+                                "(${Fiats.getSymbol()}${ticker.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
+                            } else {
+                                ""
+                            }
+                            fragment.getString(R.string.wallet_transaction_that_time_value, "${Fiats.getSymbol()}$amount $pricePerUnit")
                         }
                         fragment.context?.let { c ->
                             setTextColor(c.colorFromAttribute(R.attr.text_minor))
@@ -194,7 +201,13 @@ interface TransactionInterface {
                 }
             }
             val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).priceFormat()
-            valueAsTv.text = fragment.getString(R.string.wallet_transaction_current_value, "${Fiats.getSymbol()}$amount")
+            val pricePerUnit = if (BuildConfig.DEBUG) {
+                "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
+            } else {
+                ""
+            }
+
+            valueAsTv.text = fragment.getString(R.string.wallet_transaction_current_value, "${Fiats.getSymbol()}$amount $pricePerUnit")
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
             memoTv.text = snapshot.memo
