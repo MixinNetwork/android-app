@@ -102,6 +102,8 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         }
 
         binding.chatTv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
+            textGestureListener?.longPressed = true
+
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlLongClick(matchedText)
@@ -219,6 +221,8 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         var onItemListener: ConversationAdapter.OnItemListener,
         var absoluteAdapterPosition: Int = 0
     ) : GestureDetector.SimpleOnGestureListener() {
+        var longPressed = false
+
         override fun onDoubleTap(e: MotionEvent?): Boolean {
             onItemListener.onTextDoubleClick(messageItem)
             return true
@@ -232,6 +236,11 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         }
 
         override fun onLongPress(e: MotionEvent?) {
+            if (longPressed) {
+                longPressed = false
+                return
+            }
+
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                 MixinApplication.appContext.tapVibrate()
