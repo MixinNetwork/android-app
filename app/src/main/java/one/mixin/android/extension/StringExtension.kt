@@ -26,6 +26,7 @@ import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
+import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -42,13 +43,14 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import kotlin.collections.set
 import kotlin.math.abs
+import kotlin.random.Random
 
 fun String.generateQRCode(size: Int, isNight: Boolean, padding: Float = 32.dp.toFloat()): Bitmap? {
     val result: QRCode
     try {
         val hints = HashMap<EncodeHintType, Any>()
         hints[EncodeHintType.CHARACTER_SET] = "utf-8"
-        result = Encoder.encode(this, ErrorCorrectionLevel.H, hints)
+        result = Encoder.encode(this, ErrorCorrectionLevel.M, hints)
     } catch (iae: IllegalArgumentException) {
         // Unsupported format
         return null
@@ -74,6 +76,7 @@ fun String.generateQRCode(size: Int, isNight: Boolean, padding: Float = 32.dp.to
         )
         paint.color = Color.BLACK
     }
+    Timber.d("${result.version} $inputHeight - $inputWidth")
     for (y in 0 until inputHeight) {
         for (x in 0 until inputWidth) {
             if (input[x, y].toInt() == 1) {
@@ -85,7 +88,11 @@ fun String.generateQRCode(size: Int, isNight: Boolean, padding: Float = 32.dp.to
                 canvas.drawCircle(
                     (circleRadius + itemSize * x) + padding,
                     (circleRadius + itemSize * y) + padding,
-                    circleRadius,
+                    if (Random.nextBoolean()) {
+                        circleRadius * 0.95f
+                    } else {
+                        circleRadius * 0.85f
+                    },
                     paint
                 )
             }

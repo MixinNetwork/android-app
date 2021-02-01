@@ -87,9 +87,9 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         binding.badgeView.pos = END_BOTTOM
                     }
                     val name = getName(user)
-                    if (requireContext().isQRCodeFileExists(name)) {
-                        binding.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
-                    } else {
+                    // if (requireContext().isQRCodeFileExists(name)) {
+                    //     binding.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
+                    // } else {
                         binding.qr.post {
                             Observable.create<Bitmap> { e ->
                                 val account = Session.getAccount() ?: return@create
@@ -114,7 +114,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     }
                                 )
                         }
-                    }
+                    // }
                 }
             }
         )

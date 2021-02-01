@@ -39,8 +39,8 @@
 
             <one.mixin.android.widget.BadgeAvatarView
                 android:id="@+id/badge_view"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_gravity="center"
                 app:border_color="@color/white"
                 app:border_width="2dp"/>
