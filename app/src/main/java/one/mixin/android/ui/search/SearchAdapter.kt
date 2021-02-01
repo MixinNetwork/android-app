@@ -72,14 +72,20 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             else -> if (data.messageShowMore()) data.messageList else null
         }
 
+    fun clear() {
+        data.assetList = null
+        data.userList = null
+        data.showTip = shouldTips(query)
+        data.chatList = null
+        data.messageList = null
+        notifyDataSetChanged()
+    }
+
     fun setData(assetItems: List<AssetItem>?, users: List<User>?, chatMinimals: List<ChatMinimal>?) {
         data.assetList = assetItems
         data.userList = users
         data.showTip = shouldTips(query)
         data.chatList = chatMinimals
-
-        // for clear last query messages
-        data.messageList = null
         notifyDataSetChanged()
     }
 

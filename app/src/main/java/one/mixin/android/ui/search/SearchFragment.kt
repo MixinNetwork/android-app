@@ -244,17 +244,20 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         if (viewDestroyed()) return@launch
 
         (requireActivity() as MainActivity).showSearchLoading()
+        searchAdapter.clear()
 
-        searchAdapter.setData(null, null, null)
+        val messageJob = launch {
+            (searchViewModel.fuzzySearch<SearchMessageItem>(keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
+                searchAdapter.setMessageData(searchMessageItems)
+            }
+        }
         val assetItems = searchViewModel.fuzzySearch<AssetItem>(keyword) as List<AssetItem>?
         val users = searchViewModel.fuzzySearch<User>(keyword) as List<User>?
         val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(keyword) as List<ChatMinimal>?
         decoration.invalidateHeaders()
         searchAdapter.setData(assetItems, users, chatMinimals)
-        (searchViewModel.fuzzySearch<SearchMessageItem>(keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
-            searchAdapter.setMessageData(searchMessageItems)
-        }
 
+        messageJob.join()
         (requireActivity() as MainActivity).hideSearchLoading()
     }
 
