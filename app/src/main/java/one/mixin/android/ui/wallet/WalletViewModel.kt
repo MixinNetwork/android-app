@@ -35,6 +35,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.PendingDeposit
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
@@ -142,13 +143,26 @@ internal constructor(
             },
             successBlock = { list ->
                 assetRepository.clearPendingDepositsByAssetId(asset.assetId)
-                list.data?.map {
-                    it.toSnapshot(asset.assetId)
-                }?.let {
-                    assetRepository.insertPendingDeposit(it)
+                val pendingDeposits = list.data ?: return@handleMixinResponse
+
+                pendingDeposits.chunked(100) { trunk ->
+                    viewModelScope.launch(Dispatchers.IO) {
+                        processPendingDepositTrunk(asset.assetId, trunk)
+                    }
                 }
             }
         )
+    }
+
+    private suspend fun processPendingDepositTrunk(assetId: String, trunk: List<PendingDeposit>) {
+        val hashList = trunk.map { it.transactionHash }
+        val existIds = assetRepository.findSnapshotIdsByTransactionHashList(assetId, hashList)
+        trunk.filter { it.transactionId !in existIds }
+            .map {
+                it.toSnapshot(assetId)
+            }.let {
+                assetRepository.insertPendingDeposit(it)
+            }
     }
 
     suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {

@@ -256,4 +256,7 @@ constructor(
     suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
 
     suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
+
+    suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
+        snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
 }
