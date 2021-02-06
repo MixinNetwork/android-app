@@ -259,4 +259,7 @@ constructor(
 
     suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
         snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
+
+    suspend fun suspendUpdatePrices(assetId: String, priceBtc: String, priceUsd: String, changeBtc: String, changeUsd: String) =
+        assetDao.suspendUpdatePrices(assetId, priceBtc, priceUsd, changeBtc, changeUsd)
 }
