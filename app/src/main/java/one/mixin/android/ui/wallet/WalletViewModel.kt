@@ -196,9 +196,10 @@ internal constructor(
                     asset.toTopAssetItem(chainIconUrl)
                 }
                 val existsSet = ArraySet<AssetItem>()
-                topAssetList.forEach {
+                assetList.forEach {
                     val exists = assetRepository.findAssetItemById(it.assetId)
                     if (exists != null) {
+                        assetRepository.suspendUpdatePrices(it.assetId, it.priceBtc, it.priceUsd, it.changeBtc, it.changeUsd)
                         existsSet.add(exists)
                     }
                 }

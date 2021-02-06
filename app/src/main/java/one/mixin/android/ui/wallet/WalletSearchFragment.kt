@@ -174,7 +174,7 @@ class WalletSearchFragment : BaseFragment() {
             searchAdapter.clear()
             binding.pb.isVisible = true
 
-            val localAssets = viewModel.fuzzySearchAssets(query)
+            var localAssets = viewModel.fuzzySearchAssets(query)
             searchAdapter.localAssets = localAssets
 
             val pair = viewModel.queryAsset(query)
@@ -182,15 +182,17 @@ class WalletSearchFragment : BaseFragment() {
             if (localAssets.isNullOrEmpty()) {
                 searchAdapter.remoteAssets = remoteAssets
             } else {
+                localAssets = viewModel.fuzzySearchAssets(query)
                 val filtered = mutableListOf<TopAssetItem>()
                 remoteAssets?.forEach { remote ->
-                    val exists = localAssets.find { local ->
+                    val exists = localAssets?.find { local ->
                         local.assetId == remote.assetId
                     }
                     if (exists == null) {
                         filtered.add(remote)
                     }
                 }
+                searchAdapter.localAssets = localAssets
                 searchAdapter.remoteAssets = filtered
             }
             binding.pb.isVisible = false
