@@ -45,6 +45,9 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
             requireContext().toast(R.string.copy_success)
             true
         }
+        binding.titleView.leftIb.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
 
         showWarning()
     }

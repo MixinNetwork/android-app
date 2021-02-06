@@ -14,23 +14,24 @@
         app:titleText="@string/app_name" />
 
     <EditText
-        style="@style/NormalTextStyle"
         android:id="@+id/sql"
+        style="@style/NormalTextStyle"
         android:layout_width="match_parent"
-        android:padding="12dp"
+        android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:background="@drawable/bg_input"
         android:hint="type raw sql"
-        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:maxLines="5"
         tools:ignore="Autofill,HardcodedText,TextFields" />
 
     <Button
         android:id="@+id/run_bn"
-        android:layout_margin="8dp"
-        android:text="run"
         style="@style/AppTheme.MaterialButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="run"
         tools:ignore="HardcodedText" />
 
     <ScrollView
@@ -38,8 +39,8 @@
         android:layout_height="match_parent">
 
         <TextView
-            style="@style/NormalTextStyle"
             android:id="@+id/logs"
+            style="@style/NormalTextStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </ScrollView>
