@@ -10,6 +10,7 @@ import androidx.room.InvalidationTracker;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
+import one.mixin.android.util.CrashExceptionReportKt;
 import timber.log.Timber;
 
 import java.util.Collections;
@@ -90,12 +91,23 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
         final int firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount);
 
         List<T> list = loadRange(firstLoadPosition, firstLoadSize);
-        if (list != null && list.size() == firstLoadSize) {
+        if (list != null) {
             try {
                 callback.onResult(list, firstLoadPosition, totalCount);
             } catch (IllegalArgumentException e) {
-                // workaround with paging incorrect tiling
+                // workaround with paging initial load size NOT to be a multiple of page size
                 Timber.w(e);
+                try {
+                    callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size());
+                } catch (IllegalArgumentException iae) {
+                    // workaround with paging incorrect tiling
+                    String message = "MixinLimitOffsetDataSource "
+                            + "firstLoadPosition: " + firstLoadPosition
+                            + ", list size: " + list.size()
+                            + ", count: " + totalCount;
+                    CrashExceptionReportKt.reportException(message, iae);
+                    Timber.w(iae);
+                }
             }
         } else {
             // null list, or size doesn't match request - DB modified between count and load
