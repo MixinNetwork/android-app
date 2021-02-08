@@ -1,11 +1,15 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.TopAsset
 
 class RefreshTopAssetsJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(RefreshTopAssetsJob.GROUP).requireNetwork()
+        .addTags(GROUP).requireNetwork()
 ) {
 
     companion object {
@@ -18,6 +22,23 @@ class RefreshTopAssetsJob : BaseJob(
         if (response != null && response.isSuccess && response.data != null) {
             val assetList = response.data as List<TopAsset>
             topAssetDao.insertList(assetList)
+
+            val recentArray = MixinApplication.appContext.defaultSharedPreferences
+                .getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
+            if (recentArray.isNullOrEmpty()) return
+            runBlocking {
+                val recentList = assetDao.suspendFindAssetsByIds(recentArray.take(2))
+                if (recentList.isNullOrEmpty()) return@runBlocking
+
+                assetList.forEach { t ->
+                    val needUpdate = recentList.find { r ->
+                        r.assetId == t.assetId && r.priceUsd != t.priceUsd
+                    }
+                    if (needUpdate != null) {
+                        assetDao.suspendUpdatePrices(t.assetId, t.priceBtc, t.priceUsd, t.changeBtc, t.changeUsd)
+                    }
+                }
+            }
         }
     }
 }
