@@ -257,7 +257,7 @@ constructor(
 
     suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
 
-    suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
+    suspend fun findSnapshotByTransactionHashList(assetId: String, hashList: List<String>): List<String> =
         snapshotDao.findSnapshotIdsByTransactionHashList(assetId, hashList)
 
     suspend fun suspendUpdatePrices(assetId: String, priceBtc: String, priceUsd: String, changeBtc: String, changeUsd: String) =

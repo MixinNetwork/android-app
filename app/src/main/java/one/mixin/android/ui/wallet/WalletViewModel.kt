@@ -156,8 +156,8 @@ internal constructor(
 
     private suspend fun processPendingDepositTrunk(assetId: String, trunk: List<PendingDeposit>) {
         val hashList = trunk.map { it.transactionHash }
-        val existIds = assetRepository.findSnapshotIdsByTransactionHashList(assetId, hashList)
-        trunk.filter { it.transactionId !in existIds }
+        val existHashList = assetRepository.findSnapshotByTransactionHashList(assetId, hashList)
+        trunk.filter { it.transactionHash !in existHashList }
             .map {
                 it.toSnapshot(assetId)
             }.let {
