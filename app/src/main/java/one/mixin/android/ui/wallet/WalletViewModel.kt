@@ -36,9 +36,11 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.PendingDeposit
+import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.vo.toTopAssetItem
 
@@ -196,12 +198,16 @@ internal constructor(
                     asset.toTopAssetItem(chainIconUrl)
                 }
                 val existsSet = ArraySet<AssetItem>()
+                val needUpdatePrice = arrayListOf<PriceAndChange>()
                 assetList.forEach {
                     val exists = assetRepository.findAssetItemById(it.assetId)
                     if (exists != null) {
-                        assetRepository.suspendUpdatePrices(it.assetId, it.priceBtc, it.priceUsd, it.changeBtc, it.changeUsd)
+                        needUpdatePrice.add(it.toPriceAndChange())
                         existsSet.add(exists)
                     }
+                }
+                if (needUpdatePrice.isNotEmpty()) {
+                    assetRepository.suspendUpdatePrices(needUpdatePrice)
                 }
                 return@withContext Pair(topAssetList, existsSet)
             } else {

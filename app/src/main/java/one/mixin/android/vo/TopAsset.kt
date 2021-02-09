@@ -49,3 +49,7 @@ data class TopAsset(
     @ColumnInfo(name = "confirmations")
     val confirmations: Int
 ) : Parcelable
+
+fun TopAsset.toPriceAndChange(): PriceAndChange {
+    return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
+}

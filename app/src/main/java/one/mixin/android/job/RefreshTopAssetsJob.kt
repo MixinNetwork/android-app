@@ -5,7 +5,9 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.TopAsset
+import one.mixin.android.vo.toPriceAndChange
 
 class RefreshTopAssetsJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -29,14 +31,17 @@ class RefreshTopAssetsJob : BaseJob(
             runBlocking {
                 val recentList = assetDao.suspendFindAssetsByIds(recentArray.take(2))
                 if (recentList.isNullOrEmpty()) return@runBlocking
-
+                val needUpdatePrice = arrayListOf<PriceAndChange>()
                 assetList.forEach { t ->
                     val needUpdate = recentList.find { r ->
                         r.assetId == t.assetId && r.priceUsd != t.priceUsd
                     }
                     if (needUpdate != null) {
-                        assetDao.suspendUpdatePrices(t.assetId, t.priceBtc, t.priceUsd, t.changeBtc, t.changeUsd)
+                        needUpdatePrice.add(t.toPriceAndChange())
                     }
+                }
+                if (needUpdatePrice.isNotEmpty()) {
+                    assetDao.suspendUpdatePrices(needUpdatePrice)
                 }
             }
         }

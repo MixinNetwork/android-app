@@ -56,6 +56,23 @@ data class Asset(
     val reserve: String?
 ) : Parcelable
 
+data class PriceAndChange(
+    @ColumnInfo(name = "asset_id")
+    val assetId: String,
+    @ColumnInfo(name = "price_btc")
+    val priceBtc: String,
+    @ColumnInfo(name = "price_usd")
+    val priceUsd: String,
+    @ColumnInfo(name = "change_usd")
+    val changeUsd: String,
+    @ColumnInfo(name = "change_btc")
+    val changeBtc: String,
+)
+
+fun Asset.toPriceAndChange(): PriceAndChange {
+    return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
+}
+
 fun Asset.toAssetItem(): AssetItem = AssetItem(
     assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
     confirmations, null, null, null, null, assetKey, reserve

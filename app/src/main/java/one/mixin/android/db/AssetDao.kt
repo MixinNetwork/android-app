@@ -4,9 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import androidx.room.Update
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.PriceAndChange
 
 @Dao
 interface AssetDao : BaseDao<Asset> {
@@ -102,10 +104,6 @@ interface AssetDao : BaseDao<Asset> {
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds)")
     suspend fun suspendFindAssetsByIds(assetIds: List<String>): List<AssetItem>
 
-    @Query(
-        """UPDATE assets SET price_btc =:priceBtc, price_usd =:priceUsd, change_btc =:changeBtc, change_usd =:changeUsd
-        WHERE asset_id =:assetId
-    """
-    )
-    suspend fun suspendUpdatePrices(assetId: String, priceBtc: String, priceUsd: String, changeBtc: String, changeUsd: String)
+    @Update(entity = Asset::class)
+    suspend fun suspendUpdatePrices(priceAndChanges: List<PriceAndChange>)
 }
