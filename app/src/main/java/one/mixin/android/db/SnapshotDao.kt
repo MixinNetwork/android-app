@@ -72,6 +72,6 @@ interface SnapshotDao : BaseDao<Snapshot> {
     @Query("DELETE FROM snapshots WHERE type = 'pending' AND transaction_hash = :transactionHash")
     fun deletePendingSnapshotByHash(transactionHash: String)
 
-    @Query("SELECT transaction_hash FROM snapshots WHERE asset_id = :assetId AND transaction_hash IN (:hashList)")
+    @Query("SELECT transaction_hash FROM snapshots WHERE asset_id = :assetId AND type = 'deposit' AND transaction_hash IN (:hashList)")
     suspend fun findSnapshotIdsByTransactionHashList(assetId: String, hashList: List<String>): List<String>
 }
