@@ -148,6 +148,8 @@ class WalletSearchFragment : BaseFragment() {
                 if (binding.searchEt.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
                     binding.rvVa.displayedChild = POS_DEFAULT
                 }
+
+                checkRecent()
             }
         )
         searchDefaultAdapter.recentAssets = loadRecentSearchAssets()
@@ -163,6 +165,28 @@ class WalletSearchFragment : BaseFragment() {
             result.sortedBy {
                 assetList.indexOf(it.assetId)
             }
+        }
+    }
+
+    private fun checkRecent() = lifecycleScope.launch {
+        if (viewDestroyed()) return@launch
+
+        val recentAssets = searchDefaultAdapter.recentAssets
+        if (recentAssets.isNullOrEmpty()) return@launch
+
+        val newRecentList = viewModel.findAssetsByIds(recentAssets.take(2).map { it.assetId })
+        var needRefreshRecent = false
+        newRecentList.forEach { n ->
+            val needUpdate = recentAssets.find { r ->
+                r.assetId == n.assetId && r.priceUsd != n.priceUsd
+            }
+            if (needUpdate != null) {
+                needRefreshRecent = true
+                return@forEach
+            }
+        }
+        if (needRefreshRecent) {
+            searchDefaultAdapter.recentAssets = newRecentList
         }
     }
 
