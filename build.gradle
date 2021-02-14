@@ -68,7 +68,7 @@ buildscript {
         ext.markwonVersion = '4.6.1'
         ext.prism4jVersion = '2.0.0'
 
-        ext.junitVersion = '4.13.1'
+        ext.junitVersion = '4.13.2'
         ext.testCoreVersion = '1.3.0'
         ext.mockitoVersion = '3.7.7'
         ext.androidxJunitVersion = '1.1.2'
