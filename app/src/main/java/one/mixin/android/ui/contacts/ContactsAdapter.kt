@@ -16,6 +16,7 @@ import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.session.Session
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
+import java.lang.IndexOutOfBoundsException
 
 class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :
     RecyclerView.Adapter<ContactsAdapter.ViewHolder>(),
@@ -96,7 +97,11 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             holder.bind()
             return
         }
-        val user = users[getPosition(position)]
+        val user = try {
+            users[getPosition(position)]
+        } catch (e: IndexOutOfBoundsException) {
+            return
+        }
         holder.bind(user)
     }
 

@@ -5,6 +5,7 @@ import android.text.format.DateUtils
 import one.mixin.android.R
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.reportException
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalTime
@@ -133,10 +134,11 @@ fun String.timeAgoDay(patten: String = "dd/MM/yyyy"): String {
             timeAgoDate = date.format(DateTimeFormatter.ofPattern(patten).withZone(LocaleZone))
             TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
         } catch (e: IllegalArgumentException) {
+            reportException("TimeExtension timeAgoDay()", e)
             Timber.w(e)
         }
     }
-    return timeAgoDate as String
+    return timeAgoDate as? String ?: ""
 }
 
 fun String.lateOneHours(): Boolean {

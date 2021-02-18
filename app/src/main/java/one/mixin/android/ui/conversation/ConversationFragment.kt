@@ -317,7 +317,9 @@ class ConversationFragment() :
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
                             ?.getBoolean(conversationId, false) == true
                         ) {
-                            chatViewModel.viewModelScope.launch {
+                            lifecycleScope.launch {
+                                if (viewDestroyed()) return@launch
+
                                 binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
                                 binding.groupDesc.collapse()
                                 binding.groupDesc.requestFocus()
@@ -1190,7 +1192,9 @@ class ConversationFragment() :
 
     private fun closeTool() {
         chatAdapter.selectSet.clear()
-        chatAdapter.notifyDataSetChanged()
+        if (!binding.chatRv.isComputingLayout) {
+            chatAdapter.notifyDataSetChanged()
+        }
         binding.toolView.fadeOut()
     }
 

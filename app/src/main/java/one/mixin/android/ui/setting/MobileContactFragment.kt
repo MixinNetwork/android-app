@@ -42,6 +42,8 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
 
         lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+
             binding.opPb.isVisible = true
             handleMixinResponse(
                 invokeNetwork = { viewModel.getContacts() },

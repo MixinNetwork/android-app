@@ -604,7 +604,7 @@ class ConversationAdapter(
                 0 -> create(
                     MessageCategory.STRANGER.name,
                     if (super.getItemCount() > 0) {
-                        super.getItem(0)?.createdAt
+                        getItemInternal(0)?.createdAt
                     } else {
                         null
                     }
@@ -612,41 +612,49 @@ class ConversationAdapter(
                 itemCount - 1 -> create(
                     MessageCategory.SECRET.name,
                     if (super.getItemCount() > 0) {
-                        super.getItem(super.getItemCount() - 1)?.createdAt
+                        getItemInternal(super.getItemCount() - 1)?.createdAt
                     } else {
                         null
                     }
                 )
-                else -> super.getItem(position - 1)
+                else -> getItemInternal(position - 1)
             }
         } else if (isSecret) {
             if (position == itemCount - 1) {
                 create(
                     MessageCategory.SECRET.name,
                     if (super.getItemCount() > 0) {
-                        super.getItem(super.getItemCount() - 1)?.createdAt
+                        getItemInternal(super.getItemCount() - 1)?.createdAt
                     } else {
                         null
                     }
                 )
             } else {
-                super.getItem(position)
+                getItemInternal(position)
             }
         } else if (hasBottomView) {
             if (position == 0) {
                 create(
                     MessageCategory.STRANGER.name,
                     if (super.getItemCount() > 0) {
-                        super.getItem(0)?.createdAt
+                        getItemInternal(0)?.createdAt
                     } else {
                         null
                     }
                 )
             } else {
-                super.getItem(position - 1)
+                getItemInternal(position - 1)
             }
         } else {
-            super.getItem(position)
+            getItemInternal(position)
+        }
+    }
+
+    private fun getItemInternal(pos: Int): MessageItem? {
+        return try {
+            super.getItem(pos)
+        } catch (e: IndexOutOfBoundsException) {
+            null
         }
     }
 

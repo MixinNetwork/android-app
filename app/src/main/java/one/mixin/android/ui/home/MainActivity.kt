@@ -134,7 +134,6 @@ import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import timber.log.Timber
-import java.io.IOException
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -310,7 +309,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkNeedGo2MigrationPage(): Boolean {
         val currentVersion = try {
             DBUtil.readVersion(getDatabasePath(DB_NAME))
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             0
         }
         if (currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion) {
