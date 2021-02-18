@@ -110,6 +110,8 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
     }
 
     private fun dismissInternal() {
+        if (!::sheetContainer.isInitialized) return
+
         cancelSheetAnimation()
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
