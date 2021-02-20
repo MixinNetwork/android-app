@@ -96,11 +96,6 @@ class AvatarView : ViewAnimator {
         avatarSimple.setPadding(padding)
     }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        binding.avatarTv.round((right - left) / 2)
-    }
-
     fun setInfo(name: String?, url: String?, id: String) {
         binding.avatarTv.text = checkEmoji(name)
         try {

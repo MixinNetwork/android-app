@@ -14,15 +14,23 @@ class BorderTextView(context: Context, attrs: AttributeSet?) : AppCompatTextView
     }
 
     private var borderPaint: Paint? = null
+    private val bgPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = DEFAULT_COLOR
+    }
 
     override fun onDraw(canvas: Canvas) {
+        val borderPaint = borderPaint ?: return
+        val w = width
+        val h = height
+        val radius = if (h > w) h / 2f else w / 2f
+        canvas.drawCircle(radius, radius, radius, bgPaint)
+        canvas.drawCircle(radius, radius, radius - borderPaint.strokeWidth / 2 + 1, borderPaint)
         super.onDraw(canvas)
-        borderPaint?.let {
-            val w = width
-            val h = height
-            val radius = if (h > w) h / 2f else w / 2f
-            canvas.drawCircle(radius, radius, radius - it.strokeWidth / 2 + 1, it)
-        }
+    }
+
+    override fun setBackgroundColor(color: Int) {
+        bgPaint.color = color
     }
 
     fun setBorderInfo(borderWidth: Float?, borderColor: Int?) {
