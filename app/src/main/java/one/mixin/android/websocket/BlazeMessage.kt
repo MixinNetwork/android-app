@@ -2,6 +2,7 @@ package one.mixin.android.websocket
 
 import com.google.gson.JsonElement
 import one.mixin.android.api.ResponseError
+import one.mixin.android.extension.notNullWithElse
 import java.io.Serializable
 import java.util.UUID
 
@@ -38,8 +39,11 @@ const val LIST_KRAKEN_PEERS = "LIST_KRAKEN_PEERS"
 fun createParamBlazeMessage(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
 
-fun createListPendingMessage() =
-    BlazeMessage(UUID.randomUUID().toString(), LIST_PENDING_MESSAGES, null)
+fun createListPendingMessage(offset: String?) = BlazeMessage(
+    UUID.randomUUID().toString(),
+    LIST_PENDING_MESSAGES,
+    offset.notNullWithElse({ BlazeMessageParam(offset = it) }, null)
+)
 
 fun createCountSignalKeys() =
     BlazeMessage(UUID.randomUUID().toString(), COUNT_SIGNAL_KEYS, null)

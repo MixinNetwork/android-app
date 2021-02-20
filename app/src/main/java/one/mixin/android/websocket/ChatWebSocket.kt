@@ -139,7 +139,7 @@ class ChatWebSocket(
     }
 
     private fun sendPendingMessage() {
-        val blazeMessage = createListPendingMessage()
+        val blazeMessage = createListPendingMessage(floodMessageDao.getLastBlazeMessageCreatedAt())
         val transaction = WebSocketTransaction(
             blazeMessage.id,
             object : TransactionCallbackSuccess {
