@@ -163,12 +163,12 @@ class CircleProgress @JvmOverloads constructor(
                             }
                             setProgress(progress)
                         } else {
-                            when {
-                                event.status == STATUS_PAUSE -> {
+                            when (event.status) {
+                                STATUS_PAUSE -> {
                                     setPlay()
                                     invalidate()
                                 }
-                                event.status == STATUS_PLAY -> {
+                                STATUS_PLAY -> {
                                     setPause()
                                     invalidate()
                                 }

@@ -42,6 +42,11 @@
         <item name="bg_divider">@color/dividerNight</item>
         <item name="bg_translucence">@color/bgTranslucenceNight</item>
 
+        <item name="music_played">@color/musicPlayedNight</item>
+        <item name="music_unplayed">@color/musicUnPlayedNight</item>
+        <item name="music_buffered">@color/musicBufferedNight</item>
+        <item name="music_text">@color/musicTextNight</item>
+
         <item name="icon_emergency">@drawable/ic_emergency_avatar_night</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>
 

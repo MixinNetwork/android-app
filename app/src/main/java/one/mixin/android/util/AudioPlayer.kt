@@ -1,9 +1,20 @@
 package one.mixin.android.util
 
 import android.media.AudioManager
+import android.media.browse.MediaBrowser
+import android.support.v4.media.MediaMetadataCompat
+import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.MimeTypes
+import com.google.android.exoplayer2.util.Util
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -11,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -24,7 +36,14 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.util.video.MixinPlayer
+import one.mixin.android.ui.player.FloatingPlayer
+import one.mixin.android.ui.player.internal.album
+import one.mixin.android.ui.player.internal.flag
+import one.mixin.android.ui.player.internal.id
+import one.mixin.android.ui.player.internal.mediaUri
+import one.mixin.android.ui.player.internal.title
+import one.mixin.android.ui.player.internal.toMediaSource
+import one.mixin.android.ui.player.isMusicServiceRunning
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
@@ -42,7 +61,7 @@ import java.util.concurrent.TimeUnit
 class AudioPlayer private constructor() {
     companion object {
         @Synchronized
-        private fun get(): AudioPlayer {
+        fun get(): AudioPlayer {
             if (instance == null) {
                 instance = AudioPlayer()
             }
@@ -51,20 +70,31 @@ class AudioPlayer private constructor() {
 
         private var instance: AudioPlayer? = null
 
-        fun release() {
+        fun release(checkMusicService: Boolean = true) {
+            Timber.d("@@@ release checkMusicService: $checkMusicService")
+            if (checkMusicService) {
+                if (isMusicServiceRunning(MixinApplication.appContext)) {
+                    return
+                }
+            }
             instance?.let {
                 it.recallDisposable?.let { disposable ->
                     if (!disposable.isDisposed) {
                         disposable.dispose()
                     }
                 }
-                it.player.release()
+                it.exoPlayer.release()
                 it.stopTimber()
             }
             instance = null
         }
 
-        fun pause() {
+        fun pause(checkMusicService: Boolean = true) {
+            if (checkMusicService) {
+                if (isMusicServiceRunning(MixinApplication.appContext)) {
+                    return
+                }
+            }
             instance?.pause()
         }
 
@@ -80,8 +110,9 @@ class AudioPlayer private constructor() {
             instance?.switchAudioStreamType(useFrontSpeaker)
         }
 
-        fun audioFilePlaying(): Boolean {
-            return instance?.messageItem?.isData() == true
+        fun sameChatAudioFilePlaying(conversationId: String): Boolean {
+            val playItem = instance?.messageItem
+            return playItem?.conversationId == conversationId && playItem.isData()
         }
 
         fun isPlay(id: String): Boolean = instance.notNullWithElse({ return it.status == STATUS_PLAY && it.id == id }, false)
@@ -96,6 +127,19 @@ class AudioPlayer private constructor() {
 
         fun setStatusListener(statusListener: StatusListener) {
             this.statusListener = statusListener
+        }
+
+        fun preparePlaylist(
+            metadataList: List<MediaMetadataCompat>,
+            itemToPlay: MediaMetadataCompat?,
+            playWhenReady: Boolean,
+            playbackStartPositionMs: Long
+        ) {
+            get().preparePlaylist(metadataList, itemToPlay, playWhenReady, playbackStartPositionMs)
+        }
+
+        fun playMusic(messageItem: MessageItem) {
+            get().playMusic(messageItem)
         }
 
         fun play(
@@ -114,7 +158,7 @@ class AudioPlayer private constructor() {
         recallDisposable = RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                Timber.d("recall:" + it.messageId)
+                Timber.d("recall: ${it.messageId}")
                 if (id == it.messageId) {
                     pause()
                 }
@@ -122,47 +166,92 @@ class AudioPlayer private constructor() {
     }
 
     fun switchAudioStreamType(useFrontSpeaker: Boolean) {
-        if (useFrontSpeaker) {
-            player.setAudioStreamType(AudioManager.STREAM_MUSIC)
+        val streamType = if (useFrontSpeaker) {
+            AudioManager.STREAM_MUSIC
         } else {
-            player.setAudioStreamType(AudioManager.STREAM_VOICE_CALL)
+           AudioManager.STREAM_VOICE_CALL
+        }
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(streamType)
+            .build()
+        exoPlayer.setAudioAttributes(audioAttributes, false)
+        exoPlayer.volume = 1f
+    }
+
+    private val audioAttributes = AudioAttributes.Builder()
+        .setContentType(C.CONTENT_TYPE_MUSIC)
+        .setUsage(C.USAGE_MEDIA)
+        .build()
+
+    private val playerListener = PlayerListener()
+
+    val exoPlayer: SimpleExoPlayer by lazy {
+        SimpleExoPlayer.Builder(MixinApplication.appContext).build().apply {
+            setAudioAttributes(this@AudioPlayer.audioAttributes, true)
+            setHandleAudioBecomingNoisy(true)
+            addListener(playerListener)
         }
     }
 
-    private val player: MixinPlayer = MixinPlayer(true).also {
-        it.setCycle(false)
-        it.setOnVideoPlayerListener(
-            object : MixinPlayer.VideoPlayerListenerWrapper() {
-                override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                    if (playbackState == Player.STATE_ENDED) {
-                        id?.let { id -> RxBus.publish(pauseEvent(id)) }
-                        stopTimber()
-                        status = STATUS_DONE
+    private inner class PlayerListener : Player.EventListener {
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == Player.STATE_ENDED) {
+                id?.let { id -> RxBus.publish(pauseEvent(id)) }
+                stopTimber()
+                status = STATUS_DONE
 
-                        if (autoPlayNext) {
-                            checkNext()
-                        }
-                    }
+                if (autoPlayNext) {
+                    checkNext()
                 }
-
-                override fun onPlayerError(error: ExoPlaybackException) {
-                    if (error.cause is UnrecognizedInputFormatException) {
-                        status = STATUS_ERROR
-                        id?.let { id -> RxBus.publish(errorEvent(id)) }
-                        MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
-                        messageItem?.let {
-                            MixinApplication.appContext.openMedia(it)
-                        }
-                    } else {
-                        status = STATUS_PAUSE
-                        id?.let { id -> RxBus.publish(pauseEvent(id)) }
-                    }
-                    stopTimber()
-                    it.stop()
-
-                    reportExoPlayerException("AudioPlayer", error)
+            } else if (playbackState == Player.STATE_READY) {
+                if (exoPlayer.playWhenReady) {
+                    resume()
+                } else {
+                    pause()
                 }
             }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            if (playWhenReady) {
+                resume()
+            } else {
+                pause()
+            }
+        }
+
+        override fun onPlayerError(error: ExoPlaybackException) {
+            if (error.cause is UnrecognizedInputFormatException) {
+                status = STATUS_ERROR
+                id?.let { id -> RxBus.publish(errorEvent(id)) }
+                MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
+                messageItem?.let {
+                    MixinApplication.appContext.openMedia(it)
+                }
+            } else {
+                status = STATUS_PAUSE
+                id?.let { id -> RxBus.publish(pauseEvent(id)) }
+            }
+            stopTimber()
+            exoPlayer.stop()
+
+            reportExoPlayerException("AudioPlayer", error)
+        }
+
+        override fun onPositionDiscontinuity(reason: Int) {
+            val newMediaItem = exoPlayer.currentMediaItem ?: return
+            if (newMediaItem.mediaId != id) {
+                id = newMediaItem.mediaId
+                resume()
+            }
+        }
+    }
+
+    private val dataSourceFactory: DefaultDataSourceFactory by lazy {
+        DefaultDataSourceFactory(
+            MixinApplication.appContext,
+            Util.getUserAgent(MixinApplication.appContext, BuildConfig.APPLICATION_ID),
+            null
         )
     }
 
@@ -179,8 +268,42 @@ class AudioPlayer private constructor() {
     private var autoPlayNext: Boolean = true
     private var continuePlayOnlyToday: Boolean = false
 
+    var currentPlaylistItems: List<MediaMetadataCompat> = emptyList()
+
     interface StatusListener {
         fun onStatusChange(status: Int)
+    }
+
+    fun preparePlaylist(
+        metadataList: List<MediaMetadataCompat>,
+        itemToPlay: MediaMetadataCompat?,
+        playWhenReady: Boolean = true,
+        playbackStartPositionMs: Long = 0,
+    ) {
+        currentPlaylistItems = metadataList
+        playMusicList(metadataList, itemToPlay, playWhenReady, playbackStartPositionMs)
+    }
+
+    private fun playMusic(messageItem: MessageItem) {
+        if (messageItem.mediaUrl == null) {
+            MixinApplication.appContext.toast(R.string.error_bad_data)
+            return
+        } else if (!messageItem.mediaUrl.fileExists()) {
+            MixinApplication.appContext.toast(R.string.error_file_exists)
+            return
+        }
+
+        checkAddToPlaylist(messageItem)
+
+        if (id != messageItem.messageId) {
+            id = messageItem.messageId
+            this.messageItem = messageItem
+            playMusicList(currentPlaylistItems)
+        } else if (status == STATUS_DONE || status == STATUS_ERROR) {
+            playMusicList(currentPlaylistItems)
+        }
+
+        resume()
     }
 
     private fun play(
@@ -201,35 +324,49 @@ class AudioPlayer private constructor() {
         if (id != messageItem.messageId) {
             id = messageItem.messageId
             this.messageItem = messageItem
-            player.loadAudio(messageItem.mediaUrl)
+            val mediaSource = buildMediaSourceFromMessageItem(messageItem)
+            exoPlayer.setMediaSource(mediaSource)
+            exoPlayer.prepare()
 
             if (autoPlayNext && messageItem.isAudio()) {
                 markAudioReadAndCheckNextAudioAvailable(messageItem, whenPlayNewAudioMessage)
             }
         } else if (status == STATUS_DONE || status == STATUS_ERROR) {
-            player.loadAudio(messageItem.mediaUrl)
+            val mediaSource = buildMediaSourceFromMessageItem(messageItem)
+            exoPlayer.setMediaSource(mediaSource)
+            exoPlayer.prepare()
         }
+        resume()
+    }
+
+    private fun resume() {
         status = STATUS_PLAY
-        player.start()
+        if (!exoPlayer.playWhenReady) {
+            exoPlayer.playWhenReady = true
+        }
         id?.let {
             RxBus.publish(playEvent(it))
         }
         startTimer()
-    }
 
-    private fun resume() {
-        if (messageItem != null && (status == STATUS_PAUSE || status == STATUS_DONE || status == STATUS_ERROR)) {
-            play(messageItem!!)
+        if (isMusicServiceRunning(MixinApplication.appContext)) {
+            FloatingPlayer.getInstance().startAnim()
         }
     }
 
     private fun pause() {
         status = STATUS_PAUSE
-        player.pause()
+        if (exoPlayer.playWhenReady) {
+            exoPlayer.playWhenReady = false
+        }
         id?.let { id ->
             RxBus.publish(pauseEvent(id, -1f))
         }
         stopTimber()
+
+        if (isMusicServiceRunning(MixinApplication.appContext)) {
+            FloatingPlayer.getInstance().stopAnim()
+        }
     }
 
     private fun isLoaded(id: String): Boolean {
@@ -237,9 +374,62 @@ class AudioPlayer private constructor() {
     }
 
     private fun seekTo(progress: Int, max: Float = 100f) {
-        val p = progress * player.duration() / max
-        player.seekTo(p.toInt())
+        val p = progress * duration() / max
+        exoPlayer.seekTo(p.toLong())
         id?.let { id -> RxBus.publish(playEvent(id, p)) }
+    }
+
+    private fun duration() = if (exoPlayer.duration == C.TIME_UNSET) 0 else exoPlayer.duration.toInt()
+
+    private val period = Timeline.Period()
+
+    private fun getCurrentPos(): Long {
+        var position = exoPlayer.currentPosition
+        val currentTimeline = exoPlayer.currentTimeline
+        if (!currentTimeline.isEmpty) {
+            position -= currentTimeline.getPeriod(exoPlayer.currentPeriodIndex, period)
+                .positionInWindowMs
+        }
+        return position
+    }
+
+    private fun playMusicList(
+        metadataList: List<MediaMetadataCompat>,
+        itemToPlay: MediaMetadataCompat? = null,
+        playWhenReady: Boolean = false,
+        playbackStartPositionMs: Long = 0,
+    ) {
+        val initialWindowIndex = if (itemToPlay == null) 0 else metadataList.indexOf(itemToPlay)
+        exoPlayer.apply {
+            if (itemToPlay != null) {
+                id = itemToPlay.description.mediaId
+            }
+            val currentPlayId = exoPlayer.currentMediaItem?.mediaId
+            val changed = itemToPlay?.description?.mediaId != currentPlayId
+            this.playWhenReady = playWhenReady
+            val index = metadataList.indexOfFirst { it.description.mediaId == currentPlayId }
+            if (changed || index == -1 || metadataList.size == 1) {
+                val mediaSource = metadataList.toMediaSource(dataSourceFactory)
+                setMediaSource(mediaSource)
+                prepare()
+                seekTo(initialWindowIndex, playbackStartPositionMs)
+            } else {
+                if (mediaItemCount == 1 && metadataList.size > 1) {
+                    val pre = metadataList.subList(0, index).map {
+                        it.toMediaSource(dataSourceFactory)
+                    }
+                    val post = metadataList.subList(index + 1, metadataList.size).map {
+                        it.toMediaSource(dataSourceFactory)
+                    }
+                    addMediaSources(0, pre)
+                    addMediaSources(post)
+                }
+            }
+
+            if (playWhenReady) {
+                resume()
+            }
+        }
     }
 
     var timerDisposable: Disposable? = null
@@ -248,10 +438,10 @@ class AudioPlayer private constructor() {
         if (timerDisposable == null) {
             timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread()).subscribe {
-                    if (player.duration() == 0) {
+                    if (duration() == 0) {
                         return@subscribe
                     }
-                    progress = player.getCurrentPos().toFloat() / player.duration()
+                    progress = getCurrentPos().toFloat() / duration()
                     id?.let { id ->
                         RxBus.publish(playEvent(id, progress))
                     }
@@ -311,4 +501,35 @@ class AudioPlayer private constructor() {
             whenPlayNewAction?.invoke(message)
         }
     }
+
+    private fun checkAddToPlaylist(messageItem: MessageItem) {
+        if (messageItem.isData() && MimeTypes.isAudio(messageItem.mediaMimeType)) {
+            val mediaMetadata = buildFromMessageItem(messageItem)
+            if (currentPlaylistItems.isNullOrEmpty() || currentPlaylistItems[0].album != messageItem.conversationId) {
+                currentPlaylistItems = listOf(mediaMetadata)
+            } else {
+                val exists = currentPlaylistItems.find { it.description.mediaId == messageItem.messageId }
+                if (exists == null) {
+                    currentPlaylistItems = currentPlaylistItems + mediaMetadata
+                }
+            }
+        }
+    }
+
+    private fun buildFromMessageItem(messageItem: MessageItem) =
+        MediaMetadataCompat.Builder().apply {
+            id = messageItem.messageId
+            title = messageItem.mediaName
+            album = messageItem.conversationId
+            mediaUri = messageItem.mediaUrl
+            flag = MediaBrowser.MediaItem.FLAG_PLAYABLE
+        }.build()
+
+    private fun buildMediaSourceFromMessageItem(messageItem: MessageItem) =
+        ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(
+            MediaItem.Builder()
+                .setMediaId(messageItem.messageId)
+                .setUri(messageItem.mediaUrl)
+                .build()
+        )
 }

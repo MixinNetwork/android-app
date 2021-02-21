@@ -506,4 +506,9 @@ interface MessageDao : BaseDao<Message> {
             conversationDao.unseenMessageCount(message.conversationId, userId)
         }
     }
+
+    @Query("""
+        $PREFIX_MESSAGE_ITEM AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")  
+    """)
+    suspend fun findAudiosByConversationId(conversationId: String): List<MessageItem>
 }

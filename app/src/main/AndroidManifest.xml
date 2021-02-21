@@ -265,6 +265,13 @@
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
 
         <activity
+            android:name=".ui.player.MusicActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.Web"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
+
+
+        <activity
             android:name=".ui.preview.TextPreviewActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Photo"
@@ -305,6 +312,16 @@
         <service
             android:name=".job.BlazeMessageService"
             android:enabled="true" />
+
+        <service
+            android:name=".ui.player.MusicService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
 
         <receiver
             android:name=".receiver.ShareBroadcastReceiver"

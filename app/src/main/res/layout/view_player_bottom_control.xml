@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/position_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="20dp"
+            android:fontFamily="monospace"
+            android:text="@string/default_time"
+            android:textColor="?attr/music_text" />
+
+        <com.google.android.exoplayer2.ui.DefaultTimeBar
+            android:id="@+id/progress_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            app:bar_height="4dp"
+            app:played_color="?attr/music_played"
+            app:unplayed_color="?attr/music_unplayed"
+            app:buffered_color="?attr/music_buffered"
+            app:scrubber_drawable="@drawable/ic_seek_bar" />
+
+        <TextView
+            android:id="@+id/duration_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="20dp"
+            android:fontFamily="monospace"
+            android:text="@string/default_time"
+            android:textColor="?attr/music_text"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="50dp">
+
+            <ImageButton
+                android:id="@+id/mode_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_player_repeat_all"
+                android:background="?android:selectableItemBackground" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="50dp">
+
+            <ImageButton
+                android:id="@+id/previous_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_player_skip_previous_24"
+                android:background="?android:selectableItemBackground" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="56dp">
+
+            <one.mixin.android.widget.PlayView2
+                android:id="@+id/play_view"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="56dp">
+
+            <ImageButton
+                android:id="@+id/next_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_player_skip_next_24"
+                android:background="?android:selectableItemBackground" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="56dp">
+
+            <TextView
+                android:id="@+id/speed_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/margin10"
+                android:layout_gravity="center"
+                android:textColor="?icon_default"
+                android:text="1X"
+                android:background="?android:selectableItemBackground"
+                tools:ignore="HardcodedText" />
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -158,6 +158,12 @@ import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.player.FloatingPlayer
+import one.mixin.android.ui.player.MediaItemData
+import one.mixin.android.ui.player.MusicViewModel
+import one.mixin.android.ui.player.collapse
+import one.mixin.android.ui.player.internal.MusicServiceConnection
+import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
@@ -284,6 +290,13 @@ class ConversationFragment() :
     lateinit var audioSwitch: AudioSwitch
 
     private val chatViewModel by viewModels<ConversationViewModel>()
+
+    @Inject
+    lateinit var musicServiceConnection: MusicServiceConnection
+
+    private val musicViewModel by viewModels<MusicViewModel> {
+        provideMusicViewModel(musicServiceConnection, conversationId)
+    }
 
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {
@@ -529,6 +542,9 @@ class ConversationFragment() :
                     binding.chatControl.isRecording -> showRecordingAlert()
                     AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
                     else -> {
+                        // if (isMusicServiceRunning(MixinApplication.appContext)) {
+                        //     musicViewModel.stopMusicService()
+                        // }
                         AudioPlayer.play(messageItem) {
                             chatViewModel.downloadAttachment(it)
                         }
@@ -589,8 +605,27 @@ class ConversationFragment() :
                 if (!MimeTypes.isAudio(messageItem.mediaMimeType)) return
                 when {
                     binding.chatControl.isRecording -> showRecordingAlert()
-                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
-                    else -> AudioPlayer.play(messageItem)
+                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause(false)
+                    else -> {
+                        if (!AudioPlayer.sameChatAudioFilePlaying(conversationId)) {
+                            AudioPlayer.playMusic(messageItem)
+                            FloatingPlayer.getInstance().hide()
+                        }
+                        FloatingPlayer.getInstance().conversationId = conversationId
+
+                        musicViewModel.playMedia(
+                            MediaItemData(
+                                messageItem.messageId,
+                                messageItem.mediaName ?: "",
+                                "",
+                                Uri.EMPTY,
+                                false,
+                                R.drawable.exo_icon_pause
+                            )
+                        ) {
+                            collapse(requireActivity(), conversationId)
+                        }
+                    }
                 }
             }
 
@@ -1069,7 +1104,7 @@ class ConversationFragment() :
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
             isNearToSensor = values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
-            if (AudioPlayer.isEnd() || AudioPlayer.audioFilePlaying() || audioSwitch.isBluetoothHeadsetOrWiredHeadset()) {
+            if (AudioPlayer.isEnd() || AudioPlayer.sameChatAudioFilePlaying(conversationId) || audioSwitch.isBluetoothHeadsetOrWiredHeadset()) {
                 leaveDevice()
             } else if (!audioSwitch.isBluetoothHeadsetOrWiredHeadset()) {
                 if (isNearToSensor) {

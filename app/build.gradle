@@ -274,6 +274,7 @@ dependencies {
     implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
     implementation "com.google.android.exoplayer:exoplayer-hls:${exoplayerVersion}"
     implementation "com.google.android.exoplayer:exoplayer-ui:${exoplayerVersion}"
+    implementation "com.google.android.exoplayer:extension-mediasession:${exoplayerVersion}"
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"

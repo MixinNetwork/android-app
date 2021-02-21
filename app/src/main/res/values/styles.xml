@@ -56,6 +56,11 @@
         <item name="bg_divider">@color/divider</item>
         <item name="bg_translucence">@color/bgTranslucence</item>
 
+        <item name="music_played">@color/musicPlayed</item>
+        <item name="music_unplayed">@color/musicUnPlayed</item>
+        <item name="music_buffered">@color/musicBuffered</item>
+        <item name="music_text">@color/musicText</item>
+
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 

@@ -15,3 +15,14 @@ fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observ
         }
     )
 }
+
+fun <T> LiveData<T>.observeUntil(target: T, observer: Observer<T>) {
+    observeForever(object : Observer<T> {
+        override fun onChanged(t: T?) {
+            observer.onChanged(t)
+            if (target == t) {
+                removeObserver(this)
+            }
+        }
+    })
+}

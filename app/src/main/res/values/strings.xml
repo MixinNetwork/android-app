@@ -943,5 +943,13 @@
     <string name="db_debug_enable">Enable db debug</string>
     <string name="db_debug_disable">Disable db debug</string>
     <string name="db_debug_warning">Attention: If a harmful SQL statement is executed, the result is irreversible!</string>
-</resources>
 
+    <!--  player  -->
+    <string name="player_playlist">Playlist</string>
+    <string name="notification_channel">Now Playing</string>
+    <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>
+    <string name="notification_skip_to_previous">Skip to previous track</string>
+    <string name="notification_skip_to_next">Skip to next track</string>
+    <string name="notification_play">Play</string>
+    <string name="notification_pause">Pause</string>
+</resources>

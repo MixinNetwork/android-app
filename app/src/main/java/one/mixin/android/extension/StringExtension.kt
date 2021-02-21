@@ -2,6 +2,7 @@
 
 package one.mixin.android.extension
 
+import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -546,3 +547,17 @@ fun Uri.appendQueryParamsFromOtherUri(otherUri: Uri, exclusiveKey: String = "act
         }
     return builder.build().toString()
 }
+
+fun String.isLocalScheme() =
+    this == ContentResolver.SCHEME_CONTENT ||
+        this == ContentResolver.SCHEME_FILE ||
+        this == ContentResolver.SCHEME_ANDROID_RESOURCE
+
+fun String?.toUri(): Uri = this?.let { Uri.parse(it) } ?: Uri.EMPTY
+
+fun String?.containsCaseInsensitive(other: String?) =
+    if (this != null && other != null) {
+        toLowerCase(Locale.getDefault()).contains(other.toLowerCase(Locale.getDefault()))
+    } else {
+        this == other
+    }

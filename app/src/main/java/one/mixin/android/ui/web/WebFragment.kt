@@ -102,6 +102,12 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.player.FloatingPlayer
+import one.mixin.android.ui.player.MusicActivity
+import one.mixin.android.ui.player.MusicViewModel
+import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
+import one.mixin.android.ui.player.internal.MusicServiceConnection
+import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.language.Lingver
@@ -124,6 +130,7 @@ import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -160,6 +167,13 @@ class WebFragment : BaseFragment() {
         ) = WebFragment().apply {
             arguments = bundle
         }
+    }
+
+    @Inject
+    lateinit var musicServiceConnection: MusicServiceConnection
+
+    private val musicViewModel by viewModels<MusicViewModel> {
+        provideMusicViewModel(musicServiceConnection, MUSIC_PLAYLIST)
     }
 
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
@@ -661,7 +675,8 @@ class WebFragment : BaseFragment() {
                     requireContext(),
                     conversationId,
                     immersive,
-                    reloadThemeAction = { reloadTheme() }
+                    reloadThemeAction = { reloadTheme() },
+                    playlistAction = { showPlaylist(it) },
                 ),
                 "MixinContext"
             )
@@ -680,6 +695,17 @@ class WebFragment : BaseFragment() {
                 return
             }
             webView.loadUrl(url, extraHeaders)
+        }
+    }
+
+    private fun showPlaylist(playlist: Array<String>) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            musicViewModel.showPlaylist(playlist) {
+                MusicActivity.show(requireContext(), MUSIC_PLAYLIST)
+                FloatingPlayer.getInstance().conversationId = MUSIC_PLAYLIST
+            }
         }
     }
 
@@ -1173,7 +1199,8 @@ class WebFragment : BaseFragment() {
         val context: Context,
         val conversationId: String?,
         val immersive: Boolean,
-        val reloadThemeAction: () -> Unit
+        val reloadThemeAction: () -> Unit,
+        val playlistAction: (Array<String>) -> Unit,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1196,6 +1223,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun reloadTheme() {
             reloadThemeAction.invoke()
+        }
+
+        @JavascriptInterface
+        fun playlist(list: Array<String>) {
+            playlistAction.invoke(list)
         }
     }
 
