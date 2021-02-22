@@ -60,11 +60,14 @@ class MusicServiceConnection(context: Context, serviceComponent: ComponentName) 
         parameters: Bundle?,
         resultCallback: ((Int, Bundle?) -> Unit)
     ) = if (mediaBrowser.isConnected) {
-        mediaController.sendCommand(command, parameters, object : ResultReceiver(Handler()) {
-            override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
-                resultCallback(resultCode, resultData)
+        mediaController.sendCommand(
+            command, parameters,
+            object : ResultReceiver(Handler()) {
+                override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                    resultCallback(resultCode, resultData)
+                }
             }
-        })
+        )
         true
     } else {
         false

@@ -1,38 +1,36 @@
 package one.mixin.android.ui.player.internal
 
-import android.content.Context
-import android.support.v4.media.MediaBrowserCompat.MediaItem
+import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 
-class BrowseTree(
-    val context: Context,
-    musicSourceMap: HashMap<String, MusicSource>,
-) {
+class MusicTree {
     private val mediaIdToChildren = mutableMapOf<String, MutableList<MediaMetadataCompat>>()
 
     init {
         val rootList = mediaIdToChildren[MUSIC_BROWSABLE_ROOT] ?: mutableListOf()
         mediaIdToChildren[MUSIC_BROWSABLE_ROOT] = rootList
+    }
 
-        musicSourceMap.forEach { entry ->
-            addMusicSource(entry.value)
+    fun setItems(mediaItems: List<MediaMetadataCompat>) {
+        mediaItems.forEach { mediaItem ->
+            setItem(mediaItem)
         }
     }
 
-    fun addMusicSource(musicSource: MusicSource) {
-        musicSource.forEach { mediaItem ->
-            val albumMediaId = mediaItem.album ?: MUSIC_UNKNOWN_ROOT
-            val albumChildren = mediaIdToChildren[albumMediaId] ?: buildAlbumRoot(mediaItem)
-            val exists = albumChildren.find { it.description.mediaId == mediaItem.id }
-            if (exists == null) {
-                albumChildren += mediaItem
-            }
+    fun setItem(mediaItem: MediaMetadataCompat) {
+        val albumMediaId = mediaItem.album ?: MUSIC_UNKNOWN_ROOT
+        val albumChildren = mediaIdToChildren[albumMediaId] ?: buildAlbumRoot(mediaItem)
+        val index = albumChildren.indexOfFirst { it.description.mediaId == mediaItem.id }
+        if (index == -1) {
+            albumChildren += mediaItem
+        } else {
+            albumChildren[index] = mediaItem
         }
     }
 
-    fun addPlaylist(musicSource: MusicSource) {
+    fun updatePlaylist(mediaItems: List<MediaMetadataCompat>) {
         mediaIdToChildren[MUSIC_PLAYLIST]?.clear()
-        addMusicSource(musicSource)
+        setItems(mediaItems)
     }
 
     operator fun get(mediaId: String) = mediaIdToChildren[mediaId]
@@ -42,7 +40,7 @@ class BrowseTree(
         val albumMetadata = MediaMetadataCompat.Builder().apply {
             id = albumMediaId
             title = mediaItem.album
-            flag = MediaItem.FLAG_BROWSABLE
+            flag = MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
         }.build()
 
         val rootList = mediaIdToChildren[MUSIC_BROWSABLE_ROOT] ?: mutableListOf()

@@ -4,8 +4,6 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.media.browse.MediaBrowser
 import android.support.v4.media.MediaMetadataCompat
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.MixinDatabase
@@ -15,18 +13,12 @@ import one.mixin.android.vo.MessageItem
 import timber.log.Timber
 import java.io.File
 
-class ConversationSource(
+class ConversationLoader(
     private val database: MixinDatabase,
     val conversationId: String,
-) : AbstractMusicSource() {
+) : MusicLoader {
 
-    private var catalog: List<MediaMetadataCompat> = emptyList()
-
-    init {
-        state = STATE_INITIALIZING
-    }
-
-    override suspend fun load() {
+    override suspend fun load(): List<MediaMetadataCompat> {
         val start = System.currentTimeMillis()
         val messageItems = database.messageDao().findAudiosByConversationId(conversationId)
         val query = System.currentTimeMillis()
@@ -52,18 +44,8 @@ class ConversationSource(
         mediaMetadataCompats.forEach { it.description.extras?.putAll(it.bundle) }
 
         Timber.d("@@@ ConversationSource retrieve cost: ${System.currentTimeMillis() - query},  mediaMetadataCompats size: ${mediaMetadataCompats.size}")
-        withContext(Dispatchers.Main) {
-            if (!mediaMetadataCompats.isNullOrEmpty()) {
-                catalog = mediaMetadataCompats
-                state = STATE_INITIALIZED
-            } else {
-                catalog = emptyList()
-                state = STATE_ERROR
-            }
-        }
+        return mediaMetadataCompats
     }
-
-    override fun iterator(): Iterator<MediaMetadataCompat> = catalog.iterator()
 
     fun MediaMetadataCompat.Builder.from(messageItem: MessageItem, url: String, retriever: MediaMetadataRetriever): MediaMetadataCompat.Builder {
         id = messageItem.messageId

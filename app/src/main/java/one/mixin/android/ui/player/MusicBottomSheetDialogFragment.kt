@@ -97,19 +97,22 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 musicLayout.itemState.isVisible = false
 
                 viewModel.subscribe()
-                viewModel.mediaItems.observe(this@MusicBottomSheetDialogFragment, { list ->
-                    listAdapter.submitList(list)
+                viewModel.mediaItems.observe(
+                    this@MusicBottomSheetDialogFragment,
+                    { list ->
+                        listAdapter.submitList(list)
 
-                    var mediaItem = list.find { it.mediaId == AudioPlayer.get().exoPlayer.currentMediaItem?.mediaId }
-                    if (mediaItem == null) {
-                        mediaItem = list.firstOrNull()
+                        var mediaItem = list.find { it.mediaId == AudioPlayer.get().exoPlayer.currentMediaItem?.mediaId }
+                        if (mediaItem == null) {
+                            mediaItem = list.firstOrNull()
+                        }
+                        musicLayout.title.text = mediaItem?.title
+                        musicLayout.subtitle.text = mediaItem?.subtitle
+                        Glide.with(musicLayout.albumArt)
+                            .load(mediaItem?.albumArtUri)
+                            .into(musicLayout.albumArt)
                     }
-                    musicLayout.title.text = mediaItem?.title
-                    musicLayout.subtitle.text = mediaItem?.subtitle
-                    Glide.with(musicLayout.albumArt)
-                        .load(mediaItem?.albumArtUri)
-                        .into(musicLayout.albumArt)
-                })
+                )
             }
             playerControlView.player = AudioPlayer.get().exoPlayer
         }

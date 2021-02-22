@@ -62,7 +62,6 @@ import one.mixin.android.job.MyJobService
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.player.MusicService
-import one.mixin.android.ui.player.MusicViewModel
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
@@ -386,6 +385,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideMusicServiceConnection(app: Application): MusicServiceConnection =
-        MusicServiceConnection.getInstance(app.applicationContext,
-            ComponentName(app.applicationContext, MusicService::class.java))
+        MusicServiceConnection.getInstance(
+            app.applicationContext,
+            ComponentName(app.applicationContext, MusicService::class.java)
+        )
 }

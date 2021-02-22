@@ -507,8 +507,11 @@ interface MessageDao : BaseDao<Message> {
         }
     }
 
-    @Query("""
-        $PREFIX_MESSAGE_ITEM AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")  
-    """)
+    @Query(
+        """
+        $PREFIX_MESSAGE_ITEM AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
+        ORDER BY m.created_at ASC, m.rowid ASC
+    """
+    )
     suspend fun findAudiosByConversationId(conversationId: String): List<MessageItem>
 }

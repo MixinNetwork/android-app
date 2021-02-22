@@ -26,19 +26,20 @@ import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.isServiceRunning
-import one.mixin.android.ui.player.internal.BrowseTree
-import one.mixin.android.ui.player.internal.ConversationSource
+import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.ui.player.internal.ConversationLoader
 import one.mixin.android.ui.player.internal.MUSIC_BROWSABLE_ROOT
 import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
-import one.mixin.android.ui.player.internal.MusicSource
-import one.mixin.android.ui.player.internal.PlaylistSource
+import one.mixin.android.ui.player.internal.MusicTree
+import one.mixin.android.ui.player.internal.PlaylistLoader
 import one.mixin.android.ui.player.internal.album
 import one.mixin.android.ui.player.internal.flag
-import one.mixin.android.ui.player.internal.id
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
 import timber.log.Timber
@@ -48,16 +49,14 @@ import javax.inject.Inject
 class MusicService : MediaBrowserServiceCompat() {
 
     private lateinit var notificationManager: MusicNotificationManager
-    private lateinit var musicSource: MusicSource
-    private val musicSourceMap = hashMapOf<String, MusicSource>()
+
+    private val musicTree = MusicTree()
 
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
-
-    private var currentPlaylist: Array<String>? = null
 
     @Inject
     lateinit var database: MixinDatabase
@@ -71,17 +70,13 @@ class MusicService : MediaBrowserServiceCompat() {
 
     private val playerListener = PlayerEventListener()
 
-    private val browseTree: BrowseTree by lazy {
-        BrowseTree(applicationContext, musicSourceMap)
-    }
-
     override fun onCreate() {
         super.onCreate()
 
         val sessionActivityPendingIntent = Intent(this, MusicActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }.let { sessionIntent ->
-                PendingIntent.getActivity(this, 0, sessionIntent, 0)
+            PendingIntent.getActivity(this, 0, sessionIntent, 0)
         }
 
         mediaSession = MediaSessionCompat(this, "MusicService")
@@ -141,56 +136,75 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onLoadChildren(parentId: String, result: Result<List<MediaBrowserCompat.MediaItem>>) {
         Timber.d("@@@ onLoadChildren parentId: $parentId")
-        checkSource(parentId, false)
-        Timber.d("@@@ musicSource: $musicSource")
-        val resultsSent = musicSource.whenReady { successfullyInitialized ->
-            Timber.d("@@@ whenReady parentId: $parentId, successfullyInitialized: $successfullyInitialized")
-            if (successfullyInitialized) {
-                val children = browseTree[parentId]?.map { item ->
-                    MediaBrowserCompat.MediaItem(item.description, item.flag)
-                }
-                result.sendResult(children)
+
+        val exists = musicTree[parentId]
+        if (exists != null) {
+            val children = exists.map { item ->
+                MediaBrowserCompat.MediaItem(item.description, item.flag)
+            }
+            result.sendResult(children)
+        } else {
+            if (parentId == MUSIC_PLAYLIST) {
+                result.detach()
             } else {
-                mediaSession.sendSessionEvent(NETWORK_FAILURE, null)
-                result.sendResult(null)
+                loadConversationMusic(parentId)
+                result.detach()
             }
         }
+        this.parentId = parentId
+    }
 
-        if (!resultsSent) {
-            result.detach()
+    private var parentId: String = MUSIC_BROWSABLE_ROOT
+    private var musicLoader: ConversationLoader? = null
+    private var loadJob: Job? = null
+
+    private fun loadConversationMusic(
+        parentId: String,
+        mediaId: String? = null,
+        onLoaded: ((MediaMetadataCompat) -> Unit)? = null,
+    ) {
+        Timber.d("@@@ loadConversationMusic parentId: $parentId, mediaId: $mediaId, musicLoader: ${musicLoader?.conversationId}")
+        if (musicLoader != null && musicLoader?.conversationId == parentId && mediaId == null) {
+            return
+        }
+
+        Timber.d("@@@ load conversation music")
+        loadJob?.cancel()
+        musicLoader = ConversationLoader(database, parentId)
+        loadJob = serviceScope.launch(Dispatchers.IO) {
+            musicLoader?.load()?.let { list ->
+                musicTree.setItems(list)
+                musicLoader = null
+                notifyChildrenChanged(parentId)
+
+                if (mediaId != null && onLoaded != null) {
+                    list.find { it.description.mediaId == mediaId }?.let {
+                        withContext(Dispatchers.Main) {
+                            onLoaded.invoke(it)
+                        }
+                    }
+                }
+            }
         }
     }
 
-    private fun checkSource(parentId: String, force: Boolean) {
-        if (parentId == MUSIC_PLAYLIST) {
-            val playlist = currentPlaylist
-            if (!playlist.isNullOrEmpty()) {
-                musicSource = PlaylistSource(playlist)
-                serviceScope.launch(Dispatchers.IO) {
-                    musicSource.load()
+    private fun loadPlaylist(
+        playlist: Array<String>,
+        mediaId: String? = null,
+        onLoaded: ((MediaMetadataCompat) -> Unit)? = null,
+    ) {
+        val playlistLoader = PlaylistLoader(playlist)
+        serviceScope.launch(Dispatchers.IO) {
+            playlistLoader.load().let { list ->
+                musicTree.updatePlaylist(list)
+                notifyChildrenChanged(MUSIC_PLAYLIST)
 
-                    browseTree.addPlaylist(musicSource)
-                }
-            } else {
-                musicSource = PlaylistSource(emptyArray())
-            }
-        } else {
-            if (force ||
-                !::musicSource.isInitialized ||
-                (::musicSource.isInitialized && (musicSource as? ConversationSource)?.conversationId != parentId)
-            ) {
-                var exists = musicSourceMap[parentId]
-                if (exists == null) {
-                    exists = ConversationSource(database, parentId)
-                    musicSourceMap[parentId] = exists
-                    musicSource = exists
-                    serviceScope.launch(Dispatchers.IO) {
-                        musicSource.load()
-
-                        browseTree.addMusicSource(exists)
+                if (mediaId != null && onLoaded != null) {
+                    list.find { it.description.mediaId == mediaId }?.let {
+                        withContext(Dispatchers.Main) {
+                            onLoaded.invoke(it)
+                        }
                     }
-                } else {
-                    musicSource = exists
                 }
             }
         }
@@ -219,78 +233,79 @@ class MusicService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            Timber.d("@@@ onPrepareFromMediaId mediaId: $mediaId, playWhenReady: $playWhenReady")
-            if (!::musicSource.isInitialized) return
-
-            if (musicSource is PlaylistSource && musicSource.count() == 0) {
-                val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST)
-                if (!playlist.isNullOrEmpty()) {
-                    currentPlaylist = playlist
-                    notifyChildrenChanged(MUSIC_PLAYLIST)
-                }
-            }
-            musicSource.whenReady {
-                Timber.d("@@@ onPrepareFromMediaId whenReady")
-                prepare(mediaId, playWhenReady, extras, false)
-            }
-        }
-
-        private fun prepare(
-            mediaId: String,
-            playWhenReady: Boolean,
-            extras: Bundle?,
-            endPoint: Boolean,
-        ) {
-            val itemToPlay: MediaMetadataCompat? = musicSource.find { item ->
-                item.id == mediaId
-            }
-            Timber.d("@@@ itemToPlay: $itemToPlay")
-            if (itemToPlay == null) {
-                if (endPoint) {
-                    Timber.w("$TAG Content not found: MediaID=$mediaId")
-                    return
-                }
-                val cid = extras?.getString(EXTRA_CONVERSATION_ID)
-                if (cid != null && cid != (musicSource as? ConversationSource)?.conversationId) {
-                    checkSource(cid, true)
-                    musicSource.whenReady {
-                        notifyChildrenChanged(cid)
-                        prepare(mediaId, playWhenReady, extras, true)
+            val parentExists = musicTree[parentId]
+            if (parentExists == null) {
+                Timber.d("@@@ not find parent for $parentId")
+                if (parentId == MUSIC_PLAYLIST) {
+                    val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST)
+                    if (!playlist.isNullOrEmpty()) {
+                        loadPlaylist(playlist, mediaId) {
+                            playItem(it, playWhenReady, extras)
+                        }
+                    } else {
+                        Timber.w("$TAG Content not found: MediaID=$mediaId")
                     }
                 } else {
-                    val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST)
-                    Timber.d("@@ prepare playlist: ${playlist?.size}")
-                    if (!playlist.isNullOrEmpty()) {
-                        currentPlaylist = playlist
-                        notifyChildrenChanged(MUSIC_PLAYLIST)
+                    val cid = extras?.getString(EXTRA_CONVERSATION_ID)
+                    if (cid != null) {
+                        loadConversationMusic(cid, mediaId) {
+                            playItem(it, playWhenReady, extras)
+                        }
+                    } else {
+                        Timber.w("$TAG Content not found: MediaID=$mediaId")
                     }
                 }
             } else {
-                val playbackStartPositionMs =
-                    extras?.getLong(MEDIA_DESCRIPTION_EXTRAS_START_PLAYBACK_POSITION_MS, C.TIME_UNSET)
-                        ?: C.TIME_UNSET
-
-                AudioPlayer.preparePlaylist(
-                    buildPlaylist(itemToPlay),
-                    itemToPlay,
-                    playWhenReady,
-                    playbackStartPositionMs
-                )
+                Timber.d("@@@ find parent for $parentId")
+                val itemToPlay = parentExists.find { item ->
+                    item.description.mediaId == mediaId
+                }
+                if (itemToPlay == null) {
+                    if (parentId == MUSIC_PLAYLIST) {
+                        val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST)
+                        if (!playlist.isNullOrEmpty()) {
+                            loadPlaylist(playlist, mediaId) {
+                                playItem(it, playWhenReady, extras)
+                            }
+                        } else {
+                            Timber.w("$TAG Content not found: MediaID=$mediaId")
+                        }
+                    } else {
+                        val cid = extras?.getString(EXTRA_CONVERSATION_ID)
+                        if (cid != null) {
+                            loadConversationMusic(cid, mediaId) {
+                                playItem(it, playWhenReady, extras)
+                            }
+                        } else {
+                            Timber.w("$TAG Content not found: MediaID=$mediaId")
+                        }
+                    }
+                } else {
+                    playItem(itemToPlay, playWhenReady, extras)
+                }
             }
         }
 
+        private fun playItem(
+            itemToPlay: MediaMetadataCompat,
+            playWhenReady: Boolean,
+            extras: Bundle?
+        ) {
+            val playbackStartPositionMs =
+                extras?.getLong(MEDIA_DESCRIPTION_EXTRAS_START_PLAYBACK_POSITION_MS, C.TIME_UNSET)
+                    ?: C.TIME_UNSET
+
+            val playlist = buildPlaylist(itemToPlay)
+            Timber.d("@@@ playlist size: ${playlist.size}")
+            AudioPlayer.preparePlaylist(
+                playlist,
+                itemToPlay,
+                playWhenReady,
+                playbackStartPositionMs
+            )
+        }
+
         override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) {
-            musicSource.whenReady {
-                val metadataList = musicSource.search(query, extras ?: Bundle.EMPTY)
-                if (metadataList.isNotEmpty()) {
-                    AudioPlayer.preparePlaylist(
-                        metadataList,
-                        metadataList[0],
-                        playWhenReady,
-                        playbackStartPositionMs = C.TIME_UNSET
-                    )
-                }
-            }
         }
 
         override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) = Unit
@@ -306,8 +321,9 @@ class MusicService : MediaBrowserServiceCompat() {
             when (command) {
                 MUSIC_CMD_PLAYLIST -> {
                     val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST) ?: return false
-                    currentPlaylist = playlist
-                    notifyChildrenChanged(MUSIC_PLAYLIST)
+                    // currentPlaylist = playlist
+                    // notifyChildrenChanged(MUSIC_PLAYLIST)
+                    loadPlaylist(playlist)
                 }
                 MUSIC_CMD_STOP -> {
                     notificationManager.hideNotification()
@@ -321,7 +337,14 @@ class MusicService : MediaBrowserServiceCompat() {
         }
 
         private fun buildPlaylist(item: MediaMetadataCompat): List<MediaMetadataCompat> =
-            musicSource.filter { it.album == item.album }
+            item.album.notNullWithElse<String, List<MediaMetadataCompat>>(
+                {
+                    musicTree[it] ?: emptyList()
+                },
+                {
+                    emptyList()
+                }
+            )
     }
 
     private inner class MusicNotificationListener : PlayerNotificationManager.NotificationListener {

@@ -63,7 +63,7 @@ class MusicNotificationManager(
         notificationManager.setPlayer(null)
     }
 
-    fun showNotificationForPlayer(player: Player){
+    fun showNotificationForPlayer(player: Player) {
         notificationManager.setPlayer(player)
     }
 

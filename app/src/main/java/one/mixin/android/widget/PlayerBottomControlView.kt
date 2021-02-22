@@ -78,7 +78,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     private val binding = ViewPlayerBottomControlBinding.inflate(LayoutInflater.from(context), this, true)
     private val playView by lazy { binding.playView }
     private val durationView by lazy { binding.durationTv }
-    private val positionView by lazy { binding.positionTv}
+    private val positionView by lazy { binding.positionTv }
     private val timeBar by lazy { binding.progressTv }
     private val modeView by lazy { binding.modeIb }
     private val previousView by lazy { binding.previousIb }

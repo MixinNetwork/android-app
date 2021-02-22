@@ -54,17 +54,23 @@ internal constructor(
                     }
                 }
             } else {
-                transportControls.playFromMediaId(mediaItem.mediaId, Bundle().apply {
-                    putString(EXTRA_CONVERSATION_ID, mediaId)
-                })
-
-                musicServiceConnection.subscribe(mediaId, object : MediaBrowserCompat.SubscriptionCallback() {
-                    override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
-                        Timber.d("@@@ onChildrenLoaded")
-                        onChildrenLoaded.invoke()
-                        musicServiceConnection.unsubscribe(mediaId, this)
+                transportControls.playFromMediaId(
+                    mediaItem.mediaId,
+                    Bundle().apply {
+                        putString(EXTRA_CONVERSATION_ID, mediaId)
                     }
-                })
+                )
+
+                musicServiceConnection.subscribe(
+                    mediaId,
+                    object : MediaBrowserCompat.SubscriptionCallback() {
+                        override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
+                            Timber.d("@@@ onChildrenLoaded")
+                            onChildrenLoaded.invoke()
+                            musicServiceConnection.unsubscribe(mediaId, this)
+                        }
+                    }
+                )
             }
         }
     }
@@ -72,9 +78,12 @@ internal constructor(
     fun showPlaylist(playlist: Array<String>, onConnected: () -> Unit) {
         checkConnected {
             val transportControls = musicServiceConnection.transportControls
-            transportControls.playFromMediaId(playlist[0], Bundle().apply {
-                putStringArray(MUSIC_EXTRA_PLAYLIST, playlist)
-            })
+            transportControls.playFromMediaId(
+                playlist[0],
+                Bundle().apply {
+                    putStringArray(MUSIC_EXTRA_PLAYLIST, playlist)
+                }
+            )
             // val bundle = Bundle().apply {
             //     putStringArray(MUSIC_EXTRA_PLAYLIST, playlist)
             // }
@@ -228,10 +237,10 @@ internal constructor(
     }
 }
 
-fun provideMusicViewModel(musicServiceConnection: MusicServiceConnection, mediaId: String)
-    : MusicViewModel.Factory {
-    return MusicViewModel.Factory(mediaId, musicServiceConnection)
-}
+fun provideMusicViewModel(musicServiceConnection: MusicServiceConnection, mediaId: String):
+    MusicViewModel.Factory {
+        return MusicViewModel.Factory(mediaId, musicServiceConnection)
+    }
 
 private const val NO_RES = 0
 private const val TAG = "MusicViewModel"

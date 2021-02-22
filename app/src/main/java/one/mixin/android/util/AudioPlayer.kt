@@ -169,7 +169,7 @@ class AudioPlayer private constructor() {
         val streamType = if (useFrontSpeaker) {
             AudioManager.STREAM_MUSIC
         } else {
-           AudioManager.STREAM_VOICE_CALL
+            AudioManager.STREAM_VOICE_CALL
         }
         val audioAttributes = AudioAttributes.Builder()
             .setContentType(streamType)

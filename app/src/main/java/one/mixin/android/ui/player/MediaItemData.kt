@@ -17,8 +17,6 @@
 package one.mixin.android.ui.player
 
 import android.net.Uri
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaBrowserCompat.MediaItem
 import androidx.recyclerview.widget.DiffUtil
 
 data class MediaItemData(
@@ -73,4 +71,3 @@ data class MediaItemData(
         }
     }
 }
-

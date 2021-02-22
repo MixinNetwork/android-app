@@ -6,16 +6,9 @@ import android.support.v4.media.MediaMetadataCompat
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 
-class PlaylistSource(
-    private val playlist: Array<String>
-) : AbstractMusicSource() {
-    private var catalog: List<MediaMetadataCompat> = emptyList()
+class PlaylistLoader(private val playlist: Array<String>) : MusicLoader {
 
-    init {
-        state = STATE_INITIALIZING
-    }
-
-    override suspend fun load() {
+    override suspend fun load(): List<MediaMetadataCompat> {
         val mediaMetadataCompats = mutableListOf<MediaMetadataCompat>()
         playlist.forEach { p ->
             mediaMetadataCompats.add(
@@ -25,16 +18,8 @@ class PlaylistSource(
             )
         }
         mediaMetadataCompats.forEach { it.description.extras?.putAll(it.bundle) }
-        if (!mediaMetadataCompats.isNullOrEmpty()) {
-            catalog = mediaMetadataCompats
-            state = STATE_INITIALIZED
-        } else {
-            catalog = emptyList()
-            state = STATE_ERROR
-        }
+        return mediaMetadataCompats
     }
-
-    override fun iterator(): Iterator<MediaMetadataCompat> = catalog.iterator()
 
     fun MediaMetadataCompat.Builder.from(url: String): MediaMetadataCompat.Builder {
         id = url
