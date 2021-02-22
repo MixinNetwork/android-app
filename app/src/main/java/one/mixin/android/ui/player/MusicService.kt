@@ -174,7 +174,6 @@ class MusicService : MediaBrowserServiceCompat() {
         loadJob = serviceScope.launch(Dispatchers.IO) {
             musicLoader?.load()?.let { list ->
                 musicTree.setItems(list)
-                musicLoader = null
                 notifyChildrenChanged(parentId)
 
                 if (mediaId != null && onLoaded != null) {
@@ -184,6 +183,18 @@ class MusicService : MediaBrowserServiceCompat() {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun updateMusicItems(items: Array<String>) {
+        if (musicLoader == null) {
+            musicLoader = ConversationLoader(database, parentId)
+        }
+        serviceScope.launch(Dispatchers.IO) {
+            musicLoader?.loadByIds(items)?.let { list ->
+                musicTree.setItems(list)
+                notifyChildrenChanged(parentId)
             }
         }
     }
@@ -226,6 +237,7 @@ class MusicService : MediaBrowserServiceCompat() {
                 PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
 
         override fun onPrepare(playWhenReady: Boolean) {
+            Timber.d("@@@ onPrepare playWhenReady: $playWhenReady")
         }
 
         override fun onPrepareFromMediaId(
@@ -233,6 +245,7 @@ class MusicService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
+            Timber.d("@@@ onPrepareFromMediaId mediaId: $mediaId, playWhenReady: $playWhenReady")
             val parentExists = musicTree[parentId]
             if (parentExists == null) {
                 Timber.d("@@@ not find parent for $parentId")
@@ -321,15 +334,19 @@ class MusicService : MediaBrowserServiceCompat() {
             when (command) {
                 MUSIC_CMD_PLAYLIST -> {
                     val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST) ?: return false
-                    // currentPlaylist = playlist
-                    // notifyChildrenChanged(MUSIC_PLAYLIST)
-                    loadPlaylist(playlist)
+                    loadPlaylist(playlist, playlist[0]) {
+                        playItem(it, true, null)
+                    }
                 }
                 MUSIC_CMD_STOP -> {
                     notificationManager.hideNotification()
                     stopForeground(true)
                     isForegroundService = false
                     stopSelf()
+                }
+                MUSIC_CMD_UPDATE_ITEMS -> {
+                    val items = extras?.getStringArray(MUSIC_EXTRA_ITEMS) ?: return false
+                    updateMusicItems(items)
                 }
             }
 
@@ -402,8 +419,10 @@ const val NETWORK_FAILURE = "one.mixin.messenger.media.session.NETWORK_FAILURE"
 
 const val MUSIC_CMD_PLAYLIST = "music_cmd_playlist"
 const val MUSIC_CMD_STOP = "music_cmd_stop"
+const val MUSIC_CMD_UPDATE_ITEMS = "music_cmd_update_items"
 
 const val MUSIC_EXTRA_PLAYLIST = "music_extra_playlist"
+const val MUSIC_EXTRA_ITEMS = "music_extra_items"
 
 val MEDIA_DESCRIPTION_EXTRAS_START_PLAYBACK_POSITION_MS = "playback_start_position_ms"
 

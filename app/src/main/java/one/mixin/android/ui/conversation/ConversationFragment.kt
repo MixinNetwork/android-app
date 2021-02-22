@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
+import android.support.v4.media.MediaDescriptionCompat.STATUS_DOWNLOADED
 import android.text.method.LinkMovementMethod
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
@@ -620,7 +621,7 @@ class ConversationFragment() :
                                 "",
                                 Uri.EMPTY,
                                 false,
-                                R.drawable.exo_icon_pause
+                                STATUS_DOWNLOADED
                             )
                         ) {
                             collapse(requireActivity(), conversationId)

@@ -2,6 +2,8 @@ package one.mixin.android.ui.player
 
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat.EXTRA_DOWNLOAD_STATUS
+import android.support.v4.media.MediaDescriptionCompat.STATUS_NOT_DOWNLOADED
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LiveData
@@ -10,9 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import one.mixin.android.R
 import one.mixin.android.extension.observeUntil
-import one.mixin.android.ui.player.internal.EMPTY_PLAYBACK_STATE
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.ui.player.internal.NOTHING_PLAYING
 import one.mixin.android.ui.player.internal.id
@@ -93,6 +93,15 @@ internal constructor(
         }
     }
 
+    fun updateMedias(mediaIds: List<String>) {
+        musicServiceConnection.sendCommand(
+            MUSIC_CMD_UPDATE_ITEMS,
+            Bundle().apply {
+                putStringArray(MUSIC_EXTRA_ITEMS, mediaIds.toTypedArray())
+            }
+        )
+    }
+
     fun subscribe() {
         checkConnected {
             musicServiceConnection.subscribe(mediaId, subscriptionCallback)
@@ -126,9 +135,9 @@ internal constructor(
                     child.mediaId!!,
                     child.description.title.toString(),
                     subtitle.toString(),
-                    child.description.iconUri!!,
+                    child.description.iconUri,
                     child.isBrowsable,
-                    getResourceForMediaId(child.mediaId!!)
+                    child.description.extras?.getLong(EXTRA_DOWNLOAD_STATUS) ?: STATUS_NOT_DOWNLOADED
                 )
             }
             _mediaItems.postValue(itemsList)
@@ -136,10 +145,9 @@ internal constructor(
     }
 
     private val playbackStateObserver = Observer<PlaybackStateCompat> {
-        val playbackState = it ?: EMPTY_PLAYBACK_STATE
         val metadata = musicServiceConnection.nowPlaying.value ?: NOTHING_PLAYING
         if (metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID) != null) {
-            _mediaItems.postValue(updateState(playbackState, metadata))
+            _mediaItems.postValue(mediaItems.value ?: emptyList())
         }
     }
 
@@ -150,10 +158,9 @@ internal constructor(
      * changed. (i.e.: play/pause button or blank)
      */
     private val mediaMetadataObserver = Observer<MediaMetadataCompat> {
-        val playbackState = musicServiceConnection.playbackState.value ?: EMPTY_PLAYBACK_STATE
         val metadata = it ?: NOTHING_PLAYING
         if (metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID) != null) {
-            _mediaItems.postValue(updateState(playbackState, metadata))
+            _mediaItems.postValue(mediaItems.value ?: emptyList())
         }
     }
 
@@ -199,32 +206,6 @@ internal constructor(
         musicServiceConnection.unsubscribe(mediaId, subscriptionCallback)
     }
 
-    private fun getResourceForMediaId(mediaId: String): Int {
-        val isActive = mediaId == musicServiceConnection.nowPlaying.value?.id
-        val isPlaying = musicServiceConnection.playbackState.value?.isPlaying ?: false
-        return when {
-            !isActive -> NO_RES
-            isPlaying -> R.drawable.exo_icon_pause
-            else -> R.drawable.exo_icon_play
-        }
-    }
-
-    private fun updateState(
-        playbackState: PlaybackStateCompat,
-        mediaMetadata: MediaMetadataCompat
-    ): List<MediaItemData> {
-
-        val newResId = when (playbackState.isPlaying) {
-            true -> R.drawable.exo_icon_pause
-            else -> R.drawable.exo_icon_play
-        }
-
-        return mediaItems.value?.map {
-            val useResId = if (it.mediaId == mediaMetadata.id) newResId else NO_RES
-            it.copy(playbackRes = useResId)
-        } ?: emptyList()
-    }
-
     class Factory(
         private val mediaId: String,
         private val musicServiceConnection: MusicServiceConnection
@@ -242,5 +223,4 @@ fun provideMusicViewModel(musicServiceConnection: MusicServiceConnection, mediaI
         return MusicViewModel.Factory(mediaId, musicServiceConnection)
     }
 
-private const val NO_RES = 0
 private const val TAG = "MusicViewModel"

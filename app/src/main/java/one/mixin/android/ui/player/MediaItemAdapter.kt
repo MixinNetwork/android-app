@@ -1,100 +1,85 @@
-/*
- * Copyright 2017 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package one.mixin.android.ui.player
 
+import android.support.v4.media.MediaDescriptionCompat
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import one.mixin.android.databinding.ItemFragmentMediaBinding
-import one.mixin.android.ui.player.MediaItemData.Companion.PLAYBACK_RES_CHANGED
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.util.AudioPlayer
+import one.mixin.android.widget.CircleProgress
 
-/**
- * [RecyclerView.Adapter] of [MediaItemData]s used by the [MediaItemFragment].
- */
-class MediaItemAdapter(
-    private val itemClickedListener: (MediaItemData) -> Unit
-) : ListAdapter<MediaItemData, MediaViewHolder>(MediaItemData.diffCallback) {
+class MediaItemAdapter : ListAdapter<MediaItemData, MediaViewHolder>(MediaItemData.diffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = ItemFragmentMediaBinding.inflate(inflater, parent, false)
-        return MediaViewHolder(binding, itemClickedListener)
+        return MediaViewHolder(binding)
     }
 
-    override fun onBindViewHolder(
-        holder: MediaViewHolder,
-        position: Int,
-        payloads: MutableList<Any>
-    ) {
-
+    override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
         val mediaItem = getItem(position)
-        var fullRefresh = payloads.isEmpty()
-
-        if (payloads.isNotEmpty()) {
-            payloads.forEach { payload ->
-                when (payload) {
-                    PLAYBACK_RES_CHANGED -> {
-                        holder.playbackState.setImageResource(mediaItem.playbackRes)
-                    }
-                    // If the payload wasn't understood, refresh the full item (to be safe).
-                    else -> fullRefresh = true
+        holder.titleView.text = mediaItem.title
+        holder.subtitleView.text = mediaItem.subtitle
+        when (mediaItem.downloadStatus) {
+            MediaDescriptionCompat.STATUS_NOT_DOWNLOADED -> {
+                holder.progress.isVisible = true
+                holder.progress.enableDownload()
+                holder.progress.setBindId(mediaItem.mediaId)
+                holder.progress.setProgress(-1)
+                holder.root.setOnClickListener {
+                    listener?.onDownload(mediaItem)
+                }
+            }
+            MediaDescriptionCompat.STATUS_DOWNLOADING -> {
+                holder.progress.isVisible = true
+                holder.progress.enableLoading(MixinJobManager.getAttachmentProcess(mediaItem.mediaId))
+                holder.progress.setBindOnly(mediaItem.mediaId)
+                holder.root.setOnClickListener {
+                    listener?.onCancel(mediaItem)
+                }
+            }
+            MediaDescriptionCompat.STATUS_DOWNLOADED -> {
+                holder.progress.isVisible = true
+                holder.progress.setBindOnly(mediaItem.mediaId)
+                if (AudioPlayer.isPlay(mediaItem.mediaId)) {
+                    holder.progress.setPause()
+                } else {
+                    holder.progress.setPlay()
+                }
+                holder.root.setOnClickListener {
+                    listener?.onItemClick(mediaItem)
                 }
             }
         }
 
-        // Normally we only fully refresh the list item if it's being initially bound, but
-        // we might also do it if there was a payload that wasn't understood, just to ensure
-        // there isn't a stale item.
-        if (fullRefresh) {
-            holder.item = mediaItem
-            holder.titleView.text = mediaItem.title
-            holder.subtitleView.text = mediaItem.subtitle
-            holder.playbackState.setImageResource(mediaItem.playbackRes)
-
-            Glide.with(holder.albumArt)
-                .load(mediaItem.albumArtUri)
-                .into(holder.albumArt)
-        }
+        Glide.with(holder.albumArt)
+            .load(mediaItem.albumArtUri)
+            .into(holder.albumArt)
     }
 
-    override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
-        onBindViewHolder(holder, position, mutableListOf())
-    }
+    var listener: MediaItemListener? = null
 }
 
 class MediaViewHolder(
     binding: ItemFragmentMediaBinding,
-    itemClickedListener: (MediaItemData) -> Unit
 ) : RecyclerView.ViewHolder(binding.root) {
 
     val titleView: TextView = binding.title
     val subtitleView: TextView = binding.subtitle
     val albumArt: ImageView = binding.albumArt
-    val playbackState: ImageView = binding.itemState
+    val progress: CircleProgress = binding.progress
+    val root: View = binding.root
+}
 
-    var item: MediaItemData? = null
-
-    init {
-        binding.root.setOnClickListener {
-            item?.let { itemClickedListener(it) }
-        }
-    }
+interface MediaItemListener {
+    fun onItemClick(mediaItem: MediaItemData)
+    fun onDownload(mediaItem: MediaItemData)
+    fun onCancel(mediaItem: MediaItemData)
 }

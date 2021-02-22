@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import android.media.AudioManager
 import android.media.browse.MediaBrowser
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
@@ -38,6 +39,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.internal.album
+import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.flag
 import one.mixin.android.ui.player.internal.id
 import one.mixin.android.ui.player.internal.mediaUri
@@ -280,8 +282,9 @@ class AudioPlayer private constructor() {
         playWhenReady: Boolean = true,
         playbackStartPositionMs: Long = 0,
     ) {
-        currentPlaylistItems = metadataList
-        playMusicList(metadataList, itemToPlay, playWhenReady, playbackStartPositionMs)
+        val downloadedList = metadataList.filter { it.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED }
+        currentPlaylistItems = downloadedList
+        playMusicList(downloadedList, itemToPlay, playWhenReady, playbackStartPositionMs)
     }
 
     private fun playMusic(messageItem: MessageItem) {

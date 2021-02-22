@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="70dp">
+    android:layout_height="70dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <one.mixin.android.widget.CircleImageView
         android:id="@+id/albumArt"
@@ -11,13 +12,17 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"/>
 
-    <ImageView
-        android:id="@+id/itemState"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+    <one.mixin.android.widget.CircleProgress
+        android:id="@+id/progress"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
         android:layout_centerVertical="true"
-        android:layout_marginStart="29dp"
-        android:src="@drawable/exo_icon_play" />
+        app:playColor="@color/white"
+        app:progressColor="@color/white"
+        app:shadowColor="@android:color/transparent"
+        android:src="@drawable/ic_avatar_place_holder" />
 
     <Space
         android:id="@+id/center"
