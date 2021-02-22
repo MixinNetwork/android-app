@@ -20,12 +20,13 @@ class BorderTextView(context: Context, attrs: AttributeSet?) : AppCompatTextView
     }
 
     override fun onDraw(canvas: Canvas) {
-        val borderPaint = borderPaint ?: return
         val w = width
         val h = height
         val radius = if (h > w) h / 2f else w / 2f
         canvas.drawCircle(radius, radius, radius, bgPaint)
-        canvas.drawCircle(radius, radius, radius - borderPaint.strokeWidth / 2 + 1, borderPaint)
+        borderPaint?.let { borderPaint ->
+            canvas.drawCircle(radius, radius, radius - borderPaint.strokeWidth / 2 + 1, borderPaint)
+        }
         super.onDraw(canvas)
     }
 
