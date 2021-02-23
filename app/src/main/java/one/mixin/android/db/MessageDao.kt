@@ -518,13 +518,22 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
         AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
     """
     )
     suspend fun findAudiosByConversationId(conversationId: String): List<MessageItem>
 
-    @Query("SELECT id as mediaId, media_status as mediaStatus FROM messages WHERE id in (:ids)")
-    fun observeMediaStatus(ids: List<String>): LiveData<List<MessageIdIdAndMediaStatus>>
+    @Query(
+        """
+        SELECT id as mediaId, media_status as mediaStatus FROM messages 
+        WHERE conversation_id = :conversationId
+        AND (category = 'SIGNAL_DATA' OR category = 'PLAIN_DATA') AND media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND media_status != 'EXPIRED'
+        ORDER BY created_at ASC, rowid ASC
+    """
+    )
+    fun observeMediaStatus(conversationId: String): LiveData<List<MessageIdIdAndMediaStatus>>
 
     @Query(
         """

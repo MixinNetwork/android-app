@@ -309,6 +309,20 @@ class AudioPlayer private constructor() {
         resume()
     }
 
+    fun setMediaSource(metadataList: List<MediaMetadataCompat>) {
+        val downloadedList = metadataList.filter { it.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED }
+        currentPlaylistItems = downloadedList
+        exoPlayer.apply {
+            val itemToPlay = currentMediaItem?.mediaId
+            val initialWindowIndex = if (itemToPlay == null) 0 else downloadedList.indexOfFirst { it.description.mediaId == itemToPlay }
+            val mediaSource = downloadedList.toMediaSource(dataSourceFactory)
+            val pos = getCurrentPos()
+            setMediaSource(mediaSource)
+            prepare()
+            seekTo(initialWindowIndex, pos)
+        }
+    }
+
     private fun play(
         messageItem: MessageItem,
         autoPlayNext: Boolean = true,
@@ -424,6 +438,7 @@ class AudioPlayer private constructor() {
                     val post = metadataList.subList(index + 1, metadataList.size).map {
                         it.toMediaSource(dataSourceFactory)
                     }
+
                     addMediaSources(0, pre)
                     addMediaSources(post)
                 }

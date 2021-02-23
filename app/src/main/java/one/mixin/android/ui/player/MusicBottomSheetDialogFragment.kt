@@ -7,7 +7,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.support.v4.media.MediaDescriptionCompat
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
@@ -17,7 +16,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -32,6 +30,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.checkInlinePermissions
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.AttachmentDownloadJob
@@ -137,9 +136,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             musicLayout.progress.isVisible = false
 
-            val start = System.currentTimeMillis()
             viewModel.subscribe()
-            Timber.d("@@@ subscribe cost: ${System.currentTimeMillis() - start}")
             viewModel.mediaItems.observe(
                 this@MusicBottomSheetDialogFragment,
                 { list ->
@@ -151,14 +148,9 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     musicLayout.title.text = mediaItem?.title
                     musicLayout.subtitle.text = mediaItem?.subtitle
-                    Glide.with(musicLayout.albumArt)
-                        .load(mediaItem?.albumArtUri)
-                        .into(musicLayout.albumArt)
-
-                    observeUnDownloadedItems(list.toMutableList())
+                    musicLayout.albumArt.loadImage(mediaItem?.albumArtUri)
                 }
             )
-
             playerControlView.player = AudioPlayer.get().exoPlayer
         }
     }
@@ -242,40 +234,5 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 messageDao.updateMediaStatusSuspend(MediaStatus.CANCELED.name, mediaItemData.mediaId)
             }
         }
-    }
-
-    private fun observeUnDownloadedItems(mediaItems: MutableList<MediaItemData>) {
-        val unDownloadedItems = mediaItems.filter { it.downloadStatus != MediaDescriptionCompat.STATUS_DOWNLOADED }.map { it.mediaId }
-        messageDao.observeMediaStatus(unDownloadedItems).observe(
-            this,
-            { list ->
-                val updateDownloadedList = mutableListOf<String>()
-                var changed = false
-                mediaItems.forEachIndexed { index, item ->
-                    val newStatus = list.find { item.mediaId == it.mediaId }?.mediaStatus
-                    if (newStatus != null) {
-                        val oldStatus = item.downloadStatus
-                        if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADED && (newStatus == MediaStatus.DONE.name || newStatus == MediaStatus.READ.name)) {
-                            mediaItems[index] = item.createNew(MediaDescriptionCompat.STATUS_DOWNLOADED)
-                            changed = true
-                            updateDownloadedList.add(item.mediaId)
-                        } else if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADING && newStatus == MediaStatus.PENDING.name) {
-                            mediaItems[index] = item.createNew(MediaDescriptionCompat.STATUS_DOWNLOADING)
-                            changed = true
-                        } else if (oldStatus != MediaDescriptionCompat.STATUS_NOT_DOWNLOADED && newStatus == MediaStatus.CANCELED.name) {
-                            mediaItems[index] = item.createNew(MediaDescriptionCompat.STATUS_NOT_DOWNLOADED)
-                            changed = true
-                        }
-                    }
-                }
-                if (changed) {
-                    listAdapter.submitList(mediaItems.toList())
-                }
-
-                if (updateDownloadedList.isNotEmpty()) {
-                    viewModel.updateMedias(updateDownloadedList)
-                }
-            }
-        )
     }
 }

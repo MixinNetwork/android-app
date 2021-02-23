@@ -14,6 +14,8 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.media.MediaBrowserServiceCompat
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ControlDispatcher
@@ -39,8 +41,10 @@ import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
 import one.mixin.android.ui.player.internal.MusicTree
 import one.mixin.android.ui.player.internal.PlaylistLoader
 import one.mixin.android.ui.player.internal.album
+import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.flag
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
 import timber.log.Timber
 import javax.inject.Inject
@@ -119,6 +123,9 @@ class MusicService : MediaBrowserServiceCompat() {
             release()
         }
         serviceJob.cancel()
+        if (::conversationMusicObserver.isInitialized) {
+            musicLiveData?.removeObserver(conversationMusicObserver)
+        }
         AudioPlayer.release(false)
         FloatingPlayer.getInstance().hide()
     }
@@ -143,15 +150,72 @@ class MusicService : MediaBrowserServiceCompat() {
                 MediaBrowserCompat.MediaItem(item.description, item.flag)
             }
             result.sendResult(children)
+
+            if (hasNewDownloaded) {
+                hasNewDownloaded = false
+                AudioPlayer.get().setMediaSource(exists)
+            }
         } else {
             if (parentId == MUSIC_PLAYLIST) {
                 result.detach()
             } else {
                 loadConversationMusic(parentId)
                 result.detach()
+
+                observeConversationMusic(parentId)
             }
         }
         this.parentId = parentId
+    }
+
+    private fun observeConversationMusic(cid: String) {
+        if (::conversationMusicObserver.isInitialized) {
+            if (conversationMusicObserver.cid == cid) {
+                return
+            } else {
+                musicLiveData?.removeObserver(conversationMusicObserver)
+            }
+        }
+        conversationMusicObserver = ConversationMusicObserver(cid)
+        musicLiveData = database.messageDao().observeMediaStatus(cid)
+        musicLiveData?.observeForever(conversationMusicObserver)
+    }
+
+    private var musicLiveData: LiveData<List<MessageIdIdAndMediaStatus>>? = null
+    private lateinit var conversationMusicObserver: ConversationMusicObserver
+
+    private var hasNewDownloaded = false
+
+    private inner class ConversationMusicObserver(
+        var cid: String,
+    ) : Observer<List<MessageIdIdAndMediaStatus>> {
+        override fun onChanged(list: List<MessageIdIdAndMediaStatus>?) {
+            val album = musicTree[cid]
+            if (list.isNullOrEmpty() || album.isNullOrEmpty()) return
+
+            val updateList = mutableListOf<String>()
+            list.forEach { item ->
+                val exists = album.find { item.mediaId == it.description.mediaId }
+
+                if (exists != null) {
+                    val oldStatus = exists.downloadStatus
+                    val newStatus = item.mediaStatus
+                    if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADED && (newStatus == MediaStatus.DONE.name || newStatus == MediaStatus.READ.name)) {
+                        updateList.add(item.mediaId)
+                        hasNewDownloaded = true
+                    } else if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADING && newStatus == MediaStatus.PENDING.name) {
+                        notifyChildrenChanged(cid)
+                    } else if (oldStatus != MediaDescriptionCompat.STATUS_NOT_DOWNLOADED && newStatus == MediaStatus.CANCELED.name) {
+                        notifyChildrenChanged(cid)
+                    }
+                } else {
+                    updateList.add(item.mediaId)
+                }
+            }
+            if (updateList.isNotEmpty()) {
+                updateMusicItems(updateList.toTypedArray())
+            }
+        }
     }
 
     private var parentId: String = MUSIC_BROWSABLE_ROOT

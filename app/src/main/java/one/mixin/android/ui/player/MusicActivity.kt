@@ -1,5 +1,6 @@
 package one.mixin.android.ui.player
 
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
@@ -8,6 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MusicActivity : BaseActivity() {
@@ -18,7 +20,12 @@ class MusicActivity : BaseActivity() {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 putExtra(EXTRA_CONVERSATION_ID, conversationId)
             }
-            context.startActivity(intent)
+            val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+            try {
+                pendingIntent.send()
+            } catch (e: PendingIntent.CanceledException) {
+                Timber.w(e)
+            }
         }
     }
 

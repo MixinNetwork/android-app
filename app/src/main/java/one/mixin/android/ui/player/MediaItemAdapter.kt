@@ -9,8 +9,8 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import one.mixin.android.databinding.ItemFragmentMediaBinding
+import one.mixin.android.extension.loadImage
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.widget.CircleProgress
@@ -58,10 +58,7 @@ class MediaItemAdapter : ListAdapter<MediaItemData, MediaViewHolder>(MediaItemDa
                 }
             }
         }
-
-        Glide.with(holder.albumArt)
-            .load(mediaItem.albumArtUri)
-            .into(holder.albumArt)
+        holder.albumArt.loadImage(mediaItem.albumArtUri)
     }
 
     var listener: MediaItemListener? = null
