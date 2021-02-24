@@ -45,7 +45,11 @@ class MusicActivity : BaseActivity() {
         if (conversationId == null) {
             conversationId = FloatingPlayer.getInstance().conversationId
         }
-        MusicBottomSheetDialogFragment.newInstance(conversationId!!)
+        if (conversationId == null) {
+            finish()
+            return
+        }
+        MusicBottomSheetDialogFragment.newInstance(conversationId)
             .showNow(supportFragmentManager, MusicBottomSheetDialogFragment.TAG)
 
         handleIntent()

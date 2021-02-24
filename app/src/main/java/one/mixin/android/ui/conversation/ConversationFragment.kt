@@ -624,6 +624,7 @@ class ConversationFragment() :
                                 STATUS_DOWNLOADED
                             )
                         ) {
+                            if (viewDestroyed()) return@playMedia
                             collapse(requireActivity(), conversationId)
                         }
                     }

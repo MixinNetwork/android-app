@@ -93,6 +93,6 @@ abstract class MusicLoader {
     )
 
     companion object {
-        private const val RETRIEVE_TIMEOUT_SEC = 5L
+        private const val RETRIEVE_TIMEOUT_SEC = 1L
     }
 }

@@ -143,7 +143,6 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onLoadChildren(parentId: String, result: Result<List<MediaBrowserCompat.MediaItem>>) {
         Timber.d("@@@ onLoadChildren parentId: $parentId")
-
         val exists = musicTree[parentId]
         if (exists != null) {
             val children = exists.map { item ->
@@ -241,7 +240,7 @@ class MusicService : MediaBrowserServiceCompat() {
         mediaId: String? = null,
         onLoaded: ((MediaMetadataCompat) -> Unit)? = null,
     ) {
-        Timber.d("@@@ loadConversationMusic parentId: $parentId, mediaId: $mediaId, musicLoader: ${musicLoader?.conversationId}")
+        Timber.d("@@@ loadConversationMusic parentId: $parentId, mediaId: $mediaId, musicLoader-cid: ${musicLoader?.conversationId}")
         if (musicLoader != null && musicLoader?.conversationId == parentId && mediaId == null) {
             return
         }

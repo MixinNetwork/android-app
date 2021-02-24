@@ -523,6 +523,16 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
     return null
 }
 
+fun Uri.getOrCreate(context: Context = MixinApplication.appContext, name: String): String? {
+    val file = File(context.getDocumentPath(), name)
+    if (!file.exists()) {
+        context.contentResolver.openInputStream(this)?.let {
+            file.copyFromInputStream(it)
+        }
+    }
+    return file.absolutePath
+}
+
 fun File.copyFromInputStream(inputStream: InputStream) {
     inputStream.use { input ->
         this.outputStream().use { output ->

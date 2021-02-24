@@ -82,6 +82,8 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private lateinit var contentView: View
 
+    private var firstOpen = true
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return MixinBottomSheetDialog(requireContext(), theme).apply {
             dismissWithAnimation = true
@@ -148,7 +150,17 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     musicLayout.title.text = mediaItem?.title
                     musicLayout.subtitle.text = mediaItem?.subtitle
-                    musicLayout.albumArt.loadImage(mediaItem?.albumArtUri)
+                    musicLayout.albumArt.loadImage(mediaItem?.albumArtUri?.path, R.drawable.ic_music_place_holder)
+
+                    if (list.isNotEmpty() && firstOpen) {
+                        firstOpen = false
+                        val pos = list.indexOf(mediaItem)
+                        if (pos != -1) {
+                            playlistRv.post {
+                                (playlistRv.layoutManager as LinearLayoutManager).scrollToPosition(pos)
+                            }
+                        }
+                    }
                 }
             )
             playerControlView.player = AudioPlayer.get().exoPlayer

@@ -40,6 +40,7 @@ class ConversationLoader(
                 }
                 else -> {
                     val url = m.mediaUrl ?: return@forEach
+                    Timber.d("@@@ url: $url")
                     val musicMeta = retrieveMetadata(m.messageId, url) ?: return@forEach
                     mediaMetadataCompats.add(
                         MediaMetadataCompat.Builder()
