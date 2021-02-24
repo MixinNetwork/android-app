@@ -18,7 +18,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.round
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface

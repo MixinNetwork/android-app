@@ -15,5 +15,5 @@ interface FloodMessageDao : BaseDao<FloodMessage> {
     fun getFloodMessageCount(): LiveData<Int>
 
     @Query("select created_at from flood_messages ORDER BY created_at DESC limit 1")
-    fun getLastBlazeMessageCreatedAt():String?
+    fun getLastBlazeMessageCreatedAt(): String?
 }
