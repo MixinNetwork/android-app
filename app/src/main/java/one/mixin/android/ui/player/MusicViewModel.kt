@@ -13,13 +13,13 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import one.mixin.android.extension.observeUntil
+import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.ui.player.internal.NOTHING_PLAYING
 import one.mixin.android.ui.player.internal.id
 import one.mixin.android.ui.player.internal.isPlayEnabled
 import one.mixin.android.ui.player.internal.isPlaying
 import one.mixin.android.ui.player.internal.isPrepared
-import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
 import timber.log.Timber
 
 class MusicViewModel
@@ -57,7 +57,7 @@ internal constructor(
                 transportControls.playFromMediaId(
                     mediaItem.mediaId,
                     Bundle().apply {
-                        putString(EXTRA_CONVERSATION_ID, mediaId)
+                        putString(MUSIC_EXTRA_PARENT_ID, mediaId)
                     }
                 )
 
@@ -75,12 +75,13 @@ internal constructor(
         }
     }
 
-    fun showPlaylist(playlist: Array<String>, onConnected: () -> Unit) {
+    fun showPlaylist(playlist: Array<String>, onChildrenLoaded: () -> Unit) {
         checkConnected {
             val transportControls = musicServiceConnection.transportControls
             transportControls.playFromMediaId(
                 playlist[0],
                 Bundle().apply {
+                    putString(MUSIC_EXTRA_PARENT_ID, MUSIC_PLAYLIST)
                     putStringArray(MUSIC_EXTRA_PLAYLIST, playlist)
                 }
             )
@@ -89,17 +90,17 @@ internal constructor(
             // }
             // musicServiceConnection.sendCommand(MUSIC_CMD_PLAYLIST, bundle)
 
-            onConnected.invoke()
+            musicServiceConnection.subscribe(
+                mediaId,
+                object : MediaBrowserCompat.SubscriptionCallback() {
+                    override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
+                        Timber.d("@@@ onChildrenLoaded")
+                        onChildrenLoaded.invoke()
+                        musicServiceConnection.unsubscribe(mediaId, this)
+                    }
+                }
+            )
         }
-    }
-
-    fun updateMedias(mediaIds: List<String>) {
-        musicServiceConnection.sendCommand(
-            MUSIC_CMD_UPDATE_ITEMS,
-            Bundle().apply {
-                putStringArray(MUSIC_EXTRA_ITEMS, mediaIds.toTypedArray())
-            }
-        )
     }
 
     fun subscribe() {

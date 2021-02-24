@@ -58,7 +58,7 @@ class MediaItemAdapter : ListAdapter<MediaItemData, MediaViewHolder>(MediaItemDa
                 }
             }
         }
-        holder.albumArt.loadImage(mediaItem.albumArtUri)
+        holder.albumArt.loadImage(mediaItem.albumArtUri?.path)
     }
 
     var listener: MediaItemListener? = null

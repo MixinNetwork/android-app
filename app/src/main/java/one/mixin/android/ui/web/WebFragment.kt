@@ -703,8 +703,8 @@ class WebFragment : BaseFragment() {
 
         lifecycleScope.launch {
             musicViewModel.showPlaylist(playlist) {
-                MusicActivity.show(requireContext(), MUSIC_PLAYLIST)
                 FloatingPlayer.getInstance().conversationId = MUSIC_PLAYLIST
+                MusicActivity.show(requireContext(), MUSIC_PLAYLIST)
             }
         }
     }

@@ -201,6 +201,9 @@ class AudioPlayer private constructor() {
                 id?.let { id -> RxBus.publish(pauseEvent(id)) }
                 stopTimber()
                 status = STATUS_DONE
+                if (isMusicServiceRunning(MixinApplication.appContext)) {
+                    FloatingPlayer.getInstance().stopAnim()
+                }
 
                 if (autoPlayNext) {
                     checkNext()
@@ -416,6 +419,7 @@ class AudioPlayer private constructor() {
         playWhenReady: Boolean = false,
         playbackStartPositionMs: Long = 0,
     ) {
+        Timber.d("@@@ playMusicList itemToPlay: ${itemToPlay?.description?.mediaId}, metadataList: ${metadataList.size}")
         val initialWindowIndex = if (itemToPlay == null) 0 else metadataList.indexOf(itemToPlay)
         exoPlayer.apply {
             if (itemToPlay != null) {
@@ -429,7 +433,9 @@ class AudioPlayer private constructor() {
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory)
                 setMediaSource(mediaSource)
                 prepare()
-                seekTo(initialWindowIndex, playbackStartPositionMs)
+                if (initialWindowIndex != -1) {
+                    seekTo(initialWindowIndex, playbackStartPositionMs)
+                }
             } else {
                 if (mediaItemCount == 1 && metadataList.size > 1) {
                     val pre = metadataList.subList(0, index).map {

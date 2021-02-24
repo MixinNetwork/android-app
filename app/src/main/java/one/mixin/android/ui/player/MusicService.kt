@@ -45,7 +45,6 @@ import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.flag
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -158,6 +157,10 @@ class MusicService : MediaBrowserServiceCompat() {
         } else {
             if (parentId == MUSIC_PLAYLIST) {
                 result.detach()
+
+                if (::conversationMusicObserver.isInitialized) {
+                    musicLiveData?.removeObserver(conversationMusicObserver)
+                }
             } else {
                 loadConversationMusic(parentId)
                 result.detach()
@@ -309,11 +312,12 @@ class MusicService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            Timber.d("@@@ onPrepareFromMediaId mediaId: $mediaId, playWhenReady: $playWhenReady")
-            val parentExists = musicTree[parentId]
+            val pid = extras?.getString(MUSIC_EXTRA_PARENT_ID) ?: parentId
+            Timber.d("@@@ onPrepareFromMediaId mediaId: $mediaId, pid: $pid, playWhenReady: $playWhenReady")
+            val parentExists = musicTree[pid]
             if (parentExists == null) {
-                Timber.d("@@@ not find parent for $parentId")
-                if (parentId == MUSIC_PLAYLIST) {
+                Timber.d("@@@ not find parent for $pid")
+                if (pid == MUSIC_PLAYLIST) {
                     val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST)
                     if (!playlist.isNullOrEmpty()) {
                         loadPlaylist(playlist, mediaId) {
@@ -323,22 +327,17 @@ class MusicService : MediaBrowserServiceCompat() {
                         Timber.w("$TAG Content not found: MediaID=$mediaId")
                     }
                 } else {
-                    val cid = extras?.getString(EXTRA_CONVERSATION_ID)
-                    if (cid != null) {
-                        loadConversationMusic(cid, mediaId) {
-                            playItem(it, playWhenReady, extras)
-                        }
-                    } else {
-                        Timber.w("$TAG Content not found: MediaID=$mediaId")
+                    loadConversationMusic(pid, mediaId) {
+                        playItem(it, playWhenReady, extras)
                     }
                 }
             } else {
-                Timber.d("@@@ find parent for $parentId")
+                Timber.d("@@@ find parent for $pid")
                 val itemToPlay = parentExists.find { item ->
                     item.description.mediaId == mediaId
                 }
                 if (itemToPlay == null) {
-                    if (parentId == MUSIC_PLAYLIST) {
+                    if (pid == MUSIC_PLAYLIST) {
                         val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST)
                         if (!playlist.isNullOrEmpty()) {
                             loadPlaylist(playlist, mediaId) {
@@ -348,13 +347,8 @@ class MusicService : MediaBrowserServiceCompat() {
                             Timber.w("$TAG Content not found: MediaID=$mediaId")
                         }
                     } else {
-                        val cid = extras?.getString(EXTRA_CONVERSATION_ID)
-                        if (cid != null) {
-                            loadConversationMusic(cid, mediaId) {
-                                playItem(it, playWhenReady, extras)
-                            }
-                        } else {
-                            Timber.w("$TAG Content not found: MediaID=$mediaId")
+                        loadConversationMusic(pid, mediaId) {
+                            playItem(it, playWhenReady, extras)
                         }
                     }
                 } else {
@@ -373,7 +367,6 @@ class MusicService : MediaBrowserServiceCompat() {
                     ?: C.TIME_UNSET
 
             val playlist = buildPlaylist(itemToPlay)
-            Timber.d("@@@ playlist size: ${playlist.size}")
             AudioPlayer.preparePlaylist(
                 playlist,
                 itemToPlay,
@@ -487,6 +480,7 @@ const val MUSIC_CMD_UPDATE_ITEMS = "music_cmd_update_items"
 
 const val MUSIC_EXTRA_PLAYLIST = "music_extra_playlist"
 const val MUSIC_EXTRA_ITEMS = "music_extra_items"
+const val MUSIC_EXTRA_PARENT_ID = "music_extra_parent_id"
 
 val MEDIA_DESCRIPTION_EXTRAS_START_PLAYBACK_POSITION_MS = "playback_start_position_ms"
 
