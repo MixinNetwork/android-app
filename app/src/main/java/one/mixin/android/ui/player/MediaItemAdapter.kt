@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.R
 import one.mixin.android.databinding.ItemFragmentMediaBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.job.MixinJobManager
@@ -58,7 +59,7 @@ class MediaItemAdapter : ListAdapter<MediaItemData, MediaViewHolder>(MediaItemDa
                 }
             }
         }
-        holder.albumArt.loadImage(mediaItem.albumArtUri?.path)
+        holder.albumArt.loadImage(mediaItem.albumArtUri?.path, R.drawable.ic_music_place_holder)
     }
 
     var listener: MediaItemListener? = null

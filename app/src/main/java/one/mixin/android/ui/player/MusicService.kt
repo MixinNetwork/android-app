@@ -41,6 +41,7 @@ import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
 import one.mixin.android.ui.player.internal.MusicTree
 import one.mixin.android.ui.player.internal.PlaylistLoader
 import one.mixin.android.ui.player.internal.album
+import one.mixin.android.ui.player.internal.copy
 import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.flag
 import one.mixin.android.util.AudioPlayer
@@ -197,6 +198,7 @@ class MusicService : MediaBrowserServiceCompat() {
             if (list.isNullOrEmpty() || album.isNullOrEmpty()) return
 
             val updateList = mutableListOf<String>()
+            var changed = false
             list.forEach { item ->
                 val exists = album.find { item.mediaId == it.description.mediaId }
 
@@ -207,9 +209,15 @@ class MusicService : MediaBrowserServiceCompat() {
                         updateList.add(item.mediaId)
                         hasNewDownloaded = true
                     } else if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADING && newStatus == MediaStatus.PENDING.name) {
-                        notifyChildrenChanged(cid)
+                        val newItem = exists.copy(MediaDescriptionCompat.STATUS_DOWNLOADING)
+                        val index = album.indexOfFirst { item.mediaId == it.description.mediaId }
+                        album[index] = newItem
+                        changed = true
                     } else if (oldStatus != MediaDescriptionCompat.STATUS_NOT_DOWNLOADED && newStatus == MediaStatus.CANCELED.name) {
-                        notifyChildrenChanged(cid)
+                        val newItem = exists.copy(MediaDescriptionCompat.STATUS_NOT_DOWNLOADED)
+                        val index = album.indexOfFirst { item.mediaId == it.description.mediaId }
+                        album[index] = newItem
+                        changed = true
                     }
                 } else {
                     updateList.add(item.mediaId)
@@ -217,6 +225,9 @@ class MusicService : MediaBrowserServiceCompat() {
             }
             if (updateList.isNotEmpty()) {
                 updateMusicItems(updateList.toTypedArray())
+            }
+            if (changed) {
+                notifyChildrenChanged(cid)
             }
         }
     }

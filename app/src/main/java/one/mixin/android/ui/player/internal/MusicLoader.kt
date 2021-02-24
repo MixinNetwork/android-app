@@ -82,9 +82,7 @@ abstract class MusicLoader {
             }
         }
         val artist = artistList.joinToString { it }
-        val musicMeta = MusicMeta(title, album, albumArt, artist)
-        Timber.d("@@@ musicMeta: $musicMeta")
-        return musicMeta
+        return MusicMeta(title, album, albumArt, artist)
     }
 
     data class MusicMeta(

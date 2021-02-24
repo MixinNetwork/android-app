@@ -253,6 +253,25 @@ inline var MediaMetadataCompat.Builder.flag: Int
         putLong(METADATA_KEY_MIXIN_FLAGS, value.toLong())
     }
 
+fun MediaMetadataCompat.copy(status: Long): MediaMetadataCompat =
+    MediaMetadataCompat.Builder()
+        .copy(this, status)
+        .build()
+
+fun MediaMetadataCompat.Builder.copy(media: MediaMetadataCompat, status: Long): MediaMetadataCompat.Builder {
+    id = media.id!!
+    title = media.title
+    artist = media.artist
+    album = media.album
+    flag = media.flag
+    downloadStatus = status
+    albumArtUri = media.albumArtUri.path
+    displayTitle = media.title
+    displaySubtitle = media.artist
+    displayIconUri = media.albumArtUri.path
+    return this
+}
+
 /**
  * Extension method for building an [ExtractorMediaSource] from a [MediaMetadataCompat] object.
  *
