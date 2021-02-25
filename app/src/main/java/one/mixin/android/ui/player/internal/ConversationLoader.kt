@@ -1,6 +1,5 @@
 package one.mixin.android.ui.player.internal
 
-import android.media.MediaMetadataRetriever
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -26,7 +25,6 @@ class ConversationLoader(
     }
 
     private fun loadMessageItems(messageItems: List<MessageItem>): List<MediaMetadataCompat> {
-        val retriever = MediaMetadataRetriever()
         val mediaMetadataCompats = mutableListOf<MediaMetadataCompat>()
         val start = System.currentTimeMillis()
         messageItems.forEach { m ->
@@ -51,9 +49,8 @@ class ConversationLoader(
             }
         }
 
-        retriever.release()
         mediaMetadataCompats.forEach { it.description.extras?.putAll(it.bundle) }
-        Timber.d("@@@ retrieve cost: ${System.currentTimeMillis() - start}")
+        Timber.d("@@@ retrieve ${messageItems.size} items cost: ${System.currentTimeMillis() - start}")
         return mediaMetadataCompats
     }
 

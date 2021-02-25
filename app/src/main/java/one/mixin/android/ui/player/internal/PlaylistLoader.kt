@@ -9,7 +9,7 @@ class PlaylistLoader(private val playlist: Array<String>) : MusicLoader() {
     override suspend fun load(): List<MediaMetadataCompat> {
         val mediaMetadataCompats = mutableListOf<MediaMetadataCompat>()
         playlist.forEach { url ->
-            val musicMeta = retrieveMetadata(url, url) ?: return@forEach
+            val musicMeta = retrieveMetadata(url, url, 2000) ?: return@forEach
             mediaMetadataCompats.add(
                 MediaMetadataCompat.Builder()
                     .from(url, musicMeta)

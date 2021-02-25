@@ -198,6 +198,8 @@ class MusicService : MediaBrowserServiceCompat() {
 
             val updateList = mutableListOf<String>()
             var changed = false
+
+            Timber.d("@@@ observe list size: ${list.size}, album size: ${album.size}")
             list.forEach { item ->
                 val exists = album.find { item.mediaId == it.description.mediaId }
 
@@ -219,9 +221,12 @@ class MusicService : MediaBrowserServiceCompat() {
                         changed = true
                     }
                 } else {
-                    updateList.add(item.mediaId)
+                    if (musicLoader?.ignoreSet?.contains(item.mediaId) == false) {
+                        updateList.add(item.mediaId)
+                    }
                 }
             }
+            Timber.d("@@@ updateList size: ${updateList.size}")
             if (updateList.isNotEmpty()) {
                 updateMusicItems(updateList.toTypedArray())
             }

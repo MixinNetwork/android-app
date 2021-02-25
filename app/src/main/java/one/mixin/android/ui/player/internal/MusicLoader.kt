@@ -11,18 +11,23 @@ import com.google.android.exoplayer2.metadata.id3.TextInformationFrame
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import timber.log.Timber
+import java.io.FileNotFoundException
+import java.lang.Exception
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 abstract class MusicLoader {
     val unknownString = MixinApplication.appContext.getString(R.string.unknown)
 
+    val ignoreSet = mutableSetOf<String>()
+
     abstract suspend fun load(): List<MediaMetadataCompat>
 
-    protected fun retrieveMetadata(id: String, url: String): MusicMeta? {
+    protected fun retrieveMetadata(id: String, url: String, timeoutMillis: Long = RETRIEVE_TIMEOUT_MILLI_SEC): MusicMeta? {
         try {
             val item = MediaItem.fromUri(url)
             val trackGroupsFuture = MetadataRetriever.retrieveMetadata(MixinApplication.appContext, item)
-            val trackGroups = trackGroupsFuture.get(RETRIEVE_TIMEOUT_SEC, TimeUnit.SECONDS)
+            val trackGroups = trackGroupsFuture.get(timeoutMillis, TimeUnit.MILLISECONDS)
             for (i in 0 until trackGroups.length) {
                 val trackGroup = trackGroups[i]
                 for (j in 0 until trackGroup.length) {
@@ -33,13 +38,19 @@ abstract class MusicLoader {
                 }
             }
         } catch (e: Exception) {
-            Timber.e(e)
+            if (e is FileNotFoundException || e is SecurityException || e is TimeoutException) {
+                // message exits but media not
+                ignoreSet.add(id)
+                return null
+            }
+            Timber.w(e)
+            return EMPTY_MUSIC_META
         }
         return null
     }
 
     private fun decodeMetadata(id: String, url: String, metadata: Metadata): MusicMeta {
-        val artistList = mutableListOf<String>()
+        val artistList = mutableSetOf<String>()
         var title: String? = null
         var album: String? = null
         var albumArt: String? = null
@@ -92,7 +103,10 @@ abstract class MusicLoader {
         val artist: String?,
     )
 
+    @Suppress("PropertyName")
+    val EMPTY_MUSIC_META = MusicMeta(null, null, null, null)
+
     companion object {
-        private const val RETRIEVE_TIMEOUT_SEC = 1L
+        private const val RETRIEVE_TIMEOUT_MILLI_SEC = 100L
     }
 }
