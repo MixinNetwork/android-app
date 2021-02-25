@@ -64,7 +64,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         }
         val autoLinkItems = LinkedList<AutoLinkItem>()
         val sp = SpannableStringBuilder()
-        renderMarkdown(sp, simpleMarkwon.parse(text.toString()))
+        sp.append(SpannableString(text))
         renderMention(sp, autoLinkItems)
         renderKeyWord(sp)
         matchedRanges(sp, autoLinkItems)

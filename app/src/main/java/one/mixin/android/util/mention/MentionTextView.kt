@@ -1,6 +1,7 @@
 package one.mixin.android.util.mention
 
 import android.content.Context
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
@@ -18,7 +19,7 @@ class MentionTextView(context: Context, attrs: AttributeSet?) :
             return
         } else {
             val sp = SpannableStringBuilder()
-            renderMarkdown(sp, simpleMarkwon.parse(text.toString()))
+            sp.append(SpannableString(text))
             mentionRenderContext.notNullWithElse(
                 { super.setText(renderMention(sp), type) },
                 { super.setText(sp, type) }
