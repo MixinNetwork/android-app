@@ -8,7 +8,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
@@ -287,17 +286,10 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
     }
 
     suspend fun findAddressById(addressId: String, assetId: String) =
-        viewModelScope.async(Dispatchers.IO) {
-            assetRepository.findAddressById(
-                addressId,
-                assetId
-            )
-        }.await()
+        assetRepository.findAddressById(addressId, assetId)
 
     suspend fun findAssetItemById(assetId: String): AssetItem? =
-        viewModelScope.async(Dispatchers.IO) {
-            return@async assetRepository.findAssetItemById(assetId)
-        }.await()
+        assetRepository.findAssetItemById(assetId)
 
     suspend fun refreshAsset(assetId: String): AssetItem? {
         return withContext(Dispatchers.IO) {
