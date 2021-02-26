@@ -6,7 +6,6 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.graphics.Outline
 import android.graphics.PixelFormat
 import android.os.Build
 import android.view.Gravity
@@ -14,7 +13,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.ViewOutlineProvider
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
@@ -22,7 +20,6 @@ import androidx.annotation.Keep
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.checkInlinePermissions
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getPixelsInCM
@@ -203,13 +200,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
 
         musicView = RLottieImageView(activity)
         musicBgView = View(activity).apply {
-            setBackgroundColor(context.colorFromAttribute(R.attr.music_floating_bg))
-            outlineProvider = object : ViewOutlineProvider() {
-                override fun getOutline(view: View, outline: Outline) {
-                    outline.setRoundRect(0, 0, view.width, view.height, view.width / 2f)
-                }
-            }
-            clipToOutline = true
+            setBackgroundResource(R.drawable.bg_music)
         }
 
         windowView.addView(

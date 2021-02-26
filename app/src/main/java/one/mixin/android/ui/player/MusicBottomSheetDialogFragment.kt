@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -30,6 +31,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.checkInlinePermissions
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
@@ -104,6 +106,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         )
         behavior?.skipCollapsed = true
         behavior?.peekHeight = contentView.measuredHeight
+        behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
 
         binding.apply {
             listAdapter.listener = object : MediaItemListener {
@@ -119,6 +122,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     cancel(mediaItem)
                 }
             }
+            titleView.rightIv.setPadding(8.dp)
             titleView.rightIv.setOnClickListener { dismiss() }
             titleView.leftIv.setOnClickListener {
                 alertDialogBuilder()
@@ -245,6 +249,18 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             lifecycleScope.launch {
                 messageDao.updateMediaStatusSuspend(MediaStatus.CANCELED.name, mediaItemData.mediaId)
             }
+        }
+    }
+
+    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+
+        override fun onStateChanged(bottomSheet: View, newState: Int) {
+            if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                dismissAllowingStateLoss()
+            }
+        }
+
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {
         }
     }
 }

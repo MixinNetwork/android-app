@@ -241,6 +241,10 @@
         <item name="android:windowIsTranslucent">true</item>
     </style>
 
+    <style name="AppTheme.Music" parent="AppTheme.Web">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
     <style name="BoxStyle" parent="AppTheme">
         <item name="colorAccent">@color/colorDarkBlue</item>
     </style>
