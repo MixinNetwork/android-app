@@ -159,6 +159,7 @@ android {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+    implementation platform("com.google.firebase:firebase-bom:26.5.0")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
@@ -231,14 +232,13 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}")
 
     implementation "com.google.code.gson:gson:${gsonVersion}"
-    implementation "com.google.firebase:firebase-analytics:${firebaseVersion}"
-    implementation 'com.google.firebase:firebase-crashlytics:17.3.1'
-    implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
-    implementation "com.google.firebase:firebase-dynamic-links:${firebaseDylinkVersion}"
+
+    implementation "com.google.firebase:firebase-messaging-ktx"
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-dynamic-links-ktx'
+
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
-    implementation("com.google.firebase:firebase-perf:${perfVersion}") {
-        exclude group: 'com.google.protobuf', module: 'protobuf-lite'
-    }
     implementation "com.google.android.play:core:${playVersion}"
     implementation "com.google.android.gms:play-services-safetynet:${google_play_services_version}"
     implementation "com.google.android.gms:play-services-maps:${google_play_services_version}"
