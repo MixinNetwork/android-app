@@ -4,6 +4,9 @@ import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.EncryptedProtocol
+import one.mixin.android.crypto.aesDecrypt
+import one.mixin.android.crypto.aesEncrypt
+import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.extension.base64Encode
@@ -11,6 +14,7 @@ import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class EncryptedProtocolTest {
 
@@ -26,6 +30,19 @@ class EncryptedProtocolTest {
         val mockStickerPayload = StickerMessagePayload(mockStickerId)
         val content = GsonHelper.customGson.toJson(mockStickerPayload).base64Encode().toByteArray()
         testEncryptAndDecrypt(content)
+    }
+
+    @Test
+    fun testAes() {
+        val content = "LA".toByteArray()
+        val aesGcmKey = generateAesKey()
+        val encodedContent = aesEncrypt(aesGcmKey, content)
+        val decryptedContent = aesDecrypt(
+            aesGcmKey,
+            encodedContent.slice(IntRange(0, 15)).toByteArray(),
+            encodedContent.slice(IntRange(16, encodedContent.size - 1)).toByteArray(),
+        )
+        assertEquals("LA",String(decryptedContent))
     }
 
     @Test
