@@ -119,8 +119,8 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     cancel(mediaItem)
                 }
             }
-            titleView.rightAnimator.setOnClickListener { dismiss() }
-            titleView.leftIb.setOnClickListener {
+            titleView.rightIv.setOnClickListener { dismiss() }
+            titleView.leftIv.setOnClickListener {
                 alertDialogBuilder()
                     .setMessage(getString(R.string.player_delete_all_desc))
                     .setNegativeButton(R.string.cancel) { dialog, _ ->

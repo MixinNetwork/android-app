@@ -60,6 +60,7 @@
         <item name="music_unplayed">@color/musicUnPlayed</item>
         <item name="music_buffered">@color/musicBuffered</item>
         <item name="music_text">@color/musicText</item>
+        <item name="music_floating_bg">@color/musicFloatingBg</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>

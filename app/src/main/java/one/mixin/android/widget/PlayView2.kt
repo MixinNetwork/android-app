@@ -7,12 +7,12 @@ import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import androidx.annotation.ColorInt
 
 class PlayView2 @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
     FrameLayout(context, attrs, defStyleAttr) {
 
     companion object {
-        const val DEFAULT_COLOR = Color.WHITE
         val DEFAULT_BG = Color.parseColor("#B2212121")
 
         const val STATUS_IDLE = 0
@@ -28,7 +28,6 @@ class PlayView2 @JvmOverloads constructor(context: Context, attrs: AttributeSet?
         }
 
     private var bg = DEFAULT_BG
-    private var color = DEFAULT_COLOR
 
     private val bgPaint: Paint by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -42,6 +41,12 @@ class PlayView2 @JvmOverloads constructor(context: Context, attrs: AttributeSet?
 
     init {
         setWillNotDraw(false)
+    }
+
+    fun setColor(@ColorInt bgColor: Int?, @ColorInt drawableColor: Int?) {
+        bgColor?.let { bgPaint.color = it }
+        drawableColor?.let { playDrawable.color = it }
+        invalidate()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

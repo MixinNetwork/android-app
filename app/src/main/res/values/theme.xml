@@ -48,6 +48,7 @@
     <attr name="music_unplayed" format="color|reference" />
     <attr name="music_buffered" format="color|reference" />
     <attr name="music_text" format="color|reference" />
+    <attr name="music_floating_bg" format="color|reference" />
 
     <attr name="flag_night" format="boolean|reference" />
 

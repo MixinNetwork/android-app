@@ -18,6 +18,7 @@ import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerBottomControlBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
 import org.jetbrains.anko.textColorResource
@@ -87,6 +88,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
 
     init {
         playView.setOnClickListener(componentListener)
+        playView.setColor(context.colorFromAttribute(R.attr.icon_default), context.colorFromAttribute(R.attr.icon_white))
         modeView.setOnClickListener(componentListener)
         previousView.setOnClickListener(componentListener)
         nextView.setOnClickListener(componentListener)

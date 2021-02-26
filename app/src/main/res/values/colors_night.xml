@@ -45,6 +45,7 @@
     <color name="musicUnPlayedNight">#41464A</color>
     <color name="musicBufferedNight">#44FFFFFF</color>
     <color name="musicTextNight">#B8BDC7</color>
+    <color name="musicFloatingBgNight">#62686C</color>
 
     <color name="highlight_night">#33FFFFFF</color>
 </resources>

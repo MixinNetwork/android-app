@@ -42,6 +42,7 @@
     <color name="musicUnPlayed">#F6F7FA</color>
     <color name="musicBuffered">#442F3032</color>
     <color name="musicText">#B8BDC7</color>
+    <color name="musicFloatingBg">#F5F7FA</color>
 
     <color name="highlight">#33333333</color>
 

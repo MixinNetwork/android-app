@@ -30,7 +30,7 @@
             app:played_color="?attr/music_played"
             app:unplayed_color="?attr/music_unplayed"
             app:buffered_color="?attr/music_buffered"
-            app:scrubber_drawable="@drawable/ic_seek_bar" />
+            app:scrubber_drawable="@drawable/ic_player_seek_bar" />
 
         <TextView
             android:id="@+id/duration_tv"
@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_player_skip_previous_24"
+                android:src="@drawable/ic_player_skip_previous"
                 android:background="?android:selectableItemBackground" />
         </FrameLayout>
 
@@ -86,8 +86,8 @@
 
             <one.mixin.android.widget.PlayView2
                 android:id="@+id/play_view"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_gravity="center" />
         </FrameLayout>
 
@@ -102,7 +102,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_player_skip_next_24"
+                android:src="@drawable/ic_player_skip_next"
                 android:background="?android:selectableItemBackground" />
         </FrameLayout>
 
@@ -119,6 +119,7 @@
                 android:layout_gravity="center"
                 android:textColor="?icon_default"
                 android:text="1X"
+                android:textSize="16sp"
                 android:background="?android:selectableItemBackground"
                 tools:ignore="HardcodedText" />
         </FrameLayout>

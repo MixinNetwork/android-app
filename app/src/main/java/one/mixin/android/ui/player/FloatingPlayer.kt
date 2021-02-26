@@ -6,7 +6,6 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.PixelFormat
 import android.os.Build
@@ -23,6 +22,7 @@ import androidx.annotation.Keep
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.checkInlinePermissions
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getPixelsInCM
@@ -84,7 +84,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
 
-    private val rLottieDrawable = RLottieDrawable(R.raw.anim_music, "music", 30.dp, 30.dp)
+    private var rLottieDrawable: RLottieDrawable? = null
 
     var conversationId: String? = null
 
@@ -113,7 +113,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         }
 
         if (isNightMode != activity.isNightMode()) {
-            recreate(activity.isNightMode()).show(activity, true)
+            recreate(activity.isNightMode()).show(activity, true, this.conversationId)
         } else {
             if (!isShown) {
                 init(activity)
@@ -203,7 +203,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
 
         musicView = RLottieImageView(activity)
         musicBgView = View(activity).apply {
-            setBackgroundColor(Color.parseColor("#F5F7FA"))
+            setBackgroundColor(context.colorFromAttribute(R.attr.music_floating_bg))
             outlineProvider = object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
                     outline.setRoundRect(0, 0, view.width, view.height, view.width / 2f)
@@ -226,6 +226,11 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         )
 
         musicView.setAutoRepeat(true)
+        rLottieDrawable = if (isNightMode) {
+            RLottieDrawable(R.raw.anim_music_night, "music_night", 30.dp, 30.dp)
+        } else {
+            RLottieDrawable(R.raw.anim_music, "music", 30.dp, 30.dp)
+        }
         musicView.setAnimation(rLottieDrawable)
         if (AudioPlayer.get().exoPlayer.isPlaying) {
             musicView.playAnimation()
