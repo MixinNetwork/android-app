@@ -56,8 +56,8 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/avatar"
                         android:layout_centerHorizontal="true"
-                        android:layout_marginStart="32dp"
-                        android:layout_marginEnd="32dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
                         app:center="true">
 
                         <TextView
@@ -66,6 +66,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/mixin_condensed"
                             android:textColor="?attr/text_primary"
+                            android:textIsSelectable="true"
                             android:textSize="40sp"
                             tools:text="1234812304812045.8321498123749812348" />
 
