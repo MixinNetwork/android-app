@@ -90,6 +90,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.config
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -380,6 +381,7 @@ class ConversationFragment() :
         }
 
     private fun voiceCall() {
+        AudioPlayer.pause(false)
         if (LinkState.isOnline(linkState.state)) {
             if (isGroup) {
                 if (callState.getGroupCallStateOrNull(conversationId) != null) {
@@ -611,6 +613,10 @@ class ConversationFragment() :
                         if (!AudioPlayer.sameChatAudioFilePlaying(conversationId)) {
                             AudioPlayer.playMusic(messageItem)
                             FloatingPlayer.getInstance().hide()
+                        } else {
+                            if (checkFloatingPermission()) {
+                                collapse(requireActivity(), conversationId)
+                            }
                         }
                         FloatingPlayer.getInstance().conversationId = conversationId
 
@@ -625,7 +631,9 @@ class ConversationFragment() :
                             )
                         ) {
                             if (viewDestroyed()) return@playMedia
-                            collapse(requireActivity(), conversationId)
+                            if (checkFloatingPermission()) {
+                                collapse(requireActivity(), conversationId)
+                            }
                         }
                     }
                 }
@@ -1651,6 +1659,29 @@ class ConversationFragment() :
         }
         deleteDialog?.show()
     }
+
+    private var permissionAlert: AlertDialog? = null
+    private fun checkFloatingPermission() =
+        requireContext().checkInlinePermissions {
+            if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
+
+            permissionAlert = AlertDialog.Builder(requireContext())
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.web_floating_permission)
+                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${requireContext().packageName}")
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                    dialog.dismiss()
+                }.show()
+        }
 
     private fun generateDeleteDialogLayout(): DialogDeleteBinding {
         return DialogDeleteBinding.inflate(LayoutInflater.from(requireActivity()), null, false)

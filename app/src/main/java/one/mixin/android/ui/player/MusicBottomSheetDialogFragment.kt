@@ -3,13 +3,9 @@ package one.mixin.android.ui.player
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
@@ -30,7 +26,6 @@ import one.mixin.android.databinding.FragmentMusicBottomSheetBinding
 import one.mixin.android.db.MessageDao
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
@@ -187,7 +182,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun dismiss() {
-        if (checkFloatingPermission()) {
+        if ((requireActivity() as MusicActivity).checkFloatingPermission()) {
             dismissAllowingStateLoss()
         }
     }
@@ -199,30 +194,6 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             Timber.e(e)
         }
     }
-
-    private var permissionAlert: AlertDialog? = null
-
-    private fun checkFloatingPermission() =
-        requireContext().checkInlinePermissions {
-            if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
-
-            permissionAlert = AlertDialog.Builder(requireContext())
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${requireContext().packageName}")
-                            )
-                        )
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                    dialog.dismiss()
-                }.show()
-        }
 
     private fun download(mediaItemData: MediaItemData) {
         RxPermissions(requireActivity())

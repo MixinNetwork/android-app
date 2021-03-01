@@ -2,6 +2,8 @@ package one.mixin.android.extension
 
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
@@ -39,6 +41,7 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
@@ -54,6 +57,7 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.receiver.ShareBroadcastReceiver
+import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MediaController
@@ -65,6 +69,7 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import org.jetbrains.anko.configuration
 import org.jetbrains.anko.displayMetrics
+import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.textColorResource
 import timber.log.Timber
 import java.io.File
@@ -802,3 +807,27 @@ fun <T> Context.isServiceRunning(service: Class<T>) =
     (getSystemService(ACTIVITY_SERVICE) as ActivityManager)
         .getRunningServices(Integer.MAX_VALUE)
         .any { it.service.className == service.name }
+
+fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: String) {
+    val pendingIntent = PendingIntent.getActivity(
+        this,
+        0,
+        Intent(this, targetActivity),
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
+    val builder = NotificationCompat.Builder(this, CallActivity.CHANNEL_PIP_PERMISSION)
+        .setSmallIcon(R.drawable.ic_msg_default)
+        .setContentIntent(pendingIntent)
+        .setContentTitle(title)
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setAutoCancel(true)
+    supportsOreo {
+        val channel = NotificationChannel(
+            CallActivity.CHANNEL_PIP_PERMISSION,
+            getString(R.string.other),
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        notificationManager.createNotificationChannel(channel)
+    }
+    notificationManager.notify(CallActivity.ID_PIP_PERMISSION, builder.build())
+}

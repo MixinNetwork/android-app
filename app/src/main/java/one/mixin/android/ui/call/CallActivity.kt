@@ -7,9 +7,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.KeyguardManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -32,7 +29,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -61,8 +57,8 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.supportsOreo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.WebActivity
@@ -80,7 +76,6 @@ import one.mixin.android.webrtc.muteAudio
 import one.mixin.android.webrtc.speakerPhone
 import one.mixin.android.widget.CallButton
 import one.mixin.android.widget.PipCallView
-import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
@@ -336,7 +331,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         if (callState.isNotIdle()) {
             if (!checkPipPermission()) {
                 if (!setClicked) {
-                    showPipPermissionNotification()
+                    showPipPermissionNotification(CallActivity::class.java, getString(R.string.call_pip_permission))
                 }
                 return
             }
@@ -367,30 +362,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         }
-    }
-
-    private fun showPipPermissionNotification() {
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            Intent(this, CallActivity::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val builder = NotificationCompat.Builder(this, CHANNEL_PIP_PERMISSION)
-            .setSmallIcon(R.drawable.ic_msg_default)
-            .setContentIntent(pendingIntent)
-            .setContentTitle(getString(R.string.call_pip_permission))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-        supportsOreo {
-            val channel = NotificationChannel(
-                CHANNEL_PIP_PERMISSION,
-                getString(R.string.other),
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
-        notificationManager.notify(ID_PIP_PERMISSION, builder.build())
     }
 
     private fun hangup() {

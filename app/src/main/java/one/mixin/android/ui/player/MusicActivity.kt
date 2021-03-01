@@ -4,10 +4,15 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.WindowManager
+import androidx.appcompat.app.AlertDialog
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.extension.checkInlinePermissions
+import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
 import timber.log.Timber
@@ -69,7 +74,11 @@ class MusicActivity : BaseActivity() {
 
     override fun finish() {
         if (!serviceStopped) {
-            collapse(this)
+            if (!checkFloatingPermission()) {
+                showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+            } else {
+                collapse(this)
+            }
         }
         super.finish()
     }
@@ -77,4 +86,28 @@ class MusicActivity : BaseActivity() {
     private fun handleIntent() {
         FloatingPlayer.getInstance().hide()
     }
+
+    private var permissionAlert: AlertDialog? = null
+
+    fun checkFloatingPermission() =
+        checkInlinePermissions {
+            if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
+
+            permissionAlert = AlertDialog.Builder(this)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.web_floating_permission)
+                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:$packageName")
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                    dialog.dismiss()
+                }.show()
+        }
 }
