@@ -117,15 +117,16 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     cancel(mediaItem)
                 }
             }
+            titleView.leftIv.setPadding(12.dp)
             titleView.rightIv.setPadding(8.dp)
-            titleView.rightIv.setOnClickListener { dismiss() }
-            titleView.leftIv.setOnClickListener {
+            titleView.leftIv.setOnClickListener { dismiss() }
+            titleView.rightIv.setOnClickListener {
                 alertDialogBuilder()
                     .setMessage(getString(R.string.player_delete_all_desc))
                     .setNegativeButton(R.string.cancel) { dialog, _ ->
                         dialog.dismiss()
                     }
-                    .setPositiveButton(R.string.player_delete_all) { _, _ ->
+                    .setPositiveButton(R.string.player_stop_playing) { _, _ ->
                         (requireActivity() as MusicActivity).serviceStopped = true
                         viewModel.stopMusicService()
                         dismiss()

@@ -933,6 +933,6 @@
     <string name="notification_skip_to_next">下一首</string>
     <string name="notification_play">播放</string>
     <string name="notification_pause">暂停</string>
-    <string name="player_delete_all_desc">确定删除播放列表么？</string>
-    <string name="player_delete_all">删除所有</string>
+    <string name="player_delete_all_desc">确定要停止并关闭播放列表？</string>
+    <string name="player_stop_playing">停止播放</string>
 </resources>

@@ -10,8 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:titleText="@string/player_playlist"
-        app:left_icon="@drawable/ic_player_delete"
-        app:right_icon="@drawable/ic_arrow_down_info" />
+        app:left_icon="@drawable/ic_arrow_down_info"
+        app:right_icon="@drawable/ic_player_stop" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/playlist_rv"
