@@ -41,19 +41,6 @@ fun Bitmap.toPNGBytes(): ByteArray {
     }
 }
 
-fun Bitmap.saveQRCode(ctx: Context, name: String) {
-    try {
-        ByteArrayOutputStream().use { bos ->
-            compress(Bitmap.CompressFormat.PNG, 100, bos)
-            FileOutputStream(ctx.getQRCodePath(name)).use { fos ->
-                fos.write(bos.toByteArray())
-                fos.flush()
-            }
-        }
-    } catch (ignored: Exception) {
-    }
-}
-
 fun Bitmap.saveGroupAvatar(ctx: Context, name: String) {
     try {
         ByteArrayOutputStream().use { bos ->

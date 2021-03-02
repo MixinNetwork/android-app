@@ -329,33 +329,6 @@ fun Context.getImageCachePath(): File {
     return File("$root${File.separator}Images")
 }
 
-fun Context.isQRCodeFileExists(name: String): Boolean {
-    val root = getBestAvailableCacheRoot()
-    val file = File(
-        "$root${File.separator}$name${if (isNightMode()) {
-            "_night"
-        } else {
-            "_light"
-        }}.png"
-    )
-    return file.exists() && file.length() > 0
-}
-
-fun Context.getQRCodePath(name: String): File {
-    val root = getBestAvailableCacheRoot()
-    val file = File(
-        "$root${File.separator}$name${if (isNightMode()) {
-            "_night"
-        } else {
-            "_light"
-        }}.png"
-    )
-    if (!file.exists()) {
-        file.createNewFile()
-    }
-    return file
-}
-
 fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
     val root = getBestAvailableCacheRoot()
     val file = File("$root${File.separator}$name.png")

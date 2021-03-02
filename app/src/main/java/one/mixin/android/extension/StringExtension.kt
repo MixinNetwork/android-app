@@ -6,7 +6,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.text.Editable
 import androidx.core.net.toUri
@@ -16,8 +18,8 @@ import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import com.google.zxing.qrcode.encoder.ByteMatrix
 import com.google.zxing.qrcode.encoder.Encoder
-import com.google.zxing.qrcode.encoder.QRCode
 import okio.Buffer
 import okio.ByteString
 import okio.GzipSink
@@ -26,6 +28,7 @@ import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
+import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -35,95 +38,141 @@ import java.io.Serializable
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.text.DecimalFormat
+import java.util.Arrays
 import java.util.Formatter
+import java.util.HashMap
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import kotlin.collections.set
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
-fun String.generateQRCode(size: Int, isNight: Boolean, padding: Float = 32.dp.toFloat()): Bitmap? {
-    val result: QRCode
-    try {
-        val hints = HashMap<EncodeHintType, Any>()
-        hints[EncodeHintType.CHARACTER_SET] = "utf-8"
-        result = Encoder.encode(this, ErrorCorrectionLevel.H, hints)
-    } catch (iae: IllegalArgumentException) {
-        // Unsupported format
-        return null
+private const val QUIET_ZONE_SIZE = 4
+private val radii = FloatArray(8)
+fun String.generateQRCode(qrSize: Int, padding: Int = 32.dp): Pair<Bitmap, Int> {
+    require(isNotEmpty()) { "Found empty contents" }
+    require(qrSize >= 0) { "Requested dimensions are too small: $qrSize" }
+    var errorCorrectionLevel = ErrorCorrectionLevel.M
+    var quietZone = QUIET_ZONE_SIZE
+    val hints = HashMap<EncodeHintType, String>()
+    if (hints.containsKey(EncodeHintType.ERROR_CORRECTION)) {
+        errorCorrectionLevel = ErrorCorrectionLevel.valueOf(hints[EncodeHintType.ERROR_CORRECTION].toString())
     }
-
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        Color.BLACK
+    if (hints.containsKey(EncodeHintType.MARGIN)) {
+        quietZone = hints[EncodeHintType.MARGIN].toString().toInt()
     }
-    val patternSize = 7
-    val input = result.matrix
+    val code = Encoder.encode(this, errorCorrectionLevel, hints)
+    val input = code.matrix
+    checkNotNull(input)
     val inputWidth = input.width
     val inputHeight = input.height
-    val itemSize = (size - padding * 2) / inputWidth
-    val circleRadius = itemSize / 2
-    if (isNight) {
-        paint.color = Color.WHITE
-        paint.style = Paint.Style.FILL
-        canvas.drawRect(
-            RectF(padding / 2f, padding / 2f, size - padding / 2f, size - padding / 2),
-            paint
-        )
-        paint.color = Color.BLACK
-    }
-    for (y in 0 until inputHeight) {
-        for (x in 0 until inputWidth) {
-            if (input[x, y].toInt() == 1) {
-                if (x in 0..patternSize && (y in 0..patternSize || y in inputHeight - 1 - patternSize until inputHeight)) {
-                    continue
-                } else if (x in inputWidth - 1 - patternSize until inputWidth && y in 0..patternSize) {
-                    continue
-                }
-                canvas.drawCircle(
-                    (circleRadius + itemSize * x) + padding,
-                    (circleRadius + itemSize * y) + padding,
-                    circleRadius,
-                    paint
-                )
-            }
+    var sideQuadSize = 0
+    for (x in 0 until inputWidth) {
+        if (has(input, x, 0, 0, sideQuadSize, 0)) {
+            sideQuadSize++
+        } else {
+            break
         }
     }
-    paint.strokeWidth = itemSize
-    val positionSize = itemSize * (patternSize - 1)
-    drawRoundRect(canvas, padding + itemSize / 2, padding + itemSize / 2, positionSize, paint)
-    drawRoundRect(
-        canvas,
-        size - padding - (itemSize * patternSize - itemSize),
-        padding + itemSize / 2,
-        positionSize,
-        paint
+    val qrWidth = inputWidth + quietZone * 2
+    val qrHeight = inputHeight + quietZone * 2
+    val outputWidth = qrSize.coerceAtLeast(qrWidth)
+    val outputHeight = qrSize.coerceAtLeast(qrHeight)
+    val multiple = (outputWidth / qrWidth).coerceAtMost(outputHeight / qrHeight)
+    val size = multiple * inputWidth + padding * 2
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val blackPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val canvas = Canvas(bitmap)
+
+    blackPaint.color = Color.WHITE
+    blackPaint.style = Paint.Style.FILL
+    canvas.drawRoundRect(
+        RectF(padding / 2f, padding / 2f, size.toFloat() - padding / 2f, size.toFloat() - padding / 2f),
+        padding / 2f,
+        padding / 2f,
+        blackPaint
     )
-    drawRoundRect(
-        canvas,
-        padding + itemSize / 2,
-        size - padding - (itemSize * patternSize - itemSize),
-        positionSize,
-        paint
-    )
-    return bitmap
+    blackPaint.color = Color.BLACK
+    val rect = GradientDrawable()
+    rect.shape = GradientDrawable.RECTANGLE
+    rect.cornerRadii = radii
+    var imageIgnore = ((size - padding * 2) / 4.65f / multiple).roundToInt()
+    if (imageIgnore % 2 != inputWidth % 2) {
+        imageIgnore++
+    }
+    val imageBlockX = (inputWidth - imageIgnore) / 2
+    for (a in 0..2) {
+        var x: Int
+        var y: Int
+        when (a) {
+            0 -> {
+                x = padding
+                y = padding
+            }
+            1 -> {
+                x = size - sideQuadSize * multiple - padding
+                y = padding
+            }
+            else -> {
+                x = padding
+                y = size - sideQuadSize * multiple - padding
+            }
+        }
+        var r = sideQuadSize * multiple / 3.0f
+        Arrays.fill(radii, r)
+        rect.setColor(-0x1000000)
+        rect.setBounds(x, y, x + sideQuadSize * multiple, y + sideQuadSize * multiple)
+        rect.draw(canvas)
+        canvas.drawRect(
+            (x + multiple).toFloat(),
+            (y + multiple).toFloat(),
+            (x + (sideQuadSize - 1) * multiple).toFloat(),
+            (y + (sideQuadSize - 1) * multiple).toFloat(),
+            blackPaint
+        )
+        r = sideQuadSize * multiple / 4.0f
+        Arrays.fill(radii, r)
+        rect.setColor(-0x1)
+        rect.setBounds(x + multiple, y + multiple, x + (sideQuadSize - 1) * multiple, y + (sideQuadSize - 1) * multiple)
+        rect.draw(canvas)
+        r = (sideQuadSize - 2) * multiple / 4.0f
+        Arrays.fill(radii, r)
+        rect.setColor(-0x1000000)
+        rect.setBounds(x + multiple * 2, y + multiple * 2, x + (sideQuadSize - 2) * multiple, y + (sideQuadSize - 2) * multiple)
+        rect.draw(canvas)
+    }
+    var y = 0
+    var outputY = padding
+    while (y < inputHeight) {
+        var x = 0
+        var outputX = padding
+        while (x < inputWidth) {
+            if (has(input, imageBlockX, imageIgnore, sideQuadSize, x, y)) {
+                canvas.drawCircle(outputX + multiple / 2f, outputY + multiple / 2f, multiple / 2f, blackPaint)
+            }
+            x++
+            outputX += multiple
+        }
+        y++
+        outputY += multiple
+    }
+    canvas.setBitmap(null)
+    return Pair(bitmap, imageIgnore * multiple - 2.dp)
 }
 
-private fun drawRoundRect(canvas: Canvas, left: Float, top: Float, size: Float, paint: Paint) {
-    paint.style = Paint.Style.STROKE
-    canvas.drawRoundRect(RectF(left, top, left + size, top + size), size / 4, size / 4, paint)
-    paint.style = Paint.Style.FILL
-    canvas.drawRoundRect(
-        RectF(
-            left + size * 2 / 7,
-            top + size * 2 / 7,
-            left + size * 5 / 7,
-            top + size * 5 / 7
-        ),
-        2.dp.toFloat(), 2.dp.toFloat(), paint
-    )
+private fun has(input: ByteMatrix, imageBlockX: Int, imageBloks: Int, sideQuadSize: Int, x: Int, y: Int): Boolean {
+    if (x >= imageBlockX && x < imageBlockX + imageBloks && y >= imageBlockX && y < imageBlockX + imageBloks) {
+        return false
+    }
+    if ((x < sideQuadSize || x >= input.width - sideQuadSize) && y < sideQuadSize) {
+        return false
+    }
+    return if (x < sideQuadSize && y >= input.height - sideQuadSize) {
+        false
+    } else x >= 0 && y >= 0 && x < input.width && y < input.height && input[x, y].toInt() == 1
 }
 
 fun String.getEpochNano(): Long {

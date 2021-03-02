@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -21,12 +22,9 @@ import one.mixin.android.databinding.FragmentDepositQrBottomBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -34,6 +32,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
+import kotlin.math.ceil
 
 @AndroidEntryPoint
 class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
@@ -52,7 +51,6 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             )
         }
 
-        fun getSize(context: Context) = context.screenWidth() - context.dpToPx(64f)
     }
 
     private val binding by viewBinding(FragmentDepositQrBottomBinding::inflate)
@@ -82,6 +80,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
+
             saveIv.setOnClickListener {
                 RxPermissions(requireActivity())
                     .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -104,35 +103,29 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                     )
             }
 
-            val name = when (type) {
-                TYPE_TAG -> "${BuildConfig.VERSION_CODE}-${asset.tag}"
-                else -> "${BuildConfig.VERSION_CODE}-${asset.destination}"
-            }
-            if (requireContext().isQRCodeFileExists(name)) {
-                qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
-            } else {
-                qr.post {
-                    Observable.create<Bitmap> { e ->
-                        val code = when (type) {
-                            TYPE_TAG -> asset.tag
-                            else -> asset.destination
-                        }
-                        val b = code!!.generateQRCode(getSize(requireContext()), requireContext().isNightMode())
-                        if (b != null) {
-                            b.saveQRCode(requireContext(), name)
-                            e.onNext(b)
-                        }
-                    }.subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { r ->
-                                qr.setImageBitmap(r)
-                            },
-                            {
+
+            qr.post {
+                Observable.create<Pair<Bitmap, Int>?> { e ->
+                    val code = when (type) {
+                        TYPE_TAG -> asset.tag
+                        else -> asset.destination
+                    }
+                    val r = code?.generateQRCode(qr.width)
+                    r?.let { e.onNext(it) }
+                }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { r ->
+                            badgeView.layoutParams = badgeView.layoutParams.apply {
+                                width = r.second
+                                height = r.second
                             }
-                        )
-                }
+                            qr.setImageBitmap(r.first)
+                        },
+                        {
+                        }
+                    )
             }
         }
     }
