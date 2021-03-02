@@ -2,6 +2,8 @@ package one.mixin.android.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -88,7 +90,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
 
     init {
         playView.setOnClickListener(componentListener)
-        playView.setColor(context.colorFromAttribute(R.attr.icon_default), context.colorFromAttribute(R.attr.icon_white))
+        playView.playPauseDrawable.colorFilter = PorterDuffColorFilter(context.colorFromAttribute(R.attr.icon_white), PorterDuff.Mode.MULTIPLY)
         modeView.setOnClickListener(componentListener)
         previousView.setOnClickListener(componentListener)
         nextView.setOnClickListener(componentListener)

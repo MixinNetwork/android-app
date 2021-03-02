@@ -9,6 +9,8 @@ import android.graphics.CornerPathEffect
 import android.graphics.Paint
 import android.graphics.Paint.Cap
 import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
@@ -72,7 +74,7 @@ class CircleProgress @JvmOverloads constructor(
 
     private val drawable: PlayPauseDrawable = PlayPauseDrawable().apply {
         callback = this@CircleProgress
-        firstTimeNotAnimated = true
+        setFirstTimeNotAnimated(true)
     }
 
     init {
@@ -104,7 +106,7 @@ class CircleProgress @JvmOverloads constructor(
         mBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         mBackgroundPaint.color = mShadowColor
 
-        drawable.color = mPlayColor
+        drawable.colorFilter = PorterDuffColorFilter(mPlayColor, PorterDuff.Mode.MULTIPLY)
 
         mForkPath = Path()
         mArrowPath = Path()
@@ -219,6 +221,7 @@ class CircleProgress @JvmOverloads constructor(
         fBounds.top = bounds.top + mBorderWidth
         fBounds.bottom = bounds.bottom - mBorderWidth
         drawable.setBounds(0, 0, w, h)
+        drawable.setSize(w)
     }
 
     override fun draw(canvas: Canvas) {
@@ -243,11 +246,11 @@ class CircleProgress @JvmOverloads constructor(
                 drawDone(canvas)
             }
             STATUS_PLAY -> {
-                drawable.isPlay = true
+                drawable.setPause(false)
                 drawable.draw(canvas)
             }
             STATUS_PAUSE -> {
-                drawable.isPlay = false
+                drawable.setPause(true)
                 drawable.draw(canvas)
             }
             else -> {

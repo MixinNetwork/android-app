@@ -297,6 +297,7 @@ class PipVideoView {
 
         val dp42 = appContext.dpToPx(42f)
         playView = PlayView(activity).apply {
+            setBackgroundResource(R.drawable.bg_play_control)
             windowView.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
             val playbackState = VideoPlayer.player().player.playbackState
             status = when (playbackState) {

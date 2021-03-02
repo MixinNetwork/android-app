@@ -88,6 +88,7 @@
                 android:id="@+id/play_view"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:background="@drawable/bg_music_play_pause"
                 android:layout_gravity="center" />
         </FrameLayout>
 
