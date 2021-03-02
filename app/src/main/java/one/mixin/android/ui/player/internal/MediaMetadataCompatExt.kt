@@ -1,29 +1,14 @@
-/*
- * Copyright 2017 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package one.mixin.android.ui.player.internal
 
 import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat.MediaItem
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
+import one.mixin.android.extension.isLocalScheme
 import one.mixin.android.extension.toUri
 
 /**
@@ -272,30 +257,28 @@ fun MediaMetadataCompat.Builder.copy(media: MediaMetadataCompat, status: Long): 
     return this
 }
 
-/**
- * Extension method for building an [ExtractorMediaSource] from a [MediaMetadataCompat] object.
- *
- * For convenience, place the [MediaDescriptionCompat] into the tag so it can be retrieved later.
- */
-fun MediaMetadataCompat.toMediaSource(dataSourceFactory: DataSource.Factory) =
-    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(
+fun MediaMetadataCompat.toMediaSource(
+    dataSourceFactory: DataSource.Factory,
+    cacheDataSourceFactory: DataSource.Factory,
+): MediaSource {
+    val targetDataSourceFactory = if (mediaUri.scheme?.isLocalScheme() == false) {
+        cacheDataSourceFactory
+    } else dataSourceFactory
+    return ProgressiveMediaSource.Factory(targetDataSourceFactory).createMediaSource(
         com.google.android.exoplayer2.MediaItem.Builder()
             .setMediaId(id)
             .setUri(mediaUri)
             .build()
     )
+}
 
-/**
- * Extension method for building a [ConcatenatingMediaSource] given a [List]
- * of [MediaMetadataCompat] objects.
- */
 fun List<MediaMetadataCompat>.toMediaSource(
-    dataSourceFactory: DataSource.Factory
+    dataSourceFactory: DataSource.Factory,
+    cacheDataSourceFactory: DataSource.Factory,
 ): ConcatenatingMediaSource {
-
     val concatenatingMediaSource = ConcatenatingMediaSource()
     forEach {
-        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory))
+        concatenatingMediaSource.addMediaSource(it.toMediaSource(dataSourceFactory, cacheDataSourceFactory))
     }
     return concatenatingMediaSource
 }

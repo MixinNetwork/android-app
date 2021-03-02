@@ -38,6 +38,7 @@ import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.player.FloatingPlayer
+import one.mixin.android.ui.player.internal.CacheDataSourceFactory
 import one.mixin.android.ui.player.internal.album
 import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.flag
@@ -260,6 +261,8 @@ class AudioPlayer private constructor() {
         )
     }
 
+    private val cacheDataSourceFactory = CacheDataSourceFactory(MixinApplication.appContext)
+
     private var id: String? = null
     private var messageItem: MessageItem? = null
     private var status = STATUS_PAUSE
@@ -318,7 +321,7 @@ class AudioPlayer private constructor() {
         exoPlayer.apply {
             val itemToPlay = currentMediaItem?.mediaId
             val initialWindowIndex = if (itemToPlay == null) 0 else downloadedList.indexOfFirst { it.description.mediaId == itemToPlay }
-            val mediaSource = downloadedList.toMediaSource(dataSourceFactory)
+            val mediaSource = downloadedList.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
             val pos = getCurrentPos()
             setMediaSource(mediaSource)
             prepare()
@@ -430,7 +433,7 @@ class AudioPlayer private constructor() {
             this.playWhenReady = playWhenReady
             val index = metadataList.indexOfFirst { it.description.mediaId == currentPlayId }
             if (changed || index == -1 || metadataList.size == 1) {
-                val mediaSource = metadataList.toMediaSource(dataSourceFactory)
+                val mediaSource = metadataList.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
                 setMediaSource(mediaSource)
                 prepare()
                 if (initialWindowIndex != -1) {
@@ -439,10 +442,10 @@ class AudioPlayer private constructor() {
             } else {
                 if (mediaItemCount == 1 && metadataList.size > 1) {
                     val pre = metadataList.subList(0, index).map {
-                        it.toMediaSource(dataSourceFactory)
+                        it.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
                     }
                     val post = metadataList.subList(index + 1, metadataList.size).map {
-                        it.toMediaSource(dataSourceFactory)
+                        it.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
                     }
 
                     addMediaSources(0, pre)
