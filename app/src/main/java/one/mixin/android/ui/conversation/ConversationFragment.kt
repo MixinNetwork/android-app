@@ -165,6 +165,7 @@ import one.mixin.android.ui.player.MediaItemData
 import one.mixin.android.ui.player.MusicViewModel
 import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.player.internal.MusicServiceConnection
+import one.mixin.android.ui.player.isMusicServiceRunning
 import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
@@ -543,11 +544,11 @@ class ConversationFragment() :
             override fun onAudioClick(messageItem: MessageItem) {
                 when {
                     binding.chatControl.isRecording -> showRecordingAlert()
-                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
+                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause(false)
                     else -> {
-                        // if (isMusicServiceRunning(MixinApplication.appContext)) {
-                        //     musicViewModel.stopMusicService()
-                        // }
+                        if (isMusicServiceRunning(MixinApplication.appContext)) {
+                            musicViewModel.stopMusicService()
+                        }
                         AudioPlayer.play(messageItem) {
                             chatViewModel.downloadAttachment(it)
                         }

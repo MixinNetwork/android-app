@@ -20,6 +20,7 @@ import one.mixin.android.ui.player.internal.id
 import one.mixin.android.ui.player.internal.isPlayEnabled
 import one.mixin.android.ui.player.internal.isPlaying
 import one.mixin.android.ui.player.internal.isPrepared
+import one.mixin.android.util.AudioPlayer
 import timber.log.Timber
 
 class MusicViewModel
@@ -30,11 +31,6 @@ internal constructor(
 
     private val _mediaItems = MutableLiveData<List<MediaItemData>>()
     val mediaItems: LiveData<List<MediaItemData>> = _mediaItems
-
-    /**
-     * Pass the status of the [MusicServiceConnection.networkFailure] through.
-     */
-    val networkError = Transformations.map(musicServiceConnection.networkFailure) { it }
 
     fun playMedia(mediaItem: MediaItemData, pauseAllowed: Boolean = true, onChildrenLoaded: () -> Unit) {
         checkConnected {
@@ -85,10 +81,6 @@ internal constructor(
                     putStringArray(MUSIC_EXTRA_PLAYLIST, playlist)
                 }
             )
-            // val bundle = Bundle().apply {
-            //     putStringArray(MUSIC_EXTRA_PLAYLIST, playlist)
-            // }
-            // musicServiceConnection.sendCommand(MUSIC_CMD_PLAYLIST, bundle)
 
             musicServiceConnection.subscribe(
                 mediaId,
@@ -110,6 +102,7 @@ internal constructor(
     }
 
     fun stopMusicService() {
+        AudioPlayer.release(false)
         musicServiceConnection.sendCommand(MUSIC_CMD_STOP, null)
         musicServiceConnection.disconnect()
     }
@@ -198,12 +191,8 @@ internal constructor(
      */
     override fun onCleared() {
         super.onCleared()
-
-        // Remove the permanent observers from the MusicServiceConnection.
         musicServiceConnection.playbackState.removeObserver(playbackStateObserver)
         musicServiceConnection.nowPlaying.removeObserver(mediaMetadataObserver)
-
-        // And then, finally, unsubscribe the media ID that was being watched.
         musicServiceConnection.unsubscribe(mediaId, subscriptionCallback)
     }
 

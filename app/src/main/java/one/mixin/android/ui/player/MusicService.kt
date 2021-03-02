@@ -126,7 +126,7 @@ class MusicService : MediaBrowserServiceCompat() {
         if (::conversationMusicObserver.isInitialized) {
             musicLiveData?.removeObserver(conversationMusicObserver)
         }
-        AudioPlayer.release(false)
+
         FloatingPlayer.getInstance().hide()
     }
 
@@ -412,9 +412,6 @@ class MusicService : MediaBrowserServiceCompat() {
                 }
                 MUSIC_CMD_STOP -> {
                     notificationManager.hideNotification()
-                    stopForeground(true)
-                    isForegroundService = false
-                    stopSelf()
                 }
                 MUSIC_CMD_UPDATE_ITEMS -> {
                     val items = extras?.getStringArray(MUSIC_EXTRA_ITEMS) ?: return false

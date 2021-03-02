@@ -124,7 +124,6 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     }
 
     fun reload() {
-
         animateToBoundsMaybe()
     }
 
