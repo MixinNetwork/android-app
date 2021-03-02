@@ -133,6 +133,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 MediaStatus.EXPIRED.name -> {
                     binding.fileExpired.visibility = View.VISIBLE
                     binding.fileProgress.visibility = View.INVISIBLE
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.chatLayout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
@@ -142,6 +144,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.visibility = View.VISIBLE
                     binding.fileProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
                     binding.fileProgress.setBindOnly(messageItem.messageId)
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.messageId)
                     }
@@ -154,7 +158,6 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                         binding.fileProgress.setBindOnly(messageItem.messageId)
-
                         binding.bottomLayout.bindId = messageItem.messageId
                         if (AudioPlayer.isPlay(messageItem.messageId)) {
                             binding.fileProgress.setPause()
@@ -192,6 +195,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     }
                     binding.fileProgress.setBindId(messageItem.messageId)
                     binding.fileProgress.setProgress(-1)
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.fileProgress.setOnClickListener {
                         if (isMe && messageItem.mediaUrl != null) {
                             onItemListener.onRetryUpload(messageItem.messageId)
