@@ -38,6 +38,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.player.internal.ConversationLoader
 import one.mixin.android.ui.player.internal.MUSIC_BROWSABLE_ROOT
 import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
+import one.mixin.android.ui.player.internal.MUSIC_UNKNOWN_ROOT
 import one.mixin.android.ui.player.internal.MusicTree
 import one.mixin.android.ui.player.internal.PlaylistLoader
 import one.mixin.android.ui.player.internal.album
@@ -76,7 +77,6 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onCreate() {
         super.onCreate()
-
         val sessionActivityPendingIntent = Intent(this, MusicActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }.let { sessionIntent ->
@@ -126,7 +126,9 @@ class MusicService : MediaBrowserServiceCompat() {
         if (::conversationMusicObserver.isInitialized) {
             musicLiveData?.removeObserver(conversationMusicObserver)
         }
-
+        AudioPlayer.get().exoPlayer.removeListener(playerListener)
+        notificationManager.hideNotification()
+        mediaSessionConnector.setQueueNavigator(null)
         FloatingPlayer.getInstance().hide()
     }
 
@@ -306,8 +308,14 @@ class MusicService : MediaBrowserServiceCompat() {
     private inner class MusicQueueNavigator(
         mediaSession: MediaSessionCompat
     ) : TimelineQueueNavigator(mediaSession) {
-        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
-            AudioPlayer.get().currentPlaylistItems[windowIndex].description
+        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
+            return try {
+                AudioPlayer.get().currentPlaylistItems[windowIndex].description
+            } catch (e: IndexOutOfBoundsException) {
+                Timber.w(e)
+                MediaDescriptionCompat.Builder().setMediaId(MUSIC_UNKNOWN_ROOT).build()
+            }
+        }
     }
 
     private inner class MusicPlaybackPreparer : MediaSessionConnector.PlaybackPreparer {
