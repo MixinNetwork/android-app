@@ -126,8 +126,6 @@ class MusicService : MediaBrowserServiceCompat() {
         if (::conversationMusicObserver.isInitialized) {
             musicLiveData?.removeObserver(conversationMusicObserver)
         }
-        AudioPlayer.get().exoPlayer.removeListener(playerListener)
-        notificationManager.hideNotification()
         mediaSessionConnector.setQueueNavigator(null)
         FloatingPlayer.getInstance().hide()
     }
@@ -239,6 +237,7 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     private var parentId: String = MUSIC_BROWSABLE_ROOT
+    private var lastMediaId: String? = null
     private var musicLoader: ConversationLoader? = null
     private var loadJob: Job? = null
 
@@ -248,12 +247,15 @@ class MusicService : MediaBrowserServiceCompat() {
         onLoaded: ((MediaMetadataCompat) -> Unit)? = null,
     ) {
         Timber.d("@@@ loadConversationMusic parentId: $parentId, mediaId: $mediaId, musicLoader-cid: ${musicLoader?.conversationId}")
-        if (musicLoader != null && musicLoader?.conversationId == parentId && mediaId == null) {
+        if ((lastMediaId != null && mediaId == null) ||
+            (musicLoader != null && musicLoader?.conversationId == parentId && mediaId == null)
+        ) {
             return
         }
 
         Timber.d("@@@ load conversation music")
         loadJob?.cancel()
+        lastMediaId = mediaId
         musicLoader = ConversationLoader(database, parentId)
         loadJob = serviceScope.launch(Dispatchers.IO) {
             musicLoader?.load()?.let { list ->
@@ -264,6 +266,7 @@ class MusicService : MediaBrowserServiceCompat() {
                     list.find { it.description.mediaId == mediaId }?.let {
                         withContext(Dispatchers.Main) {
                             onLoaded.invoke(it)
+                            lastMediaId = null
                         }
                     }
                 }

@@ -32,7 +32,30 @@ internal constructor(
     private val _mediaItems = MutableLiveData<List<MediaItemData>>()
     val mediaItems: LiveData<List<MediaItemData>> = _mediaItems
 
-    fun playMedia(mediaItem: MediaItemData, pauseAllowed: Boolean = true, onChildrenLoaded: () -> Unit) {
+    fun playMedia(mediaItem: MediaItemData, onChildrenLoaded: () -> Unit) {
+        checkConnected {
+            val transportControls = musicServiceConnection.transportControls
+            transportControls.playFromMediaId(
+                mediaItem.mediaId,
+                Bundle().apply {
+                    putString(MUSIC_EXTRA_PARENT_ID, mediaId)
+                }
+            )
+
+            musicServiceConnection.subscribe(
+                mediaId,
+                object : MediaBrowserCompat.SubscriptionCallback() {
+                    override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
+                        Timber.d("@@@ onChildrenLoaded")
+                        onChildrenLoaded.invoke()
+                        musicServiceConnection.unsubscribe(mediaId, this)
+                    }
+                }
+            )
+        }
+    }
+
+    fun playOrPauseMedia(mediaItem: MediaItemData, pauseAllowed: Boolean = true, onChildrenLoaded: () -> Unit) {
         checkConnected {
             val nowPlaying = musicServiceConnection.nowPlaying.value
             val transportControls = musicServiceConnection.transportControls

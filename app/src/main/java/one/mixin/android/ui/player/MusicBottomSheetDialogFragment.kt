@@ -106,7 +106,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.apply {
             listAdapter.listener = object : MediaItemListener {
                 override fun onItemClick(mediaItem: MediaItemData) {
-                    viewModel.playMedia(mediaItem) {}
+                    viewModel.playOrPauseMedia(mediaItem) {}
                 }
 
                 override fun onDownload(mediaItem: MediaItemData) {

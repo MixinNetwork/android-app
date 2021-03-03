@@ -4,6 +4,8 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 
 class MusicTree {
+    private val lock = Any()
+
     private val mediaIdToChildren = mutableMapOf<String, MutableList<MediaMetadataCompat>>()
 
     init {
@@ -18,13 +20,15 @@ class MusicTree {
     }
 
     fun setItem(mediaItem: MediaMetadataCompat) {
-        val albumMediaId = mediaItem.album ?: MUSIC_UNKNOWN_ROOT
-        val albumChildren = mediaIdToChildren[albumMediaId] ?: buildAlbumRoot(mediaItem)
-        val index = albumChildren.indexOfFirst { it.description.mediaId == mediaItem.id }
-        if (index == -1) {
-            albumChildren += mediaItem
-        } else {
-            albumChildren[index] = mediaItem
+        synchronized(lock) {
+            val albumMediaId = mediaItem.album ?: MUSIC_UNKNOWN_ROOT
+            val albumChildren = mediaIdToChildren[albumMediaId] ?: buildAlbumRoot(mediaItem)
+            val index = albumChildren.indexOfFirst { it.description.mediaId == mediaItem.id }
+            if (index == -1) {
+                albumChildren += mediaItem
+            } else {
+                albumChildren[index] = mediaItem
+            }
         }
     }
 
