@@ -12,10 +12,12 @@ import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
 import one.mixin.android.R
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
+import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
 import one.mixin.android.extension.selectEarpiece
 import one.mixin.android.extension.selectSpeakerphone
+import one.mixin.android.util.AudioPlayer
 import timber.log.Timber
 
 class CallAudioManager(
@@ -69,6 +71,10 @@ class CallAudioManager(
     }
 
     fun start(isInitiator: Boolean, playRingtone: Boolean = true) {
+        context.mainThread {
+            AudioPlayer.pause(false)
+        }
+
         hasStarted = true
         this.playRingtone = playRingtone
         this.isInitiator = isInitiator

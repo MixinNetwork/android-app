@@ -111,11 +111,6 @@ class MusicService : MediaBrowserServiceCompat() {
         notificationManager.showNotificationForPlayer(AudioPlayer.get().exoPlayer)
     }
 
-    override fun onTaskRemoved(rootIntent: Intent) {
-        super.onTaskRemoved(rootIntent)
-        AudioPlayer.get().exoPlayer.stop(true)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         mediaSession.run {

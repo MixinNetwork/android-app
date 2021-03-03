@@ -382,7 +382,6 @@ class ConversationFragment() :
         }
 
     private fun voiceCall() {
-        AudioPlayer.pause(false)
         if (LinkState.isOnline(linkState.state)) {
             if (isGroup) {
                 if (callState.getGroupCallStateOrNull(conversationId) != null) {
