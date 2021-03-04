@@ -630,6 +630,7 @@
     <string name="invite_forward">转发给好友</string>
     <string name="invite_title">群邀请链接</string>
     <string name="invite_invalid">邀请链接</string>
+    <string name="invite_qr_code">二维码</string>
     <string name="conversation_pin">置顶</string>
     <string name="conversation_pin_clear">取消置顶</string>
     <string name="group_role">你现在成为管理员</string>

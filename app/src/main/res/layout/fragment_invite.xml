@@ -103,6 +103,31 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/invite_qr"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/invite_forward">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_qr_code"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/invite_qr_code" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/invite_share"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
