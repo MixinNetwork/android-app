@@ -8,7 +8,6 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -33,8 +32,10 @@ import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
@@ -451,15 +452,15 @@ fun buildBottomSheetView(
         if (index == 0) {
             textView.setBackgroundResource(R.drawable.bg_upper_round)
         } else {
-            textView.setBackgroundResource(R.color.white)
+            textView.setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
         }
-        textView.foreground = context.getDrawable(outValue.resourceId)
+        textView.foreground = ContextCompat.getDrawable(context, outValue.resourceId)
         bottomSheetItem.icon?.let {
             textView.setCompoundDrawables(it, null, null, null)
             textView.compoundDrawablePadding = padding
         }
         textView.text = bottomSheetItem.text
-        textView.setTextColor(Color.BLACK)
+        textView.setTextColor(context.colorFromAttribute(R.attr.text_default))
         textView.setPadding(padding, 0, padding, 0)
         textView.gravity = Gravity.CENTER_VERTICAL
         textView.setOnClickListener {
