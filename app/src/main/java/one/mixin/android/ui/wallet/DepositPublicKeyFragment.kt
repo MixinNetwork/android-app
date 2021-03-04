@@ -2,8 +2,10 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.content.ClipData
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,13 +21,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositKeyBinding
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.getTipsByAsset
-import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_ADDRESS
 import one.mixin.android.vo.needShowReserve
@@ -74,27 +72,24 @@ class DepositPublicKeyFragment : DepositFragment() {
             qrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
-            if (requireContext().isQRCodeFileExists(asset.destination)) {
-                qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(asset.destination).absolutePath))
-            } else {
-                qr.post {
-                    Observable.create<Bitmap> { e ->
-                        val b = asset.destination.generateQRCode(qr.width, requireContext().isNightMode())
-                        if (b != null) {
-                            b.saveQRCode(requireContext(), asset.destination)
-                            e.onNext(b)
-                        }
-                    }.subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDispose(scopeProvider)
-                        .subscribe(
-                            { r ->
-                                qr.setImageBitmap(r)
-                            },
-                            {
+            qr.post {
+                Observable.create<Pair<Bitmap, Int>> { e ->
+                    val r = asset.destination.generateQRCode(qr.width)
+                    e.onNext(r)
+                }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(scopeProvider)
+                    .subscribe(
+                        { r ->
+                            qrAvatar.layoutParams = qrAvatar.layoutParams.apply {
+                                width = r.second
+                                height = r.second
                             }
-                        )
-                }
+                            qr.setImageBitmap(r.first)
+                        },
+                        {
+                        }
+                    )
             }
         }
         showTip()

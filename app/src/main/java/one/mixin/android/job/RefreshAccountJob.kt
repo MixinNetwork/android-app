@@ -8,7 +8,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.saveQRCode
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.vo.MessageSource
@@ -29,14 +28,6 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
             val u = account!!.toUser()
             userRepo.upsert(u)
             Session.storeAccount(account)
-            if (account.codeId.isNotEmpty()) {
-                val p = Point()
-                MixinApplication.appContext.windowManager.defaultDisplay?.getSize(p)
-                val size = minOf(p.x, p.y)
-                val b = account.codeUrl.generateQRCode(size, MixinApplication.get().isNightMode())
-                b?.saveQRCode(MixinApplication.appContext, account.userId)
-            }
-
             val receive = MixinApplication.appContext.defaultSharedPreferences
                 .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
             if (response.data!!.receiveMessageSource == MessageSource.EVERYBODY.name &&

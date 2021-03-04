@@ -15,7 +15,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.*
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.saveQRCode
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
@@ -68,15 +67,6 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
     }
 
-    private suspend fun saveQrCode(account: Account) = withContext(Dispatchers.IO) {
-        val p = Point()
-        val ctx = MixinApplication.appContext
-        ctx.windowManager.defaultDisplay?.getSize(p)
-        val size = minOf(p.x, p.y)
-        val b = account.codeUrl.generateQRCode(size, requireContext().isNightMode())
-        b?.saveQRCode(ctx, account.userId)
-    }
-
     protected suspend fun handleAccount(
         response: MixinResponse<Account>,
         sessionKey: KeyPair,
@@ -89,9 +79,6 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         }
 
         val account = response.data as Account
-        if (account.codeId.isNotEmpty()) {
-            saveQrCode(account)
-        }
 
         val lastUserId = getLastUserId(requireContext())
         val sameUser = lastUserId != null && lastUserId == account.userId

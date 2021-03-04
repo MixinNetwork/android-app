@@ -3,7 +3,6 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.os.bundleOf
@@ -26,11 +25,7 @@ import one.mixin.android.databinding.FragmentQrBottomSheetBinding
 import one.mixin.android.databinding.ViewQrBottomBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getQRCodePath
-import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.util.viewBinding
@@ -86,34 +81,31 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         binding.badgeView.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
                         binding.badgeView.pos = END_BOTTOM
                     }
-                    val name = getName(user)
-                    if (requireContext().isQRCodeFileExists(name)) {
-                        binding.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
-                    } else {
-                        binding.qr.post {
-                            Observable.create<Bitmap> { e ->
-                                val account = Session.getAccount() ?: return@create
-                                val code = when (type) {
-                                    TYPE_MY_QR -> account.codeUrl
-                                    TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
-                                    else -> ""
-                                }
-                                val b = code.generateQRCode(binding.qr.width, requireContext().isNightMode())
-                                if (b != null) {
-                                    b.saveQRCode(requireContext(), name)
-                                    e.onNext(b)
-                                }
-                            }.subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .autoDispose(stopScope)
-                                .subscribe(
-                                    { r ->
-                                        binding.qr.setImageBitmap(r)
-                                    },
-                                    {
+                    binding.qr.post {
+                        Observable.create<Pair<Bitmap, Int>> { e ->
+                            val account = Session.getAccount() ?: return@create
+                            val code = when (type) {
+                                TYPE_MY_QR -> account.codeUrl
+                                TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
+                                else -> ""
+                            }
+
+                            val r = code.generateQRCode(binding.qr.width)
+                            e.onNext(r)
+                        }.subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDispose(stopScope)
+                            .subscribe(
+                                { r ->
+                                    binding.badgeView.layoutParams = binding.badgeView.layoutParams.apply {
+                                        width = r.second
+                                        height = r.second
                                     }
-                                )
-                        }
+                                    binding.qr.setImageBitmap(r.first)
+                                },
+                                {
+                                }
+                            )
                     }
                 }
             }
