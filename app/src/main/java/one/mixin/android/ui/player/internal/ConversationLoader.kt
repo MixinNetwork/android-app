@@ -4,6 +4,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.fileSize
 import one.mixin.android.ui.player.internal.AlbumArtCache.DEFAULT_ALBUM_ART
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
@@ -57,7 +58,7 @@ class ConversationLoader(
     fun MediaMetadataCompat.Builder.from(messageItem: MessageItem): MediaMetadataCompat.Builder {
         id = messageItem.messageId
         title = messageItem.mediaName
-        val subtitle = messageItem.mediaSize?.toString()
+        val subtitle = messageItem.mediaSize?.fileSize()
         artist = subtitle
         album = conversationId
         flag = MediaBrowserCompat.MediaItem.FLAG_PLAYABLE

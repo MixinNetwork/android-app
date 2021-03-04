@@ -74,7 +74,56 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     var messageId: String? = null
 
     private var playMode: PlayMode = PlayMode.RepeatAll
+        set(value) {
+            field = value
+            when (value) {
+                PlayMode.RepeatAll -> {
+                    player?.let {
+                        controlDispatcher.dispatchSetShuffleModeEnabled(it, false)
+                        controlDispatcher.dispatchSetRepeatMode(it, Player.REPEAT_MODE_ALL)
+                    }
+                    modeView.setImageResource(R.drawable.ic_player_repeat_all)
+                }
+                PlayMode.RepeatOne -> {
+                    player?.let {
+                        controlDispatcher.dispatchSetShuffleModeEnabled(it, false)
+                        controlDispatcher.dispatchSetRepeatMode(it, Player.REPEAT_MODE_ONE)
+                    }
+                    modeView.setImageResource(R.drawable.ic_player_repeat_one)
+                }
+                PlayMode.Shuffle -> {
+                    player?.let {
+                        controlDispatcher.dispatchSetShuffleModeEnabled(it, true)
+                    }
+                    modeView.setImageResource(R.drawable.ic_player_shuffle)
+                }
+            }
+        }
+
     private var playSpeed: PlaySpeed = PlaySpeed.Speed1
+        @SuppressLint("SetTextI18n")
+        set(value) {
+            if (value == field) return
+
+            field = value
+            when (value) {
+                PlaySpeed.Speed1 -> {
+                    player?.setPlaybackParameters(PlaybackParameters(1f))
+                    speedView.text = "1X"
+                    speedView.setTextColor(R.attr.icon_default)
+                }
+                PlaySpeed.Speed15 -> {
+                    player?.setPlaybackParameters(PlaybackParameters(1.5f))
+                    speedView.text = "1.5X"
+                    speedView.textColorResource = R.color.colorAccent
+                }
+                PlaySpeed.Speed20 -> {
+                    player?.setPlaybackParameters(PlaybackParameters(2.0f))
+                    speedView.text = "2.0X"
+                    speedView.textColorResource = R.color.colorAccentNight
+                }
+            }
+        }
 
     var progressUpdateListener: ProgressUpdateListener? = null
 
@@ -136,6 +185,26 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         updatePlayView()
         updateNavigation()
         updateTimeline()
+
+        player?.let {
+            playMode = when (it.repeatMode) {
+                Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> {
+                    PlayMode.RepeatAll
+                }
+                Player.REPEAT_MODE_ONE -> {
+                    PlayMode.RepeatOne
+                }
+                else -> {
+                    PlayMode.Shuffle
+                }
+            }
+
+            playSpeed = when (it.playbackParameters.speed) {
+                1.5f -> PlaySpeed.Speed15
+                2f -> PlaySpeed.Speed20
+                else -> PlaySpeed.Speed1
+            }
+        }
     }
 
     private fun updatePlayView() {
@@ -355,23 +424,15 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                     }
                 }
                 modeView -> {
-                    when (playMode) {
+                    playMode = when (playMode) {
                         PlayMode.RepeatAll -> {
-                            controlDispatcher.dispatchSetShuffleModeEnabled(player, false)
-                            controlDispatcher.dispatchSetRepeatMode(player, Player.REPEAT_MODE_ONE)
-                            modeView.setImageResource(R.drawable.ic_player_repeat_one)
-                            playMode = PlayMode.RepeatOne
+                            PlayMode.RepeatOne
                         }
                         PlayMode.RepeatOne -> {
-                            controlDispatcher.dispatchSetShuffleModeEnabled(player, true)
-                            modeView.setImageResource(R.drawable.ic_player_shuffle)
-                            playMode = PlayMode.Shuffle
+                            PlayMode.Shuffle
                         }
                         PlayMode.Shuffle -> {
-                            controlDispatcher.dispatchSetShuffleModeEnabled(player, false)
-                            controlDispatcher.dispatchSetRepeatMode(player, Player.REPEAT_MODE_ALL)
-                            modeView.setImageResource(R.drawable.ic_player_repeat_all)
-                            playMode = PlayMode.RepeatAll
+                            PlayMode.RepeatAll
                         }
                     }
                 }
@@ -382,24 +443,15 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                     controlDispatcher.dispatchPrevious(player)
                 }
                 speedView -> {
-                    when (playSpeed) {
+                    playSpeed = when (playSpeed) {
                         PlaySpeed.Speed1 -> {
-                            player.setPlaybackParameters(PlaybackParameters(1.5f))
-                            speedView.text = "1.5X"
-                            speedView.textColorResource = R.color.colorAccent
-                            playSpeed = PlaySpeed.Speed15
+                            PlaySpeed.Speed15
                         }
                         PlaySpeed.Speed15 -> {
-                            player.setPlaybackParameters(PlaybackParameters(2.0f))
-                            speedView.text = "2.0X"
-                            speedView.textColorResource = R.color.colorAccentNight
-                            playSpeed = PlaySpeed.Speed20
+                            PlaySpeed.Speed20
                         }
                         PlaySpeed.Speed20 -> {
-                            player.setPlaybackParameters(PlaybackParameters(1f))
-                            speedView.text = "1X"
-                            speedView.setTextColor(R.attr.icon_default)
-                            playSpeed = PlaySpeed.Speed1
+                            PlaySpeed.Speed1
                         }
                     }
                 }

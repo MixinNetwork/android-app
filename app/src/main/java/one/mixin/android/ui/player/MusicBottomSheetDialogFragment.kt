@@ -175,6 +175,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 !requireContext().booleanFromAttribute(R.attr.flag_night)
             )
         }
+        (requireActivity() as MusicActivity).checkFloatingPermission()
     }
 
     override fun onDetach() {

@@ -145,6 +145,10 @@ class MusicService : MediaBrowserServiceCompat() {
             }
             result.sendResult(children)
 
+            if (::conversationMusicObserver.isInitialized && conversationMusicObserver.cid != parentId) {
+                observeConversationMusic(parentId)
+            }
+
             if (hasNewDownloaded) {
                 hasNewDownloaded = false
                 AudioPlayer.get().setMediaSource(exists)
@@ -162,6 +166,9 @@ class MusicService : MediaBrowserServiceCompat() {
 
                 observeConversationMusic(parentId)
             }
+        }
+        if (this.parentId != parentId) {
+            AudioPlayer.resetModeAndSpeed()
         }
         this.parentId = parentId
     }

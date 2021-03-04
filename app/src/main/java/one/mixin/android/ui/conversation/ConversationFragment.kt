@@ -128,6 +128,7 @@ import one.mixin.android.extension.selectEarpiece
 import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -162,6 +163,7 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MediaItemData
+import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicViewModel
 import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.player.internal.MusicServiceConnection
@@ -633,6 +635,8 @@ class ConversationFragment() :
                             if (viewDestroyed()) return@playMedia
                             if (checkFloatingPermission()) {
                                 collapse(requireActivity(), conversationId)
+                            } else {
+                                requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
                             }
                         }
                     }

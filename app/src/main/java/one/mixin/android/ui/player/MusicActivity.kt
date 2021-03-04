@@ -71,16 +71,20 @@ class MusicActivity : BaseActivity() {
     }
 
     var serviceStopped = false
+    private var setClicked = false
 
-    override fun finish() {
+    override fun onStop() {
+        super.onStop()
         if (!serviceStopped) {
             if (!checkFloatingPermission()) {
-                showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                if (!setClicked) {
+                    showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                }
             } else {
                 collapse(this)
+                finish()
             }
         }
-        super.finish()
     }
 
     private fun handleIntent() {
@@ -91,6 +95,10 @@ class MusicActivity : BaseActivity() {
 
     fun checkFloatingPermission() =
         checkInlinePermissions {
+            if (setClicked) {
+                setClicked = false
+                return@checkInlinePermissions
+            }
             if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
 
             permissionAlert = AlertDialog.Builder(this)
@@ -108,6 +116,7 @@ class MusicActivity : BaseActivity() {
                         Timber.e(e)
                     }
                     dialog.dismiss()
+                    setClicked = true
                 }.show()
         }
 }

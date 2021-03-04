@@ -268,8 +268,8 @@
             android:name=".ui.player.MusicActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Music"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
-
 
         <activity
             android:name=".ui.preview.TextPreviewActivity"

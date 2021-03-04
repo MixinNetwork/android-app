@@ -89,6 +89,7 @@ import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsQ
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -102,7 +103,6 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicViewModel
 import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
@@ -701,10 +701,17 @@ class WebFragment : BaseFragment() {
     private fun showPlaylist(playlist: Array<String>) {
         if (viewDestroyed()) return
 
+        if (!checkFloatingPermission()) {
+            return
+        }
         lifecycleScope.launch {
             musicViewModel.showPlaylist(playlist) {
-                FloatingPlayer.getInstance().conversationId = MUSIC_PLAYLIST
-                MusicActivity.show(requireContext(), MUSIC_PLAYLIST)
+                if (viewDestroyed()) return@showPlaylist
+                if (checkFloatingPermission()) {
+                    one.mixin.android.ui.player.collapse(requireActivity(), MUSIC_PLAYLIST)
+                } else {
+                    requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                }
             }
         }
     }

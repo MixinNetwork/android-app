@@ -61,7 +61,8 @@
                 android:padding="10dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_player_repeat_all"
-                android:background="?android:selectableItemBackground" />
+
+          android:background="@drawable/mixin_ripple" />
         </FrameLayout>
 
         <FrameLayout
@@ -76,7 +77,7 @@
                 android:padding="10dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_player_skip_previous"
-                android:background="?android:selectableItemBackground" />
+                android:background="@drawable/mixin_ripple" />
         </FrameLayout>
 
         <FrameLayout
@@ -104,7 +105,7 @@
                 android:padding="10dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_player_skip_next"
-                android:background="?android:selectableItemBackground" />
+                android:background="@drawable/mixin_ripple" />
         </FrameLayout>
 
         <FrameLayout
@@ -121,7 +122,7 @@
                 android:textColor="?icon_default"
                 android:text="1X"
                 android:textSize="16sp"
-                android:background="?android:selectableItemBackground"
+                android:background="@drawable/mixin_ripple"
                 tools:ignore="HardcodedText" />
         </FrameLayout>
     </LinearLayout>

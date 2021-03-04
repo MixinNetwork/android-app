@@ -7,6 +7,7 @@ import android.support.v4.media.MediaMetadataCompat
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
@@ -130,6 +131,13 @@ class AudioPlayer private constructor() {
 
         fun setStatusListener(statusListener: StatusListener) {
             this.statusListener = statusListener
+        }
+
+        fun resetModeAndSpeed() {
+            instance?.exoPlayer?.let {
+                it.setPlaybackParameters(PlaybackParameters(1f))
+                it.repeatMode = Player.REPEAT_MODE_OFF
+            }
         }
 
         fun preparePlaylist(
