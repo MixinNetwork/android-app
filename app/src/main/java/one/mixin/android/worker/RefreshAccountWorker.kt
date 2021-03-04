@@ -1,21 +1,18 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import android.graphics.Point
 import androidx.hilt.Assisted
 import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.putInt
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.toUser
-import org.jetbrains.anko.windowManager
 
 class RefreshAccountWorker @WorkerInject constructor(
     @Assisted context: Context,

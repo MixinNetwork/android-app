@@ -2,10 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -16,23 +13,18 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositQrBottomBinding
 import one.mixin.android.extension.capture
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
-import kotlin.math.ceil
 
 @AndroidEntryPoint
 class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
@@ -50,7 +42,6 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 ARGS_TYPE to type
             )
         }
-
     }
 
     private val binding by viewBinding(FragmentDepositQrBottomBinding::inflate)
@@ -102,7 +93,6 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                         }
                     )
             }
-
 
             qr.post {
                 Observable.create<Pair<Bitmap, Int>?> { e ->

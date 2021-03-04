@@ -1,18 +1,14 @@
 package one.mixin.android.job
 
-import android.graphics.Point
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.toUser
-import org.jetbrains.anko.windowManager
 
 class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
 

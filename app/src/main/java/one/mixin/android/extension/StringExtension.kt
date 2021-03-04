@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -28,7 +27,6 @@ import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
-import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -47,7 +45,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import kotlin.collections.set
 import kotlin.math.abs
-import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 private const val QUIET_ZONE_SIZE = 4

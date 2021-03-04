@@ -1,6 +1,5 @@
 package one.mixin.android.ui.common
 
-import android.graphics.Point
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -13,8 +12,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.*
-import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
@@ -27,7 +24,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
-import org.jetbrains.anko.windowManager
 import java.security.KeyPair
 
 abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFragment(contentLayoutId) {
