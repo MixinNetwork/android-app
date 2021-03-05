@@ -3,6 +3,7 @@ package one.mixin.android.crypto
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
+import one.mixin.android.extension.leByteArraytoInt
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toLeByteArray
 import java.util.UUID
@@ -32,14 +33,20 @@ class EncryptedProtocol {
         return aesDecrypt(sharedSecret, iv, ciphertext)
     }
 
-    fun decryptMessage(privateKey: EdDSAPrivateKey, ciphertext: ByteArray): ByteArray {
+    fun decryptMessage(privateKey: EdDSAPrivateKey, sessionId: ByteArray, ciphertext: ByteArray): ByteArray {
         val version = ciphertext[0]
-        val sessionSize = ciphertext.slice(IntRange(1, 2)).toByteArray()
+        val sessionSize = leByteArraytoInt(ciphertext.slice(IntRange(1, 2)).toByteArray())
         val senderPublicKey = ciphertext.slice(IntRange(3, 34)).toByteArray()
-        val sessionId = ciphertext.slice(IntRange(35, 50)).toByteArray()
-        val messageKey = ciphertext.slice(IntRange(51, 98)).toByteArray()
-        val message = ciphertext.slice(IntRange(99, ciphertext.size - 1)).toByteArray()
-
+        var key: ByteArray? = null
+        repeat(sessionSize) {
+            val offset = it * 64
+            val sid = ciphertext.slice(IntRange(35 + offset, 50 + offset)).toByteArray()
+            if (sessionId.contentEquals(sid)) {
+                key = ciphertext.slice(IntRange(51 + offset, 98 + offset)).toByteArray()
+            }
+        }
+        val messageKey = requireNotNull(key)
+        val message = ciphertext.slice(IntRange(35 + 64 * sessionSize, ciphertext.size - 1)).toByteArray()
         val iv = messageKey.slice(IntRange(0, 15)).toByteArray()
         val content = messageKey.slice(IntRange(16, messageKey.size - 1)).toByteArray()
         val decodedMessageKey = decryptCipherMessageKey(privateKey.seed, senderPublicKey, iv, content)

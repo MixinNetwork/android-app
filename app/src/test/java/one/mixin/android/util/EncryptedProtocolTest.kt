@@ -10,6 +10,7 @@ import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.toByteArray
 import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import java.util.UUID
@@ -42,7 +43,7 @@ class EncryptedProtocolTest {
             encodedContent.slice(IntRange(0, 15)).toByteArray(),
             encodedContent.slice(IntRange(16, encodedContent.size - 1)).toByteArray(),
         )
-        assertEquals("LA",String(decryptedContent))
+        assertEquals("LA", String(decryptedContent))
     }
 
     @Test
@@ -90,7 +91,7 @@ class EncryptedProtocolTest {
 
         val encodedContent = encryptedProtocol.encryptMessage(senderPrivateKey, content, receiverCurvePublicKey, otherSessionId)
 
-        val decryptedContent = encryptedProtocol.decryptMessage(receiverPrivateKey, encodedContent)
+        val decryptedContent = encryptedProtocol.decryptMessage(receiverPrivateKey, UUID.fromString(otherSessionId).toByteArray(), encodedContent)
 
         assert(decryptedContent.contentEquals(content))
     }
