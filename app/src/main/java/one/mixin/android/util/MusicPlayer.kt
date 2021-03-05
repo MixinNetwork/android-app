@@ -10,6 +10,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.source.ConcatenatingMediaSource
 import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
@@ -205,6 +206,8 @@ class MusicPlayer private constructor() {
 
     var currentPlaylistItems: List<MediaMetadataCompat> = emptyList()
 
+    private var concatenatingMediaSource = ConcatenatingMediaSource()
+
     fun preparePlaylist(
         metadataList: List<MediaMetadataCompat>,
         itemToPlay: MediaMetadataCompat?,
@@ -240,15 +243,34 @@ class MusicPlayer private constructor() {
 
     fun setMediaSource(metadataList: List<MediaMetadataCompat>) {
         val downloadedList = metadataList.filter { it.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED }
-        currentPlaylistItems = downloadedList
         exoPlayer.apply {
             val itemToPlay = currentMediaItem?.mediaId
+            val index = currentPlaylistItems.indexOfFirst { it.description.mediaId == itemToPlay }
+            val remain = currentPlaylistItems.size - index
+            currentPlaylistItems = downloadedList
             val initialWindowIndex = if (itemToPlay == null) 0 else downloadedList.indexOfFirst { it.description.mediaId == itemToPlay }
-            val mediaSource = downloadedList.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
-            val pos = getCurrentPos()
-            setMediaSource(mediaSource)
-            prepare()
-            seekTo(initialWindowIndex, pos)
+            Timber.d("@@@ index: $index, initialWindowIndex: $initialWindowIndex, remain: $remain")
+            if (initialWindowIndex == -1) {
+                val mediaSource = downloadedList.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
+                concatenatingMediaSource = mediaSource
+                setMediaSource(mediaSource)
+                val pos = getCurrentPos()
+                prepare()
+                if (initialWindowIndex != -1) {
+                    seekTo(initialWindowIndex, pos)
+                }
+            } else {
+                concatenatingMediaSource.removeMediaSourceRange(0, index)
+                concatenatingMediaSource.removeMediaSourceRange(1, remain)
+                val pre = downloadedList.subList(0, initialWindowIndex).map {
+                    it.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
+                }
+                val post = downloadedList.subList(initialWindowIndex + 1, downloadedList.size).map {
+                    it.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
+                }
+                concatenatingMediaSource.addMediaSources(0, pre)
+                concatenatingMediaSource.addMediaSources(post)
+            }
         }
     }
 
@@ -320,6 +342,7 @@ class MusicPlayer private constructor() {
             val index = metadataList.indexOfFirst { it.description.mediaId == currentPlayId }
             if (changed || index == -1 || metadataList.size == 1) {
                 val mediaSource = metadataList.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
+                concatenatingMediaSource = mediaSource
                 setMediaSource(mediaSource)
                 prepare()
                 if (initialWindowIndex != -1) {
@@ -334,8 +357,8 @@ class MusicPlayer private constructor() {
                         it.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
                     }
 
-                    addMediaSources(0, pre)
-                    addMediaSources(post)
+                    concatenatingMediaSource.addMediaSources(0, pre)
+                    concatenatingMediaSource.addMediaSources(post)
                 }
             }
 
