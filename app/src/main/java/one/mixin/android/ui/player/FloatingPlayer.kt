@@ -27,7 +27,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
-import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
 import kotlin.math.abs
@@ -222,7 +222,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
             RLottieDrawable(R.raw.anim_music, "music", 30.dp, 30.dp)
         }
         musicView.setAnimation(rLottieDrawable)
-        if (AudioPlayer.get().exoPlayer.isPlaying) {
+        if (MusicPlayer.get().exoPlayer.isPlaying) {
             musicView.playAnimation()
         }
     }

@@ -167,7 +167,6 @@ import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicViewModel
 import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.player.internal.MusicServiceConnection
-import one.mixin.android.ui.player.isMusicServiceRunning
 import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
@@ -179,6 +178,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.mention.mentionDisplay
@@ -545,11 +545,8 @@ class ConversationFragment() :
             override fun onAudioClick(messageItem: MessageItem) {
                 when {
                     binding.chatControl.isRecording -> showRecordingAlert()
-                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause(false)
+                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
                     else -> {
-                        if (isMusicServiceRunning(MixinApplication.appContext)) {
-                            musicViewModel.stopMusicService()
-                        }
                         AudioPlayer.play(messageItem) {
                             chatViewModel.downloadAttachment(it)
                         }
@@ -610,10 +607,10 @@ class ConversationFragment() :
                 if (!MimeTypes.isAudio(messageItem.mediaMimeType)) return
                 when {
                     binding.chatControl.isRecording -> showRecordingAlert()
-                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause(false)
+                    MusicPlayer.isPlay(messageItem.messageId) -> MusicPlayer.pause()
                     else -> {
-                        if (!AudioPlayer.sameChatAudioFilePlaying(conversationId)) {
-                            AudioPlayer.playMusic(messageItem)
+                        if (!MusicPlayer.sameChatAudioFilePlaying(conversationId)) {
+                            MusicPlayer.playMusic(messageItem)
                             FloatingPlayer.getInstance().hide()
                         } else {
                             if (checkFloatingPermission()) {
@@ -1118,7 +1115,7 @@ class ConversationFragment() :
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
             isNearToSensor = values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
-            if (AudioPlayer.isEnd() || AudioPlayer.sameChatAudioFilePlaying(conversationId) || audioSwitch.isBluetoothHeadsetOrWiredHeadset()) {
+            if (AudioPlayer.isEnd() || AudioPlayer.audioFilePlaying() || audioSwitch.isBluetoothHeadsetOrWiredHeadset()) {
                 leaveDevice()
             } else if (!audioSwitch.isBluetoothHeadsetOrWiredHeadset()) {
                 if (isNearToSensor) {
@@ -2775,6 +2772,7 @@ class ConversationFragment() :
 
         override fun onRecordStart(audio: Boolean) {
             AudioPlayer.pause()
+            MusicPlayer.pause()
             OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
             if (!isNearToSensor) {
                 if (!aodWakeLock.isHeld) {

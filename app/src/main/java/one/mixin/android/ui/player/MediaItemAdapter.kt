@@ -13,7 +13,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemFragmentMediaBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.widget.CircleProgress
 
 class MediaItemAdapter : ListAdapter<MediaItemData, MediaViewHolder>(MediaItemData.diffCallback) {
@@ -49,7 +49,7 @@ class MediaItemAdapter : ListAdapter<MediaItemData, MediaViewHolder>(MediaItemDa
             MediaDescriptionCompat.STATUS_DOWNLOADED -> {
                 holder.progress.isVisible = true
                 holder.progress.setBindOnly(mediaItem.mediaId)
-                if (AudioPlayer.isPlay(mediaItem.mediaId)) {
+                if (MusicPlayer.isPlay(mediaItem.mediaId)) {
                     holder.progress.setPause()
                 } else {
                     holder.progress.setPlay()

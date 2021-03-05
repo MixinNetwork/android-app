@@ -20,7 +20,6 @@ import one.mixin.android.ui.player.internal.id
 import one.mixin.android.ui.player.internal.isPlayEnabled
 import one.mixin.android.ui.player.internal.isPlaying
 import one.mixin.android.ui.player.internal.isPrepared
-import one.mixin.android.util.AudioPlayer
 import timber.log.Timber
 
 class MusicViewModel
@@ -125,7 +124,6 @@ internal constructor(
     }
 
     fun stopMusicService() {
-        AudioPlayer.release(false)
         musicServiceConnection.sendCommand(MUSIC_CMD_STOP, null)
         musicServiceConnection.disconnect()
     }

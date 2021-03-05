@@ -45,7 +45,7 @@ import one.mixin.android.ui.player.internal.album
 import one.mixin.android.ui.player.internal.copy
 import one.mixin.android.ui.player.internal.downloadStatus
 import one.mixin.android.ui.player.internal.flag
-import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import timber.log.Timber
 import javax.inject.Inject
@@ -91,7 +91,7 @@ class MusicService : MediaBrowserServiceCompat() {
 
         sessionToken = mediaSession.sessionToken
 
-        AudioPlayer.get().exoPlayer.apply {
+        MusicPlayer.get().exoPlayer.apply {
             setAudioAttributes(musicAudioAttributes, true)
             setHandleAudioBecomingNoisy(true)
             addListener(playerListener)
@@ -106,9 +106,9 @@ class MusicService : MediaBrowserServiceCompat() {
         mediaSessionConnector = MediaSessionConnector(mediaSession)
         mediaSessionConnector.setPlaybackPreparer(MusicPlaybackPreparer())
         mediaSessionConnector.setQueueNavigator(MusicQueueNavigator(mediaSession))
-        mediaSessionConnector.setPlayer(AudioPlayer.get().exoPlayer)
+        mediaSessionConnector.setPlayer(MusicPlayer.get().exoPlayer)
 
-        notificationManager.showNotificationForPlayer(AudioPlayer.get().exoPlayer)
+        notificationManager.showNotificationForPlayer(MusicPlayer.get().exoPlayer)
     }
 
     override fun onDestroy() {
@@ -121,7 +121,7 @@ class MusicService : MediaBrowserServiceCompat() {
         if (::conversationMusicObserver.isInitialized) {
             musicLiveData?.removeObserver(conversationMusicObserver)
         }
-        mediaSessionConnector.setQueueNavigator(null)
+        MusicPlayer.release()
         FloatingPlayer.getInstance().hide()
     }
 
@@ -151,7 +151,7 @@ class MusicService : MediaBrowserServiceCompat() {
 
             if (hasNewDownloaded) {
                 hasNewDownloaded = false
-                AudioPlayer.get().setMediaSource(exists)
+                MusicPlayer.get().setMediaSource(exists)
             }
         } else {
             if (parentId == MUSIC_PLAYLIST) {
@@ -168,7 +168,7 @@ class MusicService : MediaBrowserServiceCompat() {
             }
         }
         if (this.parentId != parentId) {
-            AudioPlayer.resetModeAndSpeed()
+            MusicPlayer.resetModeAndSpeed()
         }
         this.parentId = parentId
     }
@@ -315,7 +315,7 @@ class MusicService : MediaBrowserServiceCompat() {
     ) : TimelineQueueNavigator(mediaSession) {
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
             return try {
-                AudioPlayer.get().currentPlaylistItems[windowIndex].description
+                MusicPlayer.get().currentPlaylistItems[windowIndex].description
             } catch (e: IndexOutOfBoundsException) {
                 Timber.w(e)
                 MediaDescriptionCompat.Builder().setMediaId(MUSIC_UNKNOWN_ROOT).build()
@@ -395,7 +395,7 @@ class MusicService : MediaBrowserServiceCompat() {
                     ?: C.TIME_UNSET
 
             val playlist = buildPlaylist(itemToPlay)
-            AudioPlayer.preparePlaylist(
+            MusicPlayer.preparePlaylist(
                 playlist,
                 itemToPlay,
                 playWhenReady,
@@ -475,7 +475,7 @@ class MusicService : MediaBrowserServiceCompat() {
             when (playbackState) {
                 Player.STATE_BUFFERING,
                 Player.STATE_READY -> {
-                    notificationManager.showNotificationForPlayer(AudioPlayer.get().exoPlayer)
+                    notificationManager.showNotificationForPlayer(MusicPlayer.get().exoPlayer)
                     if (playbackState == Player.STATE_READY) {
                         if (!playWhenReady) {
                             stopForeground(false)

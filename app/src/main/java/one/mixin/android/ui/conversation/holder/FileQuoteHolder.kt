@@ -16,8 +16,8 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
@@ -139,9 +139,9 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
 
                 override fun onStopTrackingTouch(seekBar: SeekBar) {
                     if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
-                        AudioPlayer.isPlay(messageItem.messageId)
+                        MusicPlayer.isPlay(messageItem.messageId)
                     ) {
-                        AudioPlayer.seekTo(seekBar.progress)
+                        MusicPlayer.seekTo(seekBar.progress)
                     }
                 }
             }
@@ -173,7 +173,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                         binding.fileProgress.setBindOnly(messageItem.messageId)
                         binding.bottomLayout.bindId = messageItem.messageId
-                        if (AudioPlayer.isPlay(messageItem.messageId)) {
+                        if (MusicPlayer.isPlay(messageItem.messageId)) {
                             binding.fileProgress.setPause()
                             binding.bottomLayout.showSeekBar()
                         } else {
@@ -192,7 +192,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                         }
                     }
                     binding.chatLayout.setOnClickListener {
-                        if (AudioPlayer.isPlay(messageItem.messageId)) {
+                        if (MusicPlayer.isPlay(messageItem.messageId)) {
                             onItemListener.onAudioFileClick(messageItem)
                         } else {
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)

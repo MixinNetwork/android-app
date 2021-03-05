@@ -33,7 +33,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.player.internal.MusicServiceConnection
-import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MediaStatus
@@ -144,7 +144,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 { list ->
                     listAdapter.submitList(list)
 
-                    var mediaItem = list.find { it.mediaId == AudioPlayer.get().exoPlayer.currentMediaItem?.mediaId }
+                    var mediaItem = list.find { it.mediaId == MusicPlayer.get().exoPlayer.currentMediaItem?.mediaId }
                     if (mediaItem == null) {
                         mediaItem = list.firstOrNull()
                     }
@@ -163,7 +163,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             )
-            playerControlView.player = AudioPlayer.get().exoPlayer
+            playerControlView.player = MusicPlayer.get().exoPlayer
         }
     }
 
