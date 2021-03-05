@@ -94,6 +94,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                 PlayMode.Shuffle -> {
                     player?.let {
                         controlDispatcher.dispatchSetShuffleModeEnabled(it, true)
+                        controlDispatcher.dispatchSetRepeatMode(it, Player.REPEAT_MODE_ALL)
                     }
                     modeView.setImageResource(R.drawable.ic_player_shuffle)
                 }

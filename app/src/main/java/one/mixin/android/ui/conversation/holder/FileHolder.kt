@@ -23,7 +23,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.textResource
 
 class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
     init {
@@ -89,7 +88,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         )
         when (messageItem.mediaStatus) {
             MediaStatus.EXPIRED.name -> {
-                binding.bottomLayout.fileSizeTv.textResource = R.string.chat_expired
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.chat_expired))
             }
             MediaStatus.PENDING.name -> {
                 messageItem.mediaSize?.notNullWithElse(
@@ -97,12 +96,12 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                         binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, it)
                     },
                     {
-                        binding.bottomLayout.fileSizeTv.text = messageItem.mediaSize.fileSize()
+                        binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize.fileSize())
                     }
                 )
             }
             else -> {
-                binding.bottomLayout.fileSizeTv.text = "${messageItem.mediaSize?.fileSize()}"
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())
             }
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->

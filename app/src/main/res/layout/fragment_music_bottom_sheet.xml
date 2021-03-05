@@ -26,6 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="10dp"
+        android:paddingTop="@dimen/margin10"
         android:background="?bg_white"
         android:layout_alignParentBottom="true"
         android:orientation="vertical">
