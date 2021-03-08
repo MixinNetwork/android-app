@@ -408,6 +408,7 @@
     <string name="wallet_pin_pay_interval_tips">为了您的资产安全，距离上次输入支付密码的时间超过以上指定时间时，再次转账时已然需要支付密码</string>
     <string name="wallet_biometric_screen_lock">锁屏</string>
     <string name="wallet_biometric_screen_lock_desc">请解锁您的设备以继续</string>
+    <string name="wallet_enable_biometric_pay_prompt">开启后，转账时可验证生物识别快速完成付款</string>
     <string name="wallet_transactions_empty">暂无转账记录</string>
     <string name="wallet_deposits_empty">暂无充值记录</string>
     <string name="wallet_withdrawals_empty">暂无提现记录</string>
@@ -514,6 +515,7 @@
     <string name="conversation_status_live">[直播]</string>
     <string name="conversation_status_group_call">[群组语音]</string>
     <string name="setting_incognito">隐身键盘</string>
+    <string name="setting_incognito_prompt">禁止键盘个性化学习</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_no_auth_app">没有授权任何机器人</string>
     <string name="setting_authentications">授权</string>

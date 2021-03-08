@@ -83,11 +83,27 @@
                 tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/bg_window">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/wallet_enable_biometric_pay_prompt"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp"/>
+    </FrameLayout>
+
     <TextView
             android:id="@+id/change_tv"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop="@dimen/item_divider"
             android:text="@string/wallet_password_change"
             android:textColor="@color/colorBlue"
             android:gravity="center_vertical"
