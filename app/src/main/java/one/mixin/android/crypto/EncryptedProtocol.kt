@@ -3,14 +3,22 @@ package one.mixin.android.crypto
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
-import one.mixin.android.extension.leByteArraytoInt
+import one.mixin.android.extension.leByteArrayToInt
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toLeByteArray
 import java.util.UUID
 
 class EncryptedProtocol {
 
-    fun encryptMessage(privateKey: EdDSAPrivateKey, plaintext: ByteArray, otherPublicKey: ByteArray, otherSessionId: String): ByteArray {
+    @ExperimentalUnsignedTypes
+    fun encryptMessage(
+        privateKey: EdDSAPrivateKey,
+        plaintext: ByteArray,
+        otherPublicKey: ByteArray,
+        otherSessionId: String,
+        extensionSessionKey: ByteArray? = null,
+        extensionSessionId: String? = null
+    ): ByteArray {
         val aesGcmKey = generateAesKey()
         val encryptedMessageData = aesGcmEncrypt(plaintext, aesGcmKey)
         val messageKey = encryptCipherMessageKey(privateKey.seed, otherPublicKey, aesGcmKey)
@@ -18,7 +26,19 @@ class EncryptedProtocol {
         val pub = EdDSAPublicKey(EdDSAPublicKeySpec(privateKey.a, ed25519))
         val senderPublicKey = publicKeyToCurve25519(pub)
         val version = byteArrayOf(0x01)
-        return version.plus(toLeByteArray(1.toUInt())).plus(senderPublicKey).plus(messageKeyWithSession).plus(encryptedMessageData)
+
+        return version.run {
+            if (extensionSessionKey != null && extensionSessionId != null) {
+                plus(toLeByteArray(2.toUInt()))
+            } else {
+                plus(toLeByteArray(1.toUInt()))
+            }
+        }.plus(senderPublicKey).run {
+            extensionSessionKey ?: return this
+            extensionSessionId ?: return this
+            val emergencyMessageKey = encryptCipherMessageKey(privateKey.seed, extensionSessionKey, aesGcmKey)
+            plus(UUID.fromString(extensionSessionId).toByteArray().plus(emergencyMessageKey))
+        }.plus(messageKeyWithSession).plus(encryptedMessageData)
     }
 
     private fun encryptCipherMessageKey(seed: ByteArray, publicKey: ByteArray, aesGcmKey: ByteArray): ByteArray {
@@ -33,9 +53,9 @@ class EncryptedProtocol {
         return aesDecrypt(sharedSecret, iv, ciphertext)
     }
 
+    @ExperimentalUnsignedTypes
     fun decryptMessage(privateKey: EdDSAPrivateKey, sessionId: ByteArray, ciphertext: ByteArray): ByteArray {
-        val version = ciphertext[0]
-        val sessionSize = leByteArraytoInt(ciphertext.slice(IntRange(1, 2)).toByteArray())
+        val sessionSize = leByteArrayToInt(ciphertext.slice(IntRange(1, 2)).toByteArray()).toInt()
         val senderPublicKey = ciphertext.slice(IntRange(3, 34)).toByteArray()
         var key: ByteArray? = null
         repeat(sessionSize) {

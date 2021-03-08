@@ -117,7 +117,8 @@ internal constructor(
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_TRANSCRIPT.name,
-                        MessageCategory.PLAIN_TRANSCRIPT.name
+                        MessageCategory.PLAIN_TRANSCRIPT.name,
+                        MessageCategory.ENCRYPTED_TRANSCRIPT.name
                     )
                 }
             }

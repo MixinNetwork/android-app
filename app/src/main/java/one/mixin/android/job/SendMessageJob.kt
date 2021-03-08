@@ -9,6 +9,7 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
@@ -18,6 +19,7 @@ import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.isCall
+import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPin
@@ -182,8 +184,9 @@ open class SendMessageJob(
         deliver(blazeMessage)
     }
 
+    @ExperimentalUnsignedTypes
     private fun sendEncryptedMessage() {
-        val conversation = conversationDao.getConversation(message.conversationId) ?: return
+        val conversation = conversationDao.findConversationById(message.conversationId) ?: return
         checkConversationExist(conversation)
         val participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
         if (participantSessionKey == null) {
@@ -196,8 +199,14 @@ open class SendMessageJob(
             return
         }
 
+        val extensionSessionKey =
+            Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, it) }, null)
+
         val privateKey = Session.getEd25519PrivateKey() ?: return
-        val content = encryptedProtocol.encryptMessage(privateKey, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId)
+        val content = encryptedProtocol.encryptMessage(
+            privateKey, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId,
+            extensionSessionKey?.publicKey?.base64RawUrlDecode(), extensionSessionKey?.sessionId
+        )
 
         val blazeParam = BlazeMessageParam(
             message.conversationId,

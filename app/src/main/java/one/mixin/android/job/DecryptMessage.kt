@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants

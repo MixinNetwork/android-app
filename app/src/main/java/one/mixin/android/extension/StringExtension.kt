@@ -265,8 +265,9 @@ fun toLeByteArray(v: UInt): ByteArray {
     return b
 }
 
-fun leByteArraytoInt(bytes: ByteArray): Int {
-    return bytes[0].toInt() + bytes[1].toInt()
+@ExperimentalUnsignedTypes
+fun leByteArrayToInt(bytes: ByteArray): UInt {
+    return bytes[0].toUInt() + (bytes[1].toUInt() shl 8)
 }
 
 fun UUID.toByteArray(): ByteArray {
