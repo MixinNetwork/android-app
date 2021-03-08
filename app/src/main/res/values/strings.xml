@@ -954,4 +954,5 @@
     <string name="notification_pause">Pause</string>
     <string name="player_delete_all_desc">Are you sure you want to stop and close the playlist?</string>
     <string name="player_stop_playing">Stop Playing</string>
+    <string name="player_playback_failed">Playback failed</string>
 </resources>

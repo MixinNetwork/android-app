@@ -5,6 +5,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.ExoPlaybackException.TYPE_SOURCE
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -172,6 +173,10 @@ class MusicPlayer private constructor() {
                     MixinApplication.appContext.openMedia(it)
                 }
             } else {
+                if (error.type == TYPE_SOURCE) {
+                    MixinApplication.appContext.toast(R.string.player_playback_failed)
+                }
+
                 status = STATUS_PAUSE
                 id?.let { id -> RxBus.publish(pauseEvent(id)) }
             }

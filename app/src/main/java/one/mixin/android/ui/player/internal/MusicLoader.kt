@@ -10,6 +10,8 @@ import com.google.android.exoplayer2.metadata.id3.ApicFrame
 import com.google.android.exoplayer2.metadata.id3.TextInformationFrame
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.isLocalScheme
+import one.mixin.android.extension.toUri
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.lang.Exception
@@ -38,10 +40,17 @@ abstract class MusicLoader {
                 }
             }
         } catch (e: Exception) {
-            if (e is FileNotFoundException || e is SecurityException || e is TimeoutException) {
+            if (e is FileNotFoundException || e is SecurityException) {
                 // message exits but media not
                 ignoreSet.add(id)
                 return null
+            } else if (e is TimeoutException) {
+                return if (url.toUri().scheme?.isLocalScheme() == false) {
+                    EMPTY_MUSIC_META
+                } else {
+                    ignoreSet.add(id)
+                    null
+                }
             }
             Timber.w(e)
             return EMPTY_MUSIC_META
@@ -92,7 +101,9 @@ abstract class MusicLoader {
                 }
             }
         }
-        val artist = artistList.joinToString { it }
+        val artist = if (artistList.isNotEmpty()) {
+            artistList.joinToString { it }
+        } else null
         return MusicMeta(title, album, albumArt, artist)
     }
 
