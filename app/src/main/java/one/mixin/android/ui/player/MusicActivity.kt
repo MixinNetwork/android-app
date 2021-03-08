@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.checkInlinePermissions
@@ -82,6 +83,10 @@ class MusicActivity : BaseActivity() {
                 }
             } else {
                 collapse(this)
+
+                val dialogFragment = supportFragmentManager.findFragmentByTag(MusicBottomSheetDialogFragment.TAG) as? DialogFragment
+                dialogFragment?.dismissAllowingStateLoss()
+
                 finish()
             }
         }
