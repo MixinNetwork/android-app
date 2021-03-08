@@ -62,7 +62,6 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-
         binding.apply {
             title.rightIv.setOnClickListener { dismiss() }
             title.setSubTitle(name ?: "")

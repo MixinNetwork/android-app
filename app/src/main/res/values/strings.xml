@@ -426,6 +426,7 @@
     <string name="wallet_pin_pay_interval_tips">For the security of your assets, you need to verify your PIN for the specified interval.</string>
     <string name="wallet_biometric_screen_lock">Screen Lock</string>
     <string name="wallet_biometric_screen_lock_desc">Use your device pattern to continue</string>
+    <string name="wallet_enable_biometric_pay_prompt">Once enabled, biometrics can be used to make quick transfers</string>
     <string name="wallet_transactions_empty">No transactions</string>
     <string name="wallet_deposits_empty">No deposits</string>
     <string name="wallet_withdrawals_empty">No withdrawals</string>
@@ -532,6 +533,7 @@
     <string name="conversation_status_live">[Live]</string>
     <string name="conversation_status_group_call">[Group Call]</string>
     <string name="setting_incognito">Incognito Keyboard</string>
+    <string name="setting_incognito_prompt">Disable keyboard personalized learning</string>
     <string name="setting_no_blocked">No blocked users</string>
     <string name="setting_authentications">Authorizations</string>
     <string name="setting_no_auth_app">No auth app</string>

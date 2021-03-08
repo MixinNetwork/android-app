@@ -15,10 +15,8 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.InviteActivity.Companion.ARGS_ID
-import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 
@@ -80,7 +78,7 @@ class InviteFragment : BaseFragment() {
                             context?.toast(R.string.copy_success)
                         }
                         binding.inviteQr.setOnClickListener {
-                            InviteQrBottomFragment.newInstance(c.name,c.iconUrl,url)
+                            InviteQrBottomFragment.newInstance(c.name, c.iconUrl, url)
                                 .show(parentFragmentManager, InviteQrBottomFragment.TAG)
                         }
                         binding.inviteShare.setOnClickListener {
