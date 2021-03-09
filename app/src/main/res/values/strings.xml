@@ -610,6 +610,10 @@
     <string name="setting_share">Share This App</string>
     <string name="setting_share_text">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search %1$s to add me as a friend.</string>
     <string name="setting_auth_search_hint">Mixin ID, Name</string>
+    <string name="setting_biometric_error_low_version">Low device software version</string>
+    <string name="setting_biometric_error_pin_not_set">The PIN, pattern or password is NOT set or a SIM card is unlocked</string>
+    <string name="setting_biometric_error_not_secure">The key NOT resides inside secure hardware (TEE)</string>
+    <string name="setting_biometric_error_rooted">The device has been rooted</string>
     <string-array name="setting_night_array">
         <item>Light</item>
         <item>Dark</item>
