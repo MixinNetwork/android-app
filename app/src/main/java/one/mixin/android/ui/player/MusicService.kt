@@ -66,8 +66,6 @@ class MusicService : MediaBrowserServiceCompat() {
     @Inject
     lateinit var database: MixinDatabase
 
-    private var isForegroundService = false
-
     private val musicAudioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
         .setUsage(C.USAGE_MEDIA)
@@ -121,6 +119,7 @@ class MusicService : MediaBrowserServiceCompat() {
         if (::conversationMusicObserver.isInitialized) {
             musicLiveData?.removeObserver(conversationMusicObserver)
         }
+        MusicPlayer.get().exoPlayer.removeListener(playerListener)
         MusicPlayer.release()
         FloatingPlayer.getInstance().hide()
     }
@@ -450,20 +449,16 @@ class MusicService : MediaBrowserServiceCompat() {
             notification: Notification,
             ongoing: Boolean
         ) {
-            if (ongoing && !isForegroundService) {
-                ContextCompat.startForegroundService(
-                    applicationContext,
-                    Intent(applicationContext, this@MusicService.javaClass)
-                )
+            ContextCompat.startForegroundService(
+                applicationContext,
+                Intent(applicationContext, this@MusicService.javaClass)
+            )
 
-                startForeground(notificationId, notification)
-                isForegroundService = true
-            }
+            startForeground(notificationId, notification)
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
             stopForeground(true)
-            isForegroundService = false
             stopSelf()
         }
     }

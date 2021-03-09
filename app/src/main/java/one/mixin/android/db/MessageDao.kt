@@ -15,7 +15,6 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 
 @Dao
@@ -223,22 +222,6 @@ interface MessageDao : BaseDao<Message> {
         """
     )
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
-
-    @Query(
-        """
-            SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
-            m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
-            FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) fts
-            INNER JOIN users u ON m.user_id = u.user_id 
-            WHERE m.id = fts.message_id
-            AND m.conversation_id = :conversationId
-            ORDER BY m.created_at DESC
-        """
-    )
-    fun fuzzySearchMessageByConversationId(
-        query: String,
-        conversationId: String
-    ): DataSource.Factory<Int, SearchMessageDetailItem>
 
     @Query("SELECT m.media_url FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE'")
     suspend fun findAllMediaPathByConversationId(conversationId: String): List<String>
