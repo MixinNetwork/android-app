@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_player_seekbar_normal"
+          android:state_focused="false" android:state_pressed="false"/>
+    <item android:drawable="@drawable/ic_seekbar_pressed"
+          android:state_window_focused="true" android:state_pressed="true"/>
+    <item android:drawable="@drawable/ic_seekbar_pressed"
+          android:state_window_focused="true" android:state_selected="true"/>
+    <item android:drawable="@drawable/ic_seekbar_pressed"
+          android:state_window_focused="true" android:state_focused="true"/>
+    <item android:state_enabled="false" android:drawable="@drawable/ic_seekbar_disable"/>
+</selector>

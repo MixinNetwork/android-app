@@ -143,6 +143,9 @@ class AudioPlayer private constructor() {
                             checkNext()
                         }
                     }
+                    if (playWhenReady) {
+                        MusicPlayer.pause()
+                    }
                 }
 
                 override fun onPlayerError(error: ExoPlaybackException) {

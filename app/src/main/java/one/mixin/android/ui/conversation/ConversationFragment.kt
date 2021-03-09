@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
+import android.support.v4.media.MediaDescriptionCompat.STATUS_DOWNLOADED
 import android.text.method.LinkMovementMethod
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
@@ -89,6 +90,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.config
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -126,6 +128,7 @@ import one.mixin.android.extension.selectEarpiece
 import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -158,6 +161,13 @@ import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.player.FloatingPlayer
+import one.mixin.android.ui.player.MediaItemData
+import one.mixin.android.ui.player.MusicActivity
+import one.mixin.android.ui.player.MusicViewModel
+import one.mixin.android.ui.player.collapse
+import one.mixin.android.ui.player.internal.MusicServiceConnection
+import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
@@ -168,6 +178,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.mention.mentionDisplay
@@ -284,6 +295,13 @@ class ConversationFragment() :
     lateinit var audioSwitch: AudioSwitch
 
     private val chatViewModel by viewModels<ConversationViewModel>()
+
+    @Inject
+    lateinit var musicServiceConnection: MusicServiceConnection
+
+    private val musicViewModel by viewModels<MusicViewModel> {
+        provideMusicViewModel(musicServiceConnection, conversationId)
+    }
 
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {
@@ -589,8 +607,36 @@ class ConversationFragment() :
                 if (!MimeTypes.isAudio(messageItem.mediaMimeType)) return
                 when {
                     binding.chatControl.isRecording -> showRecordingAlert()
-                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
-                    else -> AudioPlayer.play(messageItem)
+                    MusicPlayer.isPlay(messageItem.messageId) -> MusicPlayer.pause()
+                    else -> {
+                        if (!MusicPlayer.sameChatAudioFilePlaying(conversationId)) {
+                            MusicPlayer.playMusic(messageItem)
+                            FloatingPlayer.getInstance().hide()
+                        } else {
+                            if (checkFloatingPermission()) {
+                                collapse(requireActivity(), conversationId)
+                            }
+                        }
+                        FloatingPlayer.getInstance().conversationId = conversationId
+
+                        musicViewModel.playMedia(
+                            MediaItemData(
+                                messageItem.messageId,
+                                messageItem.mediaName ?: "",
+                                "",
+                                Uri.EMPTY,
+                                false,
+                                STATUS_DOWNLOADED
+                            )
+                        ) {
+                            if (viewDestroyed()) return@playMedia
+                            if (checkFloatingPermission()) {
+                                collapse(requireActivity(), conversationId)
+                            } else {
+                                requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1614,6 +1660,29 @@ class ConversationFragment() :
         }
         deleteDialog?.show()
     }
+
+    private var permissionAlert: AlertDialog? = null
+    private fun checkFloatingPermission() =
+        requireContext().checkInlinePermissions {
+            if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
+
+            permissionAlert = AlertDialog.Builder(requireContext())
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.web_floating_permission)
+                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${requireContext().packageName}")
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                    dialog.dismiss()
+                }.show()
+        }
 
     private fun generateDeleteDialogLayout(): DialogDeleteBinding {
         return DialogDeleteBinding.inflate(LayoutInflater.from(requireActivity()), null, false)
@@ -2703,6 +2772,7 @@ class ConversationFragment() :
 
         override fun onRecordStart(audio: Boolean) {
             AudioPlayer.pause()
+            MusicPlayer.pause()
             OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
             if (!isNearToSensor) {
                 if (!aodWakeLock.isHeld) {

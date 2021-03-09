@@ -927,4 +927,16 @@
     <string name="db_debug_enable">已开启 db 调试</string>
     <string name="db_debug_disable">已关闭 db 调试</string>
     <string name="db_debug_warning">注意：如果执行了有侵害性的 SQL，结果不可逆！</string>
+
+    <!--  player  -->
+    <string name="player_playlist">播放列表</string>
+    <string name="notification_channel">正在播放</string>
+    <string name="notification_channel_description">显示 Mixin Messenger 中正在播放的音乐</string>
+    <string name="notification_skip_to_previous">上一首</string>
+    <string name="notification_skip_to_next">下一首</string>
+    <string name="notification_play">播放</string>
+    <string name="notification_pause">暂停</string>
+    <string name="player_delete_all_desc">确定要停止并关闭播放列表？</string>
+    <string name="player_stop_playing">停止播放</string>
+    <string name="player_playback_failed">播放失败</string>
 </resources>

@@ -56,6 +56,13 @@
         <item name="bg_divider">@color/divider</item>
         <item name="bg_translucence">@color/bgTranslucence</item>
 
+        <item name="music_played">@color/musicPlayed</item>
+        <item name="music_unplayed">@color/musicUnPlayed</item>
+        <item name="music_buffered">@color/musicBuffered</item>
+        <item name="music_text">@color/musicText</item>
+        <item name="music_floating_bg">@color/musicFloatingBg</item>
+        <item name="music_play_pause_bg">@color/musicPlayPauseBg</item>
+
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
@@ -233,6 +240,10 @@
     <style name="AppTheme.Web" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <style name="AppTheme.Music" parent="AppTheme.Web">
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <style name="BoxStyle" parent="AppTheme">

@@ -44,6 +44,13 @@
     <attr name="bg_translucence" format="color|reference" />
     <attr name="bg_bot" format="color|reference" />
 
+    <attr name="music_played" format="color|reference" />
+    <attr name="music_unplayed" format="color|reference" />
+    <attr name="music_buffered" format="color|reference" />
+    <attr name="music_text" format="color|reference" />
+    <attr name="music_floating_bg" format="color|reference" />
+    <attr name="music_play_pause_bg" format="color|reference" />
+
     <attr name="flag_night" format="boolean|reference" />
 
     <attr name="map_default" format="reference" />

@@ -16,6 +16,7 @@ import one.mixin.android.vo.User
 
 class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
     private val binding = ViewRoundTitleBinding.inflate(LayoutInflater.from(context), this, true)
+    val leftIv = binding.leftIv
     val rightIv = binding.rightIv
     val titleTv = binding.titleTv
     init {

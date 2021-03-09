@@ -354,17 +354,17 @@ fun File.createImageTemp(conversationId: String, messageId: String, type: String
 }
 
 fun File.createImageTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("IMAGE_$time", ".jpg", noMedia)
 }
 
 fun File.createImagePngTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("IMAGE_$time", ".png", noMedia)
 }
 
 fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return if (prefix != null) {
         newTempFile("${prefix}_POST_$time", type ?: ".md", false)
     } else {
@@ -378,12 +378,12 @@ fun File.createGifTemp(conversationId: String, messageId: String, noMedia: Boole
 }
 
 fun File.createGifTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile(time, ".gif", noMedia)
 }
 
 fun File.createPngTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("IMAGE_$time", ".png", noMedia)
 }
 
@@ -411,7 +411,7 @@ fun File.createDocumentTemp(conversationId: String, messageId: String, type: Str
 }
 
 private fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair<File, Boolean> {
-    val defaultName = "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}"
+    val defaultName = "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())}"
     val fileName = name ?: defaultName
     if (!this.exists()) {
         this.mkdirs()
@@ -429,7 +429,7 @@ fun File.createVideoTemp(conversationId: String, messageId: String, type: String
 }
 
 fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("VIDEO_$time", ".$type", noMedia)
 }
 
@@ -521,6 +521,16 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
         }
     }
     return null
+}
+
+fun Uri.getOrCreate(context: Context = MixinApplication.appContext, name: String): String? {
+    val file = File(context.getDocumentPath(), name)
+    if (!file.exists()) {
+        context.contentResolver.openInputStream(this)?.let {
+            file.copyFromInputStream(it)
+        }
+    }
+    return file.absolutePath
 }
 
 fun File.copyFromInputStream(inputStream: InputStream) {

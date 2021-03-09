@@ -47,6 +47,11 @@ class FileProgressTextView @JvmOverloads constructor(
         }
     }
 
+    fun clearBindIdAndSetText(fileText: String?) {
+        text = fileText
+        mBindId = null
+    }
+
     override fun onDetachedFromWindow() {
         disposable?.let {
             if (!it.isDisposed) {

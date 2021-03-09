@@ -1,10 +1,12 @@
 package one.mixin.android.db
 
+import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
+import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.HyperlinkItem
@@ -506,4 +508,43 @@ interface MessageDao : BaseDao<Message> {
             conversationDao.unseenMessageCount(message.conversationId, userId)
         }
     }
+
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE m.conversation_id = :conversationId
+        AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND media_status != 'EXPIRED'
+        ORDER BY m.created_at ASC, m.rowid ASC
+    """
+    )
+    suspend fun findAudiosByConversationId(conversationId: String): List<MessageItem>
+
+    @Query(
+        """
+        SELECT id as mediaId, media_status as mediaStatus FROM messages 
+        WHERE conversation_id = :conversationId
+        AND (category = 'SIGNAL_DATA' OR category = 'PLAIN_DATA') AND media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND media_status != 'EXPIRED'
+        ORDER BY created_at ASC, rowid ASC
+    """
+    )
+    fun observeMediaStatus(conversationId: String): LiveData<List<MessageIdIdAndMediaStatus>>
+
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE m.conversation_id = :conversationId
+        AND m.id in (:ids)
+    """
+    )
+    suspend fun suspendFindMessagesByIds(conversationId: String, ids: List<String>): List<MessageItem>
 }

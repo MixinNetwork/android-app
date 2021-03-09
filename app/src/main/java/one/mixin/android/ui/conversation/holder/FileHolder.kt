@@ -18,12 +18,11 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.textResource
 
 class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
     init {
@@ -89,7 +88,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         )
         when (messageItem.mediaStatus) {
             MediaStatus.EXPIRED.name -> {
-                binding.bottomLayout.fileSizeTv.textResource = R.string.chat_expired
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.chat_expired))
             }
             MediaStatus.PENDING.name -> {
                 messageItem.mediaSize?.notNullWithElse(
@@ -97,12 +96,12 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                         binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, it)
                     },
                     {
-                        binding.bottomLayout.fileSizeTv.text = messageItem.mediaSize.fileSize()
+                        binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize.fileSize())
                     }
                 )
             }
             else -> {
-                binding.bottomLayout.fileSizeTv.text = "${messageItem.mediaSize?.fileSize()}"
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())
             }
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
@@ -121,9 +120,9 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
 
                 override fun onStopTrackingTouch(seekBar: SeekBar) {
                     if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
-                        AudioPlayer.isPlay(messageItem.messageId)
+                        MusicPlayer.isPlay(messageItem.messageId)
                     ) {
-                        AudioPlayer.seekTo(seekBar.progress)
+                        MusicPlayer.seekTo(seekBar.progress)
                     }
                 }
             }
@@ -133,6 +132,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 MediaStatus.EXPIRED.name -> {
                     binding.fileExpired.visibility = View.VISIBLE
                     binding.fileProgress.visibility = View.INVISIBLE
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.chatLayout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
@@ -142,6 +143,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.visibility = View.VISIBLE
                     binding.fileProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
                     binding.fileProgress.setBindOnly(messageItem.messageId)
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.messageId)
                     }
@@ -154,9 +157,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                         binding.fileProgress.setBindOnly(messageItem.messageId)
-
                         binding.bottomLayout.bindId = messageItem.messageId
-                        if (AudioPlayer.isPlay(messageItem.messageId)) {
+                        if (MusicPlayer.isPlay(messageItem.messageId)) {
                             binding.fileProgress.setPause()
                             binding.bottomLayout.showSeekBar()
                         } else {
@@ -175,7 +177,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                         }
                     }
                     binding.chatLayout.setOnClickListener {
-                        if (AudioPlayer.isPlay(messageItem.messageId)) {
+                        if (MusicPlayer.isPlay(messageItem.messageId)) {
                             onItemListener.onAudioFileClick(messageItem)
                         } else {
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
@@ -192,6 +194,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     }
                     binding.fileProgress.setBindId(messageItem.messageId)
                     binding.fileProgress.setProgress(-1)
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.fileProgress.setOnClickListener {
                         if (isMe && messageItem.mediaUrl != null) {
                             onItemListener.onRetryUpload(messageItem.messageId)
