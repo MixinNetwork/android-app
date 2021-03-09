@@ -3,7 +3,6 @@ package one.mixin.android.ui.player.internal
 import android.graphics.BitmapFactory
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.toBytes
-import timber.log.Timber
 import java.io.File
 
 object AlbumArtCache {
@@ -12,7 +11,6 @@ object AlbumArtCache {
     fun getAlbumArtUri(id: String, url: String?, artData: ByteArray?): String {
         val cachedFile = getCachedFile(id)
         return if (cachedFile != null) {
-            Timber.d("Cache hit for $url at ${cachedFile.absolutePath}")
             cachedFile.absolutePath
         } else {
             if (artData != null) {

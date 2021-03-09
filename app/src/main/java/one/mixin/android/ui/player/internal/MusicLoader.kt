@@ -14,7 +14,6 @@ import one.mixin.android.extension.isLocalScheme
 import one.mixin.android.extension.toUri
 import timber.log.Timber
 import java.io.FileNotFoundException
-import java.lang.Exception
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -64,9 +63,7 @@ abstract class MusicLoader {
         var album: String? = null
         var albumArt: String? = null
         for (i in 0 until metadata.length()) {
-            val entry = metadata[i]
-            // Timber.d("@@@ entry: $entry")
-            when (entry) {
+            when (val entry = metadata[i]) {
                 is TextInformationFrame -> {
                     when {
                         entry.id.startsWith("TPE") -> {

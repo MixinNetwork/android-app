@@ -92,6 +92,11 @@ class MusicActivity : BaseActivity() {
         }
     }
 
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(0, 0)
+    }
+
     private fun handleIntent() {
         FloatingPlayer.getInstance().hide()
     }

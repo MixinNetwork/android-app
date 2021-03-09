@@ -45,7 +45,6 @@ internal constructor(
                 mediaId,
                 object : MediaBrowserCompat.SubscriptionCallback() {
                     override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
-                        Timber.d("@@@ onChildrenLoaded")
                         onChildrenLoaded.invoke()
                         musicServiceConnection.unsubscribe(mediaId, this)
                     }
@@ -83,7 +82,6 @@ internal constructor(
                     mediaId,
                     object : MediaBrowserCompat.SubscriptionCallback() {
                         override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
-                            Timber.d("@@@ onChildrenLoaded")
                             onChildrenLoaded.invoke()
                             musicServiceConnection.unsubscribe(mediaId, this)
                         }
@@ -108,7 +106,6 @@ internal constructor(
                 mediaId,
                 object : MediaBrowserCompat.SubscriptionCallback() {
                     override fun onChildrenLoaded(parentId: String, children: MutableList<MediaBrowserCompat.MediaItem>) {
-                        Timber.d("@@@ onChildrenLoaded")
                         onChildrenLoaded.invoke()
                         musicServiceConnection.unsubscribe(mediaId, this)
                     }
@@ -143,7 +140,6 @@ internal constructor(
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(parentId: String, children: List<MediaBrowserCompat.MediaItem>) {
-            Timber.d("@@@ onChildrenLoaded parentId: $parentId")
             val itemsList = children.map { child ->
                 val subtitle = child.description.subtitle ?: ""
                 MediaItemData(

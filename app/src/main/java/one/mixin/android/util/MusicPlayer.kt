@@ -254,7 +254,6 @@ class MusicPlayer private constructor() {
             val remain = currentPlaylistItems.size - index
             currentPlaylistItems = downloadedList
             val initialWindowIndex = if (itemToPlay == null) 0 else downloadedList.indexOfFirst { it.description.mediaId == itemToPlay }
-            Timber.d("@@@ index: $index, initialWindowIndex: $initialWindowIndex, remain: $remain")
             if (initialWindowIndex == -1) {
                 val mediaSource = downloadedList.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
                 concatenatingMediaSource = mediaSource
@@ -335,7 +334,6 @@ class MusicPlayer private constructor() {
         playWhenReady: Boolean = false,
         playbackStartPositionMs: Long = 0,
     ) {
-        Timber.d("@@@ playMusicList itemToPlay: ${itemToPlay?.description?.mediaId}, metadataList: ${metadataList.size}")
         val initialWindowIndex = if (itemToPlay == null) 0 else metadataList.indexOf(itemToPlay)
         exoPlayer.apply {
             if (itemToPlay != null) {

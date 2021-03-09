@@ -8,7 +8,6 @@ import one.mixin.android.extension.fileSize
 import one.mixin.android.ui.player.internal.AlbumArtCache.DEFAULT_ALBUM_ART
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import timber.log.Timber
 
 class ConversationLoader(
     private val database: MixinDatabase,
@@ -27,7 +26,6 @@ class ConversationLoader(
 
     private fun loadMessageItems(messageItems: List<MessageItem>): List<MediaMetadataCompat> {
         val mediaMetadataCompats = mutableListOf<MediaMetadataCompat>()
-        val start = System.currentTimeMillis()
         messageItems.forEach { m ->
             when (m.mediaStatus) {
                 MediaStatus.CANCELED.name, MediaStatus.PENDING.name -> {
@@ -39,7 +37,6 @@ class ConversationLoader(
                 }
                 else -> {
                     val url = m.mediaUrl ?: return@forEach
-                    Timber.d("@@@ url: $url")
                     val musicMeta = retrieveMetadata(m.messageId, url) ?: return@forEach
                     mediaMetadataCompats.add(
                         MediaMetadataCompat.Builder()
@@ -51,7 +48,6 @@ class ConversationLoader(
         }
 
         mediaMetadataCompats.forEach { it.description.extras?.putAll(it.bundle) }
-        Timber.d("@@@ retrieve ${messageItems.size} items cost: ${System.currentTimeMillis() - start}")
         return mediaMetadataCompats
     }
 

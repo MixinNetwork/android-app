@@ -24,8 +24,6 @@ data class MediaItemData(
                 oldItem == newItem
         }
     }
-
-    fun createNew(newStatus: Long) = MediaItemData(mediaId, title, subtitle, albumArtUri, browsable, newStatus)
 }
 
 data class MessageIdIdAndMediaStatus(

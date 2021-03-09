@@ -137,7 +137,7 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     override fun onLoadChildren(parentId: String, result: Result<List<MediaBrowserCompat.MediaItem>>) {
-        Timber.d("@@@ onLoadChildren parentId: $parentId")
+        Timber.d("$TAG onLoadChildren parentId: $parentId")
         val exists = musicTree[parentId]
         if (exists != null) {
             val children = exists.map { item ->
@@ -201,7 +201,7 @@ class MusicService : MediaBrowserServiceCompat() {
             val updateList = mutableListOf<String>()
             var changed = false
 
-            Timber.d("@@@ observe list size: ${list.size}, album size: ${album.size}")
+            Timber.d("$TAG observe list size: ${list.size}, album size: ${album.size}")
             list.forEach { item ->
                 val exists = album.find { item.mediaId == it.description.mediaId }
 
@@ -228,7 +228,7 @@ class MusicService : MediaBrowserServiceCompat() {
                     }
                 }
             }
-            Timber.d("@@@ updateList size: ${updateList.size}")
+            Timber.d("$TAG updateList size: ${updateList.size}")
             if (updateList.isNotEmpty()) {
                 updateMusicItems(updateList.toTypedArray())
             }
@@ -248,14 +248,13 @@ class MusicService : MediaBrowserServiceCompat() {
         mediaId: String? = null,
         onLoaded: ((MediaMetadataCompat) -> Unit)? = null,
     ) {
-        Timber.d("@@@ loadConversationMusic parentId: $parentId, mediaId: $mediaId, musicLoader-cid: ${musicLoader?.conversationId}")
+        Timber.d("$TAG loadConversationMusic parentId: $parentId, mediaId: $mediaId, musicLoader-cid: ${musicLoader?.conversationId}")
         if ((lastMediaId != null && mediaId == null) ||
             (musicLoader != null && musicLoader?.conversationId == parentId && mediaId == null)
         ) {
             return
         }
 
-        Timber.d("@@@ load conversation music")
         loadJob?.cancel()
         lastMediaId = mediaId
         musicLoader = ConversationLoader(database, parentId)
@@ -332,7 +331,6 @@ class MusicService : MediaBrowserServiceCompat() {
                 PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
 
         override fun onPrepare(playWhenReady: Boolean) {
-            Timber.d("@@@ onPrepare playWhenReady: $playWhenReady")
         }
 
         override fun onPrepareFromMediaId(
@@ -341,10 +339,10 @@ class MusicService : MediaBrowserServiceCompat() {
             extras: Bundle?
         ) {
             val pid = extras?.getString(MUSIC_EXTRA_PARENT_ID) ?: parentId
-            Timber.d("@@@ onPrepareFromMediaId mediaId: $mediaId, pid: $pid, playWhenReady: $playWhenReady")
+            Timber.d("$TAG onPrepareFromMediaId mediaId: $mediaId, pid: $pid, playWhenReady: $playWhenReady")
             val parentExists = musicTree[pid]
             if (parentExists == null) {
-                Timber.d("@@@ not find parent for $pid")
+                Timber.d("$TAG not find parent for $pid")
                 if (pid == MUSIC_PLAYLIST) {
                     val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST)
                     if (!playlist.isNullOrEmpty()) {
@@ -360,7 +358,7 @@ class MusicService : MediaBrowserServiceCompat() {
                     }
                 }
             } else {
-                Timber.d("@@@ find parent for $pid")
+                Timber.d("$TAG find parent for $pid")
                 val itemToPlay = parentExists.find { item ->
                     item.description.mediaId == mediaId
                 }
@@ -415,7 +413,7 @@ class MusicService : MediaBrowserServiceCompat() {
             extras: Bundle?,
             cb: ResultReceiver?
         ): Boolean {
-            Timber.d("@@@ onCommand command: $command")
+            Timber.d("$TAG onCommand command: $command")
             when (command) {
                 MUSIC_CMD_PLAYLIST -> {
                     val playlist = extras?.getStringArray(MUSIC_EXTRA_PLAYLIST) ?: return false
@@ -489,8 +487,7 @@ class MusicService : MediaBrowserServiceCompat() {
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
-            Timber.e(error)
-            // reportExoPlayerException("MusicPlayer", error)
+            Timber.i(error)
         }
     }
 }
@@ -507,6 +504,6 @@ const val MUSIC_EXTRA_PLAYLIST = "music_extra_playlist"
 const val MUSIC_EXTRA_ITEMS = "music_extra_items"
 const val MUSIC_EXTRA_PARENT_ID = "music_extra_parent_id"
 
-val MEDIA_DESCRIPTION_EXTRAS_START_PLAYBACK_POSITION_MS = "playback_start_position_ms"
+const val MEDIA_DESCRIPTION_EXTRAS_START_PLAYBACK_POSITION_MS = "playback_start_position_ms"
 
 private const val TAG = "MusicService"
