@@ -61,13 +61,6 @@ class MusicActivity : BaseActivity() {
         }
         MusicBottomSheetDialogFragment.newInstance(conversationId)
             .showNow(supportFragmentManager, MusicBottomSheetDialogFragment.TAG)
-
-        handleIntent()
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        handleIntent()
     }
 
     var serviceStopped = false
@@ -80,9 +73,6 @@ class MusicActivity : BaseActivity() {
                 if (!setClicked) {
                     showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
                 }
-            } else {
-                collapse(this)
-                finish()
             }
         }
     }
@@ -90,10 +80,6 @@ class MusicActivity : BaseActivity() {
     override fun finish() {
         super.finish()
         overridePendingTransition(0, 0)
-    }
-
-    private fun handleIntent() {
-        FloatingPlayer.getInstance().hide()
     }
 
     private var permissionAlert: AlertDialog? = null

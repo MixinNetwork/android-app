@@ -37,7 +37,9 @@ import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
+import one.mixin.android.ui.player.isMusicServiceRunning
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
@@ -211,7 +213,7 @@ open class MixinApplication :
         SignalDatabase.getDatabase(this).clearAllTables()
     }
 
-    private var activityInForeground = true
+    var activityInForeground = true
     var currentActivity: Activity? = null
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
     }
@@ -221,12 +223,23 @@ open class MixinApplication :
 
     override fun onActivityResumed(activity: Activity) {
         activityInForeground = true
-        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity) {
+        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity) {
             FloatingWebClip.getInstance(activity.isNightMode()).hide()
-        } else if (activity !is WebActivity && activity !is LandingActivity && activity !is InitializeActivity) {
-            currentActivity = activity
-            GlobalScope.launch(Dispatchers.Main) {
-                refresh(activity)
+            FloatingPlayer.getInstance(activity.isNightMode()).hide()
+        } else if (activity !is LandingActivity && activity !is InitializeActivity) {
+            if (activity !is WebActivity) {
+                currentActivity = activity
+                GlobalScope.launch(Dispatchers.Main) {
+                    refresh(activity)
+                }
+            }
+            if (activity !is MusicActivity) {
+                currentActivity = activity
+                GlobalScope.launch(Dispatchers.Main) {
+                    if (isMusicServiceRunning(activity)) {
+                        FloatingPlayer.getInstance(activity.isNightMode()).show(activity, false)
+                    }
+                }
             }
         }
     }
@@ -237,6 +250,7 @@ open class MixinApplication :
             delay(200)
             if (!activityInForeground) {
                 FloatingWebClip.getInstance(activity.isNightMode()).hide()
+                FloatingPlayer.getInstance(activity.isNightMode()).hide()
             }
         }
     }

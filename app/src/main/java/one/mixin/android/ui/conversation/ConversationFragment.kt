@@ -631,7 +631,9 @@ class ConversationFragment() :
                         ) {
                             if (viewDestroyed()) return@playMedia
                             if (checkFloatingPermission()) {
-                                collapse(requireActivity(), conversationId)
+                                if (MixinApplication.get().activityInForeground) {
+                                    collapse(requireActivity(), conversationId)
+                                }
                             } else {
                                 requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
                             }
