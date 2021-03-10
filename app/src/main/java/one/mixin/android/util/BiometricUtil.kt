@@ -38,16 +38,16 @@ object BiometricUtil {
 
     fun isSupportWithErrorInfo(ctx: Context): Pair<Boolean, String?> {
         if (!BiometricPromptCompat.isHardwareDetected(ctx)) {
-            return Pair(false, "Low device software version")
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_low_version))
         }
         if (!isKeyguardSecure(ctx)) {
-            return Pair(false, "The PIN, pattern or password is NOT set or a SIM card is unlocked")
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_pin_not_set))
         }
         if (!isSecureHardware()) {
-            return Pair(false, "The key NOT resides inside secure hardware (TEE)")
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_not_secure))
         }
         if (RootUtil.isDeviceRooted) {
-            return Pair(false, "The device has been rooted")
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_rooted))
         }
         return Pair(true, null)
     }

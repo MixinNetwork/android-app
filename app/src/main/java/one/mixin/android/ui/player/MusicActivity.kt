@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.checkInlinePermissions
@@ -62,13 +61,6 @@ class MusicActivity : BaseActivity() {
         }
         MusicBottomSheetDialogFragment.newInstance(conversationId)
             .showNow(supportFragmentManager, MusicBottomSheetDialogFragment.TAG)
-
-        handleIntent()
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        handleIntent()
     }
 
     var serviceStopped = false
@@ -81,13 +73,6 @@ class MusicActivity : BaseActivity() {
                 if (!setClicked) {
                     showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
                 }
-            } else {
-                collapse(this)
-
-                val dialogFragment = supportFragmentManager.findFragmentByTag(MusicBottomSheetDialogFragment.TAG) as? DialogFragment
-                dialogFragment?.dismissAllowingStateLoss()
-
-                finish()
             }
         }
     }
@@ -95,10 +80,6 @@ class MusicActivity : BaseActivity() {
     override fun finish() {
         super.finish()
         overridePendingTransition(0, 0)
-    }
-
-    private fun handleIntent() {
-        FloatingPlayer.getInstance().hide()
     }
 
     private var permissionAlert: AlertDialog? = null
