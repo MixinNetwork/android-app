@@ -1,9 +1,14 @@
 package one.mixin.android.ui.common.biometric
 
-import android.content.Context
-import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
-import moe.feng.support.biometricprompt.BiometricPromptCompat
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricPrompt
+import androidx.biometric.BiometricPrompt.ERROR_CANCELED
+import androidx.biometric.BiometricPrompt.ERROR_LOCKOUT
+import androidx.biometric.BiometricPrompt.ERROR_LOCKOUT_PERMANENT
+import androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
@@ -23,21 +28,20 @@ class BiometricInfo(
 )
 
 class BiometricDialog(
-    private val context: Context,
+    private val context: FragmentActivity,
     private val biometricInfo: BiometricInfo
 ) {
     var callback: Callback? = null
-    private var cancellationSignal: CancellationSignal? = null
 
     fun show() {
-        val biometricPromptBuilder = BiometricPromptCompat.Builder(context)
-        biometricPromptBuilder.setTitle(biometricInfo.title)
+        val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(biometricInfo.title)
             .setSubtitle(biometricInfo.subTitle)
             .setDescription(biometricInfo.description)
-            .setNegativeButton(biometricInfo.negativeBtnText) { _, _ ->
-                callback?.showPin()
-            }
-        val biometricPrompt = biometricPromptBuilder.build()
+            .setNegativeButtonText(biometricInfo.negativeBtnText)
+            .setConfirmationRequired(true)
+            .setAllowedAuthenticators(BIOMETRIC_STRONG)
+            .build()
         val cipher = try {
             BiometricUtil.getDecryptCipher(context)
         } catch (e: Exception) {
@@ -54,28 +58,23 @@ class BiometricDialog(
             }
             return
         }
-        val cryptoObject = BiometricPromptCompat.DefaultCryptoObject(cipher)
-        cancellationSignal = CancellationSignal().apply {
-            setOnCancelListener { context.toast(R.string.cancel) }
-        }
-        biometricPrompt.authenticate(cryptoObject, cancellationSignal, biometricCallback)
+        val cryptoObject = BiometricPrompt.CryptoObject(cipher)
+        val biometricPrompt = BiometricPrompt(context, ContextCompat.getMainExecutor(context), authenticationCallback)
+        biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
     }
 
-    private val biometricCallback = object : BiometricPromptCompat.IAuthenticationCallback {
-        override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
-            if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_CANCELED || errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_USER_CANCELED) {
+    private val authenticationCallback = object : BiometricPrompt.AuthenticationCallback() {
+        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+            if (errorCode == ERROR_CANCELED || errorCode == ERROR_USER_CANCELED) {
                 callback?.onCancel()
-            } else if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT ||
-                errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT
-            ) {
-                cancellationSignal?.cancel()
+            } else if (errorCode == ERROR_LOCKOUT || errorCode == ERROR_LOCKOUT_PERMANENT) {
                 callback?.showPin()
             } else {
-                errString?.let { context.toast(it) }
+                context.toast(errString)
             }
         }
 
-        override fun onAuthenticationSucceeded(result: BiometricPromptCompat.IAuthenticationResult) {
+        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
             val cipher = result.cryptoObject?.cipher
             if (cipher != null) {
                 try {
@@ -87,12 +86,6 @@ class BiometricDialog(
                     reportException("$CRASHLYTICS_BIOMETRIC-onAuthenticationSucceeded", e)
                 }
             }
-        }
-
-        override fun onAuthenticationHelp(helpCode: Int, helpString: CharSequence?) {
-        }
-
-        override fun onAuthenticationFailed() {
         }
     }
 

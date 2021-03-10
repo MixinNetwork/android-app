@@ -6,9 +6,17 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.security.keystore.UserNotAuthenticatedException
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED
+import androidx.biometric.BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED
+import androidx.biometric.BiometricManager.BIOMETRIC_STATUS_UNKNOWN
+import androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
-import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
 import one.mixin.android.R
@@ -33,12 +41,25 @@ object BiometricUtil {
     const val CRASHLYTICS_BIOMETRIC = "biometric"
 
     private fun isSupport(ctx: Context): Boolean {
-        return BiometricPromptCompat.isHardwareDetected(ctx) && isKeyguardSecure(ctx) && isSecureHardware() && !RootUtil.isDeviceRooted
+        val biometricManager = BiometricManager.from(ctx)
+        return biometricManager.canAuthenticate(BIOMETRIC_STRONG) == BIOMETRIC_SUCCESS &&
+            isKeyguardSecure(ctx) && isSecureHardware() && !RootUtil.isDeviceRooted
     }
 
     fun isSupportWithErrorInfo(ctx: Context): Pair<Boolean, String?> {
-        if (!BiometricPromptCompat.isHardwareDetected(ctx)) {
-            return Pair(false, ctx.getString(R.string.setting_biometric_error_low_version))
+        val biometricManager = BiometricManager.from(ctx)
+        val authStatusCode = biometricManager.canAuthenticate(BIOMETRIC_STRONG)
+        if (authStatusCode == BIOMETRIC_STATUS_UNKNOWN ||
+            authStatusCode == BIOMETRIC_ERROR_UNSUPPORTED ||
+            authStatusCode == BIOMETRIC_ERROR_NO_HARDWARE
+        ) {
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_unsupported_device))
+        } else if (authStatusCode == BIOMETRIC_ERROR_HW_UNAVAILABLE) {
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_hardware_unavailable))
+        } else if (authStatusCode == BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED) {
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_not_secure))
+        } else if (authStatusCode == BIOMETRIC_ERROR_NONE_ENROLLED) {
+            return Pair(false, ctx.getString(R.string.setting_biometric_error_none_enrolled))
         }
         if (!isKeyguardSecure(ctx)) {
             return Pair(false, ctx.getString(R.string.setting_biometric_error_pin_not_set))

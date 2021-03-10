@@ -593,7 +593,9 @@
     <string name="setting_share">分享应用</string>
     <string name="setting_share_text">快来 Mixin 与我聊天！简单、安全好用还支持比特币、以太坊等加密货币，下载 https://mixin.one/messenger 后搜索 %1$s 加我好友。</string>
     <string name="setting_auth_search_hint">Mixin ID, 昵称</string>
-    <string name="setting_biometric_error_low_version">设备系统版本过低</string>
+    <string name="setting_biometric_error_unsupported_device">当前设备不支持</string>
+    <string name="setting_biometric_error_hardware_unavailable">当前设备硬件不可用，请稍后再试</string>
+    <string name="setting_biometric_error_none_enrolled">未录入指纹或其他设备解锁凭证</string>
     <string name="setting_biometric_error_pin_not_set">当前设备不安全，请设置解锁密码或解锁手势或 SIM 卡锁定</string>
     <string name="setting_biometric_error_not_secure">当前设备不安全</string>
     <string name="setting_biometric_error_rooted">当前设备不安全</string>

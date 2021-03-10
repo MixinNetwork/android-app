@@ -94,7 +94,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     private fun showBiometricPrompt() {
         biometricDialog = BiometricDialog(
-            requireContext(),
+            requireActivity(),
             getBiometricInfo()
         )
         biometricDialog?.callback = biometricDialogCallback
