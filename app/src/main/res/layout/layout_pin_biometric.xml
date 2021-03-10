@@ -111,5 +111,17 @@
             android:layout_gravity="center_horizontal"
             android:textColor="@color/textRemarks"
             android:text="@string/done"/>
+
+        <TextView
+            android:id="@+id/enable_biometric_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="20dp"
+            android:textColor="@color/colorBlue"
+            android:text="@string/setting_enable_biometric_pay"
+            android:drawablePadding="@dimen/margin10"
+            app:drawableStartCompat="@drawable/ic_biometric_enable" />
     </LinearLayout>
 </merge>

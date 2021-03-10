@@ -599,6 +599,7 @@
     <string name="setting_biometric_error_pin_not_set">当前设备不安全，请设置解锁密码或解锁手势或 SIM 卡锁定</string>
     <string name="setting_biometric_error_not_secure">当前设备不安全</string>
     <string name="setting_biometric_error_rooted">当前设备不安全</string>
+    <string name="setting_enable_biometric_pay">开启生物识别支付？</string>
     <string-array name="setting_night_array">
         <item>浅色</item>
         <item>暗黑</item>

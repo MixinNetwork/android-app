@@ -616,6 +616,7 @@
     <string name="setting_biometric_error_pin_not_set">The PIN, pattern or password is NOT set or a SIM card is unlocked</string>
     <string name="setting_biometric_error_not_secure">The key NOT resides inside secure hardware (TEE)</string>
     <string name="setting_biometric_error_rooted">The device has been rooted</string>
+    <string name="setting_enable_biometric_pay">Enable Biometric Pay?</string>
     <string-array name="setting_night_array">
         <item>Light</item>
         <item>Dark</item>

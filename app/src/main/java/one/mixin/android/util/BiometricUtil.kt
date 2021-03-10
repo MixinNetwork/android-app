@@ -40,7 +40,7 @@ object BiometricUtil {
 
     const val CRASHLYTICS_BIOMETRIC = "biometric"
 
-    private fun isSupport(ctx: Context): Boolean {
+    fun isSupport(ctx: Context): Boolean {
         val biometricManager = BiometricManager.from(ctx)
         return biometricManager.canAuthenticate(BIOMETRIC_STRONG) == BIOMETRIC_SUCCESS &&
             isKeyguardSecure(ctx) && isSecureHardware() && !RootUtil.isDeviceRooted
