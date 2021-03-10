@@ -98,7 +98,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         try {
             loadData()
         } catch (e: Exception) {
-            toast(R.string.error_data)
+            toast(getString(R.string.error_unknown_with_message, e.message))
             dismiss()
             return
         }
@@ -233,7 +233,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun loadLive(content: String) {
         val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
         if (liveData.width <= 0 || liveData.height <= 0) {
-            toast(R.string.error_data)
+            toast(getString(R.string.error_unknown_with_message, "Illegal size"))
             dismiss()
         }
         val renderer = ShareLiveRenderer(requireContext())
