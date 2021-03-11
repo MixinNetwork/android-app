@@ -493,10 +493,10 @@ class ConversationListFragment : LinkFragment() {
     private fun showEmergencyContact() = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 
-        val totalUsd = messagesViewModel.findTotalUSDBalance()
-        if (totalUsd >= 100) {
-            val emergencyContactTime = requireContext().defaultSharedPreferences.getLong(PREF_EMERGENCY_CONTACT, 0)
-            if (System.currentTimeMillis() - emergencyContactTime > INTERVAL_7_DAYS) {
+        val emergencyContactTime = requireContext().defaultSharedPreferences.getLong(PREF_EMERGENCY_CONTACT, 0)
+        if (System.currentTimeMillis() - emergencyContactTime > INTERVAL_7_DAYS) {
+            val totalUsd = messagesViewModel.findTotalUSDBalance()
+            if (totalUsd >= 100) {
                 bulletinView.type = BulletinView.Type.EmergencyContact
                 bulletinView.callback = bulletinEmergencyContactCallback
                 messageAdapter.setShowHeader(true, binding.messageRv)
