@@ -11,8 +11,10 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPinBiometricBinding
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.tapVibrate
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
@@ -25,6 +27,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     val payTv get() = binding.payTv
     val pin get() = binding.pin
     val errorBtn get() = binding.errorBtn
+    val enableBiometricTv get() = binding.enableBiometricTv
 
     var callback: Callback? = null
 
@@ -120,6 +123,13 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
 
     fun showDone() {
         displayedChild = POS_DONE
+
+        val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+        enableBiometricTv.isVisible = !open && BiometricUtil.isSupport(context)
+        enableBiometricTv.setOnClickListener {
+            SettingActivity.showPinSetting(context)
+        }
+
         keyboard?.animateHeight(keyboardHeight, 0)
     }
 

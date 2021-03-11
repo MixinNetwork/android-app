@@ -15,8 +15,18 @@ import one.mixin.android.util.viewBinding
 class SettingActivity : BlazeBaseActivity() {
     companion object {
         const val FROM_NOTIFICATION = "notification"
+        const val EXTRA_SHOW_PIN_SETTING = "extra_show_pin_setting"
+
         fun show(context: Context) {
             context.startActivity(Intent(context, SettingActivity::class.java))
+        }
+
+        fun showPinSetting(context: Context) {
+            context.startActivity(
+                Intent(context, SettingActivity::class.java).apply {
+                    putExtra(EXTRA_SHOW_PIN_SETTING, true)
+                }
+            )
         }
     }
 
@@ -25,10 +35,14 @@ class SettingActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        val fragment = SettingFragment.newInstance()
-        replaceFragment(fragment, R.id.container, SettingFragment.TAG)
-        if (intent.getBooleanExtra(FROM_NOTIFICATION, false)) {
-            addFragment(fragment, BackUpFragment.newInstance(), BackUpFragment.TAG)
+        if (intent.getBooleanExtra(EXTRA_SHOW_PIN_SETTING, false)) {
+            replaceFragment(PinSettingFragment.newInstance(), R.id.container, PinSettingFragment.TAG)
+        } else {
+            val fragment = SettingFragment.newInstance()
+            replaceFragment(fragment, R.id.container, SettingFragment.TAG)
+            if (intent.getBooleanExtra(FROM_NOTIFICATION, false)) {
+                addFragment(fragment, BackUpFragment.newInstance(), BackUpFragment.TAG)
+            }
         }
     }
 
