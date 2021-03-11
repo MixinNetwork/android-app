@@ -316,6 +316,13 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             binding.assetRl.setOnClickListener {
                 operateKeyboard(false)
                 context?.let {
+                    if (assets.isNullOrEmpty()) {
+                        assetsViewBinding.emptyTv.isVisible = true
+                        assetsViewBinding.typeRv.isVisible = false
+                    } else {
+                        assetsViewBinding.emptyTv.isVisible = false
+                        assetsViewBinding.typeRv.isVisible = true
+                    }
                     adapter.submitList(assets)
                     adapter.setTypeListener(
                         object : OnTypeClickListener {
@@ -361,7 +368,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 if (r != null && r.isNotEmpty()) {
                     assets = r
                     adapter.submitList(r)
-                    binding.assetRl.isEnabled = true
 
                     r.find {
                         it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
@@ -376,8 +382,6 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                             currentAsset = a
                         }
                     )
-                } else {
-                    binding.assetRl.isEnabled = false
                 }
             }
         )

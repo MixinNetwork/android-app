@@ -445,6 +445,7 @@
     <string name="wallet_search_hint">Name, Symbol</string>
     <string name="wallet_trending">Trending</string>
     <string name="wallet_recent_search">Recent searches</string>
+    <string name="wallet_transfer_no_available_assets">No Available Assets</string>
     <!--pin logs-->
     <string name="logs">Logs</string>
     <string name="log_category_pin_incorrect">PIN incorrect</string>

@@ -42,9 +42,26 @@
         android:layout_height=".5dp"
         android:background="?attr/bg_window"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/type_rv"
+    <FrameLayout
+        android:id="@+id/type_fl"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layoutManager="LinearLayoutManager"/>
+        android:layout_height="wrap_content">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/type_rv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="LinearLayoutManager"/>
+
+        <TextView
+            android:id="@+id/empty_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="200dp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp"
+            android:text="@string/wallet_transfer_no_available_assets"/>
+    </FrameLayout>
 </one.mixin.android.widget.BottomSheetLinearLayout>
