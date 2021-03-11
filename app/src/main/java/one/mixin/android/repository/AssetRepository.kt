@@ -263,4 +263,6 @@ constructor(
 
     suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
         assetDao.suspendUpdatePrices(priceAndChange)
+
+    suspend fun findTotalUSDBalance(): Int = assetDao.findTotalUSDBalance() ?: 0
 }

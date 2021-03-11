@@ -35,9 +35,11 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Account.PREF_EMERGENCY_CONTACT
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.INTERVAL_48_HOURS
+import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
 import one.mixin.android.Constants.Mute.MUTE_1_WEEK
 import one.mixin.android.Constants.Mute.MUTE_1_YEAR
@@ -47,7 +49,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentConversationListBinding
 import one.mixin.android.databinding.ItemListConversationBinding
-import one.mixin.android.databinding.ItemListConversationHeaderBinding
 import one.mixin.android.databinding.ViewConversationBottomBinding
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
@@ -68,6 +69,7 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -83,6 +85,7 @@ import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
 import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
 import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.markdown.MarkwonUtil
@@ -90,9 +93,11 @@ import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.*
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.margin
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -115,6 +120,8 @@ class ConversationListFragment : LinkFragment() {
             registerAdapterDataObserver(messageAdapterDataObserver)
         }
     }
+
+    private lateinit var bulletinView: BulletinView
 
     private val messageAdapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
@@ -162,20 +169,13 @@ class ConversationListFragment : LinkFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController(activity as MainActivity)
-        val headerBinding =
-            ItemListConversationHeaderBinding.inflate(layoutInflater, binding.messageRv, false)
-        messageAdapter.headerView = headerBinding.root.apply {
-            headerBinding.headerClose.setOnClickListener {
-                messageAdapter.setShowHeader(false, binding.messageRv)
-                requireContext().defaultSharedPreferences.putLong(
-                    PREF_NOTIFICATION_ON,
-                    System.currentTimeMillis()
-                )
-            }
-            headerBinding.headerSettings.setOnClickListener {
-                requireContext().openNotificationSetting()
+        bulletinView = BulletinView(requireContext()).apply {
+            layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                margin = 16.dp
             }
         }
+        bulletinView.callback = bulletinNotificationCallback
+        messageAdapter.headerView = bulletinView
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -470,12 +470,67 @@ class ConversationListFragment : LinkFragment() {
         val notificationTime =
             requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
         if (System.currentTimeMillis() - notificationTime > INTERVAL_48_HOURS) {
-            messageAdapter.setShowHeader(
-                !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled(),
-                binding.messageRv
-            )
+            val notificationEnable = NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()
+            if (notificationEnable) {
+                checkEmergencyContact()
+            } else {
+                messageAdapter.setShowHeader(true, binding.messageRv)
+            }
         } else {
+            checkEmergencyContact()
+        }
+    }
+
+    private fun checkEmergencyContact() {
+        val hasEmergencyContact = Session.getAccount()?.hasEmergencyContact == true
+        if (hasEmergencyContact) {
             messageAdapter.setShowHeader(false, binding.messageRv)
+        } else {
+            showEmergencyContact()
+        }
+    }
+
+    private fun showEmergencyContact() = lifecycleScope.launch {
+        if (viewDestroyed()) return@launch
+
+        val totalUsd = messagesViewModel.findTotalUSDBalance()
+        if (totalUsd >= 100) {
+            val emergencyContactTime = requireContext().defaultSharedPreferences.getLong(PREF_EMERGENCY_CONTACT, 0)
+            if (System.currentTimeMillis() - emergencyContactTime > INTERVAL_7_DAYS) {
+                bulletinView.type = BulletinView.Type.EmergencyContact
+                bulletinView.callback = bulletinEmergencyContactCallback
+                messageAdapter.setShowHeader(true, binding.messageRv)
+                return@launch
+            }
+        }
+        messageAdapter.setShowHeader(false, binding.messageRv)
+    }
+
+    private val bulletinNotificationCallback = object : BulletinView.Callback {
+        override fun onClose() {
+            requireContext().defaultSharedPreferences.putLong(
+                PREF_NOTIFICATION_ON,
+                System.currentTimeMillis()
+            )
+            checkEmergencyContact()
+        }
+
+        override fun onSetting() {
+            requireContext().openNotificationSetting()
+        }
+    }
+
+    private val bulletinEmergencyContactCallback = object : BulletinView.Callback {
+        override fun onClose() {
+            messageAdapter.setShowHeader(false, binding.messageRv)
+            requireContext().defaultSharedPreferences.putLong(
+                PREF_EMERGENCY_CONTACT,
+                System.currentTimeMillis()
+            )
+        }
+
+        override fun onSetting() {
+            SettingActivity.showEmergencyContact(requireContext())
         }
     }
 

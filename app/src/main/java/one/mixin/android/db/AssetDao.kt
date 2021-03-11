@@ -106,4 +106,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @Update(entity = Asset::class)
     suspend fun suspendUpdatePrices(priceAndChanges: List<PriceAndChange>)
+
+    @Query("SELECT SUM(balance * price_usd) FROM assets")
+    suspend fun findTotalUSDBalance(): Int?
 }
