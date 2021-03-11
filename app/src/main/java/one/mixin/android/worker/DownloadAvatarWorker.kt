@@ -1,14 +1,16 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
 
-class DownloadAvatarWorker @WorkerInject constructor(
+@HiltWorker
+class DownloadAvatarWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters
 ) : AvatarWorker(context, parameters) {

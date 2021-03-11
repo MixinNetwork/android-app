@@ -1,11 +1,12 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.UserService
 import one.mixin.android.extension.buildNetworkRequest
@@ -13,7 +14,8 @@ import one.mixin.android.extension.buildRequest
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
 
-class RefreshUserWorker @WorkerInject constructor(
+@HiltWorker
+class RefreshUserWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val userService: UserService,

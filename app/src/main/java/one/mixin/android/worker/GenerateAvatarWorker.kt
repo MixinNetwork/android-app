@@ -14,10 +14,11 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import androidx.collection.ArrayMap
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.R
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.getColorCode
@@ -28,7 +29,8 @@ import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class GenerateAvatarWorker @WorkerInject constructor(
+@HiltWorker
+class GenerateAvatarWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters
 ) : AvatarWorker(context, parameters) {
