@@ -1,14 +1,16 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.vo.Asset
 
-class RefreshAssetsWorker @WorkerInject constructor(
+@HiltWorker
+class RefreshAssetsWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val assetService: AssetService,

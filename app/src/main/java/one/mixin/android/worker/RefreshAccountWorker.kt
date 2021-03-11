@@ -1,9 +1,10 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
@@ -14,7 +15,8 @@ import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.toUser
 
-class RefreshAccountWorker @WorkerInject constructor(
+@HiltWorker
+class RefreshAccountWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,

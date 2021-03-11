@@ -1,11 +1,12 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AssetDao
@@ -13,7 +14,8 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.vo.Snapshot
 
-class RefreshUserSnapshotsWorker @WorkerInject constructor(
+@HiltWorker
+class RefreshUserSnapshotsWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val assetService: AssetService,

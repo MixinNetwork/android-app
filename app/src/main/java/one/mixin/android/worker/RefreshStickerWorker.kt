@@ -1,16 +1,18 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.vo.Sticker
 
-class RefreshStickerWorker @WorkerInject constructor(
+@HiltWorker
+class RefreshStickerWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,

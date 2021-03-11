@@ -1,13 +1,15 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerRelationshipDao
 
-class RemoveStickersWorker @WorkerInject constructor(
+@HiltWorker
+class RemoveStickersWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,
