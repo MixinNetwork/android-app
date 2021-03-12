@@ -186,6 +186,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         updatePlayView()
         updateNavigation()
         updateTimeline()
+        updatePrevAndNext()
 
         player?.let {
             playMode = when (it.repeatMode) {
@@ -229,6 +230,13 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         }
     }
 
+    private fun updatePrevAndNext() {
+        val player = this.player ?: return
+
+        previousView.isEnabled = player.hasPrevious()
+        nextView.isEnabled = player.hasNext()
+    }
+
     private fun updateNavigation() {
         var enableSeeking = false
         if (player != null) {
@@ -244,6 +252,8 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
 
     private fun updateTimeline() {
         post {
+            if (player == null) return@post
+
             multiWindowTimeBar =
                 showMultiWindowTimeBar && canShowMultiWindowTimeBar(player!!.currentTimeline, window)
             currentWindowOffset = 0
@@ -402,6 +412,22 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
             updateNavigation()
             updateTimeline()
+        }
+
+        override fun onEvents(player: Player, events: Player.Events) {
+            if (events.containsAny(
+                    Player.EVENT_PLAYBACK_STATE_CHANGED,
+                    Player.EVENT_PLAY_WHEN_READY_CHANGED,
+                    Player.EVENT_IS_PLAYING_CHANGED,
+                    Player.EVENT_TIMELINE_CHANGED,
+                    Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
+                    Player.EVENT_POSITION_DISCONTINUITY,
+                    Player.EVENT_REPEAT_MODE_CHANGED,
+                    Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED
+                )
+            ) {
+                updatePrevAndNext()
+            }
         }
 
         @SuppressLint("SetTextI18n")

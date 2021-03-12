@@ -19,7 +19,7 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigateUp
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -111,7 +111,7 @@ interface TransactionInterface {
                         text = if (ticker.priceUsd == "0") {
                             fragment.getString(R.string.wallet_transaction_that_time_no_value)
                         } else {
-                            val amount = (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).priceFormat()
+                            val amount = (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
                             val pricePerUnit = if (BuildConfig.DEBUG) {
                                 "(${Fiats.getSymbol()}${ticker.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
                             } else {
@@ -200,7 +200,7 @@ interface TransactionInterface {
                     R.color.wallet_pink
                 }
             }
-            val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).priceFormat()
+            val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).numberFormat2()
             val pricePerUnit = if (BuildConfig.DEBUG) {
                 "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
             } else {

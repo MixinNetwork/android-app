@@ -178,6 +178,11 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         (requireActivity() as MusicActivity).checkFloatingPermission()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding.playerControlView.player = null
+    }
+
     override fun onDetach() {
         super.onDetach()
         requireActivity().finish()
