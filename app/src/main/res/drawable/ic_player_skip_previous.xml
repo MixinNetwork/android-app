@@ -3,7 +3,7 @@
     android:height="32dp"
     android:viewportWidth="24"
     android:viewportHeight="24"
-    android:tint="?attr/icon_default">
+    android:tint="@color/color_music_prev_next">
   <path
       android:fillColor="@android:color/white"
       android:pathData="M6,6h2v12L6,18zM9.5,12l8.5,6L18,6z"/>

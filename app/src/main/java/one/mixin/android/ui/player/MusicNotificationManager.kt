@@ -1,6 +1,5 @@
 package one.mixin.android.ui.player
 
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Bitmap
@@ -30,12 +29,9 @@ class MusicNotificationManager(
     notificationListener: PlayerNotificationManager.NotificationListener
 ) {
 
-    private var player: Player? = null
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private val notificationManager: PlayerNotificationManager
-    private val platformNotificationManager: NotificationManager =
-        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     init {
         val mediaController = MediaControllerCompat(context, sessionToken)
