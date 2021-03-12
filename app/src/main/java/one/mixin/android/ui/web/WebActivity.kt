@@ -15,9 +15,11 @@ import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SixLayout
 
 @AndroidEntryPoint
@@ -51,7 +53,12 @@ class WebActivity : BaseActivity() {
                     putExtras(
                         Bundle().apply {
                             putString(WebFragment.URL, url)
-                            putString(WebFragment.CONVERSATION_ID, conversationId)
+                            putString(
+                                WebFragment.CONVERSATION_ID,
+                                conversationId ?: app?.let {
+                                    generateConversationId(Session.getAccountId()!!, it.appId)
+                                }
+                            )
                             putParcelable(WebFragment.ARGS_APP, app)
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
                         }
