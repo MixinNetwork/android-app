@@ -84,8 +84,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     protected fun showDone() {
         if (!isAdded) return
-        biometricLayout.showDone()
-        dismissRunnable = contentView.postDelayed(3000) {
+        val delayMillis = biometricLayout.showDone()
+        dismissRunnable = contentView.postDelayed(delayMillis) {
             dismissRunnable = null
             dismiss()
             callback?.onSuccess()

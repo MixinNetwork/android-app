@@ -121,16 +121,19 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         )
     }
 
-    fun showDone() {
+    fun showDone(): Long {
         displayedChild = POS_DONE
 
         val open = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        enableBiometricTv.isVisible = !open && BiometricUtil.isSupport(context)
+        val enable = !open && BiometricUtil.isSupport(context)
+        enableBiometricTv.isVisible = enable
         enableBiometricTv.setOnClickListener {
             SettingActivity.showPinSetting(context)
         }
 
         keyboard?.animateHeight(keyboardHeight, 0)
+
+        return if (enable) 4000L else 3000L
     }
 
     fun showPb() {
