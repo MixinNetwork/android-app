@@ -85,9 +85,9 @@ class ContentEditText : AppCompatEditText {
         }
     }
 
-    override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection {
+    override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection? {
         val ic = super.onCreateInputConnection(editorInfo)
-        if (listener == null) {
+        if (listener == null || ic == null) {
             return ic
         }
 
