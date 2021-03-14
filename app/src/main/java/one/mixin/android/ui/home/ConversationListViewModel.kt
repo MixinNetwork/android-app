@@ -21,6 +21,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Circle
@@ -39,6 +40,7 @@ internal constructor(
     private val messageRepository: ConversationRepository,
     private val userRepository: UserRepository,
     private val conversationRepository: ConversationRepository,
+    private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
 
@@ -186,4 +188,6 @@ internal constructor(
     suspend fun getCircleConversationCount(conversationId: String) = userRepository.getCircleConversationCount(conversationId)
 
     suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
+
+    suspend fun findTotalUSDBalance() = assetRepository.findTotalUSDBalance()
 }

@@ -36,6 +36,7 @@ object Constants {
         const val PREF_DELETE_MOBILE_CONTACTS = "pref_delete_mobile_contacts"
         const val PREF_FIAT_MAP = "pref_fiat_map"
         const val PREF_NOTIFICATION_ON = "pref_notification_on"
+        const val PREF_EMERGENCY_CONTACT = "pref_emergency_contact"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
         const val PREF_SYNC_CIRCLE = "pref_sync_circle"
         const val PREF_ATTACHMENT = "pref_attachment"
@@ -147,6 +148,7 @@ object Constants {
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
     const val INTERVAL_10_MINS: Long = 1000 * 60 * 10
+    const val INTERVAL_7_DAYS: Long = INTERVAL_24_HOURS * 7
     const val DELAY_SECOND = 60
     const val ALLOW_INTERVAL: Long = 5 * 60 * 1000
 
