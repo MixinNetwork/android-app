@@ -19,11 +19,13 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchMessageBinding
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.observeOnce
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.ConversationFragment
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.search.SearchSingleFragment.Companion.ARGS_QUERY
 import one.mixin.android.util.viewBinding
@@ -52,6 +54,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private val searchMessageItem: SearchMessageItem by lazy {
         requireArguments().getParcelable(ARGS_SEARCH_MESSAGE)!!
     }
+
     private val query by lazy { requireArguments().getString(ARGS_QUERY)!! }
 
     private val adapter by lazy { SearchMessageAdapter() }
@@ -90,14 +93,29 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                     .autoDispose(stopScope)
                     .subscribe {
                         binding.searchEt.hideKeyboard()
-                        ConversationActivity.show(
-                            requireContext(),
-                            conversationId = searchMessageItem.conversationId,
-                            messageId = item.messageId,
-                            keyword = binding.searchEt.text.toString()
-                        )
-                        if (isConversationSearch()) {
-                            parentFragmentManager.popBackStack()
+                        val activity = requireActivity()
+                        val conversationFragment = activity.supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
+                        if (activity is ConversationActivity && conversationFragment != null) {
+                            lifecycleScope.launch {
+                                val unreadCount = searchViewModel.findMessageIndex(searchMessageItem.conversationId, item.messageId)
+                                activity.supportFragmentManager.inTransaction {
+                                    setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+                                    show(conversationFragment)
+                                    hide(this@SearchMessageFragment)
+                                    addToBackStack(null)
+                                }
+                                conversationFragment.updateConversationInfo(item.messageId, binding.searchEt.text.toString(), unreadCount)
+                            }
+                        } else {
+                            ConversationActivity.show(
+                                requireContext(),
+                                conversationId = searchMessageItem.conversationId,
+                                messageId = item.messageId,
+                                keyword = binding.searchEt.text.toString()
+                            )
+                            if (isConversationSearch()) {
+                                parentFragmentManager.popBackStack()
+                            }
                         }
                     }
             }
@@ -131,6 +149,19 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                 500
             )
         }
+    }
+
+    override fun onBackPressed(): Boolean {
+        if (requireActivity() is ConversationActivity) {
+            val conversationFragment = requireActivity().supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment
+            if (conversationFragment != null) {
+                requireActivity().supportFragmentManager.inTransaction {
+                    conversationFragment.updateConversationInfo(null, null, 0)
+                    show(conversationFragment)
+                }
+            }
+        }
+        return super.onBackPressed()
     }
 
     private fun isConversationSearch() = searchMessageItem.messageCount == 0
