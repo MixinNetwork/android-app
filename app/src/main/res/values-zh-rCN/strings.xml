@@ -180,7 +180,7 @@
     <string name="error_not_supported_audio_format">不支持的音频格式，请用其他app打开。</string>
     <!--home-->
     <string name="title_home">联系人</string>
-    <string name="search_hint">资产，联系人，消息</string>
+    <string name="search_hint">搜索资产，联系人，消息</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="text_qr">文本二维码</string>
     <string name="detect_qr_tip">检测到一个 Mixin 二维码，点击识别</string>
@@ -193,7 +193,7 @@
     <string name="search_title_assets">资产</string>
     <string name="search_title_chat">会话</string>
     <string name="search_title_contacts">联系人</string>
-    <string name="search_title_messages">消息</string>
+    <string name="search_title_messages">搜索消息</string>
     <string name="search_title_more">更多</string>
     <string name="search_related_message">%1$d 条相关的消息</string>
     <string name="search_tip">搜索 Mixin ID 或者手机号：%1$s</string>
@@ -424,7 +424,7 @@
     <string name="wallet_biometric_invalid">生物识别失效，请重新设置。</string>
     <string name="wallet_setting_currency_desc">%1$s （%2$s）</string>
     <string name="wallet_transactions_asset_key_warning">资产标识不是充值地址！</string>
-    <string name="wallet_search_hint">名称，符号</string>
+    <string name="wallet_search_hint">搜索名称，符号</string>
     <string name="wallet_trending">热门资产</string>
     <string name="wallet_recent_search">最近搜索</string>
     <string name="wallet_transfer_no_available_assets">没有可用资产</string>
