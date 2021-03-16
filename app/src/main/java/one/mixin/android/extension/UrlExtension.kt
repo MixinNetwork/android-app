@@ -10,11 +10,9 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -27,7 +25,6 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.getShareCategory
 import timber.log.Timber
-import java.lang.IllegalStateException
 
 fun String.openAsUrlOrWeb(
     context: Context,
@@ -93,24 +90,7 @@ fun String.openAsUrl(
     host: String? = null,
     extraAction: () -> Unit,
 ) {
-    if (startsWith(Constants.Scheme.TRANSFER, true) ||
-        startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
-    ) {
-        val segments = Uri.parse(this).pathSegments
-        val data = when {
-            segments.size >= 2 -> segments[1]
-            segments.size >= 1 -> segments[0]
-            else -> ""
-        }
-        if (data.isUUID()) {
-            if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(data, supportSwitchAsset = true)
-                    .showNow(supportFragmentManager, TransferFragment.TAG)
-            } else {
-                MixinApplication.appContext.toast(R.string.transfer_without_pin)
-            }
-        }
-    } else if (startsWith(Constants.Scheme.SEND, true)) {
+    if (startsWith(Constants.Scheme.SEND, true)) {
         val uri = Uri.parse(this)
         uri.handleSchemeSend(
             context, supportFragmentManager, currentConversation, app, host,

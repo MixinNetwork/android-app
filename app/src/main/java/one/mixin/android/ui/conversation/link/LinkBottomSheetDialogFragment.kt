@@ -63,6 +63,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -75,7 +76,6 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import timber.log.Timber
-import java.lang.Exception
 import java.util.UUID
 
 @AndroidEntryPoint
@@ -176,7 +176,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
                         lifecycleScope.launch {
-                            val app = linkViewModel.findAppById(user.appId!!)
+                            val app = linkViewModel.findAppById(user!!.appId!!)
                             if (app != null) {
                                 val url = try {
                                     app.homeUri.appendQueryParamsFromOtherUri(uri)
@@ -185,7 +185,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                                 WebActivity.show(requireActivity(), url, null, app)
                             } else {
-                                UserBottomSheetDialogFragment.newInstance(user)
+                                UserBottomSheetDialogFragment.newInstance(user!!)
                                     .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                             }
                         }
@@ -193,6 +193,49 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         UserBottomSheetDialogFragment.newInstance(user)
                             .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
+                    dismiss()
+                }
+            }
+        } else if (url.startsWith(Scheme.TRANSFER, true) || url.startsWith(Scheme.HTTPS_TRANSFER, true)) {
+            if (checkHasPin()) return
+
+            val uri = url.toUri()
+            val segments = uri.pathSegments
+            val userId = if (segments.size >= 2) {
+                segments[1]
+            } else {
+                segments[0]
+            }
+            if (!userId.isUUID()) {
+                context?.toast(R.string.error_user_not_found)
+                dismiss()
+            } else if (userId == Session.getAccountId()) {
+                context?.toast(R.string.cant_transfer_self)
+                dismiss()
+            } else {
+                lifecycleScope.launch {
+                    var user = linkViewModel.suspendFindUserById(userId)
+                    if (user == null) {
+                        val response = try {
+                            withContext(Dispatchers.IO) {
+                                linkViewModel.getUser(userId).execute()
+                            }
+                        } catch (t: Throwable) {
+                            context?.toast(R.string.error_user_not_found)
+                            dismiss()
+                            return@launch
+                        }
+                        if (response.isSuccessful) {
+                            user = response.body()?.data
+                        }
+                        if (user == null) {
+                            context?.toast(R.string.error_user_not_found)
+                            dismiss()
+                            return@launch
+                        }
+                    }
+                    TransferFragment.newInstance(userId, supportSwitchAsset = true)
+                        .showNow(parentFragmentManager, TransferFragment.TAG)
                     dismiss()
                 }
             }
