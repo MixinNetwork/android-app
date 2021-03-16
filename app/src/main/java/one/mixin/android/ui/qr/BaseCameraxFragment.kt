@@ -548,5 +548,5 @@ abstract class BaseCameraxFragment : VisionFragment() {
 val donateSupported = arrayOf(
     "bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
     "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
-    "stellar:", "dogecoin:"
+    "stellar:", "dogecoin:", "mobilecoin:"
 )
