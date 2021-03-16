@@ -110,7 +110,7 @@ import kotlin.math.abs
 
 class ConversationAdapter(
     private val context: Activity,
-    private val keyword: String?,
+    var keyword: String?,
     private val onItemListener: OnItemListener,
     private val isGroup: Boolean,
     private val isSecret: Boolean = true,

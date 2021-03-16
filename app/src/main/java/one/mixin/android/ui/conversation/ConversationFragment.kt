@@ -173,7 +173,6 @@ import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
@@ -307,6 +306,30 @@ class ConversationFragment() :
     private val chatAdapter: ConversationAdapter by lazy {
         ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, !isPlainMessage(), isBot).apply {
             registerAdapterDataObserver(chatAdapterDataObserver)
+        }
+    }
+
+    fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
+        this.keyword = keyword
+        chatAdapter.keyword = keyword
+        val currentList = chatAdapter.currentList
+        if (currentList != null) {
+            (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPosition(unreadCount)
+            lifecycleScope.launch {
+                delay(160)
+                (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                    unreadCount,
+                    binding.chatRv.measuredHeight * 3 / 4
+                )
+                messageId?.let { id ->
+                    RxBus.publish(BlinkEvent(id))
+                }
+            }
+        } else {
+            this.messageId = messageId
+            this.unreadCount = unreadCount
+            isFirstLoad = true
+            liveDataMessage(unreadCount, messageId, !keyword.isNullOrEmpty())
         }
     }
 
@@ -885,17 +908,13 @@ class ConversationFragment() :
         recipient?.isBot() == true
     }
 
-    private val messageId: String? by lazy {
-        requireArguments().getString(MESSAGE_ID, null)
-    }
+    private var messageId: String? = null
 
     private val initialPositionMessageId: String? by lazy {
         requireArguments().getString(INITIAL_POSITION_MESSAGE_ID, null)
     }
 
-    private val keyword: String? by lazy {
-        requireArguments().getString(KEY_WORD, null)
-    }
+    private var keyword: String? = null
 
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
     private var app: App? = null
@@ -908,8 +927,6 @@ class ConversationFragment() :
             binding.flagLayout.bottomFlag = !value
         }
     private var positionBeforeClickQuote: String? = null
-
-    private var botWebBottomSheet: WebFragment? = null
 
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService()!!
@@ -960,6 +977,8 @@ class ConversationFragment() :
             }
         }
         recipient = requireArguments().getParcelable(RECIPIENT)
+        messageId = requireArguments().getString(MESSAGE_ID, null)
+        keyword = requireArguments().getString(KEY_WORD, null)
     }
 
     private val binding by viewBinding(FragmentConversationBinding::bind)

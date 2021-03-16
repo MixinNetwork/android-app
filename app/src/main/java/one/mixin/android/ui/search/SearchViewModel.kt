@@ -83,4 +83,7 @@ internal constructor(
     fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
         userRepository.upsert(user)
     }
+
+    suspend fun findMessageIndex(conversationId: String, messageId: String) =
+        conversationRepository.findMessageIndex(conversationId, messageId)
 }
