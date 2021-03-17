@@ -73,6 +73,7 @@
     <string name="save_to_gallery">Save to Gallery</string>
     <string name="save_to_downloads">Save to Downloads</string>
     <string name="cant_talk_self">You can\'t talk to yourself</string>
+    <string name="cant_transfer_self">You can\'t transfer to yourself</string>
     <string name="need_camera_permission">Requires camera permission for continue</string>
     <string name="need_background_permission">Requires start in background permission for continue</string>
     <string name="currency">Currency</string>
