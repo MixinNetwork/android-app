@@ -2,12 +2,12 @@ package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
 import androidx.collection.ArraySet
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -43,8 +43,11 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.vo.toTopAssetItem
+import javax.inject.Inject
 
-class WalletViewModel @ViewModelInject
+@HiltViewModel
+class WalletViewModel
+@Inject
 internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
