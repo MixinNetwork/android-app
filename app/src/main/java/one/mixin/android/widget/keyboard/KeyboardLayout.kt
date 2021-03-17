@@ -149,7 +149,9 @@ class KeyboardLayout : LinearLayout {
                         ).let { value ->
                             if (lastKeyboardHeight == value) return@let
                             lastKeyboardHeight = value
-                            inputAreaHeight = value
+                            if (value > 0 && value != inputAreaHeight) {
+                                inputAreaHeight = value
+                            }
                             if (value > 0) {
                                 onKeyboardShownListener?.onKeyboardShown(value)
                             } else {
