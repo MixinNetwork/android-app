@@ -444,7 +444,7 @@ interface MessageDao : BaseDao<Message> {
         LIMIT 1
     """
     )
-    suspend fun isSilence(conversationId: String, userId: String): Int
+    suspend fun isSilence(conversationId: String, userId: String): Int?
 
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
