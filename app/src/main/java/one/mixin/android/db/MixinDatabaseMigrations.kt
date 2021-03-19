@@ -255,5 +255,25 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
             }
         }
+
+        val MIGRATION_36_37: Migration = object : Migration(36, 37) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP INDEX IF EXISTS `index_participants_conversation_id`")
+                database.execSQL("DROP INDEX IF EXISTS `index_participants_created_at`")
+                database.execSQL("DROP INDEX IF EXISTS `index_users_full_name`")
+                database.execSQL("DROP INDEX IF EXISTS `index_snapshots_asset_id`")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_category` ON messages(`conversation_id`, `category`);")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_quote_message_id` ON `messages` (`conversation_id`, `quote_message_id`)")
+            }
+        }
+
+        // Remaining works
+        val MIGRATION_37_38: Migration = object : Migration(37, 38) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_user_id_status_created_at`")
+                database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_status_user_id`")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id_created_at` ON `messages` (`conversation_id`, `status`,`user_id`, `created_at`)")
+            }
+        }
     }
 }

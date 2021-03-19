@@ -4,11 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
-import androidx.room.Index
 
 @Entity(
     tableName = "participants",
-    indices = [Index(value = arrayOf("conversation_id")), Index(value = arrayOf("created_at"))],
     foreignKeys = [
         (
             ForeignKey(
