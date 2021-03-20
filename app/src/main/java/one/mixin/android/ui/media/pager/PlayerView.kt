@@ -13,6 +13,7 @@ import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackPreparer
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.ui.spherical.SingleTapListener
 import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
@@ -265,7 +266,11 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                 binding.pbView.isVisible = false
                 updateRefreshViewVisibility(true)
 
-                reportExoPlayerException("PlayerView", error)
+                if (error.cause is BehindLiveWindowException) {
+                    VideoPlayer.player().player.prepare()
+                } else {
+                    reportExoPlayerException("PlayerView", error)
+                }
             }
         }
 
