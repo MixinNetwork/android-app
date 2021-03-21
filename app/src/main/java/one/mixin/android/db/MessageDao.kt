@@ -439,7 +439,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT rowid FROM messages 
         WHERE conversation_id =:conversationId
-        AND status IN ('SENDING', 'SENT', 'DELIVERED', 'READ', 'UNKNOWN', 'FAILED')
+        AND status IN ('SENDING', 'SENT', 'DELIVERED', 'READ')  /* Make use of `index_messages_conversation_id_status_user_id_created_at` */
         AND user_id =:userId
         LIMIT 1
     """
