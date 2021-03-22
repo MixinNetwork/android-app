@@ -19,6 +19,7 @@ import kotlinx.parcelize.Parcelize
 @Entity(
     tableName = "users",
     indices = [
+        Index(value = arrayOf("full_name")),
         Index(value = arrayOf("relationship", "full_name")),
     ]
 )

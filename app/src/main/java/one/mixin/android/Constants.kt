@@ -75,7 +75,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 37
+        const val CURRENT_VERSION = 36
     }
 
     object Storage {
@@ -89,7 +89,6 @@ object Constants {
         const val BACKUP_PERIOD = "backup_period"
         const val BACKUP_LAST_TIME = "backup_last_time"
     }
-
     object CIRCLE {
         const val CIRCLE_ID = "circle_id"
         const val CIRCLE_NAME = "circle_name"
