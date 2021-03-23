@@ -30,6 +30,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
@@ -118,7 +119,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                     }
                 }
 
-                override fun onConversationItemClick(item: ConversationItem) {
+                override fun onConversationClick(item: ConversationMinimal) {
                     lifecycleScope.launch {
                         if (adapter.selectItem.contains(item)) {
                             adapter.selectItem.remove(item)
