@@ -16,7 +16,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.repository.ConversationRepository
-import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -34,8 +33,7 @@ class SharedMediaViewModel @ViewModelInject constructor(
         return LivePagedListBuilder(
             conversationRepository.getMediaMessagesExcludeLive(conversationId),
             PagedList.Config.Builder()
-                .setPrefetchDistance(MediaPagerActivity.PAGE_SIZE * 2)
-                .setPageSize(MediaPagerActivity.PAGE_SIZE)
+                .setPageSize(MediaFragment.PAGE_SIZE)
                 .setEnablePlaceholders(true)
                 .build()
         )

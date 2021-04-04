@@ -18,7 +18,7 @@ import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.gallery.MimeType
 
-class MediaAdapter(private val onClickListener: (imageView: View, messageId: String) -> Unit) :
+class MediaAdapter(private val onClickListener: (imageView: View, messageItem: MessageItem) -> Unit) :
     SharedMediaHeaderAdapter<MediaHolder>() {
     var size: Int = 0
 
@@ -44,7 +44,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
     fun bind(
         item: MessageItem,
         size: Int,
-        onClickListener: (imageView: View, messageId: String) -> Unit
+        onClickListener: (imageView: View, messageItem: MessageItem) -> Unit
     ) {
         val binding = ItemMediaBinding.bind(itemView)
         val params = itemView.layoutParams
@@ -89,7 +89,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
             }
         }
         itemView.setOnClickListener {
-            onClickListener(binding.thumbnailIv, item.messageId)
+            onClickListener(binding.thumbnailIv, item)
         }
     }
 }

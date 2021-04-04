@@ -36,7 +36,6 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.core.net.toUri
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
@@ -112,6 +111,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
     private val ratio by lazy {
         intent.getFloatExtra(RATIO, 0f)
+    }
+    private val initialItem by lazy {
+        intent.getParcelableExtra(INITIAL_ITEM) as? MessageItem
     }
 
     private var initialIndex: Int = 0
@@ -239,12 +241,16 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     @SuppressLint("RestrictedApi")
     private fun loadData() = lifecycleScope.launch {
-        val messageItem = viewModel.getMediaMessage(conversationId, messageId) ?: return@launch
+        val messageItem = if (initialItem != null) {
+            initialItem!!
+        } else {
+            viewModel.getMediaMessage(conversationId, messageId) ?: return@launch
+        }
         val pagedConfig = PagedList.Config.Builder()
             .setInitialLoadSizeHint(1)
             .setPageSize(1)
             .build()
-        val pagedList = PagedList.Builder<Int, MessageItem>(
+        val pagedList = PagedList.Builder(
             FixedMessageDataSource(listOf(messageItem)),
             pagedConfig
         ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
@@ -267,7 +273,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
             .observe(
                 this@MediaPagerActivity,
-                Observer {
+                {
                     adapter.submitList(it) {
                         if (firstLoad) {
                             adapter.initialPos = initialIndex
@@ -803,6 +809,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         private const val RATIO = "ratio"
         private const val CONVERSATION_ID = "conversation_id"
         private const val EXCLUDE_LIVE = "exclude_live"
+        private const val INITIAL_ITEM = "initial_item"
         private const val ALPHA_MAX = 0xFF
         const val PREFIX = "media"
         const val PAGE_SIZE = 3
@@ -814,12 +821,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             imageView: View,
             conversationId: String,
             messageId: String,
+            messageItem: MessageItem?,
             excludeLive: Boolean = false
         ) {
             val intent = Intent(activity, MediaPagerActivity::class.java).apply {
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
                 putExtra(EXCLUDE_LIVE, excludeLive)
+                messageItem?.let { putExtra(INITIAL_ITEM, messageItem) }
             }
             activity.startActivity(
                 intent,
