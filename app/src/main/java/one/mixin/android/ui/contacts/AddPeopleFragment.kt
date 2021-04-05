@@ -78,7 +78,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
                                     )
                                 } else {
                                     contactsViewModel.insertUser(user = data)
-                                    UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                    UserBottomSheetDialogFragment.newInstance(data)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                                 }
                             }
                             r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.error_user_not_found)

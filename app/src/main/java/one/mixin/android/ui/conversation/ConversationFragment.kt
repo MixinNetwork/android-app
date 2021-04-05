@@ -751,8 +751,7 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(it, conversationId)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                     },
                     {
@@ -801,8 +800,7 @@ class ConversationFragment() :
                             ProfileBottomSheetDialogFragment.newInstance()
                                 .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
                         } else {
-                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(user, conversationId)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                     }
                 }
@@ -869,8 +867,7 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(it, conversationId)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                     },
                     {
@@ -2282,8 +2279,7 @@ class ConversationFragment() :
         )
         binding.actionBar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
-            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+            UserBottomSheetDialogFragment.newInstance(user, conversationId)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
         }
         binding.bottomUnblock.setOnClickListener {
             recipient?.let { user ->

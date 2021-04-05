@@ -189,13 +189,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                                 WebActivity.show(requireActivity(), url, null, app)
                             } else {
-                                UserBottomSheetDialogFragment.newInstance(user!!)
-                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                UserBottomSheetDialogFragment.newInstance(user!!)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                             }
                         }
                     } else {
-                        UserBottomSheetDialogFragment.newInstance(user)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        UserBottomSheetDialogFragment.newInstance(user)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
                     dismiss()
                 }
@@ -317,8 +315,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             if (account != null && account.userId == (result.second as User).userId) {
                                 toast("It's your QR Code, please try another.")
                             } else {
-                                UserBottomSheetDialogFragment.newInstance(user)
-                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                UserBottomSheetDialogFragment.newInstance(user)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                             }
                             dismiss()
                         }

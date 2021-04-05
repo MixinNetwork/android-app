@@ -283,8 +283,7 @@ class ChatHistoryActivity : BaseActivity() {
                 lifecycleScope.launch {
                     userRepository.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))
                         ?.let { user ->
-                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(user, conversationId)?.showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                 }
             }
@@ -467,11 +466,10 @@ class ChatHistoryActivity : BaseActivity() {
                     withContext(Dispatchers.IO) {
                         userRepository.getUserById(userId)?.let { user ->
                             withContext(Dispatchers.Main) {
-                                UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                    .showNow(
-                                        supportFragmentManager,
-                                        UserBottomSheetDialogFragment.TAG
-                                    )
+                                UserBottomSheetDialogFragment.newInstance(user, conversationId)?.showNow(
+                                    supportFragmentManager,
+                                    UserBottomSheetDialogFragment.TAG
+                                )
                             }
                         }
                     }
@@ -503,11 +501,10 @@ class ChatHistoryActivity : BaseActivity() {
                         withContext(Dispatchers.IO) {
                             userRepository.getUserById(uid)?.let { user ->
                                 withContext(Dispatchers.Main) {
-                                    UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                        .showNow(
-                                            supportFragmentManager,
-                                            UserBottomSheetDialogFragment.TAG
-                                        )
+                                    UserBottomSheetDialogFragment.newInstance(user, conversationId)?.showNow(
+                                        supportFragmentManager,
+                                        UserBottomSheetDialogFragment.TAG
+                                    )
                                 }
                             }
                         }

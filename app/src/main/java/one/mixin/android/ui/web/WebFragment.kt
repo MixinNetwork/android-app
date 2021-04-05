@@ -1115,8 +1115,7 @@ class WebFragment : BaseFragment() {
         if (app?.appId != null) {
             val u = bottomViewModel.suspendFindUserById(app?.appId!!)
             if (u != null) {
-                UserBottomSheetDialogFragment.newInstance(u, conversationId)
-                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                UserBottomSheetDialogFragment.newInstance(u, conversationId)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }
     }

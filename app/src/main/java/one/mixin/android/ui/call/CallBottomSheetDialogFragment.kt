@@ -208,16 +208,14 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         .throttleFirst(500, TimeUnit.MILLISECONDS)
                         .autoDispose(stopScope)
                         .subscribe {
-                            UserBottomSheetDialogFragment.newInstance(callee)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(callee)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                     binding.nameTv.clicks()
                         .observeOn(AndroidSchedulers.mainThread())
                         .throttleFirst(500, TimeUnit.MILLISECONDS)
                         .autoDispose(stopScope)
                         .subscribe {
-                            UserBottomSheetDialogFragment.newInstance(callee)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(callee)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                 }
             }
@@ -364,8 +362,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (userId != null) {
                     lifecycleScope.launch {
                         val user = viewModel.suspendFindUserById(userId) ?: return@launch
-                        UserBottomSheetDialogFragment.newInstance(user)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        UserBottomSheetDialogFragment.newInstance(user)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
                 } else if (callState.isGroupCall() && callState.conversationId != null) {
                     GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)

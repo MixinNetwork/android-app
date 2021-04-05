@@ -215,7 +215,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
             walletViewModel.getUser(userId)?.let {
                 withContext(Dispatchers.Main) {
                     val f = UserBottomSheetDialogFragment.newInstance(it)
-                    f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
             }
         }

@@ -68,7 +68,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
                     lifecycleScope.launch {
                         viewModel.findUserByIdentityNumberSuspend(matchedText.substring(1))?.let { user ->
                             UserBottomSheetDialogFragment.newInstance(user, messageItem.conversationId)
-                                .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                ?.showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                     }
                 }
