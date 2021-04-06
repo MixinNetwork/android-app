@@ -11,6 +11,7 @@ import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStorageUsage
 
 @Dao
@@ -50,13 +51,23 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        """$PREFIX_CONVERSATION_ITEM
+        """
+        SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
+        c.name AS groupName, c.owner_id AS ownerId, ou.avatar_url AS avatarUrl, ou.full_name AS name, 
+        ou.is_verified AS ownerVerified, ou.identity_number AS ownerIdentityNumber, ou.app_id AS appId
+        FROM conversations c
+        INNER JOIN users ou ON ou.user_id = c.owner_id
+        LEFT JOIN messages m ON c.last_message_id = m.id
+        LEFT JOIN message_mentions mm ON mm.message_id = m.id
+        LEFT JOIN users mu ON mu.user_id = m.user_id
+        LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
+        LEFT JOIN users pu ON pu.user_id = m.participant_id 
         WHERE c.category IN ('CONTACT', 'GROUP')
         AND c.status = 2
         ORDER BY c.pin_time DESC, c.last_message_created_at DESC
         """
     )
-    suspend fun successConversationList(): List<ConversationItem>
+    suspend fun successConversationList(): List<ConversationMinimal>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(

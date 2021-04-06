@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
-import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.ConversationCheckView
@@ -25,11 +25,11 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
     var selectItem = ArrayList<Any>()
 
     private var listener: ForwardListener? = null
-    var conversations: List<ConversationItem>? = null
+    var conversations: List<ConversationMinimal>? = null
     var friends: List<User>? = null
     var bots: List<User>? = null
 
-    var sourceConversations: List<ConversationItem>? = null
+    var sourceConversations: List<ConversationMinimal>? = null
     var sourceFriends: List<User>? = null
     var sourceBots: List<User>? = null
 
@@ -220,7 +220,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
     }
 
     class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: ConversationItem, listener: ForwardListener?, isCheck: Boolean) {
+        fun bind(item: ConversationMinimal, listener: ForwardListener?, isCheck: Boolean) {
             (itemView as ConversationCheckView).let {
                 it.isChecked = isCheck
                 it.bind(item, listener)
@@ -232,6 +232,6 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
 
     interface ForwardListener {
         fun onUserItemClick(user: User)
-        fun onConversationItemClick(item: ConversationItem)
+        fun onConversationClick(item: ConversationMinimal)
     }
 }

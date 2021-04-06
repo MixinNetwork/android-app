@@ -54,6 +54,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.Job
@@ -98,7 +99,7 @@ internal constructor(
         MessageProvider.observeConversationsByCircleId(circleId, appDatabase)
     }
 
-    suspend fun successConversationList(): List<ConversationItem> = conversationDao.successConversationList()
+    suspend fun successConversationList(): List<ConversationMinimal> = conversationDao.successConversationList()
 
     suspend fun insertConversation(conversation: Conversation, participants: List<Participant>) =
         withContext(SINGLE_DB_THREAD) {

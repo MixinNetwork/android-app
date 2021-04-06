@@ -44,7 +44,7 @@ import one.mixin.android.util.ShortcutInfo
 import one.mixin.android.util.generateDynamicShortcut
 import one.mixin.android.util.maxDynamicShortcutCount
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -71,7 +71,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     companion object {
         const val TAG = "ForwardFragment"
 
-        inline fun newInstance(
+        fun newInstance(
             messages: ArrayList<ForwardMessage>,
             action: ForwardAction
         ): ForwardFragment {
@@ -114,7 +114,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         val str = StringBuffer()
         for (i in adapter.selectItem.size - 1 downTo 0) {
             adapter.selectItem[i].let {
-                if (it is ConversationItem) {
+                if (it is ConversationMinimal) {
                     if (it.isGroupConversation()) {
                         str.append(it.groupName)
                     } else {
@@ -163,7 +163,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
                 val selectItem = adapter.selectItem.mapNotNull {
                     when (it) {
-                        is ConversationItem -> {
+                        is ConversationMinimal -> {
                             SelectItem(it.conversationId, null)
                         }
                         is User -> {
@@ -180,7 +180,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
         adapter.setForwardListener(
             object : ForwardAdapter.ForwardListener {
-                override fun onConversationItemClick(item: ConversationItem) {
+                override fun onConversationClick(item: ConversationMinimal) {
                     if (adapter.selectItem.contains(item)) {
                         adapter.selectItem.remove(item)
                     } else {
@@ -381,7 +381,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 break
             }
 
-            val shortcutInfo = if (s is ConversationItem) {
+            val shortcutInfo = if (s is ConversationMinimal) {
                 val bitmap = loadBitmap(s.iconUrl()) ?: continue
                 val intent = ConversationActivity.getShortcutIntent(
                     requireContext(),
