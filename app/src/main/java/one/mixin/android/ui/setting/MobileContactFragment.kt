@@ -59,15 +59,20 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
                     return@handleMixinResponse false
                 },
                 exceptionBlock = {
-                    binding.opPb.isVisible = false
+                    hidePb()
                     setUpdate()
                     return@handleMixinResponse false
                 },
                 doAfterNetworkSuccess = {
-                    binding.opPb.isVisible = false
+                    hidePb()
                 }
             )
         }
+    }
+
+    private fun hidePb() {
+        if (viewDestroyed()) return
+        binding.opPb.isVisible = false
     }
 
     private fun setDelete() {
