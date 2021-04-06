@@ -31,7 +31,6 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
-import timber.log.Timber
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -197,7 +196,8 @@ class KeyboardLayout : LinearLayout {
                     keyboardHeight = bounds.upperBound.bottom
                     return super.onStart(animation, bounds)
                 }
-            })
+            }
+        )
     }
 
     var backgroundImage: Drawable? = null
