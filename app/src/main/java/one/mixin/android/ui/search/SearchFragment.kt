@@ -229,6 +229,8 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     private fun showSearch() {
         binding.searchRv.post {
+            if (viewDestroyed()) return@post
+
             binding.searchRv.isVisible = true
             binding.appRv.isGone = true
         }
@@ -236,6 +238,8 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     private fun showBots() {
         binding.searchRv.post {
+            if (viewDestroyed()) return@post
+
             binding.searchRv.isGone = true
             binding.appRv.isVisible = true
         }

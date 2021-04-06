@@ -264,8 +264,15 @@ class MusicPlayer private constructor() {
                     seekTo(initialWindowIndex, pos)
                 }
             } else {
-                concatenatingMediaSource.removeMediaSourceRange(0, index)
-                concatenatingMediaSource.removeMediaSourceRange(1, remain)
+                try {
+                    concatenatingMediaSource.removeMediaSourceRange(0, index)
+                    concatenatingMediaSource.removeMediaSourceRange(1, remain)
+                } catch (e: Exception) {
+                    val msg = """remove mediaSource from concatenatingMediaSource meet exception, 
+                        |index: $index, remain: $remain, concatenatingMediaSource size: ${concatenatingMediaSource.size}"""
+                    Timber.w(e, msg)
+                    reportException(msg, e)
+                }
                 val pre = downloadedList.subList(0, initialWindowIndex).map {
                     it.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
                 }

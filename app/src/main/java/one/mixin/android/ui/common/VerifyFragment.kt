@@ -16,6 +16,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
@@ -67,6 +68,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
     }
 
     private fun showLoading() {
+        if (viewDestroyed()) return
         binding.apply {
             verifyFab.visibility = VISIBLE
             verifyFab.show()
@@ -75,11 +77,17 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
     }
 
     private fun hideLoading() {
+        if (viewDestroyed()) return
         binding.apply {
             verifyFab.hide()
             verifyFab.visibility = GONE
             verifyCover.visibility = GONE
         }
+    }
+
+    private fun clearPin() {
+        if (viewDestroyed()) return
+        binding.pin.clear()
     }
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
@@ -88,7 +96,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
             invokeNetwork = { accountRepository.verifyPin(pinCode) },
             successBlock = {
                 hideLoading()
-                binding.pin.clear()
+                clearPin()
                 context?.updatePinCheck()
                 activity?.supportFragmentManager?.inTransaction {
                     remove(this@VerifyFragment)
@@ -101,7 +109,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                 }
             },
             failureBlock = {
-                binding.pin.clear()
+                clearPin()
                 if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                     hideLoading()
                     toast(R.string.error_pin_check_too_many_request)
@@ -117,7 +125,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
             },
             exceptionBlock = {
                 hideLoading()
-                binding.pin.clear()
+                clearPin()
                 return@handleMixinResponse false
             }
         )

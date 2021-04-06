@@ -71,7 +71,7 @@ internal object ImageUtil {
         val width = options.outWidth
         var inSampleSize = 1
 
-        if (height / width >= 3 || width / height >= 3) {
+        if (width == 0 || height == 0 || height / width >= 3 || width / height >= 3) {
             return inSampleSize
         }
 
