@@ -1758,11 +1758,11 @@ class ConversationFragment() :
                 oldCount = list.size
             }
             chatViewModel.viewModelScope.launch {
-                chatAdapter.hasBottomView = (
-                    (isBot && list.isEmpty()) ||
-                        (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))
-                    ) &&
-                    recipient?.relationship == UserRelationship.STRANGER.name
+                chatAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name &&
+                    (
+                        (isBot && list.isEmpty()) ||
+                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))
+                        )
             }
             if (isFirstLoad && messageId == null && unreadCount > 0) {
                 chatAdapter.unreadMsgId = unreadMessageId

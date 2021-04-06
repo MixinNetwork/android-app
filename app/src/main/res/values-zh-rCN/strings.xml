@@ -649,7 +649,7 @@
     <string name="loading_wait">请稍等</string>
     <string name="loading_time">检测到系统时间异常，请校正后再继续使用</string>
     <string name="database_upgrade">数据库升级</string>
-    <string name="database_upgrade_tips">正在进行数据库升级，请不要强制关闭应用。</string>
+    <string name="database_upgrade_tips">正在进行数据库升级，可能需要几分钟，请不要强制关闭应用。</string>
     <string name="database_upgrade_progress">升级中...</string>
     <!-- notification -->
     <string name="alert_key_group_text_message">%1$s 发送一条消息</string>
