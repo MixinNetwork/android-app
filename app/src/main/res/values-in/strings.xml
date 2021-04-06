@@ -628,7 +628,7 @@
     <string name="loading_wait">Harap tunggu sebentar</string>
     <string name="loading_time">Waktu sistem tidak normal, silakan gunakan lagi setelah perbaikan dilakukan</string>
     <string name="database_upgrade">Tingkatkan Database</string>
-    <string name="database_upgrade_tips">Database sedang ditingkatkan, jangan tutup Aplikasi ini.</string>
+    <string name="database_upgrade_tips">Database sedang ditingkatkan, mungkin perlu beberapa menit, jangan tutup Aplikasi ini.</string>
     <string name="database_upgrade_progress">Meningkatkan</string>
     <!-- notification -->
     <string name="alert_key_group_text_message">%1$s mengirim pesan</string>

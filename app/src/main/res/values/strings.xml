@@ -666,7 +666,7 @@
     <string name="loading_wait">Please wait a moment</string>
     <string name="loading_time">System time is unusual, please continue to use again after correction</string>
     <string name="database_upgrade">Upgrade Database</string>
-    <string name="database_upgrade_tips">The database is being upgraded, please do not close this App.</string>
+    <string name="database_upgrade_tips">The database is being upgraded, it may take several minutes, please do not close this App.</string>
     <string name="database_upgrade_progress">Upgrading</string>
     <!-- notification -->
     <string name="alert_key_group_text_message">%1$s send a message</string>
