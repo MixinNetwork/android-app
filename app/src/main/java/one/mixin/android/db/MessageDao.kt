@@ -12,6 +12,7 @@ import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageBackup
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
@@ -538,4 +539,11 @@ interface MessageDao : BaseDao<Message> {
     """
     )
     suspend fun suspendFindMessagesByIds(conversationId: String, ids: List<String>): List<MessageItem>
+
+    @Query(
+        """
+        SELECT * FROM messages WHERE conversation_id = :conversationId
+    """
+    )
+    suspend fun getMessageBackup(conversationId: String): List<MessageBackup>
 }

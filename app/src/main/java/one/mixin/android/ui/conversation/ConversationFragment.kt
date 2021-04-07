@@ -98,6 +98,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
+import one.mixin.android.extension.getBackupPath
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
@@ -190,6 +191,7 @@ import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.MessageBackup
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -356,7 +358,7 @@ class ConversationFragment() :
                             }
                         }
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                            ?.getBoolean(conversationId, false) == true
+                                ?.getBoolean(conversationId, false) == true
                         ) {
                             lifecycleScope.launch {
                                 if (viewDestroyed()) return@launch
@@ -610,9 +612,9 @@ class ConversationFragment() :
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                            "application/vnd.android.package-archive",
-                            true
-                        )
+                        "application/vnd.android.package-archive",
+                        true
+                    )
                 ) {
                     if (requireContext().packageManager.canRequestPackageInstalls()) {
                         requireContext().openMedia(messageItem)
@@ -1828,6 +1830,19 @@ class ConversationFragment() :
             binding.chatControl.hideBot()
         }
         liveDataAppList()
+        lifecycleScope.launch {
+            val backupFile = File("${requireContext().getBackupPath(true)!!.absolutePath}${File.separator}Backup.json")
+            backupFile.printWriter().use { writer ->
+                chatViewModel.getMessageBackup(conversationId).forEach {
+                    val text = GsonHelper.customGson.toJson(it)
+                    writer.println(text)
+                }
+            }
+            backupFile.forEachLine(action = { text ->
+                val message = GsonHelper.customGson.fromJson(text, MessageBackup::class.java)
+                Timber.e("${message.messageId} ${message.category}")
+            })
+        }
     }
 
     private fun liveDataAppList() {

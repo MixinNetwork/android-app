@@ -767,4 +767,6 @@ internal constructor(
             }
         }
     }
+
+    suspend fun getMessageBackup(conversationId: String) = conversationRepository.getMessageBackup(conversationId)
 }

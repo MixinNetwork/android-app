@@ -450,4 +450,6 @@ internal constructor(
 
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
+
+    suspend fun getMessageBackup(conversationId: String) = messageDao.getMessageBackup(conversationId)
 }
