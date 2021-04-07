@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentDraggableRecyclerViewBinding
 import one.mixin.android.event.DragReleaseEvent
+import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
@@ -35,7 +36,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
         const val ARGS_ALBUM = "args_album"
         const val ARGS_NEED_CAMERA = "args_need_camera"
         const val PADDING = 10
-        const val COLUMN = 3
+        var COLUMN = 3
 
         fun newInstance(album: Album, needCamera: Boolean) = GalleryItemFragment().withArgs {
             putParcelable(ARGS_ALBUM, album)
@@ -65,6 +66,11 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        COLUMN = if (requireContext().isWideScreen()) {
+            5
+        } else {
+            3
+        }
         binding.apply {
             rv.layoutManager = GridLayoutManager(context, COLUMN)
             rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))

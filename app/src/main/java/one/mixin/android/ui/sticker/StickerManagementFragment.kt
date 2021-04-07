@@ -26,6 +26,7 @@ import one.mixin.android.databinding.FragmentStickerManagementBinding
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
@@ -45,7 +46,7 @@ import org.jetbrains.anko.textColor
 class StickerManagementFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerManagementFragment"
-        const val COLUMN = 3
+        var COLUMN = 3
 
         fun newInstance(id: String?) = StickerManagementFragment().apply {
             arguments = bundleOf(ARGS_ALBUM_ID to id)
@@ -70,6 +71,11 @@ class StickerManagementFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        COLUMN = if (requireContext().isWideScreen()) {
+            5
+        } else {
+            3
+        }
         binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressed() }
         binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         binding.titleView.rightAnimator.setOnClickListener {

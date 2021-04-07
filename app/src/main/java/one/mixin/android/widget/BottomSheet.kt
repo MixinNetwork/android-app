@@ -38,7 +38,6 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNotchScreen
-import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -110,17 +109,7 @@ class BottomSheet(
                 height -= lastInsets!!.systemWindowInsetBottom
             }
             setMeasuredDimension(width, height)
-            val widthSpec = if (context.isTablet()) {
-                MeasureSpec.makeMeasureSpec(
-                    (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
-                    MeasureSpec.EXACTLY
-                )
-            } else {
-                MeasureSpec.makeMeasureSpec(
-                    width,
-                    MeasureSpec.EXACTLY
-                )
-            }
+            val widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
             sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec(height, AT_MOST))
         }
     }
