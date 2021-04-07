@@ -8,7 +8,7 @@ buildscript {
         ext.pagingVersion = '2.1.2'
         ext.collectionx = '1.1.0'
         ext.roomVersion = '2.3.0-beta03'
-        ext.navigationVersion = '2.3.4'
+        ext.navigationVersion = '2.3.5'
         ext.workManagerVersion = '2.5.0'
         ext.constraintLayoutVersion = '2.0.4'
         ext.supportLibVersion = '1.0.0'
