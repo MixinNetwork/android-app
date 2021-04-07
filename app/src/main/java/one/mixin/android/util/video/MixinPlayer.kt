@@ -1,10 +1,10 @@
 package one.mixin.android.util.video
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.view.TextureView
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
@@ -22,7 +22,6 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import okhttp3.OkHttpClient
@@ -134,8 +133,9 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         }
         this.url = url
         mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory())
-            .createMediaSource(Uri.parse(url)).apply {
-                player.prepare(this)
+            .createMediaSource(url.toMediaItem()).apply {
+                player.setMediaSource(this)
+                player.prepare()
             }
     }
 
@@ -146,17 +146,24 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         this.mId = id
         this.url = url
         mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory())
-            .createMediaSource(Uri.parse(url)).apply {
-                player.prepare(this)
+            .createMediaSource(url.toMediaItem()).apply {
+                player.setMediaSource(this)
+                player.prepare()
             }
     }
 
     fun loadAudio(url: String) {
         mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
-            .createMediaSource(Uri.parse(url)).apply {
-                player.prepare(this)
+            .createMediaSource(url.toMediaItem()).apply {
+                player.setMediaSource(this)
+                player.prepare()
             }
     }
+
+    private fun String.toMediaItem(): MediaItem =
+        MediaItem.Builder()
+            .setUri(this)
+            .build()
 
     var mId: String? = null
 
@@ -182,11 +189,12 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
                     contentType.contains("application/vnd.apple.mpegurl", true) ||
                     contentType.contains("binary/octet-stream", ignoreCase = true)
                 ) {
-                    HlsMediaSource.Factory(buildDataSourceFactory()).createMediaSource(Uri.parse(url))
+                    HlsMediaSource.Factory(buildDataSourceFactory()).createMediaSource(url.toMediaItem())
                 } else {
-                    ProgressiveMediaSource.Factory(buildDataSourceFactory()).createMediaSource(Uri.parse(url))
+                    ProgressiveMediaSource.Factory(buildDataSourceFactory()).createMediaSource(url.toMediaItem())
                 }.apply {
-                    player.prepare(this)
+                    player.setMediaSource(this)
+                    player.prepare()
                 }
             }
         }
@@ -195,8 +203,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     private fun buildDataSourceFactory(): DataSource.Factory {
         return DefaultDataSourceFactory(
             MixinApplication.appContext,
-            null,
-            DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), null)
+            Util.getUserAgent(MixinApplication.appContext, "Mixin")
         )
     }
 
@@ -235,7 +242,10 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
 
     override fun onPlayerError(error: ExoPlaybackException) {
         if (isBehindLiveWindow(error)) {
-            mediaSource?.let { player.prepare(it) }
+            mediaSource?.let {
+                player.setMediaSource(it)
+                player.prepare()
+            }
         }
         // HttpDataSourceException
         onVideoPlayerListener?.onPlayerError(error)
