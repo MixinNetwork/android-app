@@ -17,6 +17,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentStickerBinding
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.clear
+import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.viewDestroyed
@@ -47,7 +48,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         const val ARGS_ALBUM_ID = "args_album_id"
         const val ARGS_TYPE = "args_type"
         const val PADDING = 10
-        const val COLUMN = 3
+        var COLUMN = 3
 
         fun newInstance(id: String? = null, type: Int): StickerFragment {
             val f = StickerFragment()
@@ -86,6 +87,11 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        COLUMN = if (requireContext().isWideScreen()) {
+            5
+        } else {
+            3
+        }
         if (type == TYPE_NORMAL && albumId != null) {
             stickerViewModel.observeStickers(albumId!!).observe(
                 viewLifecycleOwner,

@@ -197,6 +197,11 @@ fun Context.realSize(): Point {
     return size
 }
 
+fun Context.isWideScreen(): Boolean {
+    val ratio = displayRatio()
+    return ratio < 1.33f
+}
+
 fun Context.screenHeight(): Int {
     return realSize().y
 }
