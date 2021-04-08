@@ -1,11 +1,11 @@
 package one.mixin.android.ui.home
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,8 +34,11 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import javax.inject.Inject
 
-class ConversationListViewModel @ViewModelInject
+@HiltViewModel
+class ConversationListViewModel
+@Inject
 internal constructor(
     private val messageRepository: ConversationRepository,
     private val userRepository: UserRepository,

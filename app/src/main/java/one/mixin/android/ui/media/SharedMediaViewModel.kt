@@ -1,12 +1,12 @@
 package one.mixin.android.ui.media
 
 import android.net.Uri
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.PAGE_SIZE
@@ -23,8 +23,10 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import org.threeten.bp.ZonedDateTime
+import javax.inject.Inject
 
-class SharedMediaViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SharedMediaViewModel @Inject constructor(
     val conversationRepository: ConversationRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {

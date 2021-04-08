@@ -1,11 +1,13 @@
 package one.mixin.android.ui.preview
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.repository.UserRepository
+import javax.inject.Inject
 
+@HiltViewModel
 class TextPreviewViewModel
-@ViewModelInject
+@Inject
 internal constructor(
     private val userRepository: UserRepository,
 ) : ViewModel() {

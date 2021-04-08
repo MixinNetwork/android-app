@@ -1,9 +1,9 @@
 package one.mixin.android.ui.setting
 
 import android.content.Context
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -14,8 +14,11 @@ import one.mixin.android.extension.putString
 import one.mixin.android.ui.setting.PhoneNumberSettingFragment.Companion.ACCEPT_SEARCH_KEY
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.SearchSource
+import javax.inject.Inject
 
-class SettingConversationViewModel @ViewModelInject
+@HiltViewModel
+class SettingConversationViewModel
+@Inject
 internal constructor(private val userService: AccountService) : ViewModel() {
 
     suspend fun savePreferences(request: AccountUpdateRequest) = withContext(Dispatchers.IO) {

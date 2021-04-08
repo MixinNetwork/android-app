@@ -1,7 +1,7 @@
 package one.mixin.android.ui.setting
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
@@ -17,8 +17,11 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.UserRelationship
+import javax.inject.Inject
 
-class SettingViewModel @ViewModelInject
+@HiltViewModel
+class SettingViewModel
+@Inject
 internal constructor(
     private val accountRepository: AccountRepository,
     private val authorizationService: AuthorizationService,

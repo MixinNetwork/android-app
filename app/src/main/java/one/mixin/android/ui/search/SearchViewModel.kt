@@ -1,12 +1,12 @@
 package one.mixin.android.ui.search
 
 import android.os.Parcelable
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -26,8 +26,11 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import javax.inject.Inject
 
-class SearchViewModel @ViewModelInject
+@HiltViewModel
+class SearchViewModel
+@Inject
 internal constructor(
     val userRepository: UserRepository,
     val conversationRepository: ConversationRepository,

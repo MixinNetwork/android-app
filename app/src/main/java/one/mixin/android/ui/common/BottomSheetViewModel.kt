@@ -1,9 +1,9 @@
 package one.mixin.android.ui.common
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -52,8 +52,10 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import javax.inject.Inject
 
-class BottomSheetViewModel @ViewModelInject internal constructor(
+@HiltViewModel
+class BottomSheetViewModel @Inject internal constructor(
     private val accountRepository: AccountRepository,
     private val jobManager: MixinJobManager,
     private val userRepository: UserRepository,

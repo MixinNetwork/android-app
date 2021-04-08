@@ -1,8 +1,8 @@
 package one.mixin.android.ui.setting
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -10,8 +10,11 @@ import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.User
+import javax.inject.Inject
 
-class EmergencyViewModel @ViewModelInject
+@HiltViewModel
+class EmergencyViewModel
+@Inject
 internal constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository

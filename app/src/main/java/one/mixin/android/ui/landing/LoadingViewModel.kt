@@ -1,9 +1,9 @@
 package one.mixin.android.ui.landing
 
 import androidx.collection.ArrayMap
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,9 +25,11 @@ import one.mixin.android.extension.getDeviceId
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.ParticipantSession
+import javax.inject.Inject
 import kotlin.math.abs
 
-class LoadingViewModel @ViewModelInject internal
+@HiltViewModel
+class LoadingViewModel @Inject internal
 constructor(
     private val signalKeyService: SignalKeyService,
     private val accountService: AccountService,

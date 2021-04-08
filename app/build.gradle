@@ -204,7 +204,6 @@ dependencies {
     implementation "com.google.dagger:hilt-android:${hiltVersion}"
     kapt "com.google.dagger:hilt-android-compiler:${hiltVersion}"
     implementation "androidx.hilt:hilt-work:${hiltAndroidxVersion}"
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:${hiltAndroidxVersion}"
     kapt "androidx.hilt:hilt-compiler:${hiltAndroidxVersion}"
 
     // RxJava
