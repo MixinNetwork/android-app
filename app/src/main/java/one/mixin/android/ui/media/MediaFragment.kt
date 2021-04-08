@@ -16,6 +16,7 @@ import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationF
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
 
 @AndroidEntryPoint
@@ -24,6 +25,8 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         const val TAG = "MediaFragment"
         const val PADDING = 1
         const val COLUMN = 4
+
+        const val PAGE_SIZE = 25
 
         fun newInstance(conversationId: String) = MediaFragment().withArgs {
             putString(ARGS_CONVERSATION_ID, conversationId)
@@ -39,8 +42,8 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
     }
 
     private val adapter = MediaAdapter(
-        fun(imageView: View, messageId: String) {
-            MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageId, true)
+        fun(imageView: View, messageItem: MessageItem) {
+            MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageItem.messageId, messageItem, true)
         }
     )
 

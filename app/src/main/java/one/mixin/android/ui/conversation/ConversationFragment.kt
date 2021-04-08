@@ -584,7 +584,8 @@ class ConversationFragment() :
                         requireActivity(),
                         view,
                         messageItem.conversationId,
-                        messageItem.messageId
+                        messageItem.messageId,
+                        messageItem,
                     )
                     return
                 }
@@ -599,7 +600,8 @@ class ConversationFragment() :
                         requireActivity(),
                         view,
                         messageItem.conversationId,
-                        messageItem.messageId
+                        messageItem.messageId,
+                        messageItem,
                     )
                 } else {
                     toast(R.string.error_file_exists)

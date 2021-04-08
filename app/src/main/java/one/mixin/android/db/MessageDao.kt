@@ -65,7 +65,9 @@ interface MessageDao : BaseDao<Message> {
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        FROM messages m
+        INDEXED BY index_messages_conversation_id_category
+        INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
         AND m.category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
         ORDER BY m.created_at ASC, m.rowid ASC
@@ -89,9 +91,11 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-            SELECT count(1) FROM messages WHERE conversation_id = :conversationId
-            AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
+            SELECT count(1) FROM messages 
+            INDEXED BY index_messages_conversation_id_category
+            WHERE conversation_id = :conversationId
             AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
+            AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
             ORDER BY created_at ASC, rowid ASC
         """
     )
@@ -105,7 +109,9 @@ interface MessageDao : BaseDao<Message> {
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_size AS mediaSize,
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
+        FROM messages m
+        INDEXED BY index_messages_conversation_id_category
+        INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND m.category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
         ORDER BY m.created_at DESC, m.rowid DESC
@@ -114,9 +120,11 @@ interface MessageDao : BaseDao<Message> {
     fun getMediaMessagesExcludeLive(conversationId: String): DataSource.Factory<Int, MessageItem>
 
     @Query(
-        """SELECT count(1) FROM messages WHERE conversation_id = :conversationId 
-        AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
+        """SELECT count(1) FROM messages
+        INDEXED BY index_messages_conversation_id_category 
+        WHERE conversation_id = :conversationId 
         AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
+        AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
         ORDER BY created_at DESC, rowid DESC
         """
     )
