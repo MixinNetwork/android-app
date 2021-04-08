@@ -106,7 +106,6 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
-import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
@@ -817,20 +816,7 @@ class ConversationFragment() :
 
             override fun onLocationClick(messageItem: MessageItem) {
                 val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
-                if (requireContext().isGooglePlayServicesAvailable()) {
-                    LocationActivity.show(requireContext(), location)
-                } else {
-                    try {
-                        requireActivity().startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")
-                            )
-                        )
-                    } catch (e: ActivityNotFoundException) {
-                        toast(R.string.error_open_location)
-                    }
-                }
+                LocationActivity.show(requireContext(), location)
             }
 
             override fun onCallClick(messageItem: MessageItem) {
@@ -2380,20 +2366,16 @@ class ConversationFragment() :
                         }
                     }
                     MenuType.Location -> {
-                        if (requireContext().isGooglePlayServicesAvailable()) {
-                            RxPermissions(requireActivity())
-                                .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-                                .autoDispose(stopScope)
-                                .subscribe { granted ->
-                                    if (granted) {
-                                        LocationActivity.show(this@ConversationFragment)
-                                    } else {
-                                        context?.openPermissionSetting()
-                                    }
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+                            .autoDispose(stopScope)
+                            .subscribe { granted ->
+                                if (granted) {
+                                    LocationActivity.show(this@ConversationFragment)
+                                } else {
+                                    context?.openPermissionSetting()
                                 }
-                        } else {
-                            toast(R.string.location_google_error)
-                        }
+                            }
                     }
                     MenuType.App -> {
                         menu.app?.let { app ->

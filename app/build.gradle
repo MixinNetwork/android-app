@@ -42,6 +42,7 @@ android {
         buildConfigField 'String', 'FS_SECRET', "\"${propOrEmpty('MIXIN_FS_SECRET')}\""
         buildConfigField 'String', 'GOOGLE_MAP_KEY', "\"${propOrEmpty('MIXIN_GOOGLE_MAP_KEY')}\""
         resValue "string", "google_maps_key", propOrEmpty('MIXIN_GOOGLE_MAP_KEY')
+        buildConfigField 'String', 'MAPBOX_PUBLIC_TOKEN', "\"${propOrEmpty('MAPBOX_PUBLIC_TOKEN')}\""
 
         packagingOptions {
             exclude 'kotlin/**'
@@ -296,6 +297,8 @@ dependencies {
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
     implementation "com.twilio:audioswitch:$audioSwitchVersion"
     implementation "com.github.skydoves:balloon:$balloonVersion"
+    implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}"
+    implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
