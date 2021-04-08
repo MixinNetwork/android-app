@@ -1,12 +1,13 @@
 package one.mixin.android.ui.call
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import javax.inject.Inject
 
-class CallViewModel
-@ViewModelInject
+@HiltViewModel
+class CallViewModel @Inject
 internal constructor(
     private val userRepository: UserRepository,
     private val conversationRepo: ConversationRepository

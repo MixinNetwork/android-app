@@ -1,14 +1,17 @@
 package one.mixin.android.ui.common.profile
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.util.ErrorHandler
+import javax.inject.Inject
 
+@HiltViewModel
 class MySharedAppsViewModel
-@ViewModelInject internal constructor(
+@Inject
+internal constructor(
     private val accountRepository: AccountRepository
 ) : ViewModel() {
     suspend fun addFavoriteApp(appId: String) =

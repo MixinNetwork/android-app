@@ -1,7 +1,7 @@
 package one.mixin.android.ui.setting
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -23,8 +23,11 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
+import javax.inject.Inject
 
-class SettingStorageViewModel @ViewModelInject
+@HiltViewModel
+class SettingStorageViewModel
+@Inject
 internal constructor(
     private val conversationRepository: ConversationRepository
 ) : ViewModel() {

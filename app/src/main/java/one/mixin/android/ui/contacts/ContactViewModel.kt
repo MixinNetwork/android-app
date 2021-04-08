@@ -1,9 +1,9 @@
 package one.mixin.android.ui.contacts
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -22,9 +22,10 @@ import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import javax.inject.Inject
 
-class ContactViewModel
-@ViewModelInject
+@HiltViewModel
+class ContactViewModel @Inject
 internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,

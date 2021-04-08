@@ -7,13 +7,13 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.annotation.RequiresPermission
 import androidx.core.net.toUri
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -95,10 +95,12 @@ import one.mixin.android.websocket.toLocationData
 import org.jetbrains.anko.doAsync
 import java.io.File
 import java.util.UUID
+import javax.inject.Inject
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+@HiltViewModel
 class ConversationViewModel
-@ViewModelInject
+@Inject
 internal constructor(
     private val conversationRepository: ConversationRepository,
     private val userRepository: UserRepository,

@@ -1,8 +1,8 @@
 package one.mixin.android.ui.landing
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -23,8 +23,10 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
+import javax.inject.Inject
 
-class MobileViewModel @ViewModelInject internal
+@HiltViewModel
+class MobileViewModel @Inject internal
 constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository,

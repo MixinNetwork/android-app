@@ -1,8 +1,8 @@
 package one.mixin.android.ui.group
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -11,8 +11,10 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.repository.ConversationRepository
+import javax.inject.Inject
 
-class InviteViewModel @ViewModelInject internal constructor(
+@HiltViewModel
+class InviteViewModel @Inject internal constructor(
     private val conversationService: ConversationService,
     private val conversationRepository: ConversationRepository
 ) : ViewModel() {
