@@ -59,17 +59,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
 
-                    <ImageView
-                        android:id="@+id/location_holder"
-                        android:layout_width="260dp"
-                        android:layout_height="180dp"
-                        android:scaleType="centerCrop"
-                        android:src="?attr/map_default" />
-
                     <com.google.android.gms.maps.MapView
-                        android:id="@+id/location_map"
+                        android:id="@+id/google_map"
                         android:layout_width="260dp"
                         android:layout_height="180dp"
+                        app:liteMode="true"
+                        app:uiCompass="false"
+                        app:uiMapToolbar="false"
+                        app:uiRotateGestures="false"
+                        app:uiScrollGestures="false"
+                        app:uiScrollGesturesDuringRotateOrZoom="false"
+                        app:uiTiltGestures="false"
+                        app:uiZoomControls="false"
+                        app:uiZoomGestures="false"
+                        app:useViewLifecycle="false"
+                        app:zOrderOnTop="false" />
+
+                    <com.amap.api.maps.TextureMapView
+                        android:id="@+id/amap"
+                        android:layout_width="260dp"
+                        android:layout_height="180dp"
+                        android:visibility="gone"
                         app:liteMode="true"
                         app:uiCompass="false"
                         app:uiMapToolbar="false"

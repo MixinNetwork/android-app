@@ -22,16 +22,15 @@ import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.maps.CameraUpdate
+import com.amap.api.maps.AMap
+import com.amap.api.maps.model.CameraPosition
+import com.amap.api.maps.model.MyLocationStyle
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -68,13 +67,12 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     @Inject
     lateinit var foursquareService: FoursquareService
 
-    private val ZOOM_LEVEL = 13f
-    private var currentPosition: LatLng? = null
-    private var selfPosition: LatLng? = null
+    private var currentPosition: MixinLatLng? = null
+    private var selfPosition: MixinLatLng? = null
         set(value) {
             if (value != null) {
                 location?.let { location ->
-                    calculationByDistance(value, LatLng(location.latitude, location.longitude)).distanceFormat()
+                    calculationByDistance(LatLng(value.latitude, value.longitude), LatLng(location.latitude, location.longitude)).distanceFormat()
                 }?.let {
                     if (binding.locationSubTitle.text == null)
                         binding.locationSubTitle.text = getString(R.string.location_distance, it.first, getString(it.second))
@@ -85,7 +83,6 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private var mapsInitialized = false
     private var onResumeCalled = false
-    private var forceUpdate: CameraUpdate? = null
 
     private val location: LocationPayload? by lazy {
         intent.getParcelableExtra(LOCATION)
@@ -112,11 +109,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private val mLocationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location) {
-            currentPosition = LatLng(location.latitude, location.longitude)
-            selfPosition = LatLng(location.latitude, location.longitude)
+            currentPosition = MixinLatLng(location.latitude, location.longitude)
+            selfPosition = MixinLatLng(location.latitude, location.longitude)
             if (this@LocationActivity.location == null) {
                 currentPosition?.let { currentPosition ->
-                    moveCamera(currentPosition)
+                    mixinMapView.moveCamera(currentPosition)
                     isInit = false
                 }
                 locationAdapter.accurate = getString(R.string.location_accurate, location.accuracy.toInt())
@@ -130,6 +127,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         override fun onProviderDisabled(provider: String) {}
     }
 
+    private lateinit var mixinMapView: MixinMapView
+
     private lateinit var binding: ActivityLocationBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -140,8 +139,14 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 mentionLocation.motion.loadLayoutDescription(R.xml.scene_location_none)
             }
             MapsInitializer.initialize(MixinApplication.appContext)
-            mentionLocation.mapView.onCreate(savedInstanceState)
-            mentionLocation.mapView.getMapAsync(this@LocationActivity)
+            mixinMapView = MixinMapView(mentionLocation.googleMapView, mentionLocation.amapView).apply {
+                onCreate(savedInstanceState)
+            }
+            if (useGoogleMap()) {
+                mentionLocation.googleMapView.getMapAsync(this@LocationActivity)
+            } else {
+                initAMap(mentionLocation.amapView.map)
+            }
             icBack.setOnClickListener {
                 if (searchVa.displayedChild == 1) {
                     searchVa.showPrevious()
@@ -164,7 +169,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
             mentionLocation.myLocation.setOnClickListener {
                 selfPosition?.let { selfPosition ->
-                    moveCamera(selfPosition)
+                    mixinMapView.moveCamera(selfPosition)
                 }
             }
             icClose.setOnClickListener {
@@ -258,7 +263,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 }
             }
         if (mapsInitialized) {
-            binding.mentionLocation.mapView.onResume()
+            mixinMapView.onResume()
         }
     }
 
@@ -269,11 +274,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             for (provider in providers) {
                 val l = locationManager.getLastKnownLocation(provider)
                 if (l != null) {
-                    currentPosition = LatLng(l.latitude, l.longitude)
-                    selfPosition = LatLng(l.latitude, l.longitude)
+                    currentPosition = MixinLatLng(l.latitude, l.longitude)
+                    selfPosition = MixinLatLng(l.latitude, l.longitude)
                     if (this@LocationActivity.location == null) {
                         currentPosition?.let { currentPosition ->
-                            moveCamera(currentPosition)
+                            mixinMapView.moveCamera(currentPosition)
                             isInit = false
                         }
                         locationAdapter.accurate = getString(R.string.location_accurate, l.accuracy.toInt())
@@ -289,55 +294,40 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         onResumeCalled = false
         getSystemService<LocationManager>()?.removeUpdates(mLocationListener)
         if (mapsInitialized) {
-            binding.mentionLocation.mapView.onPause()
+            mixinMapView.onPause()
         }
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
         if (mapsInitialized) {
-            binding.mentionLocation.mapView.onLowMemory()
+            mixinMapView.onLowMemory()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if (mapsInitialized) {
-            binding.mentionLocation.mapView.onDestroy()
+            mixinMapView.onDestroy()
         }
     }
 
-    private var googleMap: GoogleMap? = null
-
-    private fun moveCamera(latlng: LatLng) {
-        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, ZOOM_LEVEL))
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (mapsInitialized) {
+            mixinMapView.onSaveInstanceState(outState)
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
         googleMap ?: return
-        this.googleMap = googleMap
+        mixinMapView.googleMap = googleMap
         if (this.isNightMode()) {
             val style = MapStyleOptions.loadRawResourceStyle(applicationContext, R.raw.mapstyle_night)
             googleMap.setMapStyle(style)
         }
-        mapInit(googleMap)
-
-        with(googleMap) {
-            if (location != null) {
-                addMarker(
-                    MarkerOptions().position(
-                        LatLng(location!!.latitude, location!!.longitude)
-                    ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker))
-                )
-                moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location!!.latitude, location!!.longitude), ZOOM_LEVEL))
-            } else if (selfPosition != null) {
-                moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(selfPosition!!.latitude, selfPosition!!.longitude), ZOOM_LEVEL))
-            }
-        }
-        mapsInitialized = true
-        if (onResumeCalled) {
-            binding.mentionLocation.mapView.onResume()
-        }
+        initGoogleMap(googleMap)
+        afterInit()
     }
 
     private fun setResult(location: LocationPayload) {
@@ -345,8 +335,75 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         finish()
     }
 
+    private fun afterInit() {
+        if (location != null) {
+            val mixinLatLng = MixinLatLng(location!!.latitude, location!!.longitude)
+            mixinMapView.addMarker(mixinLatLng)
+            mixinMapView.moveCamera(mixinLatLng)
+        } else if (selfPosition != null) {
+            mixinMapView.moveCamera(selfPosition!!)
+        }
+        mapsInitialized = true
+        if (onResumeCalled) {
+            mixinMapView.onResume()
+        }
+    }
+
     private var isInit = true
-    fun mapInit(googleMap: GoogleMap) {
+
+    private fun initAMap(aMap: AMap) {
+        val myLocationStyle = MyLocationStyle().apply {
+            interval(2000)
+            myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER)
+        }
+        mixinMapView.aMap = aMap
+        if (isNightMode()) {
+            aMap.mapType = AMap.MAP_TYPE_NIGHT
+        }
+        aMap.myLocationStyle = myLocationStyle
+        aMap.isMyLocationEnabled = true
+        with(aMap) {
+            uiSettings?.isMyLocationButtonEnabled = false
+            uiSettings?.isZoomControlsEnabled = false
+            uiSettings?.isCompassEnabled = false
+            uiSettings?.isIndoorSwitchEnabled = false
+            uiSettings?.isRotateGesturesEnabled = false
+        }
+        aMap.setOnCameraChangeListener(object : AMap.OnCameraChangeListener {
+            override fun onCameraChange(cameraPosition: CameraPosition) {
+                com.amap.api.maps.CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
+                if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
+                    binding.mentionLocation.icMarker.isVisible = true
+                    locationSearchAdapter.setMark()
+                }
+            }
+
+            override fun onCameraChangeFinish(cameraPosition: CameraPosition?) {
+                markerAnimatorSet?.cancel()
+                markerAnimatorSet = AnimatorSet()
+                markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, 0f))
+                markerAnimatorSet?.duration = 200
+                markerAnimatorSet?.start()
+                aMap.cameraPosition.target.let { lastLang ->
+                    if (location == null) {
+                        val mixinLatLng = MixinLatLng(lastLang.latitude, lastLang.longitude)
+                        currentPosition = mixinLatLng
+                        search(mixinLatLng)
+                    }
+                }
+            }
+        })
+        aMap.setOnMarkerClickListener { marker ->
+            locationSearchAdapter.setMark(marker.zIndex)
+            binding.mentionLocation.icMarker.isVisible = true
+            false
+        }
+
+        afterInit()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun initGoogleMap(googleMap: GoogleMap) {
         try {
             googleMap.isMyLocationEnabled = true
         } catch (e: Exception) {
@@ -362,7 +419,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         googleMap.setOnCameraMoveStartedListener { reason ->
             if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
                 val cameraPosition = googleMap.cameraPosition
-                forceUpdate = CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
+                CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
                 if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
                     binding.mentionLocation.icMarker.isVisible = true
                     locationSearchAdapter.setMark()
@@ -389,8 +446,9 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             markerAnimatorSet?.start()
             googleMap.cameraPosition.target.let { lastLang ->
                 if (location == null) {
-                    currentPosition = lastLang
-                    search(lastLang)
+                    val mixinLatLng = MixinLatLng(lastLang.latitude, lastLang.longitude)
+                    currentPosition = mixinLatLng
+                    search(mixinLatLng)
                 }
             }
         }
@@ -399,7 +457,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     private var lastSearchJob: Job? = null
-    fun search(latlng: LatLng) {
+    fun search(latlng: MixinLatLng) {
         binding.mentionLocation.locationPb.isVisible = locationAdapter.venues == null
         if (lastSearchJob != null && lastSearchJob?.isActive == true) {
             lastSearchJob?.cancel()
@@ -436,7 +494,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     locationEmptyTv.text = getString(R.string.location_empty, query)
                     locationPb.isVisible = data == null
                 }
-                googleMap?.clear()
+                mixinMapView.clear()
                 var south: Double? = null
                 var west: Double? = null
                 var north: Double? = null
@@ -462,26 +520,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     } else {
                         max(east!!, item.location.lng)
                     }
-                    googleMap?.addMarker(
-                        MarkerOptions().zIndex(index.toFloat()).position(
-                            LatLng(
-                                item.location.lat,
-                                item.location.lng
-                            )
-                        ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
-                    )
+                    mixinMapView.addMarker(index, item)
 
                     if (south != null && west != null && north != null && east != null) {
-                        val bound = LatLngBounds(LatLng(south!!, west!!), LatLng(north!!, east!!))
-                        moveBounds(bound)
+                        val bound = MixinLatLngBounds(MixinLatLng(south!!, west!!), MixinLatLng(north!!, east!!))
+                        mixinMapView.moveBounds(bound)
                     }
                 }
             }
         }
-    }
-
-    private fun moveBounds(bound: LatLngBounds) {
-        googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 64.dp))
     }
 
     private var markerAnimatorSet: AnimatorSet? = null
@@ -503,7 +550,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     locationSearchAdapter.keyword = null
                     locationSearchAdapter.venues = null
                     locationSearchAdapter.setMark()
-                    googleMap?.clear()
+                    mixinMapView.clear()
                 }
             )
         }
