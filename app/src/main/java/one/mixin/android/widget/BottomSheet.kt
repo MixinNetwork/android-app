@@ -38,6 +38,8 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNotchScreen
+import one.mixin.android.extension.isTablet
+import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -109,8 +111,36 @@ class BottomSheet(
                 height -= lastInsets!!.systemWindowInsetBottom
             }
             setMeasuredDimension(width, height)
-            val widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
+            val widthSpec = when {
+                context.isWideScreen() -> {
+                    MeasureSpec.makeMeasureSpec(
+                        (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.5f).toInt(),
+                        MeasureSpec.EXACTLY
+                    )
+                }
+                context.isTablet() -> {
+                    MeasureSpec.makeMeasureSpec(
+                        (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
+                        MeasureSpec.EXACTLY
+                    )
+                }
+                else -> {
+                    MeasureSpec.makeMeasureSpec(
+                        width,
+                        MeasureSpec.EXACTLY
+                    )
+                }
+            }
             sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec(height, AT_MOST))
+        }
+
+        override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+            val t = (bottom - top) - sheetContainer.measuredHeight
+            var l = (right - left - sheetContainer.measuredWidth) / 2
+            if (lastInsets != null) {
+                l += lastInsets!!.systemWindowInsetLeft
+            }
+            sheetContainer.layout(l, t, l + sheetContainer.measuredWidth, t + sheetContainer.measuredHeight)
         }
     }
 

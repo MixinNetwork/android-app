@@ -7,10 +7,14 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.core.view.updateLayoutParams
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import one.mixin.android.extension.isTablet
+import one.mixin.android.extension.isWideScreen
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.displayMetrics
 import kotlin.math.abs
@@ -35,6 +39,13 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         container.backgroundDrawable = backDrawable
         backDrawable.alpha = 0
         sheetContainer = window!!.findViewById(com.google.android.material.R.id.design_bottom_sheet)
+        sheetContainer.updateLayoutParams<ViewGroup.LayoutParams> {
+            width = when {
+                context.isWideScreen() -> (context.displayMetrics.widthPixels * 0.5).toInt()
+                context.isTablet() -> (context.displayMetrics.widthPixels * 0.8).toInt()
+                else -> width
+            }
+        }
         behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
     }
 
