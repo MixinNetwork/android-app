@@ -68,15 +68,19 @@ fun parseMentionData(
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
         numbers.add(identityNumber)
     }
+    val mentionAll = mentionAllPattern.matcher(text).find()
     val account = Session.getAccount()
     val mentions = userDao.findUserByIdentityNumbers(numbers)
     if (mentions.isEmpty()) {
-        return Pair(null, false)
+        if (mentionAll) {
+            messageMentionDao.insert(MessageMention(messageId, conversationId, "[]", false))
+        }
+        return Pair(null, mentionAll)
     }
     val mentionData = GsonHelper.customGson.toJson(mentions)
     val mentionMe = userId != account?.userId && numbers.contains(account?.identityNumber)
-    messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, !mentionMe))
-    return Pair(mentions, mentionMe)
+    messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, !(mentionMe || mentionAll)))
+    return Pair(mentions, mentionMe || mentionAll)
 }
 
 fun rendMentionContent(
@@ -107,6 +111,10 @@ private val mentionEndPattern by lazy {
 
 val mentionNumberPattern: Pattern by lazy {
     Pattern.compile("@[\\d]{4,}")
+}
+
+val mentionAllPattern: Pattern by lazy {
+    Pattern.compile("@all")
 }
 
 val MENTION_PRESS_COLOR by lazy { Color.parseColor("#665FA7E4") }
