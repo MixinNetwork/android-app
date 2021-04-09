@@ -35,8 +35,8 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         itemView.context.dpToPx(120f)
     }
 
-    private val dp48 by lazy {
-        itemView.context.dpToPx(48f)
+    private val dp64 by lazy {
+        itemView.context.dpToPx(64f)
     }
 
     fun bind(
@@ -71,22 +71,22 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
             binding.chatSticker.layoutParams.width = dp120
             binding.chatSticker.layoutParams.height = dp120
             binding.chatTime.visibility = INVISIBLE
-        } else if (messageItem.assetWidth * 2 < dp48 || messageItem.assetHeight * 2 < dp48) {
+        } else if (messageItem.assetWidth * 2 < dp64 || messageItem.assetHeight * 2 < dp64) {
             if (messageItem.assetWidth < messageItem.assetHeight) {
-                if (dp48 * messageItem.assetHeight / messageItem.assetWidth > dp120) {
+                if (dp64 * messageItem.assetHeight / messageItem.assetWidth > dp120) {
                     binding.chatSticker.layoutParams.width = dp120 * messageItem.assetWidth / messageItem.assetHeight
                     binding.chatSticker.layoutParams.height = dp120
                 } else {
-                    binding.chatSticker.layoutParams.width = dp48
-                    binding.chatSticker.layoutParams.height = dp48 * messageItem.assetHeight / messageItem.assetWidth
+                    binding.chatSticker.layoutParams.width = dp64
+                    binding.chatSticker.layoutParams.height = dp64 * messageItem.assetHeight / messageItem.assetWidth
                 }
             } else {
-                if (dp48 * messageItem.assetWidth / messageItem.assetHeight > dp120) {
+                if (dp64 * messageItem.assetWidth / messageItem.assetHeight > dp120) {
                     binding.chatSticker.layoutParams.height = dp120 * messageItem.assetHeight / messageItem.assetWidth
                     binding.chatSticker.layoutParams.width = dp120
                 } else {
-                    binding.chatSticker.layoutParams.height = dp48
-                    binding.chatSticker.layoutParams.width = dp48 * messageItem.assetWidth / messageItem.assetHeight
+                    binding.chatSticker.layoutParams.height = dp64
+                    binding.chatSticker.layoutParams.width = dp64 * messageItem.assetWidth / messageItem.assetHeight
                 }
             }
             binding.chatTime.visibility = VISIBLE
