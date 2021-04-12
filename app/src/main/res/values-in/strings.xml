@@ -125,7 +125,7 @@
     <string name="error_no_connection">Tidak ada sambungan jaringan</string>
     <string name="error_connection_timeout">Batas waktu sambungan jaringan</string>
     <string name="error_network">Kesalahan jaringan</string>
-    <string name="error_server_5xx">Server sedang dalam pemeliharaan</string>
+    <string name="error_server_5xx">Server sedang dalam pemeliharaan: %1$d</string>
     <string name="error_data">Kesalahan data</string>
     <string name="error_unknown_with_code">KESALAHAN: %1$d</string>
     <string name="error_unknown_with_message">KESALAHAN: %1$s</string>

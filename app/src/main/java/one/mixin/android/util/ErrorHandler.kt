@@ -72,8 +72,8 @@ open class ErrorHandler {
                     TOO_MANY_REQUEST -> {
                         toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
                     }
-                    SERVER -> {
-                        toast(R.string.error_server_5xx)
+                    SERVER, INSUFFICIENT_POOL -> {
+                        toast(R.string.error_server_5xx, code)
                     }
                     TIME_INACCURATE -> { }
                     else -> {
@@ -124,6 +124,7 @@ open class ErrorHandler {
         const val CONVERSATION_CHECKSUM_INVALID_ERROR = 20140
         const val BLOCKCHAIN_ERROR = 30100
         const val INVALID_ADDRESS = 30102
+        const val INSUFFICIENT_POOL = 30103
     }
 }
 
@@ -242,8 +243,8 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
         ErrorHandler.FORBIDDEN -> {
             getString(R.string.error_forbidden)
         }
-        ErrorHandler.SERVER -> {
-            getString(R.string.error_server_5xx)
+        ErrorHandler.SERVER, ErrorHandler.INSUFFICIENT_POOL -> {
+            getString(R.string.error_server_5xx, code)
         }
         ErrorHandler.TIME_INACCURATE -> "${ErrorHandler.TIME_INACCURATE} TIME_INACCURATE"
 
