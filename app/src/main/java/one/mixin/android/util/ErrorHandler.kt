@@ -73,7 +73,7 @@ open class ErrorHandler {
                         toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
                     }
                     SERVER, INSUFFICIENT_POOL -> {
-                        toast(R.string.error_server_5xx)
+                        toast(R.string.error_server_5xx, code)
                     }
                     TIME_INACCURATE -> { }
                     else -> {
@@ -244,7 +244,7 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_forbidden)
         }
         ErrorHandler.SERVER, ErrorHandler.INSUFFICIENT_POOL -> {
-            getString(R.string.error_server_5xx)
+            getString(R.string.error_server_5xx, code)
         }
         ErrorHandler.TIME_INACCURATE -> "${ErrorHandler.TIME_INACCURATE} TIME_INACCURATE"
 
