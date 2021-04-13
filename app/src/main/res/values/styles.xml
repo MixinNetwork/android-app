@@ -237,12 +237,14 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 
-    <style name="AppTheme.Web" parent="AppTheme.NoActionBar">
+    <style name="AppTheme.Blur" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
     </style>
 
-    <style name="AppTheme.Music" parent="AppTheme.Web">
+    <style name="AppTheme.Music" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 

@@ -63,6 +63,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     companion object {
         const val TAG = "GroupBottomSheetDialogFragment"
 
+        @SuppressLint("StaticFieldLeak")
         private var instant: GroupBottomSheetDialogFragment? = null
         fun newInstance(
             conversationId: String,
@@ -323,6 +324,14 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
         list.groups.add(
             menuGroup {
+                menu {
+                    title = getString(R.string.contact_other_export_chat)
+                    style = MenuStyle.Info
+                    action = {
+                        // todo
+                        dismiss()
+                    }
+                }
                 menu {
                     title = getString(R.string.group_info_clear_chat)
                     style = MenuStyle.Danger

@@ -28,6 +28,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
+import one.mixin.android.job.SendTranscriptAttachmentMessageJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
@@ -37,6 +38,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.Transcript
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAppCardMessage
 import one.mixin.android.vo.createAttachmentMessage
@@ -88,6 +90,20 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             }
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
         }
+    }
+
+    fun sendTranscriptMessage(messageId: String, conversationId: String, sender: User, transcript: List<Transcript>, isPlain: Boolean) {
+        val category = if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
+        val message = createMessage(
+            messageId,
+            conversationId,
+            sender.userId,
+            category,
+            GsonHelper.customGson.toJson(transcript),
+            nowInUtc(),
+            MessageStatus.SENDING.name
+        )
+        jobManager.addJobInBackground(SendTranscriptAttachmentMessageJob(message))
     }
 
     fun sendReplyTextMessage(

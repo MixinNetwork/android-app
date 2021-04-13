@@ -156,6 +156,16 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
                     dip(8)
             }
+            quoteMessageItem.type.endsWith("_TRANSCRIPT") -> {
+                binding.replyContentTv.setText(R.string.transcript)
+                setIcon(R.drawable.ic_type_file)
+                binding.replyIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+                (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
+                    dip(8)
+                (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
+                    dip(8)
+            }
             quoteMessageItem.type.endsWith("_LOCATION") -> {
                 binding.replyContentTv.setText(R.string.location)
                 setIcon(R.drawable.ic_type_location)

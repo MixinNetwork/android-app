@@ -29,6 +29,7 @@ import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.dip
 
@@ -115,6 +116,13 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.isPost() -> {
                 binding.replyViewTv.setText(R.string.post)
+                setIcon(R.drawable.ic_type_file)
+                (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                binding.replyViewIv.visibility = View.GONE
+                binding.replyAvatar.visibility = View.GONE
+            }
+            messageItem.isTranscript() -> {
+                binding.replyViewTv.setText(R.string.transcript)
                 setIcon(R.drawable.ic_type_file)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE

@@ -68,9 +68,9 @@ class WebActivity : BaseActivity() {
         }
     }
 
-    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Web
+    override fun getNightThemeId(): Int = R.style.AppTheme_Night_BLUR
 
-    override fun getDefaultThemeId(): Int = R.style.AppTheme_Web
+    override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
     private lateinit var binding: ActivityWebBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +82,7 @@ class WebActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityWebBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        screenshot?.let {
+        getScreenshot()?.let {
             binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
         }
         binding.container.setOnClickListener {

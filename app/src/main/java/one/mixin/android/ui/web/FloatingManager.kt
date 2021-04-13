@@ -29,8 +29,11 @@ import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
 
 private const val PREF_FLOATING = "floating"
-var screenshot: Bitmap? = null
-fun expand(context: Context) {
+private var screenshot: Bitmap? = null
+
+fun getScreenshot() = screenshot
+
+fun refreshScreenshot(context: Context) {
     MixinApplication.get().currentActivity?.let { activity ->
         val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
         if (!rootView.isLaidOut) return@let
@@ -57,6 +60,10 @@ fun expand(context: Context) {
         screenshot = resultBitmap
     }
     initRenderScript(context)
+}
+
+fun expand(context: Context) {
+    refreshScreenshot(context)
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }

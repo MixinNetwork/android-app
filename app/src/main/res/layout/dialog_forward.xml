@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:padding="24dp"
+    android:gravity="end"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/forward"
+        android:text="@string/forward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/selector_tv_blue"
+        android:textStyle="bold"
+        android:padding="8dp"/>
+
+    <TextView
+        android:id="@+id/combine_forward"
+        android:text="@string/combine_forward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/selector_tv_blue"
+        android:textStyle="bold"
+        android:padding="8dp"/>
+
+    <TextView
+        android:id="@+id/cancel"
+        android:text="@android:string/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/selector_tv_blue"
+        android:textStyle="bold"
+        android:padding="8dp"/>
+
+</LinearLayout>
+

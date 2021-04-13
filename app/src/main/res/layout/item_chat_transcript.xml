@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/chat_reply"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/bg_circle_reply"
+        android:layout_marginStart="16dp"
+        android:padding="4dp"
+        android:alpha="0"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_layout"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/chat_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="1.5dp"
+        android:layout_marginBottom="1.5dp"
+        android:ellipsize="end"
+        android:gravity="start|center_vertical"
+        android:lines="1"
+        android:minWidth="30dp"
+        android:textColor="#19BEF1"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/chat_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="16:10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_name"
+        app:layout_goneMarginTop="1.5dp">
+
+        <TextView
+            android:id="@+id/chat_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginTop="4dp"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:autoLink="none"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/chat_transcript" />
+
+        <TextView
+            android:id="@+id/chat_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/bg_transcript_shadow"
+            android:textColor="@color/textTranscript"
+            android:textSize="14sp"
+            android:autoLink="none"
+            app:layout_constraintHeight_max="100dp"
+            app:layout_constraintTop_toBottomOf="@id/chat_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/chat_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/bg_bubble_shadow"
+            android:drawablePadding="3dp"
+            android:fontFamily="@font/roboto_light"
+            android:gravity="end|bottom"
+            android:textColor="@color/white"
+            android:textSize="@dimen/chat_date_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="7:48AM" />
+
+        <ImageView
+            android:id="@+id/chat_post"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:src="@drawable/ic_post"
+            tools:ignore="HardcodedText"
+            android:contentDescription="@null" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+

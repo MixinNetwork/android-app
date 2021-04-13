@@ -50,6 +50,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -88,6 +89,7 @@ import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.websocket.ContactMessagePayload
 import org.threeten.bp.Instant
 import timber.log.Timber
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -97,6 +99,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     companion object {
         const val TAG = "UserBottomSheetDialogFragment"
 
+        @SuppressLint("StaticFieldLeak")
         private var instant: UserBottomSheetDialogFragment? = null
         fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment {
             try {
@@ -495,6 +498,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             UserRelationship.FRIEND.name -> {
                 list.groups.add(
                     menuGroup {
+                        // Todo export chat
+                        // menu {
+                        //     title = getString(R.string.contact_other_export_chat)
+                        //     style = MenuStyle.Info
+                        //     action = {
+                        //         exportChat()
+                        //         // dismiss()
+                        //     }
+                        // }
                         menu {
                             title = getString(
                                 if (user.isBot()) {
@@ -965,6 +977,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     }
                 }
             ).submit()
+    }
+
+    private fun exportChat() {
+        lifecycleScope.launch {
+            val backupFile = File("${requireContext().getOtherPath().absolutePath}${File.separator}${user.fullName}-chats.txt")
+            bottomViewModel.exportChat(generateConversationId(user.userId, Session.getAccountId()!!), backupFile)
+        }
     }
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {

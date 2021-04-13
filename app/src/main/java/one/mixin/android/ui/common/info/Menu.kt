@@ -84,7 +84,7 @@ data class Menu(
 )
 
 enum class MenuStyle {
-    Normal, Danger
+    Normal, Danger, Info
 }
 
 @SuppressLint("InflateParams")
@@ -107,10 +107,16 @@ fun MenuList.createMenuLayout(
             menuBinding.titleTv.text = menu.title
             menuBinding.subtitleTv.text = menu.subtitle
             menuBinding.titleTv.setTextColor(
-                if (menu.style == MenuStyle.Normal) {
-                    context.colorFromAttribute(R.attr.text_primary)
-                } else {
-                    context.resources.getColor(R.color.colorRed, context.theme)
+                when (menu.style) {
+                    MenuStyle.Normal -> {
+                        context.colorFromAttribute(R.attr.text_primary)
+                    }
+                    MenuStyle.Info -> {
+                        context.resources.getColor(R.color.colorBlue, context.theme)
+                    }
+                    else -> {
+                        context.resources.getColor(R.color.colorRed, context.theme)
+                    }
                 }
             )
             menu.icon.notNullWithElse(

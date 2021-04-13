@@ -46,11 +46,15 @@ interface MessageDao : BaseDao<Message> {
                 LEFT JOIN message_mentions mm ON m.id = mm.message_id
                 WHERE m.conversation_id = :conversationId 
             """
+        private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
     }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM ORDER BY m.created_at DESC")
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+
+    @Query("$PREFIX_MESSAGE_ITEM AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
+    suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem>
 
     @Query(
         """SELECT count(1) FROM messages WHERE conversation_id = :conversationId

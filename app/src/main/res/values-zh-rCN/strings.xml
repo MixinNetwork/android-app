@@ -27,6 +27,7 @@
     <string name="done">完成</string>
     <string name="forward">转发</string>
     <string name="forward_success">转发成功</string>
+    <string name="combine_forward">合并转发</string>
     <string name="message_sent">消息已发送</string>
     <string name="save">保存</string>
     <string name="saving">保存中…</string>
@@ -322,11 +323,17 @@
     <string name="chat_call_bad_network_you">当前通话网络不佳</string>
     <string name="chat_call_bad_network">当前通话对方网络不佳</string>
     <string name="chat_not_found">找不到该消息</string>
+    <string name="chat_transcript">聊天记录</string>
+    <string name="chat_import_content">导入聊天记录到%1$s？</string>
+    <string name="chat_import_fail_content">导入聊天记录失败！是否按文件发送？</string>
+    <string name="chat_import">导入聊天记录</string>
+    <string name="chat_send_file">按文件发送</string>
     <!--contact-->
     <string name="contact_other_send">发消息</string>
     <string name="contact_other_share">发送名片</string>
     <string name="contact_other_search_conversation">搜索聊天记录</string>
     <string name="contact_other_shared_media">媒体内容</string>
+    <string name="contact_other_export_chat">导出聊天记录</string>
     <string name="contact_other_block">屏蔽用户</string>
     <string name="contact_other_unblock">解除屏蔽</string>
     <string name="contact_other_remove">删除联系人</string>
@@ -518,6 +525,7 @@
     <string name="conversation_status_location">[位置]</string>
     <string name="conversation_status_live">[直播]</string>
     <string name="conversation_status_group_call">[群组语音]</string>
+    <string name="conversation_status_transcript">[聊天记录]</string>
     <string name="setting_incognito">隐身键盘</string>
     <string name="setting_incognito_prompt">禁止键盘个性化学习</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
@@ -664,6 +672,7 @@
     <string name="alert_key_group_contact_message">%1$s 分享了一个联系人</string>
     <string name="alert_key_group_post_message">%1$s 发送一篇文章</string>
     <string name="alert_key_group_location_message">%1$s 发送一个位置</string>
+    <string name="alert_key_group_transcript_message">%1$s 分享一个聊天记录</string>
     <string name="alert_key_contact_text_message">发送一条消息</string>
     <string name="alert_key_contact_image_message">发送一张照片</string>
     <string name="alert_key_contact_video_message">发送一个视频</string>
@@ -676,6 +685,7 @@
     <string name="alert_key_contact_post_message">发送了一篇文章</string>
     <string name="alert_key_contact_location_message">发送了一个位置</string>
     <string name="alert_key_contact_audio_call_message">发起了语音通话</string>
+    <string name="alert_key_contact_transcript_message">分享一个聊天记录</string>
 
     <string name="unread">未读消息</string>
     <string name="stranger_from">他/她不是你的联系人</string>
@@ -732,6 +742,7 @@
     <string name="post_tag">文章</string>
     <string name="message">消息</string>
     <string name="card">卡片</string>
+    <string name="transcript">聊天记录</string>
     <!--pay-->
     <string name="pay_paid">此付款链接已由某人支付，您无法进行重复付款。</string>
 

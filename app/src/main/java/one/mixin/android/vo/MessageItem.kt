@@ -22,11 +22,15 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.timeFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.websocket.toLocationData
 import java.io.File
 import java.io.FileInputStream
+import java.lang.IllegalArgumentException
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -209,6 +213,40 @@ fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
     }
 }
 
+fun MessageItem.toSimpleChat(): String {
+    return "${createdAt.timeFormat()} : $userFullName - ${simpleChat()}"
+}
+
+private fun MessageItem.simpleChat(): String {
+    return when {
+        isText() -> {
+            return content!!
+        }
+        isSticker() -> "[STICKER]"
+        isImage() -> mediaUrl.notNullWithElse({ "[IMAGE - ${File(it).name}]" }, "[IMAGE]")
+        isVideo() -> mediaUrl.notNullWithElse({ "[VIDEO - ${File(it).name}]" }, "[VIDEO]")
+        isData() -> mediaUrl.notNullWithElse({ "[FILE - ${File(it).name}]" }, "[FILE]")
+        isAudio() -> mediaUrl.notNullWithElse({ "[AUDIO - ${File(it).name}]" }, "[AUDIO]")
+        type == MessageCategory.APP_BUTTON_GROUP.name -> "[Mixin APP]"
+        type == MessageCategory.APP_CARD.name -> "[Mixin APP]"
+        type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ->
+            "[TRANSFER ${
+            if (snapshotAmount?.toFloat()!! > 0) {
+                "+"
+            } else {
+                ""
+            }
+            }$snapshotAmount $assetSymbol]"
+        isContact() -> {
+            "[CONTACT - $sharedUserFullName]"
+        }
+        isLive() -> "[LIVE]"
+        isPost() -> content!!
+        isLocation() -> "[LOCATION https://maps.google.com/?q=${toLocationData(content).run { "${this?.latitude}&${this?.longitude}" }}]"
+        else -> throw IllegalArgumentException()
+    }
+}
+
 class FixedMessageDataSource(private val messageItems: List<MessageItem>) : PositionalDataSource<MessageItem>() {
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MessageItem>) {
         callback.onResult(messageItems)
@@ -220,4 +258,109 @@ class FixedMessageDataSource(private val messageItems: List<MessageItem>) : Posi
     ) {
         callback.onResult(messageItems, 0, 1)
     }
+}
+
+fun MessageItem.toTranscript(isPlain: Boolean = false): Transcript {
+    val category = when {
+        isImage() -> if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+        isVideo() -> if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+        isAudio() -> if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+        isData() -> if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
+        isSticker() -> if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
+        isLive() -> if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
+        isLocation() -> if (isPlain) MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
+        isContact() -> if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
+        isTranscript() -> if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
+        else -> if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+    }
+    return Transcript(
+        messageId,
+        userId,
+        userFullName,
+        category,
+        createdAt,
+        content,
+        mediaUrl ?: assetUrl,
+        mediaName,
+        mediaSize,
+        mediaWidth,
+        mediaHeight,
+        mediaMimeType,
+        mediaDuration,
+        mediaStatus,
+        mediaWaveform,
+        thumbImage,
+        thumbUrl,
+        null,
+        null,
+        null,
+        stickerId,
+        sharedUserId,
+        sharedUserFullName,
+        sharedUserIdentityNumber,
+        sharedUserAvatarUrl,
+        sharedUserAppId,
+        sharedUserIsVerified,
+        mentions,
+        quoteId,
+        quoteContent
+    )
+}
+
+fun Transcript.toMessageItem(): MessageItem {
+    return MessageItem(
+        messageId,
+        "",
+        userId ?: "",
+        userFullName,
+        "",
+        type,
+        content,
+        createdAt,
+        "",
+        MediaStatus.DONE.name,
+        null,
+        mediaName,
+        mediaMimeType,
+        mediaSize,
+        thumbUrl,
+        mediaWidth,
+        mediaHeight,
+        thumbImage,
+        mediaUrl,
+        mediaDuration,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        mediaUrl,
+        null,
+        null,
+        null,
+        stickerId,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        sharedUserId,
+        sharedUserFullName,
+        sharedUserIdentityNumber,
+        sharedUserAvatarUrl,
+        sharedUserIsVerified,
+        sharedUserAppId,
+        mediaWaveform,
+        quoteId,
+        quoteContent,
+        null,
+        mentions,
+        null
+    )
 }
