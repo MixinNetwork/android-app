@@ -64,6 +64,10 @@ class ShareHelper {
                 intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
                     item.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
                 }
+            } else {
+                intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
+                    item.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+                }
             }
         }
         return result

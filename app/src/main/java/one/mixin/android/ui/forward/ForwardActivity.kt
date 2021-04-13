@@ -80,7 +80,7 @@ class ForwardActivity : BlazeBaseActivity() {
             val conversationId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
                 intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
             } else null
-            if (forwardMessageList != null && forwardMessageList.isNotEmpty()) {
+            if (!forwardMessageList.isNullOrEmpty()) {
                 replaceFragment(
                     ForwardFragment.newInstance(
                         forwardMessageList,
