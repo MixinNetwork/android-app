@@ -94,6 +94,7 @@ import one.mixin.android.vo.User
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
+import timber.log.Timber
 
 @Database(
     entities = [
@@ -187,8 +188,8 @@ abstract class MixinDatabase : RoomDatabase() {
                                 FrameworkSQLiteOpenHelperFactory(),
                                 listOf(object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Mixin database is corrupted, current DB version: $CURRENT_VERSION")
-                                        reportException(e)
+                                        Timber.e("Mixin database is corrupted")
+                                        MixinApplication.get().gotoRepair()
                                     }
                                 }),
                             ),

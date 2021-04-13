@@ -49,6 +49,10 @@
         android:largeHeap="true"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
         tools:replace="allowBackup">
+
+        <activity
+            android:name=".ui.repair.RepairActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
