@@ -52,6 +52,8 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.vo.toSimpleChat
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -519,4 +521,22 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun deletePreviousTraces() = assetRepository.deletePreviousTraces()
 
     suspend fun suspendDeleteTraceById(traceId: String) = assetRepository.suspendDeleteTraceById(traceId)
+
+    suspend fun exportChat(conversationId: String, file: File) {
+        var offset = 0
+        val limit = 1000
+        file.printWriter().use { writer ->
+            while (true) {
+                val list = conversationRepo.getChatMessages(conversationId, offset, limit)
+                list.forEach { item ->
+                    writer.println(item.toSimpleChat())
+                }
+                if (list.size < limit) {
+                    break
+                } else {
+                    offset += limit
+                }
+            }
+        }
+    }
 }

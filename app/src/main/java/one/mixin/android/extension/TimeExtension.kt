@@ -141,6 +141,19 @@ fun String.timeAgoDay(patten: String = "dd/MM/yyyy"): String {
     return timeAgoDate as? String ?: ""
 }
 
+private val dateTimeFormatter by lazy {
+    DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm")
+}
+
+fun String.timeFormat(): String {
+    val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
+    return requireNotNull(date.format(dateTimeFormatter.withZone(LocaleZone)))
+}
+
+fun String.toUtcTime(): String {
+    return ZonedDateTime.parse(this, dateTimeFormatter.withZone(LocaleZone)).toString()
+}
+
 fun String.lateOneHours(): Boolean {
     val offset = ZonedDateTime.now().toInstant().toEpochMilli() - ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone).toInstant().toEpochMilli()
     return offset > 3600000L

@@ -728,6 +728,11 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.text = MarkwonUtil.parseContent(conversationItem.content)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
                 }
+                conversationItem.isTranscript() -> {
+                    setConversationName(conversationItem)
+                    binding.msgTv.setText(R.string.conversation_status_transcript)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
+                }
                 conversationItem.isLocation() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_location)

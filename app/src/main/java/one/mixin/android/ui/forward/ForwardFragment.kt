@@ -41,6 +41,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_ACTION
+import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_COMBINE_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
@@ -59,6 +60,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
+import one.mixin.android.vo.Transcript
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
@@ -74,6 +76,7 @@ import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import java.io.File
+import java.lang.Exception
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -94,6 +97,19 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             fragment.arguments = b
             return fragment
         }
+
+        fun newCombineInstance(
+            messages: ArrayList<Transcript>,
+            action: ForwardAction
+        ): ForwardFragment {
+            val fragment = ForwardFragment()
+            val b = bundleOf(
+                ARGS_COMBINE_MESSAGES to messages,
+                ARGS_ACTION to action
+            )
+            fragment.arguments = b
+            return fragment
+        }
     }
 
     private val chatViewModel by viewModels<ConversationViewModel>()
@@ -103,10 +119,15 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     }
 
     private val messages: ArrayList<ForwardMessage> by lazy {
-        requireArguments().getParcelableArrayList(ARGS_MESSAGES)!!
+        requireNotNull(requireArguments().getParcelableArrayList(ARGS_MESSAGES))
     }
+
+    private val combineMessages: ArrayList<Transcript> by lazy {
+        requireNotNull(requireArguments().getParcelableArrayList(ARGS_COMBINE_MESSAGES))
+    }
+
     private val action: ForwardAction by lazy {
-        requireArguments().getParcelable(ARGS_ACTION)!!
+        requireNotNull(requireArguments().getParcelable(ARGS_ACTION))
     }
 
     private val sender = Session.getAccount()?.toUser()
@@ -149,10 +170,13 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         super.onViewCreated(view, savedInstanceState)
         val cid = action.conversationId
         if (cid != null) {
-            if (action is ForwardAction.System) {
-                sendDirectMessages(cid)
-            } else {
-                sendMessage(listOf(SelectItem(cid, null)))
+            when (action) {
+                is ForwardAction.System -> {
+                    sendDirectMessages(cid)
+                }
+                else -> {
+                    sendMessage(listOf(SelectItem(cid, null)))
+                }
             }
             requireActivity().finish()
             return
@@ -185,8 +209,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         }
                     }
                 }
-
-                sendMessage(selectItem)
+                if (action is ForwardAction.Combine) {
+                    sendCombineMessage(selectItem)
+                } else {
+                    sendMessage(selectItem)
+                }
             }
         }
         adapter.setForwardListener(
@@ -271,6 +298,21 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
             requireActivity().finish()
         }
+    }
+
+    private fun sendCombineMessage(selectItems: List<SelectItem>) = lifecycleScope.launch {
+        if (sender == null) return@launch
+        selectItems.forEach { item ->
+            chatViewModel.checkData(item) { conversationId: String, isPlain: Boolean ->
+                val (messageId, transcripts) = chatViewModel.processTranscript(conversationId, combineMessages)
+                chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, isPlain)
+            }
+        }
+        val result = Intent().apply {
+            putParcelableArrayListExtra(ForwardActivity.ARGS_RESULT, ArrayList(selectItems))
+        }
+        requireActivity().setResult(Activity.RESULT_OK, result)
+        requireActivity().finish()
     }
 
     private fun checkPermission(afterGranted: () -> Job) {
@@ -396,6 +438,14 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     ForwardCategory.Location -> {
                         val locationPayload = GsonHelper.customGson.fromJson(content, LocationPayload::class.java)
                         chatViewModel.sendLocationMessage(conversationId, sender.userId, locationPayload, isPlain)
+                    }
+                    ForwardCategory.Transcript -> {
+                        val transcript = GsonHelper.customGson.fromJson(content, Array<Transcript>::class.java)
+                        val (messageId, list) = chatViewModel.processTranscript(conversationId, transcript.toList())
+                        chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, list, isPlain)
+                    }
+                    else -> {
+                        throw IllegalArgumentException("Unknown category")
                     }
                 }
                 if (errorString != null) {

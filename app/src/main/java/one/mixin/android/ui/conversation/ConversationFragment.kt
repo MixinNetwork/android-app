@@ -74,6 +74,8 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.databinding.DialogDeleteBinding
+import one.mixin.android.databinding.DialogForwardBinding
+import one.mixin.android.databinding.DialogImportMessageBinding
 import one.mixin.android.databinding.FragmentConversationBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.event.BlinkEvent
@@ -87,6 +89,7 @@ import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
@@ -157,6 +160,7 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
+import one.mixin.android.ui.conversation.transcript.TranscriptActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -179,6 +183,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
+import one.mixin.android.util.import.ImportChatUtil
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -193,6 +198,8 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canRecall
@@ -204,6 +211,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
+import one.mixin.android.vo.toTranscript
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.SelectItem
@@ -251,6 +259,7 @@ class ConversationFragment() :
         const val MESSAGE_ID = "message_id"
         const val INITIAL_POSITION_MESSAGE_ID = "initial_position_message_id"
         const val UNREAD_COUNT = "unread_count"
+        const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
 
         fun putBundle(
@@ -258,7 +267,8 @@ class ConversationFragment() :
             recipientId: String?,
             messageId: String?,
             keyword: String?,
-            unreadCount: Int? = null
+            unreadCount: Int? = null,
+            transcriptData: TranscriptData? = null
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -273,6 +283,7 @@ class ConversationFragment() :
                 unreadCount?.let {
                     putInt(UNREAD_COUNT, unreadCount)
                 }
+                putParcelable(TRANSCRIPT_DATA, transcriptData)
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
@@ -299,8 +310,12 @@ class ConversationFragment() :
         provideMusicViewModel(musicServiceConnection, conversationId)
     }
 
+    private val transcriptData: TranscriptData? by lazy {
+        requireArguments().getParcelable(TRANSCRIPT_DATA)
+    }
+
     private var unreadTipCount: Int = 0
-    private val chatAdapter: ConversationAdapter by lazy {
+    private val conversationAdapter: ConversationAdapter by lazy {
         ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, !isPlainMessage(), isBot).apply {
             registerAdapterDataObserver(chatAdapterDataObserver)
         }
@@ -308,8 +323,8 @@ class ConversationFragment() :
 
     fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
         this.keyword = keyword
-        chatAdapter.keyword = keyword
-        val currentList = chatAdapter.currentList
+        conversationAdapter.keyword = keyword
+        val currentList = conversationAdapter.currentList
         if (currentList != null) {
             (binding.chatRv.layoutManager as LinearLayoutManager).scrollToPosition(unreadCount)
             lifecycleScope.launch {
@@ -335,7 +350,7 @@ class ConversationFragment() :
             var oldSize = 0
 
             override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
-                chatAdapter.currentList?.let {
+                conversationAdapter.currentList?.let {
                     oldSize = it.size
                 }
             }
@@ -383,7 +398,7 @@ class ConversationFragment() :
                         binding.chatRv.isVisible = true
                     }
                     isBottom -> {
-                        if (chatAdapter.currentList != null && chatAdapter.currentList!!.size > oldSize) {
+                        if (conversationAdapter.currentList != null && conversationAdapter.currentList!!.size > oldSize) {
                             binding.chatRv.layoutManager?.scrollToPosition(0)
                         }
                     }
@@ -396,7 +411,7 @@ class ConversationFragment() :
                         }
                     }
                 }
-                chatAdapter.currentList?.let {
+                conversationAdapter.currentList?.let {
                     oldSize = it.size
                 }
             }
@@ -425,17 +440,17 @@ class ConversationFragment() :
         object : ConversationAdapter.OnItemListener() {
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
                 if (isSelect) {
-                    chatAdapter.addSelect(messageItem)
+                    conversationAdapter.addSelect(messageItem)
                 } else {
-                    chatAdapter.removeSelect(messageItem)
+                    conversationAdapter.removeSelect(messageItem)
                 }
-                binding.toolView.countTv.text = chatAdapter.selectSet.size.toString()
+                binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
                 when {
-                    chatAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
-                    chatAdapter.selectSet.size == 1 -> {
+                    conversationAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
+                    conversationAdapter.selectSet.size == 1 -> {
                         try {
-                            if (chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_TEXT.name ||
-                                chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_TEXT.name
+                            if (conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_TEXT.name ||
+                                conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_TEXT.name
                             ) {
                                 binding.toolView.copyIv.visibility = VISIBLE
                             } else {
@@ -444,19 +459,19 @@ class ConversationFragment() :
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             binding.toolView.copyIv.visibility = GONE
                         }
-                        if (chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_DATA.name ||
-                            chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_DATA.name
+                        if (conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_DATA.name ||
+                            conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_DATA.name
                         ) {
                             binding.toolView.shareIv.visibility = VISIBLE
                         } else {
                             binding.toolView.shareIv.visibility = GONE
                         }
-                        if (chatAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
+                        if (conversationAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
                             binding.toolView.addStickerIv.visibility = VISIBLE
                         } else {
                             binding.toolView.addStickerIv.visibility = GONE
                         }
-                        if (chatAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
+                        if (conversationAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
                             binding.toolView.replyIv.visibility = GONE
                         } else {
                             binding.toolView.replyIv.visibility = VISIBLE
@@ -470,17 +485,17 @@ class ConversationFragment() :
                         binding.toolView.shareIv.visibility = GONE
                     }
                 }
-                if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
+                if (conversationAdapter.selectSet.find { it.canNotForward() } != null) {
                     binding.toolView.forwardIv.visibility = GONE
                 } else {
                     binding.toolView.forwardIv.visibility = VISIBLE
                 }
-                chatAdapter.notifyDataSetChanged()
+                conversationAdapter.notifyDataSetChanged()
             }
 
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
-                val b = chatAdapter.addSelect(messageItem)
-                binding.toolView.countTv.text = chatAdapter.selectSet.size.toString()
+                val b = conversationAdapter.addSelect(messageItem)
+                binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
                 if (b) {
                     if (messageItem.type == MessageCategory.SIGNAL_TEXT.name ||
                         messageItem.type == MessageCategory.PLAIN_TEXT.name
@@ -503,17 +518,17 @@ class ConversationFragment() :
                         binding.toolView.addStickerIv.visibility = GONE
                     }
 
-                    if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
+                    if (conversationAdapter.selectSet.find { it.canNotForward() } != null) {
                         binding.toolView.forwardIv.visibility = GONE
                     } else {
                         binding.toolView.forwardIv.visibility = VISIBLE
                     }
-                    if (chatAdapter.selectSet.find { it.canNotReply() } != null) {
+                    if (conversationAdapter.selectSet.find { it.canNotReply() } != null) {
                         binding.toolView.replyIv.visibility = GONE
                     } else {
                         binding.toolView.replyIv.visibility = VISIBLE
                     }
-                    chatAdapter.notifyDataSetChanged()
+                    conversationAdapter.notifyDataSetChanged()
                     binding.toolView.fadeIn()
                 }
                 return b
@@ -803,6 +818,10 @@ class ConversationFragment() :
                 MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
             }
 
+            override fun onTranscriptClick(messageItem: MessageItem) {
+                TranscriptActivity.show(requireActivity(), messageItem.content!!, conversationId)
+            }
+
             override fun onSayHi() {
                 sendMessage("Hi")
             }
@@ -853,7 +872,7 @@ class ConversationFragment() :
     }
 
     private val decoration by lazy {
-        MixinHeadersDecoration(chatAdapter)
+        MixinHeadersDecoration(conversationAdapter)
     }
 
     private val mentionAdapter: MentionAdapter by lazy {
@@ -946,12 +965,14 @@ class ConversationFragment() :
     var selectItem: SelectItem? = null
 
     lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
+    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<Transcript>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
 
         getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract(), resultRegistry, ::callbackForward)
+        getCombineForwardContract = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1010,6 +1031,7 @@ class ConversationFragment() :
             }
 
         checkPeerIfNeeded()
+        checkTranscript()
     }
 
     private var paused = false
@@ -1061,7 +1083,7 @@ class ConversationFragment() :
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
             .subscribe { event ->
-                if (chatAdapter.selectSet.any { it.messageId == event.messageId }) {
+                if (conversationAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
                 }
                 binding.chatControl.replyView.messageItem?.let {
@@ -1166,7 +1188,7 @@ class ConversationFragment() :
     override fun onDestroyView() {
         chatViewModel.keyLivePagedListBuilder = null
         if (isAdded) {
-            chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
+            conversationAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
         super.onDestroyView()
     }
@@ -1242,15 +1264,15 @@ class ConversationFragment() :
     }
 
     private fun closeTool() {
-        chatAdapter.selectSet.clear()
+        conversationAdapter.selectSet.clear()
         if (!binding.chatRv.isComputingLayout) {
-            chatAdapter.notifyDataSetChanged()
+            conversationAdapter.notifyDataSetChanged()
         }
         binding.toolView.fadeOut()
     }
 
     private fun markRead() {
-        chatAdapter.markRead()
+        conversationAdapter.markRead()
     }
 
     private var firstPosition = 0
@@ -1265,8 +1287,8 @@ class ConversationFragment() :
         }
         binding.chatRv.visibility = INVISIBLE
         if (binding.chatRv.adapter == null) {
-            binding.chatRv.adapter = chatAdapter
-            chatAdapter.listen(destroyScope)
+            binding.chatRv.adapter = conversationAdapter
+            conversationAdapter.listen(destroyScope)
         }
         binding.chatControl.callback = chatControlCallback
         binding.chatControl.activity = requireActivity()
@@ -1386,12 +1408,12 @@ class ConversationFragment() :
             )
         binding.toolView.closeIv.setOnClickListener { activity?.onBackPressed() }
         binding.toolView.deleteIv.setOnClickListener {
-            chatAdapter.selectSet.filter { it.isAudio() }.forEach {
+            conversationAdapter.selectSet.filter { it.isAudio() }.forEach {
                 if (AudioPlayer.isPlay(it.messageId)) {
                     AudioPlayer.pause()
                 }
             }
-            deleteMessage(chatAdapter.selectSet.toList())
+            deleteMessage(conversationAdapter.selectSet.toList())
             closeTool()
         }
         binding.chatControl.replyView.replyCloseIv.setOnClickListener {
@@ -1401,7 +1423,7 @@ class ConversationFragment() :
         binding.toolView.copyIv.setOnClickListener {
             try {
                 context?.getClipboardManager()?.setPrimaryClip(
-                    ClipData.newPlainText(null, chatAdapter.selectSet.valueAt(0)?.content)
+                    ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content)
                 )
                 context?.toast(R.string.copy_success)
             } catch (e: ArrayIndexOutOfBoundsException) {
@@ -1409,17 +1431,13 @@ class ConversationFragment() :
             closeTool()
         }
         binding.toolView.forwardIv.setOnClickListener {
-            lifecycleScope.launch {
-                val list = chatViewModel.getSortMessagesByIds(chatAdapter.selectSet)
-                getForwardResult.launch(Pair(list, null))
-                closeTool()
-            }
+            showForwardDialog()
         }
         binding.toolView.addStickerIv.setOnClickListener {
-            if (chatAdapter.selectSet.isEmpty()) {
+            if (conversationAdapter.selectSet.isEmpty()) {
                 return@setOnClickListener
             }
-            val messageItem = chatAdapter.selectSet.valueAt(0)
+            val messageItem = conversationAdapter.selectSet.valueAt(0)
             messageItem?.let { m ->
                 val isSticker = messageItem.isSticker()
                 if (isSticker && m.stickerId != null) {
@@ -1440,17 +1458,17 @@ class ConversationFragment() :
         }
 
         binding.toolView.replyIv.setOnClickListener {
-            if (chatAdapter.selectSet.isEmpty()) {
+            if (conversationAdapter.selectSet.isEmpty()) {
                 return@setOnClickListener
             }
-            chatAdapter.selectSet.valueAt(0)?.let {
+            conversationAdapter.selectSet.valueAt(0)?.let {
                 binding.chatControl.replyView.bind(it)
             }
             displayReplyView()
             closeTool()
         }
         binding.toolView.shareIv.setOnClickListener {
-            val messageItem = chatAdapter.selectSet.valueAt(0)
+            val messageItem = conversationAdapter.selectSet.valueAt(0)
             Intent().apply {
                 var uri: Uri? = try {
                     messageItem?.mediaUrl?.toUri()
@@ -1588,7 +1606,7 @@ class ConversationFragment() :
                             Timber.w(e)
                         }
                         if (position >= 0) {
-                            chatAdapter.getItem(position)?.let {
+                            conversationAdapter.getItem(position)?.let {
                                 binding.chatControl.replyView.bind(it)
                             }
 
@@ -1741,14 +1759,14 @@ class ConversationFragment() :
                 oldCount = list.size
             }
             chatViewModel.viewModelScope.launch {
-                chatAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name &&
+                conversationAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name &&
                     (
                         (isBot && list.isEmpty()) ||
                             (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))
                         )
             }
             if (isFirstLoad && messageId == null && unreadCount > 0) {
-                chatAdapter.unreadMsgId = unreadMessageId
+                conversationAdapter.unreadMsgId = unreadMessageId
             } else if (lastReadMessage != null) {
                 chatViewModel.viewModelScope.launch {
                     lastReadMessage?.let { id ->
@@ -1758,7 +1776,7 @@ class ConversationFragment() :
                             id
                         )
                         if (unreadMsgId != null) {
-                            chatAdapter.unreadMsgId = unreadMsgId
+                            conversationAdapter.unreadMsgId = unreadMsgId
                             lastReadMessage = null
                         }
                     }
@@ -1770,7 +1788,7 @@ class ConversationFragment() :
                 }
                 chatViewModel.markMessageRead(conversationId, sender.userId)
             }
-            chatAdapter.submitList(list) {
+            conversationAdapter.submitList(list) {
                 if (countable) return@submitList
 
                 liveDataMessage(unreadCount, unreadMessageId, true)
@@ -2101,7 +2119,7 @@ class ConversationFragment() :
     }
 
     private fun renderUser(user: User) {
-        chatAdapter.recipient = user
+        conversationAdapter.recipient = user
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(
             viewLifecycleOwner,
@@ -2427,7 +2445,7 @@ class ConversationFragment() :
     private fun scrollToDown() {
         binding.chatRv.layoutManager?.scrollToPosition(0)
         if (firstPosition > PAGE_SIZE * 6) {
-            chatAdapter.notifyDataSetChanged()
+            conversationAdapter.notifyDataSetChanged()
         }
     }
 
@@ -2495,8 +2513,8 @@ class ConversationFragment() :
                 }
             )
         } else {
-            chatAdapter.loadAround(index)
-            if (index == chatAdapter.itemCount - 1) {
+            conversationAdapter.loadAround(index)
+            if (index == conversationAdapter.itemCount - 1) {
                 scrollTo(
                     index,
                     0,
@@ -2893,5 +2911,117 @@ class ConversationFragment() :
         val firstVisiblePosition: Int = lm.findFirstVisibleItemPosition()
         val firstKeyToLoad: Int = if (unreadCount <= 0) firstVisiblePosition else unreadCount
         chatViewModel.keyLivePagedListBuilder?.setFirstKeyToLoad(firstKeyToLoad)
+    }
+
+    private var transcriptDialog: AlertDialog? = null
+    private fun generateTranscriptDialogLayout(): DialogImportMessageBinding {
+        return DialogImportMessageBinding.inflate(LayoutInflater.from(requireActivity()), null, false)
+            .apply {
+                this.cancel.setOnClickListener {
+                    deleteDialog?.dismiss()
+                }
+            }
+    }
+
+    private fun checkTranscript() {
+        transcriptData?.let { transcriptData ->
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        transcriptDialog?.dismiss()
+                        val transcriptDialogLayoutBinding = generateTranscriptDialogLayout()
+                        transcriptDialog = alertDialogBuilder()
+                            .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
+                            .setView(transcriptDialogLayoutBinding.root)
+                            .create()
+                        transcriptDialogLayoutBinding.importChat.setOnClickListener {
+                            sendTranscript(transcriptData)
+                            transcriptDialog?.dismiss()
+                        }
+                        transcriptDialogLayoutBinding.sendChat.setOnClickListener {
+                            sendFile(transcriptData)
+                            transcriptDialog?.dismiss()
+                        }
+                        transcriptDialog?.show()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+        }
+    }
+
+    private fun sendTranscript(transcriptData: TranscriptData) {
+        try {
+            val importChatUtil = ImportChatUtil.get()
+            val content = importChatUtil.generateTranscriptMessage(requireContext(), transcriptData.chatUri, transcriptData.documentUris)
+            // todo
+            // content?.notEmptyWithElse({ sendTranscriptMessage(content) }, { sendFileAlert(transcriptData) })
+        } catch (e: Exception) {
+            Timber.e(e)
+            sendFileAlert(transcriptData)
+        }
+    }
+
+    private fun sendFileAlert(transcriptData: TranscriptData) {
+        alert(getString(R.string.chat_import_fail_content))
+            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.chat_send_file) { dialog, _ ->
+                sendFile(transcriptData)
+                dialog.dismiss()
+            }
+    }
+
+    private fun sendFile(transcriptData: TranscriptData) {
+        // todo
+    }
+
+    private var forwardDialog: AlertDialog? = null
+    private fun generateForwardDialogLayout(): DialogForwardBinding {
+        return DialogForwardBinding.inflate(LayoutInflater.from(requireActivity()), null, false)
+            .apply {
+                this.cancel.setOnClickListener {
+                    deleteDialog?.dismiss()
+                }
+            }
+    }
+
+    private fun showForwardDialog() {
+        forwardDialog?.dismiss()
+        if (conversationAdapter.selectSet.size == 1) {
+            forward()
+        } else {
+            val forwardDialogLayoutBinding = generateForwardDialogLayout()
+            forwardDialog = alertDialogBuilder()
+                .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
+                .setView(forwardDialogLayoutBinding.root)
+                .create()
+            forwardDialogLayoutBinding.forward.setOnClickListener {
+                forward()
+                forwardDialog?.dismiss()
+            }
+            forwardDialogLayoutBinding.combineForward.setOnClickListener {
+                combineForward()
+                forwardDialog?.dismiss()
+            }
+            forwardDialog?.show()
+        }
+    }
+
+    private fun forward() {
+        lifecycleScope.launch {
+            val list = chatViewModel.getSortMessagesByIds(conversationAdapter.selectSet)
+            getForwardResult.launch(Pair(list, null))
+            closeTool()
+        }
+    }
+
+    private fun combineForward() {
+        lifecycleScope.launch {
+            val messages = conversationAdapter.selectSet.sortedWith(compareBy { it.createdAt }).map { it.toTranscript() }
+            getCombineForwardContract.launch(ArrayList(messages))
+            closeTool()
+        }
     }
 }

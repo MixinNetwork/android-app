@@ -92,6 +92,8 @@ internal constructor(
     fun getMessages(conversationId: String, unreadCount: Int, countable: Boolean) =
         MessageProvider.getMessages(conversationId, appDatabase, unreadCount, countable)
 
+    suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
+
     fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
         MessageProvider.getConversations(appDatabase)
     } else {

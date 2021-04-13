@@ -29,7 +29,6 @@ class ShareHelper {
             return null
         }
         val result = arrayListOf<ForwardMessage>()
-        // TODO handle */*
         if (Intent.ACTION_SEND == action) {
             if ("text/plain" == type) {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
@@ -50,23 +49,43 @@ class ShareHelper {
                 imageUri?.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
             } else if (type.startsWith("application/") || type.startsWith("audio/")) {
                 intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
-                    it.getFilePath(MixinApplication.appContext)?.let { url ->
-                        url.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
-                    }
-                }
-            }
-        } else if (Intent.ACTION_SEND_MULTIPLE == action) {
-            if (type.startsWith("image/")) {
-                intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
-                    item.systemMediaToMessage(ShareCategory.Image)?.addTo(result)
-                }
-            } else if (type.startsWith("video/")) {
-                intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
-                    item.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
+                    it.getFilePath(MixinApplication.appContext)?.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
                 }
             } else {
-                intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
-                    item.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+                val dataUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                dataUri?.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+            }
+        } else if (Intent.ACTION_SEND_MULTIPLE == action) {
+            when {
+                type.startsWith("image/") -> {
+                    intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
+                        item.systemMediaToMessage(ShareCategory.Image)?.addTo(result)
+                    }
+                }
+                type.startsWith("video/") -> {
+                    intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
+                        item.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
+                    }
+                }
+                else -> {
+                    intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.let { list ->
+                        // Todo parse whatsapp file
+                        // val importChatUtil = ImportChatUtil.get()
+                        // val exportingChatUris = importChatUtil.getImportChatUri(list)
+                        // if (exportingChatUris != null) {
+                        //     val (exportingChatUri, documentsUrisArray) = exportingChatUris
+                        //     result.add(
+                        //         ForwardMessage(
+                        //             ShareCategory.Transcript,
+                        //             GsonHelper.customGson.toJson(TranscriptData(exportingChatUri.toString(), documentsUrisArray.map { it.toString() }))
+                        //         )
+                        //     )
+                        // } else {
+                        list.forEach { item ->
+                            item.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+                        }
+                        // }
+                    }
                 }
             }
         }

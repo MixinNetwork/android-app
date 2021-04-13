@@ -15,6 +15,10 @@
     <color name="textRemarks">#BCBEC3</color>
     <color name="textSubtitle">#BBBEC3</color>
 
+    <color name="textTranscript">#663B3C3E</color>
+    <color name="textTranscriptNight">#858f9c</color>
+    <color name="textTranscriptNightOther">#828589</color>
+
     <color name="colorIcon">#FF000000</color>
     <color name="colorIconWhite">#FFFFFF</color>
     <color name="colorIconGray">#D2D4DA</color>

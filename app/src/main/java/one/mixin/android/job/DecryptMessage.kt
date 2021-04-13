@@ -34,6 +34,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
@@ -63,6 +64,7 @@ import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.Transcript
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
@@ -78,6 +80,8 @@ import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isIllegalMessageCategory
+import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isText
 import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.toJson
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -615,6 +619,21 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt
                 )
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                generateNotification(message, data.source)
+            }
+            data.category.endsWith("_TRANSCRIPT") -> {
+                val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(Base64.decode(plainText)) else plainText
+                val transcripts = gson.fromJson(plain, Array<Transcript>::class.java)
+                val stringBuffer = StringBuffer()
+                transcripts.filter { it.isText() || it.isPost() }.forEach { transcript ->
+                    transcript.content?.joinWhiteSpace()?.let {
+                        stringBuffer.append(it)
+                    }
+                }
+                MessageFts4Helper.insertMessageFts4(data.messageId, stringBuffer.toString())
+                val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message))
                 generateNotification(message, data.source)
             }
         }

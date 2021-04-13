@@ -28,6 +28,7 @@
     <string name="done">Done</string>
     <string name="forward">Forward</string>
     <string name="forward_success">Forward success</string>
+    <string name="combine_forward">Combine forward</string>
     <string name="message_sent">Message sent</string>
     <string name="save">Save</string>
     <string name="saving">Saving…</string>
@@ -341,11 +342,17 @@
     <string name="chat_call_bad_network_you">Connection is unstable</string>
     <string name="chat_call_bad_network">Other user\'s connection is unstable</string>
     <string name="chat_not_found">Message not found</string>
+    <string name="chat_transcript">Transcript</string>
+    <string name="chat_import_content">Do you want import messages to %1$s ?</string>
+    <string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>
+    <string name="chat_import">Import</string>
+    <string name="chat_send_file">Send as file</string>
     <!--contact-->
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>
     <string name="contact_other_search_conversation">Search Conversation</string>
     <string name="contact_other_shared_media">Shared Media</string>
+    <string name="contact_other_export_chat">Export Chat</string>
     <string name="contact_other_block">Block</string>
     <string name="contact_other_unblock">Unblock</string>
     <string name="contact_other_remove">Remove Contact</string>
@@ -536,6 +543,7 @@
     <string name="conversation_status_location">[Location]</string>
     <string name="conversation_status_live">[Live]</string>
     <string name="conversation_status_group_call">[Group Call]</string>
+    <string name="conversation_status_transcript">[Transcript]</string>
     <string name="setting_incognito">Incognito Keyboard</string>
     <string name="setting_incognito_prompt">Disable keyboard personalized learning</string>
     <string name="setting_no_blocked">No blocked users</string>
@@ -681,6 +689,7 @@
     <string name="alert_key_group_contact_message">%1$s shared a contact</string>
     <string name="alert_key_group_post_message">%1$s send a post</string>
     <string name="alert_key_group_location_message">%1$s send a location</string>
+    <string name="alert_key_group_transcript_message">%1$s shared a transcript</string>
     <string name="alert_key_contact_text_message">send you a message</string>
     <string name="alert_key_contact_image_message">send you a photo</string>
     <string name="alert_key_contact_video_message">send you a video</string>
@@ -693,6 +702,7 @@
     <string name="alert_key_contact_post_message">send a post</string>
     <string name="alert_key_contact_location_message">send a location</string>
     <string name="alert_key_contact_audio_call_message">ask you an audio call</string>
+    <string name="alert_key_contact_transcript_message">shared a transcript</string>
     <string name="unread">New Messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
     <string name="bot_interact_info">Click the button to interact with the bot</string>
@@ -748,6 +758,7 @@
     <string name="post_tag">POST</string>
     <string name="message">message</string>
     <string name="card">Card</string>
+    <string name="transcript">Transcript</string>
     <!--pay-->
     <string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
 

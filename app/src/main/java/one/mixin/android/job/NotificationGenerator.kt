@@ -43,6 +43,7 @@ import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRepresentativeMessage
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.notificationManager
 
@@ -274,6 +275,21 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_post_message))
                     notificationBuilder.setContentTitle(user.fullName)
                     notificationBuilder.setContentText("${user.fullName}: ${rendMentionContent(message.content, userMap)}")
+                }
+            }
+            message.isTranscript() -> {
+                if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
+                    notificationBuilder.setTicker(
+                        context.getString(R.string.alert_key_group_transcript_message, user.fullName)
+                    )
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
+                    notificationBuilder.setContentText(
+                        context.getString(R.string.alert_key_group_transcript_message, user.fullName)
+                    )
+                } else {
+                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transcript_message))
+                    notificationBuilder.setContentTitle(user.fullName)
+                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_transcript_message))
                 }
             }
             message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {

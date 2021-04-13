@@ -39,6 +39,7 @@ import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.databinding.ItemChatTimeBinding
+import one.mixin.android.databinding.ItemChatTranscriptBinding
 import one.mixin.android.databinding.ItemChatTransparentBinding
 import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.databinding.ItemChatUnreadBinding
@@ -78,6 +79,7 @@ import one.mixin.android.ui.conversation.holder.SystemHolder
 import one.mixin.android.ui.conversation.holder.TextHolder
 import one.mixin.android.ui.conversation.holder.TextQuoteHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
+import one.mixin.android.ui.conversation.holder.TranscriptHolder
 import one.mixin.android.ui.conversation.holder.TransparentHolder
 import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
@@ -102,6 +104,7 @@ import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
@@ -480,6 +483,17 @@ class ConversationAdapter(
                         onItemListener
                     )
                 }
+                TRANSCRIPT_TYPE -> {
+                    (holder as TranscriptHolder).bind(
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        isRepresentative(it),
+                        onItemListener
+                    )
+                }
                 else -> {
                 }
             }
@@ -747,6 +761,9 @@ class ConversationAdapter(
             GROUP_CALL_TYPE -> {
                 GroupCallHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+            TRANSCRIPT_TYPE -> {
+                TranscriptHolder(ItemChatTranscriptBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
             else -> {
                 TransparentHolder(ItemChatTransparentBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
@@ -827,6 +844,7 @@ class ConversationAdapter(
                     item.isRecall() -> RECALL_TYPE
                     item.isLocation() -> LOCATION_TYPE
                     item.isGroupCall() -> GROUP_CALL_TYPE
+                    item.isTranscript() -> TRANSCRIPT_TYPE
                     else -> UNKNOWN_TYPE
                 }
             },
@@ -865,6 +883,7 @@ class ConversationAdapter(
         const val RECALL_TYPE = 19
         const val LOCATION_TYPE = 20
         const val GROUP_CALL_TYPE = 21
+        const val TRANSCRIPT_TYPE = 22
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
@@ -946,6 +965,8 @@ class ConversationAdapter(
         open fun onLocationClick(messageItem: MessageItem) {}
 
         open fun onTextDoubleClick(messageItem: MessageItem) {}
+
+        open fun onTranscriptClick(messageItem: MessageItem) {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {

@@ -193,6 +193,7 @@ enum class MessageCategory {
     SIGNAL_LIVE,
     SIGNAL_POST,
     SIGNAL_LOCATION,
+    SIGNAL_TRANSCRIPT,
     PLAIN_TEXT,
     PLAIN_IMAGE,
     PLAIN_VIDEO,
@@ -204,6 +205,7 @@ enum class MessageCategory {
     PLAIN_POST,
     PLAIN_JSON,
     PLAIN_LOCATION,
+    PLAIN_TRANSCRIPT,
     MESSAGE_RECALL,
     STRANGER,
     SECRET,
@@ -241,7 +243,8 @@ enum class MessageCategory {
     ENCRYPTED_AUDIO,
     ENCRYPTED_LIVE,
     ENCRYPTED_POST,
-    ENCRYPTED_LOCATION
+    ENCRYPTED_LOCATION,
+    ENCRYPTED_TRANSCRIPT
 }
 
 fun String.isIllegalMessageCategory(): Boolean {
