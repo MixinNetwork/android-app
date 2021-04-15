@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemGroupSelectBinding
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.vo.ConversationItem
+import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroupConversation
 
@@ -34,7 +34,7 @@ class ConversationCircleSelectAdapter(
         if (item is User) {
             binding.avatarView.setInfo(item.fullName, item.avatarUrl, item.userId)
             binding.nameTv.text = item.fullName
-        } else if (item is ConversationItem) {
+        } else if (item is ConversationMinimal) {
             holder.itemView.apply {
                 if (item.isGroupConversation()) {
                     binding.avatarView.setGroup(item.groupIconUrl)
