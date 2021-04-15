@@ -29,7 +29,6 @@ import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleItem
-import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
@@ -57,7 +56,7 @@ class ConversationCircleEditFragment : BaseFragment() {
     private val chatViewModel by viewModels<ConversationListViewModel>()
 
     private val circle: ConversationCircleItem by lazy {
-        requireArguments().getParcelable<ConversationCircleItem>(ARGS_CIRCLE)!!
+        requireArguments().getParcelable(ARGS_CIRCLE)!!
     }
 
     private val adapter = ForwardAdapter(true)
@@ -163,7 +162,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                     is User -> {
                         generateConversationId(Session.getAccountId()!!, item.userId)
                     }
-                    is ConversationItem -> {
+                    is ConversationMinimal -> {
                         item.conversationId
                     }
                     else -> {
@@ -248,7 +247,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                         item.userId
                     )
                 )
-            } else if (item is ConversationItem) {
+            } else if (item is ConversationMinimal) {
                 conversationRequests.add(
                     CircleConversationPayload(
                         item.conversationId,
