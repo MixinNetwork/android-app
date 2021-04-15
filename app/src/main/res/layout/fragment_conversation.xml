@@ -85,11 +85,12 @@
                     android:id="@+id/group_flag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:padding="12dp"
-                    android:translationZ="1dp"
+                    android:translationZ="4dp"
                     android:visibility="gone">
 
                     <ImageView
@@ -131,11 +132,12 @@
                     android:id="@+id/scam_flag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:padding="12dp"
-                    android:translationZ="1dp"
+                    android:translationZ="4dp"
                     android:visibility="gone"
                     tools:visibility="visible">
 
