@@ -1,6 +1,8 @@
 package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.crypto.Base64
+import one.mixin.android.util.GsonHelper
 
 data class AttachmentMessagePayload(
     @SerializedName("key")
@@ -27,6 +29,8 @@ data class AttachmentMessagePayload(
     var waveform: ByteArray? = null,
     @SerializedName("caption")
     var caption: String? = null,
+    @SerializedName("created_at")
+    var createdAt: String? = null,
 )
 
 fun AttachmentMessagePayload.invalidData(): Boolean {
@@ -35,3 +39,6 @@ fun AttachmentMessagePayload.invalidData(): Boolean {
     }
     return false
 }
+
+fun String.toAttachmentMessagePayload(): AttachmentMessagePayload? =
+    GsonHelper.customGson.fromJson(String(Base64.decode(this)), AttachmentMessagePayload::class.java)

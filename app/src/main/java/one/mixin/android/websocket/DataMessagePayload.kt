@@ -11,7 +11,9 @@ data class DataMessagePayload(
     @SerializedName("mime_type")
     val mimeType: String,
     @SerializedName("file_size")
-    val fileSize: Long
+    val fileSize: Long,
+    @SerializedName("attachment_message_payload")
+    val attachmentMessagePayload: String? = null,
 ) {
-    fun toAttachment() = Attachment(url.toUri(), filename, mimeType, fileSize)
+    fun toAttachment() = Attachment(url.toUri(), filename, mimeType, fileSize, attachmentMessagePayload)
 }

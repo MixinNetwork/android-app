@@ -478,8 +478,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
             data.category.endsWith("_IMAGE") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val decoded = String(Base64.decode(plainText))
+                val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
@@ -487,7 +487,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                 val message = generateMessage(data) { quoteMessageItem ->
                     createMediaMessage(
-                        data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mediaData.mimeType, mediaData.size,
+                        data.messageId, data.conversationId, data.userId, data.category, plainText, null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
                         data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
@@ -501,8 +501,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data.source)
             }
             data.category.endsWith("_VIDEO") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val decoded = String(Base64.decode(plainText))
+                val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
@@ -511,7 +511,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val message = generateMessage(data) { quoteMessageItem ->
                     createVideoMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, mediaData.attachmentId, mediaData.name, mediaData.mimeType, mediaData.duration,
+                        data.category, plainText, mediaData.name, null, mediaData.duration,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mimeType,
                         mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -525,12 +525,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data.source)
             }
             data.category.endsWith("_DATA") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val decoded = String(Base64.decode(plainText))
+                val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAttachmentMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, mediaData.attachmentId, mediaData.name, null,
+                        data.category, plainText, mediaData.name, null,
                         mediaData.mimeType, mediaData.size, data.createdAt,
                         mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -545,11 +545,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data.source)
             }
             data.category.endsWith("_AUDIO") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val decoded = String(Base64.decode(plainText))
+                val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAudioMessage(
-                        data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
+                        data.messageId, data.conversationId, data.userId, plainText,
                         data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
                         mediaData.key, mediaData.digest, MediaStatus.PENDING, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -871,11 +871,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_DATA.name
         ) {
-            val decoded = Base64.decode(plainText)
-            val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+            val decoded = String(Base64.decode(plainText))
+            val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
             val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
             messageDao.updateAttachmentMessage(
-                messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
+                messageId, decoded, mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status
             )

@@ -203,7 +203,8 @@ internal constructor(
         val file = File(audioMessagePayload.url)
         val duration = audioMessagePayload.duration
         val waveForm = audioMessagePayload.waveForm
-        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage)
+        val attachmentContent = audioMessagePayload.attachmentMessagePayload
+        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage, attachmentContent)
     }
 
     fun sendStickerMessage(
@@ -244,7 +245,8 @@ internal constructor(
         val uri = videoMessagePayload.url.toUri()
         val messageId = videoMessagePayload.messageId
         val createdAt = videoMessagePayload.createdAt
-        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage)
+        val attachmentContent = videoMessagePayload.attachmentMessagePayload
+        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage, attachmentContent)
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -280,9 +282,10 @@ internal constructor(
         uri: Uri,
         isPlain: Boolean,
         mime: String? = null,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
+        attachmentContent: String? = null,
     ): Int {
-        return messenger.sendImageMessage(conversationId, sender, uri, isPlain, mime, replyMessage)
+        return messenger.sendImageMessage(conversationId, sender, uri, isPlain, mime, replyMessage, attachmentContent)
     }
 
     fun updateRelationship(request: RelationshipRequest) {
@@ -591,7 +594,7 @@ internal constructor(
                             { url ->
                                 ForwardMessage(
                                     ShareCategory.Image,
-                                    GsonHelper.customGson.toJson(ShareImageData(url))
+                                    GsonHelper.customGson.toJson(ShareImageData(url, m.content))
                                 )
                             },
                             { null }
@@ -607,7 +610,8 @@ internal constructor(
                             m.mediaUrl,
                             m.name,
                             m.mediaMimeType,
-                            m.mediaSize
+                            m.mediaSize,
+                            m.content,
                         )
                         ForwardMessage(ForwardCategory.Data, GsonHelper.customGson.toJson(dataMessagePayload))
                     }
@@ -618,7 +622,8 @@ internal constructor(
                         val videoData = VideoMessagePayload(
                             m.mediaUrl,
                             UUID.randomUUID().toString(),
-                            nowInUtc()
+                            nowInUtc(),
+                            m.content,
                         )
                         ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData))
                     }
@@ -645,7 +650,8 @@ internal constructor(
                             UUID.randomUUID().toString(),
                             url,
                             duration,
-                            waveForm
+                            waveForm,
+                            m.content,
                         )
                         ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData))
                     }

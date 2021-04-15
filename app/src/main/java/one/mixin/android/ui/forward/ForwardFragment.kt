@@ -306,12 +306,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                     null
                                 }
                                 if (file == null) {
-                                    chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), isPlain)
+                                    chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), isPlain, attachmentContent = shareImageData.attachmentMessagePayload)
                                 } else {
-                                    chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain)
+                                    chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain, attachmentContent = shareImageData.attachmentMessagePayload)
                                 }
                             } else {
-                                chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), isPlain)
+                                chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), isPlain, attachmentContent = shareImageData.attachmentMessagePayload)
                             }
                         }
                         val errorRes = ShareCategory.Image.getErrorStringOrNull(code)

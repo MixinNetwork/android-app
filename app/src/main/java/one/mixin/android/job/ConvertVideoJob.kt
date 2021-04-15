@@ -11,6 +11,7 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.MediaStatus
@@ -19,6 +20,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toQuoteMessageItem
+import one.mixin.android.websocket.toAttachmentMessagePayload
 import one.mixin.android.widget.ConvertEvent
 import java.io.File
 
@@ -29,7 +31,8 @@ class ConvertVideoJob(
     isPlain: Boolean,
     private val messageId: String,
     createdAt: String? = null,
-    private val replyMessage: MessageItem? = null
+    private val replyMessage: MessageItem? = null,
+    private val attachmentContent: String? = null,
 ) : MixinJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID), messageId) {
 
     companion object {
@@ -75,6 +78,29 @@ class ConvertVideoJob(
             return
         }
         jobManager.saveJob(this)
+
+        if (attachmentContent != null) {
+            val attachment = attachmentContent.toAttachmentMessagePayload()
+            if (attachment?.createdAt != null) {
+                val within24Hours = attachment.createdAt?.within24Hours() == true
+                if (within24Hours) {
+                    messageDao.updateMediaSize(attachment.size, messageId)
+                    messageDao.updateMessageContent(attachmentContent, messageId)
+                    messageDao.updateMediaStatus(MediaStatus.DONE.name, messageId)
+                    val message = createVideoMessage(
+                        messageId, conversationId, senderId, category, attachmentContent,
+                        attachment.name, uri.path, attachment.duration, attachment.width,
+                        attachment.height, attachment.thumbnail, attachment.mimeType,
+                        attachment.size, createdAt, attachment.key, attachment.digest,
+                        MediaStatus.DONE, MessageStatus.SENDING.name,
+                    )
+                    jobManager.addJobInBackground(SendMessageJob(message, null, true))
+                    removeJob()
+                    return
+                }
+            }
+        }
+
         val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
         val error = MediaController.getInstance().convertVideo(
             video.originalPath,
