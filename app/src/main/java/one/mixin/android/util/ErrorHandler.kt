@@ -29,7 +29,7 @@ open class ErrorHandler {
                     is IOException -> when (throwable) {
                         is SocketTimeoutException -> toast(R.string.error_connection_timeout)
                         is UnknownHostException -> toast(R.string.error_no_connection)
-                        is ServerErrorException -> toast(R.string.error_server_5xx)
+                        is ServerErrorException -> toast(R.string.error_server_5xx, throwable.code)
                         is ClientErrorException -> {
                             handleErrorCode(throwable.code, ctx)
                         }
