@@ -145,7 +145,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
         val message = createAttachmentMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
-            attachment.attachmentMessagePayload, attachment.filename, attachment.uri.toString(),
+            null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
             null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
         )
@@ -161,11 +161,10 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         waveForm: ByteArray,
         isPlain: Boolean,
         replyMessage: MessageItem? = null,
-        attachmentContent: String? = null,
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
         val message = createAudioMessage(
-            messageId, conversationId, sender.userId, attachmentContent, category,
+            messageId, conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
             MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
         )
@@ -224,10 +223,9 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         messageId: String? = null,
         createdAt: String? = null,
         replyMessage: MessageItem? = null,
-        attachmentContent: String? = null,
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
-        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, mid, createdAt, replyMessage, attachmentContent))
+        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, mid, createdAt, replyMessage))
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -326,7 +324,6 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         isPlain: Boolean,
         mime: String? = null,
         replyMessage: MessageItem? = null,
-        attachmentContent: String? = null,
     ): Int {
         val category =
             if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
@@ -350,7 +347,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 conversationId,
                 sender.userId,
                 category,
-                attachmentContent,
+                null,
                 Uri.fromFile(gifFile).toString(),
                 mimeType,
                 gifFile.length(),
@@ -398,7 +395,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             conversationId,
             sender.userId,
             category,
-            attachmentContent,
+            null,
             imageUrl,
             MimeType.JPEG.toString(),
             length,

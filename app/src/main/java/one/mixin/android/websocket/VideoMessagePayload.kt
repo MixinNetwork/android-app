@@ -8,6 +8,6 @@ data class VideoMessagePayload(
     val messageId: String? = null,
     @SerializedName("created_at")
     val createdAt: String? = null,
-    @SerializedName("attachment_message_payload")
-    val attachmentMessagePayload: String? = null,
+    @SerializedName("attachment_content")
+    val attachmentContent: String? = null,
 )

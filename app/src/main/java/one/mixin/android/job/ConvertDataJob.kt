@@ -8,12 +8,10 @@ import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.within24Hours
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAttachmentMessage
-import one.mixin.android.websocket.toAttachmentMessagePayload
 
 class ConvertDataJob(
     private val message: Message
@@ -40,27 +38,6 @@ class ConvertDataJob(
             return
         }
         jobManager.saveJob(this)
-
-        val content = message.content
-        if (content != null) {
-            val attachment = content.toAttachmentMessagePayload()
-            if (attachment?.createdAt != null) {
-                val within24Hours = attachment.createdAt?.within24Hours() == true
-                if (within24Hours) {
-                    messageDao.updateMediaSize(attachment.size, message.id)
-                    messageDao.updateMessageContent(content, message.id)
-                    messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                    val newMessage = createAttachmentMessage(
-                        message.id, message.conversationId, message.userId, message.category, content, message.name,
-                        message.mediaUrl, attachment.mimeType, attachment.size, message.createdAt, message.mediaKey,
-                        message.mediaDigest, MediaStatus.DONE, MessageStatus.SENDING.name, message.quoteMessageId, message.quoteContent
-                    )
-                    jobManager.addJobInBackground(SendMessageJob(newMessage, null, true))
-                    removeJob()
-                    return
-                }
-            }
-        }
 
         message.mediaUrl?.getFilePath()?.let { _ ->
             val inputStream = MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl)) ?: return@let

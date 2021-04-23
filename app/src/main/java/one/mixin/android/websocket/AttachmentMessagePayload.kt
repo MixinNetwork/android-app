@@ -1,8 +1,7 @@
 package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.crypto.Base64
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.AttachmentContent
 
 data class AttachmentMessagePayload(
     @SerializedName("key")
@@ -40,5 +39,5 @@ fun AttachmentMessagePayload.invalidData(): Boolean {
     return false
 }
 
-fun String.toAttachmentMessagePayload(): AttachmentMessagePayload? =
-    GsonHelper.customGson.fromJson(String(Base64.decode(this)), AttachmentMessagePayload::class.java)
+fun AttachmentMessagePayload.toAttachmentContent(messageId: String) =
+    AttachmentContent(attachmentId, messageId, createdAt)

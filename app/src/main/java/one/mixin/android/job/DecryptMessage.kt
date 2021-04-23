@@ -107,6 +107,7 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
+import one.mixin.android.websocket.toAttachmentContent
 import org.threeten.bp.ZonedDateTime
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -485,9 +486,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     return
                 }
 
+                val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
                 val message = generateMessage(data) { quoteMessageItem ->
                     createMediaMessage(
-                        data.messageId, data.conversationId, data.userId, data.category, plainText, null, mediaData.mimeType, mediaData.size,
+                        data.messageId, data.conversationId, data.userId, data.category, attachmentContent, null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
                         data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
@@ -508,10 +510,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     return
                 }
 
+                val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
                 val message = generateMessage(data) { quoteMessageItem ->
                     createVideoMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, plainText, mediaData.name, null, mediaData.duration,
+                        data.category, attachmentContent, mediaData.name, null, mediaData.duration,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mimeType,
                         mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -527,10 +530,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category.endsWith("_DATA") -> {
                 val decoded = String(Base64.decode(plainText))
                 val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
+                val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAttachmentMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, plainText, mediaData.name, null,
+                        data.category, attachmentContent, mediaData.name, null,
                         mediaData.mimeType, mediaData.size, data.createdAt,
                         mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -547,9 +551,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category.endsWith("_AUDIO") -> {
                 val decoded = String(Base64.decode(plainText))
                 val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
+                val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAudioMessage(
-                        data.messageId, data.conversationId, data.userId, plainText,
+                        data.messageId, data.conversationId, data.userId, attachmentContent,
                         data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
                         mediaData.key, mediaData.digest, MediaStatus.PENDING, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()

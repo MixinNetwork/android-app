@@ -17,15 +17,14 @@ import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.within24Hours
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.AttachmentContent
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
-import one.mixin.android.websocket.toAttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 import java.io.FileNotFoundException
@@ -88,24 +87,6 @@ class SendAttachmentMessageJob(
             return
         }
         jobManager.saveJob(this)
-
-        val content = message.content
-        if (content != null) {
-            val attachmentContent = content.toAttachmentMessagePayload()
-            if (attachmentContent?.createdAt != null) {
-                if (attachmentContent.createdAt?.within24Hours() == true) {
-                    message.content = content
-                    messageDao.updateMessageContent(content, message.id)
-                    messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-
-                    attachmentProcess.remove(message.id)
-                    jobManager.addJobInBackground(SendMessageJob(message, null, true))
-
-                    removeJob()
-                    return
-                }
-            }
-        }
 
         disposable = conversationApi.requestAttachment().map {
             if (it.isSuccess && !isCancelled) {
@@ -210,11 +191,13 @@ class SendAttachmentMessageJob(
             key, digest, attachmentId, mimeType, size, name, width, height,
             thumbnail, duration, waveform, createdAt = attachResponse.created_at,
         )
+        val attachmentContent = GsonHelper.customGson.toJson(AttachmentContent(attachmentId, message.id, attachResponse.created_at))
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
         messageDao.updateMessageContent(encoded, message.id)
-        jobManager.addJobInBackground(SendMessageJob(message, null, true))
+        messageDao.updateMediaInfo(key, digest, width, height, thumbnail, message.id)
+        jobManager.addJobInBackground(SendMessageJob(message, null, true, attachmentContent = attachmentContent))
         return true
     }
 

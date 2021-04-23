@@ -42,6 +42,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
+import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -203,8 +204,7 @@ internal constructor(
         val file = File(audioMessagePayload.url)
         val duration = audioMessagePayload.duration
         val waveForm = audioMessagePayload.waveForm
-        val attachmentContent = audioMessagePayload.attachmentMessagePayload
-        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage, attachmentContent)
+        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage)
     }
 
     fun sendStickerMessage(
@@ -245,8 +245,7 @@ internal constructor(
         val uri = videoMessagePayload.url.toUri()
         val messageId = videoMessagePayload.messageId
         val createdAt = videoMessagePayload.createdAt
-        val attachmentContent = videoMessagePayload.attachmentMessagePayload
-        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage, attachmentContent)
+        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage)
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -283,9 +282,8 @@ internal constructor(
         isPlain: Boolean,
         mime: String? = null,
         replyMessage: MessageItem? = null,
-        attachmentContent: String? = null,
     ): Int {
-        return messenger.sendImageMessage(conversationId, sender, uri, isPlain, mime, replyMessage, attachmentContent)
+        return messenger.sendImageMessage(conversationId, sender, uri, isPlain, mime, replyMessage)
     }
 
     fun updateRelationship(request: RelationshipRequest) {
@@ -774,5 +772,11 @@ internal constructor(
                 }
             }
         }
+    }
+
+    suspend fun findMessageById(messageId: String) = conversationRepository.suspendFindMessageById(messageId)
+
+    fun sendMessage(message: Message) {
+        jobManager.addJobInBackground(SendMessageJob(message))
     }
 }

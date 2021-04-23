@@ -35,7 +35,7 @@ import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.websocket.toAttachmentMessagePayload
+import one.mixin.android.vo.toAttachmentContent
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import java.io.File
@@ -91,8 +91,8 @@ class AttachmentDownloadJob(
         jobManager.saveJob(this)
         val aid: String = attachmentId
             ?: try {
-                val attachmentMessagePayload = message.content?.toAttachmentMessagePayload()
-                attachmentMessagePayload?.attachmentId ?: ""
+                val attachmentContent = message.content?.toAttachmentContent()
+                attachmentContent?.attachmentId ?: ""
             } catch (e: Exception) {
                 message.content!!
             }
