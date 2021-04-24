@@ -432,7 +432,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
             val category = getCategory.invoke()
             val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentContent.attachmentId, attachmentContent.createdAt, message)
-            chatViewModel.sendMessage(newMessage)
+            chatViewModel.sendMessage(newMessage, GsonHelper.customGson.toJson(AttachmentContent(attachmentContent.attachmentId, newMessage.id, newMessage.createdAt)))
         } else {
             fallbackAction.invoke()
         }
@@ -448,9 +448,9 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             messageId, conversationId, sender.userId, category,
             GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), message.mediaUrl, message.mediaMimeType,
             message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
-            message.mediaHeight, null, message.thumbImage, message.thumbUrl,
-            null, null, MediaStatus.DONE.name, MessageStatus.SENDING.name,
-            nowInUtc(),
+            message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
+            message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
+            nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform,
         )
     }
 

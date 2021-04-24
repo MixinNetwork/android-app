@@ -195,8 +195,7 @@ class SendAttachmentMessageJob(
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
-        messageDao.updateMessageContent(encoded, message.id)
-        messageDao.updateMediaInfo(key, digest, width, height, thumbnail, message.id)
+        messageDao.updateMediaInfo(encoded, key, digest, width, height, thumbnail, name, size, mimeType, duration, waveform, message.id)
         jobManager.addJobInBackground(SendMessageJob(message, null, true, attachmentContent = attachmentContent))
         return true
     }

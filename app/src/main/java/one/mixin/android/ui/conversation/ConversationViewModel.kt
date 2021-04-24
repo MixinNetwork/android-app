@@ -776,7 +776,7 @@ internal constructor(
 
     suspend fun findMessageById(messageId: String) = conversationRepository.suspendFindMessageById(messageId)
 
-    fun sendMessage(message: Message) {
-        jobManager.addJobInBackground(SendMessageJob(message))
+    fun sendMessage(message: Message, attachmentContent: String?) {
+        jobManager.addJobInBackground(SendMessageJob(message, attachmentContent = attachmentContent))
     }
 }
