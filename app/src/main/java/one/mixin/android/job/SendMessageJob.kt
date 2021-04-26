@@ -30,7 +30,6 @@ open class SendMessageJob(
     private var recipientIds: List<String>? = null,
     private val recallMessageId: String? = null,
     private val krakenParam: KrakenParam? = null,
-    private val attachmentExtra: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.id) {
 
@@ -154,10 +153,7 @@ open class SendMessageJob(
         } else {
             createParamBlazeMessage(blazeParam)
         }
-        val result = deliver(blazeMessage)
-        if (result) {
-            checkAttachment()
-        }
+        deliver(blazeMessage)
     }
 
     private fun sendSignalMessage() {
@@ -171,16 +167,7 @@ open class SendMessageJob(
             checkConversation(message.conversationId)
         }
         checkSessionSenderKey(message.conversationId)
-        val result = deliver(encryptNormalMessage())
-        if (result) {
-            checkAttachment()
-        }
-    }
-
-    private fun checkAttachment() {
-        if (message.isAttachment()) {
-            attachmentExtra?.let { messageDao.updateMessageContent(it, message.id) }
-        }
+        deliver(encryptNormalMessage())
     }
 
     private fun encryptNormalMessage(): BlazeMessage {

@@ -28,6 +28,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.crypto.Base64
 import one.mixin.android.databinding.FragmentForwardBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.hideKeyboard
@@ -309,7 +310,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     ShareCategory.Image -> {
                         val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
                         sendAttachmentMessage(
-                            conversationId, sender, shareImageData.attachmentExtra,
+                            conversationId, sender, shareImageData.url, shareImageData.attachmentExtra,
                             {
                                 if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
                             },
@@ -355,7 +356,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     ForwardCategory.Video -> {
                         val videoData = GsonHelper.customGson.fromJson(content, VideoMessagePayload::class.java)
                         sendAttachmentMessage(
-                            conversationId, sender, videoData.attachmentExtra,
+                            conversationId, sender, videoData.url, videoData.attachmentExtra,
                             {
                                 if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
                             },
@@ -367,7 +368,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     ForwardCategory.Data -> {
                         val dataMessagePayload = GsonHelper.customGson.fromJson(content, DataMessagePayload::class.java)
                         sendAttachmentMessage(
-                            conversationId, sender, dataMessagePayload.attachmentExtra,
+                            conversationId, sender, dataMessagePayload.url, dataMessagePayload.attachmentExtra,
                             {
                                 if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
                             },
@@ -379,7 +380,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     ForwardCategory.Audio -> {
                         val audioData = GsonHelper.customGson.fromJson(content, AudioMessagePayload::class.java)
                         sendAttachmentMessage(
-                            conversationId, sender, audioData.attachmentExtra,
+                            conversationId, sender, audioData.url, audioData.attachmentExtra,
                             {
                                 if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
                             },
@@ -408,15 +409,16 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     private suspend fun sendAttachmentMessage(
         conversationId: String,
         sender: User,
+        mediaUrl: String?,
         attachmentExtraString: String?,
         getCategory: () -> String,
         fallbackAction: suspend () -> Unit
     ) = withContext(Dispatchers.IO) {
         if (attachmentExtraString != null) {
-            val attachmentExtra = try {
+            val attachmentExtra: AttachmentExtra = try {
                 GsonHelper.customGson.fromJson(attachmentExtraString, AttachmentExtra::class.java)
             } catch (e: Exception) {
-                fallbackAction.invoke()
+                parseAsAttachmentMessagePayload(attachmentExtraString, sender, conversationId, getCategory.invoke(), mediaUrl, fallbackAction)
                 return@withContext
             }
             val createdAt = attachmentExtra.createdAt
@@ -431,14 +433,42 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 return@withContext
             }
             val category = getCategory.invoke()
-            val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra.attachmentId, attachmentExtra.createdAt, message)
-            chatViewModel.sendMessage(newMessage, GsonHelper.customGson.toJson(AttachmentExtra(attachmentExtra.attachmentId, newMessage.id, newMessage.createdAt)))
+            val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra.attachmentId, message)
+            chatViewModel.sendMessage(newMessage)
         } else {
             fallbackAction.invoke()
         }
     }
 
-    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentId: String, createAt: String?, message: Message): Message {
+    private suspend fun parseAsAttachmentMessagePayload(
+        attachmentExtraString: String?,
+        sender: User,
+        conversationId: String,
+        category: String,
+        mediaUrl: String?,
+        fallbackAction: suspend () -> Unit
+    ) {
+        val payload: AttachmentMessagePayload = try {
+            GsonHelper.customGson.fromJson(String(Base64.decode(attachmentExtraString)), AttachmentMessagePayload::class.java)
+        } catch (e: Exception) {
+            fallbackAction.invoke()
+            return
+        }
+        val createdAt = payload.createdAt
+        if (createdAt == null || !createdAt.within24Hours()) {
+            fallbackAction.invoke()
+            return
+        }
+        val message = Message(
+            UUID.randomUUID().toString(), conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), mediaUrl,
+            payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
+            payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
+            caption = payload.caption,
+        )
+        chatViewModel.sendMessage(message)
+    }
+
+    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentId: String, message: Message): Message {
         val messageId = UUID.randomUUID().toString()
         val attachmentMessagePayload = AttachmentMessagePayload(
             message.mediaKey, message.mediaDigest, attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
