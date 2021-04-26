@@ -9,6 +9,6 @@ data class AudioMessagePayload(
     val duration: Long,
     @SerializedName("wave_form")
     val waveForm: ByteArray,
-    @SerializedName("attachment_content")
-    val attachmentContent: String? = null,
+    @SerializedName("attachment_extra")
+    val attachmentExtra: String? = null,
 )

@@ -33,7 +33,7 @@ import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.okhttp.ProgressListener
 import one.mixin.android.util.okhttp.ProgressResponseBody
-import one.mixin.android.vo.AttachmentContent
+import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -97,8 +97,8 @@ class AttachmentDownloadJob(
             attachmentResponse.view_url?.let {
                 val result = decryptAttachment(it)
                 if (result) {
-                    val attachmentContent = GsonHelper.customGson.toJson(AttachmentContent(attachmentResponse.attachment_id, message.id, attachmentResponse.created_at))
-                    messageDao.updateMessageContent(attachmentContent, message.id)
+                    val attachmentExtra = GsonHelper.customGson.toJson(AttachmentExtra(attachmentResponse.attachment_id, message.id, attachmentResponse.created_at))
+                    messageDao.updateMessageContent(attachmentExtra, message.id)
                 }
             }
             removeJob()

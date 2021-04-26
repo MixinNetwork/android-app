@@ -20,7 +20,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
-import one.mixin.android.vo.AttachmentContent
+import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
@@ -189,14 +189,14 @@ class SendAttachmentMessageJob(
         val waveform = message.mediaWaveform
         val transferMediaData = AttachmentMessagePayload(
             key, digest, attachmentId, mimeType, size, name, width, height,
-            thumbnail, duration, waveform, createdAt = attachResponse.created_at,
+            thumbnail, duration, waveform
         )
-        val attachmentContent = GsonHelper.customGson.toJson(AttachmentContent(attachmentId, message.id, attachResponse.created_at))
+        val attachmentExtra = GsonHelper.customGson.toJson(AttachmentExtra(attachmentId, message.id, attachResponse.created_at))
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
         messageDao.updateMediaInfo(encoded, key, digest, width, height, thumbnail, name, size, mimeType, duration, waveform, message.id)
-        jobManager.addJobInBackground(SendMessageJob(message, null, true, attachmentContent = attachmentContent))
+        jobManager.addJobInBackground(SendMessageJob(message, null, true, attachmentExtra = attachmentExtra))
         return true
     }
 

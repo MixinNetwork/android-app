@@ -30,7 +30,7 @@ open class SendMessageJob(
     private var recipientIds: List<String>? = null,
     private val recallMessageId: String? = null,
     private val krakenParam: KrakenParam? = null,
-    private val attachmentContent: String? = null,
+    private val attachmentExtra: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.id) {
 
@@ -179,7 +179,7 @@ open class SendMessageJob(
 
     private fun checkAttachment() {
         if (message.isAttachment()) {
-            attachmentContent?.let { messageDao.updateMessageContent(it, message.id) }
+            attachmentExtra?.let { messageDao.updateMessageContent(it, message.id) }
         }
     }
 

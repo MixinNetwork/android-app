@@ -4,6 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 data class ShareImageData(
     val url: String,
-    @SerializedName("attachment_content")
-    val attachmentContent: String? = null,
+    @SerializedName("attachment_extra")
+    val attachmentExtra: String? = null,
 )

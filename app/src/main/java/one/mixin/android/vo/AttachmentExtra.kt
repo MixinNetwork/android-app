@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import com.google.gson.annotations.SerializedName
 
-class AttachmentContent(
+class AttachmentExtra(
     @SerializedName("attachment_id")
     var attachmentId: String,
     @SerializedName("message_id")
