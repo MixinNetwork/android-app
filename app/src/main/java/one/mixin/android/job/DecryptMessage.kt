@@ -107,7 +107,6 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
-import one.mixin.android.websocket.toAttachmentContent
 import org.threeten.bp.ZonedDateTime
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -479,17 +478,16 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
             data.category.endsWith("_IMAGE") -> {
-                val decoded = String(Base64.decode(plainText))
-                val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
+                val decoded = Base64.decode(plainText)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
                 }
 
-                val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
                 val message = generateMessage(data) { quoteMessageItem ->
                     createMediaMessage(
-                        data.messageId, data.conversationId, data.userId, data.category, attachmentContent, null, mediaData.mimeType, mediaData.size,
+                        data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
                         data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
@@ -503,18 +501,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data.source)
             }
             data.category.endsWith("_VIDEO") -> {
-                val decoded = String(Base64.decode(plainText))
-                val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
+                val decoded = Base64.decode(plainText)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
                 }
 
-                val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
                 val message = generateMessage(data) { quoteMessageItem ->
                     createVideoMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, attachmentContent, mediaData.name, null, mediaData.duration,
+                        data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mimeType,
                         mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -528,13 +525,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data.source)
             }
             data.category.endsWith("_DATA") -> {
-                val decoded = String(Base64.decode(plainText))
-                val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
-                val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
+                val decoded = Base64.decode(plainText)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAttachmentMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, attachmentContent, mediaData.name, null,
+                        data.category, mediaData.attachmentId, mediaData.name, null,
                         mediaData.mimeType, mediaData.size, data.createdAt,
                         mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -549,12 +545,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data.source)
             }
             data.category.endsWith("_AUDIO") -> {
-                val decoded = String(Base64.decode(plainText))
-                val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
-                val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
+                val decoded = Base64.decode(plainText)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAudioMessage(
-                        data.messageId, data.conversationId, data.userId, attachmentContent,
+                        data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                         data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
                         mediaData.key, mediaData.digest, MediaStatus.PENDING, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -876,12 +871,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_DATA.name
         ) {
-            val decoded = String(Base64.decode(plainText))
-            val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
+            val decoded = Base64.decode(plainText)
+            val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
             val duration = mediaData.duration?.toString()
-            val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
             messageDao.updateAttachmentMessage(
-                messageId, attachmentContent, mediaData.mimeType, mediaData.size,
+                messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status
             )
