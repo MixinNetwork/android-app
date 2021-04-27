@@ -29,7 +29,7 @@ class ConvertVideoJob(
     isPlain: Boolean,
     private val messageId: String,
     createdAt: String? = null,
-    private val replyMessage: MessageItem? = null
+    private val replyMessage: MessageItem? = null,
 ) : MixinJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID), messageId) {
 
     companion object {
@@ -75,6 +75,7 @@ class ConvertVideoJob(
             return
         }
         jobManager.saveJob(this)
+
         val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
         val error = MediaController.getInstance().convertVideo(
             video.originalPath,

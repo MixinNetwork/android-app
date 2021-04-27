@@ -160,7 +160,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         duration: Long,
         waveForm: ByteArray,
         isPlain: Boolean,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
         val message = createAudioMessage(
@@ -222,7 +222,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         isPlain: Boolean,
         messageId: String? = null,
         createdAt: String? = null,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
         jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, mid, createdAt, replyMessage))
@@ -323,7 +323,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         uri: Uri,
         isPlain: Boolean,
         mime: String? = null,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ): Int {
         val category =
             if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name

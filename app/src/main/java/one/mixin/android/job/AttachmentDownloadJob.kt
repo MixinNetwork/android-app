@@ -30,8 +30,10 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.okhttp.ProgressListener
 import one.mixin.android.util.okhttp.ProgressResponseBody
+import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -91,8 +93,13 @@ class AttachmentDownloadJob(
         attachmentCall = conversationApi.getAttachment(attachmentId ?: message.content!!)
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {
-            body.data!!.view_url?.let {
-                decryptAttachment(it)
+            val attachmentResponse = body.data!!
+            attachmentResponse.view_url?.let {
+                val result = decryptAttachment(it)
+                if (result) {
+                    val attachmentExtra = GsonHelper.customGson.toJson(AttachmentExtra(attachmentResponse.attachment_id, message.id, attachmentResponse.created_at))
+                    messageDao.updateMessageContent(attachmentExtra, message.id)
+                }
             }
             removeJob()
         } else {

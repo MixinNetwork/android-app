@@ -42,6 +42,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
+import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -280,7 +281,7 @@ internal constructor(
         uri: Uri,
         isPlain: Boolean,
         mime: String? = null,
-        replyMessage: MessageItem? = null
+        replyMessage: MessageItem? = null,
     ): Int {
         return messenger.sendImageMessage(conversationId, sender, uri, isPlain, mime, replyMessage)
     }
@@ -591,7 +592,7 @@ internal constructor(
                             { url ->
                                 ForwardMessage(
                                     ShareCategory.Image,
-                                    GsonHelper.customGson.toJson(ShareImageData(url))
+                                    GsonHelper.customGson.toJson(ShareImageData(url, m.content))
                                 )
                             },
                             { null }
@@ -607,7 +608,8 @@ internal constructor(
                             m.mediaUrl,
                             m.name,
                             m.mediaMimeType,
-                            m.mediaSize
+                            m.mediaSize,
+                            m.content,
                         )
                         ForwardMessage(ForwardCategory.Data, GsonHelper.customGson.toJson(dataMessagePayload))
                     }
@@ -618,7 +620,8 @@ internal constructor(
                         val videoData = VideoMessagePayload(
                             m.mediaUrl,
                             UUID.randomUUID().toString(),
-                            nowInUtc()
+                            nowInUtc(),
+                            m.content,
                         )
                         ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData))
                     }
@@ -645,7 +648,8 @@ internal constructor(
                             UUID.randomUUID().toString(),
                             url,
                             duration,
-                            waveForm
+                            waveForm,
+                            m.content,
                         )
                         ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData))
                     }
@@ -768,5 +772,11 @@ internal constructor(
                 }
             }
         }
+    }
+
+    suspend fun findMessageById(messageId: String) = conversationRepository.suspendFindMessageById(messageId)
+
+    fun sendMessage(message: Message) {
+        jobManager.addJobInBackground(SendMessageJob(message))
     }
 }

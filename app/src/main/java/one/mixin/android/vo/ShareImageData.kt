@@ -1,3 +1,9 @@
 package one.mixin.android.vo
 
-data class ShareImageData(val url: String)
+import com.google.gson.annotations.SerializedName
+
+data class ShareImageData(
+    val url: String,
+    @SerializedName("attachment_extra")
+    val attachmentExtra: String? = null,
+)

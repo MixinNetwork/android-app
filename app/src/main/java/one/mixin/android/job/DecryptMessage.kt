@@ -511,7 +511,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val message = generateMessage(data) { quoteMessageItem ->
                     createVideoMessage(
                         data.messageId, data.conversationId, data.userId,
-                        data.category, mediaData.attachmentId, mediaData.name, mediaData.mimeType, mediaData.duration,
+                        data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mimeType,
                         mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
@@ -873,7 +873,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         ) {
             val decoded = Base64.decode(plainText)
             val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
-            val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
+            val duration = mediaData.duration?.toString()
             messageDao.updateAttachmentMessage(
                 messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,

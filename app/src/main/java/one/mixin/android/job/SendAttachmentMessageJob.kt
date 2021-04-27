@@ -86,6 +86,7 @@ class SendAttachmentMessageJob(
             return
         }
         jobManager.saveJob(this)
+
         disposable = conversationApi.requestAttachment().map {
             if (it.isSuccess && !isCancelled) {
                 val result = it.data!!
@@ -186,8 +187,8 @@ class SendAttachmentMessageJob(
         val duration = if (message.mediaDuration == null) null else message.mediaDuration.toLong()
         val waveform = message.mediaWaveform
         val transferMediaData = AttachmentMessagePayload(
-            key, digest, attachmentId,
-            mimeType, size, name, width, height, thumbnail, duration, waveform
+            key, digest, attachmentId, mimeType, size, name, width, height,
+            thumbnail, duration, waveform, createdAt = attachResponse.created_at,
         )
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()

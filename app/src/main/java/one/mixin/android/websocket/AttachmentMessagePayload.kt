@@ -27,6 +27,8 @@ data class AttachmentMessagePayload(
     var waveform: ByteArray? = null,
     @SerializedName("caption")
     var caption: String? = null,
+    @SerializedName("created_at")
+    var createdAt: String? = null,
 )
 
 fun AttachmentMessagePayload.invalidData(): Boolean {
