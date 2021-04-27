@@ -10,6 +10,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -38,6 +39,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_35_36
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_36_37
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -140,6 +142,17 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     val builder = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
+                        .openHelperFactory(
+                            MixinOpenHelperFactory(
+                                FrameworkSQLiteOpenHelperFactory(),
+                                listOf(object : MixinCorruptionCallback {
+                                    override fun onCorruption(database: SupportSQLiteDatabase) {
+                                        val e = IllegalStateException("Mixin database is corrupted, current DB version: $CURRENT_VERSION")
+                                        reportException(e)
+                                    }
+                                })
+                            )
+                        )
                         .addMigrations(
                             MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22,
                             MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29,
