@@ -8,20 +8,10 @@
         android:id="@+id/avatar_view"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        app:border_width="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
-
-    <ImageView
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:visibility="gone"
-        android:contentDescription="@null"
-        android:src="@drawable/ic_call_user_mute"
-        app:layout_constraintEnd_toEndOf="@id/avatar_view"
-        app:layout_constraintBottom_toBottomOf="@id/avatar_view" />
 
     <View
         android:id="@+id/cover"
