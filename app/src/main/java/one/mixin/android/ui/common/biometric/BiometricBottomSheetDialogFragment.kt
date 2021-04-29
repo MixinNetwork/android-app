@@ -2,6 +2,8 @@ package one.mixin.android.ui.common.biometric
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Bundle
+import android.view.WindowManager
 import androidx.core.view.postDelayed
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -18,12 +20,19 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RoundTitleView
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
     private var dismissRunnable: Runnable? = null
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        return dialog
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -34,6 +43,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     override fun onDestroyView() {
         super.onDestroyView()
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         if (dismissRunnable != null) {
             contentView.removeCallbacks(dismissRunnable)
             callback?.onSuccess()

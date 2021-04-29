@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.WindowManager
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -52,6 +53,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
             closeIv.setOnClickListener { activity?.onBackPressed() }
             pin.setListener(this@VerifyFragment)
@@ -59,6 +61,11 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
             keyboard.setOnClickKeyboardListener(keyboardListener)
             keyboard.animate().translationY(0f).start()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     override fun onUpdate(index: Int) {
