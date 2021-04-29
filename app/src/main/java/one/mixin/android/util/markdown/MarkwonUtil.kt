@@ -216,7 +216,7 @@ class MarkwonUtil {
                     }
 
                     override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                        return Glide.with(context).load(drawable.destination)
+                        return Glide.with(context).load(drawable.destination).placeholder(R.drawable.image_holder)
                     }
                 }
             )
