@@ -136,6 +136,10 @@ object Constants {
             const val Language = "id"
             const val Country = "ID"
         }
+        object Malay {
+            const val Language = "ms"
+            const val Country = ""
+        }
     }
 
     object Debug {
