@@ -427,12 +427,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 fallbackAction.invoke()
                 return@withContext
             }
+            val category = getCategory.invoke()
             val message = chatViewModel.findMessageById(messageId)
-            if (message == null) {
+            if (message == null || category != message.category) {
                 fallbackAction.invoke()
                 return@withContext
             }
-            val category = getCategory.invoke()
             val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra.attachmentId, message)
             chatViewModel.sendMessage(newMessage)
         } else {
@@ -451,6 +451,13 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         val payload: AttachmentMessagePayload = try {
             GsonHelper.customGson.fromJson(String(Base64.decode(attachmentExtraString)), AttachmentMessagePayload::class.java)
         } catch (e: Exception) {
+            fallbackAction.invoke()
+            return
+        }
+        // Should be removed when PLAIN message's attachment is encrypted
+        if ((category.startsWith("SIGNAL_") && (payload.key == null || payload.digest == null)) ||
+            (category.startsWith("PLAIN_") && (payload.key != null && payload.digest != null))
+        ) {
             fallbackAction.invoke()
             return
         }
