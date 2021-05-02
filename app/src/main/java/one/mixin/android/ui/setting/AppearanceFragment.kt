@@ -29,6 +29,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
         const val POS_ENGLISH = 1
         const val POS_SIMPLIFY_CHINESE = 2
         const val POS_INDONESIA = 3
+        const val POS_Malay = 4
 
         fun newInstance() = AppearanceFragment()
     }
@@ -89,6 +90,9 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                     Constants.Locale.Indonesian.Language -> {
                         languageNames[POS_INDONESIA]
                     }
+                    Constants.Locale.Malay.Language -> {
+                        languageNames[POS_Malay]
+                    }
                     else -> {
                         languageNames[POS_ENGLISH]
                     }
@@ -121,6 +125,9 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 Constants.Locale.Indonesian.Language -> {
                     POS_INDONESIA
                 }
+                Constants.Locale.Malay.Language -> {
+                    POS_Malay
+                }
                 else -> {
                     POS_ENGLISH
                 }
@@ -140,11 +147,13 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                         val selectedLang = when (newSelectItem) {
                             POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
                             POS_INDONESIA -> Constants.Locale.Indonesian.Language
+                            POS_Malay -> Constants.Locale.Malay.Language
                             else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelectItem) {
                             POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
                             POS_INDONESIA -> Constants.Locale.Indonesian.Country
+                            POS_Malay -> Constants.Locale.Malay.Country
                             else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)

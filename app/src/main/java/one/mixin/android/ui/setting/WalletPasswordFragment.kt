@@ -2,8 +2,8 @@ package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.viewModels
 import android.view.WindowManager
+import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
