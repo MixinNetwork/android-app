@@ -1,11 +1,13 @@
 package one.mixin.android.ui.search
 
+import android.os.CancellationSignal
 import android.os.Parcelable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LivePagedListBuilder
+import androidx.paging.Config
 import androidx.paging.PagedList
+import androidx.paging.toLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -61,22 +63,19 @@ internal constructor(
 
     fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
 
-    fun fuzzySearchMessageDetailAsync(
+    fun observeFuzzySearchMessageDetail(
         query: String,
         conversationId: String,
-        countable: Boolean,
+        cancellationSignal: CancellationSignal,
     ): LiveData<PagedList<SearchMessageDetailItem>> {
         val escapedQuery = query.trim().escapeSql()
-        val searchResult = conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId, countable)
-        return LivePagedListBuilder(
-            searchResult,
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build()
+        return conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId, cancellationSignal).toLiveData(
+            config = Config(
+                pageSize = PAGE_SIZE,
+                prefetchDistance = PAGE_SIZE * 2,
+                enablePlaceholders = false,
+            )
         )
-            .build()
     }
 
     fun search(query: String): Observable<MixinResponse<User>> =

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.search
 
 import android.os.Bundle
+import android.os.CancellationSignal
 import android.view.View
 import android.view.View.VISIBLE
 import androidx.core.view.isVisible
@@ -20,7 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSearchMessageBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.observeOnce
+import one.mixin.android.extension.observeOnceAtMost
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -60,11 +61,14 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
     private val adapter by lazy { SearchMessageAdapter() }
 
     private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
+    private var queryObserver: Observer<PagedList<SearchMessageDetailItem>>? = null
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
     private val binding by viewBinding(FragmentSearchMessageBinding::bind)
 
     private var searchJob: Job? = null
+
+    private var cancellationSignal: CancellationSignal? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -168,15 +172,14 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
     private fun onTextChanged(s: String) = lifecycleScope.launch {
         if (s == adapter.query) {
-            binding.progress.isVisible = false
             return@launch
         }
 
         adapter.query = s
         if (s.isEmpty()) {
-            observer?.let {
-                curLiveData?.removeObserver(it)
-            }
+            removeObserverAndCancel()
+            cancellationSignal = null
+            queryObserver = null
             observer = null
             curLiveData = null
             binding.progress.isVisible = false
@@ -184,32 +187,29 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
             return@launch
         }
 
-        bindAndSearch(s, false)
+        bindAndSearch(s)
     }
 
-    private fun bindAndSearch(s: String, countable: Boolean) {
-        if (!countable) {
-            binding.progress.isVisible = true
-        }
+    private fun bindAndSearch(s: String) {
+        binding.progress.isVisible = true
 
-        observer?.let {
-            curLiveData?.removeObserver(it)
-        }
-        curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId, countable)
+        removeObserverAndCancel()
+        cancellationSignal = CancellationSignal()
+        curLiveData = searchViewModel.observeFuzzySearchMessageDetail(s, searchMessageItem.conversationId, cancellationSignal!!)
         observer = Observer {
+            if (s != binding.searchEt.text.toString()) return@Observer
             binding.progress.isVisible = false
-            adapter.submitList(it) {
-                if (countable) return@submitList
 
-                bindAndSearch(s, true)
-            }
+            adapter.submitList(it)
         }
         observer?.let {
-            if (countable) {
-                curLiveData?.observe(viewLifecycleOwner, it)
-            } else {
-                curLiveData?.observeOnce(viewLifecycleOwner, it)
-            }
+            queryObserver = curLiveData?.observeOnceAtMost(viewLifecycleOwner, it)
         }
+    }
+
+    private fun removeObserverAndCancel() {
+        cancellationSignal?.cancel()
+        observer?.let { curLiveData?.removeObserver(it) }
+        queryObserver?.let { curLiveData?.removeObserver(it) }
     }
 }

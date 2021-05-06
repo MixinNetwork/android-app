@@ -1,6 +1,7 @@
 package one.mixin.android.repository
 
 import android.annotation.SuppressLint
+import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import androidx.paging.DataSource
@@ -28,7 +29,6 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.MessageProvider
-import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -78,7 +78,6 @@ internal constructor(
     private val messageDao: MessageDao,
     private val conversationDao: ConversationDao,
     private val circleConversationDao: CircleConversationDao,
-    private val messageFts4Dao: MessagesFts4Dao,
     private val participantDao: ParticipantDao,
     private val messageMentionDao: MessageMentionDao,
     private val participantSessionDao: ParticipantSessionDao,
@@ -140,8 +139,8 @@ internal constructor(
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem> =
         messageDao.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit)
 
-    fun fuzzySearchMessageDetail(query: String, conversationId: String, countable: Boolean) =
-        MessageProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, countable)
+    fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal) =
+        MessageProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, cancellationSignal)
 
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal> =
         conversationDao.fuzzySearchChat(query)
