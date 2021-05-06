@@ -2,9 +2,11 @@ package one.mixin.android.db
 
 import android.annotation.SuppressLint
 import android.database.Cursor
+import android.os.CancellationSignal
 import androidx.paging.DataSource
 import androidx.room.RoomSQLiteQuery
 import androidx.room.util.CursorUtil
+import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FixedLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
 import one.mixin.android.vo.ConversationItem
@@ -298,7 +300,7 @@ class MessageProvider {
                 }
             }
 
-        fun fuzzySearchMessageDetail(query: String?, conversationId: String?, database: MixinDatabase, countable: Boolean) =
+        fun fuzzySearchMessageDetail(query: String?, conversationId: String?, database: MixinDatabase, cancellationSignal: CancellationSignal) =
             object : DataSource.Factory<Int, SearchMessageDetailItem>() {
                 override fun create(): DataSource<Int, SearchMessageDetailItem> {
                     val sql =
@@ -335,11 +337,7 @@ class MessageProvider {
                         statement.bindString(argIndex, conversationId)
                         countStatement.bindString(argIndex, conversationId)
                     }
-                    return if (countable) {
-                        MixinSearchMessageDetailItemLimitOffsetDataSource(database, statement, countStatement)
-                    } else {
-                        FixedSearchMessageDetailItemLimitOffsetDataSource(database, statement, 0)
-                    }
+                    return CancellationMessageDetailItemLimitOffsetDataSource(database, statement, countStatement, cancellationSignal)
                 }
             }
     }
@@ -364,21 +362,12 @@ class MessageProvider {
         }
     }
 
-    private class MixinSearchMessageDetailItemLimitOffsetDataSource(
+    private class CancellationMessageDetailItemLimitOffsetDataSource(
         database: MixinDatabase,
         statement: RoomSQLiteQuery,
         countStatement: RoomSQLiteQuery,
-    ) : MixinLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, true, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
-        override fun convertRows(cursor: Cursor?): MutableList<SearchMessageDetailItem> {
-            return convertToSearchMessageDetailItem(cursor)
-        }
-    }
-
-    private class FixedSearchMessageDetailItemLimitOffsetDataSource(
-        database: MixinDatabase,
-        statement: RoomSQLiteQuery,
-        unreadCount: Int,
-    ) : FixedLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, unreadCount, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
+        cancellationSignal: CancellationSignal,
+    ) : CancellationLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, cancellationSignal, true, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
         override fun convertRows(cursor: Cursor?): MutableList<SearchMessageDetailItem> {
             return convertToSearchMessageDetailItem(cursor)
         }

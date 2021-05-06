@@ -26,3 +26,14 @@ fun <T> LiveData<T>.observeUntil(target: T, observer: Observer<T>) {
         }
     })
 }
+
+fun <T> LiveData<T>.observeOnceAtMost(lifecycleOwner: LifecycleOwner, observer: Observer<T>): Observer<T> {
+    val o = object : Observer<T> {
+        override fun onChanged(t: T?) {
+            observer.onChanged(t)
+            removeObserver(this)
+        }
+    }
+    observe(lifecycleOwner, o)
+    return o
+}
