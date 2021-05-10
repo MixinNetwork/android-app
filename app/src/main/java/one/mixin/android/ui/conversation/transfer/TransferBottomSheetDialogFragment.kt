@@ -136,7 +136,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             else -> {
                 t as WithdrawBiometricItem
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
-                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo)
+                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo, t.fee)
             }
         }
         bottomViewModel.insertTrace(trace)

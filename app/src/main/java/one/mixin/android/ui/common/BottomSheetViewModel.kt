@@ -110,7 +110,8 @@ class BottomSheetViewModel @Inject internal constructor(
         amount: String,
         code: String,
         traceId: String,
-        memo: String?
+        memo: String?,
+        fee: String?,
     ) =
         assetRepository.withdrawal(
             WithdrawalRequest(
@@ -118,7 +119,8 @@ class BottomSheetViewModel @Inject internal constructor(
                 amount,
                 encryptPin(Session.getPinToken()!!, code)!!,
                 traceId,
-                memo
+                memo,
+                fee,
             )
         )
 
