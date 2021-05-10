@@ -135,7 +135,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
     }
 
     private lateinit var mixinMapView: MixinMapView
-    private val useGoogleMap = useGoogleMap()
+    private val useMapbox = useMapbox()
 
     private lateinit var binding: ActivityLocationBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -147,20 +147,20 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
                 mentionLocation.motion.loadLayoutDescription(R.xml.scene_location_none)
             }
             var mapBoxView: MapView? = null
-            if (useGoogleMap) {
-                MapsInitializer.initialize(MixinApplication.appContext)
-            } else {
+            if (useMapbox) {
                 Mapbox.getInstance(this@LocationActivity, BuildConfig.MAPBOX_PUBLIC_TOKEN)
                 val stub = mentionLocation.mapboxStub
                 mapBoxView = stub.inflate() as MapView
+            } else {
+                MapsInitializer.initialize(MixinApplication.appContext)
             }
             mixinMapView = MixinMapView(this@LocationActivity, mentionLocation.googleMapView, mapBoxView).apply {
                 onCreate(savedInstanceState)
             }
-            if (useGoogleMap) {
-                mentionLocation.googleMapView.getMapAsync(this@LocationActivity)
-            } else {
+            if (useMapbox) {
                 mapBoxView?.getMapAsync(this@LocationActivity)
+            } else {
+                mentionLocation.googleMapView.getMapAsync(this@LocationActivity)
             }
             icBack.setOnClickListener {
                 if (searchVa.displayedChild == 1) {

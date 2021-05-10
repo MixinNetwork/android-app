@@ -26,7 +26,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
-import one.mixin.android.ui.conversation.location.useGoogleMap
+import one.mixin.android.ui.conversation.location.useMapbox
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.LocationPayload
@@ -51,23 +51,23 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         MixinApplication.appContext.dpToPx(4f).toFloat()
     }
 
-    private val useGoogleMap = useGoogleMap()
+    private val useMapbox = useMapbox()
 
     init {
         binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
         binding.locationLayout.round(6.dp)
         var mapBoxView: MapView? = null
-        if (!useGoogleMap) {
+        if (useMapbox) {
             Mapbox.getInstance(itemView.context, BuildConfig.MAPBOX_PUBLIC_TOKEN)
             val stub = binding.mapboxStub
             mapBoxView = stub.inflate() as MapView
         }
         mixinMapView = MixinMapView(binding.root.context, binding.googleMap, mapBoxView)
         mixinMapView.onCreate(null)
-        if (useGoogleMap) {
-            binding.googleMap.getMapAsync(this)
-        } else {
+        if (useMapbox) {
             mapBoxView?.getMapAsync(this)
+        } else {
+            binding.googleMap.getMapAsync(this)
         }
     }
 
@@ -103,10 +103,10 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
     }
 
     private fun setMapLocation() {
-        if (useGoogleMap) {
-            if (mixinMapView.googleMap == null) return
-        } else {
+        if (useMapbox) {
             if (mixinMapView.mapboxMap == null) return
+        } else {
+            if (mixinMapView.googleMap == null) return
         }
         if (itemView.tag == location.hashCode()) return
 
@@ -116,7 +116,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         mixinMapView.onResume()
         location?.let { data ->
             val position = MixinLatLng(data.latitude, data.longitude)
-            if (useGoogleMap) {
+            if (!useMapbox) {
                 mixinMapView.googleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
             }
             mixinMapView.addMarker(position)

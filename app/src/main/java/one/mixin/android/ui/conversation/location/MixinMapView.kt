@@ -27,11 +27,11 @@ class MixinMapView(
     private val googleMapView: MapView,
     private val mapboxView: com.mapbox.mapboxsdk.maps.MapView?
 ) {
-    private val useGoogleMap = useGoogleMap()
+    private val useMapbox = useMapbox()
 
     init {
-        googleMapView.isVisible = useGoogleMap
-        mapboxView?.isVisible = !useGoogleMap
+        googleMapView.isVisible = !useMapbox
+        mapboxView?.isVisible = useMapbox
     }
 
     var googleMap: GoogleMap? = null
@@ -39,24 +39,30 @@ class MixinMapView(
 
     @Suppress("DEPRECATION")
     fun addMarker(latLng: MixinLatLng) {
-        if (useGoogleMap) {
-            googleMap?.addMarker(
-                MarkerOptions().position(
-                    LatLng(latLng.latitude, latLng.longitude)
-                ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
-            )
-        } else {
+        if (useMapbox) {
             mapboxMap?.addMarker(
                 com.mapbox.mapboxsdk.annotations.MarkerOptions().position(
                     com.mapbox.mapboxsdk.geometry.LatLng(latLng.latitude, latLng.longitude)
                 ).icon(IconFactory.getInstance(context).fromResource(R.drawable.ic_location_search_maker))
+            )
+        } else {
+            googleMap?.addMarker(
+                MarkerOptions().position(
+                    LatLng(latLng.latitude, latLng.longitude)
+                ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
             )
         }
     }
 
     @Suppress("DEPRECATION")
     fun addMarker(index: Int, venue: Venue) {
-        if (useGoogleMap) {
+        if (useMapbox) {
+            mapboxMap?.addMarker(
+                com.mapbox.mapboxsdk.annotations.MarkerOptions().position(
+                    com.mapbox.mapboxsdk.geometry.LatLng(venue.location.lat, venue.location.lng)
+                ).icon(IconFactory.getInstance(context).fromResource(R.drawable.ic_location_search_maker))
+            )
+        } else {
             googleMap?.addMarker(
                 MarkerOptions().zIndex(index.toFloat()).position(
                     LatLng(
@@ -65,37 +71,31 @@ class MixinMapView(
                     )
                 ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
             )
-        } else {
-            mapboxMap?.addMarker(
-                com.mapbox.mapboxsdk.annotations.MarkerOptions().position(
-                    com.mapbox.mapboxsdk.geometry.LatLng(venue.location.lat, venue.location.lng)
-                ).icon(IconFactory.getInstance(context).fromResource(R.drawable.ic_location_search_maker))
-            )
         }
     }
 
     fun moveBounds(bound: MixinLatLngBounds) {
-        if (useGoogleMap) {
-            googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bound.toGoogleMap(), 64.dp))
-        } else {
+        if (useMapbox) {
             mapboxMap?.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bound.toMapbox(), 64.dp))
+        } else {
+            googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bound.toGoogleMap(), 64.dp))
         }
     }
 
     fun moveCamera(latLng: MixinLatLng) {
-        if (useGoogleMap) {
-            googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng.toGoogleMap(), GOOGLE_MAP_ZOOM_LEVEL))
-        } else {
+        if (useMapbox) {
             mapboxMap?.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(latLng.toMapbox(), MAPBOX_ZOOM_LEVEL.toDouble()))
+        } else {
+            googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng.toGoogleMap(), GOOGLE_MAP_ZOOM_LEVEL))
         }
     }
 
     fun clear() {
-        if (useGoogleMap) {
-            googleMap?.clear()
-        } else {
+        if (useMapbox) {
             @Suppress("DEPRECATION")
             mapboxMap?.clear()
+        } else {
+            googleMap?.clear()
         }
     }
 
@@ -108,66 +108,66 @@ class MixinMapView(
     )
 
     fun onCreate(savedInstanceState: Bundle?) {
-        if (useGoogleMap) {
-            googleMapView.onCreate(savedInstanceState)
-        } else {
+        if (useMapbox) {
             mapboxView?.onCreate(savedInstanceState)
+        } else {
+            googleMapView.onCreate(savedInstanceState)
         }
     }
 
     fun onStart() {
-        if (useGoogleMap) {
-            googleMapView.onStart()
-        } else {
+        if (useMapbox) {
             mapboxView?.onStart()
+        } else {
+            googleMapView.onStart()
         }
     }
 
     fun onResume() {
-        if (useGoogleMap) {
-            googleMapView.onResume()
-        } else {
+        if (useMapbox) {
             mapboxView?.onResume()
+        } else {
+            googleMapView.onResume()
         }
     }
 
     fun onPause() {
-        if (useGoogleMap) {
-            googleMapView.onPause()
-        } else {
+        if (useMapbox) {
             mapboxView?.onPause()
+        } else {
+            googleMapView.onPause()
         }
     }
 
     fun onStop() {
-        if (useGoogleMap) {
-            googleMapView.onStop()
-        } else {
+        if (useMapbox) {
             mapboxView?.onStop()
+        } else {
+            googleMapView.onStop()
         }
     }
 
     fun onDestroy() {
-        if (useGoogleMap) {
-            googleMapView.onDestroy()
-        } else {
+        if (useMapbox) {
             mapboxView?.onDestroy()
+        } else {
+            googleMapView.onDestroy()
         }
     }
 
     fun onLowMemory() {
-        if (useGoogleMap) {
-            googleMapView.onLowMemory()
-        } else {
+        if (useMapbox) {
             mapboxView?.onLowMemory()
+        } else {
+            googleMapView.onLowMemory()
         }
     }
 
     fun onSaveInstanceState(savedInstanceState: Bundle) {
-        if (useGoogleMap) {
-            googleMapView.onSaveInstanceState(savedInstanceState)
-        } else {
+        if (useMapbox) {
             mapboxView?.onSaveInstanceState(savedInstanceState)
+        } else {
+            googleMapView.onSaveInstanceState(savedInstanceState)
         }
     }
 
@@ -180,10 +180,9 @@ class MixinMapView(
     }
 }
 
-fun useGoogleMap() = BuildConfig.MAPBOX_PUBLIC_TOKEN.isBlank() || (
-    Lingver.getInstance().getLanguage() != "zh" &&
-        MixinApplication.appContext.isGooglePlayServicesAvailable()
-    )
+fun useMapbox() = Lingver.getInstance().getLanguage() == "zh" &&
+    !MixinApplication.appContext.isGooglePlayServicesAvailable() &&
+    BuildConfig.MAPBOX_PUBLIC_TOKEN.isNotBlank()
 
 data class MixinLatLng(val latitude: Double, val longitude: Double) {
     fun toGoogleMap() = LatLng(latitude, longitude)
