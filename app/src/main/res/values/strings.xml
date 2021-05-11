@@ -119,6 +119,7 @@
     <string name="common_file">File</string>
     <string name="common_audio">Audio</string>
     <string name="common_sticker">Sticker</string>
+    <string name="common_transcript">Transcript</string>
     <string name="you">You</string>
     <string name="know">I know</string>
     <string name="storage_low_title">Your phone is low on storage</string>
@@ -344,6 +345,7 @@
     <string name="chat_not_found">Message not found</string>
     <string name="chat_transcript">Transcript</string>
     <string name="chat_import_content">Do you want import messages to %1$s ?</string>
+    <string name="chat_forward_title">Forward message</string>
     <string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>
     <string name="chat_import">Import</string>
     <string name="chat_send_file">Send as file</string>

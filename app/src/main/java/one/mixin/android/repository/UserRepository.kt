@@ -13,6 +13,7 @@ import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.TranscriptDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
@@ -26,6 +27,7 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleName
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleManagerItem
+import one.mixin.android.vo.Transcript
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import javax.inject.Inject
@@ -41,7 +43,8 @@ constructor(
     private val userService: UserService,
     private val conversationDao: ConversationDao,
     private val circleService: CircleService,
-    private val circleConversationDao: CircleConversationDao
+    private val circleConversationDao: CircleConversationDao,
+    private val transcriptDao: TranscriptDao
 ) {
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()
@@ -220,4 +223,6 @@ constructor(
     suspend fun findUserByAppId(appId: String): User? = userDao.findUserByAppId(appId)
 
     fun updateMuteUntil(id: String, muteUntil: String) = userDao.updateMuteUntil(id, muteUntil)
+
+    fun a (transcripts: List<Transcript>) = transcriptDao.insertList(transcripts)
 }

@@ -5,22 +5,20 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.ui.conversation.holder.BaseMentionHolder
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 
-class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root) {
+class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(binding.root) {
 
     init {
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_MENTION)
@@ -67,10 +65,10 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
     }
 
     fun bind(
-        messageItem: MessageItem,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
 
         if (messageItem.mentions?.isNotBlank() == true) {
@@ -107,8 +105,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
 
         if (textGestureListener == null) {
             textGestureListener = TextGestureListener(
-                messageItem, false,
-                isSelect = false,
+                messageItem,
                 onItemListener = onItemListener,
                 absoluteAdapterPosition = absoluteAdapterPosition
             )
@@ -146,7 +143,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
         setStatusIcon(
             isMe,
-            messageItem.status,
+            MessageStatus.DELIVERED.name,
             messageItem.isSignal(),
             false
         ) { statusIcon, secretIcon, representativeIcon ->
@@ -156,23 +153,13 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
         }
         chatLayout(isMe, isLast)
-
-        attachAction = if (messageItem.mentionRead == false) {
-            {
-                blink()
-            }
-        } else {
-            null
-        }
     }
 
     private var textGestureListener: TextGestureListener? = null
 
     private class TextGestureListener(
-        var messageItem: MessageItem,
-        var hasSelect: Boolean = false,
-        var isSelect: Boolean = false,
-        var onItemListener: ConversationAdapter.OnItemListener,
+        var messageItem: TranscriptMessageItem,
+        var onItemListener: TranscriptAdapter.OnItemListener,
         var absoluteAdapterPosition: Int = 0
     ) : GestureDetector.SimpleOnGestureListener() {
         var longPressed = false
@@ -183,9 +170,6 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         }
 
         override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-            }
             return true
         }
 
@@ -193,13 +177,6 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             if (longPressed) {
                 longPressed = false
                 return
-            }
-
-            if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-                MixinApplication.appContext.tapVibrate()
-            } else {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
     }

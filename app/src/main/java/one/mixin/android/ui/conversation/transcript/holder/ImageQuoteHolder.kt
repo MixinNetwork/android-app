@@ -9,10 +9,13 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.MediaHolder
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 import kotlin.math.min
@@ -62,27 +65,67 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         }
     }
 
+    private var onItemListener: TranscriptAdapter.OnItemListener? = null
+
     fun bind(
-        messageItem: MessageItem,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onClickListener: View.OnClickListener
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
+        this.onItemListener = onItemListener
         binding.chatQuoteLayout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
 
         binding.chatTime.timeAgoClock(messageItem.createdAt)
+        messageItem.mediaStatus?.let {
+            when (it) {
+                MediaStatus.EXPIRED.name -> {
+                    binding.chatWarning.visibility = View.VISIBLE
+                    binding.progress.visibility = View.GONE
+                }
+                MediaStatus.PENDING.name -> {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.VISIBLE
+                    binding.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                    binding.progress.setBindOnly(messageItem.messageId)
+                    binding.chatImage.setOnClickListener { }
+                }
+                MediaStatus.DONE.name -> {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.GONE
+                    binding.progress.setBindId(messageItem.messageId)
+                    binding.chatImage.setOnClickListener {
+                        onItemListener.onImageClick(messageItem, binding.chatImage)
+                    }
+                }
+                MediaStatus.CANCELED.name -> {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.VISIBLE
+                    if (isMe && messageItem.mediaUrl != null) {
+                        binding.progress.enableUpload()
+                    } else {
+                        binding.progress.enableDownload()
+                    }
+                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setProgress(-1)
 
-        binding.chatWarning.visibility = View.GONE
-        binding.progress.visibility = View.GONE
-        binding.progress.setBindId(messageItem.messageId)
-        binding.progress.setOnClickListener {}
-        binding.progress.setOnLongClickListener { false }
-        binding.chatImage.setOnClickListener(onClickListener)
+                    binding.progress.setOnClickListener {
+                        if (messageItem.mediaUrl.isNullOrEmpty()) {
+                            onItemListener.onRetryDownload(messageItem.messageId)
+                        } else {
+                            onItemListener.onRetryUpload(messageItem.messageId)
+                        }
+                    }
+                    binding.chatImage.setOnClickListener {}
+                }
+            }
+        }
 
         val dataWidth = messageItem.mediaWidth
         val dataHeight = messageItem.mediaHeight
         val width = mediaWidth - dp6
+        binding.chatImageLayout.layoutParams.width = width
         if (dataWidth <= 0 || dataHeight <= 0) {
             binding.chatImage.layoutParams.width = width
             binding.chatImage.layoutParams.height = width
@@ -93,7 +136,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         }
         binding.chatImage.loadLongImageMark(messageItem.mediaUrl, null)
 
-        val isMe = false
+        val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -104,6 +147,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }
@@ -114,7 +158,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative = false, isWhite = true) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
@@ -122,6 +166,9 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         }
         val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.setOnClickListener {
+            onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
+        }
 
         chatLayout(isMe, isLast)
     }

@@ -14,6 +14,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.Transcript
 import one.mixin.android.vo.isAudio
@@ -174,7 +175,10 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
                         it.isSticker() -> {
                             str.append("${it.userFullName}: [${itemView.context.getString(R.string.sticker)}]\n")
                         }
-                        else -> str.append("${it.userFullName}: [${it.content}]\n")
+                        it.type == MessageCategory.APP_CARD.name -> {
+                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.card)}]\n")
+                        }
+                        else -> str.append("${it.userFullName}: ${it.content}\n")
                     }
                 }
                 binding.chatTv.text = str.removeSuffix("\n")

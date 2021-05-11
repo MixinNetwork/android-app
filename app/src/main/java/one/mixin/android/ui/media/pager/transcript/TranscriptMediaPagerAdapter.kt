@@ -1,4 +1,4 @@
-package one.mixin.android.ui.media.pager
+package one.mixin.android.ui.media.pager.transcript
 
 import android.content.Context
 import android.util.LruCache
@@ -14,6 +14,12 @@ import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
+import one.mixin.android.ui.media.pager.LargeImageHolder
+import one.mixin.android.ui.media.pager.MediaItemType
+import one.mixin.android.ui.media.pager.MediaPagerAdapterListener
+import one.mixin.android.ui.media.pager.MediaPagerHolder
+import one.mixin.android.ui.media.pager.PhotoHolder
+import one.mixin.android.ui.media.pager.VideoHolder
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.CircleProgress

@@ -1,4 +1,4 @@
-package one.mixin.android.ui.media.pager
+package one.mixin.android.ui.media.pager.transcript
 
 import android.Manifest
 import android.animation.Animator
@@ -65,6 +65,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.media.pager.MediaPagerAdapterListener
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
@@ -235,8 +236,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     private fun checkPip() {
         if (pipVideoView.shown) {
-            // todo
-            // pipVideoView.close(messageId != VideoPlayer.player().mId)
+            pipVideoView.close(messageId != VideoPlayer.player().mId)
         }
     }
 
@@ -752,10 +752,16 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         }
     }
 
+    private val messageId by lazy {
+        intent.getStringExtra(MESSAGE_ID) as String
+    }
+
     companion object {
         private const val ITEMS = "items"
         private const val INIT_INDEX = "init_index"
         private const val ALPHA_MAX = 0xFF
+        private const val MESSAGE_ID = "message_id"
+
         const val PREFIX = "media"
         const val PAGE_SIZE = 3
 
@@ -765,11 +771,13 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             activity: Activity,
             imageView: View,
             messageItems: ArrayList<MessageItem>,
+            messageId: String,
             index: Int
         ) {
             val intent = Intent(activity, TranscriptMediaPagerActivity::class.java).apply {
                 putParcelableArrayListExtra(ITEMS, messageItems)
                 putExtra(INIT_INDEX, index)
+                putExtra(MESSAGE_ID, messageId)
             }
             activity.startActivity(
                 intent,

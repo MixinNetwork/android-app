@@ -208,6 +208,7 @@ import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
@@ -239,6 +240,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -370,7 +372,7 @@ class ConversationFragment() :
                             }
                         }
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                            ?.getBoolean(conversationId, false) == true
+                                ?.getBoolean(conversationId, false) == true
                         ) {
                             lifecycleScope.launch {
                                 if (viewDestroyed()) return@launch
@@ -625,9 +627,9 @@ class ConversationFragment() :
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                            "application/vnd.android.package-archive",
-                            true
-                        )
+                        "application/vnd.android.package-archive",
+                        true
+                    )
                 ) {
                     if (requireContext().packageManager.canRequestPackageInstalls()) {
                         requireContext().openMedia(messageItem)
@@ -821,7 +823,8 @@ class ConversationFragment() :
             }
 
             override fun onTranscriptClick(messageItem: MessageItem) {
-                TranscriptActivity.show(requireActivity(), messageItem.content!!, conversationId)
+                binding.chatControl.chatEt.hideKeyboard()
+                TranscriptActivity.show(requireActivity(), messageItem.messageId)
             }
 
             override fun onSayHi() {
@@ -2996,13 +2999,14 @@ class ConversationFragment() :
         } else {
             val forwardDialogLayoutBinding = generateForwardDialogLayout()
             forwardDialog = alertDialogBuilder()
-                .setMessage(getString(R.string.chat_import_content, groupName ?: conversationAdapter.recipient?.fullName ?: ""))
+                .setMessage(getString(R.string.chat_forward_title))
                 .setView(forwardDialogLayoutBinding.root)
                 .create()
             forwardDialogLayoutBinding.forward.setOnClickListener {
                 forward()
                 forwardDialog?.dismiss()
             }
+            forwardDialogLayoutBinding.combineForward.isVisible = !conversationAdapter.selectSet.any { t -> t.isTranscript() }
             forwardDialogLayoutBinding.combineForward.setOnClickListener {
                 combineForward()
                 forwardDialog?.dismiss()
@@ -3021,7 +3025,8 @@ class ConversationFragment() :
 
     private fun combineForward() {
         lifecycleScope.launch {
-            val messages = conversationAdapter.selectSet.sortedWith(compareBy { it.createdAt }).map { it.toTranscript() }
+            val transcriptId = UUID.randomUUID().toString()
+            val messages = conversationAdapter.selectSet.sortedWith(compareBy { it.createdAt }).map { it.toTranscript(transcriptId) }
             getCombineForwardContract.launch(ArrayList(messages))
             closeTool()
         }

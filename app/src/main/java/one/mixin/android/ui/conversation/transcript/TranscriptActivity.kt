@@ -1,45 +1,70 @@
 package one.mixin.android.ui.conversation.transcript
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.support.v4.media.MediaDescriptionCompat
 import android.view.ContextThemeWrapper
 import android.view.View
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.exoplayer2.util.MimeTypes
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityTranscriptBinding
+import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
-import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openMedia
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.ui.media.pager.TranscriptMediaPagerActivity
+import one.mixin.android.ui.conversation.location.LocationActivity
+import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.player.FloatingPlayer
+import one.mixin.android.ui.player.MediaItemData
+import one.mixin.android.ui.player.MusicActivity
+import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.Transcript
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.toMessageItem
+import one.mixin.android.vo.ForwardAction
+import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.TranscriptMessageItem
+import one.mixin.android.vo.saveToLocal
+import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.WebControlView
+import one.mixin.android.widget.buildBottomSheetView
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -57,8 +82,15 @@ class TranscriptActivity : BaseActivity() {
     @Inject
     lateinit var userRepository: UserRepository
 
+    @Inject
+    lateinit var conversationRepository: ConversationRepository
+
     private val conversationId by lazy {
         intent.getStringExtra(CONVERSATION_ID)
+    }
+
+    private val transcriptId by lazy {
+        requireNotNull(intent.getStringExtra(MESSAGE_ID))
     }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,40 +102,44 @@ class TranscriptActivity : BaseActivity() {
             binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
         }
         binding.control.mode = this.isNightMode()
-        binding.control.callback = object : WebControlView.Callback {
-            override fun onMoreClick() {
-            }
-
-            override fun onCloseClick() {
-                finish()
-            }
-        }
         binding.recyclerView.addItemDecoration(decoration)
         binding.recyclerView.itemAnimator = null
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
+        conversationRepository.findTranscriptMessageItemById(transcriptId)
+            .observe(this) { transcripts ->
+                binding.control.callback = object : WebControlView.Callback {
+                    override fun onMoreClick() {
+                        // todo forward
+                    }
+
+                    override fun onCloseClick() {
+                        finish()
+                    }
+                }
+                adapter.transcripts = transcripts
+            }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        AudioPlayer.pause()
     }
 
     private val adapter by lazy {
-        TranscriptAdapter(transcripts, onItemListener) { view, messageItem ->
-            if (messageItem.isVideo() || messageItem.isLive() || messageItem.isImage()) {
-                val index = attachmentTranscripts.indexOf(messageItem)
-                TranscriptMediaPagerActivity.show(this, view, attachmentTranscripts, index)
-            } else if (messageItem.isAudio()) {
-                if (AudioPlayer.isPlay(messageItem.messageId)) {
-                    AudioPlayer.pause()
-                } else {
-                    AudioPlayer.play(messageItem)
-                }
-            }
-        }
+        TranscriptAdapter(onItemListener)
     }
 
     private val onItemListener by lazy {
-        object : ConversationAdapter.OnItemListener() {
+        object : TranscriptAdapter.OnItemListener() {
             override fun onUrlClick(url: String) {
-                url.openAsUrlOrWeb(this@TranscriptActivity, conversationId, supportFragmentManager, lifecycleScope)
+                url.openAsUrlOrWeb(
+                    this@TranscriptActivity,
+                    conversationId,
+                    supportFragmentManager,
+                    lifecycleScope
+                )
             }
 
             override fun onUrlLongClick(url: String) {
@@ -146,10 +182,70 @@ class TranscriptActivity : BaseActivity() {
 
             override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {
                 quoteMessageId?.let { msgId ->
-                    val index = transcripts.indexOfFirst { it.messageId == msgId }
-                    if (index >= 0) {
-                        scrollTo(index) {
-                            RxBus.publish(BlinkEvent(messageId))
+                    lifecycleScope.launch {
+                        val index = conversationRepository.findTranscriptMessageIndex(transcriptId, msgId)
+                        scrollTo(index, this@TranscriptActivity.screenHeight() * 3 / 4)
+                    }
+                }
+            }
+
+            override fun onImageClick(messageItem: TranscriptMessageItem, view: View) {
+                // todo
+            }
+
+            override fun onAudioClick(messageItem: TranscriptMessageItem) {
+                // todo
+            }
+
+            override fun onAudioFileClick(messageItem: TranscriptMessageItem) {
+                // todo
+            }
+
+            override fun onLocationClick(messageItem: TranscriptMessageItem) {
+                val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
+                LocationActivity.show(this@TranscriptActivity, location)
+            }
+
+            override fun onContactCardClick(userId: String) {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        userRepository.getUserById(userId)?.let { user ->
+                            withContext(Dispatchers.Main) {
+                                UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                    .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            }
+                        }
+                    }
+                }
+            }
+
+            override fun onFileClick(messageItem: TranscriptMessageItem) {
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
+                    messageItem.mediaMimeType.equals(
+                        "application/vnd.android.package-archive",
+                        true
+                    )
+                ) {
+                    if (this@TranscriptActivity.packageManager.canRequestPackageInstalls()) {
+                        openMedia(messageItem)
+                    } else {
+                        startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
+                    }
+                } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
+                    showBottomSheet(messageItem)
+                } else {
+                    openMedia(messageItem)
+                }
+            }
+
+            override fun onUserClick(userId: String) {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        userRepository.getUserById(userId)?.let { user ->
+                            withContext(Dispatchers.Main) {
+                                UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                    .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            }
                         }
                     }
                 }
@@ -194,26 +290,105 @@ class TranscriptActivity : BaseActivity() {
         )
     }
 
-    private val attachmentTranscripts by lazy {
-        ArrayList(transcripts.filter { it.isLive() || it.isImage() || it.isVideo() })
+    @SuppressLint("AutoDispose")
+    private fun showBottomSheet(content: String) {
+        val builder = BottomSheet.Builder(this)
+        val view = View.inflate(
+            androidx.appcompat.view.ContextThemeWrapper(this, R.style.Custom),
+            R.layout.view_transcript,
+            null
+        )
+        val viewBinding = ViewTranscriptBinding.bind(view)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        viewBinding.forward.setOnClickListener {
+            ForwardActivity.show(
+                this,
+                arrayListOf(ForwardMessage(ForwardCategory.Transcript, content)),
+                ForwardAction.App.Resultless()
+            )
+            bottomSheet.dismiss()
+        }
+        bottomSheet.show()
     }
 
-    private val transcripts by lazy {
-        val content = intent.getStringExtra(CONTENT)
-        return@lazy GsonHelper.customGson.fromJson(content, Array<Transcript>::class.java).map {
-            it.toMessageItem()
+    private fun showBottomSheet(messageItem: TranscriptMessageItem) {
+        var bottomSheet: BottomSheet? = null
+        val builder = BottomSheet.Builder(this)
+        val items = arrayListOf<BottomSheetItem>()
+        if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.save_to_music),
+                    {
+                        checkWritePermissionAndSave(messageItem)
+                        bottomSheet?.dismiss()
+                    }
+                )
+            )
+        } else if (MimeTypes.isVideo(messageItem.mediaMimeType) ||
+            messageItem.mediaMimeType?.isImageSupport() == true
+        ) {
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.save_to_gallery),
+                    {
+                        checkWritePermissionAndSave(messageItem)
+                        bottomSheet?.dismiss()
+                    }
+                )
+            )
+        } else {
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.save_to_downloads),
+                    {
+                        checkWritePermissionAndSave(messageItem)
+                        bottomSheet?.dismiss()
+                    }
+                )
+            )
         }
+        items.add(
+            BottomSheetItem(
+                getString(R.string.open),
+                {
+                    openMedia(messageItem)
+                    bottomSheet?.dismiss()
+                }
+            )
+        )
+        val view = buildBottomSheetView(this, items)
+        builder.setCustomView(view)
+        bottomSheet = builder.create()
+        bottomSheet.show()
+    }
+
+    private fun checkWritePermissionAndSave(messageItem: TranscriptMessageItem) {
+        RxPermissions(this)
+            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .autoDispose(stopScope)
+            .subscribe(
+                { granted ->
+                    if (granted) {
+                        messageItem.saveToLocal(this)
+                    } else {
+                        openPermissionSetting()
+                    }
+                },
+                {
+                }
+            )
     }
 
     companion object {
-        private const val CONTENT = "content"
+        private const val MESSAGE_ID = "transcript_id"
         private const val CONVERSATION_ID = "conversation_id"
-        fun show(context: Context, content: String, conversationId: String? = null) {
+        fun show(context: Context, messageId: String) {
             refreshScreenshot(context)
             context.startActivity(
                 Intent(context, TranscriptActivity::class.java).apply {
-                    putExtra(CONTENT, content)
-                    putExtra(CONVERSATION_ID, conversationId)
+                    putExtra(MESSAGE_ID, messageId)
                 }
             )
         }

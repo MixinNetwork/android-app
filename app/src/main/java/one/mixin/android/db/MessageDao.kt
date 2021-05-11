@@ -43,17 +43,16 @@ interface MessageDao : BaseDao<Message> {
                 LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
                 LEFT JOIN users su ON m.shared_user_id = su.user_id
                 LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-                LEFT JOIN message_mentions mm ON m.id = mm.message_id
-                WHERE m.conversation_id = :conversationId 
+                LEFT JOIN message_mentions mm ON m.id = mm.message_id 
             """
         private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
     }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_MESSAGE_ITEM ORDER BY m.created_at DESC")
+    @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId ORDER BY m.created_at DESC")
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @Query("$PREFIX_MESSAGE_ITEM AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
+    @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem>
 
     @Query(
@@ -405,7 +404,7 @@ interface MessageDao : BaseDao<Message> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "$PREFIX_MESSAGE_ITEM AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO') AND m.created_at >= :createdAt AND " +
+        "$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO') AND m.created_at >= :createdAt AND " +
             "m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1"
     )
     suspend fun findNextAudioMessageItem(
@@ -550,4 +549,7 @@ interface MessageDao : BaseDao<Message> {
     """
     )
     suspend fun suspendFindMessagesByIds(conversationId: String, ids: List<String>): List<MessageItem>
+
+    @Query("$PREFIX_MESSAGE_ITEM WHERE m.id = :messageId")
+    fun findMessageItemByMessageId(messageId: String): LiveData<MessageItem?>
 }

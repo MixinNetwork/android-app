@@ -118,7 +118,7 @@ data class MessageItem(
             unfinishedAttachment() ||
             isCallMessage() || isRecall()
 
-    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
+    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio() || isTranscript())
 }
 
 fun create(type: String, createdAt: String? = null) = MessageItem(
@@ -231,11 +231,11 @@ private fun MessageItem.simpleChat(): String {
         type == MessageCategory.APP_CARD.name -> "[Mixin APP]"
         type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ->
             "[TRANSFER ${
-            if (snapshotAmount?.toFloat()!! > 0) {
-                "+"
-            } else {
-                ""
-            }
+                if (snapshotAmount?.toFloat()!! > 0) {
+                    "+"
+                } else {
+                    ""
+                }
             }$snapshotAmount $assetSymbol]"
         isContact() -> {
             "[CONTACT - $sharedUserFullName]"
@@ -260,7 +260,7 @@ class FixedMessageDataSource(private val messageItems: List<MessageItem>) : Posi
     }
 }
 
-fun MessageItem.toTranscript(isPlain: Boolean = false): Transcript {
+fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): Transcript {
     val category = when {
         isImage() -> if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         isVideo() -> if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
@@ -274,6 +274,7 @@ fun MessageItem.toTranscript(isPlain: Boolean = false): Transcript {
         else -> if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
     }
     return Transcript(
+        transcriptId,
         messageId,
         userId,
         userFullName,
@@ -296,11 +297,6 @@ fun MessageItem.toTranscript(isPlain: Boolean = false): Transcript {
         null,
         stickerId,
         sharedUserId,
-        sharedUserFullName,
-        sharedUserIdentityNumber,
-        sharedUserAvatarUrl,
-        sharedUserAppId,
-        sharedUserIsVerified,
         mentions,
         quoteId,
         quoteContent
@@ -351,12 +347,9 @@ fun Transcript.toMessageItem(): MessageItem {
         null,
         null,
         sharedUserId,
-        sharedUserFullName,
-        sharedUserIdentityNumber,
-        sharedUserAvatarUrl,
-        sharedUserIsVerified,
-        sharedUserAppId,
-        mediaWaveform,
+        // todo remove
+        "",
+        "", "", false, "", null,
         quoteId,
         quoteContent,
         null,

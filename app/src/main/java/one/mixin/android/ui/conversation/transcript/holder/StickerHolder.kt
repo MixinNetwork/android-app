@@ -12,10 +12,11 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.util.image.ImageListener
 import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isLottie
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.RLottieDrawable
@@ -39,7 +40,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
     }
 
     fun bind(
-        messageItem: MessageItem,
+        messageItem: TranscriptMessageItem,
         isFirst: Boolean,
     ) {
         super.bind(messageItem)
@@ -117,7 +118,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         } else {
             binding.chatName.visibility = GONE
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)

@@ -13,11 +13,14 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
+
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
@@ -69,13 +72,16 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
         }
     }
 
+    private var onItemListener: TranscriptAdapter.OnItemListener? = null
+
     fun bind(
-        messageItem: MessageItem,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onClickListener: View.OnClickListener
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
+        this.onItemListener = onItemListener
 
         binding.chatQuoteLayout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
 
@@ -128,15 +134,56 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
                 binding.durationTv.bindId(null)
             }
         }
-
-        binding.chatWarning.visibility = View.GONE
-        binding.progress.visibility = View.GONE
-        binding.play.visibility = View.VISIBLE
-        binding.progress.setBindId(messageItem.messageId)
-        binding.progress.setOnClickListener {}
-        binding.progress.setOnLongClickListener { false }
-
-        binding.chatImage.setOnClickListener(onClickListener)
+        messageItem.mediaStatus?.let {
+            when (it) {
+                MediaStatus.EXPIRED.name -> {
+                    binding.chatWarning.visibility = View.VISIBLE
+                    binding.progress.visibility = View.GONE
+                    binding.play.visibility = View.GONE
+                }
+                MediaStatus.PENDING.name -> {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.VISIBLE
+                    binding.play.visibility = View.GONE
+                    binding.progress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
+                    binding.progress.setBindOnly(messageItem.messageId)
+                    binding.progress.setOnClickListener {
+                        onItemListener.onCancel(messageItem.messageId)
+                    }
+                    binding.chatImage.setOnClickListener { }
+                }
+                MediaStatus.DONE.name -> {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.GONE
+                    binding.play.visibility = View.VISIBLE
+                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setOnClickListener {}
+                    binding.chatImage.setOnClickListener {
+                        onItemListener.onImageClick(messageItem, binding.chatImage)
+                    }
+                }
+                MediaStatus.CANCELED.name -> {
+                    binding.play.visibility = View.GONE
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.VISIBLE
+                    if (isMe && messageItem.mediaUrl != null) {
+                        binding.progress.enableUpload()
+                    } else {
+                        binding.progress.enableDownload()
+                    }
+                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setProgress(-1)
+                    binding.progress.setOnClickListener {
+                        if (messageItem.mediaUrl.isNullOrEmpty()) {
+                            onItemListener.onRetryDownload(messageItem.messageId)
+                        } else {
+                            onItemListener.onRetryUpload(messageItem.messageId)
+                        }
+                    }
+                    binding.chatImage.setOnClickListener {}
+                }
+            }
+        }
 
         binding.chatImage.loadVideo(
             messageItem.mediaUrl,
@@ -145,7 +192,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
             minWidth * messageItem.mediaHeight / messageItem.mediaWidth
         )
 
-        val isMe = false
+        val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -156,6 +203,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }
@@ -166,7 +214,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative = false, isWhite = true) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
@@ -175,6 +223,9 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
 
         val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         binding.chatQuote.bind(quoteMessage)
+        binding.chatQuote.setOnClickListener {
+            onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
+        }
         chatLayout(isMe, isLast)
     }
 }
