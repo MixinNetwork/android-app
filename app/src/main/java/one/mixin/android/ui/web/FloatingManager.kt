@@ -19,6 +19,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.initRenderScript
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
@@ -53,7 +54,11 @@ fun refreshScreenshot(context: Context) {
             screenBitmap.width.toFloat(),
             screenBitmap.height.toFloat(),
             Paint().apply {
-                color = Color.parseColor("#CC1C1C1C")
+                color = if (context.isNightMode()) {
+                    Color.parseColor("#CC1C1C1C")
+                } else {
+                    Color.parseColor("#E6F6F7FA")
+                }
             }
         )
         screenshot = resultBitmap

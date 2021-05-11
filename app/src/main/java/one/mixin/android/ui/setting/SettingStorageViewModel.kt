@@ -10,6 +10,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
@@ -17,6 +18,7 @@ import one.mixin.android.extension.getConversationAudioPath
 import one.mixin.android.extension.getConversationDocumentPath
 import one.mixin.android.extension.getConversationImagePath
 import one.mixin.android.extension.getConversationMediaSize
+import one.mixin.android.extension.getConversationTranscriptPath
 import one.mixin.android.extension.getConversationVideoPath
 import one.mixin.android.extension.getStorageUsageByConversationAndType
 import one.mixin.android.repository.ConversationRepository
@@ -46,6 +48,9 @@ internal constructor(
                 result.add(this)
             }
             context.getStorageUsageByConversationAndType(cid, DATA)?.apply {
+                result.add(this)
+            }
+            context.getStorageUsageByConversationAndType(cid, TRANSCRIPT)?.apply {
                 result.add(this)
             }
             result.toList()
@@ -99,6 +104,14 @@ internal constructor(
                         MessageCategory.PLAIN_DATA.name
                     )
                 }
+                TRANSCRIPT -> {
+                    MixinApplication.get().getConversationTranscriptPath(conversationId)?.deleteRecursively()
+                    conversationRepository.deleteMediaMessageByConversationAndCategory(
+                        conversationId,
+                        MessageCategory.SIGNAL_TRANSCRIPT.name,
+                        MessageCategory.PLAIN_TRANSCRIPT.name
+                    )
+                }
             }
         } else {
             when (type) {
@@ -106,6 +119,7 @@ internal constructor(
                 VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
                 AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
                 DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
+                TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name)
             }
         }
     }

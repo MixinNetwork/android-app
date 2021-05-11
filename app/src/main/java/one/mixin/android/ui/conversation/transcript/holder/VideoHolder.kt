@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation.transcript.holder
 
 import android.view.Gravity
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -12,15 +11,20 @@ import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.MediaHolder
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
+import one.mixin.android.vo.MediaStatus
+
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
@@ -39,14 +43,12 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
     }
 
     fun bind(
-        messageItem: MessageItem,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onClickListener: View.OnClickListener
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
-
-        val isMe = false
         if (isFirst && !isMe) {
             binding.chatName.visibility = VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -56,6 +58,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {
             binding.chatName.visibility = GONE
@@ -68,31 +71,122 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             binding.play.isVisible = true
             binding.liveTv.visibility = VISIBLE
             binding.progress.setBindId(messageItem.messageId)
+            binding.progress.setOnClickListener {}
+            binding.progress.setOnLongClickListener { false }
+            binding.chatImage.setOnClickListener {
+                onItemListener.onImageClick(messageItem, binding.chatImage)
+            }
         } else {
             binding.liveTv.visibility = GONE
-
-            binding.durationTv.bindId(null)
-            messageItem.mediaDuration.notNullWithElse(
-                {
-                    binding.durationTv.visibility = VISIBLE
-                    binding.durationTv.text = it.toLongOrNull()?.formatMillis() ?: ""
-                },
-                {
-                    binding.durationTv.visibility = GONE
+            when (messageItem.mediaStatus) {
+                MediaStatus.DONE.name -> {
+                    binding.durationTv.bindId(null)
+                    messageItem.mediaDuration.notNullWithElse(
+                        {
+                            binding.durationTv.visibility = VISIBLE
+                            binding.durationTv.text = it.toLongOrNull()?.formatMillis() ?: ""
+                        },
+                        {
+                            binding.durationTv.visibility = GONE
+                        }
+                    )
                 }
-            )
-            binding.chatWarning.visibility = GONE
-            binding.progress.visibility = GONE
-            binding.play.visibility = VISIBLE
-            binding.progress.setBindId(messageItem.messageId)
-            binding.progress.setOnClickListener {}
-        }
+                MediaStatus.PENDING.name -> {
+                    messageItem.mediaSize.notNullWithElse(
+                        {
+                            binding.durationTv.visibility = VISIBLE
+                            if (it == 0L) {
+                                binding.durationTv.bindId(messageItem.messageId)
+                            } else {
+                                binding.durationTv.text = it.fileSize()
+                                binding.durationTv.bindId(null)
+                            }
+                        },
+                        {
+                            binding.durationTv.bindId(null)
+                            binding.durationTv.visibility = GONE
+                        }
+                    )
+                }
+                else -> {
+                    messageItem.mediaSize.notNullWithElse(
+                        {
+                            if (it == 0L) {
+                                binding.durationTv.visibility = GONE
+                            } else {
+                                binding.durationTv.visibility = VISIBLE
+                                binding.durationTv.text = it.fileSize()
+                            }
+                        },
+                        {
+                            binding.durationTv.visibility = GONE
+                        }
+                    )
+                    binding.durationTv.bindId(null)
+                }
+            }
+            messageItem.mediaStatus?.let {
+                when (it) {
+                    MediaStatus.EXPIRED.name -> {
+                        binding.chatWarning.visibility = VISIBLE
+                        binding.progress.visibility = GONE
+                        binding.play.visibility = GONE
+                        binding.chatImage.setOnClickListener {
 
+                        }
+                    }
+                    MediaStatus.PENDING.name -> {
+                        binding.chatWarning.visibility = GONE
+                        binding.progress.visibility = VISIBLE
+                        binding.play.visibility = GONE
+                        binding.progress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
+                        binding.progress.setBindOnly(messageItem.messageId)
+                        binding.progress.setOnClickListener {
+                            onItemListener.onCancel(messageItem.messageId)
+                        }
+                        binding.chatImage.setOnClickListener { }
+                        binding.chatImage.setOnLongClickListener { false }
+                    }
+                    MediaStatus.DONE.name -> {
+                        binding.chatWarning.visibility = GONE
+                        binding.progress.visibility = GONE
+                        binding.play.visibility = VISIBLE
+                        binding.progress.setBindId(messageItem.messageId)
+                        binding.progress.setOnClickListener {}
+                        binding.progress.setOnLongClickListener { false }
+                        binding.chatImage.setOnClickListener {
+                            onItemListener.onImageClick(messageItem, binding.chatImage)
+                        }
+                    }
+                    MediaStatus.CANCELED.name -> {
+                        binding.chatWarning.visibility = GONE
+                        binding.progress.visibility = VISIBLE
+                        binding.play.visibility = GONE
+                        if (isMe) {
+                            binding.progress.enableUpload()
+                        } else {
+                            binding.progress.enableDownload()
+                        }
+                        binding.progress.setBindId(messageItem.messageId)
+                        binding.progress.setProgress(-1)
+                        binding.progress.setOnClickListener {
+                            if (messageItem.mediaUrl.isNullOrEmpty()) {
+                                onItemListener.onRetryDownload(messageItem.messageId)
+                            } else {
+                                onItemListener.onRetryUpload(messageItem.messageId)
+                            }
+                        }
+                        binding.chatImage.setOnClickListener {}
+                        binding.chatImage.setOnLongClickListener { false }
+                    }
+                }
+            }
+        }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
 
         setStatusIcon(
             isMe,
-            messageItem.status,
+            MessageStatus.DELIVERED.name,
             messageItem.isSignal(),
             isRepresentative = false,
             isWhite = true
@@ -112,7 +206,6 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         }
         type = messageItem.type
         dataThumbImage = messageItem.thumbImage
-        binding.chatImageLayout.setOnClickListener(onClickListener)
         chatLayout(isMe, isLast)
     }
 

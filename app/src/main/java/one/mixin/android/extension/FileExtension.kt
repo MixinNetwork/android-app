@@ -24,6 +24,7 @@ import androidx.exifinterface.media.ExifInterface
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
 import one.mixin.android.session.Session
@@ -248,16 +249,17 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audios")
 }
 
-private fun Context.getTranscriptPath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Transcripts")
-}
-
-fun Context.getTranscriptPath(conversationId: String, messageId: String, name: String, type: String): File =
-    File("${MixinApplication.appContext.getTranscriptPath()}${File.separator}$conversationId${File.separator}$messageId").newTempFile(
+fun Context.getTranscriptFile(conversationId: String, messageId: String, name: String, type: String): File {
+    return getTranscriptDirPath(conversationId, messageId).newTempFile(
         name, type,
         true
     )
+}
+
+fun Context.getTranscriptDirPath(conversationId: String, messageId: String): File {
+    val root = getMediaPath()
+    return File("$root${File.separator}Transcripts${File.separator}$conversationId${File.separator}$messageId")
+}
 
 fun Context.getConversationImagePath(conversationId: String): File? {
     if (conversationId.isBlank()) return null
@@ -283,6 +285,12 @@ fun Context.getConversationAudioPath(conversationId: String): File? {
     return File("$root${File.separator}Audios${File.separator}$conversationId")
 }
 
+fun Context.getConversationTranscriptPath(conversationId: String): File? {
+    if (conversationId.isBlank()) return null
+    val root = getMediaPath() ?: return null
+    return File("$root${File.separator}Transcripts${File.separator}$conversationId")
+}
+
 fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
     getConversationImagePath(conversationId)?.apply {
@@ -305,6 +313,11 @@ fun Context.getConversationMediaSize(conversationId: String): Long {
             mediaSize += dirSize() ?: 0
         }
     }
+    getConversationTranscriptPath(conversationId)?.apply {
+        if (exists()) {
+            mediaSize += dirSize() ?: 0
+        }
+    }
     return mediaSize
 }
 
@@ -314,6 +327,7 @@ fun Context.getStorageUsageByConversationAndType(conversationId: String, type: S
         VIDEO -> getConversationVideoPath(conversationId)
         AUDIO -> getConversationAudioPath(conversationId)
         DATA -> getConversationDocumentPath(conversationId)
+        TRANSCRIPT -> getConversationTranscriptPath(conversationId)
         else -> null
     } ?: return null
     return dir.run {

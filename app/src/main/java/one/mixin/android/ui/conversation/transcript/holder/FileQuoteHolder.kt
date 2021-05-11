@@ -9,12 +9,14 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.MediaHolder
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
@@ -57,12 +59,12 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
     }
 
     fun bind(
-        messageItem: MessageItem,
-        isFirst: Boolean,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
+        isFirst: Boolean = false,
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
-        val isMe = false
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
@@ -74,11 +76,12 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
@@ -86,7 +89,6 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         }
 
         binding.fileNameTv.text = messageItem.mediaName
-
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             binding.bottomLayout.fileSizeTv.textResource = R.string.chat_expired
         } else {
@@ -110,37 +112,100 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 }
             }
         )
-
-        binding.fileExpired.visibility = View.GONE
-        binding.fileProgress.visibility = View.VISIBLE
-        if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-            binding.fileProgress.setBindOnly(messageItem.messageId)
-            binding.bottomLayout.bindId = messageItem.messageId
-            if (MusicPlayer.isPlay(messageItem.messageId)) {
-                binding.fileProgress.setPause()
-                binding.bottomLayout.showSeekBar()
-            } else {
-                binding.fileProgress.setPlay()
-                binding.bottomLayout.showText()
-            }
-            binding.fileProgress.setOnClickListener {
-            }
-        } else {
-            binding.fileProgress.setDone()
-            binding.fileProgress.setBindId(null)
-            binding.bottomLayout.bindId = null
-            binding.fileProgress.setOnClickListener {
+        messageItem.mediaStatus?.let {
+            when (it) {
+                MediaStatus.EXPIRED.name -> {
+                    binding.fileExpired.visibility = View.VISIBLE
+                    binding.fileProgress.visibility = View.INVISIBLE
+                    binding.chatLayout.setOnClickListener {
+                    }
+                }
+                MediaStatus.PENDING.name -> {
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
+                    binding.fileProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
+                    binding.fileProgress.setBindOnly(messageItem.messageId)
+                    binding.fileProgress.setOnClickListener {
+                        onItemListener.onCancel(messageItem.messageId)
+                    }
+                    binding.chatLayout.setOnClickListener {
+                    }
+                }
+                MediaStatus.DONE.name, MediaStatus.READ.name -> {
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
+                    if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
+                        binding.fileProgress.setBindOnly(messageItem.messageId)
+                        binding.bottomLayout.bindId = messageItem.messageId
+                        if (MusicPlayer.isPlay(messageItem.messageId)) {
+                            binding.fileProgress.setPause()
+                            binding.bottomLayout.showSeekBar()
+                        } else {
+                            binding.fileProgress.setPlay()
+                            binding.bottomLayout.showText()
+                        }
+                        binding.fileProgress.setOnClickListener {
+                            onItemListener.onAudioFileClick(messageItem)
+                        }
+                    } else {
+                        binding.fileProgress.setDone()
+                        binding.fileProgress.setBindId(null)
+                        binding.bottomLayout.bindId = null
+                        binding.fileProgress.setOnClickListener {
+                        }
+                    }
+                    binding.chatLayout.setOnClickListener {
+                        if (MusicPlayer.isPlay(messageItem.messageId)) {
+                            onItemListener.onAudioFileClick(messageItem)
+                        } else {
+                            handleClick(messageItem, onItemListener)
+                        }
+                    }
+                }
+                MediaStatus.CANCELED.name -> {
+                    binding.fileExpired.visibility = View.GONE
+                    binding.fileProgress.visibility = View.VISIBLE
+                    if (isMe && messageItem.mediaUrl != null) {
+                        binding.fileProgress.enableUpload()
+                    } else {
+                        binding.fileProgress.enableDownload()
+                    }
+                    binding.fileProgress.setBindId(messageItem.messageId)
+                    binding.fileProgress.setProgress(-1)
+                    binding.fileProgress.setOnClickListener {
+                        if (isMe && messageItem.mediaUrl != null) {
+                            onItemListener.onRetryUpload(messageItem.messageId)
+                        } else {
+                            onItemListener.onRetryDownload(messageItem.messageId)
+                        }
+                    }
+                    binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
+                    }
+                }
             }
         }
-        binding.chatLayout.setOnClickListener {
-            if (MusicPlayer.isPlay(messageItem.messageId)) {
-            } else {
-            }
-        }
-
         val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         binding.chatQuote.bind(quoteMessage)
         binding.chatQuote.setOnClickListener {
+            onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
+        }
+    }
+
+    private fun handleClick(
+        messageItem: TranscriptMessageItem,
+        onItemListener: TranscriptAdapter.OnItemListener
+    ) {
+        if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
+            if (messageItem.mediaUrl.isNullOrEmpty()) {
+                onItemListener.onRetryDownload(messageItem.messageId)
+            } else {
+                onItemListener.onRetryUpload(messageItem.messageId)
+            }
+        } else if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
+            onItemListener.onCancel(messageItem.messageId)
+        } else if (messageItem.mediaStatus != MediaStatus.EXPIRED.name) {
+            onItemListener.onFileClick(messageItem)
         }
     }
 }

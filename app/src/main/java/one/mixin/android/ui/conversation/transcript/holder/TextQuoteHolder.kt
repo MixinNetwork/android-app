@@ -7,24 +7,22 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
-import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.ui.conversation.holder.BaseMentionHolder
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.SnakeQuoteMessageItem
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
-class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseMentionHolder(binding.root) {
+class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseViewHolder(binding.root) {
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
@@ -73,10 +71,10 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
     }
 
     fun bind(
-        messageItem: MessageItem,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
 
@@ -140,14 +138,19 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
             binding.dataWrapper.chatSecret.isVisible = secretIcon != null
             binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
         }
         binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        val quoteMessage = try {
+            GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java)
+        } catch (e: Exception) {
+            null
+        }
+
         binding.chatQuote.bind(quoteMessage)
         binding.chatContentLayout.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
@@ -157,21 +160,13 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }
         chatLayout(isMe, isLast)
-        attachAction = if (messageItem.mentionRead == false) {
-            {
-                blink()
-                RxBus.publish(MentionReadEvent(messageItem.conversationId, messageItem.messageId))
-            }
-        } else {
-            null
-        }
     }
 
     private var textQuoteGestureListener: TextQuoteGestureListener? = null
 
     private class TextQuoteGestureListener(
-        var messageItem: MessageItem,
-        var onItemListener: ConversationAdapter.OnItemListener,
+        var messageItem: TranscriptMessageItem,
+        var onItemListener: TranscriptAdapter.OnItemListener,
     ) : GestureDetector.SimpleOnGestureListener() {
         override fun onDoubleTap(e: MotionEvent?): Boolean {
             onItemListener.onTextDoubleClick(messageItem)

@@ -111,6 +111,7 @@
     <string name="common_video">视频</string>
     <string name="common_file">文件</string>
     <string name="common_audio">语音</string>
+    <string name="common_transcript">聊天记录</string>
     <string name="common_sticker">贴纸</string>
     <string name="you">你</string>
     <string name="know">我知道了</string>
@@ -325,6 +326,7 @@
     <string name="chat_not_found">找不到该消息</string>
     <string name="chat_transcript">聊天记录</string>
     <string name="chat_import_content">导入聊天记录到%1$s？</string>
+    <string name="chat_forward_title">转发消息</string>
     <string name="chat_import_fail_content">导入聊天记录失败！是否按文件发送？</string>
     <string name="chat_import">导入聊天记录</string>
     <string name="chat_send_file">按文件发送</string>

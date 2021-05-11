@@ -77,11 +77,17 @@ import one.mixin.android.vo.createPostMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
+import one.mixin.android.vo.createTranscriptMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.isAttachment
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isData
 import one.mixin.android.vo.isIllegalMessageCategory
+import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isText
+import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.toJson
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -364,7 +370,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.PLAIN_CONTACT.name ||
             data.category == MessageCategory.PLAIN_LIVE.name ||
             data.category == MessageCategory.PLAIN_POST.name ||
-            data.category == MessageCategory.PLAIN_LOCATION.name
+            data.category == MessageCategory.PLAIN_LOCATION.name ||
+            data.category == MessageCategory.PLAIN_TRANSCRIPT.name
         ) {
             if (!data.representativeId.isNullOrBlank()) {
                 data.userId = data.representativeId
@@ -623,7 +630,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
             data.category.endsWith("_TRANSCRIPT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(Base64.decode(plainText)) else plainText
-                val transcripts = gson.fromJson(plain, Array<Transcript>::class.java)
+                val transcripts = gson.fromJson(plain, Array<Transcript>::class.java).toList()
                 val stringBuffer = StringBuffer()
                 transcripts.filter { it.isText() || it.isPost() }.forEach { transcript ->
                     transcript.content?.joinWhiteSpace()?.let {
@@ -631,9 +638,40 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 MessageFts4Helper.insertMessageFts4(data.messageId, stringBuffer.toString())
-                val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
+                val message = createTranscriptMessage(
+                    data.messageId,
+                    data.conversationId,
+                    data.userId,
+                    data.category,
+                    plain,
+                    data.createdAt,
+                    data.status,
+                    MediaStatus.PENDING
+                )
+                transcriptDao.insertList(transcripts)
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message))
+                transcripts.filter { t -> t.isAttachment() }.forEach { transcript ->
+                    when {
+                        transcript.isImage() -> {
+                            MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, message.id, transcript))
+                            }
+                        }
+                        transcript.isVideo() -> {
+                            MixinApplication.appContext.autoDownload(autoDownloadVideo) {
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, message.id, transcript))
+                            }
+                        }
+                        transcript.isData() -> {
+                            MixinApplication.appContext.autoDownload(autoDownloadDocument) {
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, message.id, transcript))
+                            }
+                        }
+                        transcript.isAudio() -> {
+                            jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, message.id, transcript))
+                        }
+                    }
+                }
                 generateNotification(message, data.source)
             }
         }

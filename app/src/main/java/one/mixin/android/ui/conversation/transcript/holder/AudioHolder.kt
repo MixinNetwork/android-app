@@ -9,11 +9,15 @@ import one.mixin.android.databinding.ItemChatAudioBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 import kotlin.math.min
@@ -36,13 +40,12 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
     }
 
     fun bind(
-        messageItem: MessageItem,
-        isFirst: Boolean,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
-        onClickListener: View.OnClickListener
+        isFirst: Boolean = false,
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
-        val isMe = false
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
@@ -54,6 +57,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }
@@ -74,7 +78,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
             binding.chatLayout.layoutParams.width =
                 min((minWidth + (duration / 1000f) * dp15).toInt(), maxWidth)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
             binding.billTime.chatFlag.isVisible = statusIcon != null
             binding.billTime.chatFlag.setImageDrawable(statusIcon)
             binding.billTime.chatSecret.isVisible = secretIcon != null
@@ -84,27 +88,90 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         messageItem.mediaWaveform?.let {
             binding.audioWaveform.setWaveform(it)
         }
-
-        binding.audioDuration.setTextColor(itemView.context.getColor(R.color.gray_50))
-        binding.audioWaveform.isFresh = false
+        if (!isMe && messageItem.mediaStatus != MediaStatus.READ.name) {
+            binding.audioDuration.setTextColor(itemView.context.getColor(R.color.colorBlue))
+            binding.audioWaveform.isFresh = true
+        } else {
+            binding.audioDuration.setTextColor(itemView.context.getColor(R.color.gray_50))
+            binding.audioWaveform.isFresh = false
+        }
         if (AudioPlayer.isLoaded(messageItem.messageId)) {
             binding.audioWaveform.setProgress(AudioPlayer.getProgress())
         } else {
             binding.audioWaveform.setProgress(0f)
         }
-
-        binding.audioExpired.visibility = View.GONE
-        binding.audioProgress.visibility = View.VISIBLE
-        binding.audioProgress.setBindOnly(messageItem.messageId)
-        binding.audioWaveform.setBind(messageItem.messageId)
-        if (AudioPlayer.isPlay(messageItem.messageId)) {
-            binding.audioProgress.setPause()
-        } else {
-            binding.audioProgress.setPlay()
+        messageItem.mediaStatus?.let {
+            when (it) {
+                MediaStatus.EXPIRED.name -> {
+                    binding.audioExpired.visibility = View.VISIBLE
+                    binding.audioProgress.visibility = View.INVISIBLE
+                    binding.chatLayout.setOnClickListener {
+                    }
+                }
+                MediaStatus.PENDING.name -> {
+                    binding.audioExpired.visibility = View.GONE
+                    binding.audioProgress.visibility = View.VISIBLE
+                    binding.audioProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
+                    binding.audioProgress.setBindOnly(messageItem.messageId)
+                    binding.audioProgress.setOnClickListener {
+                    }
+                    binding.chatLayout.setOnClickListener {
+                    }
+                }
+                MediaStatus.DONE.name, MediaStatus.READ.name -> {
+                    binding.audioExpired.visibility = View.GONE
+                    binding.audioProgress.visibility = View.VISIBLE
+                    binding.audioProgress.setBindOnly(messageItem.messageId)
+                    binding.audioWaveform.setBind(messageItem.messageId)
+                    if (AudioPlayer.isPlay(messageItem.messageId)) {
+                        binding.audioProgress.setPause()
+                    } else {
+                        binding.audioProgress.setPlay()
+                    }
+                    binding.audioProgress.setOnClickListener {
+                    }
+                    binding.chatLayout.setOnClickListener {
+                    }
+                }
+                MediaStatus.CANCELED.name -> {
+                    binding.audioExpired.visibility = View.GONE
+                    binding.audioProgress.visibility = View.VISIBLE
+                    if (isMe) {
+                        binding.audioProgress.enableUpload()
+                    } else {
+                        binding.audioProgress.enableDownload()
+                    }
+                    binding.audioProgress.setBindOnly(messageItem.messageId)
+                    binding.audioProgress.setProgress(-1)
+                    binding.audioProgress.setOnClickListener {
+                        if (isMe) {
+                            onItemListener.onRetryUpload(messageItem.messageId)
+                        } else {
+                            onItemListener.onRetryDownload(messageItem.messageId)
+                        }
+                    }
+                    binding.chatLayout.setOnClickListener {
+                    }
+                }
+            }
         }
+    }
 
-        binding.audioProgress.setOnClickListener(onClickListener)
-        binding.chatLayout.setOnClickListener(onClickListener)
+    private fun handleClick(
+        messageItem: TranscriptMessageItem,
+        onItemListener: TranscriptAdapter.OnItemListener
+    ) {
+        if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
+            if (messageItem.mediaUrl.isNullOrEmpty()) {
+                onItemListener.onRetryDownload(messageItem.messageId)
+            } else {
+                onItemListener.onRetryUpload(messageItem.messageId)
+            }
+        } else if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
+            onItemListener.onCancel(messageItem.messageId)
+        } else if (messageItem.mediaStatus != MediaStatus.EXPIRED.name) {
+            onItemListener.onAudioClick(messageItem)
+        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {

@@ -32,10 +32,13 @@ import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.TranscriptDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.extension.getTranscriptDirPath
+import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
@@ -83,6 +86,7 @@ internal constructor(
     private val participantSessionDao: ParticipantSessionDao,
     private val appDao: AppDao,
     private val jobDao: JobDao,
+    private val transcriptDao: TranscriptDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager
@@ -436,9 +440,12 @@ internal constructor(
         }
     }
 
-    fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
+    fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true, conversationId: String? = null) {
         if (!mediaUrl.isNullOrBlank() && forceDelete) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
+        }
+        if (conversationId != null) {
+            MixinApplication.appContext.getTranscriptDirPath(conversationId, id).deleteRecursively()
         }
         appDatabase.deleteMessage(id)
     }
@@ -451,4 +458,8 @@ internal constructor(
 
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
+
+    fun findTranscriptMessageItemById(transcriptId: String) = transcriptDao.getTranscriptMessages(transcriptId)
+
+    suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptDao.findTranscriptMessageIndex(transcriptId, messageId)
 }

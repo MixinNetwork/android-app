@@ -31,7 +31,7 @@ import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getTranscriptPath
+import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
@@ -71,8 +71,10 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
+import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.Transcript
 import one.mixin.android.vo.User
@@ -85,6 +87,7 @@ import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -427,7 +430,12 @@ internal constructor(
                 conversationRepository.deleteMessage(
                     item.messageId,
                     item.mediaUrl,
-                    item.mediaStatus == MediaStatus.DONE.name
+                    item.mediaStatus == MediaStatus.DONE.name,
+                    if (item.isTranscript()) {
+                        item.conversationId
+                    } else {
+                        null
+                    }
                 )
                 jobManager.cancelJobByMixinJobId(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
@@ -795,16 +803,15 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
-    suspend fun processTranscript(conversationId: String, transcripts: List<Transcript>): Pair<String, List<Transcript>> {
-        val messageId = UUID.randomUUID().toString()
+    suspend fun processTranscript(conversationId: String, transcripts: List<Transcript>): List<Transcript> {
         withContext(Dispatchers.IO) {
             transcripts.forEach { transcript ->
                 if (transcript.isAttachment()) {
                     val file = File(Uri.parse(transcript.mediaUrl).path)
                     if (file.exists()) {
-                        val outFile = MixinApplication.appContext.getTranscriptPath(
+                        val outFile = MixinApplication.appContext.getTranscriptFile(
                             conversationId,
-                            messageId,
+                            transcript.transcriptId,
                             file.nameWithoutExtension,
                             file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
                         )
@@ -816,8 +823,26 @@ internal constructor(
                 } else if (!transcript.isSticker()) {
                     transcript.mediaUrl = null
                 }
+                if (transcript.quoteContent != null) {
+                    val quoteMessage = try {
+                        GsonHelper.customGson.fromJson(transcript.quoteContent, QuoteMessageItem::class.java)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (quoteMessage != null) {
+                        transcript.quoteContent = GsonHelper.customGson.toJson(SnakeQuoteMessageItem(quoteMessage))
+                    } else {
+                        try {
+                            GsonHelper.customGson.fromJson(transcript.quoteContent, SnakeQuoteMessageItem::class.java)
+                        } catch (e: Exception) {
+                            null
+                        }?.let {
+                            transcript.quoteContent = GsonHelper.customGson.toJson(it)
+                        }
+                    }
+                }
             }
         }
-        return Pair(messageId, transcripts)
+        return transcripts
     }
 }

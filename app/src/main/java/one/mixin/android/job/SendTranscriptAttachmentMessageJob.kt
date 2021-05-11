@@ -3,26 +3,29 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
+import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
-import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.Message
 import one.mixin.android.vo.Transcript
-import one.mixin.android.vo.isAttachment
-import org.jetbrains.anko.collections.forEachWithIndex
+import one.mixin.android.vo.isEncrypted
+import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isSignal
+import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 import java.io.File
@@ -30,8 +33,12 @@ import java.io.FileNotFoundException
 import java.net.SocketTimeoutException
 
 class SendTranscriptAttachmentMessageJob(
-    val message: Message
-) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_media_job").requireNetwork().persist(), message.id) {
+    val transcript: Transcript,
+    val isPlain: Boolean
+) : MixinJob(
+    Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_transcript_job").requireNetwork().persist(),
+    "${transcript.transcriptId}${transcript.messageId}"
+) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -42,8 +49,6 @@ class SendTranscriptAttachmentMessageJob(
 
     override fun cancel() {
         isCancelled = true
-        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-        MixinJobManager.attachmentProcess.remove(message.id)
         disposable?.let {
             if (!it.isDisposed) {
                 it.dispose()
@@ -52,56 +57,64 @@ class SendTranscriptAttachmentMessageJob(
         removeJob()
     }
 
-    private fun isPlain(): Boolean {
-        return message.category.startsWith("PLAIN_")
-    }
-
-    override fun onAdded() {
-        super.onAdded()
-        messageDao.insert(message)
-    }
-
-    private lateinit var transcripts: MutableList<Transcript>
+    @DelicateCoroutinesApi
     override fun onRun() {
-        transcripts = GsonHelper.customGson.fromJson(requireNotNull(message.content), Array<Transcript>::class.java).toMutableList()
-        transcripts.forEachWithIndex { index, transcript ->
-            if (!transcript.isAttachment()) return@forEachWithIndex
-            disposable = conversationApi.requestAttachment().map {
-                val file = File(requireNotNull(Uri.parse(transcript.mediaUrl).path))
-                if (it.isSuccess && !isCancelled) {
-                    val result = it.data!!
-                    processAttachment(index, transcript, file, result)
-                } else {
-                    false
+        if (transcript.isPlain() == isPlain) {
+            val attachmentExtra = try {
+                GsonHelper.customGson.fromJson(transcript.content, AttachmentExtra::class.java)
+            } catch (e: Exception) {
+                null
+            } ?: try {
+                val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcript.content)), AttachmentMessagePayload::class.java)
+                AttachmentExtra(payload.attachmentId, transcript.messageId, payload.createdAt)
+            } catch (e: Exception) {
+                null
+            }
+            if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
+                val m = messageDao.findMessageById(transcript.messageId)
+                if (m != null && (((m.isSignal() || m.isEncrypted()) && m.mediaKey != null && m.mediaDigest != null) || m.isPlain())) {
+                    transcriptDao.updateTranscript(
+                        transcript.transcriptId,
+                        transcript.messageId,
+                        attachmentExtra.attachmentId,
+                        m.mediaKey,
+                        m.mediaDigest,
+                        MediaStatus.DONE.name,
+                        attachmentExtra.createdAt!!
+                    )
+                    sendMessage()
+                    return
                 }
-            }.subscribe(
-                {
-                    if (it) {
-                        messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                        MixinJobManager.attachmentProcess.remove(message.id)
-                        removeJob()
-                    } else {
-                        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-                        MixinJobManager.attachmentProcess.remove(message.id)
-                        removeJob()
-                    }
-                },
-                {
-                    Timber.e("upload attachment error, ${it.getStackTraceString()}")
-                    reportException(it)
-                    messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-                    MixinJobManager.attachmentProcess.remove(message.id)
+            }
+        }
+        disposable = conversationApi.requestAttachment().map {
+            val file = File(requireNotNull(Uri.parse(transcript.mediaUrl).path))
+            if (it.isSuccess && !isCancelled) {
+                val result = it.data!!
+                processAttachment(transcript, file, result)
+            } else {
+                false
+            }
+        }.subscribe(
+            {
+                if (it) {
+                    sendMessage()
+                    removeJob()
+                } else {
                     removeJob()
                 }
-            )
-        }
-        messageDao.findMessageById(message.id)?.let { it ->
-            jobManager.addJob(SendMessageJob(it))
-        }
+            },
+            {
+                Timber.e("upload attachment error, ${it.getStackTraceString()}")
+                reportException(it)
+                removeJob()
+            }
+        )
     }
 
-    private fun processAttachment(index: Int, transcript: Transcript, file: File, attachResponse: AttachmentResponse): Boolean {
-        val key = if (isPlain()) {
+    @DelicateCoroutinesApi
+    private fun processAttachment(transcript: Transcript, file: File, attachResponse: AttachmentResponse): Boolean {
+        val key = if (isPlain) {
             null
         } else {
             Util.getSecretBytes(64)
@@ -116,10 +129,10 @@ class SendTranscriptAttachmentMessageJob(
         }
         val attachmentData =
             PushAttachmentData(
-                message.mediaMimeType,
+                transcript.mediaMimeType,
                 inputStream,
                 file.length(),
-                if (isPlain()) {
+                if (isPlain) {
                     null
                 } else {
                     AttachmentCipherOutputStreamFactory(key, null)
@@ -130,11 +143,9 @@ class SendTranscriptAttachmentMessageJob(
                 } catch (e: Exception) {
                     0f
                 }
-                MixinJobManager.attachmentProcess[message.id] = (pg * 100).toInt()
-                RxBus.publish(ProgressEvent.loadingEvent(message.id, pg))
             }
         val digest = try {
-            if (isPlain()) {
+            if (isPlain) {
                 uploadPlainAttachment(attachResponse.upload_url!!, file.length(), attachmentData)
                 null
             } else {
@@ -147,7 +158,6 @@ class SendTranscriptAttachmentMessageJob(
                     MixinApplication.get().toast(R.string.upload_timeout)
                 }
             }
-            MixinJobManager.attachmentProcess.remove(message.id)
             removeJob()
             reportException(e)
             return false
@@ -156,14 +166,27 @@ class SendTranscriptAttachmentMessageJob(
             removeJob()
             return true
         }
-        transcript.content = attachResponse.attachment_id
-        transcript.attachmentCreatedAt = attachResponse.created_at
-        transcript.mediaKey = key
-        transcript.mediaDigest = digest
-        transcripts.removeAt(index)
-        transcripts.add(index, transcript)
-        messageDao.updateMessageContent(GsonHelper.customGson.toJson(transcripts), message.id)
+        transcriptDao.updateTranscript(
+            transcript.transcriptId,
+            transcript.messageId,
+            attachResponse.attachment_id,
+            key,
+            digest,
+            MediaStatus.DONE.name,
+            attachResponse.created_at
+        )
         return true
+    }
+
+    private fun sendMessage() {
+        if (transcriptDao.hasUploadedAttachment(transcript.transcriptId) == 0) {
+            messageDao.findMessageById(transcript.transcriptId)?.let {
+                val list = transcriptDao.getTranscript(transcript.transcriptId)
+                it.content = GsonHelper.customGson.toJson(list)
+                // todo nest
+                jobManager.addJob(SendMessageJob(it))
+            }
+        }
     }
 
     private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {

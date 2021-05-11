@@ -304,7 +304,8 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         if (sender == null) return@launch
         selectItems.forEach { item ->
             chatViewModel.checkData(item) { conversationId: String, isPlain: Boolean ->
-                val (messageId, transcripts) = chatViewModel.processTranscript(conversationId, combineMessages)
+                val transcripts = chatViewModel.processTranscript(conversationId, combineMessages)
+                val messageId = transcripts[0].transcriptId
                 chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, isPlain)
             }
         }
@@ -441,7 +442,8 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     }
                     ForwardCategory.Transcript -> {
                         val transcript = GsonHelper.customGson.fromJson(content, Array<Transcript>::class.java)
-                        val (messageId, list) = chatViewModel.processTranscript(conversationId, transcript.toList())
+                        val list = chatViewModel.processTranscript(conversationId, transcript.toList())
+                        val messageId = transcript[0].messageId
                         chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, list, isPlain)
                     }
                     else -> {

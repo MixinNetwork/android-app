@@ -15,8 +15,11 @@ import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.MediaHolder
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
+import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.dip
@@ -32,14 +35,13 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
     }
 
     fun bind(
-        messageItem: MessageItem,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onClickListener: View.OnClickListener,
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
 
-        val isMe = false
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -49,24 +51,79 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {
             binding.chatName.visibility = View.GONE
         }
 
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-
-        binding.chatWarning.visibility = View.GONE
-        binding.progress.visibility = View.GONE
-        binding.progress.setBindId(messageItem.messageId)
-        binding.progress.setOnClickListener {}
-        binding.progress.setOnLongClickListener { false }
-
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative = false, isWhite = true) { statusIcon, secretIcon, representativeIcon ->
+        messageItem.mediaStatus?.let {
+            when (it) {
+                MediaStatus.EXPIRED.name -> {
+                    binding.chatWarning.visibility = View.VISIBLE
+                    binding.progress.visibility = View.GONE
+                }
+                MediaStatus.PENDING.name -> {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.VISIBLE
+                    binding.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                    binding.progress.setBindOnly(messageItem.messageId)
+                    binding.progress.setOnClickListener {
+                        onItemListener.onCancel(messageItem.messageId)
+                    }
+                    binding.chatImage.setOnClickListener { }
+                    binding.chatImage.setOnLongClickListener { false }
+                }
+                MediaStatus.DONE.name -> {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.GONE
+                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setOnClickListener {}
+                    binding.progress.setOnLongClickListener { false }
+                    binding.chatImage.setOnClickListener {
+                        onItemListener.onImageClick(messageItem, binding.chatImage)
+                    }
+                }
+                MediaStatus.CANCELED.name -> {
+                    binding.chatWarning.visibility = View.GONE
+                    binding.progress.visibility = View.VISIBLE
+                    if (isMe && messageItem.mediaUrl != null) {
+                        binding.progress.enableUpload()
+                    } else {
+                        binding.progress.enableDownload()
+                    }
+                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setProgress(-1)
+                    binding.progress.setOnClickListener {
+                        if (messageItem.mediaUrl.isNullOrEmpty()) {
+                            onItemListener.onRetryDownload(messageItem.messageId)
+                        } else {
+                            onItemListener.onRetryUpload(messageItem.messageId)
+                        }
+                    }
+                    binding.chatImage.setOnClickListener {}
+                    binding.chatImage.setOnLongClickListener { false }
+                }
+            }
+        }
+        setStatusIcon(
+            isMe,
+            MessageStatus.DELIVERED.name,
+            messageItem.isSignal(),
+            isRepresentative = false,
+            isWhite = true
+        ) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(
+                binding.chatTime,
+                secretIcon ?: representativeIcon,
+                null,
+                statusIcon,
+                null
+            )
         }
 
         dataWidth = messageItem.mediaWidth
@@ -75,8 +132,6 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         dataThumbImage = messageItem.thumbImage
         dataSize = messageItem.mediaSize
         isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
-        binding.chatImageLayout.setOnClickListener(onClickListener)
-
         chatLayout(isMe, isLast)
     }
 
@@ -91,11 +146,13 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
-            (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias =
+                1f
             (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
         } else {
             (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
-            (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias =
+                0f
             (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp3
         }
 
@@ -137,13 +194,20 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         if (isBlink) {
             when {
                 isGif -> handleGif(mark)
-                binding.chatImage.layoutParams.height == mediaHeight -> binding.chatImage.loadLongImageMark(dataUrl, mark)
+                binding.chatImage.layoutParams.height == mediaHeight -> binding.chatImage.loadLongImageMark(
+                    dataUrl,
+                    mark
+                )
                 else -> binding.chatImage.loadImageMark(dataUrl, mark)
             }
         } else {
             when {
                 isGif -> handleGif(mark)
-                binding.chatImage.layoutParams.height == mediaHeight -> binding.chatImage.loadLongImageMark(dataUrl, dataThumbImage, mark)
+                binding.chatImage.layoutParams.height == mediaHeight -> binding.chatImage.loadLongImageMark(
+                    dataUrl,
+                    dataThumbImage,
+                    mark
+                )
                 else -> binding.chatImage.loadImageMark(dataUrl, dataThumbImage, mark)
             }
         }

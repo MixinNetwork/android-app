@@ -11,10 +11,14 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
+
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
@@ -91,9 +95,10 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
     }
 
     fun bind(
-        messageItem: MessageItem,
+        messageItem: TranscriptMessageItem,
         isLast: Boolean,
-        isFirst: Boolean = false
+        isFirst: Boolean = false,
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         val nightMode = itemView.context.isNightMode()
@@ -151,7 +156,9 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
                 binding.chatTv.text = null
             }
         }
-
+        binding.chatLayout.setOnClickListener {
+            // onItemListener.onTranscriptClick(messageItem)
+        }
         val isMe = false
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
@@ -174,7 +181,13 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative = false, isWhite = true) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(
+            isMe,
+            MessageStatus.DELIVERED.name,
+            messageItem.isSignal(),
+            isRepresentative = false,
+            isWhite = true
+        ) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)

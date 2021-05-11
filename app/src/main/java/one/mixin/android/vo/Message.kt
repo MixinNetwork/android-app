@@ -94,7 +94,7 @@ class Message(
     val mediaDigest: ByteArray? = null,
 
     @ColumnInfo(name = "media_status")
-    val mediaStatus: String? = null,
+    var mediaStatus: String? = null,
 
     @SerializedName("status")
     @ColumnInfo(name = "status")
@@ -568,4 +568,18 @@ fun createAudioMessage(
     .setMediaStatus(mediaStatus.name)
     .setQuoteMessageId(quoteMessageId)
     .setQuoteContent(quoteContent)
+    .build()
+
+fun createTranscriptMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String,
+    createdAt: String,
+    status: String,
+    mediaStatus: MediaStatus,
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
+    .setContent(content)
+    .setMediaStatus(mediaStatus.name)
     .build()

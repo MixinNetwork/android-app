@@ -8,10 +8,11 @@ import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.holder.MediaHolder
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.SnakeQuoteMessageItem
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.showVerifiedOrBot
 import org.jetbrains.anko.dip
@@ -59,16 +60,16 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
     }
 
     fun bind(
-        messageItem: MessageItem,
-        isFirst: Boolean,
-        isLast: Boolean
+        messageItem: TranscriptMessageItem,
+        isLast: Boolean,
+        isFirst: Boolean = false,
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         binding.avatarIv.setInfo(
             messageItem.sharedUserFullName,
             messageItem.sharedUserAvatarUrl,
-            messageItem.sharedUserId
-                ?: "0"
+            messageItem.sharedUserId ?: "0"
         )
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
@@ -92,11 +93,22 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
 
         chatLayout(isMe, isLast)
 
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        binding.chatLayout.setOnClickListener {
+            onItemListener.onContactCardClick(messageItem.sharedUserId!!)
+        }
+
+        val quoteMessage = try {
+            GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java)
+        } catch (e: Exception) {
+            null
+        }
+
         binding.chatQuote.setOnClickListener {
+            onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }
         binding.chatQuote.bind(quoteMessage)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)

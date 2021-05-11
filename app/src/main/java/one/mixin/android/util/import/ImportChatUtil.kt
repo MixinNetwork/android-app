@@ -78,6 +78,7 @@ class ImportChatUtil {
         }
     }
 
+    // Todo
     private fun generateTranscriptMessage(s: String, documentsMap: ArrayMap<String, Uri>): Transcript? {
         val dateEnd = s.indexOf(" - ")
         val nameEnd = s.indexOf(": ")
@@ -85,7 +86,7 @@ class ImportChatUtil {
             val date = s.substring(0, dateEnd) // .toUtcTime()
             val name = s.substring(dateEnd + 3, nameEnd)
             val content = s.substring(nameEnd + 2, s.length)
-            Transcript(UUID.randomUUID().toString(), null, name, MessageCategory.PLAIN_TEXT.name, date, content)
+            Transcript(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), name, MessageCategory.PLAIN_TEXT.name, date, content)
         } else {
             null
         }
