@@ -73,7 +73,7 @@ open class ErrorHandler {
                         toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
                     }
                     SERVER, INSUFFICIENT_POOL -> {
-                        toast(R.string.error_server_5xx, code)
+                        toast(getString(R.string.error_server_5xx, code))
                     }
                     TIME_INACCURATE -> { }
                     else -> {
