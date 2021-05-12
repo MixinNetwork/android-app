@@ -2,10 +2,12 @@ package one.mixin.android.ui.common.biometric
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.text.SpannableStringBuilder
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.core.text.bold
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutAssetBalanceBinding
@@ -35,9 +37,18 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
             val balanceText = amount.numberFormat() + " " + asset.symbol
             balance.text = balanceText
             if (t is WithdrawBiometricItem) {
-                val amountText = "${context.getString(R.string.amount)} $balanceText"
-                val feeText = "${context.getString(R.string.fee)} ${t.fee.numberFormat()} ${asset.chainSymbol}"
-                balanceAs.text = "$amountText ${getValueText(amount, asset.priceFiat())}\n$feeText ${getValueText(t.fee, asset.chainPriceFiat())}"
+                val subText = SpannableStringBuilder()
+                    .append(context.getString(R.string.amount))
+                    .append(" ")
+                    .bold { append(balanceText) }
+                    .append(" ")
+                    .append(getValueText(amount, asset.priceFiat()))
+                    .append("\n")
+                    .append(context.getString(R.string.fee))
+                    .append(" ")
+                    .bold { append(t.fee.numberFormat()).append(" ").append(asset.chainSymbol).append(" ") }
+                    .append(getValueText(t.fee, asset.chainPriceFiat()))
+                balanceAs.text = subText
             } else {
                 balanceAs.text = getValueText(amount, asset.priceFiat())
             }
