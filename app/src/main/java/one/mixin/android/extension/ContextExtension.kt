@@ -39,7 +39,6 @@ import android.view.KeyEvent
 import android.view.ViewConfiguration
 import android.view.Window
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -729,7 +728,7 @@ fun Context.isAutoRotate() = Settings.System.getInt(contentResolver, Settings.Sy
 
 fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
 
-fun Fragment.toastShort(textResource: Int) = requireActivity().toast(textResource, Toast.LENGTH_SHORT)
+fun Fragment.toastShort(textResource: Int) = requireActivity().toast(textResource, ToastDuration.Short)
 
 fun Fragment.toast(text: CharSequence) = requireActivity().toast(text)
 
