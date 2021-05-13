@@ -1,12 +1,13 @@
 package one.mixin.android.di
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ComponentName
 import android.content.ContentResolver
 import android.provider.Settings
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
-import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.installations.FirebaseInstallations
 import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.twilio.audioswitch.AudioDevice
@@ -93,11 +94,12 @@ object AppModule {
         "Mixin/" + BuildConfig.VERSION_NAME +
             " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")"
         ).filterNonAscii()
-
+    
+    @SuppressLint("HardwareIds")
     private fun getDeviceId(resolver: ContentResolver): String {
         var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
         if (deviceId == null || deviceId == "9774d56d682e549c") {
-            deviceId = FirebaseInstanceId.getInstance().id
+            deviceId = FirebaseInstallations.getInstance().id.result
         }
         return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
     }
