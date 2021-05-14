@@ -19,5 +19,5 @@ data class PendingDeposit(
 fun PendingDeposit.toSnapshot(assetId: String): Snapshot =
     Snapshot(
         this.transactionId, SnapshotType.pending.name, assetId, this.amount, this.createdAt,
-        null, null, this.transactionHash, null, null, null, this.confirmations
+        null, null, this.transactionHash, this.sender, null, null, this.confirmations
     )
