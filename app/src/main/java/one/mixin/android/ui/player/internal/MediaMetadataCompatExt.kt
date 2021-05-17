@@ -266,7 +266,7 @@ fun MediaMetadataCompat.toMediaSource(
     } else dataSourceFactory
     return ProgressiveMediaSource.Factory(targetDataSourceFactory).createMediaSource(
         com.google.android.exoplayer2.MediaItem.Builder()
-            .setMediaId(id)
+            .setMediaId(id!!)
             .setUri(mediaUri)
             .build()
     )

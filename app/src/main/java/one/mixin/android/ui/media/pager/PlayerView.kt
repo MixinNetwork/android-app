@@ -5,16 +5,15 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackPreparer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.BehindLiveWindowException
-import com.google.android.exoplayer2.ui.spherical.SingleTapListener
 import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPlayerViewBinding
@@ -24,7 +23,7 @@ import one.mixin.android.widget.AspectRatioFrameLayout
 
 class PlayerView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
-    var player: Player? = null
+    var player: ExoPlayer? = null
         set(value) {
             field?.apply {
                 videoComponent?.clearVideoTextureView(binding.videoTexture)
@@ -194,7 +193,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         Player.EventListener,
         VideoListener,
         OnLayoutChangeListener,
-        SingleTapListener {
+        OnClickListener {
         override fun onLayoutChange(
             v: View?,
             left: Int,
@@ -209,8 +208,8 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             applyTextureViewRotation(v as TextureView, videoTextureRotation)
         }
 
-        override fun onSingleTapUp(e: MotionEvent): Boolean {
-            return toggleControllerVisibility()
+        override fun onClick(v: View?) {
+            toggleControllerVisibility()
         }
 
         override fun onVideoSizeChanged(

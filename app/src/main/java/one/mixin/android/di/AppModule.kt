@@ -94,7 +94,7 @@ object AppModule {
         "Mixin/" + BuildConfig.VERSION_NAME +
             " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")"
         ).filterNonAscii()
-    
+
     @SuppressLint("HardwareIds")
     private fun getDeviceId(resolver: ContentResolver): String {
         var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
