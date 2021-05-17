@@ -223,6 +223,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         val dataWidth = messageItem.mediaWidth
         val dataHeight = messageItem.mediaHeight
         val width = mediaWidth - dp6
+        binding.chatImageLayout.layoutParams.width = width
         if (dataWidth <= 0 || dataHeight <= 0) {
             binding.chatImage.layoutParams.width = width
             binding.chatImage.layoutParams.height = width
