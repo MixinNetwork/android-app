@@ -913,6 +913,7 @@
     <string name="location_kilometre">km</string>
     <string name="location_metre">m</string>
     <string name="location_empty">There were no results for \"%1$s\"\nTry new search</string>
+    <string name="location_enable_title">Enable your GPS to access location</string>
     <!--  circle  -->
     <string name="circle_bottom">Create circle for different  groups of chats \nand quickly switch between them</string>
     <string name="circle_add_title">Add Circle</string>

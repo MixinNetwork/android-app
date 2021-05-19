@@ -894,6 +894,7 @@
     <string name="location_kilometre">千米</string>
     <string name="location_metre">米</string>
     <string name="location_empty">找不到 \"%1$s\"\n换个名字试试吧</string>
+    <string name="location_enable_title">需要开启 GPS 启用定位功能</string>
     <!--  circle  -->
     <string name="circle_bottom">为不同对话创建 圈子 \n然后在它们之间快速切换</string>
     <string name="circle_add_title">添加圈子</string>

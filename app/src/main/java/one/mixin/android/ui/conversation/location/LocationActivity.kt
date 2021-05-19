@@ -12,32 +12,38 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.LocationComponentOptions
+import com.mapbox.mapboxsdk.location.modes.RenderMode
+import com.mapbox.mapboxsdk.maps.MapView
+import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.Style
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
@@ -63,18 +69,17 @@ import kotlin.math.max
 import kotlin.math.min
 
 @AndroidEntryPoint
-class LocationActivity : BaseActivity(), OnMapReadyCallback {
+class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsdk.maps.OnMapReadyCallback {
 
     @Inject
     lateinit var foursquareService: FoursquareService
 
-    private val ZOOM_LEVEL = 13f
-    private var currentPosition: LatLng? = null
-    private var selfPosition: LatLng? = null
+    private var currentPosition: MixinLatLng? = null
+    private var selfPosition: MixinLatLng? = null
         set(value) {
             if (value != null) {
                 location?.let { location ->
-                    calculationByDistance(value, LatLng(location.latitude, location.longitude)).distanceFormat()
+                    calculationByDistance(LatLng(value.latitude, value.longitude), LatLng(location.latitude, location.longitude)).distanceFormat()
                 }?.let {
                     if (binding.locationSubTitle.text == null)
                         binding.locationSubTitle.text = getString(R.string.location_distance, it.first, getString(it.second))
@@ -85,7 +90,6 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private var mapsInitialized = false
     private var onResumeCalled = false
-    private var forceUpdate: CameraUpdate? = null
 
     private val location: LocationPayload? by lazy {
         intent.getParcelableExtra(LOCATION)
@@ -112,11 +116,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private val mLocationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location) {
-            currentPosition = LatLng(location.latitude, location.longitude)
-            selfPosition = LatLng(location.latitude, location.longitude)
+            currentPosition = MixinLatLng(location.latitude, location.longitude)
+            selfPosition = MixinLatLng(location.latitude, location.longitude)
             if (this@LocationActivity.location == null) {
                 currentPosition?.let { currentPosition ->
-                    moveCamera(currentPosition)
+                    mixinMapView.moveCamera(currentPosition)
                     isInit = false
                 }
                 locationAdapter.accurate = getString(R.string.location_accurate, location.accuracy.toInt())
@@ -130,6 +134,9 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         override fun onProviderDisabled(provider: String) {}
     }
 
+    private lateinit var mixinMapView: MixinMapView
+    private val useMapbox = useMapbox()
+
     private lateinit var binding: ActivityLocationBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,9 +146,22 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             if (location != null) {
                 mentionLocation.motion.loadLayoutDescription(R.xml.scene_location_none)
             }
-            MapsInitializer.initialize(MixinApplication.appContext)
-            mentionLocation.mapView.onCreate(savedInstanceState)
-            mentionLocation.mapView.getMapAsync(this@LocationActivity)
+            var mapBoxView: MapView? = null
+            if (useMapbox) {
+                Mapbox.getInstance(this@LocationActivity, BuildConfig.MAPBOX_PUBLIC_TOKEN)
+                val stub = mentionLocation.mapboxStub
+                mapBoxView = stub.inflate() as MapView
+            } else {
+                MapsInitializer.initialize(MixinApplication.appContext)
+            }
+            mixinMapView = MixinMapView(this@LocationActivity, mentionLocation.googleMapView, mapBoxView).apply {
+                onCreate(savedInstanceState)
+            }
+            if (useMapbox) {
+                mapBoxView?.getMapAsync(this@LocationActivity)
+            } else {
+                mentionLocation.googleMapView.getMapAsync(this@LocationActivity)
+            }
             icBack.setOnClickListener {
                 if (searchVa.displayedChild == 1) {
                     searchVa.showPrevious()
@@ -164,7 +184,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
             mentionLocation.myLocation.setOnClickListener {
                 selfPosition?.let { selfPosition ->
-                    moveCamera(selfPosition)
+                    mixinMapView.moveCamera(selfPosition)
                 }
             }
             icClose.setOnClickListener {
@@ -244,6 +264,13 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (mapsInitialized) {
+            mixinMapView.onStart()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         onResumeCalled = true
@@ -258,22 +285,65 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 }
             }
         if (mapsInitialized) {
-            binding.mentionLocation.mapView.onResume()
+            mixinMapView.onResume()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        onResumeCalled = false
+        getSystemService<LocationManager>()?.removeUpdates(mLocationListener)
+        if (mapsInitialized) {
+            mixinMapView.onPause()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (locationAlert != null && locationAlert?.isShowing == true) {
+            locationAlert?.dismiss()
+        }
+        if (mapsInitialized) {
+            mixinMapView.onStop()
+        }
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        if (mapsInitialized) {
+            mixinMapView.onLowMemory()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (mapsInitialized) {
+            mixinMapView.onDestroy()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (mapsInitialized) {
+            mixinMapView.onSaveInstanceState(outState)
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun findMyLocation() {
         val locationManager = getSystemService<LocationManager>()
+        if (locationManager != null && !checkLocationEnable(locationManager)) {
+            return
+        }
         locationManager?.getProviders(true)?.let { providers ->
             for (provider in providers) {
                 val l = locationManager.getLastKnownLocation(provider)
                 if (l != null) {
-                    currentPosition = LatLng(l.latitude, l.longitude)
-                    selfPosition = LatLng(l.latitude, l.longitude)
+                    currentPosition = MixinLatLng(l.latitude, l.longitude)
+                    selfPosition = MixinLatLng(l.latitude, l.longitude)
                     if (this@LocationActivity.location == null) {
                         currentPosition?.let { currentPosition ->
-                            moveCamera(currentPosition)
+                            mixinMapView.moveCamera(currentPosition)
                             isInit = false
                         }
                         locationAdapter.accurate = getString(R.string.location_accurate, l.accuracy.toInt())
@@ -284,60 +354,37 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 100f, mLocationListener)
     }
 
-    override fun onPause() {
-        super.onPause()
-        onResumeCalled = false
-        getSystemService<LocationManager>()?.removeUpdates(mLocationListener)
-        if (mapsInitialized) {
-            binding.mentionLocation.mapView.onPause()
-        }
-    }
-
-    override fun onLowMemory() {
-        super.onLowMemory()
-        if (mapsInitialized) {
-            binding.mentionLocation.mapView.onLowMemory()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (mapsInitialized) {
-            binding.mentionLocation.mapView.onDestroy()
-        }
-    }
-
-    private var googleMap: GoogleMap? = null
-
-    private fun moveCamera(latlng: LatLng) {
-        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, ZOOM_LEVEL))
-    }
-
     override fun onMapReady(googleMap: GoogleMap?) {
         googleMap ?: return
-        this.googleMap = googleMap
+        mixinMapView.googleMap = googleMap
         if (this.isNightMode()) {
             val style = MapStyleOptions.loadRawResourceStyle(applicationContext, R.raw.mapstyle_night)
             googleMap.setMapStyle(style)
         }
-        mapInit(googleMap)
+        initGoogleMap(googleMap)
+        afterInit()
+    }
 
-        with(googleMap) {
-            if (location != null) {
-                addMarker(
-                    MarkerOptions().position(
-                        LatLng(location!!.latitude, location!!.longitude)
-                    ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker))
-                )
-                moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location!!.latitude, location!!.longitude), ZOOM_LEVEL))
-            } else if (selfPosition != null) {
-                moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(selfPosition!!.latitude, selfPosition!!.longitude), ZOOM_LEVEL))
-            }
+    @SuppressLint("MissingPermission")
+    override fun onMapReady(mapboxMap: MapboxMap) {
+        mixinMapView.mapboxMap = mapboxMap
+        val onStyleLoaded = Style.OnStyleLoaded { loadedStyle ->
+            val locationComponentOptions = LocationComponentOptions.builder(this)
+                .build()
+
+            val locationComponentActivationOptions = LocationComponentActivationOptions
+                .builder(this, loadedStyle)
+                .locationComponentOptions(locationComponentOptions)
+                .build()
+
+            val locationComponent = mapboxMap.locationComponent
+            locationComponent.activateLocationComponent(locationComponentActivationOptions)
+            locationComponent.renderMode = RenderMode.COMPASS
+            locationComponent.isLocationComponentEnabled = true
         }
-        mapsInitialized = true
-        if (onResumeCalled) {
-            binding.mentionLocation.mapView.onResume()
-        }
+        mapboxMap.setStyle(mixinMapView.getMapboxStyle(), onStyleLoaded)
+        initMapboxMap(mapboxMap)
+        afterInit()
     }
 
     private fun setResult(location: LocationPayload) {
@@ -345,8 +392,24 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         finish()
     }
 
+    private fun afterInit() {
+        if (location != null) {
+            val mixinLatLng = MixinLatLng(location!!.latitude, location!!.longitude)
+            mixinMapView.addMarker(mixinLatLng)
+            mixinMapView.moveCamera(mixinLatLng)
+        } else if (selfPosition != null) {
+            mixinMapView.moveCamera(selfPosition!!)
+        }
+        mapsInitialized = true
+        if (onResumeCalled) {
+            mixinMapView.onResume()
+        }
+    }
+
     private var isInit = true
-    fun mapInit(googleMap: GoogleMap) {
+
+    @SuppressLint("MissingPermission")
+    private fun initGoogleMap(googleMap: GoogleMap) {
         try {
             googleMap.isMyLocationEnabled = true
         } catch (e: Exception) {
@@ -362,7 +425,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         googleMap.setOnCameraMoveStartedListener { reason ->
             if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
                 val cameraPosition = googleMap.cameraPosition
-                forceUpdate = CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
+                CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
                 if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
                     binding.mentionLocation.icMarker.isVisible = true
                     locationSearchAdapter.setMark()
@@ -376,11 +439,10 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
         googleMap.setOnCameraMoveListener {}
         googleMap.setOnMarkerClickListener { marker ->
-            locationSearchAdapter.setMark(marker.zIndex)
+            locationSearchAdapter.setMark(marker.position.latitude, marker.position.longitude)
             binding.mentionLocation.icMarker.isVisible = true
             false
         }
-
         googleMap.setOnCameraIdleListener {
             markerAnimatorSet?.cancel()
             markerAnimatorSet = AnimatorSet()
@@ -389,23 +451,68 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             markerAnimatorSet?.start()
             googleMap.cameraPosition.target.let { lastLang ->
                 if (location == null) {
-                    currentPosition = lastLang
-                    search(lastLang)
+                    val mixinLatLng = MixinLatLng(lastLang.latitude, lastLang.longitude)
+                    currentPosition = mixinLatLng
+                    search(mixinLatLng)
                 }
             }
         }
-
         googleMap.setOnCameraMoveCanceledListener {}
     }
 
+    private fun initMapboxMap(mapboxMap: MapboxMap) {
+        with(mapboxMap) {
+            uiSettings.isCompassEnabled = false
+            uiSettings.isRotateGesturesEnabled = false
+        }
+        mapboxMap.addOnCameraMoveStartedListener { reason ->
+            if (reason == MapboxMap.OnCameraMoveStartedListener.REASON_API_GESTURE) {
+                val cameraPosition = mapboxMap.cameraPosition
+                com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
+                if (!binding.mentionLocation.icMarker.isVisible && !isInit) {
+                    binding.mentionLocation.icMarker.isVisible = true
+                    locationSearchAdapter.setMark()
+                }
+            }
+            markerAnimatorSet?.cancel()
+            markerAnimatorSet = AnimatorSet()
+            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, -8.dp.toFloat()))
+            markerAnimatorSet?.duration = 200
+            markerAnimatorSet?.start()
+        }
+
+        mapboxMap.addOnCameraIdleListener {
+            markerAnimatorSet?.cancel()
+            markerAnimatorSet = AnimatorSet()
+            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(binding.mentionLocation.icMarker, View.TRANSLATION_Y, 0f))
+            markerAnimatorSet?.duration = 200
+            markerAnimatorSet?.start()
+            mapboxMap.cameraPosition.target.let { lastLang ->
+                if (location == null) {
+                    val mixinLatLng = MixinLatLng(lastLang.latitude, lastLang.longitude)
+                    currentPosition = mixinLatLng
+                    search(mixinLatLng)
+                }
+            }
+        }
+        @Suppress("DEPRECATION")
+        mapboxMap.setOnMarkerClickListener { marker ->
+            locationSearchAdapter.setMark(marker.position.latitude, marker.position.longitude)
+            binding.mentionLocation.icMarker.isVisible = true
+            mixinMapView.moveCamera(MixinLatLng(marker.position.latitude, marker.position.longitude))
+            false
+        }
+        mapboxMap.addOnCameraMoveCancelListener {}
+    }
+
     private var lastSearchJob: Job? = null
-    fun search(latlng: LatLng) {
+    fun search(latLng: MixinLatLng) {
         binding.mentionLocation.locationPb.isVisible = locationAdapter.venues == null
         if (lastSearchJob != null && lastSearchJob?.isActive == true) {
             lastSearchJob?.cancel()
         }
         lastSearchJob = lifecycleScope.launch(errorHandler) {
-            val result = foursquareService.searchVenues("${latlng.latitude},${latlng.longitude}")
+            val result = foursquareService.searchVenues("${latLng.latitude},${latLng.longitude}")
 
             result.response?.venues.let { list ->
                 list.let { data ->
@@ -419,6 +526,31 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private val errorHandler = CoroutineExceptionHandler { _, error ->
         Timber.e(error)
     }
+
+    private fun checkLocationEnable(locationManager: LocationManager): Boolean {
+        var gpsEnable = false
+        try {
+            gpsEnable = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        } catch (e: Exception) {
+            Timber.w(e)
+        }
+        if (!gpsEnable) {
+            locationAlert = AlertDialog.Builder(this)
+                .setMessage(R.string.location_enable_title)
+                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                    try {
+                        startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                    dialog.dismiss()
+                }.show()
+            return false
+        }
+        return true
+    }
+
+    private var locationAlert: AlertDialog? = null
 
     private var lastSearchQueryJob: Job? = null
     fun search(query: String) {
@@ -436,7 +568,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     locationEmptyTv.text = getString(R.string.location_empty, query)
                     locationPb.isVisible = data == null
                 }
-                googleMap?.clear()
+                mixinMapView.clear()
                 var south: Double? = null
                 var west: Double? = null
                 var north: Double? = null
@@ -462,26 +594,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     } else {
                         max(east!!, item.location.lng)
                     }
-                    googleMap?.addMarker(
-                        MarkerOptions().zIndex(index.toFloat()).position(
-                            LatLng(
-                                item.location.lat,
-                                item.location.lng
-                            )
-                        ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
-                    )
+                    mixinMapView.addMarker(index, item)
 
                     if (south != null && west != null && north != null && east != null) {
-                        val bound = LatLngBounds(LatLng(south!!, west!!), LatLng(north!!, east!!))
-                        moveBounds(bound)
+                        val bound = MixinLatLngBounds(MixinLatLng(south!!, west!!), MixinLatLng(north!!, east!!))
+                        mixinMapView.moveBounds(bound)
                     }
                 }
             }
         }
-    }
-
-    private fun moveBounds(bound: LatLngBounds) {
-        googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 64.dp))
     }
 
     private var markerAnimatorSet: AnimatorSet? = null
@@ -503,7 +624,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     locationSearchAdapter.keyword = null
                     locationSearchAdapter.venues = null
                     locationSearchAdapter.setMark()
-                    googleMap?.clear()
+                    mixinMapView.clear()
                 }
             )
         }
@@ -515,8 +636,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     companion object {
 
-        private val LOCATION_NAME = "location_name"
-        private val LOCATION = "location"
+        private const val LOCATION_NAME = "location_name"
+        private const val LOCATION = "location"
 
         fun getResult(intent: Intent): LocationPayload? {
             return intent.getParcelableExtra(LOCATION_NAME)

@@ -26,16 +26,12 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
             notifyDataSetChanged()
         }
 
-    fun setMark(index: Float = -1f) {
-        if (index < 0) {
+    fun setMark(latitude: Double? = null, longitude: Double? = null) {
+        if (latitude == null || longitude == null) {
             currentVenues = null
             return
         }
-        index.toInt().let { i ->
-            if (i < venues?.size!!) {
-                currentVenues = venues!![i]
-            }
-        }
+        currentVenues = venues?.find { v -> v.location.lat == latitude && v.location.lng == longitude }
     }
 
     private var currentVenues: Venue? = null
@@ -100,12 +96,14 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
             binding.locationIcon.imageTintList = null
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                LocationPayload(
-                    venue.location.lat,
-                    venue.location.lng,
-                    venue.name,
-                    venue.location.address,
-                    venue.getVenueType()
+                callback(
+                    LocationPayload(
+                        venue.location.lat,
+                        venue.location.lng,
+                        venue.name,
+                        venue.location.address,
+                        venue.getVenueType()
+                    )
                 )
             }
             return

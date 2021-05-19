@@ -7,24 +7,26 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.maps.MapView
+import com.mapbox.mapboxsdk.maps.MapboxMap
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatLocationBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.location.MixinLatLng
+import one.mixin.android.ui.conversation.location.MixinMapView
+import one.mixin.android.ui.conversation.location.useMapbox
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.LocationPayload
@@ -32,15 +34,14 @@ import one.mixin.android.websocket.toLocationData
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 
-class LocationHolder constructor(val binding: ItemChatLocationBinding) : BaseViewHolder(binding.root), OnMapReadyCallback {
+class LocationHolder constructor(val binding: ItemChatLocationBinding) :
+    BaseViewHolder(binding.root),
+    OnMapReadyCallback,
+    com.mapbox.mapboxsdk.maps.OnMapReadyCallback {
     private val dp16 = itemView.context.dpToPx(16f)
 
-    private lateinit var map: GoogleMap
+    private var mixinMapView: MixinMapView
     private var onResumeCalled = false
-
-    companion object {
-        val isGooglePlayServicesAvailable by lazy { MixinApplication.appContext.isGooglePlayServicesAvailable() }
-    }
 
     private val dp36 by lazy {
         36.dp
@@ -50,16 +51,29 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) : BaseVie
         MixinApplication.appContext.dpToPx(4f).toFloat()
     }
 
+    private val useMapbox = useMapbox()
+
     init {
         binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
         binding.locationLayout.round(6.dp)
-        binding.locationMap.onCreate(null)
-        binding.locationMap.getMapAsync(this)
+        var mapBoxView: MapView? = null
+        if (useMapbox) {
+            Mapbox.getInstance(itemView.context, BuildConfig.MAPBOX_PUBLIC_TOKEN)
+            val stub = binding.mapboxStub
+            mapBoxView = stub.inflate() as MapView
+        }
+        mixinMapView = MixinMapView(binding.root.context, binding.googleMap, mapBoxView)
+        mixinMapView.onCreate(null)
+        if (useMapbox) {
+            mapBoxView?.getMapAsync(this)
+        } else {
+            binding.googleMap.getMapAsync(this)
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         MapsInitializer.initialize(MixinApplication.appContext)
-        map = googleMap
+        mixinMapView.googleMap = googleMap
         if (isNightMode) {
             val style = MapStyleOptions.loadRawResourceStyle(MixinApplication.appContext, R.raw.mapstyle_night)
             googleMap.setMapStyle(style)
@@ -70,25 +84,43 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) : BaseVie
             uiSettings.isScrollGesturesEnabledDuringRotateOrZoom = false
         }
         if (onResumeCalled) {
-            binding.locationMap.onResume()
+            mixinMapView.onResume()
+        }
+        setMapLocation()
+    }
+
+    override fun onMapReady(mapboxMap: MapboxMap) {
+        mixinMapView.mapboxMap = mapboxMap
+        mapboxMap.setStyle(mixinMapView.getMapboxStyle())
+        with(mapboxMap) {
+            uiSettings.isZoomGesturesEnabled = false
+            uiSettings.isScrollGesturesEnabled = false
+        }
+        if (onResumeCalled) {
+            mixinMapView.onResume()
         }
         setMapLocation()
     }
 
     private fun setMapLocation() {
-        if (!::map.isInitialized) return
+        if (useMapbox) {
+            if (mixinMapView.mapboxMap == null) return
+        } else {
+            if (mixinMapView.googleMap == null) return
+        }
         if (itemView.tag == location.hashCode()) return
+
         itemView.tag = location.hashCode()
         onResumeCalled = true
-        map.clear()
-        binding.locationMap.onResume()
+        mixinMapView.clear()
+        mixinMapView.onResume()
         location?.let { data ->
-            val position = LatLng(data.latitude, data.longitude)
-            with(map) {
-                mapType = GoogleMap.MAP_TYPE_NORMAL
-                addMarker(MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker)))
-                moveCamera(CameraUpdateFactory.newLatLngZoom(position, 13f))
+            val position = MixinLatLng(data.latitude, data.longitude)
+            if (!useMapbox) {
+                mixinMapView.googleMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
             }
+            mixinMapView.addMarker(position)
+            mixinMapView.moveCamera(position)
         }
     }
 
@@ -165,14 +197,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) : BaseVie
             binding.chatTime.textColorResource = (R.color.color_chat_date)
             binding.chatTime.translationY = 0f
         }
-        if (isGooglePlayServicesAvailable) {
-            binding.locationHolder.isVisible = false
-            binding.locationMap.isVisible = true
-            setMapLocation()
-        } else {
-            binding.locationHolder.isVisible = true
-            binding.locationMap.isVisible = false
-        }
+        setMapLocation()
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
