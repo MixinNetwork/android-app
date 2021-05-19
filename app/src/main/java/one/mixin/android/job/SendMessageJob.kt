@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import com.bugsnag.android.Bugsnag
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -10,6 +9,7 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.bugsnag
 import one.mixin.android.util.hyperlink.parsHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.*
@@ -69,7 +69,7 @@ open class SendMessageJob(
                 MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
             }
         } else {
-            Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
+            bugsnag?.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
     }
 

@@ -5,7 +5,6 @@ import com.birbit.android.jobqueue.CancelReason
 import com.birbit.android.jobqueue.Job
 import com.birbit.android.jobqueue.Params
 import com.birbit.android.jobqueue.RetryConstraint
-import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.MetaData
 import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
@@ -53,6 +52,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.bugsnag
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import java.io.IOException
@@ -211,7 +211,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     public override fun shouldReRunOnThrowable(throwable: Throwable, runCount: Int, maxRunCount: Int): RetryConstraint {
         if (runCount >= 10) {
-            Bugsnag.notify(throwable) { report ->
+            bugsnag?.notify(throwable) { report ->
                 report.error.metaData = MetaData().apply {
                     addToTab("Job", "shouldReRunOnThrowable", "Retry max count:$runCount")
                 }
@@ -237,7 +237,7 @@ abstract class BaseJob(params: Params) : Job(params) {
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         if (cancelReason == CancelReason.REACHED_RETRY_LIMIT) {
             throwable?.let {
-                Bugsnag.notify(it) { report ->
+                bugsnag?.notify(it) { report ->
                     report.error.metaData = MetaData().apply {
                         addToTab("Job", "CancelReason", "REACHED_RETRY_LIMIT")
                     }
