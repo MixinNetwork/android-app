@@ -99,6 +99,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             dismissRunnable = null
             dismiss()
             callback?.onSuccess()
+            dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 
@@ -113,6 +114,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     protected fun showPin() {
         if (!isAdded) return
+        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         biometricLayout.showPin(true)
     }
 
@@ -125,6 +127,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 invokeNetwork(pin)
             }
         } catch (t: Throwable) {
+            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             biometricLayout.showPin(true)
             ErrorHandler.handleError(t)
             return@launch
@@ -158,6 +161,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             }
             showErrorInfo(errorInfo, true)
         }
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     private val biometricDialogCallback = object : BiometricDialog.Callback {
@@ -166,6 +170,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
 
         override fun showPin() {
+            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             biometricLayout.showPin(false)
         }
 
