@@ -555,7 +555,7 @@ fun File.copy(destFile: File) {
 fun File.blurThumbnail(size: Size): Bitmap? {
     var scale = 1
     do {
-        if (maxOf(size.width, size.height) / scale > 64) {
+        if (maxOf(size.width, size.height) / scale > 48) {
             scale++
         } else {
             break
