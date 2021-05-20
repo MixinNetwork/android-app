@@ -365,7 +365,6 @@ class ConversationFragment() :
                                 binding.groupDesc.requestFocus()
                             }
                             binding.groupFlag.isVisible = true
-                            binding.driver.isVisible = true
                         }
                         val position = if (messageId != null) {
                             unreadCount + 1
@@ -1043,7 +1042,6 @@ class ConversationFragment() :
                             binding.groupDesc.requestFocus()
                         }
                         binding.groupFlag.isVisible = true
-                        binding.driver.isVisible = true
                     }
                 }
         }
@@ -1503,7 +1501,6 @@ class ConversationFragment() :
         binding.groupClose.setOnClickListener {
             requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
             binding.groupFlag.isVisible = false
-            binding.driver.isVisible = false
         }
         binding.tapJoinView.root.setOnClickListener {
             if (!requireContext().networkConnected()) {
@@ -2172,15 +2169,12 @@ class ConversationFragment() :
             val closeScamTime = scamPreferences.getLong(user.userId, 0)
             if (System.currentTimeMillis() > closeScamTime) {
                 binding.scamFlag.isVisible = true
-                binding.driver.isVisible = true
                 binding.warningClose.setOnClickListener {
                     scamPreferences.putLong(user.userId, System.currentTimeMillis() + INTERVAL_24_HOURS)
                     binding.scamFlag.isVisible = false
-                    binding.driver.isVisible = false
                 }
             } else {
                 binding.scamFlag.isVisible = false
-                binding.driver.isVisible = false
             }
         }
     }
