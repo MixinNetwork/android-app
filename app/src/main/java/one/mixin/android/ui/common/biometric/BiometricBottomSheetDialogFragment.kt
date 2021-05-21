@@ -59,7 +59,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
      */
     abstract fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean
 
-    open fun doWithMixinErrorCode(errorCode: Int): String? {
+    open suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
         return null
     }
     private val titleView by lazy {
@@ -145,7 +145,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 callback?.onSuccess() ?: toast(R.string.successful)
             }
         } else {
-            val errorString = doWithMixinErrorCode(response.errorCode)
+            val errorString = doWithMixinErrorCode(response.errorCode, pin)
 
             biometricLayout.let { layout ->
                 layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))

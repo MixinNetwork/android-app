@@ -447,6 +447,8 @@
     <string name="wallet_trending">Trending</string>
     <string name="wallet_recent_search">Recent searches</string>
     <string name="wallet_transfer_no_available_assets">No Available Assets</string>
+    <string name="wallet_withdrawal_changed">The withdrawal fee has been changed from %1$s to %2$s, would you like to proceed  with the request?</string>
+    <string name="wallet_refresh_address_failed">The withdrawal fee has been changed and the refresh fails, please try again.</string>
     <!--pin logs-->
     <string name="logs">Logs</string>
     <string name="log_category_pin_incorrect">PIN incorrect</string>

@@ -157,6 +157,10 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                     errorBtn.text = getString(R.string.group_ok)
                     errorBtn.setOnClickListener { callback?.onDismiss() }
                 }
+                ErrorAction.Continue -> {
+                    errorBtn.text = getString(R.string.common_continue)
+                    errorBtn.setOnClickListener { showPin(true) }
+                }
             }
         }
     }
@@ -165,6 +169,9 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         return when (errorCode) {
             ErrorHandler.INVALID_PIN_FORMAT, ErrorHandler.PIN_INCORRECT -> {
                 ErrorAction.RetryPin
+            }
+            ErrorHandler.WITHDRAWAL_FEE_TOO_SMALL -> {
+                ErrorAction.Continue
             }
             else -> {
                 ErrorAction.Close
@@ -204,7 +211,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     private fun getString(resId: Int) = context.getString(resId)
 
     enum class ErrorAction {
-        RetryPin, Close
+        RetryPin, Close, Continue
     }
 
     interface Callback {
