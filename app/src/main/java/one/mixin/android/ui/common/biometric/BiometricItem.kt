@@ -34,7 +34,7 @@ class WithdrawBiometricItem(
     val tag: String?,
     val addressId: String,
     val label: String,
-    val fee: String,
+    var fee: String,
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,

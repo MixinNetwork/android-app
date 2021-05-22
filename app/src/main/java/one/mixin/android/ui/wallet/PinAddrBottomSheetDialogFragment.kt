@@ -127,7 +127,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         return true
     }
 
-    override fun doWithMixinErrorCode(errorCode: Int): String? {
+    override suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
         return if (errorCode == INVALID_ADDRESS) {
             getString(
                 if (chainId == EOS_CHAIN_ID) {

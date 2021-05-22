@@ -7,7 +7,9 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -24,6 +26,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.BLOCKCHAIN_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_BALANCE
 import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_TRANSACTION_FEE
@@ -31,6 +34,7 @@ import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
 import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
@@ -136,7 +140,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             else -> {
                 t as WithdrawBiometricItem
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
-                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo)
+                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo, t.fee)
             }
         }
         bottomViewModel.insertTrace(trace)
@@ -170,7 +174,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         return false
     }
 
-    override fun doWithMixinErrorCode(errorCode: Int): String? {
+    override suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
         if (errorCode in arrayOf(
                 INSUFFICIENT_BALANCE,
                 INVALID_PIN_FORMAT,
@@ -181,8 +185,23 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             )
         ) {
             t.traceId?.let { traceId ->
-                lifecycleScope.launch {
-                    bottomViewModel.suspendDeleteTraceById(traceId)
+                bottomViewModel.suspendDeleteTraceById(traceId)
+            }
+        } else if (errorCode == ErrorHandler.WITHDRAWAL_FEE_TOO_SMALL) {
+            if (t is WithdrawBiometricItem) {
+                val item = t as WithdrawBiometricItem
+                val oldFee = item.fee
+                val newFee = withContext(Dispatchers.IO) {
+                    refreshAddressAndGetFee(item, pin)
+                }
+                return if (newFee != null) {
+                    (t as WithdrawBiometricItem).fee = newFee
+                    setBiometricItem()
+
+                    val symbol = item.asset.chainSymbol
+                    getString(R.string.wallet_withdrawal_changed, "${oldFee}$symbol", "${newFee}$symbol")
+                } else {
+                    getString(R.string.wallet_refresh_address_failed)
                 }
             }
         }
@@ -202,6 +221,23 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             firsSet.add(item.addressId)
         }
         defaultSharedPreferences.putStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, firsSet)
+    }
+
+    private suspend fun refreshAddressAndGetFee(item: WithdrawBiometricItem, pin: String): String? {
+        return try {
+            val response = bottomViewModel.syncAddr(item.asset.assetId, item.destination, item.label, item.tag, pin)
+            if (response.isSuccess) {
+                val address = response.data as Address
+                bottomViewModel.saveAddr(address)
+                return address.fee
+            } else {
+                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                null
+            }
+        } catch (e: Exception) {
+            ErrorHandler.handleError(e)
+            null
+        }
     }
 
     interface OnDestroyListener {
