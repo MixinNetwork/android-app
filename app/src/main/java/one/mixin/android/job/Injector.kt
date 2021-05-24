@@ -151,13 +151,14 @@ open class Injector {
         if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
             return
         }
+        var status = ConversationStatus.START.ordinal
         var conversation = conversationDao.getConversation(data.conversationId)
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
             conversationDao.insert(conversation)
-            refreshConversation(data.conversationId)
+            status = refreshConversation(data.conversationId)
         }
-        if (conversation.status == ConversationStatus.START.ordinal) {
+        if (status == ConversationStatus.START.ordinal) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
         }
     }
@@ -168,7 +169,7 @@ open class Injector {
         return id != null || messageHistory != null
     }
 
-    private fun refreshConversation(conversationId: String) {
+    private fun refreshConversation(conversationId: String): Int {
         try {
             val call = conversationService.getConversation(conversationId).execute()
             val response = call.body()
@@ -185,11 +186,6 @@ open class Injector {
                     } else if (conversationData.category == ConversationCategory.GROUP.name) {
                         syncUser(conversationData.creatorId)
                     }
-
-                    val remote = conversationData.participants.map {
-                        Participant(conversationId, it.userId, it.role, it.createdAt!!)
-                    }
-                    participantDao.replaceAll(conversationId, remote)
                     conversationDao.updateConversation(
                         conversationData.conversationId,
                         ownerId,
@@ -200,6 +196,25 @@ open class Injector {
                         conversationData.createdAt,
                         status
                     )
+                    val remote = mutableListOf<Participant>()
+                    val conversationUserIds = mutableListOf<String>()
+                    for (p in conversationData.participants) {
+                        remote.add(Participant(conversationId, p.userId, p.role, p.createdAt!!))
+                        conversationUserIds.add(p.userId)
+                    }
+                    participantDao.replaceAll(conversationId, remote)
+
+                    val userIds = userDao.findUserNotExist(conversationUserIds)
+                    if (userIds.isNotEmpty()) {
+                        jobManager.addJobInBackground(RefreshUserJob(userIds, conversationId))
+                    }
+
+                    val sessionParticipants = conversationData.participantSessions?.map {
+                        ParticipantSession(conversationId, it.userId, it.sessionId)
+                    }
+                    sessionParticipants?.let {
+                        participantSessionDao.replaceAll(conversationId, it)
+                    }
 
                     conversationData.circles?.let { circles ->
                         circles.forEach {
@@ -215,16 +230,11 @@ open class Injector {
                             circleConversationDao.insertUpdate(it)
                         }
                     }
-
-                    val sessionParticipants = conversationData.participantSessions?.map {
-                        ParticipantSession(conversationId, it.userId, it.sessionId)
-                    }
-                    sessionParticipants?.let {
-                        participantSessionDao.replaceAll(conversationId, it)
-                    }
+                    return status
                 }
             }
         } catch (e: IOException) {
         }
+        return ConversationStatus.START.ordinal
     }
 }

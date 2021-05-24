@@ -33,7 +33,7 @@ class RefreshConversationJob(val conversationId: String) :
             response.data?.let { data ->
                 conversationRepo.insertOrUpdateConversation(data)
                 val participants = mutableListOf<Participant>()
-                val userIdList = mutableListOf<String>()
+                val conversationUserIds = mutableListOf<String>()
                 for (p in data.participants) {
                     val item = Participant(conversationId, p.userId, p.role, p.createdAt!!)
                     if (p.role == ParticipantRole.OWNER.name) {
@@ -41,11 +41,7 @@ class RefreshConversationJob(val conversationId: String) :
                     } else {
                         participants.add(item)
                     }
-
-                    val u = userDao.findUser(p.userId)
-                    if (u == null) {
-                        userIdList.add(p.userId)
-                    }
+                    conversationUserIds.add(p.userId)
                 }
 
                 participantDao.replaceAll(data.conversationId, participants)
@@ -53,10 +49,11 @@ class RefreshConversationJob(val conversationId: String) :
                     syncParticipantSession(conversationId, it)
                 }
 
-                if (userIdList.isNotEmpty()) {
-                    jobManager.addJobInBackground(RefreshUserJob(userIdList, conversationId))
+                val userIds = userDao.findUserNotExist(conversationUserIds)
+                if (userIds.isNotEmpty()) {
+                    jobManager.addJobInBackground(RefreshUserJob(userIds, conversationId))
                 }
-                if (participants.size != localData.size || userIdList.isNotEmpty()) {
+                if (participants.size != localData.size || userIds.isNotEmpty()) {
                     jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
                 }
                 data.circles?.let { circles ->
