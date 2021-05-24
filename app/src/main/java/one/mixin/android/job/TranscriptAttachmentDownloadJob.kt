@@ -29,12 +29,11 @@ import java.util.concurrent.TimeUnit
 
 class TranscriptAttachmentDownloadJob(
     val conversationId: String,
-    val messageId: String,
     val transcript: Transcript
 ) : MixinJob(
     Params(PRIORITY_RECEIVE_MESSAGE)
         .groupBy("transcript_download").requireNetwork().persist(),
-    "$messageId${transcript.messageId}"
+    "${transcript.transcriptId}${transcript.messageId}"
 ) {
 
     private val TAG = TranscriptAttachmentDownloadJob::class.java.simpleName
@@ -62,6 +61,7 @@ class TranscriptAttachmentDownloadJob(
             }
         }
         removeJob()
+        transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
     }
 
     override fun getRetryLimit(): Int {
@@ -74,7 +74,7 @@ class TranscriptAttachmentDownloadJob(
             return
         }
         jobManager.saveJob(this)
-
+        transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.PENDING.name)
         val attachmentId = requireNotNull(transcript.content)
         attachmentCall = conversationApi.getAttachment(attachmentId)
         val body = attachmentCall!!.execute().body()
@@ -150,7 +150,7 @@ class TranscriptAttachmentDownloadJob(
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    messageId,
+                                    transcript.transcriptId,
                                     transcript.messageId,
                                     ""
                                 )
@@ -159,7 +159,7 @@ class TranscriptAttachmentDownloadJob(
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    messageId,
+                                    transcript.transcriptId,
                                     transcript.messageId,
                                     ".png"
                                 )
@@ -168,7 +168,7 @@ class TranscriptAttachmentDownloadJob(
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    messageId,
+                                    transcript.transcriptId,
                                     transcript.messageId,
                                     ".gif"
                                 )
@@ -177,7 +177,7 @@ class TranscriptAttachmentDownloadJob(
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    messageId,
+                                    transcript.transcriptId,
                                     transcript.messageId,
                                     ".webp"
                                 )
@@ -186,7 +186,7 @@ class TranscriptAttachmentDownloadJob(
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    messageId,
+                                    transcript.transcriptId,
                                     transcript.messageId,
                                     ".jpg"
                                 )
@@ -217,7 +217,7 @@ class TranscriptAttachmentDownloadJob(
                     val dataFile = MixinApplication.get()
                         .getTranscriptFile(
                             conversationId,
-                            messageId,
+                            transcript.transcriptId,
                             transcript.messageId,
                             extensionName ?: ""
                         )
@@ -248,7 +248,7 @@ class TranscriptAttachmentDownloadJob(
                     val videoFile = MixinApplication.get()
                         .getTranscriptFile(
                             conversationId,
-                            messageId,
+                            transcript.transcriptId,
                             transcript.messageId,
                             extensionName
                         )
@@ -274,7 +274,7 @@ class TranscriptAttachmentDownloadJob(
                             FileInputStream(destination)
                         }
                     val audioFile = MixinApplication.get()
-                        .getTranscriptFile(conversationId, messageId, transcript.messageId, ".ogg")
+                        .getTranscriptFile(conversationId, transcript.transcriptId, transcript.messageId, ".ogg")
                     audioFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptDao.updateMedia(
                         Uri.fromFile(audioFile).toString(),

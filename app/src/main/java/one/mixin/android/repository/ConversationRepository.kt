@@ -38,7 +38,6 @@ import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.getTranscriptDirPath
-import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
@@ -462,4 +461,16 @@ internal constructor(
     fun findTranscriptMessageItemById(transcriptId: String) = transcriptDao.getTranscriptMessages(transcriptId)
 
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptDao.findTranscriptMessageIndex(transcriptId, messageId)
+
+    suspend fun getTranscriptMediaMessage(transcriptId: String) = withContext(Dispatchers.IO) {
+        transcriptDao.getTranscriptMediaMessage(transcriptId)
+    }
+
+    suspend fun indexTranscriptMediaMessages(transcriptId: String, messageId: String) = withContext(Dispatchers.IO) {
+        transcriptDao.indexTranscriptMediaMessages(transcriptId, messageId)
+    }
+
+    suspend fun getTranscriptsById(transcriptId: String) = transcriptDao.getTranscriptsById(transcriptId)
+
+    suspend fun getTranscriptById(transcriptId: String, messageId: String) = transcriptDao.getTranscriptById(transcriptId, messageId)
 }

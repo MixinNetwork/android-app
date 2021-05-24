@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 import java.io.Serializable
@@ -53,9 +54,9 @@ class Transcript(
     @SerializedName("media_duration")
     @ColumnInfo(name = "media_duration")
     val mediaDuration: String? = null,
-    @SerializedName("media_status")
+    @Expose(deserialize = false, serialize = false)
     @ColumnInfo(name = "media_status")
-    val mediaStatus: String? = null,
+    var mediaStatus: String? = null,
     @SerializedName("media_waveform")
     @ColumnInfo(name = "media_waveform")
     val mediaWaveform: ByteArray? = null,
@@ -93,3 +94,35 @@ class Transcript(
     @ColumnInfo(name = "caption")
     val caption: String? = null
 ) : ICategory, Serializable, Parcelable
+
+fun Transcript.copy(tid: String): Transcript {
+    return Transcript(
+        tid,
+        messageId,
+        userId,
+        userFullName,
+        type,
+        createdAt,
+        content,
+        mediaUrl,
+        mediaName,
+        mediaSize,
+        mediaWidth,
+        mediaHeight,
+        mediaMimeType,
+        mediaDuration,
+        mediaStatus,
+        mediaWaveform,
+        thumbImage,
+        thumbUrl,
+        mediaKey,
+        mediaDigest,
+        mediaCreatedAt,
+        stickerId,
+        sharedUserId,
+        mentions,
+        quoteId,
+        quoteContent,
+        caption
+    )
+}

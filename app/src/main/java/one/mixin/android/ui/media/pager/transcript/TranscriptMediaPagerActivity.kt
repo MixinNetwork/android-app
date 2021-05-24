@@ -62,10 +62,10 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsPie
 import one.mixin.android.extension.toast
+import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.media.pager.MediaPagerAdapterListener
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
@@ -73,6 +73,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isMedia
@@ -89,19 +90,12 @@ import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
+import javax.inject.Inject
 import kotlin.math.min
 
 @AndroidEntryPoint
 class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
     private lateinit var colorDrawable: ColorDrawable
-
-    private val items by lazy {
-        requireNotNull(intent.getParcelableArrayListExtra<MessageItem>(ITEMS))
-    }
-
-    private val initialIndex by lazy {
-        intent.getIntExtra(INIT_INDEX, 0)
-    }
 
     private val pipVideoView by lazy {
         PipVideoView.getInstance()
@@ -110,7 +104,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     private val processor = QRCodeProcessor()
 
     private val adapter: TranscriptMediaPagerAdapter by lazy {
-        TranscriptMediaPagerAdapter(this, items, this@TranscriptMediaPagerActivity, mediaPagerAdapterListener)
+        TranscriptMediaPagerAdapter(this, this@TranscriptMediaPagerActivity, mediaPagerAdapterListener)
     }
 
     override fun getDefaultThemeId(): Int {
@@ -121,6 +115,8 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         return R.style.AppTheme_Night_Photo
     }
 
+    @Inject
+    lateinit var conversationRepository: ConversationRepository
     private lateinit var binding: ActivityMediaPagerBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         postponeEnterTransition()
@@ -160,7 +156,8 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
         SensorOrientationChangeNotifier.init(this, requestedOrientation)
 
-        binding.viewPager.setCurrentItem(initialIndex, false)
+        // todo check
+        binding.viewPager.setCurrentItem(0, false)
 
         loadData()
     }
@@ -222,10 +219,11 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     @SuppressLint("RestrictedApi")
-    private fun loadData() = lifecycleScope.launch {
-
+    private fun loadData() = lifecycleScope.launchWhenCreated {
+        adapter.list = conversationRepository.getTranscriptMediaMessage(transcriptId)
+        val initialIndex = conversationRepository.indexTranscriptMediaMessages(transcriptId, messageId)
         adapter.initialPos = initialIndex
-        val messageItem = items[initialIndex]
+        val messageItem = adapter.getItem(initialIndex)
         if (messageItem.isVideo() || messageItem.isLive()) {
             checkPip()
             messageItem.loadVideoOrLive {
@@ -240,7 +238,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         }
     }
 
-    private fun showVideoBottom(messageItem: MessageItem) {
+    private fun showVideoBottom(messageItem: TranscriptMessageItem) {
         val builder = BottomSheet.Builder(this)
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
@@ -278,7 +276,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         bottomSheet.show()
     }
 
-    private fun showImageBottom(item: MessageItem, pagerItemView: View) {
+    private fun showImageBottom(item: TranscriptMessageItem, pagerItemView: View) {
         val builder = BottomSheet.Builder(this)
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
@@ -420,7 +418,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     private var pipAnimationInProgress = false
-    private fun switchToPip(messageItem: MessageItem, view: View) {
+    private fun switchToPip(messageItem: TranscriptMessageItem, view: View) {
         if (!checkPipPermission() || pipAnimationInProgress) {
             return
         }
@@ -555,7 +553,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         return false
     }
 
-    private fun getMessageItemByPosition(position: Int): MessageItem? =
+    private fun getMessageItemByPosition(position: Int): TranscriptMessageItem? =
         try {
             adapter.getItem(position)
         } catch (e: IndexOutOfBoundsException) {
@@ -574,7 +572,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         }
     }
 
-    private fun loadVideoMessage(messageItem: MessageItem) {
+    private fun loadVideoMessage(messageItem: TranscriptMessageItem) {
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.loadVideoOrLive {
                 val view =
@@ -704,11 +702,11 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     private val mediaPagerAdapterListener = object : MediaPagerAdapterListener {
-        override fun onClick(messageItem: MessageItem) {
+        override fun onClick(messageItem: TranscriptMessageItem) {
             finishAfterTransition()
         }
 
-        override fun onLongClick(messageItem: MessageItem, view: View) {
+        override fun onLongClick(messageItem: TranscriptMessageItem, view: View) {
             if (messageItem.isImage()) {
                 showImageBottom(messageItem, view)
             } else if (messageItem.isVideo()) {
@@ -716,7 +714,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             }
         }
 
-        override fun onCircleProgressClick(messageItem: MessageItem) {
+        override fun onCircleProgressClick(messageItem: TranscriptMessageItem) {
             when (messageItem.mediaStatus) {
                 MediaStatus.CANCELED.name -> {
                     if (Session.getAccountId() == messageItem.userId) {
@@ -737,7 +735,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             setStartPostTransition(view)
         }
 
-        override fun switchToPin(messageItem: MessageItem, view: View) {
+        override fun switchToPin(messageItem: TranscriptMessageItem, view: View) {
             switchToPip(messageItem, view)
         }
 
@@ -756,11 +754,14 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         intent.getStringExtra(MESSAGE_ID) as String
     }
 
+    private val transcriptId by lazy {
+        intent.getStringExtra(TRANSCRIPT_ID) as String
+    }
+
     companion object {
-        private const val ITEMS = "items"
-        private const val INIT_INDEX = "init_index"
-        private const val ALPHA_MAX = 0xFF
         private const val MESSAGE_ID = "message_id"
+        private const val TRANSCRIPT_ID = "transcript_id"
+        private const val ALPHA_MAX = 0xFF
 
         const val PREFIX = "media"
         const val PAGE_SIZE = 3
@@ -770,13 +771,11 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         fun show(
             activity: Activity,
             imageView: View,
-            messageItems: ArrayList<MessageItem>,
+            transcriptId: String,
             messageId: String,
-            index: Int
         ) {
             val intent = Intent(activity, TranscriptMediaPagerActivity::class.java).apply {
-                putParcelableArrayListExtra(ITEMS, messageItems)
-                putExtra(INIT_INDEX, index)
+                putExtra(TRANSCRIPT_ID, transcriptId)
                 putExtra(MESSAGE_ID, messageId)
             }
             activity.startActivity(

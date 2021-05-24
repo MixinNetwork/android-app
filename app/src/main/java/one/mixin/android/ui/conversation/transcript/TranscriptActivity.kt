@@ -6,13 +6,12 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.support.v4.media.MediaDescriptionCompat
 import android.view.ContextThemeWrapper
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.exoplayer2.util.MimeTypes
@@ -22,9 +21,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityTranscriptBinding
+import one.mixin.android.databinding.ViewMarkdownBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.extension.blurBitmap
@@ -35,36 +34,38 @@ import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SendTranscriptAttachmentMessageJob
+import one.mixin.android.job.TranscriptAttachmentDownloadJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.player.FloatingPlayer
-import one.mixin.android.ui.player.MediaItemData
-import one.mixin.android.ui.player.MusicActivity
-import one.mixin.android.ui.player.collapse
+import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.Transcript
 import one.mixin.android.vo.TranscriptMessageItem
+import one.mixin.android.vo.copy
 import one.mixin.android.vo.saveToLocal
+import one.mixin.android.vo.toMessageItem
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.WebControlView
 import one.mixin.android.widget.buildBottomSheetView
+import timber.log.Timber
+import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -85,12 +86,19 @@ class TranscriptActivity : BaseActivity() {
     @Inject
     lateinit var conversationRepository: ConversationRepository
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     private val conversationId by lazy {
-        intent.getStringExtra(CONVERSATION_ID)
+        requireNotNull(intent.getStringExtra(CONVERSATION_ID))
     }
 
     private val transcriptId by lazy {
         requireNotNull(intent.getStringExtra(MESSAGE_ID))
+    }
+
+    private val isPlain by lazy {
+        intent.getBooleanExtra(IS_PLAIN, true)
     }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,7 +119,7 @@ class TranscriptActivity : BaseActivity() {
             .observe(this) { transcripts ->
                 binding.control.callback = object : WebControlView.Callback {
                     override fun onMoreClick() {
-                        // todo forward
+                        showBottomSheet()
                     }
 
                     override fun onCloseClick() {
@@ -190,15 +198,38 @@ class TranscriptActivity : BaseActivity() {
             }
 
             override fun onImageClick(messageItem: TranscriptMessageItem, view: View) {
-                // todo
+                TranscriptMediaPagerActivity.show(this@TranscriptActivity, view, transcriptId, messageItem.messageId)
             }
 
             override fun onAudioClick(messageItem: TranscriptMessageItem) {
-                // todo
+                Timber.d(messageItem.messageId)
+                if (
+                    AudioPlayer.isPlay(messageItem.messageId)) {
+                    AudioPlayer.pause()
+                } else {
+                    AudioPlayer.play(messageItem.toMessageItem(this@TranscriptActivity.conversationId))
+                }
             }
 
             override fun onAudioFileClick(messageItem: TranscriptMessageItem) {
                 // todo
+                Timber.d(messageItem.messageId)
+            }
+
+            override fun onRetryDownload(messageId: String) {
+                lifecycleScope.launch {
+                    conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
+                        jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(conversationId, transcript))
+                    }
+                }
+            }
+
+            override fun onRetryUpload(messageId: String) {
+                lifecycleScope.launch {
+                    conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
+                        jobManager.addJobInBackground(SendTranscriptAttachmentMessageJob(transcript, isPlain))
+                    }
+                }
             }
 
             override fun onLocationClick(messageItem: TranscriptMessageItem) {
@@ -381,14 +412,44 @@ class TranscriptActivity : BaseActivity() {
             )
     }
 
+    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<Transcript>>
+
+    @SuppressLint("AutoDispose")
+    private fun showBottomSheet() {
+        val builder = BottomSheet.Builder(this)
+        val view = View.inflate(
+            androidx.appcompat.view.ContextThemeWrapper(this, R.style.Custom),
+            R.layout.view_transcript,
+            null
+        )
+        val viewBinding = ViewTranscriptBinding.bind(view)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        viewBinding.forward.setOnClickListener {
+            lifecycleScope.launch {
+                val transcriptId = UUID.randomUUID().toString()
+                ForwardActivity.combineForward(this@TranscriptActivity, arrayListOf<Transcript>().apply {
+                    addAll(conversationRepository.getTranscriptsById(this@TranscriptActivity.transcriptId).map {
+                        it.copy(transcriptId)
+                    })
+                })
+                bottomSheet.dismiss()
+            }
+        }
+        bottomSheet.show()
+    }
+
     companion object {
         private const val MESSAGE_ID = "transcript_id"
         private const val CONVERSATION_ID = "conversation_id"
-        fun show(context: Context, messageId: String) {
+        private const val IS_PLAIN = "is_plain"
+        fun show(context: Context, messageId: String, conversationId: String, isPlain: Boolean) {
             refreshScreenshot(context)
             context.startActivity(
                 Intent(context, TranscriptActivity::class.java).apply {
                     putExtra(MESSAGE_ID, messageId)
+                    putExtra(CONVERSATION_ID, conversationId)
+                    putExtra(IS_PLAIN, isPlain)
                 }
             )
         }

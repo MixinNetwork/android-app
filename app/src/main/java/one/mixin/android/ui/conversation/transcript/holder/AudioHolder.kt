@@ -13,11 +13,9 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
-import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 import kotlin.math.min
@@ -114,8 +112,10 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                     binding.audioProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
                     binding.audioProgress.setBindOnly(messageItem.messageId)
                     binding.audioProgress.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
@@ -129,8 +129,10 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                         binding.audioProgress.setPlay()
                     }
                     binding.audioProgress.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                 }
                 MediaStatus.CANCELED.name -> {
@@ -144,13 +146,10 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                     binding.audioProgress.setBindOnly(messageItem.messageId)
                     binding.audioProgress.setProgress(-1)
                     binding.audioProgress.setOnClickListener {
-                        if (isMe) {
-                            onItemListener.onRetryUpload(messageItem.messageId)
-                        } else {
-                            onItemListener.onRetryDownload(messageItem.messageId)
-                        }
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                 }
             }
