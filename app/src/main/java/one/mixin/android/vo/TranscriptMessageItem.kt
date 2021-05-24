@@ -17,6 +17,7 @@ import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.toast
+import one.mixin.android.util.VideoPlayer
 import java.io.File
 import java.io.FileInputStream
 
@@ -24,6 +25,7 @@ class TranscriptMessageItem(
     val messageId: String,
     val userId: String,
     val userFullName: String,
+    val userIdentityNumber: String,
     override val type: String,
     val appId: String?,
     val content: String?,
@@ -101,4 +103,61 @@ fun TranscriptMessageItem.saveToLocal(context: Context) {
     outFile.copyFromInputStream(FileInputStream(file))
     context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
     MixinApplication.appContext.toast(MixinApplication.appContext.getString(R.string.save_to, outFile.absolutePath))
+}
+
+fun TranscriptMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
+    mediaUrl?.let {
+        if (isLive()) {
+            VideoPlayer.player().loadHlsVideo(it, messageId)
+        } else {
+            VideoPlayer.player().loadVideo(it, messageId)
+        }
+        actionAfterLoad?.invoke()
+    }
+}
+
+fun TranscriptMessageItem.toMessageItem(conversationId: String?): MessageItem {
+    return MessageItem(
+        messageId, conversationId ?: "", userId, userFullName, userIdentityNumber, type,
+        content,
+        createdAt,
+        MessageStatus.DELIVERED.name,
+        mediaStatus,
+        null,
+        mediaName,
+        mediaMimeType,
+        mediaSize,
+        thumbUrl,
+        mediaWidth,
+        mediaHeight,
+        thumbImage,
+        mediaUrl,
+        mediaDuration,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        assetType,
+        null,
+        null,
+        assetUrl,
+        assetHeight,
+        assetWidth,
+        null,
+        null,
+        null,
+        appId,
+        null, null, null, null, null, null, null, null,
+        sharedUserIsVerified,
+        sharedUserAppId,
+        mediaWaveform,
+        quoteId,
+        quoteContent,
+        null,
+        mentions = null,
+        null
+    )
 }

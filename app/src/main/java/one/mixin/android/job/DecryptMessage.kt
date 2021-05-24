@@ -648,30 +648,31 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.status,
                     MediaStatus.PENDING
                 )
-                transcriptDao.insertList(transcripts)
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 transcripts.filter { t -> t.isAttachment() }.forEach { transcript ->
+                    transcript.mediaStatus = MediaStatus.CANCELED.name
                     when {
                         transcript.isImage() -> {
                             MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, message.id, transcript))
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, transcript))
                             }
                         }
                         transcript.isVideo() -> {
                             MixinApplication.appContext.autoDownload(autoDownloadVideo) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, message.id, transcript))
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, transcript))
                             }
                         }
                         transcript.isData() -> {
                             MixinApplication.appContext.autoDownload(autoDownloadDocument) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, message.id, transcript))
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, transcript))
                             }
                         }
                         transcript.isAudio() -> {
-                            jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, message.id, transcript))
+                            jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, transcript))
                         }
                     }
                 }
+                transcriptDao.insertList(transcripts)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 generateNotification(message, data.source)
             }
         }

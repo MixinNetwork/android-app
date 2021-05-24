@@ -14,14 +14,9 @@ import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
-import one.mixin.android.ui.media.pager.LargeImageHolder
 import one.mixin.android.ui.media.pager.MediaItemType
-import one.mixin.android.ui.media.pager.MediaPagerAdapterListener
-import one.mixin.android.ui.media.pager.MediaPagerHolder
-import one.mixin.android.ui.media.pager.PhotoHolder
-import one.mixin.android.ui.media.pager.VideoHolder
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -30,7 +25,6 @@ import one.mixin.android.widget.gallery.MimeType
 
 class TranscriptMediaPagerAdapter(
     private val context: Context,
-    private val list: List<MessageItem>,
     private val onDismissListener: DismissFrameLayout.OnDismissListener,
     private val onMediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : RecyclerView.Adapter<MediaPagerHolder>() {
@@ -127,6 +121,12 @@ class TranscriptMediaPagerAdapter(
         )
         return imageView
     }
+
+    var list: List<TranscriptMessageItem> = emptyList()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     override fun getItemCount(): Int {
         return list.size

@@ -138,8 +138,10 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
                     binding.audioProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
                     binding.audioProgress.setBindOnly(messageItem.messageId)
                     binding.audioProgress.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
@@ -153,8 +155,10 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
                         binding.audioProgress.setPlay()
                     }
                     binding.audioProgress.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                 }
                 MediaStatus.CANCELED.name -> {
@@ -168,13 +172,10 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
                     binding.audioProgress.setBindOnly(messageItem.messageId)
                     binding.audioProgress.setProgress(-1)
                     binding.audioProgress.setOnClickListener {
-                        if (isMe) {
-                            onItemListener.onRetryUpload(messageItem.messageId)
-                        } else {
-                            onItemListener.onRetryDownload(messageItem.messageId)
-                        }
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                 }
             }

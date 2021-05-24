@@ -55,6 +55,7 @@ class SendTranscriptAttachmentMessageJob(
             }
         }
         removeJob()
+        transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
     }
 
     @DelicateCoroutinesApi
@@ -87,6 +88,7 @@ class SendTranscriptAttachmentMessageJob(
                 }
             }
         }
+        transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.PENDING.name)
         disposable = conversationApi.requestAttachment().map {
             val file = File(requireNotNull(Uri.parse(transcript.mediaUrl).path))
             if (it.isSuccess && !isCancelled) {
@@ -102,12 +104,14 @@ class SendTranscriptAttachmentMessageJob(
                     removeJob()
                 } else {
                     removeJob()
+                    transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
                 }
             },
             {
                 Timber.e("upload attachment error, ${it.getStackTraceString()}")
                 reportException(it)
                 removeJob()
+                transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
             }
         )
     }

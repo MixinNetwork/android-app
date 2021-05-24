@@ -207,6 +207,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.saveToLocal
@@ -824,7 +825,7 @@ class ConversationFragment() :
 
             override fun onTranscriptClick(messageItem: MessageItem) {
                 binding.chatControl.chatEt.hideKeyboard()
-                TranscriptActivity.show(requireActivity(), messageItem.messageId)
+                TranscriptActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, messageItem.isPlain())
             }
 
             override fun onSayHi() {
