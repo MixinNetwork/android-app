@@ -23,10 +23,10 @@ data class AssetItem(
     val changeBtc: String,
     var hidden: Boolean?,
     val confirmations: Int,
-    val chainIconUrl: String?,
-    val chainSymbol: String?,
-    val chainName: String?,
-    val chainPriceUsd: String?,
+    var chainIconUrl: String?,
+    var chainSymbol: String?,
+    var chainName: String?,
+    var chainPriceUsd: String?,
     val assetKey: String?,
     val reserve: String?
 ) : Parcelable {

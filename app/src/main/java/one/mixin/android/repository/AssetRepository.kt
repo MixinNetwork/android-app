@@ -64,13 +64,14 @@ constructor(
         if (assetItem != null) return assetItem
 
         assetItem = syncAsset(assetId)
-        return if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
-            syncAsset(assetItem.chainId)
-            assetDao.findAssetItemById(assetId)
-        }else{
-            assetItem
+        if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
+            val chain = syncAsset(assetItem.chainId)
+            assetItem.chainIconUrl = chain?.chainIconUrl
+            assetItem.chainSymbol = chain?.chainSymbol
+            assetItem.chainName = chain?.chainName
+            assetItem.chainPriceUsd = chain?.chainPriceUsd
         }
-
+        return assetItem
     }
 
     private suspend fun syncAsset(assetId: String): AssetItem? {
