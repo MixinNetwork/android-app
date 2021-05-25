@@ -68,7 +68,7 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 
 @Database(
@@ -101,7 +101,7 @@ import one.mixin.android.vo.User
         (Circle::class),
         (CircleConversation::class),
         (Trace::class),
-        (Transcript::class)
+        (TranscriptMessage::class)
     ],
     version = CURRENT_VERSION
 )
@@ -132,7 +132,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun circleDao(): CircleDao
     abstract fun circleConversationDao(): CircleConversationDao
     abstract fun traceDao(): TraceDao
-    abstract fun transcriptDao(): TranscriptDao
+    abstract fun transcriptDao(): TranscriptMessageDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null

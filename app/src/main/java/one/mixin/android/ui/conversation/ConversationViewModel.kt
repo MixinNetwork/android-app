@@ -76,7 +76,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.Sticker
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createConversation
@@ -165,8 +165,8 @@ internal constructor(
         messenger.sendTextMessage(viewModelScope, conversationId, sender, content, isPlain)
     }
 
-    fun sendTranscriptMessage(conversationId: String, messageId: String?, sender: User, transcripts: List<Transcript>, isPlain: Boolean) {
-        messenger.sendTranscriptMessage(messageId ?: UUID.randomUUID().toString(), conversationId, sender, transcripts, isPlain)
+    fun sendTranscriptMessage(conversationId: String, messageId: String?, sender: User, transcriptMessages: List<TranscriptMessage>, isPlain: Boolean) {
+        messenger.sendTranscriptMessage(messageId ?: UUID.randomUUID().toString(), conversationId, sender, transcriptMessages, isPlain)
     }
 
     fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
@@ -803,9 +803,9 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
-    suspend fun processTranscript(conversationId: String, transcripts: List<Transcript>): List<Transcript> {
+    suspend fun processTranscript(conversationId: String, transcriptMessages: List<TranscriptMessage>): List<TranscriptMessage> {
         withContext(Dispatchers.IO) {
-            transcripts.forEach { transcript ->
+            transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
                     val file = File(Uri.parse(transcript.mediaUrl).path)
                     if (file.exists()) {
@@ -817,11 +817,11 @@ internal constructor(
                         )
                         file.copy(outFile)
                         transcript.mediaUrl = outFile.toUri().toString()
+                        transcript.mediaStatus = MediaStatus.CANCELED.name
                     } else {
                         transcript.mediaUrl = null
+                        transcript.mediaStatus = MediaStatus.DONE.name
                     }
-                } else if (!transcript.isSticker()) {
-                    transcript.mediaUrl = null
                 }
                 if (transcript.quoteContent != null) {
                     val quoteMessage = try {
@@ -829,7 +829,7 @@ internal constructor(
                     } catch (e: Exception) {
                         null
                     }
-                    if (quoteMessage != null) {
+                    if (quoteMessage?.messageId != null) {
                         transcript.quoteContent = GsonHelper.customGson.toJson(SnakeQuoteMessageItem(quoteMessage))
                     } else {
                         try {
@@ -843,6 +843,6 @@ internal constructor(
                 }
             }
         }
-        return transcripts
+        return transcriptMessages
     }
 }

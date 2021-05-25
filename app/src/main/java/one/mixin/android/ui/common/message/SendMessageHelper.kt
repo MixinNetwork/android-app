@@ -28,7 +28,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
-import one.mixin.android.job.SendTranscriptAttachmentMessageJob
 import one.mixin.android.job.SendTranscriptJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
@@ -39,7 +38,8 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.TranscriptMinimal
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAppCardMessage
 import one.mixin.android.vo.createAttachmentMessage
@@ -54,7 +54,6 @@ import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.giphy.Image
-import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
@@ -94,18 +93,20 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         }
     }
 
-    fun sendTranscriptMessage(messageId: String, conversationId: String, sender: User, transcripts: List<Transcript>, isPlain: Boolean) {
+    fun sendTranscriptMessage(messageId: String, conversationId: String, sender: User, transcriptMessages: List<TranscriptMessage>, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
         val message = createMessage(
             messageId,
             conversationId,
             sender.userId,
             category,
-            GsonHelper.customGson.toJson(transcripts),
+            GsonHelper.customGson.toJson(transcriptMessages.map {
+                TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
+            }),
             nowInUtc(),
             MessageStatus.SENDING.name
         )
-        jobManager.addJobInBackground(SendTranscriptJob(message, transcripts))
+        jobManager.addJobInBackground(SendTranscriptJob(message, transcriptMessages))
     }
 
     fun sendReplyTextMessage(

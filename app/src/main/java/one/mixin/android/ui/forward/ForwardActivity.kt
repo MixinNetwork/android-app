@@ -16,7 +16,7 @@ import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
 
 @AndroidEntryPoint
 class ForwardActivity : BlazeBaseActivity() {
@@ -49,7 +49,7 @@ class ForwardActivity : BlazeBaseActivity() {
             show(context, list, ForwardAction.App.Resultless())
         }
 
-        fun combineForward(context: Context, messages: ArrayList<Transcript>) {
+        fun combineForward(context: Context, messages: ArrayList<TranscriptMessage>) {
             val intent = Intent(context, ForwardActivity::class.java).apply {
                 putParcelableArrayListExtra(ARGS_COMBINE_MESSAGES, messages)
                 putExtra(ARGS_ACTION, ForwardAction.Combine())
@@ -75,13 +75,13 @@ class ForwardActivity : BlazeBaseActivity() {
         }
     }
 
-    class CombineForwardContract : ActivityResultContract<ArrayList<Transcript>, Intent?>() {
+    class CombineForwardContract : ActivityResultContract<ArrayList<TranscriptMessage>, Intent?>() {
         override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }
 
-        override fun createIntent(context: Context, input: ArrayList<Transcript>): Intent {
+        override fun createIntent(context: Context, input: ArrayList<TranscriptMessage>): Intent {
             return Intent(context, ForwardActivity::class.java).apply {
                 putParcelableArrayListExtra(ARGS_COMBINE_MESSAGES, input)
                 putExtra(ARGS_ACTION, ForwardAction.Combine())

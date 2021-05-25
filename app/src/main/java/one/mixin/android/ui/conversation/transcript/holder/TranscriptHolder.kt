@@ -11,14 +11,12 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.Transcript
 import one.mixin.android.vo.TranscriptMessageItem
+import one.mixin.android.vo.TranscriptMinimal
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
@@ -113,41 +111,41 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
         }
         if (binding.chatTv.tag != messageItem.messageId) {
             if (!messageItem.content.isNullOrEmpty()) {
-                val transcripts = GsonHelper.customGson.fromJson(messageItem.content, Array<Transcript>::class.java)
+                val transcripts = GsonHelper.customGson.fromJson(messageItem.content, Array<TranscriptMinimal>::class.java)
                 val str = StringBuffer()
                 transcripts.forEach {
                     when {
                         it.isImage() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.photo)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.photo)}]\n")
                         }
                         it.isVideo() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.video)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.video)}]\n")
                         }
                         it.isData() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.document)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.document)}]\n")
                         }
                         it.isAudio() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.audio)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.audio)}]\n")
                         }
                         it.isPost() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.post)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.post)}]\n")
                         }
                         it.isLocation() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.location)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.location)}]\n")
                         }
                         it.isTranscript() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.transcript)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.transcript)}]\n")
                         }
                         it.isContact() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.contact)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.contact)}]\n")
                         }
                         it.isLive() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.live)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.live)}]\n")
                         }
                         it.isSticker() -> {
-                            str.append("${it.userFullName}: [${itemView.context.getString(R.string.sticker)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.sticker)}]\n")
                         }
-                        else -> str.append("${it.userFullName}: ${it.content}\n")
+                        else -> str.append("${it.name}: ${it.content}\n")
                     }
                 }
                 binding.chatTv.text = str.removeSuffix("\n")

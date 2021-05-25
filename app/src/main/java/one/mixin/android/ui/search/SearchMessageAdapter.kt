@@ -59,6 +59,9 @@ class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.
         } else if (message.type == MessageCategory.SIGNAL_CONTACT.name || message.type == MessageCategory.PLAIN_CONTACT.name) {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, contactIcon, null, null, null)
             binding.searchMsgTv.text = message.mediaName
+        } else if (message.type == MessageCategory.SIGNAL_TRANSCRIPT.name || message.type == MessageCategory.PLAIN_TRANSCRIPT.name) {
+            TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, fileIcon, null, null, null)
+            binding.searchMsgTv.text = binding.searchMsgTv.context.getString(R.string.transcript)
         } else {
             TextViewCompat.setCompoundDrawablesRelative(binding.searchMsgTv, null, null, null, null)
             binding.searchMsgTv.text = message.content

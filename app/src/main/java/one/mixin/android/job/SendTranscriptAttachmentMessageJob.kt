@@ -21,7 +21,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSignal
@@ -33,11 +33,11 @@ import java.io.FileNotFoundException
 import java.net.SocketTimeoutException
 
 class SendTranscriptAttachmentMessageJob(
-    val transcript: Transcript,
+    val transcriptMessage: TranscriptMessage,
     val isPlain: Boolean
 ) : MixinJob(
     Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_transcript_job").requireNetwork().persist(),
-    "${transcript.transcriptId}${transcript.messageId}"
+    "${transcriptMessage.transcriptId}${transcriptMessage.messageId}"
 ) {
 
     companion object {
@@ -55,28 +55,28 @@ class SendTranscriptAttachmentMessageJob(
             }
         }
         removeJob()
-        transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
+        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
 
     @DelicateCoroutinesApi
     override fun onRun() {
-        if (transcript.isPlain() == isPlain) {
+        if (transcriptMessage.isPlain() == isPlain) {
             val attachmentExtra = try {
-                GsonHelper.customGson.fromJson(transcript.content, AttachmentExtra::class.java)
+                GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
             } catch (e: Exception) {
                 null
             } ?: try {
-                val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcript.content)), AttachmentMessagePayload::class.java)
-                AttachmentExtra(payload.attachmentId, transcript.messageId, payload.createdAt)
+                val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
+                AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
             } catch (e: Exception) {
                 null
             }
             if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
-                val m = messageDao.findMessageById(transcript.messageId)
+                val m = messageDao.findMessageById(transcriptMessage.messageId)
                 if (m != null && (((m.isSignal() || m.isEncrypted()) && m.mediaKey != null && m.mediaDigest != null) || m.isPlain())) {
-                    transcriptDao.updateTranscript(
-                        transcript.transcriptId,
-                        transcript.messageId,
+                    transcriptMessageDao.updateTranscript(
+                        transcriptMessage.transcriptId,
+                        transcriptMessage.messageId,
                         attachmentExtra.attachmentId,
                         m.mediaKey,
                         m.mediaDigest,
@@ -88,12 +88,12 @@ class SendTranscriptAttachmentMessageJob(
                 }
             }
         }
-        transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.PENDING.name)
+        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
         disposable = conversationApi.requestAttachment().map {
-            val file = File(requireNotNull(Uri.parse(transcript.mediaUrl).path))
+            val file = File(requireNotNull(Uri.parse(transcriptMessage.mediaUrl).path))
             if (it.isSuccess && !isCancelled) {
                 val result = it.data!!
-                processAttachment(transcript, file, result)
+                processAttachment(transcriptMessage, file, result)
             } else {
                 false
             }
@@ -104,20 +104,20 @@ class SendTranscriptAttachmentMessageJob(
                     removeJob()
                 } else {
                     removeJob()
-                    transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
+                    transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
                 }
             },
             {
                 Timber.e("upload attachment error, ${it.getStackTraceString()}")
                 reportException(it)
                 removeJob()
-                transcriptDao.updateMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
+                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
             }
         )
     }
 
     @DelicateCoroutinesApi
-    private fun processAttachment(transcript: Transcript, file: File, attachResponse: AttachmentResponse): Boolean {
+    private fun processAttachment(transcriptMessage: TranscriptMessage, file: File, attachResponse: AttachmentResponse): Boolean {
         val key = if (isPlain) {
             null
         } else {
@@ -133,7 +133,7 @@ class SendTranscriptAttachmentMessageJob(
         }
         val attachmentData =
             PushAttachmentData(
-                transcript.mediaMimeType,
+                transcriptMessage.mediaMimeType,
                 inputStream,
                 file.length(),
                 if (isPlain) {
@@ -170,9 +170,9 @@ class SendTranscriptAttachmentMessageJob(
             removeJob()
             return true
         }
-        transcriptDao.updateTranscript(
-            transcript.transcriptId,
-            transcript.messageId,
+        transcriptMessageDao.updateTranscript(
+            transcriptMessage.transcriptId,
+            transcriptMessage.messageId,
             attachResponse.attachment_id,
             key,
             digest,
@@ -183,11 +183,12 @@ class SendTranscriptAttachmentMessageJob(
     }
 
     private fun sendMessage() {
-        if (transcriptDao.hasUploadedAttachment(transcript.transcriptId) == 0) {
-            messageDao.findMessageById(transcript.transcriptId)?.let {
-                val list = transcriptDao.getTranscript(transcript.transcriptId)
+        if (transcriptMessageDao.hasUploadedAttachment(transcriptMessage.transcriptId) == 0) {
+            messageDao.findMessageById(transcriptMessage.transcriptId)?.let {
+                val list = transcriptMessageDao.getTranscript(transcriptMessage.transcriptId)
                 it.content = GsonHelper.customGson.toJson(list)
                 // todo nest
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, transcriptMessage.transcriptId)
                 jobManager.addJob(SendMessageJob(it))
             }
         }

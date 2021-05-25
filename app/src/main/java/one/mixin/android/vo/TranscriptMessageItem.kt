@@ -23,9 +23,9 @@ import java.io.FileInputStream
 
 class TranscriptMessageItem(
     val messageId: String,
-    val userId: String,
-    val userFullName: String,
-    val userIdentityNumber: String,
+    val userId: String?,
+    val userFullName: String?,
+    val userIdentityNumber: String?,
     override val type: String,
     val appId: String?,
     val content: String?,
@@ -118,7 +118,11 @@ fun TranscriptMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null)
 
 fun TranscriptMessageItem.toMessageItem(conversationId: String?): MessageItem {
     return MessageItem(
-        messageId, conversationId ?: "", userId, userFullName, userIdentityNumber, type,
+        messageId,
+        conversationId ?: "",
+        userId ?: "", userFullName ?: "",
+        userIdentityNumber?:"",
+        type,
         content,
         createdAt,
         MessageStatus.DELIVERED.name,

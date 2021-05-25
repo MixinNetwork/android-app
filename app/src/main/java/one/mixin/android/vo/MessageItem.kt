@@ -110,7 +110,8 @@ data class MessageItem(
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
         unfinishedAttachment() ||
-        isCallMessage() || isRecall()
+        isCallMessage() || isRecall() ||
+        isTranscript()
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
@@ -118,7 +119,7 @@ data class MessageItem(
             unfinishedAttachment() ||
             isCallMessage() || isRecall()
 
-    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio() || isTranscript())
+    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 }
 
 fun create(type: String, createdAt: String? = null) = MessageItem(
@@ -260,7 +261,7 @@ class FixedMessageDataSource(private val messageItems: List<MessageItem>) : Posi
     }
 }
 
-fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): Transcript {
+fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): TranscriptMessage {
     val category = when {
         isImage() -> if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         isVideo() -> if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
@@ -273,7 +274,7 @@ fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): Tr
         isTranscript() -> if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
         else -> if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
     }
-    return Transcript(
+    return TranscriptMessage(
         transcriptId,
         messageId,
         userId,
@@ -287,7 +288,7 @@ fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): Tr
         mediaWidth,
         mediaHeight,
         mediaMimeType,
-        mediaDuration,
+        mediaDuration?.toLong(),
         mediaStatus,
         mediaWaveform,
         thumbImage,
@@ -300,60 +301,5 @@ fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): Tr
         mentions,
         quoteId,
         quoteContent
-    )
-}
-
-fun Transcript.toMessageItem(): MessageItem {
-    return MessageItem(
-        messageId,
-        "",
-        userId ?: "",
-        userFullName,
-        "",
-        type,
-        content,
-        createdAt,
-        "",
-        MediaStatus.DONE.name,
-        null,
-        mediaName,
-        mediaMimeType,
-        mediaSize,
-        thumbUrl,
-        mediaWidth,
-        mediaHeight,
-        thumbImage,
-        mediaUrl,
-        mediaDuration,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        mediaUrl,
-        null,
-        null,
-        null,
-        stickerId,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        sharedUserId,
-        // todo remove
-        "",
-        "", "", false, "", null,
-        quoteId,
-        quoteContent,
-        null,
-        mentions,
-        null
     )
 }

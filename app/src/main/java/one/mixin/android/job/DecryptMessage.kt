@@ -64,7 +64,8 @@ import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.TranscriptMinimal
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
@@ -82,6 +83,7 @@ import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isIllegalMessageCategory
 import one.mixin.android.vo.isImage
@@ -631,10 +633,16 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
             data.category.endsWith("_TRANSCRIPT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(Base64.decode(plainText)) else plainText
-                val transcripts = gson.fromJson(plain, Array<Transcript>::class.java).toList()
+                val transcripts = gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList()
                 val stringBuffer = StringBuffer()
-                transcripts.filter { it.isText() || it.isPost() }.forEach { transcript ->
-                    transcript.content?.joinWhiteSpace()?.let {
+                transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
+                    if (transcript.isData()) {
+                        transcript.mediaName
+                    } else if (transcript.isContact()) {
+                        transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                    } else {
+                        transcript.content
+                    }?.joinWhiteSpace()?.let {
                         stringBuffer.append(it)
                     }
                 }
@@ -644,17 +652,21 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.conversationId,
                     data.userId,
                     data.category,
-                    plain,
+                    gson.toJson(transcripts.map {
+                        TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
+                    }),
                     data.createdAt,
-                    data.status,
-                    MediaStatus.PENDING
+                    data.status
                 )
-                transcripts.filter { t -> t.isSticker() }.forEach { transcript ->
+                transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
                     transcript.stickerId?.let { stickerId ->
                         val sticker = stickerDao.getStickerByUnique(stickerId)
                         if (sticker == null) {
                             jobManager.addJobInBackground(RefreshStickerJob(stickerId))
                         }
+                    }
+                    transcript.sharedUserId?.let { userId ->
+                        syncUser(userId)
                     }
                 }
                 transcripts.filter { t -> t.isAttachment() }.forEach { transcript ->
@@ -681,7 +693,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                     }
                 }
-                transcriptDao.insertList(transcripts)
+                transcriptMessageDao.insertList(transcripts)
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 generateNotification(message, data.source)
             }

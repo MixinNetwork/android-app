@@ -32,7 +32,7 @@ import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.TranscriptDao
+import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.insertNoReplace
@@ -85,7 +85,7 @@ internal constructor(
     private val participantSessionDao: ParticipantSessionDao,
     private val appDao: AppDao,
     private val jobDao: JobDao,
-    private val transcriptDao: TranscriptDao,
+    private val transcriptMessageDao: TranscriptMessageDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager
@@ -458,19 +458,19 @@ internal constructor(
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
 
-    fun findTranscriptMessageItemById(transcriptId: String) = transcriptDao.getTranscriptMessages(transcriptId)
+    fun findTranscriptMessageItemById(transcriptId: String) = transcriptMessageDao.getTranscriptMessages(transcriptId)
 
-    suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptDao.findTranscriptMessageIndex(transcriptId, messageId)
+    suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptMessageDao.findTranscriptMessageIndex(transcriptId, messageId)
 
     suspend fun getTranscriptMediaMessage(transcriptId: String) = withContext(Dispatchers.IO) {
-        transcriptDao.getTranscriptMediaMessage(transcriptId)
+        transcriptMessageDao.getTranscriptMediaMessage(transcriptId)
     }
 
     suspend fun indexTranscriptMediaMessages(transcriptId: String, messageId: String) = withContext(Dispatchers.IO) {
-        transcriptDao.indexTranscriptMediaMessages(transcriptId, messageId)
+        transcriptMessageDao.indexTranscriptMediaMessages(transcriptId, messageId)
     }
 
-    suspend fun getTranscriptsById(transcriptId: String) = transcriptDao.getTranscriptsById(transcriptId)
+    suspend fun getTranscriptsById(transcriptId: String) = transcriptMessageDao.getTranscriptsById(transcriptId)
 
-    suspend fun getTranscriptById(transcriptId: String, messageId: String) = transcriptDao.getTranscriptById(transcriptId, messageId)
+    suspend fun getTranscriptById(transcriptId: String, messageId: String) = transcriptMessageDao.getTranscriptById(transcriptId, messageId)
 }
