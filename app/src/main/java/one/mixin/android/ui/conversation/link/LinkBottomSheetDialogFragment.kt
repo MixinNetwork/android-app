@@ -336,10 +336,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                             val multisigs = result.second as MultisigsResponse
                             lifecycleScope.launch {
-                                var asset = linkViewModel.findAssetItemById(multisigs.assetId)
-                                if (asset == null) {
-                                    asset = linkViewModel.refreshAsset(multisigs.assetId)
-                                }
+                                val asset = checkAsset(multisigs.assetId)
                                 if (asset != null) {
                                     val multisigsBiometricItem = Multi2MultiBiometricItem(
                                         requestId = multisigs.requestId,
@@ -367,10 +364,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                             val paymentCodeResponse = result.second as PaymentCodeResponse
                             lifecycleScope.launch {
-                                var asset = linkViewModel.findAssetItemById(paymentCodeResponse.assetId)
-                                if (asset == null) {
-                                    asset = linkViewModel.refreshAsset(paymentCodeResponse.assetId)
-                                }
+                                val asset = checkAsset(paymentCodeResponse.assetId)
                                 if (asset != null) {
                                     val multisigsBiometricItem = One2MultiBiometricItem(
                                         threshold = paymentCodeResponse.threshold,
@@ -412,10 +406,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (address == null) {
                             showError(R.string.error_address_exists)
                         } else {
-                            var asset = linkViewModel.findAssetItemById(assetId)
-                            if (asset == null) {
-                                asset = linkViewModel.refreshAsset(assetId)
-                            }
+                            var asset = checkAsset(assetId)
                             if (asset != null) {
                                 PinAddrBottomSheetDialogFragment.newInstance(
                                     assetId = assetId,
@@ -449,10 +440,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
                     lifecycleScope.launch {
-                        var asset = linkViewModel.findAssetItemById(assetId)
-                        if (asset == null) {
-                            asset = linkViewModel.refreshAsset(assetId)
-                        }
+                        val asset = checkAsset(assetId)
                         if (asset != null) {
                             PinAddrBottomSheetDialogFragment.newInstance(
                                 assetId = assetId,
@@ -527,10 +515,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else {
                 lifecycleScope.launch {
                     val address = linkViewModel.findAddressById(addressId, assetId)
-                    var asset = linkViewModel.findAssetItemById(assetId)
-                    if (asset == null) {
-                        asset = linkViewModel.refreshAsset(assetId)
-                    }
+                    var asset = checkAsset(assetId)
                     if (asset != null) {
                         when {
                             address == null -> showError(R.string.error_address_exists)
@@ -655,10 +640,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
         val memo = uri.getQueryParameter("memo")
 
-        var asset = linkViewModel.findAssetItemById(assetId)
-        if (asset == null) {
-            asset = linkViewModel.refreshAsset(assetId) ?: return false
-        }
+        val asset: AssetItem = checkAsset(assetId) ?: return false
 
         val user = linkViewModel.refreshUser(userId) ?: return false
 
@@ -713,6 +695,16 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
+    }
+
+    private suspend fun checkAsset(assetId: String): AssetItem? {
+        val asset = linkViewModel.findAssetItemById(assetId)
+        if (asset == null) {
+            linkViewModel.refreshAsset(assetId)
+        } else if (asset.assetId != asset.chainId && linkViewModel.findAssetItemById(asset.chainId) == null) {
+            linkViewModel.refreshAsset(asset.chainId)
+        }
+        return linkViewModel.findAssetItemById(assetId)
     }
 
     private fun showError(@StringRes errorRes: Int = R.string.link_error) {

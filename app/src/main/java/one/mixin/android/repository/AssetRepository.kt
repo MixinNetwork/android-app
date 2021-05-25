@@ -59,23 +59,31 @@ constructor(
 
     suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
 
-    suspend fun findOrSyncAsset(id: String): AssetItem? {
-        var assetItem = assetDao.findAssetItemById(id)
+    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
+        var assetItem = assetDao.findAssetItemById(assetId)
         if (assetItem != null) return assetItem
 
+        assetItem = syncAsset(assetId)
+        if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
+            val chain = syncAsset(assetItem.chainId)
+            assetItem.chainIconUrl = chain?.chainIconUrl
+            assetItem.chainSymbol = chain?.chainSymbol
+            assetItem.chainName = chain?.chainName
+            assetItem.chainPriceUsd = chain?.chainPriceUsd
+        }
+        return assetItem
+    }
+
+    private suspend fun syncAsset(assetId: String): AssetItem? {
         return handleMixinResponse(
             invokeNetwork = {
-                assetService.getAssetByIdSuspend(id)
+                assetService.getAssetByIdSuspend(assetId)
             },
             switchContext = Dispatchers.IO,
-            successBlock = {
-                it.data?.let { a ->
-                    insert(a)
-                    assetItem = assetDao.findAssetItemById(id)
-                    return@handleMixinResponse assetItem
-                }
-            }
-        )
+            successBlock = { chain ->
+                chain.data?.let { c -> insert(c) }
+                return@handleMixinResponse assetDao.findAssetItemById(assetId)
+            })
     }
 
     suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
