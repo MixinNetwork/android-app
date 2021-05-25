@@ -26,7 +26,6 @@ class RefreshUserJob(
             refreshUsers(userIds)
             return@runBlocking
         }
-
         val existUsers = userDao.findUserExist(userIds)
         val queryUsers = userIds.filter {
             !existUsers.contains(it)

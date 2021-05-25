@@ -43,9 +43,6 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT user_id FROM users WHERE user_id IN (:userIds)")
     suspend fun findUserExist(userIds: List<String>): List<String>
 
-    @Query("SELECT user_id FROM users WHERE user_id NOT IN (:userIds)")
-    fun findUserNotExist(userIds: List<String>): List<String>
-
     @Query("SELECT * FROM users WHERE relationship = :relationship")
     fun findUsersByType(relationship: String): LiveData<List<User>>
 

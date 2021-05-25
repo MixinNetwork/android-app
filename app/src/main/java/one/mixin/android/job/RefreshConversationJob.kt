@@ -49,11 +49,10 @@ class RefreshConversationJob(val conversationId: String) :
                     syncParticipantSession(conversationId, it)
                 }
 
-                val userIds = userDao.findUserNotExist(conversationUserIds)
-                if (userIds.isNotEmpty()) {
-                    jobManager.addJobInBackground(RefreshUserJob(userIds, conversationId))
+                if (conversationUserIds.isNotEmpty()) {
+                    jobManager.addJobInBackground(RefreshUserJob(conversationUserIds, conversationId))
                 }
-                if (participants.size != localData.size || userIds.isNotEmpty()) {
+                if (participants.size != localData.size || conversationUserIds.isNotEmpty()) {
                     jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
                 }
                 data.circles?.let { circles ->

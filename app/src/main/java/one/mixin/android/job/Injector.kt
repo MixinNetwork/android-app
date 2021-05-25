@@ -204,9 +204,8 @@ open class Injector {
                     }
                     participantDao.replaceAll(conversationId, remote)
 
-                    val userIds = userDao.findUserNotExist(conversationUserIds)
-                    if (userIds.isNotEmpty()) {
-                        jobManager.addJobInBackground(RefreshUserJob(userIds, conversationId))
+                    if (conversationUserIds.isNotEmpty()) {
+                        jobManager.addJobInBackground(RefreshUserJob(conversationUserIds, conversationId))
                     }
 
                     val sessionParticipants = conversationData.participantSessions?.map {
