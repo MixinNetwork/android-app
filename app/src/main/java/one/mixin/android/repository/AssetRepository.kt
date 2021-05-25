@@ -64,10 +64,13 @@ constructor(
         if (assetItem != null) return assetItem
 
         assetItem = syncAsset(assetId)
-        if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
+        return if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
             syncAsset(assetItem.chainId)
+            assetDao.findAssetItemById(assetId)
+        }else{
+            assetItem
         }
-        return assetItem
+
     }
 
     private suspend fun syncAsset(assetId: String): AssetItem? {
