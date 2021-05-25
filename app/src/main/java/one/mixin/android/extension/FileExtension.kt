@@ -13,6 +13,7 @@ import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
@@ -488,6 +489,16 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
             } catch (e: SecurityException) {
                 Timber.w(e)
                 reportException = e
+            } catch (e: UnsupportedOperationException) {
+                cursor = context.contentResolver.query(this, null, null, null, null)
+                val name = try {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                    } else null
+                } catch (e: Exception) {
+                    null
+                }
+                data = copyFileUrlWithAuthority(context, name)
             } finally {
                 cursor?.close()
             }

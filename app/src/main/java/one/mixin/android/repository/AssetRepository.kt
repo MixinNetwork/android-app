@@ -83,7 +83,8 @@ constructor(
             successBlock = { chain ->
                 chain.data?.let { c -> insert(c) }
                 return@handleMixinResponse assetDao.findAssetItemById(assetId)
-            })
+            }
+        )
     }
 
     suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
