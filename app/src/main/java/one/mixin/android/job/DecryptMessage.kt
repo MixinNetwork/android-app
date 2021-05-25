@@ -86,6 +86,7 @@ import one.mixin.android.vo.isData
 import one.mixin.android.vo.isIllegalMessageCategory
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
@@ -648,8 +649,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.status,
                     MediaStatus.PENDING
                 )
+                transcripts.filter { t -> t.isSticker() }.forEach { transcript ->
+                    transcript.stickerId?.let { stickerId ->
+                        val sticker = stickerDao.getStickerByUnique(stickerId)
+                        if (sticker == null) {
+                            jobManager.addJobInBackground(RefreshStickerJob(stickerId))
+                        }
+                    }
+                }
                 transcripts.filter { t -> t.isAttachment() }.forEach { transcript ->
                     transcript.mediaStatus = MediaStatus.CANCELED.name
+                    transcript.mediaUrl = null
                     when {
                         transcript.isImage() -> {
                             MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
