@@ -3,15 +3,14 @@ package one.mixin.android.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 import java.io.Serializable
 
 @Parcelize
-@Entity(tableName = "transcripts", primaryKeys = ["transcript_id", "message_id"])
-class Transcript(
+@Entity(tableName = "transcript_messages", primaryKeys = ["transcript_id", "message_id"])
+class TranscriptMessage(
     @SerializedName("transcript_id")
     @ColumnInfo(name = "transcript_id")
     val transcriptId: String,
@@ -23,7 +22,7 @@ class Transcript(
     val userId: String?,
     @SerializedName("user_full_name")
     @ColumnInfo(name = "user_full_name")
-    val userFullName: String,
+    val userFullName: String?,
     @SerializedName("category")
     @ColumnInfo(name = "category")
     override val type: String,
@@ -33,7 +32,7 @@ class Transcript(
     @SerializedName("content")
     @ColumnInfo(name = "content")
     val content: String?,
-    @SerializedName("media_url")
+    @Expose(deserialize = false, serialize = false)
     @ColumnInfo(name = "media_url")
     var mediaUrl: String? = null,
     @SerializedName("media_name")
@@ -53,7 +52,7 @@ class Transcript(
     val mediaMimeType: String? = null,
     @SerializedName("media_duration")
     @ColumnInfo(name = "media_duration")
-    val mediaDuration: String? = null,
+    val mediaDuration: Long? = null,
     @Expose(deserialize = false, serialize = false)
     @ColumnInfo(name = "media_status")
     var mediaStatus: String? = null,
@@ -95,8 +94,8 @@ class Transcript(
     val caption: String? = null
 ) : ICategory, Serializable, Parcelable
 
-fun Transcript.copy(tid: String): Transcript {
-    return Transcript(
+fun TranscriptMessage.copy(tid: String): TranscriptMessage {
+    return TranscriptMessage(
         tid,
         messageId,
         userId,

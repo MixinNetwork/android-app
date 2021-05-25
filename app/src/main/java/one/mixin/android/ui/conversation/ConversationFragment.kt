@@ -198,7 +198,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sticker
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
@@ -971,7 +971,7 @@ class ConversationFragment() :
     var selectItem: SelectItem? = null
 
     lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
-    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<Transcript>>
+    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<TranscriptMessage>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)

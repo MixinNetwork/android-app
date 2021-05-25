@@ -578,8 +578,6 @@ fun createTranscriptMessage(
     content: String,
     createdAt: String,
     status: String,
-    mediaStatus: MediaStatus,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
-    .setMediaStatus(mediaStatus.name)
     .build()

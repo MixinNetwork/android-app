@@ -14,7 +14,7 @@ import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
@@ -164,7 +164,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
             representativeIcon?.setBounds(0, 0, dp8, dp8)
             TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java)
         binding.chatQuote.bind(quoteMessage)
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

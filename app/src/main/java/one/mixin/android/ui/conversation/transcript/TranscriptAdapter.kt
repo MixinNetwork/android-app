@@ -416,7 +416,7 @@ class TranscriptAdapter(
 
         open fun onRetryDownload(messageId: String) {}
 
-        open fun onUserClick(userId: String) {}
+        open fun onUserClick(userId: String?) {}
 
         open fun onMentionClick(identityNumber: String) {}
 
@@ -426,7 +426,7 @@ class TranscriptAdapter(
 
         open fun onActionClick(action: String, userId: String) {}
 
-        open fun onAppCardClick(appCard: AppCardData, userId: String) {}
+        open fun onAppCardClick(appCard: AppCardData, userId: String?) {}
 
         open fun onAudioClick(messageItem: TranscriptMessageItem) {}
 

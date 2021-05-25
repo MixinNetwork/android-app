@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityTranscriptBinding
-import one.mixin.android.databinding.ViewMarkdownBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.extension.blurBitmap
@@ -53,7 +52,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.copy
 import one.mixin.android.vo.saveToLocal
@@ -269,13 +268,15 @@ class TranscriptActivity : BaseActivity() {
                 }
             }
 
-            override fun onUserClick(userId: String) {
-                lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        userRepository.getUserById(userId)?.let { user ->
-                            withContext(Dispatchers.Main) {
-                                UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                    .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+            override fun onUserClick(userId: String?) {
+                userId?.let { uid ->
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.IO) {
+                            userRepository.getUserById(uid)?.let { user ->
+                                withContext(Dispatchers.Main) {
+                                    UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                        .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                }
                             }
                         }
                     }
@@ -412,7 +413,7 @@ class TranscriptActivity : BaseActivity() {
             )
     }
 
-    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<Transcript>>
+    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<TranscriptMessage>>
 
     @SuppressLint("AutoDispose")
     private fun showBottomSheet() {
@@ -428,7 +429,7 @@ class TranscriptActivity : BaseActivity() {
         viewBinding.forward.setOnClickListener {
             lifecycleScope.launch {
                 val transcriptId = UUID.randomUUID().toString()
-                ForwardActivity.combineForward(this@TranscriptActivity, arrayListOf<Transcript>().apply {
+                ForwardActivity.combineForward(this@TranscriptActivity, arrayListOf<TranscriptMessage>().apply {
                     addAll(conversationRepository.getTranscriptsById(this@TranscriptActivity.transcriptId).map {
                         it.copy(transcriptId)
                     })

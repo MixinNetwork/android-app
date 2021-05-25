@@ -2,11 +2,14 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
+import one.mixin.android.extension.joinWhiteSpace
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.vo.*
 
 class SendTranscriptJob(
     val message: Message,
-    val transcripts: List<Transcript>,
+    val transcriptMessages: List<TranscriptMessage>,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.id) {
 
@@ -21,7 +24,8 @@ class SendTranscriptJob(
         }
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {
-            transcriptDao.insertList(transcripts)
+            messageDao.insert(message)
+            transcriptMessageDao.insertList(transcriptMessages)
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation exist"))
         }
@@ -31,8 +35,23 @@ class SendTranscriptJob(
     }
 
     override fun onRun() {
-        val list = transcripts.filter { it.isAttachment() }
+        val list = transcriptMessages.filter { it.isAttachment() }
+        val transcripts = transcriptMessageDao.getTranscript(message.id)
+        val stringBuffer = StringBuffer()
+        transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
+            if (transcript.isData()) {
+                transcript.mediaName
+            } else if (transcript.isContact()) {
+                transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+            } else {
+                transcript.content
+            }?.joinWhiteSpace()?.let {
+                stringBuffer.append(it)
+            }
+        }
+        MessageFts4Helper.insertMessageFts4(message.id, stringBuffer.toString())
         if (list.isEmpty()) {
+            message.content = GsonHelper.customGson.toJson(transcripts)
             jobManager.addJob(SendMessageJob(message))
         } else {
             messageDao.insert(message)

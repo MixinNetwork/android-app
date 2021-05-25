@@ -60,7 +60,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
@@ -99,7 +99,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
 
         fun newCombineInstance(
-            messages: ArrayList<Transcript>,
+            messages: ArrayList<TranscriptMessage>,
             action: ForwardAction
         ): ForwardFragment {
             val fragment = ForwardFragment()
@@ -122,7 +122,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         requireNotNull(requireArguments().getParcelableArrayList(ARGS_MESSAGES))
     }
 
-    private val combineMessages: ArrayList<Transcript> by lazy {
+    private val combineMessages: ArrayList<TranscriptMessage> by lazy {
         requireNotNull(requireArguments().getParcelableArrayList(ARGS_COMBINE_MESSAGES))
     }
 
@@ -441,7 +441,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         chatViewModel.sendLocationMessage(conversationId, sender.userId, locationPayload, isPlain)
                     }
                     ForwardCategory.Transcript -> {
-                        val transcript = GsonHelper.customGson.fromJson(content, Array<Transcript>::class.java)
+                        val transcript = GsonHelper.customGson.fromJson(content, Array<TranscriptMessage>::class.java)
                         val list = chatViewModel.processTranscript(conversationId, transcript.toList())
                         val messageId = transcript[0].messageId
                         chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, list, isPlain)

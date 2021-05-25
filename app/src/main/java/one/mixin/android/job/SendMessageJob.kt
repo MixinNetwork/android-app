@@ -64,9 +64,10 @@ open class SendMessageJob(
                         parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
                     }
                 }
-
-                messageDao.insert(message)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
+                if (!message.isTranscript()) {
+                    messageDao.insert(message)
+                    MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
+                }
             }
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))

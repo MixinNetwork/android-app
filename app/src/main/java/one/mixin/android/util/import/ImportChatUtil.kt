@@ -12,7 +12,7 @@ import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.Transcript
+import one.mixin.android.vo.TranscriptMessage
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.File
@@ -59,7 +59,7 @@ class ImportChatUtil {
             }
             inputStream = requireNotNull(context.contentResolver.openInputStream(Uri.parse(importUri)))
             val r = BufferedReader(InputStreamReader(inputStream))
-            val list = arrayListOf<Transcript>()
+            val list = arrayListOf<TranscriptMessage>()
             var line: String?
             while (r.readLine().also { line = it } != null) {
                 line?.let {
@@ -79,14 +79,14 @@ class ImportChatUtil {
     }
 
     // Todo
-    private fun generateTranscriptMessage(s: String, documentsMap: ArrayMap<String, Uri>): Transcript? {
+    private fun generateTranscriptMessage(s: String, documentsMap: ArrayMap<String, Uri>): TranscriptMessage? {
         val dateEnd = s.indexOf(" - ")
         val nameEnd = s.indexOf(": ")
         return if (dateEnd > 0 && nameEnd > 0) {
             val date = s.substring(0, dateEnd) // .toUtcTime()
             val name = s.substring(dateEnd + 3, nameEnd)
             val content = s.substring(nameEnd + 2, s.length)
-            Transcript(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), name, MessageCategory.PLAIN_TEXT.name, date, content)
+            TranscriptMessage(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), name, MessageCategory.PLAIN_TEXT.name, date, content)
         } else {
             null
         }

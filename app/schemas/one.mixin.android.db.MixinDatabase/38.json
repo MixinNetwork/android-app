@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 38,
-    "identityHash": "75a7b5ab58947ea0bb9f09c6d0383d52",
+    "identityHash": "4e0c214f07516f4e850c42bbcd292128",
     "entities": [
       {
         "tableName": "users",
@@ -1832,8 +1832,8 @@
         "foreignKeys": []
       },
       {
-        "tableName": "transcripts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transcript_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, `user_id` TEXT, `user_full_name` TEXT NOT NULL, `category` TEXT NOT NULL, `created_at` TEXT NOT NULL, `content` TEXT, `media_url` TEXT, `media_name` TEXT, `media_size` INTEGER, `media_width` INTEGER, `media_height` INTEGER, `media_mime_type` TEXT, `media_duration` TEXT, `media_status` TEXT, `media_waveform` BLOB, `thumb_image` TEXT, `thumb_url` TEXT, `media_key` BLOB, `media_digest` BLOB, `media_created_at` TEXT, `sticker_id` TEXT, `shared_user_id` TEXT, `mentions` TEXT, `quote_id` TEXT, `quote_content` TEXT, `caption` TEXT, PRIMARY KEY(`transcript_id`, `message_id`))",
+        "tableName": "transcript_messages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transcript_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, `user_id` TEXT, `user_full_name` TEXT, `category` TEXT NOT NULL, `created_at` TEXT NOT NULL, `content` TEXT, `media_url` TEXT, `media_name` TEXT, `media_size` INTEGER, `media_width` INTEGER, `media_height` INTEGER, `media_mime_type` TEXT, `media_duration` INTEGER, `media_status` TEXT, `media_waveform` BLOB, `thumb_image` TEXT, `thumb_url` TEXT, `media_key` BLOB, `media_digest` BLOB, `media_created_at` TEXT, `sticker_id` TEXT, `shared_user_id` TEXT, `mentions` TEXT, `quote_id` TEXT, `quote_content` TEXT, `caption` TEXT, PRIMARY KEY(`transcript_id`, `message_id`))",
         "fields": [
           {
             "fieldPath": "transcriptId",
@@ -1857,7 +1857,7 @@
             "fieldPath": "userFullName",
             "columnName": "user_full_name",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "type",
@@ -1916,7 +1916,7 @@
           {
             "fieldPath": "mediaDuration",
             "columnName": "media_duration",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": false
           },
           {
@@ -2012,7 +2012,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '75a7b5ab58947ea0bb9f09c6d0383d52')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4e0c214f07516f4e850c42bbcd292128')"
     ]
   }
 }

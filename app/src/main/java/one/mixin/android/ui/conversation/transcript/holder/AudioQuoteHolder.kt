@@ -14,12 +14,10 @@ import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
-import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 
 class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : MediaHolder(binding.root) {
@@ -182,7 +180,7 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
         }
 
         val quoteMessage =
-            GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+            GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java)
         binding.chatQuote.bind(quoteMessage)
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
