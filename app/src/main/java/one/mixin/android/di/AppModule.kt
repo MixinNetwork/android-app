@@ -53,6 +53,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.filterNonAscii
+import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
 import one.mixin.android.job.BaseJob
@@ -94,15 +95,6 @@ object AppModule {
         "Mixin/" + BuildConfig.VERSION_NAME +
             " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")"
         ).filterNonAscii()
-
-    @SuppressLint("HardwareIds")
-    private fun getDeviceId(resolver: ContentResolver): String {
-        var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
-        if (deviceId == null || deviceId == "9774d56d682e549c") {
-            deviceId = FirebaseInstallations.getInstance().id.result
-        }
-        return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
-    }
 
     @Singleton
     @Provides

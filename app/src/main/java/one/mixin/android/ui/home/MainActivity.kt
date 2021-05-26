@@ -43,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT
@@ -52,6 +53,7 @@ import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
+import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
@@ -75,6 +77,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueUniqueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putBoolean
@@ -211,6 +214,16 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().onlining.set(true)
+
+        val deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
+        if (deviceId == null) {
+            defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
+        } else if (deviceId != this.getDeviceId()) {
+            MixinApplication.get().closeAndClear()
+            finish()
+            return
+        }
+
         if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_FTS4_UPGRADE, false)) {
             InitializeActivity.showFts(this)
             finish()
