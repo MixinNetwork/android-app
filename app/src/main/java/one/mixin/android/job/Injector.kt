@@ -151,8 +151,8 @@ open class Injector {
         if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
             return
         }
-        var status = ConversationStatus.START.ordinal
         var conversation = conversationDao.getConversation(data.conversationId)
+        var status = conversation?.status ?: ConversationStatus.START.ordinal
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
             conversationDao.insert(conversation)
