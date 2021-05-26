@@ -32,7 +32,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,7 +48,6 @@ import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
@@ -65,6 +63,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -87,7 +86,6 @@ import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
-import one.mixin.android.worker.RefreshAssetsWorker
 import org.jetbrains.anko.textColor
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -215,7 +213,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
         }
 
-        WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+        jobManager.addJobInBackground(RefreshAssetsJob())
         binding.titleView.leftIb.setOnClickListener { dismiss() }
         binding.amountEt.addTextChangedListener(mWatcher)
         binding.amountEt.filters = arrayOf(inputFilter)
