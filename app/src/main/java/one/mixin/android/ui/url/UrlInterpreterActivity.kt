@@ -29,6 +29,9 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val ADDRESS = "address"
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
+
+        private var openTime = 0L
+        private var currentUrl:String? = null
     }
 
     override fun getDefaultThemeId(): Int {
@@ -63,6 +66,12 @@ class UrlInterpreterActivity : BaseActivity() {
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
             CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS -> {
+                if (System.currentTimeMillis() - openTime < 500 && currentUrl == uri.toString()) {
+                    openTime = System.currentTimeMillis()
+                    finish()
+                }
+                openTime = System.currentTimeMillis()
+                currentUrl = uri.toString()
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }

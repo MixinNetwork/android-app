@@ -515,16 +515,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else {
                 lifecycleScope.launch {
                     val address = linkViewModel.findAddressById(addressId, assetId)
-                    var asset = checkAsset(assetId)
+                    val asset = checkAsset(assetId)
                     if (asset != null) {
-                        when {
-                            address == null -> showError(R.string.error_address_exists)
-                            asset == null -> showError(R.string.error_asset_exists)
+                        when (address) {
+                            null -> showError(R.string.error_address_exists)
                             else -> {
                                 val dust = address.dust?.toDoubleOrNull()
                                 val amountDouble = amount.toDoubleOrNull()
                                 if (dust != null && amountDouble != null && amountDouble < dust) {
-                                    val errorString = getString(R.string.bottom_withdrawal_least_tip, address.dust, asset!!.symbol)
+                                    val errorString = getString(R.string.bottom_withdrawal_least_tip, address.dust, asset.symbol)
                                     showError(errorString)
                                     toast(errorString)
                                     return@launch
@@ -552,7 +551,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         }
                     } else {
-                        showError()
+                        showError(R.string.error_asset_exists)
                     }
                 }
             }
