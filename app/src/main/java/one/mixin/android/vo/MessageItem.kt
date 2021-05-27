@@ -110,8 +110,7 @@ data class MessageItem(
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
         unfinishedAttachment() ||
-        isCallMessage() || isRecall() ||
-        isTranscript()
+        isCallMessage() || isRecall()
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
@@ -119,7 +118,7 @@ data class MessageItem(
             unfinishedAttachment() ||
             isCallMessage() || isRecall()
 
-    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
+    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio() || isTranscript())
 }
 
 fun create(type: String, createdAt: String? = null) = MessageItem(

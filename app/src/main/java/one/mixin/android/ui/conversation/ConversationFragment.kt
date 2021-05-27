@@ -3007,7 +3007,6 @@ class ConversationFragment() :
                 forward()
                 forwardDialog?.dismiss()
             }
-            forwardDialogLayoutBinding.combineForward.isVisible = !conversationAdapter.selectSet.any { t -> t.isTranscript() }
             forwardDialogLayoutBinding.combineForward.setOnClickListener {
                 combineForward()
                 forwardDialog?.dismiss()

@@ -160,45 +160,45 @@ class TranscriptAttachmentDownloadJob(
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
-                                    ""
+                                    "",
+                                    transcriptMessage.transcriptId
                                 )
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
-                                    ".png"
+                                    ".png",
+                                    transcriptMessage.transcriptId
                                 )
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
-                                    ".gif"
+                                    ".gif",
+                                    transcriptMessage.transcriptId
                                 )
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
-                                    ".webp"
+                                    ".webp",
+                                    transcriptMessage.transcriptId
                                 )
                         }
                         else -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
-                                    ".jpg"
+                                    ".jpg",
+                                    transcriptMessage.transcriptId
                                 )
                         }
                     }
@@ -227,9 +227,9 @@ class TranscriptAttachmentDownloadJob(
                     val dataFile = MixinApplication.get()
                         .getTranscriptFile(
                             conversationId,
-                            transcriptMessage.transcriptId,
                             transcriptMessage.messageId,
-                            extensionName ?: ""
+                            extensionName ?: "",
+                            transcriptMessage.transcriptId
                         )
                     dataFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
@@ -258,9 +258,9 @@ class TranscriptAttachmentDownloadJob(
                     val videoFile = MixinApplication.get()
                         .getTranscriptFile(
                             conversationId,
-                            transcriptMessage.transcriptId,
                             transcriptMessage.messageId,
-                            extensionName
+                            extensionName,
+                            transcriptMessage.transcriptId
                         )
                     videoFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
@@ -284,7 +284,7 @@ class TranscriptAttachmentDownloadJob(
                             FileInputStream(destination)
                         }
                     val audioFile = MixinApplication.get()
-                        .getTranscriptFile(conversationId, transcriptMessage.transcriptId, transcriptMessage.messageId, ".ogg")
+                        .getTranscriptFile(conversationId, transcriptMessage.messageId, ".ogg", transcriptMessage.transcriptId)
                     audioFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
                         Uri.fromFile(audioFile).toString(),

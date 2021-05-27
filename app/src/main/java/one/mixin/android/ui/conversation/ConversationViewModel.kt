@@ -808,23 +808,6 @@ internal constructor(
     suspend fun processTranscript(conversationId: String, transcriptMessages: List<TranscriptMessage>): List<TranscriptMessage> {
         withContext(Dispatchers.IO) {
             transcriptMessages.forEach { transcript ->
-                if (transcript.isAttachment()) {
-                    val file = File(Uri.parse(transcript.mediaUrl).path)
-                    if (file.exists()) {
-                        val outFile = MixinApplication.appContext.getTranscriptFile(
-                            conversationId,
-                            transcript.transcriptId,
-                            file.nameWithoutExtension,
-                            file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
-                        )
-                        file.copy(outFile)
-                        transcript.mediaUrl = outFile.toUri().toString()
-                        transcript.mediaStatus = MediaStatus.CANCELED.name
-                    } else {
-                        transcript.mediaUrl = null
-                        transcript.mediaStatus = MediaStatus.DONE.name
-                    }
-                }
                 if (transcript.quoteContent != null) {
                     val quoteMessage = try {
                         GsonHelper.customGson.fromJson(transcript.quoteContent, QuoteMessageItem::class.java)

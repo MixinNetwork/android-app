@@ -249,16 +249,17 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audios")
 }
 
-fun Context.getTranscriptFile(conversationId: String, messageId: String, name: String, type: String): File {
-    return getTranscriptDirPath(conversationId, messageId).newTempFile(
+fun Context.getTranscriptFile(conversationId: String, name: String, type: String, vararg transcriptIds: String): File {
+    assert(transcriptIds.isNotEmpty())
+    return getTranscriptDirPath(conversationId, *transcriptIds).newTempFile(
         name, type,
         true
     )
 }
 
-fun Context.getTranscriptDirPath(conversationId: String, messageId: String): File {
+fun Context.getTranscriptDirPath(conversationId: String, vararg transcriptIds: String): File {
     val root = getMediaPath()
-    return File("$root${File.separator}Transcripts${File.separator}$conversationId${File.separator}$messageId")
+    return File("$root${File.separator}Transcripts${File.separator}$conversationId${File.separator}${transcriptIds.joinToString { File.separator }}")
 }
 
 fun Context.getConversationImagePath(conversationId: String): File? {
