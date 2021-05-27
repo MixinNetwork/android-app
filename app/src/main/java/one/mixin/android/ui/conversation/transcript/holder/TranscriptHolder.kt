@@ -155,7 +155,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
             }
         }
         binding.chatLayout.setOnClickListener {
-            // onItemListener.onTranscriptClick(messageItem)
+            onItemListener.onTranscriptClick(messageItem)
         }
         val isMe = false
         if (isFirst && !isMe) {

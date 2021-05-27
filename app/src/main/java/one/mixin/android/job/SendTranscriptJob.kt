@@ -35,8 +35,7 @@ class SendTranscriptJob(
     }
 
     override fun onRun() {
-        val list = transcriptMessages.filter { it.isAttachment() }
-        val transcripts = transcriptMessageDao.getTranscript(message.id)
+        val transcripts = getTranscripts(message.id, mutableListOf())
         val stringBuffer = StringBuffer()
         transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
             if (transcript.isData()) {
@@ -50,14 +49,25 @@ class SendTranscriptJob(
             }
         }
         MessageFts4Helper.insertMessageFts4(message.id, stringBuffer.toString())
-        if (list.isEmpty()) {
-            message.content = GsonHelper.customGson.toJson(transcripts)
-            jobManager.addJob(SendMessageJob(message))
-        } else {
+        if (transcripts.any { t -> t.isAttachment() }) {
             messageDao.insert(message)
-            list.forEach { t ->
+            transcripts.forEach { t ->
                 jobManager.addJob(SendTranscriptAttachmentMessageJob(t, message.isPlain()))
             }
+        } else {
+            message.mediaStatus = MediaStatus.DONE.name
+            messageDao.insert(message)
+            message.content = GsonHelper.customGson.toJson(transcripts)
+            jobManager.addJob(SendMessageJob(message))
         }
+    }
+
+    private fun getTranscripts(transcriptId: String, list: MutableList<TranscriptMessage>): MutableList<TranscriptMessage> {
+        val transcripts = transcriptMessageDao.getTranscript(transcriptId)
+        list.addAll(transcripts)
+        transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
+            getTranscripts(transcriptMessage.messageId, list)
+        }
+        return list
     }
 }

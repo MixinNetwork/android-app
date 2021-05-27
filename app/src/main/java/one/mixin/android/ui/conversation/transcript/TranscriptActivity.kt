@@ -215,6 +215,10 @@ class TranscriptActivity : BaseActivity() {
                 Timber.d(messageItem.messageId)
             }
 
+            override fun onTranscriptClick(messageItem: TranscriptMessageItem) {
+                show(this@TranscriptActivity, messageItem.messageId, conversationId, isPlain)
+            }
+
             override fun onRetryDownload(messageId: String) {
                 lifecycleScope.launch {
                     conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
