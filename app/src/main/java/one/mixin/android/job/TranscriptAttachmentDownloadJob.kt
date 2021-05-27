@@ -159,26 +159,18 @@ class TranscriptAttachmentDownloadJob(
                         transcriptMessage.mediaMimeType?.isImageSupport() == false -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
-                                    conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
-                                    ""
-                                )
+                                    "")
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
-                                    conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
-                                    ".png"
-                                )
+                                    ".png")
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
-                                    conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
                                     ".gif"
                                 )
@@ -186,8 +178,6 @@ class TranscriptAttachmentDownloadJob(
                         transcriptMessage.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
-                                    conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
                                     ".webp"
                                 )
@@ -195,8 +185,6 @@ class TranscriptAttachmentDownloadJob(
                         else -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
-                                    conversationId,
-                                    transcriptMessage.transcriptId,
                                     transcriptMessage.messageId,
                                     ".jpg"
                                 )
@@ -226,11 +214,8 @@ class TranscriptAttachmentDownloadJob(
                     val extensionName = transcriptMessage.mediaName?.getExtensionName()
                     val dataFile = MixinApplication.get()
                         .getTranscriptFile(
-                            conversationId,
-                            transcriptMessage.transcriptId,
                             transcriptMessage.messageId,
-                            extensionName ?: ""
-                        )
+                            extensionName ?: "")
                     dataFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
                         Uri.fromFile(dataFile).toString(),
@@ -257,8 +242,6 @@ class TranscriptAttachmentDownloadJob(
                     }
                     val videoFile = MixinApplication.get()
                         .getTranscriptFile(
-                            conversationId,
-                            transcriptMessage.transcriptId,
                             transcriptMessage.messageId,
                             extensionName
                         )
@@ -284,7 +267,7 @@ class TranscriptAttachmentDownloadJob(
                             FileInputStream(destination)
                         }
                     val audioFile = MixinApplication.get()
-                        .getTranscriptFile(conversationId, transcriptMessage.transcriptId, transcriptMessage.messageId, ".ogg")
+                        .getTranscriptFile(transcriptMessage.messageId, ".ogg")
                     audioFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
                         Uri.fromFile(audioFile).toString(),

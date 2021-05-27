@@ -488,7 +488,7 @@ class ConversationFragment() :
                         binding.toolView.shareIv.visibility = GONE
                     }
                 }
-                if (conversationAdapter.selectSet.find { it.canNotForward() } != null) {
+                if (conversationAdapter.selectSet.any { it.canNotForward() }) {
                     binding.toolView.forwardIv.visibility = GONE
                 } else {
                     binding.toolView.forwardIv.visibility = VISIBLE
@@ -521,12 +521,12 @@ class ConversationFragment() :
                         binding.toolView.addStickerIv.visibility = GONE
                     }
 
-                    if (conversationAdapter.selectSet.find { it.canNotForward() } != null) {
+                    if (conversationAdapter.selectSet.any { it.canNotForward() }) {
                         binding.toolView.forwardIv.visibility = GONE
                     } else {
                         binding.toolView.forwardIv.visibility = VISIBLE
                     }
-                    if (conversationAdapter.selectSet.find { it.canNotReply() } != null) {
+                    if (conversationAdapter.selectSet.any { it.canNotReply() }) {
                         binding.toolView.replyIv.visibility = GONE
                     } else {
                         binding.toolView.replyIv.visibility = VISIBLE
@@ -3005,7 +3005,6 @@ class ConversationFragment() :
                 forward()
                 forwardDialog?.dismiss()
             }
-            forwardDialogLayoutBinding.combineForward.isVisible = !conversationAdapter.selectSet.any { t -> t.isTranscript() }
             forwardDialogLayoutBinding.combineForward.setOnClickListener {
                 combineForward()
                 forwardDialog?.dismiss()

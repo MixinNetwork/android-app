@@ -576,8 +576,10 @@ fun createTranscriptMessage(
     userId: String,
     category: String,
     content: String,
+    mediaSize: Long,
     createdAt: String,
     status: String,
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
+    .setMediaSize(mediaSize)
     .build()

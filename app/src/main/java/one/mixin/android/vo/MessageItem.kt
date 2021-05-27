@@ -109,9 +109,8 @@ data class MessageItem(
     fun canNotForward() = this.type == MessageCategory.APP_BUTTON_GROUP.name ||
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        unfinishedAttachment() ||
         isCallMessage() || isRecall() ||
-        isTranscript()
+        (isTranscript() && this.mediaStatus != MediaStatus.DONE.name)
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
