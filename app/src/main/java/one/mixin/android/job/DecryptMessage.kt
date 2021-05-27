@@ -694,6 +694,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 transcriptMessageDao.insertList(transcripts)
+                if (!transcripts.any { t -> t.isAttachment() }) {
+                    message.mediaStatus = MediaStatus.DONE.name
+                }
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 generateNotification(message, data.source)
             }
