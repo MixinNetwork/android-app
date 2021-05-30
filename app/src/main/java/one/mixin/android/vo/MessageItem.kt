@@ -109,8 +109,8 @@ data class MessageItem(
     fun canNotForward() = this.type == MessageCategory.APP_BUTTON_GROUP.name ||
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        unfinishedAttachment() ||
-        isCallMessage() || isRecall()
+        isCallMessage() || isRecall() ||
+        (isTranscript() && this.mediaStatus != MediaStatus.DONE.name)
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
@@ -118,7 +118,7 @@ data class MessageItem(
             unfinishedAttachment() ||
             isCallMessage() || isRecall()
 
-    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio() || isTranscript())
+    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 }
 
 fun create(type: String, createdAt: String? = null) = MessageItem(

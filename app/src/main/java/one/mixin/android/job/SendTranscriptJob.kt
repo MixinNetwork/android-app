@@ -32,27 +32,42 @@ class SendTranscriptJob(
         }
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {
+            val stringBuffer = StringBuffer()
+            transcriptMessages.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
+                if (transcript.isData()) {
+                    transcript.mediaName
+                } else if (transcript.isContact()) {
+                    transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                } else {
+                    transcript.content
+                }?.joinWhiteSpace()?.let {
+                    stringBuffer.append(it)
+                }
+            }
+            MessageFts4Helper.insertMessageFts4(message.id, stringBuffer.toString())
             messageDao.insert(message)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
-                    val file = File(Uri.parse(transcript.mediaUrl).path)
-                    if (file.exists()) {
-                        val outFile = MixinApplication.appContext.getTranscriptFile(
-                            message.conversationId,
-                            file.nameWithoutExtension,
-                            file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
-                            transcript.transcriptId,
-                        )
-                        file.copy(outFile)
-                        transcript.mediaUrl = outFile.toUri().toString()
-                        transcript.mediaStatus = MediaStatus.CANCELED.name
-                    } else {
+                    val mediaUrl = transcript.mediaUrl
+                    if (mediaUrl == null) {
                         transcript.mediaUrl = null
                         transcript.mediaStatus = MediaStatus.DONE.name
-                    }
-                } else if (transcript.isTranscript()) {
-                    transcriptMessageDao.getTranscript(transcript.messageId).forEach {
-
+                    } else {
+                        val file = File(Uri.parse(mediaUrl).path!!)
+                        if (file.exists()) {
+                            val outFile = MixinApplication.appContext.getTranscriptFile(
+                                transcript.messageId,
+                                file.name.getExtensionName().notNullWithElse({ ".$it" }, ""),
+                            )
+                            if (!outFile.exists() || outFile.length() <= 0) {
+                                file.copy(outFile)
+                            }
+                            transcript.mediaUrl = outFile.toUri().toString()
+                            transcript.mediaStatus = MediaStatus.CANCELED.name
+                        } else {
+                            transcript.mediaUrl = null
+                            transcript.mediaStatus = MediaStatus.DONE.name
+                        }
                     }
                 }
             }
@@ -66,39 +81,29 @@ class SendTranscriptJob(
     }
 
     override fun onRun() {
-        val transcripts = getTranscripts(message.id, mutableListOf())
-        val stringBuffer = StringBuffer()
-        transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
-            if (transcript.isData()) {
-                transcript.mediaName
-            } else if (transcript.isContact()) {
-                transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
-            } else {
-                transcript.content
-            }?.joinWhiteSpace()?.let {
-                stringBuffer.append(it)
-            }
-        }
-        MessageFts4Helper.insertMessageFts4(message.id, stringBuffer.toString())
+        val transcripts = mutableListOf<TranscriptMessage>()
+        getTranscripts(message.id, transcripts)
+
         if (transcripts.any { t -> t.isAttachment() }) {
-            messageDao.insert(message)
-            transcripts.forEach { t ->
-                jobManager.addJob(SendTranscriptAttachmentMessageJob(t, message.isPlain()))
+            val mediaSize = transcripts.sumOf { t -> t.mediaSize ?: 0 }
+            messageDao.updateMediaSize(mediaSize, message.id)
+            transcripts.filter { t ->
+                t.isAttachment()
+            }.forEach { t ->
+                jobManager.addJob(SendTranscriptAttachmentMessageJob(t, message.isPlain(), message.id))
             }
         } else {
             message.mediaStatus = MediaStatus.DONE.name
-            messageDao.insert(message)
             message.content = GsonHelper.customGson.toJson(transcripts)
             jobManager.addJob(SendMessageJob(message))
         }
     }
 
-    private fun getTranscripts(transcriptId: String, list: MutableList<TranscriptMessage>): MutableList<TranscriptMessage> {
+    private fun getTranscripts(transcriptId: String, list: MutableList<TranscriptMessage>) {
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
             getTranscripts(transcriptMessage.messageId, list)
         }
-        return list
     }
 }

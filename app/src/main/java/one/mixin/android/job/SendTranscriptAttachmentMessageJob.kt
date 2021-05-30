@@ -25,6 +25,7 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
@@ -34,7 +35,8 @@ import java.net.SocketTimeoutException
 
 class SendTranscriptAttachmentMessageJob(
     val transcriptMessage: TranscriptMessage,
-    val isPlain: Boolean
+    val isPlain: Boolean,
+    val parentId: String? = null
 ) : MixinJob(
     Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_transcript_job").requireNetwork().persist(),
     "${transcriptMessage.transcriptId}${transcriptMessage.messageId}"
@@ -61,6 +63,11 @@ class SendTranscriptAttachmentMessageJob(
     @DelicateCoroutinesApi
     override fun onRun() {
         if (transcriptMessage.isPlain() == isPlain) {
+            if (transcriptMessage.mediaCreatedAt?.within24Hours() == true) {
+                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
+                sendMessage()
+                return
+            }
             val attachmentExtra = try {
                 GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
             } catch (e: Exception) {
@@ -183,14 +190,22 @@ class SendTranscriptAttachmentMessageJob(
     }
 
     private fun sendMessage() {
-        if (transcriptMessageDao.hasUploadedAttachment(transcriptMessage.transcriptId) == 0) {
-            messageDao.findMessageById(transcriptMessage.transcriptId)?.let {
-                val list = transcriptMessageDao.getTranscript(transcriptMessage.transcriptId)
-                it.content = GsonHelper.customGson.toJson(list)
-                // todo nest
-                messageDao.updateMediaStatus(MediaStatus.DONE.name, transcriptMessage.transcriptId)
+        if (transcriptMessageDao.hasUploadedAttachment(parentId ?: transcriptMessage.transcriptId) == 0) {
+            messageDao.findMessageById(parentId ?: transcriptMessage.transcriptId)?.let {
+                val transcripts = mutableListOf<TranscriptMessage>()
+                getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
+                it.content = GsonHelper.customGson.toJson(transcripts)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
                 jobManager.addJob(SendMessageJob(it))
             }
+        }
+    }
+
+    private fun getTranscripts(transcriptId: String, list: MutableList<TranscriptMessage>) {
+        val transcripts = transcriptMessageDao.getTranscript(transcriptId)
+        list.addAll(transcripts)
+        transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
+            getTranscripts(transcriptMessage.messageId, list)
         }
     }
 

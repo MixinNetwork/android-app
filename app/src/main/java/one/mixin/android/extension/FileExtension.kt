@@ -249,17 +249,16 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audios")
 }
 
-fun Context.getTranscriptFile(conversationId: String, name: String, type: String, vararg transcriptIds: String): File {
-    assert(transcriptIds.isNotEmpty())
-    return getTranscriptDirPath(conversationId, *transcriptIds).newTempFile(
+fun Context.getTranscriptFile(name: String, type: String): File {
+    return getTranscriptDirPath().newTempFile(
         name, type,
         true
     )
 }
 
-fun Context.getTranscriptDirPath(conversationId: String, vararg transcriptIds: String): File {
+fun Context.getTranscriptDirPath(): File {
     val root = getMediaPath()
-    return File("$root${File.separator}Transcripts${File.separator}$conversationId${File.separator}${transcriptIds.joinToString { File.separator }}")
+    return File("$root${File.separator}Transcripts${File.separator}")
 }
 
 fun Context.getConversationImagePath(conversationId: String): File? {
@@ -328,7 +327,6 @@ fun Context.getStorageUsageByConversationAndType(conversationId: String, type: S
         VIDEO -> getConversationVideoPath(conversationId)
         AUDIO -> getConversationAudioPath(conversationId)
         DATA -> getConversationDocumentPath(conversationId)
-        TRANSCRIPT -> getConversationTranscriptPath(conversationId)
         else -> null
     } ?: return null
     return dir.run {
@@ -472,7 +470,7 @@ fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
     if (noMedia) {
         createNoMediaDir()
     }
-    return File.createTempFile(name, type, this)
+    return File(this, "$name$type")
 }
 
 fun File.processing(to: File) {

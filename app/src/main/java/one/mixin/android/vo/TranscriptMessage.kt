@@ -13,7 +13,7 @@ import java.io.Serializable
 class TranscriptMessage(
     @SerializedName("transcript_id")
     @ColumnInfo(name = "transcript_id")
-    val transcriptId: String,
+    var transcriptId: String,
     @SerializedName("message_id")
     @ColumnInfo(name = "message_id")
     val messageId: String,

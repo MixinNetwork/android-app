@@ -37,7 +37,6 @@ import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.event.GroupEvent
-import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
@@ -47,6 +46,7 @@ import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MessageFtsDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -439,17 +439,19 @@ internal constructor(
         }
     }
 
-    fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true, conversationId: String? = null) {
+    fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
         if (!mediaUrl.isNullOrBlank() && forceDelete) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
-        }
-        if (conversationId != null) {
-            MixinApplication.appContext.getTranscriptDirPath(conversationId, id).deleteRecursively()
         }
         appDatabase.deleteMessage(id)
     }
 
+    fun deleteTranscriptByConversationId(conversationId: String) {
+        jobManager.addJobInBackground(TranscriptDeleteJob(messageDao.findTranscriptIdByConversationId(conversationId)))
+    }
+
     suspend fun deleteConversationById(conversationId: String) {
+        jobManager.addJobInBackground(TranscriptDeleteJob(messageDao.findTranscriptIdByConversationId(conversationId)))
         deleteMessageByConversationId(conversationId, true)
     }
 
@@ -473,4 +475,8 @@ internal constructor(
     suspend fun getTranscriptsById(transcriptId: String) = transcriptMessageDao.getTranscriptsById(transcriptId)
 
     suspend fun getTranscriptById(transcriptId: String, messageId: String) = transcriptMessageDao.getTranscriptById(transcriptId, messageId)
+
+    fun getMediaSizeTotalById(conversationId: String) = transcriptMessageDao.getMediaSizeTotalById(conversationId)
+
+    fun countTranscriptById(conversationId: String) = transcriptMessageDao.countTranscriptByConversationId(conversationId)
 }

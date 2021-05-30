@@ -125,6 +125,7 @@ import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.util.UUID
 
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
@@ -634,6 +635,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category.endsWith("_TRANSCRIPT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(Base64.decode(plainText)) else plainText
                 val transcripts = gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList()
+                if (transcripts.isEmpty()) {
+                    throw IllegalArgumentException("Empty transcript messages")
+                }
                 val stringBuffer = StringBuffer()
                 transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
                     if (transcript.isData()) {
@@ -647,17 +651,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 MessageFts4Helper.insertMessageFts4(data.messageId, stringBuffer.toString())
-                val message = createTranscriptMessage(
-                    data.messageId,
-                    data.conversationId,
-                    data.userId,
-                    data.category,
-                    gson.toJson(transcripts.filter { t -> t.transcriptId == data.messageId }.map {
-                        TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
-                    }),
-                    data.createdAt,
-                    data.status
-                )
+
                 transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
                     transcript.stickerId?.let { stickerId ->
                         val sticker = stickerDao.getStickerByUnique(stickerId)
@@ -669,31 +663,49 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         syncUser(userId)
                     }
                 }
+                var mediaSize = 0L
                 transcripts.filter { t -> t.isAttachment() }.forEach { transcript ->
                     transcript.mediaStatus = MediaStatus.CANCELED.name
                     transcript.mediaUrl = null
+                    transcript.mediaSize?.let {
+                        mediaSize += it
+                    }
                     when {
                         transcript.isImage() -> {
                             MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, transcript))
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(data.conversationId, transcript))
                             }
                         }
                         transcript.isVideo() -> {
                             MixinApplication.appContext.autoDownload(autoDownloadVideo) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, transcript))
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(data.conversationId, transcript))
                             }
                         }
                         transcript.isData() -> {
                             MixinApplication.appContext.autoDownload(autoDownloadDocument) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, transcript))
+                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(data.conversationId, transcript))
                             }
                         }
                         transcript.isAudio() -> {
-                            jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(message.conversationId, transcript))
+                            jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(data.conversationId, transcript))
                         }
                     }
                 }
-                transcriptMessageDao.insertList(transcripts)
+                val message = createTranscriptMessage(
+                    data.messageId,
+                    data.conversationId,
+                    data.userId,
+                    data.category,
+                    gson.toJson(transcripts.filter { t -> t.transcriptId == data.messageId }.map {
+                        TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
+                    }),
+                    mediaSize,
+                    data.createdAt,
+                    data.status
+                )
+                transcriptMessageDao.insertList(transcripts.filter { t ->
+                    transcriptMessageDao.getTranscriptByIdSync(t.transcriptId, t.messageId) == null
+                })
                 if (!transcripts.any { t -> t.isAttachment() }) {
                     message.mediaStatus = MediaStatus.DONE.name
                 }

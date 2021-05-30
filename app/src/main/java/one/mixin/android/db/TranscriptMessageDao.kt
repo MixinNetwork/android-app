@@ -99,4 +99,19 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId")
     suspend fun getTranscriptById(transcriptId: String, messageId: String): TranscriptMessage?
+
+    @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId")
+    fun getTranscriptByIdSync(transcriptId: String, messageId: String): TranscriptMessage?
+
+    @Query("SELECT sum(media_size) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
+    fun getMediaSizeTotalById(conversationId: String): Long?
+
+    @Query("SELECT count(*) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
+    fun countTranscriptByConversationId(conversationId: String): Int
+
+    @Query("SELECT count(*) FROM transcript_messages WHERE message_id = :messageId")
+    fun countTranscriptByMessageId(messageId: String): Int
+
+    @Query("DELETE FROM transcript_messages WHERE transcript_id = :transcriptId")
+    fun deleteTranscript(transcriptId: String)
 }

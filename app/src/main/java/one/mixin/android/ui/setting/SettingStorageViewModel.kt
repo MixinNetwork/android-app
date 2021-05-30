@@ -18,7 +18,6 @@ import one.mixin.android.extension.getConversationAudioPath
 import one.mixin.android.extension.getConversationDocumentPath
 import one.mixin.android.extension.getConversationImagePath
 import one.mixin.android.extension.getConversationMediaSize
-import one.mixin.android.extension.getConversationTranscriptPath
 import one.mixin.android.extension.getConversationVideoPath
 import one.mixin.android.extension.getStorageUsageByConversationAndType
 import one.mixin.android.repository.ConversationRepository
@@ -50,8 +49,8 @@ internal constructor(
             context.getStorageUsageByConversationAndType(cid, DATA)?.apply {
                 result.add(this)
             }
-            context.getStorageUsageByConversationAndType(cid, TRANSCRIPT)?.apply {
-                result.add(this)
+            conversationRepository.getMediaSizeTotalById(cid)?.apply {
+                result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(cid), this))
             }
             result.toList()
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -105,7 +104,6 @@ internal constructor(
                     )
                 }
                 TRANSCRIPT -> {
-                    MixinApplication.get().getConversationTranscriptPath(conversationId)?.deleteRecursively()
                     conversationRepository.deleteMediaMessageByConversationAndCategory(
                         conversationId,
                         MessageCategory.SIGNAL_TRANSCRIPT.name,
@@ -125,6 +123,10 @@ internal constructor(
     }
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
+        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name){
+            conversationRepository.deleteTranscriptByConversationId(conversationId)
+            return
+        }
         conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)
             ?.let { list ->
                 list.forEach { item ->

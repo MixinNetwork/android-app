@@ -27,12 +27,9 @@ import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
-import one.mixin.android.extension.copy
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.fileExists
-import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
@@ -432,12 +429,7 @@ internal constructor(
                 conversationRepository.deleteMessage(
                     item.messageId,
                     item.mediaUrl,
-                    item.mediaStatus == MediaStatus.DONE.name,
-                    if (item.isTranscript()) {
-                        item.conversationId
-                    } else {
-                        null
-                    }
+                    item.mediaStatus == MediaStatus.DONE.name
                 )
                 jobManager.cancelJobByMixinJobId(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
@@ -805,7 +797,7 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
-    suspend fun processTranscript(conversationId: String, transcriptMessages: List<TranscriptMessage>): List<TranscriptMessage> {
+    suspend fun processTranscript(transcriptMessages: List<TranscriptMessage>): List<TranscriptMessage> {
         withContext(Dispatchers.IO) {
             transcriptMessages.forEach { transcript ->
                 if (transcript.quoteContent != null) {
@@ -830,4 +822,13 @@ internal constructor(
         }
         return transcriptMessages
     }
+
+    suspend fun getTranscripts(transcriptId: String, messageId: String? = null): List<TranscriptMessage> =
+        withContext(Dispatchers.IO) {
+            val transcripts = conversationRepository.getTranscriptsById(transcriptId)
+            if (messageId != null) {
+                transcripts.forEach { t -> t.transcriptId = messageId }
+            }
+            return@withContext transcripts
+        }
 }
