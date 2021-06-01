@@ -35,7 +35,11 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
     private fun deleteAttachment(messageId: String, mediaUrl: String) {
         val count = transcriptMessageDao.countTranscriptByMessageId(messageId)
         if (count <= 1) {
-            File(Uri.parse(mediaUrl).path!!).deleteOnExit()
+            File(Uri.parse(mediaUrl).path!!).apply {
+                if (exists()) {
+                    delete()
+                }
+            }
         }
     }
 

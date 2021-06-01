@@ -192,7 +192,7 @@ class SendTranscriptAttachmentMessageJob(
     private fun sendMessage() {
         if (transcriptMessageDao.hasUploadedAttachment(parentId ?: transcriptMessage.transcriptId) == 0) {
             messageDao.findMessageById(parentId ?: transcriptMessage.transcriptId)?.let {
-                val transcripts = mutableListOf<TranscriptMessage>()
+                val transcripts = mutableSetOf<TranscriptMessage>()
                 getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
                 it.content = GsonHelper.customGson.toJson(transcripts)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
@@ -201,7 +201,7 @@ class SendTranscriptAttachmentMessageJob(
         }
     }
 
-    private fun getTranscripts(transcriptId: String, list: MutableList<TranscriptMessage>) {
+    private fun getTranscripts(transcriptId: String, list: MutableSet<TranscriptMessage>) {
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->

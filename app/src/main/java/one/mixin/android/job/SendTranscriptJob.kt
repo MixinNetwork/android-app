@@ -81,7 +81,7 @@ class SendTranscriptJob(
     }
 
     override fun onRun() {
-        val transcripts = mutableListOf<TranscriptMessage>()
+        val transcripts = mutableSetOf<TranscriptMessage>()
         getTranscripts(message.id, transcripts)
 
         if (transcripts.any { t -> t.isAttachment() }) {
@@ -93,13 +93,14 @@ class SendTranscriptJob(
                 jobManager.addJob(SendTranscriptAttachmentMessageJob(t, message.isPlain(), message.id))
             }
         } else {
+            messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             message.mediaStatus = MediaStatus.DONE.name
             message.content = GsonHelper.customGson.toJson(transcripts)
             jobManager.addJob(SendMessageJob(message))
         }
     }
 
-    private fun getTranscripts(transcriptId: String, list: MutableList<TranscriptMessage>) {
+    private fun getTranscripts(transcriptId: String, list: MutableSet<TranscriptMessage>) {
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
