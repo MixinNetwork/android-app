@@ -25,7 +25,7 @@ buildscript {
         ext.sharetargetVersion = '1.1.0'
         ext.coordinatorVersion = '1.1.0'
         ext.espressoVersion = '3.3.0'
-        ext.cameraxVersion = '1.1.0-alpha04'
+        ext.cameraxVersion = '1.1.0-alpha05'
         ext.cameraxviewVersion = '1.0.0-alpha24'
         ext.glideVersion = '4.12.0'
         ext.webpdecoderVesion = '2.0.4.12.0'
