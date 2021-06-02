@@ -488,7 +488,7 @@ class ConversationFragment() :
                         binding.toolView.shareIv.visibility = GONE
                     }
                 }
-                if (conversationAdapter.selectSet.any { it.canNotForward() }) {
+                if (conversationAdapter.selectSet.size > 99 && conversationAdapter.selectSet.any { it.canNotForward() }) {
                     binding.toolView.forwardIv.visibility = GONE
                 } else {
                     binding.toolView.forwardIv.visibility = VISIBLE
@@ -3005,6 +3005,8 @@ class ConversationFragment() :
                 forward()
                 forwardDialog?.dismiss()
             }
+            // disable combine transcript
+            forwardDialogLayoutBinding.combineForward.isVisible = !conversationAdapter.selectSet.any { it.isTranscript() }
             forwardDialogLayoutBinding.combineForward.setOnClickListener {
                 combineForward()
                 forwardDialog?.dismiss()

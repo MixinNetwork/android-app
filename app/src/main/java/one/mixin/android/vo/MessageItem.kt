@@ -18,6 +18,8 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.encodeBitmap
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
@@ -27,6 +29,8 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.timeFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.blurhash.Base83
+import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.websocket.toLocationData
 import java.io.File
 import java.io.FileInputStream
@@ -290,7 +294,19 @@ fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): Tr
         mediaDuration?.toLong(),
         mediaStatus,
         mediaWaveform,
-        thumbImage,
+        thumbImage?.let { thumb ->
+            try {
+                if (Base83.isValid(thumb)) {
+                    thumb.decodeBase64().encodeBitmap()?.let { bitmap ->
+                        BlurHashEncoder.encode(bitmap)
+                    }
+                } else {
+                    thumbImage
+                }
+            } catch (e: Exception) {
+                thumbImage
+            }
+        },
         thumbUrl,
         null,
         null,
