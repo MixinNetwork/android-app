@@ -12,7 +12,7 @@ buildscript {
         ext.workManagerVersion = '2.5.0'
         ext.constraintLayoutVersion = '2.0.4'
         ext.supportLibVersion = '1.0.0'
-        ext.recyclerViewVersion = '1.2.0'
+        ext.recyclerViewVersion = '1.2.1'
         ext.browser_version = '1.3.0'
         ext.biometric_version = '1.1.0'
         ext.mdcVersion = '1.3.0'
