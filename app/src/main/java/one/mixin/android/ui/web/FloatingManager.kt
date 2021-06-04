@@ -12,7 +12,6 @@ import androidx.annotation.ColorInt
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -110,7 +109,7 @@ fun holdClip(activity: Activity, webClip: WebClip) {
 }
 
 private fun initClips(activity: Activity) {
-    GlobalScope.launch(SINGLE_THREAD) {
+    MixinApplication.appScope.launch(SINGLE_THREAD) {
         val content =
             activity.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
         val type = object : TypeToken<List<WebClip>>() {}.type
@@ -154,7 +153,7 @@ fun releaseClip(index: Int) {
 var saveJob: Job? = null
 fun saveClips() {
     saveJob?.cancel()
-    saveJob = GlobalScope.launch(SINGLE_THREAD) {
+    saveJob = MixinApplication.appScope.launch(SINGLE_THREAD) {
         val localClips = mutableListOf<WebClip>().apply {
             addAll(clips)
         }

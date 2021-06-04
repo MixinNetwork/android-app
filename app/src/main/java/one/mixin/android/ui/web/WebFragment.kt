@@ -123,8 +123,6 @@ import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
 import one.mixin.android.widget.SuspiciousLinkView
 import one.mixin.android.widget.WebControlView
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
@@ -1039,7 +1037,7 @@ class WebFragment : BaseFragment() {
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    doAsync {
+                    lifecycleScope.launch(Dispatchers.IO) {
                         try {
                             val outFile = requireContext().getPublicPicturePath()
                                 .createImageTemp(noMedia = false)
@@ -1064,7 +1062,7 @@ class WebFragment : BaseFragment() {
                                     Uri.fromFile(outFile)
                                 )
                             )
-                            uiThread {
+                            withContext(Dispatchers.Main) {
                                 if (isAdded) toast(
                                     getString(
                                         R.string.save_to,
@@ -1073,7 +1071,7 @@ class WebFragment : BaseFragment() {
                                 )
                             }
                         } catch (e: Exception) {
-                            uiThread { if (isAdded) toast(R.string.save_failure) }
+                            withContext(Dispatchers.Main) { if (isAdded) toast(R.string.save_failure) }
                         }
                     }
                 } else {

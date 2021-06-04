@@ -34,6 +34,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_EMERGENCY_CONTACT
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
@@ -96,7 +97,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
-import org.jetbrains.anko.doAsync
+
 import org.jetbrains.anko.margin
 import java.io.File
 import javax.inject.Inject
@@ -275,7 +276,7 @@ class ConversationListFragment : LinkFragment() {
                             context?.toast(R.string.error_network)
                             return
                         }
-                        doAsync { messagesViewModel.createGroupConversation(item.conversationId) }
+                        lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
                     } else {
                         lifecycleScope.launch {
                             val user = if (item.isContactConversation()) {

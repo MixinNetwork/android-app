@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -56,7 +55,7 @@ class ConversationJob(
                 updateConversationStatusFailure()
                 return
             }
-            createCheckRunJob = GlobalScope.launch(Dispatchers.IO) {
+            createCheckRunJob = MixinApplication.appScope.launch(Dispatchers.IO) {
                 delay(CREATE_TIMEOUT_MILLIS)
                 updateConversationStatusFailure()
             }
