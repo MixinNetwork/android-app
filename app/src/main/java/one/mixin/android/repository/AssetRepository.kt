@@ -191,6 +191,22 @@ constructor(
 
     suspend fun findAddressById(addressId: String, assetId: String) = addressDao.findAddressById(addressId, assetId)
 
+    suspend fun refreshAndGetAddress(addressId: String,assetId: String): Address? {
+        var result: Address? = null
+        handleMixinResponse(
+            invokeNetwork = {
+                addressService.address(addressId)
+            },
+            successBlock = { response ->
+                response.data?.let {
+                    addressDao.insert(it)
+                    result = addressDao.findAddressById(addressId,assetId)
+                }
+            }
+        )
+        return result
+    }
+
     suspend fun findAssetItemById(assetId: String) = assetDao.findAssetItemById(assetId)
 
     suspend fun findAssetsByIds(assetIds: List<String>) = assetDao.suspendFindAssetsByIds(assetIds)
