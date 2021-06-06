@@ -219,6 +219,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 ) {
                     RxBus.publish(BotCloseEvent())
                     ConversationActivity.show(ctx, null, user.userId)
+                    dismiss()
                 }
             }
         }
@@ -735,6 +736,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         RxBus.publish(BotCloseEvent())
                         WebActivity
                             .show(requireActivity(), app.homeUri, conversationId, app)
+                        dismiss()
                     }
                 bottomViewModel.findUserById(app.creatorId)
                     .observe(
