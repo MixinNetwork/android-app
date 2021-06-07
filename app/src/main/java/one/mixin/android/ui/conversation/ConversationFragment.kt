@@ -353,7 +353,7 @@ class ConversationFragment() :
                             }
                         }
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                                ?.getBoolean(conversationId, false) == true
+                            ?.getBoolean(conversationId, false) == true
                         ) {
                             lifecycleScope.launch {
                                 if (viewDestroyed()) return@launch
@@ -608,9 +608,9 @@ class ConversationFragment() :
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true
-                    )
+                            "application/vnd.android.package-archive",
+                            true
+                        )
                 ) {
                     if (requireContext().packageManager.canRequestPackageInstalls()) {
                         requireContext().openMedia(messageItem)

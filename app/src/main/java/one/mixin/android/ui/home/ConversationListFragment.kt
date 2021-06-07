@@ -97,7 +97,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
-
 import org.jetbrains.anko.margin
 import java.io.File
 import javax.inject.Inject
