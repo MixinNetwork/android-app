@@ -6,8 +6,8 @@ import android.content.DialogInterface
 import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OpponentMultisig
@@ -199,7 +199,7 @@ class MultisigsBottomSheetDialogFragment :
             t.state != MultisigsState.signed.name &&
             t.state != MultisigsState.unlocked.name
         ) {
-            GlobalScope.launch {
+            MixinApplication.appScope.launch {
                 bottomViewModel.cancelMultisigs(t.requestId)
             }
         }

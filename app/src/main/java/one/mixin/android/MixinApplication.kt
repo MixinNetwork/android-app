@@ -18,10 +18,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
@@ -52,12 +53,12 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.disconnect
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.notificationManager
-import org.jetbrains.anko.uiThread
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 open class MixinApplication :
     Application(),
@@ -102,6 +103,11 @@ open class MixinApplication :
         var conversationId: String? = null
 
         fun get(): MixinApplication = appContext as MixinApplication
+
+        val appScope: CoroutineScope
+            get() {
+                return get().appScope
+            }
     }
 
     override fun onCreate() {
@@ -189,10 +195,10 @@ open class MixinApplication :
             WebStorage.getInstance().deleteAllData()
             releaseAll()
             PipVideoView.release()
-            doAsync {
+            get().appScope.launch {
                 clearData(sessionId)
 
-                uiThread {
+                withContext(Dispatchers.Main) {
                     val entryPoint = EntryPointAccessors.fromApplication(
                         this@MixinApplication,
                         AppEntryPoint::class.java
@@ -229,13 +235,13 @@ open class MixinApplication :
         } else if (activity !is LandingActivity && activity !is InitializeActivity) {
             if (activity !is WebActivity) {
                 currentActivity = activity
-                GlobalScope.launch(Dispatchers.Main) {
+                appScope.launch(Dispatchers.Main) {
                     refresh(activity)
                 }
             }
             if (activity !is MusicActivity) {
                 currentActivity = activity
-                GlobalScope.launch(Dispatchers.Main) {
+                appScope.launch(Dispatchers.Main) {
                     if (isMusicServiceRunning(activity)) {
                         FloatingPlayer.getInstance(activity.isNightMode()).show(activity, false)
                     }
@@ -246,7 +252,7 @@ open class MixinApplication :
 
     override fun onActivityPaused(activity: Activity) {
         activityInForeground = false
-        GlobalScope.launch {
+        get().appScope.launch {
             delay(200)
             if (!activityInForeground) {
                 FloatingWebClip.getInstance(activity.isNightMode()).hide()
@@ -263,5 +269,12 @@ open class MixinApplication :
 
     override fun onActivityDestroyed(activity: Activity) {
         if (activity == currentActivity) currentActivity = null
+    }
+
+    private val appScope by lazy {
+        object : CoroutineScope {
+            override val coroutineContext: CoroutineContext
+                get() = EmptyCoroutineContext
+        }
     }
 }

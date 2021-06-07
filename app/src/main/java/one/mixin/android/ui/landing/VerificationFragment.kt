@@ -15,7 +15,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -48,8 +50,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 
 @AndroidEntryPoint
 class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
@@ -157,15 +157,15 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         handleFailure(r)
                         return@subscribe
                     }
-                    doAsync {
+                    lifecycleScope.launch(Dispatchers.IO) {
                         val a = Session.getAccount()
                         a?.let {
-                            val phone = requireArguments().getString(ARGS_PHONE_NUM) ?: return@doAsync
+                            val phone = requireArguments().getString(ARGS_PHONE_NUM) ?: return@launch
                             viewModel.updatePhone(a.userId, phone)
                             a.phone = phone
                             Session.storeAccount(a)
                         }
-                        uiThread {
+                        withContext(Dispatchers.Main) {
                             alert(getString(R.string.change_phone_success))
                                 .setPositiveButton(android.R.string.yes) { dialog, _ ->
                                     dialog.dismiss()

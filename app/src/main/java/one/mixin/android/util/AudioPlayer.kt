@@ -8,7 +8,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -274,7 +273,7 @@ class AudioPlayer private constructor() {
     private fun checkNext() {
         messageItem?.let { item ->
             if (!item.isAudio()) return
-            GlobalScope.launch(Dispatchers.IO) {
+            MixinApplication.appScope.launch(Dispatchers.IO) {
                 val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
                     .messageDao()
                     .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId)
@@ -298,7 +297,7 @@ class AudioPlayer private constructor() {
     private fun markAudioReadAndCheckNextAudioAvailable(
         currentMessage: MessageItem,
         whenPlayNewAction: ((Message) -> Unit)? = null
-    ) = GlobalScope.launch(Dispatchers.IO) {
+    ) = MixinApplication.appScope.launch(Dispatchers.IO) {
         val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
         if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)

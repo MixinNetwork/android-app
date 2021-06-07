@@ -18,7 +18,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -93,7 +92,6 @@ import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.websocket.toLocationData
-import org.jetbrains.anko.doAsync
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -325,7 +323,7 @@ internal constructor(
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryUpload(id: String, onError: () -> Unit) {
-        doAsync {
+        viewModelScope.launch(Dispatchers.IO) {
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
@@ -366,7 +364,7 @@ internal constructor(
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryDownload(id: String) {
-        doAsync {
+        viewModelScope.launch(Dispatchers.IO) {
             conversationRepository.findMessageById(id)?.let {
                 jobManager.addJobInBackground(AttachmentDownloadJob(it))
             }
@@ -374,7 +372,7 @@ internal constructor(
     }
 
     fun markMessageRead(conversationId: String, accountId: String) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
             notificationManager.cancel(conversationId.hashCode())
             while (true) {
                 val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)

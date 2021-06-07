@@ -8,7 +8,6 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -173,7 +172,7 @@ class ChatWebSocket(
     }
 
     override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
             try {
                 val json = bytes.ungzip()
                 val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)

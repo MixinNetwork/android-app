@@ -43,7 +43,9 @@ import com.google.android.exoplayer2.Player
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMediaPagerBinding
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
@@ -88,9 +90,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.backgroundDrawable
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
-import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -347,11 +347,11 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 .subscribe(
                     { granted ->
                         if (granted) {
-                            doAsync {
+                            lifecycleScope.launch(Dispatchers.IO) {
                                 val path = item.mediaUrl?.toUri()?.getFilePath()
                                 if (path == null) {
                                     toast(R.string.save_failure)
-                                    return@doAsync
+                                    return@launch
                                 }
                                 val file = File(path)
                                 val outFile = when {
@@ -376,7 +376,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                         Uri.fromFile(outFile)
                                     )
                                 )
-                                uiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
+                                withContext(Dispatchers.Main) { toast(getString(R.string.save_to, outFile.absolutePath)) }
                             }
                         } else {
                             openPermissionSetting()

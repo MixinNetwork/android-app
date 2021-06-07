@@ -4,7 +4,6 @@ import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -129,7 +128,7 @@ class SendAttachmentMessageJob(
         val inputStream = try {
             MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
         } catch (e: FileNotFoundException) {
-            GlobalScope.launch(Dispatchers.Main) {
+            MixinApplication.appScope.launch(Dispatchers.Main) {
                 MixinApplication.get().toast(R.string.error_file_exists)
             }
             null
@@ -163,7 +162,7 @@ class SendAttachmentMessageJob(
         } catch (e: Exception) {
             Timber.e(e)
             if (e is SocketTimeoutException) {
-                GlobalScope.launch(Dispatchers.Main) {
+                MixinApplication.appScope.launch(Dispatchers.Main) {
                     MixinApplication.get().toast(R.string.upload_timeout)
                 }
             }

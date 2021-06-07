@@ -24,13 +24,14 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.reportExoPlayerException
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import kotlin.math.max
 import kotlin.math.min
 
@@ -173,7 +174,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         }
         this.mId = id
         this.url = url
-        doAsync {
+        MixinApplication.appScope.launch(Dispatchers.IO) {
             var contentType = "application/x-mpegURL"
             try {
                 val client = OkHttpClient.Builder().build()
@@ -184,7 +185,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
                 }
             } catch (e: Exception) {
             }
-            uiThread {
+            withContext(Dispatchers.Main) {
                 mediaSource = if (contentType.contains("application/x-mpegURL", true) ||
                     contentType.contains("application/vnd.apple.mpegurl", true) ||
                     contentType.contains("binary/octet-stream", ignoreCase = true)

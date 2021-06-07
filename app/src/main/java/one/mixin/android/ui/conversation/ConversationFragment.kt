@@ -227,8 +227,6 @@ import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
 import one.mixin.android.widget.linktext.AutoLinkMode
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -1831,11 +1829,11 @@ class ConversationFragment() :
 
     private inline fun createConversation(crossinline action: () -> Unit) {
         if (isFirstMessage) {
-            doAsync {
+            lifecycleScope.launch(Dispatchers.IO) {
                 chatViewModel.initConversation(conversationId, recipient!!, sender)
                 isFirstMessage = false
 
-                uiThread {
+                withContext(Dispatchers.Main) {
                     if (isAdded) {
                         action()
                     }
