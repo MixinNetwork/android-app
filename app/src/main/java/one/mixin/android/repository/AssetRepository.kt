@@ -191,7 +191,7 @@ constructor(
 
     suspend fun findAddressById(addressId: String, assetId: String) = addressDao.findAddressById(addressId, assetId)
 
-    suspend fun refreshAndGetAddress(addressId: String,assetId: String): Address? {
+    suspend fun refreshAndGetAddress(addressId: String, assetId: String): Address? {
         var result: Address? = null
         handleMixinResponse(
             invokeNetwork = {
@@ -200,7 +200,7 @@ constructor(
             successBlock = { response ->
                 response.data?.let {
                     addressDao.insert(it)
-                    result = addressDao.findAddressById(addressId,assetId)
+                    result = addressDao.findAddressById(addressId, assetId)
                 }
             }
         )

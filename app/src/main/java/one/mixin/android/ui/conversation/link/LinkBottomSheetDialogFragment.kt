@@ -370,7 +370,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         threshold = paymentCodeResponse.threshold,
                                         senders = arrayOf(Session.getAccountId()!!),
                                         receivers = paymentCodeResponse.receivers,
-                                        asset = asset!!,
+                                        asset = asset,
                                         amount = paymentCodeResponse.amount,
                                         pin = null,
                                         traceId = paymentCodeResponse.traceId,
