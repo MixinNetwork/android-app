@@ -370,7 +370,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         threshold = paymentCodeResponse.threshold,
                                         senders = arrayOf(Session.getAccountId()!!),
                                         receivers = paymentCodeResponse.receivers,
-                                        asset = asset!!,
+                                        asset = asset,
                                         amount = paymentCodeResponse.amount,
                                         pin = null,
                                         traceId = paymentCodeResponse.traceId,
@@ -406,14 +406,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (address == null) {
                             showError(R.string.error_address_exists)
                         } else {
-                            var asset = checkAsset(assetId)
+                            val asset = checkAsset(assetId)
                             if (asset != null) {
                                 PinAddrBottomSheetDialogFragment.newInstance(
                                     assetId = assetId,
-                                    assetUrl = asset!!.iconUrl,
-                                    chainId = asset!!.chainId,
-                                    chainIconUrl = asset!!.chainIconUrl,
-                                    assetName = asset!!.name,
+                                    assetUrl = asset.iconUrl,
+                                    chainId = asset.chainId,
+                                    chainIconUrl = asset.chainIconUrl,
+                                    assetName = asset.name,
                                     addressId = addressId,
                                     label = address.label,
                                     destination = address.destination,
@@ -444,10 +444,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (asset != null) {
                             PinAddrBottomSheetDialogFragment.newInstance(
                                 assetId = assetId,
-                                assetUrl = asset!!.iconUrl,
-                                chainId = asset!!.chainId,
-                                chainIconUrl = asset!!.chainIconUrl,
-                                assetName = asset!!.name,
+                                assetUrl = asset.iconUrl,
+                                chainId = asset.chainId,
+                                chainIconUrl = asset.chainIconUrl,
+                                assetName = asset.name,
                                 label = label,
                                 destination = destination,
                                 tag = tag,
@@ -515,16 +515,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else {
                 lifecycleScope.launch {
                     val address = linkViewModel.findAddressById(addressId, assetId)
-                    var asset = checkAsset(assetId)
+                    val asset = checkAsset(assetId)
                     if (asset != null) {
-                        when {
-                            address == null -> showError(R.string.error_address_exists)
-                            asset == null -> showError(R.string.error_asset_exists)
+                        when (address) {
+                            null -> showError(R.string.error_address_exists)
                             else -> {
                                 val dust = address.dust?.toDoubleOrNull()
                                 val amountDouble = amount.toDoubleOrNull()
                                 if (dust != null && amountDouble != null && amountDouble < dust) {
-                                    val errorString = getString(R.string.bottom_withdrawal_least_tip, address.dust, asset!!.symbol)
+                                    val errorString = getString(R.string.bottom_withdrawal_least_tip, address.dust, asset.symbol)
                                     showError(errorString)
                                     toast(errorString)
                                     return@launch
@@ -538,7 +537,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     successBlock = { r ->
                                         val response = r.data ?: return@handleMixinResponse false
 
-                                        showWithdrawalBottom(address, amount, asset!!, traceId, response.status, memo)
+                                        showWithdrawalBottom(address, amount, asset, traceId, response.status, memo)
                                     },
                                     failureBlock = {
                                         showError(R.string.bottom_sheet_invalid_payment)
@@ -552,7 +551,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         }
                     } else {
-                        showError()
+                        showError(R.string.error_asset_exists)
                     }
                 }
             }

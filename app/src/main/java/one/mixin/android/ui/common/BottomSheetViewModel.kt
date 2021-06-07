@@ -289,8 +289,9 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.logout(sessionId)
     }
 
-    suspend fun findAddressById(addressId: String, assetId: String) =
-        assetRepository.findAddressById(addressId, assetId)
+    suspend fun findAddressById(addressId: String, assetId: String) = withContext(Dispatchers.IO) {
+        assetRepository.findAddressById(addressId, assetId) ?: assetRepository.refreshAndGetAddress(addressId, assetId)
+    }
 
     suspend fun findAssetItemById(assetId: String): AssetItem? =
         assetRepository.findAssetItemById(assetId)
