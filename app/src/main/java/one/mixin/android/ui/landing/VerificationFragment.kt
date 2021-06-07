@@ -157,7 +157,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                         handleFailure(r)
                         return@subscribe
                     }
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(Dispatchers.IO) {
                         val a = Session.getAccount()
                         a?.let {
                             val phone = requireArguments().getString(ARGS_PHONE_NUM) ?: return@launch
