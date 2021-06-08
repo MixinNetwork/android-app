@@ -164,9 +164,8 @@ class CaptureFragment : BaseCameraxFragment() {
     private fun getVideoCapture(): VideoCapture {
         if (videoCapture != null) return videoCapture!!
 
-        val videoCaptureConfig = VideoCapture.DEFAULT_CONFIG.config
-        videoCapture = VideoCapture.Builder
-            .fromConfig(videoCaptureConfig)
+        videoCapture = VideoCapture.Builder()
+            .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
             .build()
         return videoCapture!!
     }
