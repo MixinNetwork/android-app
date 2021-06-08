@@ -227,7 +227,7 @@ internal constructor(
 
 fun provideMusicViewModel(musicServiceConnection: MusicServiceConnection, mediaId: String):
     MusicViewModel.Factory {
-    return MusicViewModel.Factory(mediaId, musicServiceConnection)
-}
+        return MusicViewModel.Factory(mediaId, musicServiceConnection)
+    }
 
 private const val TAG = "MusicViewModel"

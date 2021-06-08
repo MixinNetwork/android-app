@@ -128,4 +128,8 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesTraceDao(db: MixinDatabase) = db.traceDao()
+
+    @Singleton
+    @Provides
+    fun providesPropertyDao(db: MixinDatabase) = db.propertyDao()
 }

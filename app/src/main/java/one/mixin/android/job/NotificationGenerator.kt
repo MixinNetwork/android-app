@@ -349,12 +349,12 @@ object NotificationGenerator : Injector() {
                                     isFirstResource: Boolean
                                 ):
                                     Boolean {
-                                    notificationBuilder.setLargeIcon(
-                                        BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar)
-                                    )
-                                    notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
-                                    return false
-                                }
+                                        notificationBuilder.setLargeIcon(
+                                            BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar)
+                                        )
+                                        notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
+                                        return false
+                                    }
                             }
                         ).submit(width, height)
                 }
