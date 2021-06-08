@@ -190,8 +190,7 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
 
     override fun onLongPress(e: MotionEvent?) {
         mode = Mode.PROGRESS
-        start()
-        callback?.onProgressStart()
+        callback?.readyForProgress()
     }
 
     private fun clean() {
@@ -202,6 +201,10 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         invalidate()
     }
 
+    fun startProgress() {
+        start()
+    }
+
     fun setMaxDuration(duration: Int) {
         progressInterval = 360f / duration / 10
     }
@@ -210,9 +213,11 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         this.callback = callback
     }
 
+    fun isRecording() = mode == Mode.PROGRESS
+
     interface CameraOpCallback {
         fun onClick()
-        fun onProgressStart()
+        fun readyForProgress()
         fun onProgressStop(time: Float)
     }
 }

@@ -212,13 +212,28 @@ class CaptureFragment : BaseCameraxFragment() {
                 )
         }
 
-        override fun onProgressStart() {
+        override fun readyForProgress() {
             try {
                 oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
                 audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
             } catch (ignored: SecurityException) {
             }
-            startRecord()
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            if (binding.op.isRecording()) {
+                                startRecord()
+                            }
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    },
+                    {
+                    }
+                )
         }
 
         @SuppressLint("RestrictedApi")
@@ -255,13 +270,6 @@ class CaptureFragment : BaseCameraxFragment() {
         stopImageAnalysis()
         val videoCapture = getVideoCapture()
         bindUseCases(videoCapture)
-
-        binding.close.fadeOut()
-        binding.flash.fadeOut()
-        binding.switchCamera.fadeOut()
-        binding.chronometerLayout.fadeIn()
-        binding.chronometer.base = SystemClock.elapsedRealtime()
-        binding.chronometer.start()
         val videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
         val outputOptions = VideoCapture.OutputFileOptions.Builder(videoFile).build()
 
@@ -293,5 +301,13 @@ class CaptureFragment : BaseCameraxFragment() {
                 }
             }
         )
+
+        binding.close.fadeOut()
+        binding.flash.fadeOut()
+        binding.switchCamera.fadeOut()
+        binding.chronometerLayout.fadeIn()
+        binding.chronometer.base = SystemClock.elapsedRealtime()
+        binding.chronometer.start()
+        binding.op.startProgress()
     }
 }

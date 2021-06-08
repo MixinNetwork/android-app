@@ -300,6 +300,9 @@ class EditFragment : VisionFragment() {
             } else {
                 matrix.postScale(1f, screenWidth / ratio / screenHeight, screenWidth / 2f, screenHeight / 2f)
             }
+
+            if (viewDestroyed()) return
+
             binding.previewVideoTexture.setTransform(matrix)
         }
     }
