@@ -39,7 +39,6 @@ import com.google.android.exoplayer2.Player
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMediaPagerBinding
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
@@ -72,7 +71,6 @@ import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive

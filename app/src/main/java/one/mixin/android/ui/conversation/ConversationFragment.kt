@@ -198,8 +198,8 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sticker
-import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptData
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canRecall
@@ -371,7 +371,7 @@ class ConversationFragment() :
                             }
                         }
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                                ?.getBoolean(conversationId, false) == true
+                            ?.getBoolean(conversationId, false) == true
                         ) {
                             lifecycleScope.launch {
                                 if (viewDestroyed()) return@launch
@@ -626,9 +626,9 @@ class ConversationFragment() :
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true
-                    )
+                            "application/vnd.android.package-archive",
+                            true
+                        )
                 ) {
                     if (requireContext().packageManager.canRequestPackageInstalls()) {
                         requireContext().openMedia(messageItem)

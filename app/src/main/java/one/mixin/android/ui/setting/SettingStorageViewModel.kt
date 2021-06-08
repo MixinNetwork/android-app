@@ -123,7 +123,7 @@ internal constructor(
     }
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
-        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name){
+        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name) {
             conversationRepository.deleteTranscriptByConversationId(conversationId)
             return
         }

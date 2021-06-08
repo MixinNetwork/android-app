@@ -235,11 +235,11 @@ private fun MessageItem.simpleChat(): String {
         type == MessageCategory.APP_CARD.name -> "[Mixin APP]"
         type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ->
             "[TRANSFER ${
-                if (snapshotAmount?.toFloat()!! > 0) {
-                    "+"
-                } else {
-                    ""
-                }
+            if (snapshotAmount?.toFloat()!! > 0) {
+                "+"
+            } else {
+                ""
+            }
             }$snapshotAmount $assetSymbol]"
         isContact() -> {
             "[CONTACT - $sharedUserFullName]"

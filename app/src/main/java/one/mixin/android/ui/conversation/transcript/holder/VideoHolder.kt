@@ -21,7 +21,6 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.vo.MediaStatus
-
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
@@ -132,7 +131,6 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                         binding.progress.visibility = GONE
                         binding.play.visibility = GONE
                         binding.chatImage.setOnClickListener {
-
                         }
                     }
                     MediaStatus.PENDING.name -> {

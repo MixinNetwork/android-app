@@ -554,5 +554,5 @@ interface MessageDao : BaseDao<Message> {
     fun findMessageItemByMessageId(messageId: String): LiveData<MessageItem?>
 
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category in ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
-    fun findTranscriptIdByConversationId(conversationId: String):List<String>
+    fun findTranscriptIdByConversationId(conversationId: String): List<String>
 }

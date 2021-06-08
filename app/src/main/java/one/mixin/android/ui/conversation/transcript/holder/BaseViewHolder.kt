@@ -30,7 +30,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         val LINK_COLOR = Color.parseColor("#5FA7E4")
         val SELECT_COLOR = Color.parseColor("#660D94FC")
 
-        fun getColorById(id: String?) = colors[(id?:"0").getColorCode(CodeType.Name(colors.size))]
+        fun getColorById(id: String?) = colors[(id ?: "0").getColorCode(CodeType.Name(colors.size))]
     }
 
     protected val dp3 by lazy {

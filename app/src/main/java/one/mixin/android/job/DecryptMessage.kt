@@ -125,7 +125,6 @@ import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.util.UUID
 
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
@@ -636,7 +635,19 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(Base64.decode(plainText)) else plainText
                 val transcripts = gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList()
                 if (transcripts.isEmpty()) {
-                    throw IllegalArgumentException("Empty transcript messages")
+                    messageDao.insert(
+                        createTranscriptMessage(
+                            data.messageId,
+                            data.conversationId,
+                            data.userId,
+                            data.category,
+                            null,
+                            0,
+                            data.createdAt,
+                            MessageStatus.UNKNOWN.name
+                        )
+                    )
+                    return
                 }
                 val stringBuffer = StringBuffer()
                 transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
@@ -696,16 +707,20 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.conversationId,
                     data.userId,
                     data.category,
-                    gson.toJson(transcripts.filter { t -> t.transcriptId == data.messageId }.map {
-                        TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
-                    }),
+                    gson.toJson(
+                        transcripts.filter { t -> t.transcriptId == data.messageId }.map {
+                            TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
+                        }
+                    ),
                     mediaSize,
                     data.createdAt,
                     data.status
                 )
-                transcriptMessageDao.insertList(transcripts.filter { t ->
-                    transcriptMessageDao.getTranscriptByIdSync(t.transcriptId, t.messageId) == null
-                })
+                transcriptMessageDao.insertList(
+                    transcripts.filter { t ->
+                        transcriptMessageDao.getTranscriptByIdSync(t.transcriptId, t.messageId) == null
+                    }
+                )
                 if (!transcripts.any { t -> t.isAttachment() }) {
                     message.mediaStatus = MediaStatus.DONE.name
                 }

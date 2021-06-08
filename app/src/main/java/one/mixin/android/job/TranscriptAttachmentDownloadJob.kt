@@ -79,13 +79,16 @@ class TranscriptAttachmentDownloadJob(
         attachmentCall = conversationApi.getAttachment(attachmentId)
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {
-            body.data?.view_url.notNullWithElse({
-                if (decryptAttachment(it, transcriptMessage)) {
-                    processTranscript()
+            body.data?.view_url.notNullWithElse(
+                {
+                    if (decryptAttachment(it, transcriptMessage)) {
+                        processTranscript()
+                    }
+                },
+                {
+                    transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
                 }
-            }, {
-                transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
-            })
+            )
         } else {
             transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
             Timber.e(TAG, "get attachment url failed")
@@ -160,13 +163,15 @@ class TranscriptAttachmentDownloadJob(
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     transcriptMessage.messageId,
-                                    "")
+                                    ""
+                                )
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
                             MixinApplication.get()
                                 .getTranscriptFile(
                                     transcriptMessage.messageId,
-                                    ".png")
+                                    ".png"
+                                )
                         }
                         transcriptMessage.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
                             MixinApplication.get()
@@ -215,7 +220,8 @@ class TranscriptAttachmentDownloadJob(
                     val dataFile = MixinApplication.get()
                         .getTranscriptFile(
                             transcriptMessage.messageId,
-                            extensionName ?: "")
+                            extensionName ?: ""
+                        )
                     dataFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
                         Uri.fromFile(dataFile).toString(),

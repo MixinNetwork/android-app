@@ -575,7 +575,7 @@ fun createTranscriptMessage(
     conversationId: String,
     userId: String,
     category: String,
-    content: String,
+    content: String?,
     mediaSize: Long,
     createdAt: String,
     status: String,

@@ -14,7 +14,6 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.util.image.ImageListener
 import one.mixin.android.util.image.LottieLoader
-import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isLottie

@@ -24,7 +24,6 @@ import androidx.exifinterface.media.ExifInterface
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
-import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
 import one.mixin.android.session.Session

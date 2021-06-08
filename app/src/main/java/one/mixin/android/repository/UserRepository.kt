@@ -27,7 +27,6 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleName
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleManagerItem
-import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import javax.inject.Inject
@@ -223,6 +222,4 @@ constructor(
     suspend fun findUserByAppId(appId: String): User? = userDao.findUserByAppId(appId)
 
     fun updateMuteUntil(id: String, muteUntil: String) = userDao.updateMuteUntil(id, muteUntil)
-
-    fun a (transcriptMessages: List<TranscriptMessage>) = transcriptMessageDao.insertList(transcriptMessages)
 }

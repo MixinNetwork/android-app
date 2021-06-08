@@ -100,9 +100,11 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             conversationId,
             sender.userId,
             category,
-            GsonHelper.customGson.toJson(transcriptMessages.map {
-                TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
-            }),
+            GsonHelper.customGson.toJson(
+                transcriptMessages.map {
+                    TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
+                }
+            ),
             nowInUtc(),
             MessageStatus.SENDING.name
         )

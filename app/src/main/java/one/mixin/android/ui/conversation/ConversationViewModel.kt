@@ -80,10 +80,8 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
-import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
@@ -429,7 +427,7 @@ internal constructor(
                     item.mediaUrl,
                     item.mediaStatus == MediaStatus.DONE.name
                 )
-                if (item.isTranscript()){
+                if (item.isTranscript()) {
                     conversationRepository.deleteTranscriptByMessageId(item.messageId)
                 }
                 jobManager.cancelJobByMixinJobId(item.messageId)

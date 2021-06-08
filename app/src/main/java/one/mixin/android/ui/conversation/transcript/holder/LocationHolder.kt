@@ -22,18 +22,15 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
-
 import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
 import one.mixin.android.ui.conversation.location.useMapbox
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
-import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
-import one.mixin.android.widget.media.RecentPhotoRecyclerView
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 

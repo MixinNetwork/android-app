@@ -15,7 +15,6 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
-
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus

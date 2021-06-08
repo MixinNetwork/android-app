@@ -130,16 +130,16 @@ internal constructor(
 
     fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false):
         LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(
-            assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
-            PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
+            LivePagedListBuilder(
+                assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
+                PagedList.Config.Builder()
+                    .setPrefetchDistance(PAGE_SIZE * 2)
+                    .setPageSize(PAGE_SIZE)
+                    .setEnablePlaceholders(true)
+                    .build()
+            )
+                .setInitialLoadKey(initialLoadKey)
                 .build()
-        )
-            .setInitialLoadKey(initialLoadKey)
-            .build()
 
     suspend fun refreshPendingDeposits(asset: AssetItem) {
         handleMixinResponse(

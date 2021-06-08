@@ -203,7 +203,8 @@ class TranscriptActivity : BaseActivity() {
             override fun onAudioClick(messageItem: TranscriptMessageItem) {
                 Timber.d(messageItem.messageId)
                 if (
-                    AudioPlayer.isPlay(messageItem.messageId)) {
+                    AudioPlayer.isPlay(messageItem.messageId)
+                ) {
                     AudioPlayer.pause()
                 } else {
                     AudioPlayer.play(messageItem.toMessageItem(this@TranscriptActivity.conversationId))
@@ -256,9 +257,9 @@ class TranscriptActivity : BaseActivity() {
             override fun onFileClick(messageItem: TranscriptMessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true
-                    )
+                            "application/vnd.android.package-archive",
+                            true
+                        )
                 ) {
                     if (this@TranscriptActivity.packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)
@@ -433,11 +434,16 @@ class TranscriptActivity : BaseActivity() {
         viewBinding.forward.setOnClickListener {
             lifecycleScope.launch {
                 val transcriptId = UUID.randomUUID().toString()
-                ForwardActivity.combineForward(this@TranscriptActivity, arrayListOf<TranscriptMessage>().apply {
-                    addAll(conversationRepository.getTranscriptsById(this@TranscriptActivity.transcriptId).map {
-                        it.copy(transcriptId)
-                    })
-                })
+                ForwardActivity.combineForward(
+                    this@TranscriptActivity,
+                    arrayListOf<TranscriptMessage>().apply {
+                        addAll(
+                            conversationRepository.getTranscriptsById(this@TranscriptActivity.transcriptId).map {
+                                it.copy(transcriptId)
+                            }
+                        )
+                    }
+                )
                 bottomSheet.dismiss()
             }
         }
