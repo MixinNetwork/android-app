@@ -1,7 +1,6 @@
 package one.mixin.android.ui.call
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
@@ -13,7 +12,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
 import one.mixin.android.vo.CallUser
 
-class CallUserAdapter(private val self: CallUser, private val onClickListener: View.OnClickListener) :
+class CallUserAdapter(private val self: CallUser, private val callClicker: (String?) -> Unit) :
     ListAdapter<CallUser, RecyclerView.ViewHolder>(CallUser.DIFF_CALLBACK) {
     var guestsNotConnected: List<String>? = null
 
@@ -39,10 +38,10 @@ class CallUserAdapter(private val self: CallUser, private val onClickListener: V
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (getItemViewType(position) == 1) {
             getItem(position - 1)?.let {
-                (holder as CallUserHolder).bind(it, self, guestsNotConnected)
+                (holder as CallUserHolder).bind(it, self, guestsNotConnected, callClicker)
             }
         } else {
-            (holder as AddUserHolder).bind(onClickListener)
+            (holder as AddUserHolder).bind(callClicker)
         }
     }
 
@@ -58,7 +57,10 @@ class CallUserAdapter(private val self: CallUser, private val onClickListener: V
         return super.getItemCount() + 1
     }
 
-    override fun onCurrentListChanged(previousList: MutableList<CallUser>, currentList: MutableList<CallUser>) {
+    override fun onCurrentListChanged(
+        previousList: MutableList<CallUser>,
+        currentList: MutableList<CallUser>
+    ) {
         if (previousList != currentList) {
             notifyDataSetChanged()
         }
@@ -66,8 +68,10 @@ class CallUserAdapter(private val self: CallUser, private val onClickListener: V
 }
 
 class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(onClickListener: View.OnClickListener) {
-        itemView.setOnClickListener(onClickListener)
+    fun bind(callClicker: (String?) -> Unit) {
+        itemView.setOnClickListener {
+            callClicker(null)
+        }
     }
 }
 
@@ -81,6 +85,7 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
         user: CallUser,
         self: CallUser,
         guestsNotConnected: List<String>?,
+        callClicker: (String?) -> Unit
     ) {
         itemView.apply {
             binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
@@ -92,6 +97,9 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
                 user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
             binding.loading.isVisible = vis
             binding.cover.isVisible = vis
+            setOnClickListener {
+                callClicker(user.userId)
+            }
         }
     }
 }

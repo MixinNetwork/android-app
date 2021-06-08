@@ -22,13 +22,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center"
             tools:text="Group Call(00:38)" />
 
         <TextView
             android:id="@+id/sub_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             android:gravity="center"
             android:text="@string/end_to_end_encryption"
             android:textColor="?attr/text_minor"
@@ -162,6 +165,7 @@
         android:layout_width="wrap_content"
         android:layout_centerHorizontal="true"
         android:orientation="vertical"
+        android:gravity="center_horizontal"
         android:visibility="gone"
         android:layout_height="wrap_content">
 
@@ -178,7 +182,6 @@
             android:textSize="18sp"
             android:gravity="center_horizontal"
             android:layout_marginTop="16dp"
-            android:layout_gravity="center_horizontal"
             android:lines="1"
             android:ellipsize="end" />
     </LinearLayout>

@@ -31,6 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCallBottomSheetBinding
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.dp
@@ -39,6 +40,8 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallUser
@@ -146,15 +149,26 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog.window?.setGravity(Gravity.BOTTOM)
         join = requireArguments().getBoolean(EXTRA_JOIN, false)
         lifecycleScope.launchWhenCreated {
-            val cid = callState.conversationId ?: return@launchWhenCreated
-            self = viewModel.findSelfCallUser(cid, Session.getAccountId()!!)
+            val cid = callState.conversationId
+            self = if (cid == null) {
+                val account = Session.getAccount()!!
+                CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
+            } else {
+                viewModel.findSelfCallUser(cid, Session.getAccountId()!!)
+            }
             if (callState.isGroupCall()) {
                 binding.title.text = getString(R.string.chat_group_call_title)
                 binding.avatarLl.isVisible = false
                 binding.usersRv.isVisible = true
                 if (userAdapter == null) {
-                    userAdapter = CallUserAdapter(self) {
-                        if (callState.isGroupCall() && callState.conversationId != null) {
+                    userAdapter = CallUserAdapter(self) { userId ->
+                        if (userId != null) {
+                            lifecycleScope.launch {
+                                val user = viewModel.suspendFindUserById(userId) ?: return@launch
+                                UserBottomSheetDialogFragment.newInstance(user)
+                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            }
+                        } else if (callState.isGroupCall() && callState.conversationId != null) {
                             GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
                                 .showNow(
                                     parentFragmentManager,
@@ -174,6 +188,14 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     binding.nameTv.text = callee.fullName
                     binding.avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
                     binding.avatar.setTextSize(48f)
+                    binding.avatar.setOnClickListener {
+                        UserBottomSheetDialogFragment.newInstance(callee)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    }
+                    binding.nameTv.setOnClickListener {
+                        UserBottomSheetDialogFragment.newInstance(callee)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    }
                 }
             }
 
@@ -194,6 +216,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     pipCallView.show(requireActivity(), callState.connectedTime, callState)
                 }
                 dismissAllowingStateLoss()
+            }
+            binding.subTitle.setOnClickListener {
+                showE2EETip()
             }
             binding.muteCb.setOnCheckedChangeListener(
                 object : CallButton.OnCheckedChangeListener {
@@ -468,6 +493,23 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             userAdapter?.guestsNotConnected = newGuestsNotConnected
             userAdapter?.notifyDataSetChanged()
         }
+    }
+
+    private fun showE2EETip() {
+        alertDialogBuilder()
+            .setMessage(R.string.end_to_end_encryption_tip)
+            .setNeutralButton(R.string.chat_learn) { dialog, _ ->
+                WebActivity.show(
+                    requireContext(),
+                    getString(R.string.chat_waiting_url),
+                    callState.conversationId
+                )
+                dialog.dismiss()
+            }
+            .setPositiveButton(R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     override fun onStart() {
