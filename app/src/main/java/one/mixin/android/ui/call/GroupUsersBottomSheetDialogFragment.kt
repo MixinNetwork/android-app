@@ -36,7 +36,7 @@ import javax.inject.Inject
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GroupUsersBottomSheetDialogFragment"
-        const val GROUP_VOICE_MAX_COUNT = 16
+        const val GROUP_VOICE_MAX_COUNT = 256
 
         fun newInstance(
             conversationId: String

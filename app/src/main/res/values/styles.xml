@@ -106,12 +106,6 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
-    <style name="AppTheme.Call" parent="AppTheme.NoActionBar">
-        <item name="android:windowBackground">@color/call_gray</item>
-        <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowLightStatusBar">false</item>
-    </style>
-
     <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/colorDarkBlue</item>
         <item name="android:textColorPrimary">?attr/text_primary</item>

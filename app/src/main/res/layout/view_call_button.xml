@@ -4,5 +4,5 @@
     android:id="@+id/icon"
     android:layout_width="@dimen/call_button_size"
     android:layout_height="@dimen/call_button_size"
-    android:padding="16dp"
+    android:padding="8dp"
     tools:ignore="ContentDescription"/>

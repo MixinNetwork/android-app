@@ -32,6 +32,7 @@ import android.provider.Browser
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.TypedValue
 import android.view.KeyCharacterMap
@@ -195,6 +196,15 @@ fun Context.realSize(): Point {
     val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
     manager.defaultDisplay.getRealSize(size)
     return size
+}
+
+fun Context.displayMetrics(): Point {
+    val displayMetrics = DisplayMetrics()
+    val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    manager.defaultDisplay.getMetrics(displayMetrics)
+    val height = displayMetrics.heightPixels
+    val width = displayMetrics.widthPixels
+    return Point(width,height)
 }
 
 fun Context.isWideScreen(): Boolean {
