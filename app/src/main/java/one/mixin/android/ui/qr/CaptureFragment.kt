@@ -17,7 +17,10 @@ import androidx.camera.core.ImageCapture.FLASH_MODE_OFF
 import androidx.camera.core.ImageCapture.FLASH_MODE_ON
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.UseCase
+import androidx.camera.core.VideoCapture
 import androidx.core.view.isVisible
+import androidx.core.view.marginTop
+import androidx.core.view.updateLayoutParams
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,12 +29,12 @@ import one.mixin.android.databinding.FragmentCaptureBinding
 import one.mixin.android.extension.bounce
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasNavigationBar
-import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
@@ -41,6 +44,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CameraOpView
 import java.io.File
+import kotlin.math.max
 
 @AndroidEntryPoint
 class CaptureFragment : BaseCameraxFragment() {
@@ -53,6 +57,7 @@ class CaptureFragment : BaseCameraxFragment() {
     private var imageCaptureFile: File? = null
 
     private var imageCapture: ImageCapture? = null
+    private var videoCapture: VideoCapture? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,6 +82,14 @@ class CaptureFragment : BaseCameraxFragment() {
                 val navigationBarHeight = requireContext().navigationBarHeight()
                 binding.bottomLl.translationY = -navigationBarHeight.toFloat()
             }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val insetTop = requireActivity().window.decorView.rootWindowInsets?.displayCutout?.safeInsetTop ?: 0
+                val top = binding.chronometerLayout.marginTop
+                binding.chronometerLayout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    topMargin = max(insetTop + 8.dp, top)
+                }
+            }
         }
         binding.switchCamera.setOnClickListener {
             onSwitchClick()
@@ -99,19 +112,22 @@ class CaptureFragment : BaseCameraxFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun getOtherUseCases(
+    override fun appendOtherUseCases(
+        useCases: ArrayList<UseCase>,
         rotation: Int
-    ): Array<UseCase> {
+    ) {
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
             .setTargetRotation(rotation)
             .build()
-        return arrayOf(imageCapture!!)
+        useCases.add(imageCapture!!)
     }
 
+    @SuppressLint("RestrictedApi")
     override fun onDisplayChanged(rotation: Int) {
         imageCapture?.targetRotation = rotation
+        videoCapture?.setTargetRotation(rotation)
     }
 
     override fun fromScan() = false
@@ -142,6 +158,17 @@ class CaptureFragment : BaseCameraxFragment() {
                 .setMetadata(metadata)
                 .build()
         imageCapture?.takePicture(outputFileOptions, mainExecutor, imageSavedListener)
+    }
+
+    @SuppressLint("RestrictedApi")
+    private fun getVideoCapture(): VideoCapture {
+        if (videoCapture != null) return videoCapture!!
+
+        val videoCaptureConfig = VideoCapture.DEFAULT_CONFIG.config
+        videoCapture = VideoCapture.Builder
+            .fromConfig(videoCaptureConfig)
+            .build()
+        return videoCapture!!
     }
 
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
@@ -186,48 +213,85 @@ class CaptureFragment : BaseCameraxFragment() {
         }
 
         override fun onProgressStart() {
-            binding.close.fadeOut()
-            binding.flash.fadeOut()
-            binding.switchCamera.fadeOut()
-            binding.chronometerLayout.fadeIn()
-            binding.chronometer.base = SystemClock.elapsedRealtime()
-            binding.chronometer.start()
-            videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
             try {
                 oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
                 audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
             } catch (ignored: SecurityException) {
             }
-            videoFile?.let {
-//                view_finder.startRecording(it, backgroundExecutor, onVideoSavedCallback)
-            }
+            startRecord()
         }
 
+        @SuppressLint("RestrictedApi")
         override fun onProgressStop(time: Float) {
             binding.close.fadeIn()
             binding.flash.fadeIn()
             binding.switchCamera.fadeIn()
             binding.chronometerLayout.fadeOut()
             binding.chronometer.stop()
-            if (time < CaptureActivity.MIN_DURATION) {
-                toast(R.string.error_duration_short)
-            } else {
-                videoFile?.let {
-//                    view_finder.stopRecording()
-                    activity?.supportFragmentManager?.inTransaction {
-                        add(R.id.container, EditFragment.newInstance(it.absolutePath, true), EditFragment.TAG)
-                            .addToBackStack(null)
-                    }
-                }
-            }
+
+            videoCapture?.stopRecording()
+            unbindUseCases(getVideoCapture())
+
             if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
                 requireContext().mainThreadDelayed(
                     {
-                        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0)
+                        try {
+                            audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0)
+                        } catch (ignored: SecurityException) {
+                        }
                     },
                     300
                 )
             }
         }
+    }
+
+    @SuppressLint("RestrictedApi", "MissingPermission")
+    private fun startRecord() {
+        // Stop using an image analysis useCase before starting a video recording
+        // because many devices have limited capacity to combine these useCases.
+        // https://issuetracker.google.com/issues/180151796
+        // https://developer.android.com/reference/android/hardware/camera2/CameraDevice#createCaptureSession(android.hardware.camera2.params.SessionConfiguration)
+        stopImageAnalysis()
+        val videoCapture = getVideoCapture()
+        bindUseCases(videoCapture)
+
+        binding.close.fadeOut()
+        binding.flash.fadeOut()
+        binding.switchCamera.fadeOut()
+        binding.chronometerLayout.fadeIn()
+        binding.chronometer.base = SystemClock.elapsedRealtime()
+        binding.chronometer.start()
+        val videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
+        val outputOptions = VideoCapture.OutputFileOptions.Builder(videoFile).build()
+
+        videoCapture.startRecording(
+            outputOptions, mainExecutor,
+            object : VideoCapture.OnVideoSavedCallback {
+                override fun onVideoSaved(outputFileResults: VideoCapture.OutputFileResults) {
+                    if (binding.op.time < CaptureActivity.MIN_DURATION) {
+                        toast(R.string.error_duration_short)
+                        outputFileResults.savedUri?.path?.apply {
+                            File(this).delete()
+                        }
+                        startImageAnalysis()
+                    } else {
+                        openEdit(outputFileResults.savedUri?.path ?: "", true, fromGallery = false)
+                    }
+                    binding.op.time = 0f
+                }
+
+                override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
+                    context?.toast("Video capture failed: $message")
+                    reportException(
+                        IllegalStateException(
+                            "$CRASHLYTICS_CAMERAX-Video capture failed, " +
+                                "message: videoCaptureError: $videoCaptureError, $message, cause: $cause"
+                        )
+                    )
+                    startImageAnalysis()
+                }
+            }
+        )
     }
 }
