@@ -201,6 +201,12 @@ class EditFragment : VisionFragment() {
         binding.downloadIv.isVisible = !fromGallery
     }
 
+    override fun onBackPressed(): Boolean {
+        val captureFragment = activity?.supportFragmentManager?.findFragmentByTag(CaptureFragment.TAG) as? CaptureFragment
+        captureFragment?.startImageAnalysisIfNeeded()
+        return super.onBackPressed()
+    }
+
     private fun scan() = lifecycleScope.launch(Dispatchers.IO) {
         if (viewDestroyed()) return@launch
 
@@ -294,6 +300,9 @@ class EditFragment : VisionFragment() {
             } else {
                 matrix.postScale(1f, screenWidth / ratio / screenHeight, screenWidth / 2f, screenHeight / 2f)
             }
+
+            if (viewDestroyed()) return
+
             binding.previewVideoTexture.setTransform(matrix)
         }
     }

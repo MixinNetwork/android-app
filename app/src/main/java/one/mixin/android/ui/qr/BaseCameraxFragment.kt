@@ -84,6 +84,9 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     private var alreadyDetected = false
 
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var cameraSelector: CameraSelector? = null
+
     private var imageAnalysis: ImageAnalysis? = null
 
     private var preview: Preview? = null
@@ -201,42 +204,36 @@ abstract class BaseCameraxFragment : VisionFragment() {
     @SuppressLint("RestrictedApi")
     protected fun bindCameraUseCase() {
         metrics = DisplayMetrics().also { viewFinder.display.getRealMetrics(it) }
-        val rotation = viewFinder.display.rotation
+        val rotation = getRotation()
 
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+        cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener(
             {
-                val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+                cameraProvider = cameraProviderFuture.get()
 
+                val useCases = arrayListOf<UseCase>()
                 preview = Preview.Builder()
                     .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                     .setTargetRotation(rotation)
                     .build()
 
-                imageAnalysis = ImageAnalysis.Builder()
-                    .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-                    .setTargetRotation(rotation)
-                    .build()
-                    .also {
-                        it.setAnalyzer(backgroundExecutor, imageAnalyzer)
-                    }
+                useCases.add(preview!!)
+                useCases.add(getImageAnalysis())
+                appendOtherUseCases(useCases, rotation)
 
-                val otherUseCases = getOtherUseCases(rotation)
-
-                cameraProvider.unbindAll()
+                cameraProvider?.unbindAll()
 
                 try {
-                    camera = cameraProvider.bindToLifecycle(
+                    camera = cameraProvider?.bindToLifecycle(
                         this as LifecycleOwner,
-                        cameraSelector,
-                        preview,
-                        imageAnalysis,
-                        *otherUseCases
+                        cameraSelector!!,
+                        *useCases.toTypedArray()
                     )
                     preview?.setSurfaceProvider(viewFinder.surfaceProvider)
                 } catch (e: Exception) {
                     reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
+                    Timber.w(e)
                 }
             },
             mainExecutor
@@ -265,6 +262,76 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
         }
     }
+
+    protected fun bindUseCases(vararg useCases: UseCase) {
+        try {
+            camera = cameraProvider?.bindToLifecycle(
+                this as LifecycleOwner,
+                cameraSelector!!,
+                *useCases,
+            )
+        } catch (e: Exception) {
+            reportException("$CRASHLYTICS_CAMERAX-bindUseCases", e)
+            Timber.w(e)
+        }
+    }
+
+    protected fun unbindUseCases(vararg useCases: UseCase) {
+        try {
+            cameraProvider?.unbind(*useCases)
+        } catch (e: Exception) {
+            reportException("$CRASHLYTICS_CAMERAX-unbindUseCases", e)
+            Timber.w(e)
+        }
+    }
+
+    protected fun stopImageAnalysis() {
+        if (imageAnalysis != null) {
+            try {
+                imageAnalysis?.clearAnalyzer()
+                cameraProvider?.unbind(imageAnalysis!!)
+                imageAnalysis = null
+            } catch (e: Exception) {
+                reportException("$CRASHLYTICS_CAMERAX-stopImageAnalysis", e)
+                Timber.w(e)
+            }
+        }
+    }
+
+    protected fun startImageAnalysis() {
+        val localImageAnalysis = getImageAnalysis()
+        try {
+            camera = cameraProvider?.bindToLifecycle(
+                this as LifecycleOwner,
+                cameraSelector!!,
+                localImageAnalysis,
+            )
+        } catch (e: Exception) {
+            reportException("$CRASHLYTICS_CAMERAX-startImageAnalysis", e)
+            Timber.w(e)
+        }
+    }
+
+    private fun getImageAnalysis(): ImageAnalysis {
+        if (imageAnalysis != null) return imageAnalysis!!
+
+        imageAnalysis = ImageAnalysis.Builder()
+            .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+            .setTargetRotation(getRotation())
+            .build()
+            .also {
+                it.setAnalyzer(backgroundExecutor, imageAnalyzer)
+            }
+        return imageAnalysis!!
+    }
+
+    fun startImageAnalysisIfNeeded() {
+        if (imageAnalysis == null) {
+            startImageAnalysis()
+        }
+    }
+
+    private fun getRotation() = viewFinder.display.rotation
 
     private fun isLensBack() = CameraSelector.LENS_FACING_BACK == lensFacing
 
@@ -386,7 +453,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     private fun delta() = System.currentTimeMillis() - downEventTimestamp
 
     abstract fun onFlashClick()
-    abstract fun getOtherUseCases(rotation: Int): Array<UseCase>
+    abstract fun appendOtherUseCases(useCases: ArrayList<UseCase>, rotation: Int)
     abstract fun onDisplayChanged(rotation: Int)
     abstract fun fromScan(): Boolean
 
@@ -433,7 +500,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
         }
 
-        @SuppressLint("UnsafeExperimentalUsageError")
+        @SuppressLint("UnsafeExperimentalUsageError", "UnsafeOptInUsageError")
         private fun decodeWithFirebaseVision(image: ImageProxy) {
             val processImage = image.image
             if (processImage == null) {
