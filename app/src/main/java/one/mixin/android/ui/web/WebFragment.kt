@@ -416,13 +416,6 @@ class WebFragment : BaseFragment() {
         webView.settings.domStorageEnabled = true
         webView.settings.useWideViewPort = true
         webView.settings.loadWithOverviewMode = true
-        supportsQ {
-            webView.settings.forceDark = if (requireContext().isNightMode()) {
-                FORCE_DARK_ON
-            } else {
-                FORCE_DARK_AUTO
-            }
-        }
         webView.settings.mixedContentMode =
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         webView.settings.mediaPlaybackRequiresUserGesture = false
