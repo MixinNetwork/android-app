@@ -60,6 +60,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
         WHERE transcript_id = :transcriptId
+        ORDER BY t.created_at ASC, t.rowid ASC
     """
     )
     fun getTranscriptMessages(transcriptId: String): LiveData<List<TranscriptMessageItem>>
@@ -81,7 +82,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
         WHERE t.transcript_id = :transcriptId
         AND t.category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE')
-        ORDER BY t.created_at DESC, t.rowid DESC
+        ORDER BY t.created_at ASC, t.rowid ASC
         """
     )
     suspend fun getTranscriptMediaMessage(transcriptId: String): List<TranscriptMessageItem>
@@ -92,7 +93,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
             WHERE transcript_id = :transcriptId
             AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
             AND created_at < (SELECT created_at FROM transcript_messages WHERE message_id = :messageId)
-            ORDER BY created_at DESC, rowid DESC
+            ORDER BY created_at ASC, rowid ASC
         """
     )
     suspend fun indexTranscriptMediaMessages(transcriptId: String, messageId: String): Int

@@ -39,6 +39,7 @@ import com.google.android.exoplayer2.Player
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMediaPagerBinding
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
@@ -66,10 +67,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
-import one.mixin.android.util.AnimationProperties
-import one.mixin.android.util.SensorOrientationChangeNotifier
-import one.mixin.android.util.SystemUIManager
-import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.*
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isImage
@@ -218,9 +216,11 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     @SuppressLint("RestrictedApi")
     private fun loadData() = lifecycleScope.launchWhenCreated {
-        adapter.list = conversationRepository.getTranscriptMediaMessage(transcriptId)
         val initialIndex = conversationRepository.indexTranscriptMediaMessages(transcriptId, messageId)
+        adapter.list = conversationRepository.getTranscriptMediaMessage(transcriptId)
         adapter.initialPos = initialIndex
+        binding.viewPager.setCurrentItem(initialIndex, false)
+
         val messageItem = adapter.getItem(initialIndex)
         if (messageItem.isVideo() || messageItem.isLive()) {
             checkPip()
@@ -716,15 +716,10 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             when (messageItem.mediaStatus) {
                 MediaStatus.CANCELED.name -> {
                     if (Session.getAccountId() == messageItem.userId) {
-                        // viewModel.retryUpload(messageItem.messageId) {
-                        //     toast(R.string.error_retry_upload)
-                        // }
                     } else {
-                        // viewModel.retryDownload(messageItem.messageId)
                     }
                 }
                 MediaStatus.PENDING.name -> {
-                    // viewModel.cancel(messageItem.messageId)
                 }
             }
         }

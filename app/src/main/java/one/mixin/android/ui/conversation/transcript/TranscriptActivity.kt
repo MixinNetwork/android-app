@@ -320,37 +320,6 @@ class TranscriptActivity : BaseActivity() {
         )
     }
 
-    @SuppressLint("AutoDispose")
-    private fun showBottomSheet(content: String) {
-        val builder = BottomSheet.Builder(this)
-        val view = View.inflate(
-            androidx.appcompat.view.ContextThemeWrapper(this, R.style.Custom),
-            R.layout.view_transcript,
-            null
-        )
-        val viewBinding = ViewTranscriptBinding.bind(view)
-        builder.setCustomView(view)
-        val bottomSheet = builder.create()
-        viewBinding.forward.setOnClickListener {
-            lifecycleScope.launch {
-                if (conversationRepository.hasUploadedAttachmentSuspend(transcriptId) > 0) {
-                    alert(getString(R.string.error_transcript_forward))
-                        .setPositiveButton(R.string.ok) { dialog, _ ->
-                            dialog.dismiss()
-                        }.show()
-                } else {
-                    ForwardActivity.show(
-                        this@TranscriptActivity,
-                        arrayListOf(ForwardMessage(ForwardCategory.Transcript, content)),
-                        ForwardAction.App.Resultless()
-                    )
-                }
-                bottomSheet.dismiss()
-            }
-        }
-        bottomSheet.show()
-    }
-
     private fun showBottomSheet(messageItem: TranscriptMessageItem) {
         var bottomSheet: BottomSheet? = null
         val builder = BottomSheet.Builder(this)
@@ -435,6 +404,14 @@ class TranscriptActivity : BaseActivity() {
         val bottomSheet = builder.create()
         viewBinding.forward.setOnClickListener {
             lifecycleScope.launch {
+                if (conversationRepository.hasUploadedAttachmentSuspend(transcriptId) > 0) {
+                    alert(getString(R.string.error_transcript_forward))
+                        .setPositiveButton(R.string.ok) { dialog, _ ->
+                            dialog.dismiss()
+                        }.show()
+                    bottomSheet.dismiss()
+                    return@launch
+                }
                 val transcriptId = UUID.randomUUID().toString()
                 ForwardActivity.combineForward(
                     this@TranscriptActivity,
