@@ -22,6 +22,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
 import one.mixin.android.ui.conversation.location.useMapbox
@@ -193,7 +194,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         }
         setMapLocation()
 
-        val isMe = false
+        val isMe = messageItem.userId == Session.getAccountId()
 
         binding.chatTime.timeAgoClock(messageItem.createdAt)
         setStatusIcon(
@@ -219,6 +220,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }

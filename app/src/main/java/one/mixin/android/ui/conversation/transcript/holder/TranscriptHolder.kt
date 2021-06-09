@@ -11,6 +11,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageStatus
@@ -99,6 +100,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
     ) {
         super.bind(messageItem)
         val nightMode = itemView.context.isNightMode()
+        val isMe = messageItem.userId == Session.getAccountId()
         if (nightMode) {
             if (isMe) {
                 binding.chatTv.textColorResource = R.color.textTranscriptNight
@@ -156,7 +158,6 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
         binding.chatLayout.setOnClickListener {
             onItemListener.onTranscriptClick(messageItem)
         }
-        val isMe = false
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -167,6 +168,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }

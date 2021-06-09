@@ -10,6 +10,7 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
@@ -78,7 +79,7 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
         super.bind(messageItem)
         this.onItemListener = onItemListener
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-
+        val isMe = messageItem.userId == Session.getAccountId()
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             binding.audioDuration.setText(R.string.chat_expired)
         } else {

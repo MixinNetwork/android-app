@@ -16,6 +16,7 @@ import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
@@ -41,7 +42,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
-
+        val isMe = messageItem.userId == Session.getAccountId()
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName

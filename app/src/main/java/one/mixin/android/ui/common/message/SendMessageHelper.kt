@@ -101,7 +101,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             sender.userId,
             category,
             GsonHelper.customGson.toJson(
-                transcriptMessages.map {
+                transcriptMessages.sortedBy { t -> t.createdAt }.map {
                     TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
                 }
             ),

@@ -10,6 +10,7 @@ import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
@@ -30,7 +31,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
-        val isMe = false
+        val isMe = messageItem.userId == Session.getAccountId()
         chatLayout(isMe, isLast)
 
         binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)

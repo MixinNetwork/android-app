@@ -708,7 +708,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.userId,
                     data.category,
                     gson.toJson(
-                        transcripts.filter { t -> t.transcriptId == data.messageId }.map {
+                        transcripts.sortedBy { t -> t.createdAt }.filter { t -> t.transcriptId == data.messageId }.map {
                             TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
                         }
                     ),

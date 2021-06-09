@@ -181,6 +181,7 @@
     <string name="error_favorite_limit">ERROR %1$d: 已达到上限</string>
     <string name="error_retry_upload">重新上传失败。</string>
     <string name="error_not_supported_audio_format">不支持的音频格式，请用其他app打开。</string>
+    <string name="error_transcript_forward">请在所有附件下载完成之后再转发</string>
     <!--home-->
     <string name="title_home">联系人</string>
     <string name="search_hint">搜索资产，联系人，消息</string>

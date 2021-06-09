@@ -63,6 +63,8 @@ fun ICategory.isGroupCall() = type?.isGroupCallType() == true
 
 fun ICategory.isTranscript() = type == MessageCategory.PLAIN_TRANSCRIPT.name || type == MessageCategory.SIGNAL_TRANSCRIPT.name || type == MessageCategory.ENCRYPTED_TRANSCRIPT.name
 
+fun ICategory.isAppCard() = type == MessageCategory.APP_CARD.name
+
 fun ICategory.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
         type == MessageCategory.WEBRTC_AUDIO_DECLINE.name ||

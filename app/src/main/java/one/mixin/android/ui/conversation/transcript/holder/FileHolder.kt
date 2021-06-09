@@ -13,6 +13,7 @@ import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
@@ -34,6 +35,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
+        val isMe = messageItem.userId == Session.getAccountId()
         binding.billTime.chatSecret.isVisible = messageItem.isSignal()
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {

@@ -34,7 +34,7 @@ import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.websocket.toLocationData
 import java.io.File
 import java.io.FileInputStream
-import java.lang.IllegalArgumentException
+import kotlin.IllegalArgumentException
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -275,7 +275,9 @@ fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): Tr
         isLocation() -> if (isPlain) MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
         isContact() -> if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
         isTranscript() -> if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
-        else -> if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        isAppCard() -> MessageCategory.APP_CARD.name
+        isText() -> if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        else -> throw IllegalArgumentException("Unknown category")
     }
     return TranscriptMessage(
         transcriptId,

@@ -11,6 +11,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageStatus
@@ -118,7 +119,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         }
         binding.chatLayout.listener = textGestureListener
 
-        val isMe = false
+        val isMe = messageItem.userId == Session.getAccountId()
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -129,6 +130,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }

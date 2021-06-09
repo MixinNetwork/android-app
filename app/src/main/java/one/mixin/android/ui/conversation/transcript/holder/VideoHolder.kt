@@ -19,6 +19,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -48,6 +49,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
+        val isMe = messageItem.userId == Session.getAccountId()
         if (isFirst && !isMe) {
             binding.chatName.visibility = VISIBLE
             binding.chatName.text = messageItem.userFullName

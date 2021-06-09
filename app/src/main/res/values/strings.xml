@@ -191,6 +191,7 @@
     <string name="error_favorite_limit">ERROR %1$d: The number has reached the limit.</string>
     <string name="error_retry_upload">Retry upload failed.</string>
     <string name="error_not_supported_audio_format">Not supported audio format, please open by other app.</string>
+    <string name="error_transcript_forward">Please forward all attachments after they have been downloaded</string>
     <!--home-->
     <string name="title_home">Contacts</string>
     <string name="search_hint">assets, contacts and messages</string>

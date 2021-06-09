@@ -25,20 +25,13 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityTranscriptBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
-import one.mixin.android.extension.blurBitmap
-import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.openAsUrlOrWeb
-import one.mixin.android.extension.openMedia
-import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.toast
+import one.mixin.android.extension.*
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendTranscriptAttachmentMessageJob
 import one.mixin.android.job.TranscriptAttachmentDownloadJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.location.LocationActivity
@@ -257,9 +250,9 @@ class TranscriptActivity : BaseActivity() {
             override fun onFileClick(messageItem: TranscriptMessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                            "application/vnd.android.package-archive",
-                            true
-                        )
+                        "application/vnd.android.package-archive",
+                        true
+                    )
                 ) {
                     if (this@TranscriptActivity.packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)
@@ -339,12 +332,21 @@ class TranscriptActivity : BaseActivity() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.forward.setOnClickListener {
-            ForwardActivity.show(
-                this,
-                arrayListOf(ForwardMessage(ForwardCategory.Transcript, content)),
-                ForwardAction.App.Resultless()
-            )
-            bottomSheet.dismiss()
+            lifecycleScope.launch {
+                if (conversationRepository.hasUploadedAttachmentSuspend(transcriptId) > 0) {
+                    alert(getString(R.string.error_transcript_forward))
+                        .setPositiveButton(R.string.ok) { dialog, _ ->
+                            dialog.dismiss()
+                        }.show()
+                } else {
+                    ForwardActivity.show(
+                        this@TranscriptActivity,
+                        arrayListOf(ForwardMessage(ForwardCategory.Transcript, content)),
+                        ForwardAction.App.Resultless()
+                    )
+                }
+                bottomSheet.dismiss()
+            }
         }
         bottomSheet.show()
     }

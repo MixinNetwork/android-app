@@ -9,6 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
@@ -29,6 +30,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             messageItem.sharedUserAvatarUrl,
             messageItem.sharedUserId ?: "0"
         )
+        val isMe = messageItem.userId == Session.getAccountId()
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
         messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
@@ -43,6 +45,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = View.GONE
         }

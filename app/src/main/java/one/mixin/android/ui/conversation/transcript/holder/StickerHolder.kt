@@ -12,6 +12,8 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.session.Session
+import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.image.ImageListener
 import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.vo.MessageStatus
@@ -41,9 +43,10 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
     fun bind(
         messageItem: TranscriptMessageItem,
         isFirst: Boolean,
+        onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
-        val isMe = false
+        val isMe = messageItem.userId == Session.getAccountId()
         if (messageItem.assetWidth == null || messageItem.assetHeight == null) {
             binding.chatSticker.layoutParams.width = dp120
             binding.chatSticker.layoutParams.height = dp120
@@ -114,6 +117,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             binding.chatName.visibility = GONE
         }

@@ -10,6 +10,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
@@ -44,6 +45,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
+        val isMe = messageItem.userId == Session.getAccountId()
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE

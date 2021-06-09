@@ -10,6 +10,7 @@ import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
@@ -65,6 +66,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         super.bind(messageItem)
+        val isMe = messageItem.userId == Session.getAccountId()
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE

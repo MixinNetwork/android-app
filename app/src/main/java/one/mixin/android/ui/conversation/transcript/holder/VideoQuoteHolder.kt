@@ -14,6 +14,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
@@ -81,7 +82,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener
-
+        val isMe = messageItem.userId == Session.getAccountId()
         binding.chatQuoteLayout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
 
         binding.chatTime.timeAgoClock(messageItem.createdAt)
@@ -191,7 +192,6 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
             minWidth * messageItem.mediaHeight / messageItem.mediaWidth
         )
 
-        val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName

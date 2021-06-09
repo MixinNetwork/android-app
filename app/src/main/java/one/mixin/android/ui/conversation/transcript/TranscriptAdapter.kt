@@ -266,7 +266,8 @@ class TranscriptAdapter(
             )
             7 -> (holder as StickerHolder).bind(
                 transcripts[position],
-                isFirst = isFirst(position)
+                isFirst = isFirst(position),
+                onItemListener
             )
             8 -> (holder as TranscriptHolder).bind(
                 transcripts[position],
