@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
@@ -365,7 +364,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             if (!data.representativeId.isNullOrBlank()) {
                 data.userId = data.representativeId
             }
-            processDecryptSuccess(data, data.data)
+            try {
+                processDecryptSuccess(data, data.data)
+            } catch (e: Exception) {
+                insertInvalidMessage(data)
+            }
             updateRemoteMessageStatus(data.messageId)
         }
     }
@@ -607,7 +610,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val decoded = Base64.decode(plainText)
                 val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
                 if (liveData.width <= 0 || liveData.height <= 0) {
-                    updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                    insertInvalidMessage(data)
                     return
                 }
                 val message = createLiveMessage(
@@ -778,7 +781,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     } else {
                         try {
                             processDecryptSuccess(data, plaintext)
-                        } catch (e: JsonSyntaxException) {
+                        } catch (e: Exception) {
                             insertInvalidMessage(data)
                         }
                     }
