@@ -632,104 +632,134 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data.source)
             }
             data.category.endsWith("_TRANSCRIPT") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(Base64.decode(plainText)) else plainText
-                val transcripts = gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList().filter { t ->
-                    t.transcriptId == data.messageId
-                }
-                if (transcripts.isEmpty()) {
-                    messageDao.insert(
-                        createTranscriptMessage(
-                            data.messageId,
-                            data.conversationId,
-                            data.userId,
-                            data.category,
-                            null,
-                            0,
-                            data.createdAt,
-                            MessageStatus.UNKNOWN.name
-                        )
-                    )
-                    return
-                }
-                val stringBuffer = StringBuffer()
-                transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }.forEach { transcript ->
-                    if (transcript.isData()) {
-                        transcript.mediaName
-                    } else if (transcript.isContact()) {
-                        transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
-                    } else {
-                        transcript.content
-                    }?.joinWhiteSpace()?.let {
-                        stringBuffer.append(it)
-                    }
-                }
-                MessageFts4Helper.insertMessageFts4(data.messageId, stringBuffer.toString())
-
-                transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
-                    transcript.stickerId?.let { stickerId ->
-                        val sticker = stickerDao.getStickerByUnique(stickerId)
-                        if (sticker == null) {
-                            jobManager.addJobInBackground(RefreshStickerJob(stickerId))
-                        }
-                    }
-                    transcript.sharedUserId?.let { userId ->
-                        syncUser(userId)
-                    }
-                }
-                var mediaSize = 0L
-                transcripts.filter { t -> t.isAttachment() }.forEach { transcript ->
-                    transcript.mediaStatus = MediaStatus.CANCELED.name
-                    transcript.mediaUrl = null
-                    transcript.mediaSize?.let {
-                        mediaSize += it
-                    }
-                    when {
-                        transcript.isImage() -> {
-                            MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(data.conversationId, transcript))
-                            }
-                        }
-                        transcript.isVideo() -> {
-                            MixinApplication.appContext.autoDownload(autoDownloadVideo) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(data.conversationId, transcript))
-                            }
-                        }
-                        transcript.isData() -> {
-                            MixinApplication.appContext.autoDownload(autoDownloadDocument) {
-                                jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(data.conversationId, transcript))
-                            }
-                        }
-                        transcript.isAudio() -> {
-                            jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(data.conversationId, transcript))
-                        }
-                    }
-                }
-                val message = createTranscriptMessage(
-                    data.messageId,
-                    data.conversationId,
-                    data.userId,
-                    data.category,
-                    gson.toJson(
-                        transcripts.sortedBy { t -> t.createdAt }.filter { t -> t.transcriptId == data.messageId }.map {
-                            TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
-                        }
-                    ),
-                    mediaSize,
-                    data.createdAt,
-                    data.status
-                )
-                transcriptMessageDao.insertList(
-                    transcripts.filter { t ->
-                        transcriptMessageDao.getTranscriptByIdSync(t.transcriptId, t.messageId) == null
-                    }
-                )
-                if (!transcripts.any { t -> t.isAttachment() }) {
-                    message.mediaStatus = MediaStatus.DONE.name
-                }
+                val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(
+                    Base64.decode(plainText)
+                ) else plainText
+                val message = processTranscriptMessage(data, plain) ?: return
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 generateNotification(message, data.source)
             }
         }
+    }
+
+    private fun processTranscriptMessage(data: BlazeMessageData, plain: String): Message? {
+        val transcripts =
+            gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList().filter { t ->
+                t.transcriptId == data.messageId
+            }
+        if (transcripts.isEmpty()) {
+            messageDao.insert(
+                createTranscriptMessage(
+                    data.messageId,
+                    data.conversationId,
+                    data.userId,
+                    data.category,
+                    null,
+                    0,
+                    data.createdAt,
+                    MessageStatus.UNKNOWN.name
+                )
+            )
+            return null
+        }
+        val stringBuffer = StringBuffer()
+        transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }
+            .forEach { transcript ->
+                if (transcript.isData()) {
+                    transcript.mediaName
+                } else if (transcript.isContact()) {
+                    transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                } else {
+                    transcript.content
+                }?.joinWhiteSpace()?.let {
+                    stringBuffer.append(it)
+                }
+            }
+        MessageFts4Helper.insertMessageFts4(data.messageId, stringBuffer.toString())
+
+        transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
+            transcript.stickerId?.let { stickerId ->
+                val sticker = stickerDao.getStickerByUnique(stickerId)
+                if (sticker == null) {
+                    jobManager.addJobInBackground(RefreshStickerJob(stickerId))
+                }
+            }
+            transcript.sharedUserId?.let { userId ->
+                syncUser(userId)
+            }
+        }
+        var mediaSize = 0L
+        transcripts.filter { t -> t.isAttachment() }.forEach { transcript ->
+            transcript.mediaStatus = MediaStatus.CANCELED.name
+            transcript.mediaUrl = null
+            transcript.mediaSize?.let {
+                mediaSize += it
+            }
+            when {
+                transcript.isImage() -> {
+                    MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+                        jobManager.addJobInBackground(
+                            TranscriptAttachmentDownloadJob(
+                                data.conversationId,
+                                transcript
+                            )
+                        )
+                    }
+                }
+                transcript.isVideo() -> {
+                    MixinApplication.appContext.autoDownload(autoDownloadVideo) {
+                        jobManager.addJobInBackground(
+                            TranscriptAttachmentDownloadJob(
+                                data.conversationId,
+                                transcript
+                            )
+                        )
+                    }
+                }
+                transcript.isData() -> {
+                    MixinApplication.appContext.autoDownload(autoDownloadDocument) {
+                        jobManager.addJobInBackground(
+                            TranscriptAttachmentDownloadJob(
+                                data.conversationId,
+                                transcript
+                            )
+                        )
+                    }
+                }
+                transcript.isAudio() -> {
+                    jobManager.addJobInBackground(
+                        TranscriptAttachmentDownloadJob(
+                            data.conversationId,
+                            transcript
+                        )
+                    )
+                }
+            }
+        }
+        val message = createTranscriptMessage(
+            data.messageId,
+            data.conversationId,
+            data.userId,
+            data.category,
+            gson.toJson(
+                transcripts.sortedBy { t -> t.createdAt }
+                    .filter { t -> t.transcriptId == data.messageId }.map {
+                        TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
+                    }
+            ),
+            mediaSize,
+            data.createdAt,
+            data.status
+        )
+        transcriptMessageDao.insertList(
+            transcripts.filter { t ->
+                transcriptMessageDao.getTranscriptByIdSync(t.transcriptId, t.messageId) == null
+            }
+        )
+        if (!transcripts.any { t -> t.isAttachment() }) {
+            message.mediaStatus = MediaStatus.DONE.name
+        }
+        return message
     }
 
     private fun processSystemSessionMessage(systemSession: SystemSessionMessagePayload) {
@@ -952,7 +982,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.SIGNAL_STICKER.name ||
             data.category == MessageCategory.SIGNAL_CONTACT.name ||
             data.category == MessageCategory.SIGNAL_LOCATION.name ||
-            data.category == MessageCategory.SIGNAL_POST.name
+            data.category == MessageCategory.SIGNAL_POST.name ||
+            data.category == MessageCategory.SIGNAL_TRANSCRIPT.name
         ) {
             database.insertAndNotifyConversation(
                 createMessage(
@@ -1014,6 +1045,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val decoded = Base64.decode(plainText)
             val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
             messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
+        } else if (data.category == MessageCategory.SIGNAL_TRANSCRIPT.name) {
+            val decoded = Base64.decode(plainText)
+            processTranscriptMessage(data, String(decoded))?.let { message ->
+                messageDao.updateTranscriptMessage(
+                    message.content,
+                    message.mediaSize,
+                    message.mediaStatus,
+                    message.status,
+                    messageId
+                )
+            }
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId)?.let {

@@ -56,7 +56,6 @@ import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
-import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs

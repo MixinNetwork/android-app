@@ -31,7 +31,6 @@ import one.mixin.android.job.SendTranscriptAttachmentMessageJob
 import one.mixin.android.job.TranscriptAttachmentDownloadJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.location.LocationActivity
@@ -42,9 +41,6 @@ import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.ForwardAction
-import one.mixin.android.vo.ForwardCategory
-import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.copy
@@ -250,9 +246,9 @@ class TranscriptActivity : BaseActivity() {
             override fun onFileClick(messageItem: TranscriptMessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true
-                    )
+                            "application/vnd.android.package-archive",
+                            true
+                        )
                 ) {
                     if (this@TranscriptActivity.packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)

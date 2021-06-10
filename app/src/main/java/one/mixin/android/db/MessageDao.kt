@@ -329,6 +329,20 @@ interface MessageDao : BaseDao<Message> {
         messageId: String
     )
 
+    @Query(
+        """
+        UPDATE messages SET content = :content, media_size = :mediaSize, media_status = :mediaStatus, status = :status 
+        WHERE id = :messageId AND category != 'SIGNAL_TRANSCRIPT'
+        """
+    )
+    fun updateTranscriptMessage(
+        content: String?,
+        mediaSize: Long?,
+        mediaStatus: String?,
+        status: String,
+        messageId: String
+    )
+
     @Query("UPDATE messages SET content = :content, status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMessageContentAndStatus(content: String, status: String, id: String)
 
