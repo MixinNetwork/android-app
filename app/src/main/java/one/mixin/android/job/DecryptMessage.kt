@@ -633,7 +633,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
             data.category.endsWith("_TRANSCRIPT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(Base64.decode(plainText)) else plainText
-                val transcripts = gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList()
+                val transcripts = gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList().filter { t ->
+                    t.transcriptId == data.messageId
+                }
                 if (transcripts.isEmpty()) {
                     messageDao.insert(
                         createTranscriptMessage(

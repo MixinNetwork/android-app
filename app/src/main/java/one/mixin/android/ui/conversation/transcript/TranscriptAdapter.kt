@@ -312,8 +312,7 @@ class TranscriptAdapter(
             item.isContact() && item.quoteContent.isNullOrEmpty() -> 6
             item.isContact() -> -6
             item.isSticker() -> 7
-            item.isTranscript() -> 8
-            item.isLocation() -> 9
+            item.isLocation() -> 8
             item.type == MessageCategory.APP_CARD.name -> 10
             else -> -99
         }
