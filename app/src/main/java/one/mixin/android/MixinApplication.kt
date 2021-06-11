@@ -30,10 +30,12 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putLong
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
+import one.mixin.android.ui.auth.AppAuthActivity
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
@@ -109,6 +111,9 @@ open class MixinApplication :
                 return get().appScope
             }
     }
+
+    private var activityReferences: Int = 0
+    private var isActivityChangingConfigurations = false
 
     override fun onCreate() {
         super.onCreate()
@@ -225,11 +230,35 @@ open class MixinApplication :
     }
 
     override fun onActivityStarted(activity: Activity) {
+        if (activity !is AppAuthActivity) {
+            activityReferences += 1
+        } else {
+            appAuthShown = true
+        }
+        if (activityReferences == 1 && !isActivityChangingConfigurations) {
+            val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
+            if (appAuth != -1) {
+                if (appAuth == 0) {
+                    AppAuthActivity.show(this)
+                } else {
+                    val enterBackground = defaultSharedPreferences.getLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                    val now = System.currentTimeMillis()
+                    val offset = if (appAuth == 1) {
+                        Constants.INTERVAL_1_MIN
+                    } else {
+                        Constants.INTERVAL_30_MINS
+                    }
+                    if (now - enterBackground > offset) {
+                        AppAuthActivity.show(this)
+                    }
+                }
+            }
+        }
     }
 
     override fun onActivityResumed(activity: Activity) {
         activityInForeground = true
-        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity) {
+        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
             FloatingWebClip.getInstance(activity.isNightMode()).hide()
             FloatingPlayer.getInstance(activity.isNightMode()).hide()
         } else if (activity !is LandingActivity && activity !is InitializeActivity) {
@@ -261,7 +290,18 @@ open class MixinApplication :
         }
     }
 
+    private var appAuthShown = false
+
     override fun onActivityStopped(activity: Activity) {
+        isActivityChangingConfigurations = activity.isChangingConfigurations
+        if (activity !is AppAuthActivity) {
+            activityReferences -= 1
+        } else {
+            appAuthShown = false
+        }
+        if (!appAuthShown && activity !is AppAuthActivity && activityReferences == 0 && !isActivityChangingConfigurations) {
+            defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, System.currentTimeMillis())
+        }
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {

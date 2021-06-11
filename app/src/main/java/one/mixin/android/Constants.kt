@@ -49,6 +49,8 @@ object Constants {
         const val PREF_STRANGER_TRANSFER = "pref_stranger_transfer"
         const val PREF_RECENT_SEARCH_ASSETS = "pref_recent_search_assets"
         const val PREF_INCOGNITO_KEYBOARD = "pref_incognito_keyboard"
+        const val PREF_APP_AUTH = "pref_app_auth"
+        const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
     }
 
     object Scheme {
@@ -153,6 +155,8 @@ object Constants {
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
     const val INTERVAL_10_MINS: Long = 1000 * 60 * 10
+    const val INTERVAL_30_MINS: Long = 1000 * 60 * 30
+    const val INTERVAL_1_MIN: Long = 1000 * 60
     const val INTERVAL_7_DAYS: Long = INTERVAL_24_HOURS * 7
     const val DELAY_SECOND = 60
     const val ALLOW_INTERVAL: Long = 5 * 60 * 1000

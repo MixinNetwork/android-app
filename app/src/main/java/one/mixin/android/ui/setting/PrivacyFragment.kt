@@ -5,6 +5,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_INCOGNITO_KEYBOARD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPrivacyBinding
@@ -86,6 +87,21 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
             contactRl.setOnClickListener {
                 navTo(MobileContactFragment.newInstance(), MobileContactFragment.TAG)
             }
+            setLockDesc()
+            lockRl.setOnClickListener {
+                navTo(AppAuthSettingFragment.newInstance(), AppAuthSettingFragment.TAG)
+            }
         }
+    }
+
+    fun setLockDesc() {
+        binding.lockDescTv.text = getString(
+            when (defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)) {
+                0 -> R.string.enable_immediately
+                1 -> R.string.enable_after_1_minute
+                2 -> R.string.enable_after_30_minutes
+                else -> R.string.disabled
+            }
+        )
     }
 }

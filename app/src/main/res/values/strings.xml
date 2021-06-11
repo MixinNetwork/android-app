@@ -134,6 +134,8 @@
     <string name="strikethrough">strikethrough</string>
     <string name="italic">italic</string>
     <string name="bold">bold</string>
+    <string name="disabled">Disabled</string>
+    <string name="not_recognized">Not recognized</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -984,4 +986,19 @@
     <string name="player_delete_all_desc">Are you sure you want to stop and close the playlist?</string>
     <string name="player_stop_playing">Stop Playing</string>
     <string name="player_playback_failed">Playback failed</string>
+
+    <!--  auth  -->
+    <string name="fingerprint_lock">Fingerprint lock</string>
+    <string name="fingerprint_confirm">Confirm fingerprint</string>
+    <string name="unlock_with_fingerprint">Unlock with fingerprint</string>
+    <string name="unlock_with_fingerprint_desc">When enabled, you\'ll need to use fingerprint to open Mixin.</string>
+    <string name="automatically_lock">Automatically lock</string>
+    <string name="app_locked">Mixin Locked</string>
+    <string name="touch_fingerprint_sensor">Touch the fingerprint sensor</string>
+    <string name="auto_immediately">Immediately</string>
+    <string name="auto_after_1_minute">After 1 minute</string>
+    <string name="auto_after_30_minutes">After 30 minutes</string>
+    <string name="enable_immediately">Enabled immediately</string>
+    <string name="enable_after_1_minute">Enabled after 1 minute</string>
+    <string name="enable_after_30_minutes">Enabled after 30 minutes</string>
 </resources>

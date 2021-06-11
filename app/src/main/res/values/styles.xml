@@ -73,8 +73,10 @@
         <item name="android:colorControlHighlight">@color/highlight</item>
 
         <item name="snackbarStyle">@style/Snackbar</item>
-    </style>
 
+        <item name="swirl_ridgeColor">@color/gray_light</item>
+        <item name="swirl_errorColor">@color/colorRed</item>
+    </style>
 
     <style name="NoneHFTextViewStyle" parent="Widget.AppCompat.TextView">
         <item name="android:hyphenationFrequency" tools:ignore="NewApi">none</item>

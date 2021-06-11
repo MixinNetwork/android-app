@@ -175,7 +175,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
 
         override fun showAuthenticationScreen() {
-            BiometricUtil.showAuthenticationScreen(this@BiometricBottomSheetDialogFragment)
+            BiometricUtil.showAuthenticationScreen(this@BiometricBottomSheetDialogFragment.requireActivity())
         }
 
         override fun onCancel() {

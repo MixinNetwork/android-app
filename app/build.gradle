@@ -299,6 +299,7 @@ dependencies {
     implementation "com.github.skydoves:balloon:$balloonVersion"
     implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}"
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"
+    implementation "com.mattprecious.swirl:swirl:$swirlVersion"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 

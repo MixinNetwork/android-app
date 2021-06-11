@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_window">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="32dp"
+        android:tint="@color/colorAccent"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_call_secret"
+        android:contentDescription="@null" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin12"
+        android:layout_below="@id/icon"
+        android:text="@string/app_locked"
+        android:textSize="26sp"
+        android:textColor="?attr/text_primary" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical">
+
+        <com.mattprecious.swirl.SwirlView
+            android:id="@+id/swirl"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center_horizontal"
+            tools:swirl_state="on" />
+
+        <TextView
+            android:id="@+id/info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin12"
+            android:layout_gravity="center_horizontal"
+            android:textSize="16sp"
+            android:textColor="?attr/text_minor"
+            android:text="@string/touch_fingerprint_sensor"/>
+    </LinearLayout>
+</RelativeLayout>
