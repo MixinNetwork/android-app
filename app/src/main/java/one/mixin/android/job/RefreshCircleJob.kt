@@ -58,7 +58,8 @@ class RefreshCircleJob(
                                 {
                                     jobManager.addJobInBackground(
                                         RefreshConversationJob(
-                                            circleConversation.conversationId
+                                            circleConversation.conversationId,
+                                            skipRefreshCircle = true
                                         )
                                     )
                                 }
