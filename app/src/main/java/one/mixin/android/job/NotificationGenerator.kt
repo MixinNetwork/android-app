@@ -363,14 +363,11 @@ object NotificationGenerator : Injector() {
                                     model: Any?,
                                     target: Target<Bitmap>?,
                                     isFirstResource: Boolean
-                                ):
-                                    Boolean {
-                                        notificationBuilder.setLargeIcon(
-                                            BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar)
-                                        )
-                                        notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
-                                        return false
-                                    }
+                                ): Boolean {
+                                    notificationBuilder.setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar))
+                                    notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
+                                    return false
+                                }
                             }
                         ).submit(width, height)
                 }

@@ -499,15 +499,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             UserRelationship.FRIEND.name -> {
                 list.groups.add(
                     menuGroup {
-                        // Todo export chat
-                        // menu {
-                        //     title = getString(R.string.contact_other_export_chat)
-                        //     style = MenuStyle.Info
-                        //     action = {
-                        //         exportChat()
-                        //         // dismiss()
-                        //     }
-                        // }
                         menu {
                             title = getString(
                                 if (user.isBot()) {

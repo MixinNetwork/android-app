@@ -55,10 +55,6 @@ class TranscriptMessageItem(
     val mentions: String? = null,
 ) : ICategory
 
-fun TranscriptMessageItem.isSignal(): Boolean {
-    return type.startsWith("SIGNAL_")
-}
-
 fun TranscriptMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
 
 fun TranscriptMessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {

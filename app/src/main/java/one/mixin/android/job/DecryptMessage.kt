@@ -662,7 +662,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             )
             return null
         }
-        val stringBuffer = StringBuffer()
+        val stringBuilder = StringBuilder()
         transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }
             .forEach { transcript ->
                 if (transcript.isData()) {
@@ -672,10 +672,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 } else {
                     transcript.content
                 }?.joinWhiteSpace()?.let {
-                    stringBuffer.append(it)
+                    stringBuilder.append(it)
                 }
             }
-        MessageFts4Helper.insertMessageFts4(data.messageId, stringBuffer.toString())
+        MessageFts4Helper.insertMessageFts4(data.messageId, stringBuilder.toString())
 
         transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
             transcript.stickerId?.let { stickerId ->
