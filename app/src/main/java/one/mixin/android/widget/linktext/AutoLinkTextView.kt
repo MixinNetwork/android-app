@@ -47,6 +47,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     private var phoneModeColor = DEFAULT_COLOR
     private var emailModeColor = DEFAULT_COLOR
     private var customModeColor = DEFAULT_COLOR
+    private var botModeColor = DEFAULT_COLOR
     private var defaultSelectedColor = Color.LTGRAY
     var clickTime: Long = 0
     var mentionRenderContext: MentionRenderContext? = null
@@ -263,6 +264,17 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                         )
                     )
                 }
+            } else if (anAutoLinkMode != AutoLinkMode.MODE_BOT) {
+                while (matcher.find()) {
+                    autoLinkItems.add(
+                        AutoLinkItem(
+                            matcher.start(),
+                            matcher.end(),
+                            matcher.group(),
+                            anAutoLinkMode
+                        )
+                    )
+                }
             }
         }
 
@@ -276,6 +288,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             AutoLinkMode.MODE_URL -> urlModeColor
             AutoLinkMode.MODE_PHONE -> phoneModeColor
             AutoLinkMode.MODE_EMAIL -> emailModeColor
+            AutoLinkMode.MODE_BOT -> botModeColor
             AutoLinkMode.MODE_CUSTOM -> customModeColor
         }
     }
@@ -298,6 +311,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
     fun setEmailModeColor(@ColorInt emailModeColor: Int) {
         this.emailModeColor = emailModeColor
+    }
+
+    fun setBotModeColor(@ColorInt botModeColor: Int) {
+        this.botModeColor = botModeColor
     }
 
     fun setCustomModeColor(@ColorInt customModeColor: Int) {
