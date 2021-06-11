@@ -53,6 +53,7 @@ import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
@@ -302,8 +303,8 @@ class TranscriptAdapter(
             item.isText() -> -1
             item.isImage() && item.quoteContent.isNullOrEmpty() -> 2
             item.isImage() -> -2
-            item.isVideo() && item.quoteContent.isNullOrEmpty() -> 3
-            item.isVideo() -> -3
+            (item.isVideo() || item.isLive()) && item.quoteContent.isNullOrEmpty() -> 3
+            (item.isVideo() || item.isLive()) -> -3
             item.isData() && item.quoteContent.isNullOrEmpty() -> 4
             item.isData() -> -4
             item.isAudio() && item.quoteContent.isNullOrEmpty() -> 5
