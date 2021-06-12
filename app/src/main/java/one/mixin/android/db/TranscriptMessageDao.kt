@@ -59,7 +59,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
-        WHERE transcript_id = :transcriptId
+        WHERE t.transcript_id = :transcriptId
         ORDER BY t.created_at ASC, t.rowid ASC
     """
     )

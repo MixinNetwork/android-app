@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
+import com.google.gson.Gson
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTranscriptBinding
 import one.mixin.android.extension.dp
@@ -14,6 +15,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.TranscriptMinimal
@@ -30,6 +32,7 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
+import java.lang.StringBuilder
 
 class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : BaseViewHolder(binding.root) {
     init {
@@ -142,7 +145,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
         if (binding.chatTv.tag != messageItem.messageId) {
             if (!messageItem.content.isNullOrEmpty()) {
                 val transcripts = GsonHelper.customGson.fromJson(messageItem.content, Array<TranscriptMinimal>::class.java)
-                val str = StringBuffer()
+                val str = StringBuilder()
                 transcripts.forEach {
                     when {
                         it.isImage() -> {
@@ -176,7 +179,16 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
                             str.append("${it. name}: [${itemView.context.getString(R.string.sticker)}]\n")
                         }
                         it.type == MessageCategory.APP_CARD.name -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.card)}]\n")
+                            try {
+                                val cardData = Gson().fromJson(it.content, AppCardData::class.java)
+                                if (cardData.title.isBlank()) {
+                                    str.append("${it.name}: [${itemView.context.getString(R.string.card)}]\n")
+                                } else {
+                                    str.append("${it.name}: [${cardData.title}]\n")
+                                }
+                            } catch (e: Exception) {
+                                str.append("${it. name}: [${itemView.context.getString(R.string.card)}]\n")
+                            }
                         }
                         else -> str.append("${it. name}: ${it.content}\n")
                     }

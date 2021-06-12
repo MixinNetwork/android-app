@@ -4,6 +4,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
+import com.google.gson.Gson
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTranscriptBinding
 import one.mixin.android.extension.dp
@@ -14,6 +15,8 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.TranscriptMinimal
@@ -30,8 +33,10 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
+import java.lang.StringBuilder
 
-class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : BaseViewHolder(binding.root) {
+class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
+    BaseViewHolder(binding.root) {
     init {
         binding.chatTv.layoutParams.width = itemView.context.maxItemWidth()
         binding.chatTv.round(3.dp)
@@ -112,8 +117,11 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
         }
         if (binding.chatTv.tag != messageItem.messageId) {
             if (!messageItem.content.isNullOrEmpty()) {
-                val transcripts = GsonHelper.customGson.fromJson(messageItem.content, Array<TranscriptMinimal>::class.java)
-                val str = StringBuffer()
+                val transcripts = GsonHelper.customGson.fromJson(
+                    messageItem.content,
+                    Array<TranscriptMinimal>::class.java
+                )
+                val str = StringBuilder()
                 transcripts.forEach {
                     when {
                         it.isImage() -> {
@@ -145,6 +153,18 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
                         }
                         it.isSticker() -> {
                             str.append("${it.name}: [${itemView.context.getString(R.string.sticker)}]\n")
+                        }
+                        it.type == MessageCategory.APP_CARD.name -> {
+                            try {
+                                val cardData = Gson().fromJson(it.content, AppCardData::class.java)
+                                if (cardData.title.isBlank()) {
+                                    str.append("${it.name}: [${itemView.context.getString(R.string.card)}]\n")
+                                } else {
+                                    str.append("${it.name}: [${cardData.title}]\n")
+                                }
+                            } catch (e: Exception) {
+                                str.append("${it.name}: [${itemView.context.getString(R.string.card)}]\n")
+                            }
                         }
                         else -> str.append("${it.name}: ${it.content}\n")
                     }
@@ -190,7 +210,13 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(
+                binding.chatTime,
+                secretIcon ?: representativeIcon,
+                null,
+                statusIcon,
+                null
+            )
         }
         chatLayout(isMe, isLast)
     }
