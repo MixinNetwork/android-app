@@ -32,8 +32,6 @@ import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
-import android.webkit.WebSettings.FORCE_DARK_AUTO
-import android.webkit.WebSettings.FORCE_DARK_ON
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebViewClient.ERROR_CONNECT
@@ -90,7 +88,6 @@ import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.showPipPermissionNotification
-import one.mixin.android.extension.supportsQ
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
