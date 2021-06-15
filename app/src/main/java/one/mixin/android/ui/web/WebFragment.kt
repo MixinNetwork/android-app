@@ -826,43 +826,48 @@ class WebFragment : BaseFragment() {
             title = getString(R.string.forward)
             icon = R.drawable.ic_web_forward
             action = {
-                val currentUrl = webView.url ?: url
-                if (isBot()) {
-                    app?.appId?.let { id ->
-                        lifecycleScope.launch {
-                            val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
-                            if (app.matchResourcePattern(currentUrl)) {
-                                var webTitle = webView.title
-                                if (webTitle.isNullOrBlank()) {
-                                    webTitle = app.name
+                if (appCard?.shareable == false) {
+                    toast(R.string.link_shareable_false)
+                } else {
+                    val currentUrl = webView.url ?: url
+                    if (isBot()) {
+                        app?.appId?.let { id ->
+                            lifecycleScope.launch {
+                                val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
+                                if (app.matchResourcePattern(currentUrl)) {
+                                    var webTitle = webView.title
+                                    if (webTitle.isNullOrBlank()) {
+                                        webTitle = app.name
+                                    }
+                                    val appCardData = AppCardData(
+                                        app.appId,
+                                        app.iconUrl,
+                                        webTitle,
+                                        app.name,
+                                        currentUrl,
+                                        app.updatedAt,
+                                        shareable = true,
+                                    )
+                                    ForwardActivity.show(
+                                        requireContext(),
+                                        arrayListOf(
+                                            ForwardMessage(
+                                                ShareCategory.AppCard,
+                                                GsonHelper.customGson.toJson(appCardData)
+                                            )
+                                        ),
+                                        ForwardAction.App.Resultless()
+                                    )
+                                } else {
+                                    ForwardActivity.show(requireContext(), currentUrl)
                                 }
-                                val appCardData = AppCardData(
-                                    app.appId,
-                                    app.iconUrl,
-                                    webTitle,
-                                    app.name,
-                                    currentUrl,
-                                    app.updatedAt
-                                )
-                                ForwardActivity.show(
-                                    requireContext(),
-                                    arrayListOf(
-                                        ForwardMessage(
-                                            ShareCategory.AppCard,
-                                            GsonHelper.customGson.toJson(appCardData)
-                                        )
-                                    ),
-                                    ForwardAction.App.Resultless()
-                                )
-                            } else {
-                                ForwardActivity.show(requireContext(), currentUrl)
                             }
                         }
+                    } else {
+                        ForwardActivity.show(requireContext(), currentUrl)
                     }
-                } else {
-                    ForwardActivity.show(requireContext(), currentUrl)
+                    bottomSheet.dismiss()
                 }
-                bottomSheet.dismiss()
             }
         }
         val refreshMenu = menu {

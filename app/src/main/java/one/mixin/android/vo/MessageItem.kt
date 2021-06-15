@@ -12,8 +12,10 @@ import androidx.core.view.isVisible
 import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.android.exoplayer2.util.MimeTypes
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -28,6 +30,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.timeFormat
 import one.mixin.android.extension.toast
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashEncoder
@@ -100,6 +103,20 @@ data class MessageItem(
     val mentions: String? = null,
     val mentionRead: Boolean? = null
 ) : Parcelable, ICategory {
+
+    @IgnoredOnParcel
+    @Ignore
+    private var appCardShareable: Boolean? = null
+
+    fun isAppCardShareable(): Boolean? {
+        if (type != MessageCategory.APP_CARD.name) return null
+
+        if (appCardShareable == null) {
+            appCardShareable = GsonHelper.customGson.fromJson(content, AppCardData::class.java).shareable
+        }
+        return appCardShareable
+    }
+
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem) =
@@ -114,7 +131,8 @@ data class MessageItem(
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
         isCallMessage() || isRecall() ||
-        (isTranscript() && this.mediaStatus != MediaStatus.DONE.name)
+        (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
+        (this.type == MessageCategory.APP_CARD.name && isAppCardShareable() == false)
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
