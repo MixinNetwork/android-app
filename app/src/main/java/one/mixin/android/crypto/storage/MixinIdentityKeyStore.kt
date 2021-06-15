@@ -62,13 +62,13 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
             val signalAddress = address.name
             val identity = dao.getIdentity(signalAddress)
             if (identity == null) {
-                Log.w(TAG, "Saving new identity..." + address.toString())
+                Log.w(TAG, "Saving new identity...$address")
                 dao.insert(Identity(signalAddress, null, identityKey.serialize(), null, null, System.currentTimeMillis()))
                 return true
             }
 
             if (identity.getIdentityKey() != identityKey) {
-                Log.w(TAG, "Replacing existing identity..." + address.toString())
+                Log.w(TAG, "Replacing existing identity...$address")
                 dao.insert(Identity(signalAddress, null, identityKey.serialize(), null, null, System.currentTimeMillis()))
                 SessionUtil.archiveSiblingSessions(context, address)
                 return true
