@@ -7,6 +7,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-parcelize'
@@ -355,8 +356,6 @@ task ktlintFormat(type: JavaExec, group: "formatting") {
 configurations.all {
     exclude group: 'org.jetbrains', module: 'annotations-java5'
 }
-
-apply plugin: 'com.google.gms.google-services'
 
 task allTests(dependsOn: ['testStagingUnitTest', 'connectedStagingAndroidTest']) {
     description = "Run unit tests and instrumentation tests"
