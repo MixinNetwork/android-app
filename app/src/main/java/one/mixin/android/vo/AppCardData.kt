@@ -14,7 +14,8 @@ data class AppCardData(
     var description: String,
     val action: String,
     @SerializedName("updated_at")
-    val updatedAt: String?
+    val updatedAt: String?,
+    val shareable: Boolean?,
 ) : Parcelable {
     init {
         title = title.take(36)

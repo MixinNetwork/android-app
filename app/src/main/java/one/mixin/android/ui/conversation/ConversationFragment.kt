@@ -443,6 +443,11 @@ class ConversationFragment() :
         object : ConversationAdapter.OnItemListener() {
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
                 if (isSelect) {
+                    if (messageItem.type == MessageCategory.APP_CARD.name) {
+                        if (messageItem.isAppCardShareable() == false) {
+                            toast(R.string.app_card_shareable_false)
+                        }
+                    }
                     conversationAdapter.addSelect(messageItem)
                 } else {
                     conversationAdapter.removeSelect(messageItem)
