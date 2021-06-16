@@ -350,8 +350,8 @@
     <string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>
     <string name="chat_import">Import</string>
     <string name="chat_send_file">Send as file</string>
-    <string name="app_card_shareable_false">The card has been set to not allow forwarding</string>
-    <string name="link_shareable_false">The link has been set to not allow sharing</string>
+    <string name="app_card_shareable_false">Disallow sharing of this card</string>
+    <string name="link_shareable_false">Disallow sharing of this URL</string>
     <!--contact-->
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>
