@@ -248,6 +248,18 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audios")
 }
 
+fun Context.getTranscriptFile(name: String, type: String): File {
+    return getTranscriptDirPath().newTempFile(
+        name, type,
+        true
+    )
+}
+
+fun Context.getTranscriptDirPath(): File {
+    val root = getMediaPath()
+    return File("$root${File.separator}Transcripts${File.separator}")
+}
+
 fun Context.getConversationImagePath(conversationId: String): File? {
     if (conversationId.isBlank()) return null
     val root = getMediaPath() ?: return null
@@ -272,6 +284,12 @@ fun Context.getConversationAudioPath(conversationId: String): File? {
     return File("$root${File.separator}Audios${File.separator}$conversationId")
 }
 
+fun Context.getConversationTranscriptPath(conversationId: String): File? {
+    if (conversationId.isBlank()) return null
+    val root = getMediaPath() ?: return null
+    return File("$root${File.separator}Transcripts${File.separator}$conversationId")
+}
+
 fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
     getConversationImagePath(conversationId)?.apply {
@@ -290,6 +308,11 @@ fun Context.getConversationMediaSize(conversationId: String): Long {
         }
     }
     getConversationDocumentPath(conversationId)?.apply {
+        if (exists()) {
+            mediaSize += dirSize() ?: 0
+        }
+    }
+    getConversationTranscriptPath(conversationId)?.apply {
         if (exists()) {
             mediaSize += dirSize() ?: 0
         }
@@ -439,14 +462,14 @@ fun File.createAudioTemp(conversationId: String, messageId: String, type: String
     return path.newTempFile(messageId, ".$type", noMedia)
 }
 
-private fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
+fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
     if (!this.exists()) {
         this.mkdirs()
     }
     if (noMedia) {
         createNoMediaDir()
     }
-    return File.createTempFile(name, type, this)
+    return File(this, "$name$type")
 }
 
 fun File.processing(to: File) {
@@ -511,6 +534,38 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
         reportException("Uri.getFilePath uri: $this", reportException)
     }
     return data
+}
+
+fun Uri.getFileName(context: Context = MixinApplication.appContext): String {
+    try {
+        var result: String? = null
+        if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
+            var cursor: Cursor? = null
+            try {
+                cursor = context.contentResolver.query(this, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+                cursor?.let { c ->
+                    if (c.moveToFirst()) {
+                        result = c.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e)
+            } finally {
+                cursor?.close()
+            }
+        }
+        if (result == null) {
+            result = path
+            val cut = result!!.lastIndexOf('/')
+            if (cut != -1) {
+                result = result!!.substring(cut + 1)
+            }
+        }
+        return result ?: ""
+    } catch (e: java.lang.Exception) {
+        Timber.e(e)
+    }
+    return ""
 }
 
 fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String? {

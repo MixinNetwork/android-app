@@ -32,6 +32,7 @@ import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.insertNoReplace
@@ -45,6 +46,7 @@ import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MessageFtsDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -83,6 +85,7 @@ internal constructor(
     private val participantSessionDao: ParticipantSessionDao,
     private val appDao: AppDao,
     private val jobDao: JobDao,
+    private val transcriptMessageDao: TranscriptMessageDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager
@@ -91,6 +94,8 @@ internal constructor(
     @SuppressLint("RestrictedApi")
     fun getMessages(conversationId: String, unreadCount: Int, countable: Boolean) =
         MessageProvider.getMessages(conversationId, appDatabase, unreadCount, countable)
+
+    suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
     fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
         MessageProvider.getConversations(appDatabase)
@@ -441,7 +446,16 @@ internal constructor(
         appDatabase.deleteMessage(id)
     }
 
+    fun deleteTranscriptByMessageId(messageId: String) {
+        jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
+    }
+
+    fun deleteTranscriptByConversationId(conversationId: String) {
+        jobManager.addJobInBackground(TranscriptDeleteJob(messageDao.findTranscriptIdByConversationId(conversationId)))
+    }
+
     suspend fun deleteConversationById(conversationId: String) {
+        jobManager.addJobInBackground(TranscriptDeleteJob(messageDao.findTranscriptIdByConversationId(conversationId)))
         deleteMessageByConversationId(conversationId, true)
     }
 
@@ -449,4 +463,26 @@ internal constructor(
 
     fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
         conversationService.participants(id, action, requests)
+
+    fun findTranscriptMessageItemById(transcriptId: String) = transcriptMessageDao.getTranscriptMessages(transcriptId)
+
+    suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptMessageDao.findTranscriptMessageIndex(transcriptId, messageId)
+
+    suspend fun getTranscriptMediaMessage(transcriptId: String) = withContext(Dispatchers.IO) {
+        transcriptMessageDao.getTranscriptMediaMessage(transcriptId)
+    }
+
+    suspend fun indexTranscriptMediaMessages(transcriptId: String, messageId: String) = withContext(Dispatchers.IO) {
+        transcriptMessageDao.indexTranscriptMediaMessages(transcriptId, messageId)
+    }
+
+    suspend fun getTranscriptsById(transcriptId: String) = transcriptMessageDao.getTranscriptsById(transcriptId)
+
+    suspend fun getTranscriptById(transcriptId: String, messageId: String) = transcriptMessageDao.getTranscriptById(transcriptId, messageId)
+
+    fun getMediaSizeTotalById(conversationId: String) = transcriptMessageDao.getMediaSizeTotalById(conversationId)
+
+    fun countTranscriptById(conversationId: String) = transcriptMessageDao.countTranscriptByConversationId(conversationId)
+
+    suspend fun hasUploadedAttachmentSuspend(transcriptId: String) = transcriptMessageDao.hasUploadedAttachmentSuspend(transcriptId)
 }

@@ -30,6 +30,7 @@ import one.mixin.android.db.ResendSessionMessageDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TraceDao
+import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.session.Session
@@ -96,6 +97,8 @@ open class Injector {
     lateinit var userApi: UserService
     @Inject
     lateinit var conversationService: ConversationService
+    @Inject
+    lateinit var transcriptMessageDao: TranscriptMessageDao
     @Inject
     lateinit var database: MixinDatabase
 

@@ -22,6 +22,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
@@ -158,7 +159,8 @@ class ConversationActivity : BlazeBaseActivity() {
             recipientId: String? = null,
             messageId: String? = null,
             keyword: String? = null,
-            unreadCount: Int? = null
+            unreadCount: Int? = null,
+            transcriptData: TranscriptData? = null
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -169,7 +171,8 @@ class ConversationActivity : BlazeBaseActivity() {
                         recipientId,
                         messageId,
                         keyword,
-                        unreadCount
+                        unreadCount,
+                        transcriptData
                     )
                 )
             }.run {

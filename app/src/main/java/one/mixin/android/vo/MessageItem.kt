@@ -18,15 +18,23 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.encodeBitmap
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.timeFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.blurhash.Base83
+import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.websocket.toLocationData
 import java.io.File
 import java.io.FileInputStream
+import kotlin.IllegalArgumentException
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -105,8 +113,8 @@ data class MessageItem(
     fun canNotForward() = this.type == MessageCategory.APP_BUTTON_GROUP.name ||
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        unfinishedAttachment() ||
-        isCallMessage() || isRecall()
+        isCallMessage() || isRecall() ||
+        (isTranscript() && this.mediaStatus != MediaStatus.DONE.name)
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
@@ -209,6 +217,40 @@ fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
     }
 }
 
+fun MessageItem.toSimpleChat(): String {
+    return "${createdAt.timeFormat()} : $userFullName - ${simpleChat()}"
+}
+
+private fun MessageItem.simpleChat(): String {
+    return when {
+        isText() -> {
+            return content!!
+        }
+        isSticker() -> "[STICKER]"
+        isImage() -> mediaUrl.notNullWithElse({ "[IMAGE - ${File(it).name}]" }, "[IMAGE]")
+        isVideo() -> mediaUrl.notNullWithElse({ "[VIDEO - ${File(it).name}]" }, "[VIDEO]")
+        isData() -> mediaUrl.notNullWithElse({ "[FILE - ${File(it).name}]" }, "[FILE]")
+        isAudio() -> mediaUrl.notNullWithElse({ "[AUDIO - ${File(it).name}]" }, "[AUDIO]")
+        type == MessageCategory.APP_BUTTON_GROUP.name -> "[Mixin APP]"
+        type == MessageCategory.APP_CARD.name -> "[Mixin APP]"
+        type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ->
+            "[TRANSFER ${
+            if (snapshotAmount?.toFloat()!! > 0) {
+                "+"
+            } else {
+                ""
+            }
+            }$snapshotAmount $assetSymbol]"
+        isContact() -> {
+            "[CONTACT - $sharedUserFullName]"
+        }
+        isLive() -> "[LIVE]"
+        isPost() -> content!!
+        isLocation() -> "[LOCATION https://maps.google.com/?q=${toLocationData(content).run { "${this?.latitude}&${this?.longitude}" }}]"
+        else -> throw IllegalArgumentException()
+    }
+}
+
 class FixedMessageDataSource(private val messageItems: List<MessageItem>) : PositionalDataSource<MessageItem>() {
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MessageItem>) {
         callback.onResult(messageItems)
@@ -220,4 +262,61 @@ class FixedMessageDataSource(private val messageItems: List<MessageItem>) : Posi
     ) {
         callback.onResult(messageItems, 0, 1)
     }
+}
+
+fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): TranscriptMessage {
+    val category = when {
+        isImage() -> if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+        isVideo() -> if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+        isAudio() -> if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+        isData() -> if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
+        isSticker() -> if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
+        isLive() -> if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
+        isLocation() -> if (isPlain) MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
+        isContact() -> if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
+        isTranscript() -> if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
+        isAppCard() -> MessageCategory.APP_CARD.name
+        isText() -> if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        else -> throw IllegalArgumentException("Unknown category")
+    }
+    return TranscriptMessage(
+        transcriptId,
+        messageId,
+        userId,
+        userFullName,
+        category,
+        createdAt,
+        content,
+        mediaUrl ?: assetUrl,
+        mediaName,
+        mediaSize,
+        mediaWidth,
+        mediaHeight,
+        mediaMimeType,
+        mediaDuration?.toLong(),
+        mediaStatus,
+        mediaWaveform,
+        thumbImage?.let { thumb ->
+            try {
+                if (Base83.isValid(thumb)) {
+                    thumb.decodeBase64().encodeBitmap()?.let { bitmap ->
+                        BlurHashEncoder.encode(bitmap)
+                    }
+                } else {
+                    thumbImage
+                }
+            } catch (e: Exception) {
+                thumbImage
+            }
+        },
+        thumbUrl,
+        null,
+        null,
+        null,
+        stickerId,
+        sharedUserId,
+        mentions,
+        quoteId,
+        quoteContent
+    )
 }

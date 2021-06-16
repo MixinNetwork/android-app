@@ -267,8 +267,14 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        // Remaining works
         val MIGRATION_37_38: Migration = object : Migration(37, 38) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `transcript_messages` (`transcript_id` TEXT NOT NULL, `message_id` TEXT NOT NULL, `user_id` TEXT, `user_full_name` TEXT, `category` TEXT NOT NULL, `created_at` TEXT NOT NULL, `content` TEXT, `media_url` TEXT, `media_name` TEXT, `media_size` INTEGER, `media_width` INTEGER, `media_height` INTEGER, `media_mime_type` TEXT, `media_duration` INTEGER, `media_status` TEXT, `media_waveform` BLOB, `thumb_image` TEXT, `thumb_url` TEXT, `media_key` BLOB, `media_digest` BLOB, `media_created_at` TEXT, `sticker_id` TEXT, `shared_user_id` TEXT, `mentions` TEXT, `quote_id` TEXT, `quote_content` TEXT, `caption` TEXT, PRIMARY KEY(`transcript_id`, `message_id`))")
+            }
+        }
+
+        // Remaining works
+        val MIGRATION_38_39: Migration = object : Migration(38, 39) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_user_id_status_created_at`")
                 database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_status_user_id`")

@@ -1,9 +1,13 @@
 package one.mixin.android.util
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+import android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
 import one.mixin.android.extension.supportsPie
 
 @SuppressLint("InlinedApi")
@@ -17,14 +21,16 @@ object SystemUIManager {
     private const val action_dim = View.SYSTEM_UI_FLAG_LOW_PROFILE
     private const val action_immersive = View.SYSTEM_UI_FLAG_IMMERSIVE
     private const val action_immersive_sticky = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-
+    private const val flag_draws = FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
     fun setStickyStyle(window: Window) {
-        val flag = action_navigation_bar_hide or action_hide_status_bar or action_hide_status_bar_float or action_navigation_bar_hide_float or action_stable or action_immersive_sticky
+        val flag =
+            action_navigation_bar_hide or action_hide_status_bar or action_hide_status_bar_float or action_navigation_bar_hide_float or action_stable or action_immersive_sticky
         window.decorView.systemUiVisibility = flag
     }
 
     fun setImmersiveStyle(window: Window) {
-        val flag = action_navigation_bar_hide or action_hide_status_bar or action_hide_status_bar_float or action_navigation_bar_hide_float or action_stable or action_immersive
+        val flag =
+            action_navigation_bar_hide or action_hide_status_bar or action_hide_status_bar_float or action_navigation_bar_hide_float or action_stable or action_immersive
         window.decorView.systemUiVisibility = flag
     }
 
@@ -48,6 +54,14 @@ object SystemUIManager {
         window.decorView.systemUiVisibility = flag
     }
 
+    fun transparentDraws(window: Window) {
+        window.addFlags(FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.clearFlags(FLAG_TRANSLUCENT_STATUS)
+        window.addFlags(FLAG_TRANSLUCENT_NAVIGATION)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+    }
+
     fun setDimStyle(window: Window) {
         val flag = action_dim
         window.decorView.systemUiVisibility = flag
@@ -60,9 +74,11 @@ object SystemUIManager {
 
     fun lightUI(window: Window, light: Boolean) {
         if (light) {
-            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            window.decorView.systemUiVisibility =
+                window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         } else {
-            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility xor View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR xor View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            window.decorView.systemUiVisibility =
+                window.decorView.systemUiVisibility xor View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR xor View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
     }
 

@@ -33,6 +33,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
@@ -62,6 +63,8 @@ import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.TranscriptMinimal
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
@@ -74,9 +77,19 @@ import one.mixin.android.vo.createPostMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
+import one.mixin.android.vo.createTranscriptMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.isAttachment
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isData
 import one.mixin.android.vo.isIllegalMessageCategory
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isText
+import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.toJson
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -359,7 +372,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.PLAIN_CONTACT.name ||
             data.category == MessageCategory.PLAIN_LIVE.name ||
             data.category == MessageCategory.PLAIN_POST.name ||
-            data.category == MessageCategory.PLAIN_LOCATION.name
+            data.category == MessageCategory.PLAIN_LOCATION.name ||
+            data.category == MessageCategory.PLAIN_TRANSCRIPT.name
         ) {
             if (!data.representativeId.isNullOrBlank()) {
                 data.userId = data.representativeId
@@ -620,7 +634,135 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 generateNotification(message, data.source)
             }
+            data.category.endsWith("_TRANSCRIPT") -> {
+                val plain = if (data.category == MessageCategory.PLAIN_TRANSCRIPT.name) String(
+                    Base64.decode(plainText)
+                ) else plainText
+                val message = processTranscriptMessage(data, plain) ?: return
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                generateNotification(message, data.source)
+            }
         }
+    }
+
+    private fun processTranscriptMessage(data: BlazeMessageData, plain: String): Message? {
+        val transcripts =
+            gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList().filter { t ->
+                t.transcriptId == data.messageId
+            }
+        if (transcripts.isEmpty()) {
+            messageDao.insert(
+                createTranscriptMessage(
+                    data.messageId,
+                    data.conversationId,
+                    data.userId,
+                    data.category,
+                    null,
+                    0,
+                    data.createdAt,
+                    MessageStatus.UNKNOWN.name
+                )
+            )
+            return null
+        }
+        val stringBuilder = StringBuilder()
+        transcripts.filter { it.isText() || it.isPost() || it.isData() || it.isContact() }
+            .forEach { transcript ->
+                if (transcript.isData()) {
+                    transcript.mediaName
+                } else if (transcript.isContact()) {
+                    transcript.sharedUserId?.let { userId -> userDao.findUser(userId) }?.fullName
+                } else {
+                    transcript.content
+                }?.joinWhiteSpace()?.let {
+                    stringBuilder.append(it)
+                }
+            }
+        MessageFts4Helper.insertMessageFts4(data.messageId, stringBuilder.toString())
+
+        transcripts.filter { t -> t.isSticker() || t.isContact() }.forEach { transcript ->
+            transcript.stickerId?.let { stickerId ->
+                val sticker = stickerDao.getStickerByUnique(stickerId)
+                if (sticker == null) {
+                    jobManager.addJobInBackground(RefreshStickerJob(stickerId))
+                }
+            }
+            transcript.sharedUserId?.let { userId ->
+                syncUser(userId)
+            }
+        }
+        var mediaSize = 0L
+        transcripts.filter { t -> t.isAttachment() }.forEach { transcript ->
+            transcript.mediaStatus = MediaStatus.CANCELED.name
+            transcript.mediaUrl = null
+            transcript.mediaSize?.let {
+                mediaSize += it
+            }
+            when {
+                transcript.isImage() -> {
+                    MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+                        jobManager.addJobInBackground(
+                            TranscriptAttachmentDownloadJob(
+                                data.conversationId,
+                                transcript
+                            )
+                        )
+                    }
+                }
+                transcript.isVideo() -> {
+                    MixinApplication.appContext.autoDownload(autoDownloadVideo) {
+                        jobManager.addJobInBackground(
+                            TranscriptAttachmentDownloadJob(
+                                data.conversationId,
+                                transcript
+                            )
+                        )
+                    }
+                }
+                transcript.isData() -> {
+                    MixinApplication.appContext.autoDownload(autoDownloadDocument) {
+                        jobManager.addJobInBackground(
+                            TranscriptAttachmentDownloadJob(
+                                data.conversationId,
+                                transcript
+                            )
+                        )
+                    }
+                }
+                transcript.isAudio() -> {
+                    jobManager.addJobInBackground(
+                        TranscriptAttachmentDownloadJob(
+                            data.conversationId,
+                            transcript
+                        )
+                    )
+                }
+            }
+        }
+        val message = createTranscriptMessage(
+            data.messageId,
+            data.conversationId,
+            data.userId,
+            data.category,
+            gson.toJson(
+                transcripts.sortedBy { t -> t.createdAt }
+                    .filter { t -> t.transcriptId == data.messageId }.map {
+                        TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
+                    }
+            ),
+            mediaSize,
+            data.createdAt,
+            data.status
+        )
+        transcriptMessageDao.insertList(
+            transcripts.filter { t ->
+                transcriptMessageDao.getTranscriptByIdSync(t.transcriptId, t.messageId) == null
+            }
+        )
+        if (!transcripts.any { t -> t.isAttachment() }) {
+            message.mediaStatus = MediaStatus.DONE.name
+        }
+        return message
     }
 
     private fun processSystemSessionMessage(systemSession: SystemSessionMessagePayload) {
@@ -843,7 +985,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.SIGNAL_STICKER.name ||
             data.category == MessageCategory.SIGNAL_CONTACT.name ||
             data.category == MessageCategory.SIGNAL_LOCATION.name ||
-            data.category == MessageCategory.SIGNAL_POST.name
+            data.category == MessageCategory.SIGNAL_POST.name ||
+            data.category == MessageCategory.SIGNAL_TRANSCRIPT.name
         ) {
             database.insertAndNotifyConversation(
                 createMessage(
@@ -905,6 +1048,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val decoded = Base64.decode(plainText)
             val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
             messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
+        } else if (data.category == MessageCategory.SIGNAL_TRANSCRIPT.name) {
+            val decoded = Base64.decode(plainText)
+            processTranscriptMessage(data, String(decoded))?.let { message ->
+                messageDao.updateTranscriptMessage(
+                    message.content,
+                    message.mediaSize,
+                    message.mediaStatus,
+                    message.status,
+                    messageId
+                )
+            }
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId)?.let {

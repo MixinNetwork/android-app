@@ -49,6 +49,7 @@ import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.TopAssetDao
+import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
@@ -175,6 +176,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var circleConversationDao: CircleConversationDao
+    @Inject
+    @Transient
+    lateinit var transcriptMessageDao: TranscriptMessageDao
     @Inject
     @Transient
     lateinit var signalProtocol: SignalProtocol

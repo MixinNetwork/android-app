@@ -23,7 +23,7 @@ fun ICategory.isKraken() = type?.startsWith("KRAKEN_") == true
 fun ICategory.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
 
 fun ICategory.isFtsMessage() =
-    type?.endsWith("_TEXT") == true || type?.endsWith("_DATA") == true || type?.endsWith("_POST") == true
+    type?.endsWith("_TEXT") == true || type?.endsWith("_DATA") == true || type?.endsWith("_POST") == true || type?.endsWith("_TRANSCRIPT") == true
 
 fun ICategory.isText() =
     type == MessageCategory.SIGNAL_TEXT.name || type == MessageCategory.PLAIN_TEXT.name || type == MessageCategory.ENCRYPTED_TEXT.name
@@ -60,6 +60,10 @@ fun ICategory.isMedia(): Boolean = isData() || isImage() || isVideo()
 fun ICategory.isAttachment(): Boolean = isData() || isImage() || isVideo() || isAudio()
 
 fun ICategory.isGroupCall() = type?.isGroupCallType() == true
+
+fun ICategory.isTranscript() = type == MessageCategory.PLAIN_TRANSCRIPT.name || type == MessageCategory.SIGNAL_TRANSCRIPT.name || type == MessageCategory.ENCRYPTED_TRANSCRIPT.name
+
+fun ICategory.isAppCard() = type == MessageCategory.APP_CARD.name
 
 fun ICategory.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||

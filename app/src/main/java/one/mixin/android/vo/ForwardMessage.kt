@@ -16,7 +16,8 @@ import one.mixin.android.websocket.VideoMessagePayload
 @Parcelize
 data class ForwardMessage(
     val category: ForwardCategory,
-    val content: String
+    val content: String,
+    val messageId: String? = null
 ) : Parcelable
 
 sealed class ForwardCategory : Parcelable {
@@ -34,6 +35,9 @@ sealed class ForwardCategory : Parcelable {
     }
     @Parcelize object Location : ForwardCategory() {
         override fun toString() = "Location"
+    }
+    @Parcelize object Transcript : ForwardCategory() {
+        override fun toString() = "Transcript"
     }
 }
 
@@ -63,6 +67,9 @@ sealed class ShareCategory : ForwardCategory() {
     @Parcelize object AppCard : ShareCategory() {
         override fun toString() = "App_Card"
     }
+    @Parcelize object Transcript : ShareCategory() {
+        override fun toString() = "Transcript"
+    }
 }
 
 sealed class ForwardAction(
@@ -70,6 +77,11 @@ sealed class ForwardAction(
     open val name: String? = null
 ) : Parcelable {
     @Parcelize data class System(
+        override val conversationId: String? = null,
+        override val name: String? = null
+    ) : ForwardAction()
+
+    @Parcelize data class Combine(
         override val conversationId: String? = null,
         override val name: String? = null
     ) : ForwardAction()
@@ -123,7 +135,8 @@ val ShareCategories = arrayOf(
     ShareCategory.Live,
     ShareCategory.Contact,
     ShareCategory.Post,
-    ShareCategory.AppCard
+    ShareCategory.AppCard,
+    ShareCategory.Transcript
 )
 
 val ForwardCategories = arrayOf(

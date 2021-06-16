@@ -13,6 +13,7 @@ import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
@@ -41,7 +42,8 @@ constructor(
     private val userService: UserService,
     private val conversationDao: ConversationDao,
     private val circleService: CircleService,
-    private val circleConversationDao: CircleConversationDao
+    private val circleConversationDao: CircleConversationDao,
+    private val transcriptMessageDao: TranscriptMessageDao
 ) {
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()

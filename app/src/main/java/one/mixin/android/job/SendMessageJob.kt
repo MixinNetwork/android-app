@@ -64,9 +64,10 @@ open class SendMessageJob(
                         parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
                     }
                 }
-
-                messageDao.insert(message)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
+                if (!message.isTranscript()) {
+                    messageDao.insert(message)
+                    MessageFts4Helper.insertOrReplaceMessageFts4(message, message.name)
+                }
             }
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
@@ -123,6 +124,7 @@ open class SendMessageJob(
         var content = message.content
         if (message.category == MessageCategory.PLAIN_TEXT.name ||
             message.category == MessageCategory.PLAIN_POST.name ||
+            message.category == MessageCategory.PLAIN_TRANSCRIPT.name ||
             message.category == MessageCategory.PLAIN_LOCATION.name ||
             message.isCall() ||
             message.category == MessageCategory.APP_CARD.name

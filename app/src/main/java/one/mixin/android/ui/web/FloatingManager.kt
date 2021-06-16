@@ -19,6 +19,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.initRenderScript
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
@@ -28,8 +29,11 @@ import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
 
 private const val PREF_FLOATING = "floating"
-var screenshot: Bitmap? = null
-fun expand(context: Context) {
+private var screenshot: Bitmap? = null
+
+fun getScreenshot() = screenshot
+
+fun refreshScreenshot(context: Context) {
     MixinApplication.get().currentActivity?.let { activity ->
         val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
         if (!rootView.isLaidOut) return@let
@@ -50,12 +54,20 @@ fun expand(context: Context) {
             screenBitmap.width.toFloat(),
             screenBitmap.height.toFloat(),
             Paint().apply {
-                color = Color.parseColor("#CC1C1C1C")
+                color = if (context.isNightMode()) {
+                    Color.parseColor("#CC1C1C1C")
+                } else {
+                    Color.parseColor("#E6F6F7FA")
+                }
             }
         )
         screenshot = resultBitmap
     }
     initRenderScript(context)
+}
+
+fun expand(context: Context) {
+    refreshScreenshot(context)
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }

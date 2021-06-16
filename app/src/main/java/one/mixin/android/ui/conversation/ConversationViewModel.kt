@@ -68,9 +68,12 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
+import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createConversation
@@ -79,6 +82,7 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -154,6 +158,10 @@ internal constructor(
 
     fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
         messenger.sendTextMessage(viewModelScope, conversationId, sender, content, isPlain)
+    }
+
+    fun sendTranscriptMessage(conversationId: String, messageId: String?, sender: User, transcriptMessages: List<TranscriptMessage>, isPlain: Boolean) {
+        messenger.sendTranscriptMessage(messageId ?: UUID.randomUUID().toString(), conversationId, sender, transcriptMessages, isPlain)
     }
 
     fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
@@ -419,6 +427,9 @@ internal constructor(
                     item.mediaUrl,
                     item.mediaStatus == MediaStatus.DONE.name
                 )
+                if (item.isTranscript()) {
+                    conversationRepository.deleteTranscriptByMessageId(item.messageId)
+                }
                 jobManager.cancelJobByMixinJobId(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
             }
@@ -581,7 +592,7 @@ internal constructor(
                     m.category.endsWith("_TEXT") ->
                         m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
-                                ForwardMessage(ShareCategory.Text, c)
+                                ForwardMessage(ShareCategory.Text, c, m.id)
                             },
                             { null }
                         )
@@ -609,7 +620,7 @@ internal constructor(
                             m.mediaSize,
                             m.content,
                         )
-                        ForwardMessage(ForwardCategory.Data, GsonHelper.customGson.toJson(dataMessagePayload))
+                        ForwardMessage(ForwardCategory.Data, GsonHelper.customGson.toJson(dataMessagePayload), m.id)
                     }
                     m.category.endsWith("_VIDEO") -> {
                         if (m.mediaUrl == null || !m.mediaUrl.fileExists()) {
@@ -621,19 +632,19 @@ internal constructor(
                             nowInUtc(),
                             m.content,
                         )
-                        ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData))
+                        ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.id)
                     }
                     m.category.endsWith("_CONTACT") -> {
                         val shareUserId = m.sharedUserId ?: continue
                         val contactData = ContactMessagePayload(shareUserId)
-                        ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData))
+                        ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData), m.id)
                     }
                     m.category.endsWith("_STICKER") -> {
                         val stickerData = StickerMessagePayload(
                             name = m.name,
                             stickerId = m.stickerId
                         )
-                        ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData))
+                        ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
                     }
                     m.category.endsWith("_AUDIO") -> {
                         val url = m.mediaUrl?.getFilePath() ?: continue
@@ -649,7 +660,7 @@ internal constructor(
                             waveForm,
                             m.content,
                         )
-                        ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData))
+                        ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.id)
                     }
                     m.category.endsWith("_LIVE") -> {
                         if (m.mediaWidth == null ||
@@ -666,26 +677,33 @@ internal constructor(
                             m.thumbUrl ?: "",
                             m.mediaUrl
                         )
-                        ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData))
+                        ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.id)
                     }
                     m.category.endsWith("_POST") ->
                         m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
-                                ForwardMessage(ShareCategory.Post, c)
+                                ForwardMessage(ShareCategory.Post, c, m.id)
                             },
                             { null }
                         )
                     m.category.endsWith("_LOCATION") ->
                         m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
-                                ForwardMessage(ForwardCategory.Location, GsonHelper.customGson.toJson(toLocationData(c)))
+                                ForwardMessage(ForwardCategory.Location, GsonHelper.customGson.toJson(toLocationData(c)), m.id)
                             },
                             { null }
                         )
                     m.category == MessageCategory.APP_CARD.name ->
                         m.content.notNullWithElse<String, ForwardMessage?>(
                             { c ->
-                                ForwardMessage(ShareCategory.AppCard, c)
+                                ForwardMessage(ShareCategory.AppCard, c, m.id)
+                            },
+                            { null }
+                        )
+                    m.category.endsWith("_TRANSCRIPT") ->
+                        m.content.notNullWithElse<String, ForwardMessage?>(
+                            { c ->
+                                ForwardMessage(ForwardCategory.Transcript, c, m.id)
                             },
                             { null }
                         )
@@ -777,4 +795,39 @@ internal constructor(
     fun sendMessage(message: Message) {
         jobManager.addJobInBackground(SendMessageJob(message))
     }
+
+    suspend fun processTranscript(transcriptMessages: List<TranscriptMessage>): List<TranscriptMessage> {
+        withContext(Dispatchers.IO) {
+            transcriptMessages.forEach { transcript ->
+                if (transcript.quoteContent != null) {
+                    val quoteMessage = try {
+                        GsonHelper.customGson.fromJson(transcript.quoteContent, QuoteMessageItem::class.java)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (quoteMessage?.messageId != null) {
+                        transcript.quoteContent = GsonHelper.customGson.toJson(SnakeQuoteMessageItem(quoteMessage))
+                    } else {
+                        try {
+                            GsonHelper.customGson.fromJson(transcript.quoteContent, SnakeQuoteMessageItem::class.java)
+                        } catch (e: Exception) {
+                            null
+                        }?.let {
+                            transcript.quoteContent = GsonHelper.customGson.toJson(it)
+                        }
+                    }
+                }
+            }
+        }
+        return transcriptMessages
+    }
+
+    suspend fun getTranscripts(transcriptId: String, messageId: String? = null): List<TranscriptMessage> =
+        withContext(Dispatchers.IO) {
+            val transcripts = conversationRepository.getTranscriptsById(transcriptId)
+            if (messageId != null) {
+                transcripts.forEach { t -> t.transcriptId = messageId }
+            }
+            return@withContext transcripts
+        }
 }

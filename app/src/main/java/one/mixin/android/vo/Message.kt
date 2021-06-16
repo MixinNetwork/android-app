@@ -94,7 +94,7 @@ class Message(
     val mediaDigest: ByteArray? = null,
 
     @ColumnInfo(name = "media_status")
-    val mediaStatus: String? = null,
+    var mediaStatus: String? = null,
 
     @SerializedName("status")
     @ColumnInfo(name = "status")
@@ -193,6 +193,7 @@ enum class MessageCategory {
     SIGNAL_LIVE,
     SIGNAL_POST,
     SIGNAL_LOCATION,
+    SIGNAL_TRANSCRIPT,
     PLAIN_TEXT,
     PLAIN_IMAGE,
     PLAIN_VIDEO,
@@ -204,6 +205,7 @@ enum class MessageCategory {
     PLAIN_POST,
     PLAIN_JSON,
     PLAIN_LOCATION,
+    PLAIN_TRANSCRIPT,
     MESSAGE_RECALL,
     STRANGER,
     SECRET,
@@ -241,7 +243,8 @@ enum class MessageCategory {
     ENCRYPTED_AUDIO,
     ENCRYPTED_LIVE,
     ENCRYPTED_POST,
-    ENCRYPTED_LOCATION
+    ENCRYPTED_LOCATION,
+    ENCRYPTED_TRANSCRIPT
 }
 
 fun String.isIllegalMessageCategory(): Boolean {
@@ -565,4 +568,18 @@ fun createAudioMessage(
     .setMediaStatus(mediaStatus.name)
     .setQuoteMessageId(quoteMessageId)
     .setQuoteContent(quoteContent)
+    .build()
+
+fun createTranscriptMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String?,
+    mediaSize: Long,
+    createdAt: String,
+    status: String,
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
+    .setContent(content)
+    .setMediaSize(mediaSize)
     .build()

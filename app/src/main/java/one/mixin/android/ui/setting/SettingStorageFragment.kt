@@ -21,6 +21,7 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStorageBinding
@@ -151,7 +152,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             .map {
                 for (item in selectSet) {
                     when (item.type) {
-                        IMAGE, VIDEO, AUDIO, DATA -> {
+                        IMAGE, VIDEO, AUDIO, DATA, TRANSCRIPT -> {
                             viewModel.clear(item.conversationId, item.type)
                         }
                         else -> {
@@ -245,6 +246,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                         DATA -> R.string.common_file
                         VIDEO -> R.string.common_video
                         AUDIO -> R.string.common_audio
+                        TRANSCRIPT -> R.string.common_transcript
                         else -> R.string.unknown
                     }
                 )

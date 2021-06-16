@@ -10,6 +10,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
@@ -47,6 +48,9 @@ internal constructor(
             }
             context.getStorageUsageByConversationAndType(cid, DATA)?.apply {
                 result.add(this)
+            }
+            conversationRepository.getMediaSizeTotalById(cid)?.apply {
+                result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(cid), this))
             }
             result.toList()
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -99,6 +103,13 @@ internal constructor(
                         MessageCategory.PLAIN_DATA.name
                     )
                 }
+                TRANSCRIPT -> {
+                    conversationRepository.deleteMediaMessageByConversationAndCategory(
+                        conversationId,
+                        MessageCategory.SIGNAL_TRANSCRIPT.name,
+                        MessageCategory.PLAIN_TRANSCRIPT.name
+                    )
+                }
             }
         } else {
             when (type) {
@@ -106,11 +117,16 @@ internal constructor(
                 VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
                 AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
                 DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
+                TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name)
             }
         }
     }
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
+        if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name) {
+            conversationRepository.deleteTranscriptByConversationId(conversationId)
+            return
+        }
         conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)
             ?.let { list ->
                 list.forEach { item ->
