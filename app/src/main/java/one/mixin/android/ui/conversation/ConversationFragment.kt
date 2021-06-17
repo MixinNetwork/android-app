@@ -735,7 +735,7 @@ class ConversationFragment() :
 
             override fun onMentionClick(identityNumber: String) {
                 chatViewModel.viewModelScope.launch {
-                    chatViewModel.findUserByIdentityNumberSuspend(identityNumber.substring(1))?.let { user ->
+                    chatViewModel.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))?.let { user ->
                         UserBottomSheetDialogFragment.newInstance(user, conversationId)
                             .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }

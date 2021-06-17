@@ -5,6 +5,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.service.CircleService
@@ -53,6 +54,8 @@ constructor(
     suspend fun getFriends(): List<User> = userDao.getFriends()
 
     suspend fun fuzzySearchUser(query: String): List<User> = userDao.fuzzySearchUser(query, query, Session.getAccountId() ?: "")
+
+    suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)
 
     suspend fun fuzzySearchGroupUser(conversationId: String, query: String): List<User> =
         userDao.fuzzySearchGroupUser(conversationId, query, query, Session.getAccountId() ?: "")
@@ -155,6 +158,8 @@ constructor(
     suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)
 
     suspend fun findUserByIdentityNumberSuspend(identityNumber: String) = userDao.suspendFindUserByIdentityNumber(identityNumber)
+
+    fun insertUser(user: User) = userDao.insertUpdate(user, appDao)
 
     suspend fun findUserIdByAppNumber(conversationId: String, appNumber: String) = userDao.findUserIdByAppNumber(conversationId, appNumber)
 

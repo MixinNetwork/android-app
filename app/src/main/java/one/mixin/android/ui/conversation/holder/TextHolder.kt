@@ -25,9 +25,10 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root) {
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_MENTION)
+        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
         binding.chatTv.setMentionModeColor(LINK_COLOR)
+        binding.chatTv.setBotModeColor(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
     }
@@ -93,7 +94,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
                 }
-                AutoLinkMode.MODE_MENTION -> {
+                AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
                     onItemListener.onMentionClick(matchedText)
                 }
                 else -> {

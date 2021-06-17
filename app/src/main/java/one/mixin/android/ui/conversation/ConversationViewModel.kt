@@ -24,6 +24,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.MARK_LIMIT
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.deserialize
@@ -731,7 +732,22 @@ internal constructor(
         }
     }
 
-    suspend fun findUserByIdentityNumberSuspend(identityNumber: String) = userRepository.findUserByIdentityNumberSuspend(identityNumber)
+    suspend fun findUserByIdentityNumberSuspend(identityNumber: String): User? {
+        return userRepository.findUserByIdentityNumberSuspend(identityNumber)
+            ?: handleMixinResponse(
+                invokeNetwork = {
+                    userRepository.searchSuspend(identityNumber)
+                },
+                successBlock = { response ->
+                    response.data?.let {
+                        withContext(Dispatchers.IO) {
+                            userRepository.insertUser(it)
+                        }
+                    }
+                    return@handleMixinResponse response.data
+                }
+            )
+    }
 
     fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
 
