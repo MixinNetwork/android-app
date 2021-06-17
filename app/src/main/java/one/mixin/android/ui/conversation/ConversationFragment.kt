@@ -493,7 +493,7 @@ class ConversationFragment() :
                         binding.toolView.shareIv.visibility = GONE
                     }
                 }
-                if (conversationAdapter.selectSet.size > 99 && conversationAdapter.selectSet.any { it.canNotForward() }) {
+                if (conversationAdapter.selectSet.size > 99 || conversationAdapter.selectSet.any { it.canNotForward() }) {
                     binding.toolView.forwardIv.visibility = GONE
                 } else {
                     binding.toolView.forwardIv.visibility = VISIBLE
