@@ -143,6 +143,7 @@ class WebFragment : BaseFragment() {
         const val ARGS_APP = "args_app"
         const val ARGS_APP_CARD = "args_app_card"
         const val ARGS_INDEX = "args_index"
+        const val ARGS_SHAREABLE = "args_shareable"
 
         const val themeColorScript =
             """
@@ -182,6 +183,9 @@ class WebFragment : BaseFragment() {
     private var app: App? = null
     private val appCard: AppCardData? by lazy {
         requireArguments().getParcelable(ARGS_APP_CARD)
+    }
+    private val shareable: Boolean by lazy {
+        requireArguments().getBoolean(ARGS_SHAREABLE, true)
     }
     private var index: Int = -1
     private var currentUrl: String? = null
@@ -741,6 +745,7 @@ class WebFragment : BaseFragment() {
             screenshot,
             icon,
             conversationId,
+            appCard?.shareable ?: shareable,
             webView,
             isFinished
         )
@@ -826,7 +831,7 @@ class WebFragment : BaseFragment() {
             title = getString(R.string.forward)
             icon = R.drawable.ic_web_forward
             action = {
-                if (appCard?.shareable == false) {
+                if (appCard?.shareable == false || !shareable) {
                     toast(R.string.link_shareable_false)
                 } else {
                     val currentUrl = webView.url ?: url
@@ -846,7 +851,7 @@ class WebFragment : BaseFragment() {
                                         app.name,
                                         currentUrl,
                                         app.updatedAt,
-                                        shareable = true,
+                                        null,
                                     )
                                     ForwardActivity.show(
                                         requireContext(),

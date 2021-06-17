@@ -443,11 +443,7 @@ class ConversationFragment() :
         object : ConversationAdapter.OnItemListener() {
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
                 if (isSelect) {
-                    if (messageItem.type == MessageCategory.APP_CARD.name) {
-                        if (messageItem.isAppCardShareable() == false) {
-                            toast(R.string.app_card_shareable_false)
-                        }
-                    }
+                    checkAppCardForward(messageItem)
                     conversationAdapter.addSelect(messageItem)
                 } else {
                     conversationAdapter.removeSelect(messageItem)
@@ -502,6 +498,7 @@ class ConversationFragment() :
             }
 
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
+                checkAppCardForward(messageItem)
                 val b = conversationAdapter.addSelect(messageItem)
                 binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
                 if (b) {
@@ -3037,6 +3034,14 @@ class ConversationFragment() :
                 getCombineForwardContract.launch(ArrayList(messages))
             }
             closeTool()
+        }
+    }
+
+    private fun checkAppCardForward(messageItem: MessageItem) {
+        if (messageItem.type == MessageCategory.APP_CARD.name) {
+            if (messageItem.isAppCardShareable() == false) {
+                toast(R.string.app_card_shareable_false)
+            }
         }
     }
 }

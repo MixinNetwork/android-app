@@ -89,6 +89,7 @@ data class WebClip(
     val thumb: Bitmap?,
     val icon: Bitmap?,
     val conversationId: String?,
+    val shareable: Boolean?,
     @Transient val webView: MixinWebView?,
     @Transient val isFinished: Boolean = false
 )
