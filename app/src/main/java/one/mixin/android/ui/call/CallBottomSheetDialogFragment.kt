@@ -3,6 +3,7 @@ package one.mixin.android.ui.call
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -38,6 +39,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.session.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
@@ -176,8 +178,11 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.answerCb.setOnClickListener {
             handleAnswer()
         }
+        binding.closeIb.setOnClickListener {
+            hangup()
+        }
         binding.minimizeIb.setOnClickListener {
-            if (pipCallView.shown) {
+            if (!pipCallView.shown) {
                 if (!checkPipPermission()) {
                     return@setOnClickListener
                 }
@@ -298,6 +303,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun updateUI() {
+        binding.muteCb.isChecked = !callState.audioEnable
+        binding.voiceCb.isChecked = callState.speakerEnable
+        binding.voiceCb.isEnabled = !callState.customAudioDeviceAvailable
     }
 
     private fun hangup() {
@@ -325,7 +333,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleDisconnected() {
-        requireActivity().finishAndRemoveTask()
+        dismissAllowingStateLoss()
     }
 
     private fun handleBusy() {
@@ -338,6 +346,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.muteCb.isVisible = false
         binding.answerCb.isVisible = true
         binding.hangupCb.isVisible = false
+        binding.closeIb.isVisible = true
+        binding.minimizeIb.isVisible = false
         updateTitle(getString(R.string.call_notification_incoming_voice))
     }
 
@@ -346,6 +356,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.voiceCb.isVisible = false
         binding.muteCb.isVisible = false
         binding.answerCb.isVisible = true
+        binding.closeIb.isVisible = true
+        binding.minimizeIb.isVisible = false
         binding.hangupCb.isVisible = false
     }
 
@@ -355,6 +367,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.muteCb.isVisible = true
         binding.answerCb.isVisible = false
         binding.hangupCb.isVisible = true
+        binding.closeIb.isVisible = true
+        binding.closeIb.isVisible = false
+        binding.minimizeIb.isVisible = true
         updateTitle(getString(R.string.call_notification_outgoing))
     }
 
@@ -364,6 +379,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.muteCb.fadeIn()
         binding.answerCb.fadeOut()
         binding.hangupCb.fadeIn()
+        binding.closeIb.isVisible = false
+        binding.minimizeIb.isVisible = true
         updateTitle(getString(R.string.call_connecting))
     }
 
@@ -442,6 +459,36 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
+    override fun onResume() {
+        if (callState.connectedTime != null) {
+            startTimer()
+        }
+        super.onResume()
+    }
+
+    override fun onPause() {
+        stopTimer()
+        super.onPause()
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        if (callState.isNotIdle()) {
+            if (!checkPipPermission()) {
+                if (!setClicked) {
+                    requireActivity().showPipPermissionNotification(
+                        CallActivity::class.java,
+                        getString(R.string.call_pip_permission)
+                    )
+                }
+                return
+            }
+            if (checkPipPermission()){
+                pipCallView.show(requireActivity(), callState.connectedTime, callState)
+            }
+        }
+    }
+
     override fun onDetach() {
         super.onDetach()
         if (activity is CallActivity) {
@@ -464,6 +511,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } catch (e: IllegalStateException) {
             Timber.w(e)
         }
+    }
+
+    fun onBackPressed(): Boolean {
+        return callState.isBeforeAnswering()
     }
 
     private var permissionAlert: AlertDialog? = null

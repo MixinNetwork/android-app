@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultThemeId
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.ui.call.CallBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.SystemUIManager
 
@@ -49,7 +50,7 @@ open class BaseActivity : AppCompatActivity() {
             // Make sure there is a BaseFragment handle this event.
             fragments.indices.reversed()
                 .map { fragments[it] }
-                .filter { it != null && ((it is BaseFragment && it.onBackPressed()) || (it is WebFragment && it.onBackPressed())) }
+                .filter { it != null && ((it is BaseFragment && it.onBackPressed()) || (it is WebFragment && it.onBackPressed()) || (it is CallBottomSheetDialogFragment && it.onBackPressed())) }
                 .forEach { _ -> return }
         }
         super.onBackPressed()

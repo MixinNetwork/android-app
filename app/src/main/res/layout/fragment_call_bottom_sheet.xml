@@ -47,6 +47,21 @@
             android:contentDescription="@null"
             android:foreground="@drawable/mixin_ripple"
             android:src="@drawable/ic_call_minimize"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/sub_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/title" />
+
+        <ImageButton
+            android:id="@+id/close_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:background="@null"
+            android:contentDescription="@null"
+            android:foreground="@drawable/mixin_ripple"
+            android:src="@drawable/ic_call_close"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/sub_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/title" />
