@@ -292,7 +292,7 @@
 
         <activity
             android:name=".ui.auth.AppAuthActivity"
-            android:theme="@style/AppTheme.Web"
+            android:theme="@style/AppTheme.Blur"
             android:launchMode="singleTop" />
 
         <provider

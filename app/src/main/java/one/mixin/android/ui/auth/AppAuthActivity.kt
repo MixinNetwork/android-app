@@ -5,9 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.biometric.BiometricPrompt
 import com.mattprecious.swirl.SwirlView
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityAppAuthBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putInt
+import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseActivity
 
 class AppAuthActivity : BaseActivity() {
@@ -97,6 +101,10 @@ class AppAuthActivity : BaseActivity() {
                 errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
             ) {
                 showError(errString)
+            } else if (errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
+                defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
+                defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
+                finish()
             } else {
                 refreshSwirl(errString, true)
             }
