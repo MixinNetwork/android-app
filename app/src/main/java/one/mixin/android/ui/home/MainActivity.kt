@@ -49,6 +49,7 @@ import one.mixin.android.Constants.Account.PREF_ATTACHMENT
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
+import one.mixin.android.Constants.Account.PREF_INITIALIZE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -85,6 +86,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.BackupMigrationJob
+import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
@@ -268,6 +270,10 @@ class MainActivity : BlazeBaseActivity() {
 
         if (!defaultSharedPreferences.getBoolean(PREF_BACKUP, false)) {
             jobManager.addJobInBackground(BackupMigrationJob())
+        }
+
+        if (resources.getString(R.string.initializeBotId).isNotEmpty() && !defaultSharedPreferences.getBoolean(PREF_INITIALIZE, false)) {
+            jobManager.addJobInBackground(InitializeJob())
         }
 
         lifecycleScope.launch(Dispatchers.IO) {

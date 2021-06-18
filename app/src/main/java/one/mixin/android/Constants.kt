@@ -51,6 +51,7 @@ object Constants {
         const val PREF_INCOGNITO_KEYBOARD = "pref_incognito_keyboard"
         const val PREF_APP_AUTH = "pref_app_auth"
         const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
+        const val PREF_INITIALIZE = "pref_initialize"
     }
 
     object Scheme {
