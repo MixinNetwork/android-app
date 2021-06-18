@@ -176,6 +176,7 @@ class WebActivity : BaseActivity() {
         extras.putString(WebFragment.CONVERSATION_ID, clip.conversationId)
         extras.putInt(WebFragment.ARGS_INDEX, index)
         extras.putParcelable(WebFragment.ARGS_APP, clip.app)
+        clip.shareable?.let { extras.putBoolean(WebFragment.ARGS_SHAREABLE, it) }
         isExpand = true
 
         window.statusBarColor = clip.titleColor.apply {
