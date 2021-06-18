@@ -17,6 +17,7 @@ import androidx.biometric.BiometricManager.BIOMETRIC_STATUS_UNKNOWN
 import androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
 import one.mixin.android.R
@@ -46,9 +47,9 @@ object BiometricUtil {
             isKeyguardSecure(ctx) && isSecureHardware() && !RootUtil.isDeviceRooted
     }
 
-    fun isSupportWithErrorInfo(ctx: Context): Pair<Boolean, String?> {
+    fun isSupportWithErrorInfo(ctx: Context, type: Int): Pair<Boolean, String?> {
         val biometricManager = BiometricManager.from(ctx)
-        val authStatusCode = biometricManager.canAuthenticate(BIOMETRIC_STRONG)
+        val authStatusCode = biometricManager.canAuthenticate(type)
         if (authStatusCode == BIOMETRIC_STATUS_UNKNOWN ||
             authStatusCode == BIOMETRIC_ERROR_UNSUPPORTED ||
             authStatusCode == BIOMETRIC_ERROR_NO_HARDWARE
@@ -73,13 +74,13 @@ object BiometricUtil {
         return Pair(true, null)
     }
 
-    fun showAuthenticationScreen(fragment: Fragment) {
-        val intent = fragment.requireContext().getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
-            fragment.requireContext().getString(R.string.wallet_biometric_screen_lock),
-            fragment.requireContext().getString(R.string.wallet_biometric_screen_lock_desc)
+    fun showAuthenticationScreen(activity: FragmentActivity) {
+        val intent = activity.getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
+            activity.getString(R.string.wallet_biometric_screen_lock),
+            activity.getString(R.string.wallet_biometric_screen_lock_desc)
         )
         if (intent != null) {
-            fragment.activity?.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
+            activity.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
         }
     }
 
@@ -88,7 +89,7 @@ object BiometricUtil {
             getEncryptCipher()
         } catch (e: Exception) {
             when (e) {
-                is UserNotAuthenticatedException -> showAuthenticationScreen(fragment)
+                is UserNotAuthenticatedException -> showAuthenticationScreen(fragment.requireActivity())
                 is InvalidKeyException -> {
                     deleteKey(ctx)
                     ctx.toast(R.string.wallet_biometric_invalid)

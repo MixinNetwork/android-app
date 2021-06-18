@@ -126,6 +126,8 @@
     <string name="strikethrough">删除线</string>
     <string name="italic">斜体</string>
     <string name="bold">粗体</string>
+    <string name="disabled">已停用</string>
+    <string name="not_recognized">无法识别</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -967,4 +969,19 @@
     <string name="player_delete_all_desc">确定要停止并关闭播放列表？</string>
     <string name="player_stop_playing">停止播放</string>
     <string name="player_playback_failed">播放失败</string>
+
+    <!--  auth  -->
+    <string name="app_locked">Mixin 已锁定</string>
+    <string name="touch_fingerprint_sensor">触摸指纹传感器</string>
+    <string name="fingerprint_lock">指纹锁定</string>
+    <string name="fingerprint_confirm">确认指纹</string>
+    <string name="unlock_with_fingerprint">使用指纹解锁</string>
+    <string name="unlock_with_fingerprint_desc">启用后，您需要使用指纹解锁以开启 Mixin。</string>
+    <string name="automatically_lock">自动锁定</string>
+    <string name="auto_immediately">立即启动</string>
+    <string name="auto_after_1_minute">1分钟之后</string>
+    <string name="auto_after_30_minutes">30分钟之后</string>
+    <string name="enable_immediately">立即启动</string>
+    <string name="enable_after_1_minute">在1分钟之后启动</string>
+    <string name="enable_after_30_minutes">在30分钟后启动</string>
 </resources>

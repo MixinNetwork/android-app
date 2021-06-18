@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="?attr/bg_window">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:titleText="@string/fingerprint_lock"/>
+
+    <RelativeLayout
+        android:id="@+id/unlock_rl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/unlock_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/unlock_switch"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginTop="@dimen/margin10"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp"
+            android:text="@string/unlock_with_fingerprint"/>
+
+        <TextView
+            android:id="@+id/unlock_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/unlock_switch"
+            android:layout_below="@id/unlock_title"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginTop="@dimen/margin10"
+            android:textColor="?attr/text_minor"
+            android:text="@string/unlock_with_fingerprint_desc"/>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/unlock_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/error_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/margin12"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:textColor="@color/colorRed"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/auto_title"
+        android:text="@string/automatically_lock"
+        android:layout_marginStart="@dimen/margin16"
+        android:layout_marginTop="@dimen/margin16"
+        android:layout_marginBottom="8dp"
+        android:textSize="16sp"
+        android:textColor="@color/colorDarkBlue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <RadioGroup
+        android:id="@+id/auto_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin16">
+
+        <RadioButton
+            android:id="@+id/auto_immediately"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:text="@string/auto_immediately"/>
+
+        <RadioButton
+            android:id="@+id/auto_after_1_minute"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:text="@string/auto_after_1_minute"/>
+
+        <RadioButton
+            android:id="@+id/auto_after_30_minutes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:text="@string/auto_after_30_minutes"/>
+    </RadioGroup>
+</LinearLayout>

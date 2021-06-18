@@ -6,6 +6,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -76,7 +77,7 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
     }
 
     private val biometricsClickListener = View.OnClickListener {
-        val isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(requireContext())
+        val isSupportWithErrorInfo = BiometricUtil.isSupportWithErrorInfo(requireContext(), BiometricManager.Authenticators.BIOMETRIC_STRONG)
         val isSupport = isSupportWithErrorInfo.first
         if (!isSupport) {
             isSupportWithErrorInfo.second?.let {

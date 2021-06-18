@@ -290,6 +290,11 @@
             android:theme="@style/AppTheme.Photo"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
+        <activity
+            android:name=".ui.auth.AppAuthActivity"
+            android:theme="@style/AppTheme.Blur"
+            android:launchMode="singleTop" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
