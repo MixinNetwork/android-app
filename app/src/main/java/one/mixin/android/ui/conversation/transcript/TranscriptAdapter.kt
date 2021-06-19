@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation.transcript
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,7 @@ import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.databinding.ItemChatImageBinding
 import one.mixin.android.databinding.ItemChatImageQuoteBinding
 import one.mixin.android.databinding.ItemChatLocationBinding
+import one.mixin.android.databinding.ItemChatPostBinding
 import one.mixin.android.databinding.ItemChatStickerBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
@@ -39,6 +41,7 @@ import one.mixin.android.ui.conversation.transcript.holder.FileQuoteHolder
 import one.mixin.android.ui.conversation.transcript.holder.ImageHolder
 import one.mixin.android.ui.conversation.transcript.holder.ImageQuoteHolder
 import one.mixin.android.ui.conversation.transcript.holder.LocationHolder
+import one.mixin.android.ui.conversation.transcript.holder.PostHolder
 import one.mixin.android.ui.conversation.transcript.holder.StickerHolder
 import one.mixin.android.ui.conversation.transcript.holder.TextHolder
 import one.mixin.android.ui.conversation.transcript.holder.TextQuoteHolder
@@ -46,6 +49,7 @@ import one.mixin.android.ui.conversation.transcript.holder.TranscriptHolder
 import one.mixin.android.ui.conversation.transcript.holder.UnknownHolder
 import one.mixin.android.ui.conversation.transcript.holder.VideoHolder
 import one.mixin.android.ui.conversation.transcript.holder.VideoQuoteHolder
+import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.TranscriptMessageItem
@@ -55,6 +59,7 @@ import one.mixin.android.vo.isData
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
@@ -63,6 +68,7 @@ import kotlin.math.abs
 
 class TranscriptAdapter(
     private val onItemListener: OnItemListener,
+    private val context: Activity
 ) :
     RecyclerView.Adapter<BaseViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
@@ -180,6 +186,13 @@ class TranscriptAdapter(
                     false
                 )
             )
+            11 -> PostHolder(
+                ItemChatPostBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
             else -> UnknownHolder(
                 ItemChatUnknownBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -188,6 +201,10 @@ class TranscriptAdapter(
                 )
             )
         }
+    }
+
+    private val miniMarkwon by lazy {
+        MarkwonUtil.getMiniMarkwon(context)
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
@@ -287,6 +304,13 @@ class TranscriptAdapter(
                 isFirst = isFirst(position),
                 onItemListener
             )
+            11 -> (holder as PostHolder).bind(
+                transcripts[position],
+                isLast = isLast(position),
+                isFirst = isFirst(position),
+                onItemListener,
+                miniMarkwon
+            )
             else -> (holder as UnknownHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
@@ -312,8 +336,9 @@ class TranscriptAdapter(
             item.isContact() && item.quoteContent.isNullOrEmpty() -> 6
             item.isContact() -> -6
             item.isSticker() -> 7
-            item.isLocation() -> 8
+            item.isLocation() -> 9
             item.type == MessageCategory.APP_CARD.name -> 10
+            item.isPost() -> 11
             else -> -99
         }
     }

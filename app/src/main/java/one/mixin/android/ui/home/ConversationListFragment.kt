@@ -731,7 +731,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.isTranscript() -> {
                     setConversationName(conversationItem)
                     binding.msgTv.setText(R.string.conversation_status_transcript)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transcript)
                 }
                 conversationItem.isLocation() -> {
                     setConversationName(conversationItem)

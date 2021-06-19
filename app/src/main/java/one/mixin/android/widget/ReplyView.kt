@@ -123,7 +123,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.isTranscript() -> {
                 binding.replyViewTv.setText(R.string.transcript)
-                setIcon(R.drawable.ic_type_file)
+                setIcon(R.drawable.ic_type_transcript)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE

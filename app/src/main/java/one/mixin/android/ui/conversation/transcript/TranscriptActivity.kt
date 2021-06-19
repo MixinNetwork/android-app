@@ -34,6 +34,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.location.LocationActivity
+import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.web.getScreenshot
@@ -124,7 +125,7 @@ class TranscriptActivity : BaseActivity() {
     }
 
     private val adapter by lazy {
-        TranscriptAdapter(onItemListener)
+        TranscriptAdapter(onItemListener, this)
     }
 
     private val onItemListener by lazy {
@@ -136,6 +137,10 @@ class TranscriptActivity : BaseActivity() {
                     supportFragmentManager,
                     lifecycleScope
                 )
+            }
+
+            override fun onPostClick(view: View, messageItem: TranscriptMessageItem) {
+                MarkdownActivity.show(this@TranscriptActivity, messageItem.content!!, conversationId)
             }
 
             override fun onUrlLongClick(url: String) {
