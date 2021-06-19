@@ -295,6 +295,7 @@ fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): Tr
         isTranscript() -> if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
         isAppCard() -> MessageCategory.APP_CARD.name
         isText() -> if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        isPost() -> if (isPlain) MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
         else -> throw IllegalArgumentException("Unknown category")
     }
     return TranscriptMessage(
