@@ -159,7 +159,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
             quoteMessageItem.type.endsWith("_TRANSCRIPT") -> {
                 binding.replyContentTv.setText(R.string.transcript)
-                setIcon(R.drawable.ic_type_file)
+                setIcon(R.drawable.ic_type_transcript)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
