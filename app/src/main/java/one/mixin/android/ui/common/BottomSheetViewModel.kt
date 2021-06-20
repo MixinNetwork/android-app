@@ -31,6 +31,7 @@ import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -240,7 +241,8 @@ class BottomSheetViewModel @Inject internal constructor(
         )
     }
 
-    fun deleteGroup(conversationId: String) = viewModelScope.launch {
+    fun deleteGroup(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
+        jobManager.addJobInBackground(TranscriptDeleteJob(conversationRepo.findTranscriptIdByConversationId(conversationId)))
         conversationRepo.deleteConversationById(conversationId)
     }
 
