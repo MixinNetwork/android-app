@@ -1,11 +1,13 @@
 package one.mixin.android.ui.setting
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
@@ -20,7 +22,10 @@ import one.mixin.android.extension.getConversationImagePath
 import one.mixin.android.extension.getConversationMediaSize
 import one.mixin.android.extension.getConversationVideoPath
 import one.mixin.android.extension.getStorageUsageByConversationAndType
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
@@ -30,7 +35,8 @@ import javax.inject.Inject
 class SettingStorageViewModel
 @Inject
 internal constructor(
-    private val conversationRepository: ConversationRepository
+    private val conversationRepository: ConversationRepository,
+    private val jobManager: MixinJobManager
 ) : ViewModel() {
 
     fun getStorageUsage(conversationId: String): Single<List<StorageUsage>> =
@@ -124,7 +130,13 @@ internal constructor(
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
         if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name) {
-            conversationRepository.deleteTranscriptByConversationId(conversationId)
+            viewModelScope.launch(SINGLE_DB_THREAD) {
+                val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
+                if (ids.isEmpty()) {
+                    return@launch
+                }
+                jobManager.addJobInBackground(TranscriptDeleteJob(ids))
+            }
             return
         }
         conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)

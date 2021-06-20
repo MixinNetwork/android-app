@@ -21,6 +21,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -88,7 +89,11 @@ internal constructor(
         }
     }
 
-    fun deleteConversation(conversationId: String) = viewModelScope.launch {
+    fun deleteConversation(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
+        val ids = messageRepository.findTranscriptIdByConversationId(conversationId)
+        if (ids.isNotEmpty()) {
+            jobManager.addJobInBackground(TranscriptDeleteJob(ids))
+        }
         messageRepository.deleteConversationById(conversationId)
     }
 

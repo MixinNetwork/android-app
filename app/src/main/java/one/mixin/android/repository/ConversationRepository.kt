@@ -450,12 +450,9 @@ internal constructor(
         jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
     }
 
-    fun deleteTranscriptByConversationId(conversationId: String) {
-        jobManager.addJobInBackground(TranscriptDeleteJob(messageDao.findTranscriptIdByConversationId(conversationId)))
-    }
+    suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)
 
     suspend fun deleteConversationById(conversationId: String) {
-        jobManager.addJobInBackground(TranscriptDeleteJob(messageDao.findTranscriptIdByConversationId(conversationId)))
         deleteMessageByConversationId(conversationId, true)
     }
 
