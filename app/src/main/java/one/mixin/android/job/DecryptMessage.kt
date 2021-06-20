@@ -139,11 +139,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private val accountId = Session.getAccountId()
 
     fun onRun(data: BlazeMessageData) {
-        if (!isExistMessage(data.messageId)) {
-            processMessage(data)
-        } else {
+        if (isExistMessage(data.messageId)) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            return
         }
+        processMessage(data)
     }
 
     private fun processMessage(data: BlazeMessageData) {

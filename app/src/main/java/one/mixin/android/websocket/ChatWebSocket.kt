@@ -69,7 +69,6 @@ class ChatWebSocket(
     private val transactions = ConcurrentHashMap<String, WebSocketTransaction>()
     private val gson = Gson()
     private val accountId = Session.getAccountId()
-    private val sessionId = Session.getSessionId()
     private var homeUrl = Mixin_WS_URL
 
     companion object {
