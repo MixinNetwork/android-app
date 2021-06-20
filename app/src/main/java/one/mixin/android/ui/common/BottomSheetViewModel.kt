@@ -242,7 +242,10 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     fun deleteGroup(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
-        jobManager.addJobInBackground(TranscriptDeleteJob(conversationRepo.findTranscriptIdByConversationId(conversationId)))
+        val transIds = conversationRepo.findTranscriptIdByConversationId(conversationId)
+        if (transIds.isNotEmpty()) {
+            jobManager.addJobInBackground(TranscriptDeleteJob(transIds))
+        }
         conversationRepo.deleteConversationById(conversationId)
     }
 

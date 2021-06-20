@@ -126,7 +126,8 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(),
+        setStatusIcon(
+            isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(),
             isRepresentative = false,
             isWhite = true
         ) { statusIcon, secretIcon, representativeIcon ->

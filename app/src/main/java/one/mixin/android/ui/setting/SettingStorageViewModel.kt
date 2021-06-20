@@ -131,7 +131,11 @@ internal constructor(
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
         if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name) {
             viewModelScope.launch(SINGLE_DB_THREAD) {
-                jobManager.addJobInBackground(TranscriptDeleteJob(conversationRepository.findTranscriptIdByConversationId(conversationId)))
+                val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
+                if (ids.isEmpty()) {
+                    return@launch
+                }
+                jobManager.addJobInBackground(TranscriptDeleteJob(ids))
             }
             return
         }

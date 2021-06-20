@@ -90,7 +90,10 @@ internal constructor(
     }
 
     fun deleteConversation(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
-        jobManager.addJobInBackground(TranscriptDeleteJob(messageRepository.findTranscriptIdByConversationId(conversationId)))
+        val ids = messageRepository.findTranscriptIdByConversationId(conversationId)
+        if (ids.isNotEmpty()) {
+            jobManager.addJobInBackground(TranscriptDeleteJob(ids))
+        }
         messageRepository.deleteConversationById(conversationId)
     }
 
