@@ -3,7 +3,6 @@ package one.mixin.android.ui.call
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -271,9 +270,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             }
         )
-
-        if (pipCallView.shown) {
-            pipCallView.close()
+        if (callState.state == CallService.CallState.STATE_RINGING) {
+            binding.closeIb.isVisible = true
+            binding.minimizeIb.isVisible = false
         }
     }
 
@@ -354,9 +353,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.voiceCb.isVisible = false
         binding.muteCb.isVisible = false
         binding.answerCb.isVisible = true
+        binding.hangupCb.isVisible = false
         binding.closeIb.isVisible = true
         binding.minimizeIb.isVisible = false
-        binding.hangupCb.isVisible = false
     }
 
     private fun handleDialing() {
@@ -365,7 +364,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.muteCb.isVisible = true
         binding.answerCb.isVisible = false
         binding.hangupCb.isVisible = true
-        binding.closeIb.isVisible = true
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
         updateTitle(getString(R.string.call_notification_outgoing))
@@ -399,6 +397,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else {
             startTimer()
         }
+        binding.closeIb.isVisible = false
+        binding.minimizeIb.isVisible = true
     }
 
     private fun updateTitle(content: String) {
@@ -422,12 +422,11 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val cid = callState.conversationId ?: return@launch
         val us = callState.getUsers(cid)
         val calls = mutableListOf<String>().apply { us?.let { addAll(it) } }
-        var layoutManager: GridLayoutManager? = binding.usersRv.layoutManager as GridLayoutManager?
-        if (layoutManager == null) {
-            layoutManager = GridLayoutManager(requireContext(), 4)
-            binding.usersRv.layoutManager = layoutManager
+        if (binding.usersRv.layoutManager == null) {
+            binding.usersRv.layoutManager = GridLayoutManager(requireContext(), 4)
         }
 
+        var needNotify = false
         if (calls.isNullOrEmpty()) {
             userAdapter?.submitList(null)
         } else {
@@ -437,12 +436,15 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 return@launch
             }
             val users = viewModel.findMultiUsersByIds(calls.toSet())
+            needNotify = userAdapter?.currentList != users
             userAdapter?.submitList(users)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
         val newGuestsNotConnected = callState.getPendingUsers(cid)
         if (currentGuestsNotConnected != newGuestsNotConnected) {
             userAdapter?.guestsNotConnected = newGuestsNotConnected
+            userAdapter?.notifyDataSetChanged()
+        } else if (needNotify) {
             userAdapter?.notifyDataSetChanged()
         }
     }
@@ -454,6 +456,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 window,
                 !requireContext().booleanFromAttribute(R.attr.flag_night)
             )
+        }
+        if (pipCallView.shown) {
+            pipCallView.close()
         }
     }
 
@@ -469,8 +474,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onPause()
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
+    override fun onStop() {
+        super.onStop()
         if (callState.isNotIdle()) {
             if (!checkPipPermission()) {
                 if (!setClicked) {
