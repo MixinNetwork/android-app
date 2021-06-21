@@ -94,12 +94,12 @@
         app:spanCount="4"
         tools:listitem="@layout/item_bot_manager" />
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottom_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:background="?attr/bg_white"
         android:padding="16dp">
 
         <one.mixin.android.widget.CallButton
@@ -156,7 +156,6 @@
             tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
     <LinearLayout
         android:id="@+id/avatar_ll"

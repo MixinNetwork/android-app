@@ -7,6 +7,7 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
+import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.User
 
@@ -114,6 +115,18 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE user_id IN (:userIds)")
     suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
+
+    @Query(
+        """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
+        WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)"""
+    )
+    suspend fun findMultiCallUsersByIds(conversationId: String, userIds: Set<String>): List<CallUser>
+
+    @Query(
+        """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
+        WHERE p.conversation_id = :conversationId AND u.user_id = :userId"""
+    )
+    suspend fun findSelfCallUser(conversationId: String, userId: String): CallUser
 
     @Query("SELECT user_id FROM users WHERE identity_number IN (:identityNumbers)")
     fun findMultiUserIdsByIdentityNumbers(identityNumbers: Set<String>): List<String>

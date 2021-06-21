@@ -11,10 +11,10 @@ import one.mixin.android.databinding.ItemCallAddBinding
 import one.mixin.android.databinding.ItemCallUserBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
-import one.mixin.android.vo.User
+import one.mixin.android.vo.CallUser
 
-class CallUserAdapter(private val self: User, private val onClickListener: View.OnClickListener) :
-    ListAdapter<User, RecyclerView.ViewHolder>(User.DIFF_CALLBACK) {
+class CallUserAdapter(private val self: CallUser, private val onClickListener: View.OnClickListener) :
+    ListAdapter<CallUser, RecyclerView.ViewHolder>(CallUser.DIFF_CALLBACK) {
     var guestsNotConnected: List<String>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -72,8 +72,8 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
     }
 
     fun bind(
-        user: User,
-        self: User,
+        user: CallUser,
+        self: CallUser,
         guestsNotConnected: List<String>?,
     ) {
         itemView.apply {

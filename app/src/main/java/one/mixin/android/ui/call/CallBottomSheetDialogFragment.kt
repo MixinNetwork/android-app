@@ -40,7 +40,8 @@ import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.session.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
-import one.mixin.android.vo.toUser
+import one.mixin.android.vo.CallUser
+import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
@@ -88,10 +89,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     @Inject
     lateinit var callState: CallStateLiveData
+    lateinit var self: CallUser
     private var uiState: CallService.CallState = CallService.CallState.STATE_IDLE
     private val viewModel by viewModels<CallViewModel>()
     private var join = false
-    private val self = Session.getAccount()!!.toUser()
 
     private var _binding: FragmentCallBottomSheetBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -140,139 +141,143 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         )
         dialog.window?.setGravity(Gravity.BOTTOM)
         join = requireArguments().getBoolean(EXTRA_JOIN, false)
-        if (callState.isGroupCall()) {
-            binding.title.text = getString(R.string.chat_group_call_title)
-            binding.avatarLl.isVisible = false
-            binding.usersRv.isVisible = true
-            if (userAdapter == null) {
-                userAdapter = CallUserAdapter(self) {
-                    if (callState.isGroupCall() && callState.conversationId != null) {
-                        GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
-                            .showNow(
-                                parentFragmentManager,
-                                GroupUsersBottomSheetDialogFragment.TAG
-                            )
-                    }
-                }
-            }
-            binding.usersRv.adapter = userAdapter
-            refreshUsers()
-        } else {
-            binding.title.text = getString(R.string.chat_call_title)
-            binding.avatarLl.isVisible = true
-            binding.usersRv.isVisible = false
-            val callee = callState.user
-            if (callee != null) {
-                binding.nameTv.text = callee.fullName
-                binding.avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
-                binding.avatar.setTextSize(48f)
-            }
-        }
-
-        binding.hangupCb.setOnClickListener {
-            hangup()
-        }
-        binding.answerCb.setOnClickListener {
-            handleAnswer()
-        }
-        binding.closeIb.setOnClickListener {
-            hangup()
-        }
-        binding.minimizeIb.setOnClickListener {
-            if (!pipCallView.shown) {
-                if (!checkPipPermission()) {
-                    return@setOnClickListener
-                }
-                pipCallView.show(requireActivity(), callState.connectedTime, callState)
-            }
-            dismissAllowingStateLoss()
-        }
-        binding.muteCb.setOnCheckedChangeListener(
-            object : CallButton.OnCheckedChangeListener {
-                override fun onCheckedChanged(id: Int, checked: Boolean) {
-                    if (callState.isGroupCall()) {
-                        muteAudio<GroupCallService>(requireContext(), checked)
-                    } else if (callState.isVoiceCall()) {
-                        muteAudio<VoiceCallService>(requireContext(), checked)
-                    }
-                }
-            }
-        )
-        binding.voiceCb.setOnCheckedChangeListener(
-            object : CallButton.OnCheckedChangeListener {
-                override fun onCheckedChanged(id: Int, checked: Boolean) {
-                    if (callState.isGroupCall()) {
-                        speakerPhone<GroupCallService>(requireContext(), checked)
-                    } else if (callState.isVoiceCall()) {
-                        speakerPhone<VoiceCallService>(requireContext(), checked)
-                    }
-                }
-            }
-        )
-        binding.voiceCb.setOnLongClickListener {
+        lifecycleScope.launchWhenCreated {
+            val cid = callState.conversationId ?: return@launchWhenCreated
+            self = viewModel.findSelfCallUser(cid, Session.getAccountId()!!)
             if (callState.isGroupCall()) {
-                logCallState<GroupCallService>(requireContext())
-            } else {
-                logCallState<VoiceCallService>(requireContext())
-            }
-            return@setOnLongClickListener true
-        }
-        updateUI()
-        callState.observe(
-            this,
-            Observer { state ->
-                // if plan to join a group voice, do not show self before answering
-                if (join && state >= CallService.CallState.STATE_ANSWERING) {
-                    join = false
-                }
-
-                updateUI()
-                if (callState.isGroupCall()) {
-                    refreshUsers()
-                }
-                if (state == CallService.CallState.STATE_IDLE) {
-                    contentView.post { handleDisconnected() }
-                    return@Observer
-                }
-                if (uiState >= state) {
-                    if (
-                        uiState == CallService.CallState.STATE_CONNECTED && state == CallService.CallState.STATE_CONNECTED
-                    ) {
-                        handleConnected(callState.disconnected)
-                    }
-                    return@Observer
-                }
-
-                uiState = state
-
-                when (state) {
-                    CallService.CallState.STATE_DIALING -> {
-                        contentView.post { handleDialing() }
-                    }
-                    CallService.CallState.STATE_RINGING -> {
-                        contentView.post {
-                            if (join) {
-                                handleJoin()
-                            } else {
-                                handleRinging()
-                            }
+                binding.title.text = getString(R.string.chat_group_call_title)
+                binding.avatarLl.isVisible = false
+                binding.usersRv.isVisible = true
+                if (userAdapter == null) {
+                    userAdapter = CallUserAdapter(self) {
+                        if (callState.isGroupCall() && callState.conversationId != null) {
+                            GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
+                                .showNow(
+                                    parentFragmentManager,
+                                    GroupUsersBottomSheetDialogFragment.TAG
+                                )
                         }
                     }
-                    CallService.CallState.STATE_ANSWERING -> {
-                        contentView.post { handleAnswering() }
-                    }
-                    CallService.CallState.STATE_CONNECTED -> {
-                        contentView.post { handleConnected(callState.disconnected) }
-                    }
-                    CallService.CallState.STATE_BUSY -> {
-                        contentView.post { handleBusy() }
-                    }
+                }
+                binding.usersRv.adapter = userAdapter
+                refreshUsers()
+            } else {
+                binding.title.text = getString(R.string.chat_call_title)
+                binding.avatarLl.isVisible = true
+                binding.usersRv.isVisible = false
+                val callee = callState.user
+                if (callee != null) {
+                    binding.nameTv.text = callee.fullName
+                    binding.avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
+                    binding.avatar.setTextSize(48f)
                 }
             }
-        )
-        if (callState.state == CallService.CallState.STATE_RINGING) {
-            binding.closeIb.isVisible = true
-            binding.minimizeIb.isVisible = false
+
+            binding.hangupCb.setOnClickListener {
+                hangup()
+            }
+            binding.answerCb.setOnClickListener {
+                handleAnswer()
+            }
+            binding.closeIb.setOnClickListener {
+                hangup()
+            }
+            binding.minimizeIb.setOnClickListener {
+                if (!pipCallView.shown) {
+                    if (!checkPipPermission()) {
+                        return@setOnClickListener
+                    }
+                    pipCallView.show(requireActivity(), callState.connectedTime, callState)
+                }
+                dismissAllowingStateLoss()
+            }
+            binding.muteCb.setOnCheckedChangeListener(
+                object : CallButton.OnCheckedChangeListener {
+                    override fun onCheckedChanged(id: Int, checked: Boolean) {
+                        if (callState.isGroupCall()) {
+                            muteAudio<GroupCallService>(requireContext(), checked)
+                        } else if (callState.isVoiceCall()) {
+                            muteAudio<VoiceCallService>(requireContext(), checked)
+                        }
+                    }
+                }
+            )
+            binding.voiceCb.setOnCheckedChangeListener(
+                object : CallButton.OnCheckedChangeListener {
+                    override fun onCheckedChanged(id: Int, checked: Boolean) {
+                        if (callState.isGroupCall()) {
+                            speakerPhone<GroupCallService>(requireContext(), checked)
+                        } else if (callState.isVoiceCall()) {
+                            speakerPhone<VoiceCallService>(requireContext(), checked)
+                        }
+                    }
+                }
+            )
+            binding.voiceCb.setOnLongClickListener {
+                if (callState.isGroupCall()) {
+                    logCallState<GroupCallService>(requireContext())
+                } else {
+                    logCallState<VoiceCallService>(requireContext())
+                }
+                return@setOnLongClickListener true
+            }
+            updateUI()
+            callState.observe(
+                this@CallBottomSheetDialogFragment,
+                Observer { state ->
+                    // if plan to join a group voice, do not show self before answering
+                    if (join && state >= CallService.CallState.STATE_ANSWERING) {
+                        join = false
+                    }
+
+                    updateUI()
+                    if (callState.isGroupCall()) {
+                        refreshUsers()
+                    }
+                    if (state == CallService.CallState.STATE_IDLE) {
+                        contentView.post { handleDisconnected() }
+                        return@Observer
+                    }
+                    if (uiState >= state) {
+                        if (
+                            uiState == CallService.CallState.STATE_CONNECTED && state == CallService.CallState.STATE_CONNECTED
+                        ) {
+                            handleConnected(callState.disconnected)
+                        }
+                        return@Observer
+                    }
+
+                    uiState = state
+
+                    when (state) {
+                        CallService.CallState.STATE_DIALING -> {
+                            contentView.post { handleDialing() }
+                        }
+                        CallService.CallState.STATE_RINGING -> {
+                            contentView.post {
+                                if (join) {
+                                    handleJoin()
+                                } else {
+                                    handleRinging()
+                                }
+                            }
+                        }
+                        CallService.CallState.STATE_ANSWERING -> {
+                            contentView.post { handleAnswering() }
+                        }
+                        CallService.CallState.STATE_CONNECTED -> {
+                            contentView.post { handleConnected(callState.disconnected) }
+                        }
+                        CallService.CallState.STATE_BUSY -> {
+                            contentView.post { handleBusy() }
+                        }
+                    }
+                }
+            )
+            if (callState.state == CallService.CallState.STATE_RINGING) {
+                binding.closeIb.isVisible = true
+                binding.minimizeIb.isVisible = false
+            }
         }
     }
 
@@ -425,7 +430,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (binding.usersRv.layoutManager == null) {
             binding.usersRv.layoutManager = GridLayoutManager(requireContext(), 4)
         }
-
         var needNotify = false
         if (calls.isNullOrEmpty()) {
             userAdapter?.submitList(null)
@@ -435,7 +439,26 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 userAdapter?.submitList(listOf(self))
                 return@launch
             }
-            val users = viewModel.findMultiUsersByIds(calls.toSet())
+            val users = viewModel.findMultiCallUsersByIds(cid, calls.toSet())
+                .sortedWith { u1, u2 ->
+                    when {
+                        u1.role == u2.role -> {
+                            return@sortedWith 0
+                        }
+                        u1.role == ParticipantRole.OWNER.name -> {
+                            return@sortedWith 1
+                        }
+                        u2.role == ParticipantRole.OWNER.name -> {
+                            return@sortedWith -1
+                        }
+                        u1.role == ParticipantRole.ADMIN.name -> {
+                            return@sortedWith 1
+                        }
+                        else -> {
+                            return@sortedWith -1
+                        }
+                    }
+                }
             needNotify = userAdapter?.currentList != users
             userAdapter?.submitList(users)
         }
