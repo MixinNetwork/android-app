@@ -81,9 +81,9 @@
     </style>
 
     <style name="AppTheme.Night.Call" parent="AppTheme.Night.NoActionBar">
-        <item name="android:windowBackground">@color/call_gray</item>
-        <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 
     <style name="AppTheme.Night.Transparent" parent="AppTheme.Night.FullScreen">

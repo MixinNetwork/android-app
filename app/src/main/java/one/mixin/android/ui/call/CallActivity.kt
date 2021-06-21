@@ -11,11 +11,11 @@ import one.mixin.android.ui.common.BaseActivity
 class CallActivity : BaseActivity() {
 
     override fun getDefaultThemeId(): Int {
-        return R.style.AppTheme_Transparent
+        return R.style.AppTheme_Call
     }
 
     override fun getNightThemeId(): Int {
-        return R.style.AppTheme_Night_Transparent
+        return R.style.AppTheme_Night_Call
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

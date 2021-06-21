@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -32,13 +33,10 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCallBottomSheetBinding
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.checkInlinePermissions
-import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.hasNavigationBar
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.session.Session
 import one.mixin.android.util.SystemUIManager
@@ -60,6 +58,7 @@ import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
 import javax.inject.Inject
+import kotlin.properties.Delegates
 
 @AndroidEntryPoint
 class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -111,15 +110,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val peekHeight by lazy {
         440.dp
     }
-    private val translationOffset by lazy {
-        (
-            peekHeight - requireContext().displayHeight() + if (requireContext().hasNavigationBar()) {
-                requireContext().navigationBarHeight()
-            } else {
-                0
-            }
-            ).toFloat()
-    }
+
+    private var translationOffset by Delegates.notNull<Float>()
 
     private val pipCallView by lazy {
         PipCallView.get()
@@ -134,7 +126,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
         val behavior = params.behavior as BottomSheetBehavior<*>
         behavior.peekHeight = peekHeight
-        binding.bottomLayout.translationY = translationOffset
+        binding.root.doOnPreDraw { root ->
+            translationOffset = (peekHeight - root.measuredHeight).toFloat()
+            binding.bottomLayout.translationY = translationOffset
+        }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
         behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {

@@ -76,8 +76,7 @@ class CaptureFragment : BaseCameraxFragment() {
         binding.op.post {
             if (viewDestroyed()) return@post
 
-            val b = binding.bottomLl.bottom
-            val hasNavigationBar = requireContext().hasNavigationBar(b)
+            val hasNavigationBar = requireContext().hasNavigationBar()
             if (hasNavigationBar) {
                 val navigationBarHeight = requireContext().navigationBarHeight()
                 binding.bottomLl.translationY = -navigationBarHeight.toFloat()

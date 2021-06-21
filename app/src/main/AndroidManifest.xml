@@ -258,7 +258,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:documentLaunchMode="intoExisting"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Transparent"
+            android:theme="@style/AppTheme.Call"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".ui.media.SharedMediaActivity"
