@@ -97,7 +97,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var _binding: FragmentCallBottomSheetBinding? = null
     private val binding get() = requireNotNull(_binding)
 
-    override fun getTheme() = R.style.AppTheme_Dialog
+    override fun getTheme() = R.style.MixinBottomSheet
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return MixinBottomSheetDialog(requireContext(), theme).apply {
