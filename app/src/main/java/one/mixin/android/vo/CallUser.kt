@@ -3,7 +3,7 @@ package one.mixin.android.vo
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 
-data class CallUser(
+class CallUser(
     @ColumnInfo(name = "user_id")
     val userId: String,
     @ColumnInfo(name = "identity_number")
@@ -23,5 +23,18 @@ data class CallUser(
             override fun areContentsTheSame(oldItem: CallUser, newItem: CallUser) =
                 oldItem == newItem
         }
+    }
+
+    override fun equals(other: Any?): Boolean =
+        other is CallUser && other.userId == userId && other.role == role &&
+            other.fullName == fullName && other.avatarUrl == avatarUrl
+
+    override fun hashCode(): Int {
+        var result = userId.hashCode()
+        result = 31 * result + identityNumber.hashCode()
+        result = 31 * result + (fullName?.hashCode() ?: 0)
+        result = 31 * result + (avatarUrl?.hashCode() ?: 0)
+        result = 31 * result + role.hashCode()
+        return result
     }
 }

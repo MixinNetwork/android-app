@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -111,11 +112,13 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         440.dp
     }
     private val translationOffset by lazy {
-        (peekHeight - requireContext().displayHeight() + if (requireContext().hasNavigationBar()) {
-            requireContext().navigationBarHeight()
-        } else {
-            0
-        }).toFloat()
+        (
+            peekHeight - requireContext().displayHeight() + if (requireContext().hasNavigationBar()) {
+                requireContext().navigationBarHeight()
+            } else {
+                0
+            }
+            ).toFloat()
     }
 
     private val pipCallView by lazy {
@@ -285,6 +288,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 binding.minimizeIb.isVisible = false
             }
         }
+        dialog.setOnKeyListener { _, keyCode, _ ->
+            keyCode == KeyEvent.KEYCODE_BACK && callState.isBeforeAnswering()
+        }
     }
 
     private var timer: Timer? = null
@@ -452,16 +458,16 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             return@sortedWith 0
                         }
                         u1.role == ParticipantRole.OWNER.name -> {
-                            return@sortedWith 1
+                            return@sortedWith -1
                         }
                         u2.role == ParticipantRole.OWNER.name -> {
-                            return@sortedWith -1
-                        }
-                        u1.role == ParticipantRole.ADMIN.name -> {
                             return@sortedWith 1
                         }
-                        else -> {
+                        u1.role == ParticipantRole.ADMIN.name -> {
                             return@sortedWith -1
+                        }
+                        else -> {
+                            return@sortedWith 1
                         }
                     }
                 }
