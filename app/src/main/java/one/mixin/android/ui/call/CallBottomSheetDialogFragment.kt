@@ -36,6 +36,8 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.hasNavigationBar
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.session.Session
 import one.mixin.android.util.SystemUIManager
@@ -109,7 +111,11 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         440.dp
     }
     private val translationOffset by lazy {
-        (peekHeight - requireContext().displayHeight()).toFloat()
+        (peekHeight - requireContext().displayHeight() + if (requireContext().hasNavigationBar()) {
+            requireContext().navigationBarHeight()
+        } else {
+            0
+        }).toFloat()
     }
 
     private val pipCallView by lazy {
