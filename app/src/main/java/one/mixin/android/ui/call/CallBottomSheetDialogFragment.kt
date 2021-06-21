@@ -14,9 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.MarginLayoutParamsCompat
 import androidx.core.view.isVisible
-import androidx.core.view.marginTop
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
@@ -34,7 +32,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCallBottomSheetBinding
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.checkInlinePermissions
-import one.mixin.android.extension.displayMetrics
+import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -111,7 +109,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         440.dp
     }
     private val translationOffset by lazy {
-        (peekHeight - requireContext().displayMetrics().y).toFloat()
+        (peekHeight - requireContext().displayHeight()).toFloat()
     }
 
     private val pipCallView by lazy {
@@ -483,7 +481,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 return
             }
-            if (checkPipPermission()){
+            if (checkPipPermission()) {
                 pipCallView.show(requireActivity(), callState.connectedTime, callState)
             }
         }

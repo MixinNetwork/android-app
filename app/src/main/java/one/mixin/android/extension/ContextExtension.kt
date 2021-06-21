@@ -32,7 +32,6 @@ import android.provider.Browser
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
-import android.util.DisplayMetrics
 import android.util.Log
 import android.util.TypedValue
 import android.view.KeyCharacterMap
@@ -198,14 +197,7 @@ fun Context.realSize(): Point {
     return size
 }
 
-fun Context.displayMetrics(): Point {
-    val displayMetrics = DisplayMetrics()
-    val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    manager.defaultDisplay.getMetrics(displayMetrics)
-    val height = displayMetrics.heightPixels
-    val width = displayMetrics.widthPixels
-    return Point(width,height)
-}
+fun Context.displayHeight() = realSize().y - statusBarHeight()
 
 fun Context.isWideScreen(): Boolean {
     val ratio = displayRatio()
