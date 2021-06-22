@@ -130,7 +130,7 @@ data class MessageItem(
     fun canNotForward() = this.type == MessageCategory.APP_BUTTON_GROUP.name ||
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-        isCallMessage() || isRecall() || unfinishedAttachment() ||
+        isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
         (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
         (this.type == MessageCategory.APP_CARD.name && isAppCardShareable() == false)
 
@@ -138,7 +138,7 @@ data class MessageItem(
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
             this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
             unfinishedAttachment() ||
-            isCallMessage() || isRecall()
+            isCallMessage() || isRecall() || isGroupCall()
 
     fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 }
@@ -158,7 +158,7 @@ fun MessageItem.canNotReply() =
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
         (!mediaDownloaded(this.mediaStatus) && this.isMedia()) ||
-        isCallMessage() || isRecall()
+        isCallMessage() || isRecall() || isGroupCall()
 
 fun MessageItem.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
