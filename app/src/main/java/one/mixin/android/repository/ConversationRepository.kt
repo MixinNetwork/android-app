@@ -482,4 +482,6 @@ internal constructor(
     fun countTranscriptById(conversationId: String) = transcriptMessageDao.countTranscriptByConversationId(conversationId)
 
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String) = transcriptMessageDao.hasUploadedAttachmentSuspend(transcriptId)
+
+    fun refreshConversationById(conversationId: String) = conversationDao.refreshConversationById(conversationId)
 }

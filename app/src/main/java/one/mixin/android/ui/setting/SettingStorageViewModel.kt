@@ -126,6 +126,7 @@ internal constructor(
                 TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name)
             }
         }
+        conversationRepository.refreshConversationById(conversationId)
     }
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
