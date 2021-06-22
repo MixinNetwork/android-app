@@ -350,7 +350,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleRinging() {
-        Timber.e("handleRinging")
         binding.voiceCb.isVisible = false
         binding.muteCb.isVisible = false
         binding.answerCb.isVisible = true
@@ -361,7 +360,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleJoin() {
-        Timber.e("handleJoin")
         binding.voiceCb.isVisible = false
         binding.muteCb.isVisible = false
         binding.answerCb.isVisible = true
@@ -371,7 +369,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleDialing() {
-        Timber.e("handleDialing")
         binding.voiceCb.isVisible = true
         binding.muteCb.isVisible = true
         binding.answerCb.isVisible = false
@@ -382,7 +379,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleAnswering() {
-        Timber.e("handleAnswering")
         binding.voiceCb.fadeIn()
         binding.muteCb.fadeIn()
         binding.answerCb.fadeOut()
@@ -393,7 +389,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleConnected(disconnected: Boolean) {
-        Timber.e("handleConnected")
         if (!binding.voiceCb.isVisible) {
             binding.voiceCb.fadeIn()
         }
@@ -437,7 +432,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (binding.usersRv.layoutManager == null) {
             binding.usersRv.layoutManager = GridLayoutManager(requireContext(), 4)
         }
-        var needNotify = false
         if (calls.isNullOrEmpty()) {
             userAdapter?.submitList(null)
         } else {
@@ -466,15 +460,12 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                     }
                 }
-            needNotify = userAdapter?.currentList != users
             userAdapter?.submitList(users)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
         val newGuestsNotConnected = callState.getPendingUsers(cid)
         if (currentGuestsNotConnected != newGuestsNotConnected) {
             userAdapter?.guestsNotConnected = newGuestsNotConnected
-            userAdapter?.notifyDataSetChanged()
-        } else if (needNotify) {
             userAdapter?.notifyDataSetChanged()
         }
     }

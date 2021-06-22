@@ -57,6 +57,12 @@ class CallUserAdapter(private val self: CallUser, private val onClickListener: V
     override fun getItemCount(): Int {
         return super.getItemCount() + 1
     }
+
+    override fun onCurrentListChanged(previousList: MutableList<CallUser>, currentList: MutableList<CallUser>) {
+        if (previousList != currentList) {
+            notifyDataSetChanged()
+        }
+    }
 }
 
 class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(binding.root) {
