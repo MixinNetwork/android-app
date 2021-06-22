@@ -17,6 +17,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.generateConversationId
@@ -68,7 +69,7 @@ class WebActivity : BaseActivity() {
         }
     }
 
-    override fun getNightThemeId(): Int = R.style.AppTheme_Night_BLUR
+    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
 
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
@@ -214,7 +215,11 @@ class WebActivity : BaseActivity() {
                 FloatingWebClip.getInstance(this.isNightMode()).hide()
                 window.decorView.systemUiVisibility =
                     window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                window.statusBarColor = Color.parseColor("#CC1C1C1C")
+                if (isNightMode()) {
+                    SystemUIManager.lightUI(window, false)
+                } else {
+                    SystemUIManager.lightUI(window, true)
+                }
                 hideWeb()
             }
         )

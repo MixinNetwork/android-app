@@ -61,7 +61,7 @@ import javax.inject.Inject
 class TranscriptActivity : BaseActivity() {
     private lateinit var binding: ActivityTranscriptBinding
 
-    override fun getNightThemeId(): Int = R.style.AppTheme_Night_BLUR
+    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
 
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
