@@ -7,12 +7,14 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.ActionMode
 import android.view.GestureDetector
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import androidx.activity.viewModels
+import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -80,6 +82,14 @@ class TextPreviewActivity : BlazeBaseActivity() {
             binding.text.renderMessage(messageItem.content, null, mentionRenderContext)
         } else {
             binding.text.renderMessage(messageItem.content, null)
+        }
+        binding.text.doOnPreDraw {
+            val lineCount = binding.text.lineCount
+            if (lineCount > 1) {
+                binding.text.gravity = Gravity.START
+            } else {
+                binding.text.gravity = Gravity.CENTER_HORIZONTAL
+            }
         }
         binding.text.customSelectionActionModeCallback = object : ActionMode.Callback {
             override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
