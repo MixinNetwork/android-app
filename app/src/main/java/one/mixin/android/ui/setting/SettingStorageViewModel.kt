@@ -26,9 +26,11 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -63,6 +65,7 @@ internal constructor(
 
     fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>> = conversationRepository.getConversationStorageUsage()
         .map { list ->
+            Timber.e("clear getConversationStorageUsage ${list.size}")
             list.asSequence().map { item ->
                 val context = MixinApplication.appContext
                 item.mediaSize = context.getConversationMediaSize(item.conversationId)
@@ -71,62 +74,76 @@ internal constructor(
                 conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
             }.sortedByDescending { conversationStorageUsage ->
                 conversationStorageUsage.mediaSize
-            }.toList()
+            }.toList().apply {
+                Timber.e("clear getConversationStorageUsage return ${this.size}")
+            }
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun clear(conversationId: String, type: String) {
-        if (MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_ATTACHMENT, false)) {
-            when (type) {
-                IMAGE -> {
-                    MixinApplication.get().getConversationImagePath(conversationId)?.deleteRecursively()
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(
-                        conversationId,
-                        MessageCategory.SIGNAL_IMAGE.name,
-                        MessageCategory.PLAIN_IMAGE.name
-                    )
-                }
-                VIDEO -> {
-                    MixinApplication.get().getConversationVideoPath(conversationId)?.deleteRecursively()
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(
-                        conversationId,
-                        MessageCategory.SIGNAL_VIDEO.name,
-                        MessageCategory.PLAIN_VIDEO.name
-                    )
-                }
-                AUDIO -> {
-                    MixinApplication.get().getConversationAudioPath(conversationId)?.deleteRecursively()
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(
-                        conversationId,
-                        MessageCategory.SIGNAL_AUDIO.name,
-                        MessageCategory.PLAIN_AUDIO.name
-                    )
-                }
-                DATA -> {
-                    MixinApplication.get().getConversationDocumentPath(conversationId)?.deleteRecursively()
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(
-                        conversationId,
-                        MessageCategory.SIGNAL_DATA.name,
-                        MessageCategory.PLAIN_DATA.name
-                    )
-                }
-                TRANSCRIPT -> {
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(
-                        conversationId,
-                        MessageCategory.SIGNAL_TRANSCRIPT.name,
-                        MessageCategory.PLAIN_TRANSCRIPT.name
-                    )
+        measureTimeMillis("clear") {
+            if (MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_ATTACHMENT, false)) {
+                    Timber.e("new clear")
+                    when (type) {
+                        IMAGE -> {
+                            measureTimeMillis("clear image") { MixinApplication.get().getConversationImagePath(conversationId)?.deleteRecursively() }
+                            measureTimeMillis("clear image db") {
+                                conversationRepository.deleteMediaMessageByConversationAndCategory(
+                                    conversationId,
+                                    MessageCategory.SIGNAL_IMAGE.name,
+                                    MessageCategory.PLAIN_IMAGE.name
+                                )
+                            }
+                        }
+                        VIDEO -> {
+                            measureTimeMillis("clear video") { MixinApplication.get().getConversationVideoPath(conversationId)?.deleteRecursively() }
+                            measureTimeMillis("clear video db") {
+                                conversationRepository.deleteMediaMessageByConversationAndCategory(
+                                    conversationId,
+                                    MessageCategory.SIGNAL_VIDEO.name,
+                                    MessageCategory.PLAIN_VIDEO.name
+                                )
+                            }
+                        }
+                        AUDIO -> {
+                            measureTimeMillis("clear audio") { MixinApplication.get().getConversationAudioPath(conversationId)?.deleteRecursively() }
+                            measureTimeMillis("clear audio db") {
+                                conversationRepository.deleteMediaMessageByConversationAndCategory(
+                                    conversationId,
+                                    MessageCategory.SIGNAL_AUDIO.name,
+                                    MessageCategory.PLAIN_AUDIO.name
+                                )
+                            }
+                        }
+                        DATA -> {
+                            measureTimeMillis("clear data") { MixinApplication.get().getConversationDocumentPath(conversationId)?.deleteRecursively() }
+                            measureTimeMillis("clear data db") {
+                                conversationRepository.deleteMediaMessageByConversationAndCategory(
+                                    conversationId,
+                                    MessageCategory.SIGNAL_DATA.name,
+                                    MessageCategory.PLAIN_DATA.name
+                                )
+                            }
+                        }
+                        TRANSCRIPT -> {
+                            conversationRepository.deleteMediaMessageByConversationAndCategory(
+                                conversationId,
+                                MessageCategory.SIGNAL_TRANSCRIPT.name,
+                                MessageCategory.PLAIN_TRANSCRIPT.name
+                            )
+                        }
+                    }
+            } else {
+                Timber.e("old clear")
+                when (type) {
+                    IMAGE -> clear(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name)
+                    VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
+                    AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
+                    DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
+                    TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name)
                 }
             }
-        } else {
-            when (type) {
-                IMAGE -> clear(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name)
-                VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
-                AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
-                DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
-                TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name)
-            }
+            conversationRepository.refreshConversationById(conversationId)
         }
-        conversationRepository.refreshConversationById(conversationId)
     }
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
