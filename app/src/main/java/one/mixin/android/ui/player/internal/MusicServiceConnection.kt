@@ -12,6 +12,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
 import one.mixin.android.ui.player.NETWORK_FAILURE
+import timber.log.Timber
 
 class MusicServiceConnection(context: Context, serviceComponent: ComponentName) {
     val isConnected = MutableLiveData<Boolean>()
@@ -44,7 +45,11 @@ class MusicServiceConnection(context: Context, serviceComponent: ComponentName) 
     }
 
     fun connect() {
-        mediaBrowser.connect()
+        try {
+            mediaBrowser.connect()
+        } catch (e: IllegalStateException) {
+            Timber.i(e)
+        }
     }
 
     fun disconnect() {
