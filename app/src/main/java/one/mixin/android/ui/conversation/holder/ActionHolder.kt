@@ -80,7 +80,6 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
                 )
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label
-                button.supportBackgroundTintList = ColorStateList.valueOf(itemView.context.colorFromAttribute(R.attr.bg_bubble))
                 binding.chatLayout.addView(button)
                 (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp8
                 button.topPadding = dp8
