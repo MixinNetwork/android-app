@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -22,15 +23,19 @@ import com.bumptech.glide.request.target.Target
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityAvatarBinding
 import one.mixin.android.extension.belowOreo
+import one.mixin.android.extension.blurBitmap
+import one.mixin.android.ui.web.getScreenshot
+import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.widget.AvatarTransform
 
 class AvatarActivity : BaseActivity() {
 
     companion object {
-        const val TAG = "AvatarFragment"
+        const val TAG = "AvatarActivity"
         const val ARGS_URL = "args_url"
 
         fun show(activity: Activity, url: String, view: View) {
+            refreshScreenshot(activity)
             val intent = Intent(activity, AvatarActivity::class.java).apply {
                 putExtra(ARGS_URL, url)
             }
@@ -42,6 +47,10 @@ class AvatarActivity : BaseActivity() {
             activity.startActivity(intent, options.toBundle())
         }
     }
+
+    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
+
+    override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
 
     private val url: String by lazy { intent.getStringExtra(ARGS_URL) as String }
 
@@ -56,7 +65,9 @@ class AvatarActivity : BaseActivity() {
         window.statusBarColor = Color.TRANSPARENT
         binding = ActivityAvatarBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        getScreenshot()?.let {
+            binding.rootView.background = BitmapDrawable(resources, it.blurBitmap(25))
+        }
         Glide.with(this).asBitmap().load(url).listener(
             object : RequestListener<Bitmap> {
                 override fun onLoadFailed(

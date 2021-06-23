@@ -197,9 +197,11 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun unseenMessageCount(conversationId: String, userId: String?)
 
-    @Query("""
+    @Query(
+        """
         UPDATE conversations SET unseen_message_count = (SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId) WHERE conversation_id = :conversationId
-    """)
+    """
+    )
     fun refreshConversationById(conversationId: String)
 
     @Query(
