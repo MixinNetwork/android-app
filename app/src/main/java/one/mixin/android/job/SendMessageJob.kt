@@ -119,7 +119,7 @@ open class SendMessageJob(
     }
 
     private fun sendPlainMessage() {
-        val conversation = conversationDao.getConversation(message.conversationId) ?: return
+        val conversation = conversationDao.findConversationById(message.conversationId) ?: return
         checkConversationExist(conversation)
         var content = message.content
         if (message.category == MessageCategory.PLAIN_TEXT.name ||

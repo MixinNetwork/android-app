@@ -284,7 +284,7 @@ abstract class MixinJob(
     }
 
     protected fun checkConversation(conversationId: String) {
-        val conversation = conversationDao.getConversation(conversationId) ?: return
+        val conversation = conversationDao.findConversationById(conversationId) ?: return
         if (conversation.isGroupConversation()) {
             syncConversation(conversation.conversationId)
         } else {

@@ -224,6 +224,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun refreshUser(id: String) = userRepository.refreshUser(id)
 
+    suspend fun getAndSyncConversation(id: String) = conversationRepo.getAndSyncConversation(id)
+
     fun startGenerateAvatar(conversationId: String, list: List<String>? = null) {
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }

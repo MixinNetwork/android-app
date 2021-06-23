@@ -1,14 +1,11 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
-import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper

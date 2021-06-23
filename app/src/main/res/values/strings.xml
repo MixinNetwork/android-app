@@ -160,6 +160,7 @@
     <string name="error_pin_incorrect_with_times">ERROR %1$d: PIN incorrect. You still have %2$d chances. Please wait for 24 hours to retry later.</string>
     <string name="error_too_small">ERROR %1$d: The amount is too small</string>
     <string name="error_user_not_found">User not found</string>
+    <string name="error_conversation_not_found">Conversation not found</string>
     <string name="error_app_not_found">App not found</string>
     <string name="error_unable_to_open_media">Can\'t find an app able to open this media.</string>
     <string name="error_open_location">Can\'t find an map app</string>

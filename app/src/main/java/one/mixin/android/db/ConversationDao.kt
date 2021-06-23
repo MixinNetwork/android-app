@@ -108,6 +108,9 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun findConversationById(conversationId: String): Conversation?
 
+    @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
+    suspend fun getConversationByIdSuspend(conversationId: String): Conversation?
+
     @Query("SELECT name FROM conversations WHERE conversation_id = :conversationId")
     fun observeConversationNameById(conversationId: String): LiveData<String>
 
@@ -116,9 +119,6 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId")
     suspend fun saveDraft(conversationId: String, text: String)
-
-    @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
-    fun getConversation(conversationId: String): Conversation?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -197,9 +197,11 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun unseenMessageCount(conversationId: String, userId: String?)
 
-    @Query("""
+    @Query(
+        """
         UPDATE conversations SET unseen_message_count = (SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId) WHERE conversation_id = :conversationId
-    """)
+    """
+    )
     fun refreshConversationById(conversationId: String)
 
     @Query(

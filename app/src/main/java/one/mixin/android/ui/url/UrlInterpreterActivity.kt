@@ -29,6 +29,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val ADDRESS = "address"
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
+        private const val CONVERSATIONS = "conversations"
     }
 
     override fun getDefaultThemeId(): Int {
@@ -62,7 +63,7 @@ class UrlInterpreterActivity : BaseActivity() {
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
-            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS -> {
+            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
