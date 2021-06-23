@@ -979,9 +979,9 @@
     <string name="unlock_with_fingerprint_desc">启用后，您需要使用指纹解锁以开启 Mixin。</string>
     <string name="automatically_lock">自动锁定</string>
     <string name="auto_immediately">立即启动</string>
-    <string name="auto_after_1_minute">1分钟之后</string>
-    <string name="auto_after_30_minutes">30分钟之后</string>
+    <string name="auto_after_1_minute">1 分钟之后</string>
+    <string name="auto_after_30_minutes">30 分钟之后</string>
     <string name="enable_immediately">立即启动</string>
-    <string name="enable_after_1_minute">在1分钟之后启动</string>
-    <string name="enable_after_30_minutes">在30分钟后启动</string>
+    <string name="enable_after_1_minute">在 1 分钟之后启动</string>
+    <string name="enable_after_30_minutes">在 30 分钟后启动</string>
 </resources>
