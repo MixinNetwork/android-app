@@ -39,6 +39,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.AvatarActivity
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
@@ -120,6 +121,16 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 dismiss()
             }
             createdTv.text = getString(R.string.profile_join_in, account.createdAt.dayTime())
+            avatar.setOnClickListener {
+                if (!isAdded) return@setOnClickListener
+
+                val avatar = account.avatarUrl
+                if (avatar.isNullOrBlank()) {
+                    return@setOnClickListener
+                }
+                AvatarActivity.show(requireActivity(), avatar, binding.avatar)
+                dismiss()
+            }
             refreshInfo(account)
         }
 
