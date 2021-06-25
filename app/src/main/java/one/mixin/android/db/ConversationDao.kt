@@ -108,6 +108,9 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun findConversationById(conversationId: String): Conversation?
 
+    @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
+    suspend fun getConversationByIdSuspend(conversationId: String): Conversation?
+
     @Query("SELECT name FROM conversations WHERE conversation_id = :conversationId")
     fun observeConversationNameById(conversationId: String): LiveData<String>
 
@@ -116,9 +119,6 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId")
     suspend fun saveDraft(conversationId: String, text: String)
-
-    @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
-    fun getConversation(conversationId: String): Conversation?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(

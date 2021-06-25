@@ -75,6 +75,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
 import java.util.UUID
 
@@ -565,6 +566,39 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
                 }
                 dismiss()
+            }
+        } else if (url.startsWith(Scheme.CONVERSATIONS, true)) {
+            val uri = Uri.parse(url)
+            val conversationId = uri.pathSegments[0]
+            if (conversationId.isEmpty() || !conversationId.isUUID()) {
+                showError()
+                return
+            }
+            val userId = uri.getQueryParameter("user")
+            lifecycleScope.launch {
+                if (userId != null) {
+                    val user = linkViewModel.refreshUser(userId)
+                    when {
+                        user == null -> {
+                            showError(R.string.error_user_not_found)
+                        }
+                        conversationId != generateConversationId(requireNotNull(Session.getAccountId()), userId) -> {
+                            showError()
+                        }
+                        else -> {
+                            ConversationActivity.show(requireContext(), conversationId, userId)
+                            dismiss()
+                        }
+                    }
+                } else {
+                    val conversation = linkViewModel.getAndSyncConversation(conversationId)
+                    if (conversation != null) {
+                        ConversationActivity.show(requireContext(), conversation.conversationId)
+                        dismiss()
+                    } else {
+                        showError(R.string.error_conversation_not_found)
+                    }
+                }
             }
         } else if (url.startsWith(Scheme.SEND, true)) {
             val uri = Uri.parse(url)

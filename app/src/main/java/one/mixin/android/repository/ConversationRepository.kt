@@ -16,10 +16,12 @@ import one.mixin.android.Constants.DB_DELETE_THRESHOLD
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
@@ -42,10 +44,12 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.AttachmentDeleteJob
+import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MessageFtsDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -64,6 +68,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.createAckJob
@@ -139,7 +144,7 @@ internal constructor(
         conversationDao.saveDraft(conversationId, draft)
 
     fun getConversation(conversationId: String) =
-        conversationDao.getConversation(conversationId)
+        conversationDao.findConversationById(conversationId)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem> =
         messageDao.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit)
@@ -484,4 +489,77 @@ internal constructor(
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String) = transcriptMessageDao.hasUploadedAttachmentSuspend(transcriptId)
 
     fun refreshConversationById(conversationId: String) = conversationDao.refreshConversationById(conversationId)
+
+    suspend fun getAndSyncConversation(conversationId: String): Conversation? = withContext(Dispatchers.IO) {
+        val conversation = conversationDao.getConversationByIdSuspend(conversationId)
+        val localData = participantDao.getRealParticipants(conversationId)
+        if (conversation != null) return@withContext conversation
+
+        return@withContext handleMixinResponse(
+            invokeNetwork = {
+                conversationService.findConversationSuspend(conversationId)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                response.data?.let { data ->
+                    val participants = mutableListOf<Participant>()
+                    val conversationUserIds = mutableListOf<String>()
+                    if (!data.participants.any { p -> p.userId == Session.getAccountId() }) return@handleMixinResponse null
+                    insertOrUpdateConversation(data)
+                    for (p in data.participants) {
+                        val item = Participant(conversationId, p.userId, p.role, p.createdAt!!)
+                        if (p.role == ParticipantRole.OWNER.name) {
+                            participants.add(0, item)
+                        } else {
+                            participants.add(item)
+                        }
+                        conversationUserIds.add(p.userId)
+                    }
+
+                    participantDao.replaceAll(data.conversationId, participants)
+                    data.participantSessions?.let {
+                        syncParticipantSession(conversationId, it)
+                    }
+
+                    if (conversationUserIds.isNotEmpty()) {
+                        jobManager.addJobInBackground(
+                            RefreshUserJob(
+                                conversationUserIds,
+                                conversationId
+                            )
+                        )
+                    }
+                    if (participants.size != localData.size || conversationUserIds.isNotEmpty()) {
+                        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+                    }
+                    return@handleMixinResponse conversationDao.findConversationById(conversationId)
+                }
+            }
+        )
+    }
+
+    private fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
+        participantSessionDao.deleteByStatus(conversationId)
+        val remote = data.map {
+            ParticipantSession(conversationId, it.userId, it.sessionId)
+        }
+        if (remote.isEmpty()) {
+            participantSessionDao.deleteByConversationId(conversationId)
+            return
+        }
+        val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
+        if (local.isEmpty()) {
+            participantSessionDao.insertList(remote)
+            return
+        }
+        val common = remote.intersect(local)
+        val remove = local.minus(common)
+        val add = remote.minus(common)
+        if (remove.isNotEmpty()) {
+            participantSessionDao.deleteList(remove)
+        }
+        if (add.isNotEmpty()) {
+            participantSessionDao.insertList(add)
+        }
+    }
 }

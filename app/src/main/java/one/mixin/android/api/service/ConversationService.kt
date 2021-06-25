@@ -25,6 +25,9 @@ interface ConversationService {
     @GET("conversations/{id}")
     fun findConversation(@Path("id") id: String): Observable<MixinResponse<ConversationResponse>>
 
+    @GET("conversations/{id}")
+    suspend fun findConversationSuspend(@Path("id") id: String): MixinResponse<ConversationResponse>
+
     @POST("attachments")
     fun requestAttachment(): Observable<MixinResponse<AttachmentResponse>>
 
