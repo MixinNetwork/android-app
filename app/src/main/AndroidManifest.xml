@@ -248,7 +248,7 @@
         <activity
             android:name=".ui.common.AvatarActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:theme="@style/AppTheme.Avatar"
+            android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".ui.call.CallActivity"
