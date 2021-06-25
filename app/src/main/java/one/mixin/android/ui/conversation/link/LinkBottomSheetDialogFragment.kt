@@ -569,40 +569,36 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         } else if (url.startsWith(Scheme.CONVERSATIONS, true)) {
             val uri = Uri.parse(url)
-            if (uri.pathSegments.size >= 1) {
-                val conversationId = uri.pathSegments[0]
-                if (conversationId.isNotEmpty() && conversationId.isUUID()) {
-                    lifecycleScope.launch {
-                        val userId = uri.getQueryParameter("user")
-                        if (userId != null) {
-                            val user = linkViewModel.refreshUser(userId)
-                            when {
-                                user == null -> {
-                                    showError(R.string.error_user_not_found)
-                                }
-                                conversationId != generateConversationId(Session.getAccountId()!!, userId) -> {
-                                    showError()
-                                }
-                                else -> {
-                                    ConversationActivity.show(requireContext(), conversationId, userId)
-                                    dismiss()
-                                }
-                            }
-                        } else {
-                            val conversation = linkViewModel.getAndSyncConversation(conversationId)
-                            if (conversation != null) {
-                                ConversationActivity.show(requireContext(), conversation.conversationId)
-                                dismiss()
-                            } else {
-                                showError(R.string.error_conversation_not_found)
-                            }
+            val conversationId = uri.pathSegments[0]
+            if (conversationId.isEmpty() || !conversationId.isUUID()) {
+                showError()
+                return
+            }
+            val userId = uri.getQueryParameter("user")
+            lifecycleScope.launch {
+                if (userId != null) {
+                    val user = linkViewModel.refreshUser(userId)
+                    when {
+                        user == null -> {
+                            showError(R.string.error_user_not_found)
+                        }
+                        conversationId != generateConversationId(requireNotNull(Session.getAccountId()), userId) -> {
+                            showError()
+                        }
+                        else -> {
+                            ConversationActivity.show(requireContext(), conversationId, userId)
+                            dismiss()
                         }
                     }
                 } else {
-                    showError()
+                    val conversation = linkViewModel.getAndSyncConversation(conversationId)
+                    if (conversation != null) {
+                        ConversationActivity.show(requireContext(), conversation.conversationId)
+                        dismiss()
+                    } else {
+                        showError(R.string.error_conversation_not_found)
+                    }
                 }
-            } else {
-                showError()
             }
         } else if (url.startsWith(Scheme.SEND, true)) {
             val uri = Uri.parse(url)
