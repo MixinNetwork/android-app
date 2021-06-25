@@ -204,7 +204,9 @@ class SendTranscriptAttachmentMessageJob(
     private fun getTranscripts(transcriptId: String, list: MutableSet<TranscriptMessage>) {
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
-        transcripts.asSequence().filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
+        transcripts.asSequence().apply {
+            forEach { t -> t.mediaUrl = null }
+        }.filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
             getTranscripts(transcriptMessage.messageId, list)
         }
     }
