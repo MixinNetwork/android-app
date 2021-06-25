@@ -83,6 +83,7 @@ fun ICategory.canRecall(): Boolean {
         type == MessageCategory.SIGNAL_LIVE.name ||
         type == MessageCategory.SIGNAL_POST.name ||
         type == MessageCategory.SIGNAL_LOCATION.name ||
+        type == MessageCategory.SIGNAL_TRANSCRIPT.name ||
         type == MessageCategory.PLAIN_TEXT.name ||
         type == MessageCategory.PLAIN_IMAGE.name ||
         type == MessageCategory.PLAIN_VIDEO.name ||
@@ -93,5 +94,6 @@ fun ICategory.canRecall(): Boolean {
         type == MessageCategory.PLAIN_LIVE.name ||
         type == MessageCategory.PLAIN_POST.name ||
         type == MessageCategory.PLAIN_LOCATION.name ||
+        type == MessageCategory.PLAIN_TRANSCRIPT.name ||
         type == MessageCategory.APP_CARD.name
 }

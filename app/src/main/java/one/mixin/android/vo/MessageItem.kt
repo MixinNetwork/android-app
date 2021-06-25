@@ -282,28 +282,13 @@ class FixedMessageDataSource(private val messageItems: List<MessageItem>) : Posi
     }
 }
 
-fun MessageItem.toTranscript(transcriptId: String, isPlain: Boolean = false): TranscriptMessage {
-    val category = when {
-        isImage() -> if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
-        isVideo() -> if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-        isAudio() -> if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-        isData() -> if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-        isSticker() -> if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
-        isLive() -> if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
-        isLocation() -> if (isPlain) MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
-        isContact() -> if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
-        isTranscript() -> if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
-        isAppCard() -> MessageCategory.APP_CARD.name
-        isText() -> if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
-        isPost() -> if (isPlain) MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
-        else -> throw IllegalArgumentException("Unknown category")
-    }
+fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
     return TranscriptMessage(
         transcriptId,
         messageId,
         userId,
         userFullName,
-        category,
+        requireNotNull(type),
         createdAt,
         content,
         mediaUrl ?: assetUrl,

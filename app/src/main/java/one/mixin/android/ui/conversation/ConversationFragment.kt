@@ -3029,7 +3029,8 @@ class ConversationFragment() :
         lifecycleScope.launch {
             val transcriptId = UUID.randomUUID().toString()
             val messages = conversationAdapter.selectSet.filter { m -> !m.canNotForward() }
-                .sortedWith(compareBy { it.createdAt }).map { it.toTranscript(transcriptId) }
+                .sortedWith(compareBy { it.createdAt })
+                .map { it.toTranscript(transcriptId) }
             if (messages.isNotEmpty()) {
                 getCombineForwardContract.launch(ArrayList(messages))
             }
