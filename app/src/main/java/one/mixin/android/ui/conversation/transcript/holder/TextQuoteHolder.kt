@@ -92,8 +92,6 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                 }
-                AutoLinkMode.MODE_MENTION -> {
-                }
                 else -> {
                 }
             }

@@ -53,7 +53,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
 
         binding.text.requestFocus()
         binding.text.movementMethod = LinkMovementMethod()
-        binding.text.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_MENTION)
+        binding.text.addAutoLinkMode(AutoLinkMode.MODE_URL)
         binding.text.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         binding.text.setMentionModeColor(BaseViewHolder.LINK_COLOR)
         binding.text.setSelectedStateColor(BaseViewHolder.SELECT_COLOR)
