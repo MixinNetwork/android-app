@@ -13,7 +13,13 @@ internal constructor(
     private val conversationRepo: ConversationRepository
 ) : ViewModel() {
 
-    suspend fun findMultiUsersByIds(ids: Set<String>) = userRepository.findMultiUsersByIds(ids)
+    suspend fun findMultiCallUsersByIds(conversationId: String, ids: Set<String>) =
+        userRepository.findMultiCallUsersByIds(conversationId, ids)
+
+    suspend fun findSelfCallUser(conversationId: String, userId: String) =
+        userRepository.findSelfCallUser(conversationId, userId)
 
     fun observeConversationNameById(cid: String) = conversationRepo.observeConversationNameById(cid)
+
+    suspend fun suspendFindUserById(userId: String) = userRepository.suspendFindUserById(userId)
 }

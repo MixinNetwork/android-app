@@ -3,93 +3,103 @@ package one.mixin.android.ui.call
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemCallAddBinding
 import one.mixin.android.databinding.ItemCallUserBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
-import one.mixin.android.vo.User
+import one.mixin.android.vo.CallUser
 
-class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder>(User.DIFF_CALLBACK) {
+class CallUserAdapter(private val self: CallUser, private val callClicker: (String?) -> Unit) :
+    ListAdapter<CallUser, RecyclerView.ViewHolder>(CallUser.DIFF_CALLBACK) {
     var guestsNotConnected: List<String>? = null
 
-    var rvWidth = 0f
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        CallUserHolder(ItemCallUserBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        if (viewType == 1) {
+            CallUserHolder(
+                ItemCallUserBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+        } else {
+            AddUserHolder(
+                ItemCallAddBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+        }
 
-    override fun onBindViewHolder(holder: CallUserHolder, position: Int) {
-        getItem(position)?.let {
-            holder.bind(it, self, guestsNotConnected, itemCount, rvWidth)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (getItemViewType(position) == 1) {
+            getItem(position - 1)?.let {
+                (holder as CallUserHolder).bind(it, self, guestsNotConnected, callClicker)
+            }
+        } else {
+            (holder as AddUserHolder).bind(callClicker)
         }
     }
 
-    override fun onCurrentListChanged(previousList: MutableList<User>, currentList: MutableList<User>) {
-        val p = previousList.size
-        val c = currentList.size
-        if ((p <= 2 && c > 2) ||
-            (p > 2 && c <= 2) ||
-            (p in 3..9 && c !in 3..9) ||
-            (p !in 3..9 && c in 3..9)
-        ) {
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) {
+            0
+        } else {
+            1
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return super.getItemCount() + 1
+    }
+
+    override fun onCurrentListChanged(
+        previousList: MutableList<CallUser>,
+        currentList: MutableList<CallUser>
+    ) {
+        if (previousList != currentList) {
             notifyDataSetChanged()
         }
     }
 }
 
-class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder(binding.root) {
-    private val max = 96.dp
-    private val mid = 76.dp
-    private val min = 64.dp
+class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(binding.root) {
+    fun bind(callClicker: (String?) -> Unit) {
+        itemView.setOnClickListener {
+            callClicker(null)
+        }
+    }
+}
 
-    fun bind(user: User, self: User, guestsNotConnected: List<String>?, renderSize: Int, rvWidth: Float) {
+class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder(binding.root) {
+
+    init {
+        binding.loading.round(64.dp)
+    }
+
+    fun bind(
+        user: CallUser,
+        self: CallUser,
+        guestsNotConnected: List<String>?,
+        callClicker: (String?) -> Unit
+    ) {
         itemView.apply {
-            val size = getSize(renderSize)
-            updateLayoutParams<ViewGroup.LayoutParams> {
-                height = size + getOffset(renderSize, rvWidth)
-            }
-            binding.avatarView.updateLayoutParams<ViewGroup.LayoutParams> {
-                width = size
-                height = size
-            }
-            binding.loading.updateLayoutParams<ViewGroup.LayoutParams> {
-                width = size
-                height = size
-            }
-            binding.cover.updateLayoutParams<ViewGroup.LayoutParams> {
-                width = size
-                height = size
-            }
             binding.avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.loading.round(size)
+            binding.nameTv.text = user.fullName
             binding.loading.setAutoRepeat(true)
-            binding.loading.setAnimation(R.raw.anim_call_loading, size, size)
+            binding.loading.setAnimation(R.raw.anim_call_loading, 64.dp, 64.dp)
             binding.loading.playAnimation()
-            val vis = user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
+            val vis =
+                user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
             binding.loading.isVisible = vis
             binding.cover.isVisible = vis
+            setOnClickListener {
+                callClicker(user.userId)
+            }
         }
-    }
-
-    private fun getSize(itemCount: Int) = when {
-        itemCount <= 2 -> max
-        itemCount <= 9 -> mid
-        else -> min
-    }
-
-    private fun getOffset(itemCount: Int, rvWidth: Float): Int {
-        val itemW = when {
-            itemCount <= 1 -> rvWidth
-            itemCount <= 2 -> rvWidth / 2f
-            itemCount <= 9 -> rvWidth / 3f
-            else -> rvWidth / 4f
-        }
-        return when {
-            itemCount <= 2 -> (itemW - max) * 3 / 4
-            itemCount <= 9 -> (itemW - mid) * 3 / 4
-            else -> itemW - min
-        }.toInt()
     }
 }

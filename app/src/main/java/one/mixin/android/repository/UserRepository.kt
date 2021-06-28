@@ -155,6 +155,12 @@ constructor(
 
     suspend fun findMultiUsersByIds(ids: Set<String>) = userDao.findMultiUsersByIds(ids)
 
+    suspend fun findMultiCallUsersByIds(conversationId: String, ids: Set<String>) =
+        userDao.findMultiCallUsersByIds(conversationId, ids)
+
+    suspend fun findSelfCallUser(conversationId: String, userId: String) =
+        userDao.findSelfCallUser(conversationId, userId)
+
     suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)
 
     suspend fun findUserByIdentityNumberSuspend(identityNumber: String) = userDao.suspendFindUserByIdentityNumber(identityNumber)

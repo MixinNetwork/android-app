@@ -257,7 +257,7 @@
             android:name=".ui.call.CallActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:documentLaunchMode="intoExisting"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.Call"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity

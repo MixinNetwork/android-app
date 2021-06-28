@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.NotificationChannel
@@ -34,9 +35,6 @@ import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.Log
 import android.util.TypedValue
-import android.view.KeyCharacterMap
-import android.view.KeyEvent
-import android.view.ViewConfiguration
 import android.view.Window
 import android.view.WindowManager
 import androidx.browser.customtabs.CustomTabsIntent
@@ -137,6 +135,28 @@ fun Context.navigationBarHeight(): Int {
     return dpToPx(24f)
 }
 
+@SuppressLint("PrivateApi")
+fun Context.hasNavigationBar(): Boolean {
+    var hasNavigationBar = false
+    val rs = this.resources
+    val id = rs.getIdentifier("config_showNavigationBar", "bool", "android")
+    if (id == 0) {
+        hasNavigationBar = rs.getBoolean(id)
+    }
+    try {
+        val systemPropertiesClass = Class.forName("android.os.SystemProperties")
+        val m = systemPropertiesClass.getMethod("get", String::class.java)
+        val navBarOverride = m.invoke(systemPropertiesClass, "qemu.hw.mainkeys") as String
+        if ("1" == navBarOverride) {
+            hasNavigationBar = false
+        } else if ("0" == navBarOverride) {
+            hasNavigationBar = true
+        }
+    } catch (e: Exception) {
+    }
+    return hasNavigationBar
+}
+
 fun Context.isActivityNotDestroyed(): Boolean {
     if (this is Activity) {
         if (this.isDestroyed || this.isFinishing) {
@@ -197,6 +217,8 @@ fun Context.realSize(): Point {
     return size
 }
 
+fun Context.displayHeight() = realSize().y - statusBarHeight()
+
 fun Context.isWideScreen(): Boolean {
     val ratio = displayRatio()
     return ratio < 1.33f
@@ -222,20 +244,6 @@ fun Context.getUriForFile(file: File): Uri {
     } else {
         Uri.fromFile(file)
     }
-}
-
-fun Context.hasNavigationBar(bottom: Int = 0): Boolean {
-    // TRICK  Maybe not correct
-    if (bottom > realSize().y) {
-        return true
-    }
-
-    if (Build.MANUFACTURER == "smartisan") {
-        return true
-    }
-    val hasMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey()
-    val hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK)
-    return !hasMenuKey && !hasBackKey
 }
 
 private var maxItemWidth: Int? = null

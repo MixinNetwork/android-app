@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/title_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="?attr/text_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            tools:text="Group Call(00:38)" />
+
+        <TextView
+            android:id="@+id/sub_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:text="@string/end_to_end_encryption"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp"
+            app:drawableStartCompat="@drawable/ic_call_secret"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title" />
+
+        <ImageButton
+            android:id="@+id/minimize_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="@null"
+            android:contentDescription="@null"
+            android:foreground="@drawable/mixin_ripple"
+            android:src="@drawable/ic_call_minimize"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/sub_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/title" />
+
+        <ImageButton
+            android:id="@+id/close_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="@null"
+            android:contentDescription="@null"
+            android:foreground="@drawable/mixin_ripple"
+            android:src="@drawable/ic_call_close"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/sub_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/title" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="@null"
+            android:contentDescription="@null"
+            android:foreground="@drawable/mixin_ripple"
+            android:src="@drawable/ic_call_setting"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/sub_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/title" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/users_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottom_layout"
+        android:layout_below="@id/title_layout"
+        android:paddingStart="6dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="12dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="4"
+        tools:listitem="@layout/item_bot_manager" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="?attr/bg_white"
+        android:padding="16dp">
+
+        <one.mixin.android.widget.CallButton
+            android:id="@+id/voice_cb"
+            android:layout_width="@dimen/call_button_size"
+            android:layout_height="wrap_content"
+            android:checkable="true"
+            android:checked="false"
+            android:foreground="@drawable/mixin_ripple"
+            app:ic_checked="@drawable/ic_call_speaker_checked"
+            app:ic_disable="@drawable/ic_call_speaker_disable"
+            app:ic_unchecked="@drawable/ic_call_speaker_unchecked"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.CallButton
+            android:id="@+id/mute_cb"
+            android:layout_width="@dimen/call_button_size"
+            android:layout_height="wrap_content"
+            android:checkable="true"
+            android:checked="false"
+            android:foreground="@drawable/mixin_ripple"
+            app:ic_checked="@drawable/ic_call_mute_checked"
+            app:ic_unchecked="@drawable/ic_call_mute_unchecked"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.CallButton
+            android:id="@+id/hangup_cb"
+            android:layout_width="@dimen/call_button_size"
+            android:layout_height="wrap_content"
+            app:bg_circle_checked="@drawable/bg_call_hangup"
+            app:ic_checked="@drawable/ic_call_end_white_48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.CallButton
+            android:id="@+id/answer_cb"
+            android:layout_width="@dimen/call_button_size"
+            android:layout_height="wrap_content"
+            app:bg_circle_checked="@drawable/bg_call_answer"
+            app:ic_checked="@drawable/ic_call_end_white_48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/avatar_ll"
+        android:layout_width="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        android:layout_height="wrap_content">
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/avatar"
+            android:layout_width="96dp"
+            android:layout_height="96dp" />
+
+        <TextView
+            android:id="@+id/name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:lines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+</RelativeLayout>
+

@@ -344,6 +344,11 @@
     <string name="chat_group_call_cancel">%1$s has canceled group call</string>
     <string name="chat_group_call_end">Group call ended, duration: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Peer connection has been closed, please try again</string>
+    <string name="chat_group_call_title">Group Call</string>
+    <string name="chat_group_call_title_suffix">Group Call(%1$s)</string>
+    <string name="chat_call_title">Call</string>
+    <string name="chat_call_title_suffix">Call(%1$s)</string>
+    <string name="chat_call_add">Add</string>
     <string name="chat_call_bad_network_you">Connection is unstable</string>
     <string name="chat_call_bad_network">Other user\'s connection is unstable</string>
     <string name="chat_not_found">Message not found</string>
