@@ -13,8 +13,12 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.session.Session
+import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.Participant
+import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import java.util.UUID
@@ -33,7 +37,7 @@ class InitializeJob :
         )
     }
 
-    override fun onRun() = runBlocking {
+    override fun onRun(): Unit = runBlocking {
         val botId = MixinApplication.get().getString(R.string.initializeBotId)
         handleMixinResponse(
             invokeNetwork = {
@@ -42,20 +46,33 @@ class InitializeJob :
             successBlock = {
                 it.data?.let { u ->
                     userDao.insertUpdate(u, appDao)
-                    return@handleMixinResponse u
+                    val conversationId = generateConversationId(Session.getAccountId()!!, botId)
+                    val createdAt = nowInUtc()
+                    val conversation = createConversation(
+                        conversationId,
+                        ConversationCategory.CONTACT.name,
+                        botId,
+                        ConversationStatus.START.ordinal
+                    )
+                    val participants = arrayListOf(
+                        Participant(conversationId, Session.getAccountId()!!, "", createdAt),
+                        Participant(conversationId, botId, "", createdAt)
+                    )
+                    conversationDao.insert(conversation)
+                    participantDao.insertList(participants)
+                    val message = createMessage(
+                        UUID.randomUUID().toString(),
+                        conversationId,
+                        Session.getAccountId()!!,
+                        MessageCategory.PLAIN_TEXT.name,
+                        MixinApplication.get().getString(R.string.hi),
+                        nowInUtc(),
+                        MessageStatus.SENDING.name
+                    )
+                    jobManager.addJobInBackground(SendMessageJob(message))
+                    return@handleMixinResponse
                 }
             }
         )
-        val message = createMessage(
-            UUID.randomUUID().toString(),
-            generateConversationId(Session.getAccountId()!!, botId),
-            Session.getAccountId()!!,
-            MessageCategory.PLAIN_TEXT.name,
-            MixinApplication.get().getString(R.string.hi),
-            nowInUtc(),
-            MessageStatus.SENDING.name
-        )
-        jobManager.addJobInBackground(SendMessageJob(message))
-        return@runBlocking
     }
 }

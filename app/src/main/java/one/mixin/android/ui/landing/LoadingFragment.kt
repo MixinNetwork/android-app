@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
+import one.mixin.android.Constants.Account.PREF_INITIALIZE
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -20,11 +21,12 @@ import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.generateEd25519KeyPair
-import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.job.InitializeJob
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
@@ -32,7 +34,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.reportException
-import one.mixin.android.util.viewBinding
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
@@ -43,7 +45,8 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         fun newInstance() = LoadingFragment()
     }
 
-    private val binding by viewBinding(FragmentLoadingBinding::bind)
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     private val loadingViewModel by viewModels<LoadingViewModel>()
 
@@ -63,9 +66,10 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 syncSession()
             }
 
-            context?.let {
-                MainActivity.show(it)
+            if (resources.getString(R.string.initializeBotId).isNotEmpty() && !defaultSharedPreferences.getBoolean(PREF_INITIALIZE, false)) {
+                jobManager.addJobInBackground(InitializeJob())
             }
+            MainActivity.show(requireContext())
             activity?.finish()
         }
     }
