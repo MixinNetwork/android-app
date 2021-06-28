@@ -77,6 +77,7 @@ open class SendMessageJob(
     private fun recallMessage() {
         messageDao.recallMessage(recallMessageId!!)
         messageMentionDao.deleteMessage(recallMessageId)
+        messageFts4Dao.deleteByMessageId(recallMessageId)
         messageDao.findMessageById(recallMessageId)?.let { msg ->
             RxBus.publish(RecallEvent(msg.id))
             messageDao.recallFailedMessage(msg.id)
