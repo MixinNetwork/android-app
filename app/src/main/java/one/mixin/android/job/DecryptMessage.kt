@@ -302,6 +302,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
+                messagesFts4Dao.deleteByMessageId(msg.id)
                 messageDao.takeUnseen(accountId, msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
