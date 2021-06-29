@@ -66,7 +66,10 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
-import one.mixin.android.util.*
+import one.mixin.android.util.AnimationProperties
+import one.mixin.android.util.SensorOrientationChangeNotifier
+import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.VideoPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isImage

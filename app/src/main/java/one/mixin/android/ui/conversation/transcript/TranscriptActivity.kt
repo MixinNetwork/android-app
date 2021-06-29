@@ -25,7 +25,16 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityTranscriptBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
-import one.mixin.android.extension.*
+import one.mixin.android.extension.alert
+import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openMedia
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendTranscriptAttachmentMessageJob
 import one.mixin.android.job.TranscriptAttachmentDownloadJob

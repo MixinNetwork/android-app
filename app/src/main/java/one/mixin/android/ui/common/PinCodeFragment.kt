@@ -11,7 +11,11 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.extension.*
+import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.clear
+import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity

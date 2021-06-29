@@ -12,7 +12,9 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parsHyperlink
 import one.mixin.android.util.mention.parseMentionData
-import one.mixin.android.vo.*
+import one.mixin.android.vo.MentionUser
+import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.KrakenParam
