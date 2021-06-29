@@ -20,14 +20,13 @@ import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.generateConversationId
 import java.util.UUID
 
-class InitializeJob :
+class InitializeJob(val botId: String) :
     BaseJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP_ID).requireWebSocketConnected().persist()) {
     companion object {
         private const val GROUP_ID = "InitializeJob"
     }
 
     override fun onRun(): Unit = runBlocking {
-        val botId = MixinApplication.get().getString(R.string.initializeBotId)
         handleMixinResponse(
             invokeNetwork = {
                 userService.relationship(RelationshipRequest(botId, RelationshipAction.ADD.name))
