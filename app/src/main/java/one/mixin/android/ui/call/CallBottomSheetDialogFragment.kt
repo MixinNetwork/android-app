@@ -540,7 +540,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onStop() {
         super.onStop()
         if (callState.isNotIdle()) {
-            if (!checkPipPermission()) {
+            if (!requireActivity().checkInlinePermissions()) {
                 if (!setClicked) {
                     requireActivity().showPipPermissionNotification(
                         CallActivity::class.java,
