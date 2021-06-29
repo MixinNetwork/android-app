@@ -18,7 +18,5 @@ jobs:
         java-version: 1.8
     - name: Make Gradle executable
       run: chmod +x ./gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+    - name: Check format with ktlint
+      run: ./gradlew ktlintFormat
