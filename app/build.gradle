@@ -1,7 +1,7 @@
 def versionMajor = 0
 def versionMinor = 31
-def versionPatch = 1
-def versionBuild = 0
+def versionPatch = 2
+def versionBuild = 2
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
