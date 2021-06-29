@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
-import one.mixin.android.Constants.Account.PREF_INITIALIZE
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -66,7 +65,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 syncSession()
             }
 
-            if (resources.getString(R.string.initializeBotId).isNotEmpty() && !defaultSharedPreferences.getBoolean(PREF_INITIALIZE, false)) {
+            if (resources.getString(R.string.initializeBotId).isNotEmpty()) {
                 jobManager.addJobInBackground(InitializeJob())
             }
             MainActivity.show(requireContext())
