@@ -1,12 +1,11 @@
 package one.mixin.android.ui.qr
 
 import android.Manifest
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.drawable.Drawable
-import android.net.Uri
+import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -285,7 +284,10 @@ class EditFragment : VisionFragment() {
         withContext(Dispatchers.IO) {
             File(path).copy(outFile)
         }
-        requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+        MediaScannerConnection.scanFile(
+            context, arrayOf(outFile.toString()),
+            null, null
+        )
         requireContext().toast(getString(R.string.save_to, outFile.absolutePath))
     }
 

@@ -23,7 +23,6 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import com.google.android.exoplayer2.video.VideoListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,7 +35,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Suppress("unused")
-class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoListener {
+class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
     val player: SimpleExoPlayer by lazy {
         val trackSelector = if (isAudio) {
