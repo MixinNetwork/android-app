@@ -136,6 +136,7 @@
     <string name="bold">bold</string>
     <string name="disabled">Disabled</string>
     <string name="not_recognized">Not recognized</string>
+    <string name="hi">Hi</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
