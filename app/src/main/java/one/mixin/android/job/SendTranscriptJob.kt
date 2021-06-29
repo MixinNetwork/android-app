@@ -12,7 +12,16 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
-import one.mixin.android.vo.*
+import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.Message
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.isAttachment
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isData
+import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isText
+import one.mixin.android.vo.isTranscript
 import java.io.File
 
 class SendTranscriptJob(
