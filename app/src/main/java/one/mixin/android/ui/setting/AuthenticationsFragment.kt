@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentAuthenticationsBinding
 import one.mixin.android.databinding.ItemAuthBinding
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
@@ -48,16 +49,17 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
     private val adapter = AuthenticationAdapter(
         appCallback,
         object : OnAppClick {
-            override fun onClick(app: App, position: Int) {
-                val auth = authResponseList?.get(position) ?: return
+            override fun onClick(app: App) {
+                val auth = authResponseList?.find { it.app.appId == app.appId } ?: return
                 val fragment = PermissionListFragment.newInstance(app, auth)
                 fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
                     override fun onSuccess() {
-                        list?.removeAt(position)
-                        authResponseList?.removeAt(position)
-                        binding.authRv.adapter?.notifyItemRemoved(position)
+                        list?.removeIf { it.appId == app.appId }
+                        authResponseList?.removeIf { it.app.appId == app.appId }
+                        dataChange()
                     }
                 }
+                binding.searchEt.hideKeyboard()
                 navTo(fragment, PermissionListFragment.TAG)
             }
         }
@@ -139,7 +141,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
     }
 
     interface OnAppClick {
-        fun onClick(app: App, position: Int)
+        fun onClick(app: App)
     }
 
     class ItemHolder(private val itemBinding: ItemAuthBinding) : RecyclerView.ViewHolder(itemBinding.root) {
@@ -152,7 +154,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                 numberTv.highLight(filter)
             }
             itemView.setOnClickListener {
-                onAppClick.onClick(app, absoluteAdapterPosition)
+                onAppClick.onClick(app)
             }
         }
     }
