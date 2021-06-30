@@ -58,6 +58,17 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
 
+    bundle {
+        language {
+            enableSplit = false
+        }
+        density {
+            enableSplit = false
+        }
+        abi {
+            enableSplit = true
+        }
+    }
     buildFeatures {
         viewBinding true
     }
