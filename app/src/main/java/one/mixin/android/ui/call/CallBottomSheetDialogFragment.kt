@@ -111,7 +111,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val peekHeight by lazy {
-        440.dp
+        470.dp
     }
 
     private var translationOffset by Delegates.notNull<Float>()

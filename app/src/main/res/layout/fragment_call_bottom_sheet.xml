@@ -90,7 +90,6 @@
         android:layout_above="@id/bottom_layout"
         android:layout_below="@id/title_layout"
         android:paddingStart="6dp"
-        android:paddingTop="12dp"
         android:paddingEnd="6dp"
         android:paddingBottom="12dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
