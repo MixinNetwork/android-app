@@ -118,7 +118,7 @@ class Message(
 
     @SerializedName("hyperlink")
     @ColumnInfo(name = "hyperlink")
-    val hyperlink: String? = null,
+    var hyperlink: String? = null,
 
     @SerializedName("name")
     @ColumnInfo(name = "name")

@@ -10,7 +10,7 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
-import one.mixin.android.util.hyperlink.parsHyperlink
+import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
@@ -68,7 +68,10 @@ open class SendMessageJob(
             } else {
                 if (message.isText()) {
                     message.content?.let { content ->
-                        content.findLastUrl()?.let { parsHyperlink(it, message.id, hyperlinkDao, messageDao) }
+                        content.findLastUrl()?.let {
+                            message.hyperlink = it
+                            parseHyperlink(message.id, it, hyperlinkDao, messageDao)
+                        }
                         parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
                     }
                 }
