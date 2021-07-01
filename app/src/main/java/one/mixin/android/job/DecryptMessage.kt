@@ -42,7 +42,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
-import one.mixin.android.util.hyperlink.parsHyperlink
+import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppButtonData
@@ -452,7 +452,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             data.status,
                             quoteMessageId = data.quoteMessageId
                         ).apply {
-                            this.content?.findLastUrl()?.let { parsHyperlink(data.messageId, it, hyperlinkDao, messageDao) }
+                            this.content?.findLastUrl()?.let {
+                                this.hyperlink = it
+                                parseHyperlink(data.messageId, it, hyperlinkDao, messageDao)
+                            }
                         }
                     } else {
                         if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
