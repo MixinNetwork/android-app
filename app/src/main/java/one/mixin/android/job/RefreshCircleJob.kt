@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.insertUpdate
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.vo.Circle
@@ -32,37 +31,12 @@ class RefreshCircleJob(
                 circleResponse.data?.let { cList ->
                     cList.forEach { c ->
                         handleCircle(c) { circleConversation ->
-                            circleConversation.userId.notNullWithElse(
-                                { userId ->
-                                    val createdAt = nowInUtc()
-                                    val conversation = createConversation(
-                                        circleConversation.conversationId,
-                                        ConversationCategory.CONTACT.name,
-                                        userId,
-                                        ConversationStatus.START.ordinal
-                                    )
-                                    val participants = arrayListOf(
-                                        Participant(conversation.conversationId, userId, "", createdAt),
-                                        Participant(
-                                            conversation.conversationId,
-                                            Session.getAccountId()!!,
-                                            "",
-                                            createdAt
-                                        )
-                                    )
-                                    appDatabase.runInTransaction {
-                                        conversationDao.insert(conversation)
-                                        participantDao.insertList(participants)
-                                    }
-                                },
-                                {
-                                    jobManager.addJobInBackground(
-                                        RefreshConversationJob(
-                                            circleConversation.conversationId,
-                                            skipRefreshCircle = true
-                                        )
-                                    )
-                                }
+                            if (conversationDao.findConversationById(circleConversation.conversationId) != null) return@handleCircle
+                            jobManager.addJobInBackground(
+                                RefreshConversationJob(
+                                    circleConversation.conversationId,
+                                    skipRefreshCircle = true
+                                )
                             )
                         }
                         circleDao.insertUpdate(c)
