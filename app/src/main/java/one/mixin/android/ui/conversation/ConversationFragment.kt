@@ -886,9 +886,9 @@ class ConversationFragment() :
             object : OnUserClickListener {
                 @SuppressLint("SetTextI18n")
                 override fun onUserClick(user: User) {
-                    val text = binding.chatControl.chatEt.text ?: return
-                    binding.chatControl.chatEt.setText(mentionReplace(text, user))
-                    binding.chatControl.chatEt.setSelection(binding.chatControl.chatEt.text!!.length)
+                    binding.chatControl.chatEt.text ?: return
+                    val selectionEnd = binding.chatControl.chatEt.selectionEnd
+                    mentionReplace(binding.chatControl.chatEt, user, selectionEnd)
                     mentionAdapter.submitList(null)
                     binding.floatingLayout.hideMention()
                 }
@@ -2850,8 +2850,12 @@ class ConversationFragment() :
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
-                if (binding.mentionRv.adapter != null && !s.isNullOrEmpty() && mentionDisplay(s)) {
-                    searchMentionUser(s.toString())
+                val selectionStart = binding.chatControl.chatEt.selectionStart
+                val selectionEnd = binding.chatControl.chatEt.selectionEnd
+                if (selectionStart != selectionEnd || selectionStart <= 0) return
+                val text = s?.substring(0, selectionStart)
+                if (binding.mentionRv.adapter != null && !text.isNullOrEmpty() && mentionDisplay(text)) {
+                    searchMentionUser(text)
                     binding.mentionRv.layoutManager?.smoothScrollToPosition(binding.mentionRv, null, 0)
                 } else {
                     binding.floatingLayout.hideMention()
