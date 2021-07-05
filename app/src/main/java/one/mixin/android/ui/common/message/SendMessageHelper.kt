@@ -54,6 +54,16 @@ import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.isAppCard
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isData
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isText
+import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
@@ -95,6 +105,21 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
 
     fun sendTranscriptMessage(messageId: String, conversationId: String, sender: User, transcriptMessages: List<TranscriptMessage>, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
+        transcriptMessages.onEach { t->
+            t.type = when{
+                t.isText()-> if(isPlain)MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+                t.isAudio()-> if(isPlain)MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+                t.isContact()-> if(isPlain)MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
+                t.isData()-> if(isPlain)MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
+                t.isImage()-> if(isPlain)MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                t.isLocation()-> if(isPlain)MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
+                t.isPost()-> if(isPlain)MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
+                t.isSticker()-> if(isPlain)MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
+                t.isVideo()-> if(isPlain)MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+                t.isAppCard()-> MessageCategory.APP_CARD.name
+                else->throw IllegalArgumentException("Unknown type")
+            }
+        }
         val message = createMessage(
             messageId,
             conversationId,
