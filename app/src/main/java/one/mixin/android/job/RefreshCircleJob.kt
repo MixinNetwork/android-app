@@ -2,14 +2,8 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.insertUpdate
-import one.mixin.android.extension.nowInUtc
-import one.mixin.android.session.Session
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
-import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.Participant
-import one.mixin.android.vo.createConversation
 
 class RefreshCircleJob(
     val circleId: String? = null

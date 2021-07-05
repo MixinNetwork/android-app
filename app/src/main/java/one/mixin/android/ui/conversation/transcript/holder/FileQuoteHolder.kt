@@ -18,7 +18,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
@@ -83,7 +82,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             binding.chatName.visibility = View.GONE
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)

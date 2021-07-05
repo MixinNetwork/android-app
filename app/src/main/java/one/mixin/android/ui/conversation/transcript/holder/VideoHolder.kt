@@ -26,7 +26,6 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
 class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
@@ -187,7 +186,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         setStatusIcon(
             isMe,
             MessageStatus.DELIVERED.name,
-            messageItem.isSignal(),
+            isSecret = false,
             isRepresentative = false,
             isWhite = true
         ) { statusIcon, secretIcon, representativeIcon ->

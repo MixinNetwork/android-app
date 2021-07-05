@@ -16,7 +16,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isSignal
 
 class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
     BaseViewHolder(binding.root) {
@@ -38,8 +37,8 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         setStatusIcon(
             isMe,
             MessageStatus.DELIVERED.name,
-            messageItem.isSignal(),
-            false
+            isSecret = false,
+            isRepresentative = false
         ) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)

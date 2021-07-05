@@ -16,7 +16,6 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
 class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root) {
@@ -127,7 +126,8 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
         setStatusIcon(
-            isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(),
+            isMe, MessageStatus.DELIVERED.name,
+            isSecret = false,
             isRepresentative = false,
             isWhite = true
         ) { statusIcon, secretIcon, representativeIcon ->

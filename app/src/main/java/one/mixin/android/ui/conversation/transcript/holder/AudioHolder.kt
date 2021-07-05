@@ -16,7 +16,6 @@ import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 import kotlin.math.min
@@ -78,7 +77,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
             binding.chatLayout.layoutParams.width =
                 min((minWidth + (duration / 1000f) * dp15).toInt(), maxWidth)
         }
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
             binding.billTime.chatFlag.isVisible = statusIcon != null
             binding.billTime.chatFlag.setImageDrawable(statusIcon)
             binding.billTime.chatSecret.isVisible = secretIcon != null
