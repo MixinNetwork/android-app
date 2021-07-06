@@ -49,6 +49,7 @@ import androidx.fragment.app.FragmentTransaction
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesUtil
+import com.google.firebase.installations.FirebaseInstallations
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -72,6 +73,7 @@ import org.jetbrains.anko.textColorResource
 import timber.log.Timber
 import java.io.File
 import java.util.Locale
+import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import kotlin.math.roundToInt
@@ -880,4 +882,17 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
         notificationManager.createNotificationChannel(channel)
     }
     notificationManager.notify(CallActivity.ID_PIP_PERMISSION, builder.build())
+}
+
+@SuppressLint("HardwareIds")
+fun getDeviceId(resolver: ContentResolver): String {
+    var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
+    if (deviceId == null || deviceId == "9774d56d682e549c") {
+        deviceId = FirebaseInstallations.getInstance().id.result
+    }
+    return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
+}
+
+fun Context.getDeviceId(): String {
+    return getDeviceId(contentResolver)
 }

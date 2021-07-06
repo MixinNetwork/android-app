@@ -152,6 +152,8 @@ object Constants {
         const val DB_DEBUG_WARNING = "db_debug_warning"
     }
 
+    const val DEVICE_ID = "device_id"
+
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
