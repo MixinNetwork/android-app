@@ -46,7 +46,7 @@
             android:layout_toEndOf="@id/chat_menu_iv"
             android:background="@drawable/bg_input">
 
-            <one.mixin.android.widget.ContentEditText
+            <one.mixin.android.widget.MentionEditText
                 android:id="@+id/chat_et"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

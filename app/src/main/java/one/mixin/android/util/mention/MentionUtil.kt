@@ -1,8 +1,6 @@
 package one.mixin.android.util.mention
 
 import android.graphics.Color
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.widget.EditText
 import androidx.collection.arraySetOf
 import one.mixin.android.db.MessageMentionDao
@@ -12,6 +10,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User
+import one.mixin.android.widget.MentionEditText
 import java.lang.Integer.max
 import java.util.Stack
 import java.util.regex.Pattern
@@ -39,14 +38,16 @@ fun deleteMentionEnd(editText: EditText) {
     }
 }
 
-fun mentionReplace(editText: EditText, user: User, selectionEnd: Int) {
-    val text = editText.text.substring(0, selectionEnd)
+fun mentionReplace(editText: MentionEditText, user: User, selectionEnd: Int) {
+    val edit = editText.text ?: return
+    val text = edit.substring(0, selectionEnd)
     val index = text.lastIndexOf("@")
     if (index >= 0) {
         val replaceText = "@${user.identityNumber} "
         val end = index + replaceText.length - 1
-        editText.text.replace(index, max(text.length, index), replaceText)
-        editText.text.setSpan(ForegroundColorSpan(MENTION_COLOR), index, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        edit.replace(index, max(text.length, index), replaceText)
+        editText.mentionSet.add(user.identityNumber)
+        editText.renderMention()
         editText.setSelection(end + 1)
     }
 }
