@@ -47,7 +47,7 @@ fun mentionReplace(editText: EditText, user: User, selectionEnd: Int) {
         val end = index + replaceText.length - 1
         editText.text.replace(index, max(text.length, index), replaceText)
         editText.text.setSpan(ForegroundColorSpan(MENTION_COLOR), index, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        editText.setSelection(end)
+        editText.setSelection(end + 1)
     }
 }
 

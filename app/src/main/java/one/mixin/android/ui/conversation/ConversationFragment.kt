@@ -2850,11 +2850,15 @@ class ConversationFragment() :
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
+                if (s.isNullOrEmpty()) {
+                    binding.floatingLayout.hideMention()
+                    return
+                }
                 val selectionStart = binding.chatControl.chatEt.selectionStart
                 val selectionEnd = binding.chatControl.chatEt.selectionEnd
                 if (selectionStart != selectionEnd || selectionStart <= 0) return
-                val text = s?.substring(0, selectionStart)
-                if (binding.mentionRv.adapter != null && !text.isNullOrEmpty() && mentionDisplay(text)) {
+                val text = s.substring(0, selectionStart)
+                if (binding.mentionRv.adapter != null && text.isNotEmpty() && mentionDisplay(text)) {
                     searchMentionUser(text)
                     binding.mentionRv.layoutManager?.smoothScrollToPosition(binding.mentionRv, null, 0)
                 } else {
