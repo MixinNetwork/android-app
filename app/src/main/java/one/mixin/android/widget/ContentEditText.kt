@@ -20,7 +20,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.widget.gallery.MimeType
 
-class ContentEditText : AppCompatEditText {
+open class ContentEditText : AppCompatEditText {
 
     constructor(context: Context) : super(context)
 
