@@ -94,7 +94,7 @@ class EditDialog : MixinBottomSheetDialogFragment() {
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     binding.editSave.isEnabled = when {
-                        s.isNullOrEmpty() -> allowEmpty
+                        s.isNullOrBlank() -> allowEmpty
                         maxTextCount == -1 -> true
                         else -> s.length <= maxTextCount
                     }
