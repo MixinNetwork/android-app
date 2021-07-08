@@ -16,7 +16,6 @@ import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(binding.root) {
@@ -146,8 +145,8 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         setStatusIcon(
             isMe,
             MessageStatus.DELIVERED.name,
-            messageItem.isSignal(),
-            false
+            isSecret = false,
+            isRepresentative = false
         ) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)

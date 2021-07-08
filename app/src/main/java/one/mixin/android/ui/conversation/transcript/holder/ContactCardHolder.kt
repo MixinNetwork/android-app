@@ -13,7 +13,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root) {
@@ -51,7 +50,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
         }
 
         binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, false, false) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
             binding.dataWrapper.chatSecret.isVisible = secretIcon != null

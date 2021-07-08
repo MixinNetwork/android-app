@@ -72,7 +72,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())
             }
         }
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, messageItem.isSignal(), false) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
             binding.billTime.chatFlag.isVisible = statusIcon != null
             binding.billTime.chatFlag.setImageDrawable(statusIcon)
             binding.billTime.chatSecret.isVisible = secretIcon != null

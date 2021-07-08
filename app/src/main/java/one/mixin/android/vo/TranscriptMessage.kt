@@ -25,7 +25,7 @@ class TranscriptMessage(
     val userFullName: String?,
     @SerializedName("category")
     @ColumnInfo(name = "category")
-    override val type: String,
+    override var type: String,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,

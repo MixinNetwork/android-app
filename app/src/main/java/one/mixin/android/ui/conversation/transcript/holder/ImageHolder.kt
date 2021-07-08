@@ -21,7 +21,6 @@ import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.dip
 import kotlin.math.min
@@ -111,7 +110,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         setStatusIcon(
             isMe,
             MessageStatus.DELIVERED.name,
-            messageItem.isSignal(),
+            isSecret = false,
             isRepresentative = false,
             isWhite = true
         ) { statusIcon, secretIcon, representativeIcon ->

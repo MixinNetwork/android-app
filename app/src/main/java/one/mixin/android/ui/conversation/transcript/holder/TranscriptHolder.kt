@@ -27,7 +27,6 @@ import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPost
-import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
@@ -203,7 +202,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
         setStatusIcon(
             isMe,
             MessageStatus.DELIVERED.name,
-            messageItem.isSignal(),
+            isSecret = false,
             isRepresentative = false,
             isWhite = true
         ) { statusIcon, secretIcon, representativeIcon ->

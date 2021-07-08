@@ -29,7 +29,6 @@ import one.mixin.android.ui.conversation.location.useMapbox
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
 import org.jetbrains.anko.dip
@@ -200,9 +199,9 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         setStatusIcon(
             isMe,
             MessageStatus.DELIVERED.name,
-            messageItem.isSignal(),
-            false,
-            location?.name == null && location?.address == null
+            isSecret = false,
+            isRepresentative = false,
+            isWhite = location?.name == null && location?.address == null
         ) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
