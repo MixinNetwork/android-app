@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.view.View
+import androidx.core.text.color
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.skydoves.balloon.BalloonAnimation
@@ -14,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionBinding
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
+import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
@@ -28,7 +30,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.widget.DebugClickListener
-import org.jetbrains.anko.textColorResource
 import java.math.BigDecimal
 
 interface TransactionInterface {
@@ -55,8 +56,22 @@ interface TransactionInterface {
                             clickAvatar(fragment, asset)
                         }
                         updateUI(fragment, contentBinding, asset, snapshot)
-                        fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentBinding, asset.assetId, snapshot)
-                        refreshNoTransactionHashWithdrawal(fragment, contentBinding, lifecycleScope, walletViewModel, snapshot, asset)
+                        fetchThatTimePrice(
+                            fragment,
+                            lifecycleScope,
+                            walletViewModel,
+                            contentBinding,
+                            asset.assetId,
+                            snapshot
+                        )
+                        refreshNoTransactionHashWithdrawal(
+                            fragment,
+                            contentBinding,
+                            lifecycleScope,
+                            walletViewModel,
+                            snapshot,
+                            asset
+                        )
                     }
                 }
             } else {
@@ -75,8 +90,22 @@ interface TransactionInterface {
                 }
             })
             updateUI(fragment, contentBinding, assetItem, snapshotItem)
-            fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentBinding, assetItem.assetId, snapshotItem)
-            refreshNoTransactionHashWithdrawal(fragment, contentBinding, lifecycleScope, walletViewModel, snapshotItem, assetItem)
+            fetchThatTimePrice(
+                fragment,
+                lifecycleScope,
+                walletViewModel,
+                contentBinding,
+                assetItem.assetId,
+                snapshotItem
+            )
+            refreshNoTransactionHashWithdrawal(
+                fragment,
+                contentBinding,
+                lifecycleScope,
+                walletViewModel,
+                snapshotItem,
+                assetItem
+            )
         }
     }
 
@@ -111,13 +140,19 @@ interface TransactionInterface {
                         text = if (ticker.priceUsd == "0") {
                             fragment.getString(R.string.wallet_transaction_that_time_no_value)
                         } else {
-                            val amount = (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
+                            val amount =
+                                (BigDecimal(snapshot.amount).abs() * ticker.priceFiat()).numberFormat2()
                             val pricePerUnit = if (BuildConfig.DEBUG) {
-                                "(${Fiats.getSymbol()}${ticker.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
+                                "(${Fiats.getSymbol()}${
+                                ticker.priceFiat().priceFormat2()
+                                }/${snapshot.assetSymbol})"
                             } else {
                                 ""
                             }
-                            fragment.getString(R.string.wallet_transaction_that_time_value, "${Fiats.getSymbol()}$amount $pricePerUnit")
+                            fragment.getString(
+                                R.string.wallet_transaction_that_time_value,
+                                "${Fiats.getSymbol()}$amount $pricePerUnit"
+                            )
                         }
                         fragment.context?.let { c ->
                             setTextColor(c.colorFromAttribute(R.attr.text_minor))
@@ -143,15 +178,36 @@ interface TransactionInterface {
                         }
                     }
                 } else {
-                    showRetry(fragment, lifecycleScope, walletViewModel, contentBinding, assetId, snapshot)
+                    showRetry(
+                        fragment,
+                        lifecycleScope,
+                        walletViewModel,
+                        contentBinding,
+                        assetId,
+                        snapshot
+                    )
                 }
             },
             exceptionBlock = {
-                showRetry(fragment, lifecycleScope, walletViewModel, contentBinding, assetId, snapshot)
+                showRetry(
+                    fragment,
+                    lifecycleScope,
+                    walletViewModel,
+                    contentBinding,
+                    assetId,
+                    snapshot
+                )
                 return@handleMixinResponse false
             },
             failureBlock = {
-                showRetry(fragment, lifecycleScope, walletViewModel, contentBinding, assetId, snapshot)
+                showRetry(
+                    fragment,
+                    lifecycleScope,
+                    walletViewModel,
+                    contentBinding,
+                    assetId,
+                    snapshot
+                )
                 return@handleMixinResponse false
             }
         )
@@ -170,13 +226,27 @@ interface TransactionInterface {
             thatTv.apply {
                 text = fragment.getString(R.string.click_retry)
                 setTextColor(fragment.resources.getColor(R.color.colorDarkBlue, null))
-                setOnClickListener { fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentBinding, assetId, snapshot) }
+                setOnClickListener {
+                    fetchThatTimePrice(
+                        fragment,
+                        lifecycleScope,
+                        walletViewModel,
+                        contentBinding,
+                        assetId,
+                        snapshot
+                    )
+                }
             }
         }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateUI(fragment: Fragment, contentBinding: FragmentTransactionBinding, asset: AssetItem, snapshot: SnapshotItem) {
+    private fun updateUI(
+        fragment: Fragment,
+        contentBinding: FragmentTransactionBinding,
+        asset: AssetItem,
+        snapshot: SnapshotItem
+    ) {
         if (!fragment.isAdded) return
 
         contentBinding.apply {
@@ -186,20 +256,25 @@ interface TransactionInterface {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
-            valueTv.text = if (isPositive) "+${snapshot.amount.numberFormat()}"
+
+            val amountText = if (isPositive) "+${snapshot.amount.numberFormat()}"
             else snapshot.amount.numberFormat()
-            symbolTv.text = asset.symbol
-            valueTv.textColorResource = when {
-                snapshot.type == SnapshotType.pending.name -> {
-                    R.color.wallet_text_gray
-                }
-                isPositive -> {
-                    R.color.wallet_green
-                }
-                else -> {
-                    R.color.wallet_pink
-                }
-            }
+            val amountColor = fragment.resources.getColor(
+                when {
+                    snapshot.type == SnapshotType.pending.name -> {
+                        R.color.wallet_text_gray
+                    }
+                    isPositive -> {
+                        R.color.wallet_green
+                    }
+                    else -> {
+                        R.color.wallet_pink
+                    }
+                },
+                null
+            )
+            val symbolColor = fragment.requireContext().colorFromAttribute(R.attr.text_primary)
+            valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, asset.symbol, amountColor, symbolColor)
             val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).numberFormat2()
             val pricePerUnit = if (BuildConfig.DEBUG) {
                 "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
@@ -207,7 +282,10 @@ interface TransactionInterface {
                 ""
             }
 
-            valueAsTv.text = fragment.getString(R.string.wallet_transaction_current_value, "${Fiats.getSymbol()}$amount $pricePerUnit")
+            valueAsTv.text = fragment.getString(
+                R.string.wallet_transaction_current_value,
+                "${Fiats.getSymbol()}$amount $pricePerUnit"
+            )
             transactionIdTv.text = snapshot.snapshotId
             transactionTypeTv.text = getSnapshotType(fragment, snapshot.type)
             memoTv.text = snapshot.memo
@@ -226,7 +304,11 @@ interface TransactionInterface {
                     receiverTv.text = snapshot.transactionHash
                     transactionStatus.isVisible = true
                     transactionStatusTv.text =
-                        fragment.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
+                        fragment.getString(
+                            R.string.pending_confirmations,
+                            snapshot.confirmations,
+                            snapshot.assetConfirmations
+                        )
                 }
                 SnapshotType.transfer.name -> {
                     traceTv.text = snapshot.traceId

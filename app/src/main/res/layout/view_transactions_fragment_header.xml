@@ -26,39 +26,21 @@
                 android:layout_marginBottom="16dp"
                 tools:ignore="ContentDescription" />
 
-            <one.mixin.android.widget.BalanceLayout
-                android:id="@+id/balance_rl"
+            <TextView
+                android:id="@+id/balance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/avatar"
                 android:layout_marginStart="@dimen/margin12"
                 android:layout_marginEnd="42dp"
-                android:layout_toEndOf="@+id/avatar">
-
-                <TextView
-                    android:id="@+id/balance"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/mixin_condensed"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="40sp"
-                    tools:text="123902813409182345.5518390518" />
-
-                <TextView
-                    android:id="@+id/symbol_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="2dp"
-                    android:textColor="?attr/text_primary" />
-            </one.mixin.android.widget.BalanceLayout>
+                android:layout_toEndOf="@+id/avatar"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/balance_as"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/balance_rl"
+                android:layout_below="@+id/balance"
                 android:layout_marginStart="@dimen/margin12"
                 android:layout_marginTop="@dimen/margin12"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
