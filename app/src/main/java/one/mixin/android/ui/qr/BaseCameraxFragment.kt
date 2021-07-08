@@ -48,6 +48,7 @@ import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
@@ -462,8 +463,14 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
         if (forScanResult) {
+            val scanResult = if (analysisResult.isDonateUrl()) {
+                val index = analysisResult.indexOf("?")
+                if (index != -1) {
+                    analysisResult.take(index)
+                } else analysisResult
+            } else analysisResult
             val result = Intent().apply {
-                putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, analysisResult)
+                putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, scanResult)
             }
             activity?.setResult(Activity.RESULT_OK, result)
             activity?.finish()
