@@ -669,7 +669,7 @@ internal constructor(
     suspend fun fuzzySearchBotGroupUser(conversationId: String, keyword: String?): List<User> {
         return withContext(Dispatchers.IO) {
             searchControlledRunner.cancelPreviousThenRun {
-                if (keyword.isNullOrEmpty() || keyword.length < 3) {
+                if (keyword.isNullOrEmpty() || keyword.isEmpty()) {
                     emptyList()
                 } else {
                     userRepository.fuzzySearchBotGroupUser(
