@@ -204,4 +204,5 @@ object Constants {
     const val TEAM_MIXIN_USER_ID = "773e5e77-4107-45c2-b648-8fc722ed77f5"
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
+    const val TEAM_BOT_NAME = ""
 }

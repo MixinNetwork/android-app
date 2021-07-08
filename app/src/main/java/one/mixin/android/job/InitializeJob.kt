@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -29,7 +30,7 @@ class InitializeJob(val botId: String) :
     override fun onRun(): Unit = runBlocking {
         handleMixinResponse(
             invokeNetwork = {
-                userService.relationship(RelationshipRequest(botId, RelationshipAction.ADD.name))
+                userService.relationship(RelationshipRequest(botId, RelationshipAction.ADD.name, Constants.TEAM_BOT_NAME))
             },
             successBlock = {
                 it.data?.let { u ->
