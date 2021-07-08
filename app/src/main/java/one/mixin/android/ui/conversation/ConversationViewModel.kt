@@ -670,7 +670,7 @@ internal constructor(
         return withContext(Dispatchers.IO) {
             searchControlledRunner.cancelPreviousThenRun {
                 if (keyword.isNullOrEmpty() || keyword.isEmpty()) {
-                    emptyList()
+                    userRepository.getFriends()
                 } else {
                     userRepository.fuzzySearchBotGroupUser(
                         conversationId,
