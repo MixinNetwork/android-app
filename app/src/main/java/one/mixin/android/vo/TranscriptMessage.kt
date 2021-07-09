@@ -3,9 +3,9 @@ package one.mixin.android.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
+import one.mixin.android.util.JsonSkip
 import java.io.Serializable
 
 @Parcelize
@@ -32,8 +32,8 @@ class TranscriptMessage(
     @SerializedName("content")
     @ColumnInfo(name = "content")
     val content: String?,
-    @Expose(deserialize = false, serialize = false)
     @ColumnInfo(name = "media_url")
+    @JsonSkip
     var mediaUrl: String? = null,
     @SerializedName("media_name")
     @ColumnInfo(name = "media_name")
@@ -53,7 +53,7 @@ class TranscriptMessage(
     @SerializedName("media_duration")
     @ColumnInfo(name = "media_duration")
     val mediaDuration: Long? = null,
-    @Expose(deserialize = false, serialize = false)
+    @JsonSkip
     @ColumnInfo(name = "media_status")
     var mediaStatus: String? = null,
     @SerializedName("media_waveform")
@@ -93,6 +93,9 @@ class TranscriptMessage(
     @ColumnInfo(name = "caption")
     val caption: String? = null
 ) : ICategory, Serializable, Parcelable
+
+fun TranscriptMessage.isValidAttachment(): Boolean =
+    (isPlain() && mediaKey == null && mediaDigest == null) || ((isSignal() || isEncrypted()) && mediaKey != null && mediaDigest != null)
 
 fun TranscriptMessage.copy(tid: String): TranscriptMessage {
     return TranscriptMessage(

@@ -22,10 +22,9 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isPlain
-import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.isValidAttachment
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
@@ -63,7 +62,7 @@ class SendTranscriptAttachmentMessageJob(
     @DelicateCoroutinesApi
     override fun onRun() {
         if (transcriptMessage.isPlain() == isPlain) {
-            if (transcriptMessage.mediaCreatedAt?.within24Hours() == true) {
+            if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
                 transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
                 sendMessage()
                 return
@@ -80,11 +79,7 @@ class SendTranscriptAttachmentMessageJob(
             }
             if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
                 val m = messageDao.findMessageById(transcriptMessage.messageId)
-                if (m != null && transcriptMessage.type == m.category && (
-                    (m.isSignal() || m.isEncrypted() && m.mediaKey != null && m.mediaDigest != null) ||
-                        (m.isPlain() && m.mediaKey == null && m.mediaDigest == null)
-                    )
-                ) {
+                if (m != null && transcriptMessage.type == m.category && m.isValidAttachment()) {
                     transcriptMessageDao.updateTranscript(
                         transcriptMessage.transcriptId,
                         transcriptMessage.messageId,
@@ -195,12 +190,12 @@ class SendTranscriptAttachmentMessageJob(
 
     private fun sendMessage() {
         if (transcriptMessageDao.hasUploadedAttachment(parentId ?: transcriptMessage.transcriptId) == 0) {
-            messageDao.findMessageById(parentId ?: transcriptMessage.transcriptId)?.let {
+            messageDao.findMessageById(parentId ?: transcriptMessage.transcriptId)?.let { msg ->
                 val transcripts = mutableSetOf<TranscriptMessage>()
                 getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
-                it.content = GsonHelper.customGson.toJson(transcripts)
+                msg.content = GsonHelper.customGson.toJson(transcripts)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
-                jobManager.addJob(SendMessageJob(it))
+                jobManager.addJob(SendMessageJob(msg))
             }
         }
     }
