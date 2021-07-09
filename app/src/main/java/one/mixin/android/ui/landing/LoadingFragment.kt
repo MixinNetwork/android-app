@@ -67,7 +67,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             }
 
             if (Constants.TEAM_BOT_ID.isNotEmpty()) {
-                jobManager.addJobInBackground(InitializeJob(Constants.TEAM_BOT_ID))
+                jobManager.addJobInBackground(InitializeJob(Constants.TEAM_BOT_ID, Constants.TEAM_BOT_NAME))
             }
             MainActivity.show(requireContext())
             activity?.finish()
