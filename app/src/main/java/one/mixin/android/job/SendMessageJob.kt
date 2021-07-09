@@ -86,7 +86,7 @@ open class SendMessageJob(
     }
 
     private fun recallMessage() {
-        messageDao.recallMessage(recallMessageId!!)
+        recallMessageId ?: return
         messageMentionDao.deleteMessage(recallMessageId)
         messageFts4Dao.deleteByMessageId(recallMessageId)
         messageDao.findMessageById(recallMessageId)?.let { msg ->
@@ -109,6 +109,7 @@ open class SendMessageJob(
             }
             jobManager.cancelJobByMixinJobId(msg.id)
         }
+        messageDao.recallMessage(recallMessageId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
