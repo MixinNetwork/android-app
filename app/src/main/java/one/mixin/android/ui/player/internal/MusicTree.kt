@@ -13,7 +13,10 @@ class MusicTree {
         mediaIdToChildren[MUSIC_BROWSABLE_ROOT] = rootList
     }
 
-    fun setItems(mediaItems: List<MediaMetadataCompat>) {
+    fun setItems(mediaItems: List<MediaMetadataCompat>, clear: Boolean = false) {
+        if (clear) {
+            mediaIdToChildren[mediaItems[0].album]?.clear()
+        }
         mediaItems.forEach { mediaItem ->
             setItem(mediaItem)
         }

@@ -136,34 +136,43 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     override fun onLoadChildren(parentId: String, result: Result<List<MediaBrowserCompat.MediaItem>>) {
-        Timber.d("$TAG onLoadChildren parentId: $parentId")
+        Timber.d("$TAG onLoadChildren parentId: $parentId, needRefresh: $needRefresh")
         val exists = musicTree[parentId]
-        if (exists != null) {
-            val children = exists.map { item ->
-                MediaBrowserCompat.MediaItem(item.description, item.flag)
-            }
-            result.sendResult(children)
+        if (needRefresh) {
+            loadConversationMusic(parentId)
+            needRefresh = false
+            result.detach()
 
-            if (::conversationMusicObserver.isInitialized && conversationMusicObserver.cid != parentId) {
-                observeConversationMusic(parentId)
-            }
-
-            if (hasNewDownloaded) {
-                hasNewDownloaded = false
-                MusicPlayer.get().setMediaSource(exists)
-            }
+            observeConversationMusic(parentId)
         } else {
-            if (parentId == MUSIC_PLAYLIST) {
-                result.detach()
+            if (exists != null) {
+                Timber.d("$TAG exists size: ${exists.size}")
+                val children = exists.map { item ->
+                    MediaBrowserCompat.MediaItem(item.description, item.flag)
+                }
+                result.sendResult(children)
 
-                if (::conversationMusicObserver.isInitialized) {
-                    musicLiveData?.removeObserver(conversationMusicObserver)
+                if (::conversationMusicObserver.isInitialized && conversationMusicObserver.cid != parentId) {
+                    observeConversationMusic(parentId)
+                }
+
+                if (hasNewDownloaded) {
+                    hasNewDownloaded = false
+                    MusicPlayer.get().setMediaSource(exists)
                 }
             } else {
-                loadConversationMusic(parentId)
-                result.detach()
+                if (parentId == MUSIC_PLAYLIST) {
+                    result.detach()
 
-                observeConversationMusic(parentId)
+                    if (::conversationMusicObserver.isInitialized) {
+                        musicLiveData?.removeObserver(conversationMusicObserver)
+                    }
+                } else {
+                    loadConversationMusic(parentId)
+                    result.detach()
+
+                    observeConversationMusic(parentId)
+                }
             }
         }
         if (this.parentId != parentId) {
@@ -189,51 +198,63 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var conversationMusicObserver: ConversationMusicObserver
 
     private var hasNewDownloaded = false
+    private var lastSize = 0
+    private var needRefresh = false
 
     private inner class ConversationMusicObserver(
         var cid: String,
     ) : Observer<List<MessageIdIdAndMediaStatus>> {
         override fun onChanged(list: List<MessageIdIdAndMediaStatus>?) {
             val album = musicTree[cid]
-            if (list.isNullOrEmpty() || album.isNullOrEmpty()) return
+            Timber.d("$TAG observe list size: ${list?.size}, album size: ${album?.size}, lastSize: $lastSize")
+            if (list.isNullOrEmpty() || album.isNullOrEmpty()) {
+                lastSize = list?.size ?: 0
+                return
+            }
 
             val updateList = mutableListOf<String>()
             var changed = false
 
-            Timber.d("$TAG observe list size: ${list.size}, album size: ${album.size}")
-            list.forEach { item ->
-                val exists = album.find { item.mediaId == it.description.mediaId }
+            if (lastSize > list.size) {
+                needRefresh = true
+            } else {
+                list.forEach { item ->
+                    val exists = album.find { item.mediaId == it.description.mediaId }
 
-                if (exists != null) {
-                    val oldStatus = exists.downloadStatus
-                    val newStatus = item.mediaStatus
-                    if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADED && (newStatus == MediaStatus.DONE.name || newStatus == MediaStatus.READ.name)) {
-                        updateList.add(item.mediaId)
-                        hasNewDownloaded = true
-                    } else if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADING && newStatus == MediaStatus.PENDING.name) {
-                        val newItem = exists.copy(MediaDescriptionCompat.STATUS_DOWNLOADING)
-                        val index = album.indexOfFirst { item.mediaId == it.description.mediaId }
-                        album[index] = newItem
-                        changed = true
-                    } else if (oldStatus != MediaDescriptionCompat.STATUS_NOT_DOWNLOADED && newStatus == MediaStatus.CANCELED.name) {
-                        val newItem = exists.copy(MediaDescriptionCompat.STATUS_NOT_DOWNLOADED)
-                        val index = album.indexOfFirst { item.mediaId == it.description.mediaId }
-                        album[index] = newItem
-                        changed = true
-                    }
-                } else {
-                    if (musicLoader?.ignoreSet?.contains(item.mediaId) == false) {
-                        updateList.add(item.mediaId)
+                    if (exists != null) {
+                        val oldStatus = exists.downloadStatus
+                        val newStatus = item.mediaStatus
+                        if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADED && (newStatus == MediaStatus.DONE.name || newStatus == MediaStatus.READ.name)) {
+                            updateList.add(item.mediaId)
+                            hasNewDownloaded = true
+                        } else if (oldStatus != MediaDescriptionCompat.STATUS_DOWNLOADING && newStatus == MediaStatus.PENDING.name) {
+                            val newItem = exists.copy(MediaDescriptionCompat.STATUS_DOWNLOADING)
+                            val index =
+                                album.indexOfFirst { item.mediaId == it.description.mediaId }
+                            album[index] = newItem
+                            changed = true
+                        } else if (oldStatus != MediaDescriptionCompat.STATUS_NOT_DOWNLOADED && newStatus == MediaStatus.CANCELED.name) {
+                            val newItem = exists.copy(MediaDescriptionCompat.STATUS_NOT_DOWNLOADED)
+                            val index =
+                                album.indexOfFirst { item.mediaId == it.description.mediaId }
+                            album[index] = newItem
+                            changed = true
+                        }
+                    } else {
+                        if (musicLoader?.ignoreSet?.contains(item.mediaId) == false) {
+                            updateList.add(item.mediaId)
+                        }
                     }
                 }
             }
-            Timber.d("$TAG updateList size: ${updateList.size}")
+            Timber.d("$TAG changed: $changed, updateList size: ${updateList.size}")
             if (updateList.isNotEmpty()) {
                 updateMusicItems(updateList.toTypedArray())
             }
-            if (changed) {
+            if (changed || needRefresh) {
                 notifyChildrenChanged(cid)
             }
+            lastSize = list.size
         }
     }
 
@@ -248,8 +269,10 @@ class MusicService : MediaBrowserServiceCompat() {
         onLoaded: ((MediaMetadataCompat) -> Unit)? = null,
     ) {
         Timber.d("$TAG loadConversationMusic parentId: $parentId, mediaId: $mediaId, musicLoader-cid: ${musicLoader?.conversationId}")
-        if ((lastMediaId != null && mediaId == null) ||
-            (musicLoader != null && musicLoader?.conversationId == parentId && mediaId == null)
+        if (!needRefresh && (
+            (lastMediaId != null && mediaId == null) ||
+                (musicLoader != null && musicLoader?.conversationId == parentId && mediaId == null)
+            )
         ) {
             return
         }
@@ -257,9 +280,10 @@ class MusicService : MediaBrowserServiceCompat() {
         loadJob?.cancel()
         lastMediaId = mediaId
         musicLoader = ConversationLoader(database, parentId)
+        val localNeedRefresh = needRefresh
         loadJob = serviceScope.launch(Dispatchers.IO) {
             musicLoader?.load()?.let { list ->
-                musicTree.setItems(list)
+                musicTree.setItems(list, localNeedRefresh)
                 notifyChildrenChanged(parentId)
 
                 if (mediaId != null && onLoaded != null) {
