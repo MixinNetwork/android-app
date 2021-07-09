@@ -220,7 +220,7 @@ class TranscriptAttachmentDownloadJob(
                     val dataFile = MixinApplication.get()
                         .getTranscriptFile(
                             transcriptMessage.messageId,
-                            extensionName ?: ""
+                            extensionName.notNullWithElse({ ".$it" }, "")
                         )
                     dataFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
@@ -249,7 +249,7 @@ class TranscriptAttachmentDownloadJob(
                     val videoFile = MixinApplication.get()
                         .getTranscriptFile(
                             transcriptMessage.messageId,
-                            extensionName
+                            ".$extensionName"
                         )
                     videoFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
