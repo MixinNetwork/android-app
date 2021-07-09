@@ -283,6 +283,16 @@ class FixedMessageDataSource(private val messageItems: List<MessageItem>) : Posi
 }
 
 fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
+    val thumb = if (thumbImage != null && !Base83.isValid(thumbImage)) {
+        try {
+            val bitmap = thumbImage.decodeBase64().encodeBitmap()
+            BlurHashEncoder.encode(requireNotNull(bitmap))
+        } catch (e: Exception) {
+            thumbImage
+        }
+    } else {
+        thumbImage
+    }
     return TranscriptMessage(
         transcriptId,
         messageId,
@@ -300,19 +310,7 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
         mediaDuration?.toLong(),
         mediaStatus,
         mediaWaveform,
-        thumbImage?.let { thumb ->
-            try {
-                if (Base83.isValid(thumb)) {
-                    thumb.decodeBase64().encodeBitmap()?.let { bitmap ->
-                        BlurHashEncoder.encode(bitmap)
-                    }
-                } else {
-                    thumbImage
-                }
-            } catch (e: Exception) {
-                thumbImage
-            }
-        },
+        thumb,
         thumbUrl,
         null,
         null,

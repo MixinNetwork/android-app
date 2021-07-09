@@ -80,7 +80,11 @@ class SendTranscriptAttachmentMessageJob(
             }
             if (attachmentExtra != null && attachmentExtra.createdAt?.within24Hours() == true) {
                 val m = messageDao.findMessageById(transcriptMessage.messageId)
-                if (m != null && (((m.isSignal() || m.isEncrypted()) && m.mediaKey != null && m.mediaDigest != null) || m.isPlain())) {
+                if (m != null && transcriptMessage.type == m.category && (
+                    (m.isSignal() || m.isEncrypted() && m.mediaKey != null && m.mediaDigest != null) ||
+                        (m.isPlain() && m.mediaKey == null && m.mediaDigest == null)
+                    )
+                ) {
                     transcriptMessageDao.updateTranscript(
                         transcriptMessage.transcriptId,
                         transcriptMessage.messageId,
@@ -125,7 +129,7 @@ class SendTranscriptAttachmentMessageJob(
 
     @DelicateCoroutinesApi
     private fun processAttachment(transcriptMessage: TranscriptMessage, file: File, attachResponse: AttachmentResponse): Boolean {
-        val key = if (isPlain) {
+        val key = if (transcriptMessage.isPlain()) {
             null
         } else {
             Util.getSecretBytes(64)
