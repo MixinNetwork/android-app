@@ -49,16 +49,6 @@ class InitializeJob(val botId: String) :
                     )
                     conversationDao.insert(conversation)
                     participantDao.insertList(participants)
-                    val message = createMessage(
-                        UUID.randomUUID().toString(),
-                        conversationId,
-                        Session.getAccountId()!!,
-                        MessageCategory.PLAIN_TEXT.name,
-                        MixinApplication.get().getString(R.string.hi),
-                        nowInUtc(),
-                        MessageStatus.SENDING.name
-                    )
-                    jobManager.addJobInBackground(SendMessageJob(message))
                     return@handleMixinResponse
                 }
             }
