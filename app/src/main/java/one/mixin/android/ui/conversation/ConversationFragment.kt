@@ -733,8 +733,13 @@ class ConversationFragment() :
             override fun onMentionClick(identityNumber: String) {
                 chatViewModel.viewModelScope.launch {
                     chatViewModel.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))?.let { user ->
-                        UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        if (user.userId == Session.getAccountId()!!) {
+                            ProfileBottomSheetDialogFragment.newInstance()
+                                .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
+                        } else {
+                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        }
                     }
                 }
             }

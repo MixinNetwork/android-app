@@ -167,7 +167,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (u == null) return@Observer
                 // prevent add self
                 if (u.userId == Session.getAccountId()) {
-                    ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
+                    ProfileBottomSheetDialogFragment.newInstance()
+                        .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
                     dismiss()
                     return@Observer
                 }
