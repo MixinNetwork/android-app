@@ -18,6 +18,7 @@ import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
@@ -193,7 +194,8 @@ class SendTranscriptAttachmentMessageJob(
             messageDao.findMessageById(parentId ?: transcriptMessage.transcriptId)?.let { msg ->
                 val transcripts = mutableSetOf<TranscriptMessage>()
                 getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
-                msg.content = GsonHelper.customGson.toJson(transcripts)
+                val jsonAdapter = MoshiHelper.getTypeListAdapter<List<TranscriptMessage>>(TranscriptMessage::class.java)
+                msg.content = jsonAdapter.toJson(transcripts.toList())
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
                 jobManager.addJob(SendMessageJob(msg))
             }

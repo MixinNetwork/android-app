@@ -42,6 +42,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -650,11 +651,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     }
 
     private fun processTranscriptMessage(data: BlazeMessageData, plain: String): Message? {
-        val transcripts =
-            gson.fromJson(plain, Array<TranscriptMessage>::class.java).toList().filter { t ->
-                t.transcriptId == data.messageId
-            }
-        if (transcripts.isEmpty()) {
+        val jsonAdapter = MoshiHelper.getTypeListAdapter<List<TranscriptMessage>>(TranscriptMessage::class.java)
+        val transcripts = jsonAdapter.fromJson(plain)?.filter { t ->
+            t.transcriptId == data.messageId
+        }
+        if (transcripts.isNullOrEmpty()) {
             messageDao.insert(
                 createTranscriptMessage(
                     data.messageId,

@@ -3,93 +3,92 @@ package one.mixin.android.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.android.parcel.Parcelize
-import one.mixin.android.util.JsonSkip
 import java.io.Serializable
 
 @Parcelize
 @Entity(tableName = "transcript_messages", primaryKeys = ["transcript_id", "message_id"])
-class TranscriptMessage(
-    @SerializedName("transcript_id")
+@JsonClass(generateAdapter = true)
+data class TranscriptMessage(
+    @Json(name = "transcript_id")
     @ColumnInfo(name = "transcript_id")
     var transcriptId: String,
-    @SerializedName("message_id")
+    @Json(name = "message_id")
     @ColumnInfo(name = "message_id")
     val messageId: String,
-    @SerializedName("user_id")
+    @Json(name = "user_id")
     @ColumnInfo(name = "user_id")
     val userId: String?,
-    @SerializedName("user_full_name")
+    @Json(name = "user_full_name")
     @ColumnInfo(name = "user_full_name")
     val userFullName: String?,
-    @SerializedName("category")
+    @Json(name = "category")
     @ColumnInfo(name = "category")
     override var type: String,
-    @SerializedName("created_at")
+    @Json(name = "created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
-    @SerializedName("content")
+    @Json(name = "content")
     @ColumnInfo(name = "content")
     val content: String?,
     @ColumnInfo(name = "media_url")
-    @JsonSkip
     var mediaUrl: String? = null,
-    @SerializedName("media_name")
+    @Json(name = "media_name")
     @ColumnInfo(name = "media_name")
     val mediaName: String? = null,
-    @SerializedName("media_size")
+    @Json(name = "media_size")
     @ColumnInfo(name = "media_size")
     val mediaSize: Long? = null,
-    @SerializedName("media_width")
+    @Json(name = "media_width")
     @ColumnInfo(name = "media_width")
     val mediaWidth: Int? = null,
-    @SerializedName("media_height")
+    @Json(name = "media_height")
     @ColumnInfo(name = "media_height")
     val mediaHeight: Int? = null,
-    @SerializedName("media_mime_type")
+    @Json(name = "media_mime_type")
     @ColumnInfo(name = "media_mime_type")
     val mediaMimeType: String? = null,
-    @SerializedName("media_duration")
+    @Json(name = "media_duration")
     @ColumnInfo(name = "media_duration")
     val mediaDuration: Long? = null,
-    @JsonSkip
     @ColumnInfo(name = "media_status")
     var mediaStatus: String? = null,
-    @SerializedName("media_waveform")
+    @Json(name = "media_waveform")
     @ColumnInfo(name = "media_waveform")
     val mediaWaveform: ByteArray? = null,
-    @SerializedName("thumb_image")
+    @Json(name = "thumb_image")
     @ColumnInfo(name = "thumb_image")
     val thumbImage: String? = null,
-    @SerializedName("thumb_url")
+    @Json(name = "thumb_url")
     @ColumnInfo(name = "thumb_url")
     val thumbUrl: String? = null,
-    @SerializedName("media_key")
+    @Json(name = "media_key")
     @ColumnInfo(name = "media_key")
     val mediaKey: ByteArray? = null,
-    @SerializedName("media_digest")
+    @Json(name = "media_digest")
     @ColumnInfo(name = "media_digest")
     val mediaDigest: ByteArray? = null,
-    @SerializedName("media_created_at")
+    @Json(name = "media_created_at")
     @ColumnInfo(name = "media_created_at")
     val mediaCreatedAt: String? = null,
-    @SerializedName("sticker_id")
+    @Json(name = "sticker_id")
     @ColumnInfo(name = "sticker_id")
     val stickerId: String? = null,
-    @SerializedName("shared_user_id")
+    @Json(name = "shared_user_id")
     @ColumnInfo(name = "shared_user_id")
     val sharedUserId: String? = null,
-    @SerializedName("mentions")
+    @Json(name = "mentions")
     @ColumnInfo(name = "mentions")
     val mentions: String? = null,
-    @SerializedName("quote_id")
+    @Json(name = "quote_id")
     @ColumnInfo(name = "quote_id")
     val quoteId: String? = null,
-    @SerializedName("quote_content")
+    @Json(name = "quote_content")
     @ColumnInfo(name = "quote_content")
     var quoteContent: String? = null,
-    @SerializedName("caption")
+    @Json(name = "caption")
     @ColumnInfo(name = "caption")
     val caption: String? = null
 ) : ICategory, Serializable, Parcelable
