@@ -34,6 +34,7 @@ data class TranscriptMessage(
     @ColumnInfo(name = "content")
     val content: String?,
     @ColumnInfo(name = "media_url")
+    @Transient
     var mediaUrl: String? = null,
     @Json(name = "media_name")
     @ColumnInfo(name = "media_name")
@@ -54,6 +55,7 @@ data class TranscriptMessage(
     @ColumnInfo(name = "media_duration")
     val mediaDuration: Long? = null,
     @ColumnInfo(name = "media_status")
+    @Transient
     var mediaStatus: String? = null,
     @Json(name = "media_waveform")
     @ColumnInfo(name = "media_waveform")
