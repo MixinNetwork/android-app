@@ -672,11 +672,17 @@ internal constructor(
                         ) {
                             continue
                         }
+                        val shareable = try {
+                            GsonHelper.customGson.fromJson(m.content, LiveMessagePayload::class.java).shareable
+                        } catch (e: Exception) {
+                            null
+                        }
                         val liveData = LiveMessagePayload(
                             m.mediaWidth,
                             m.mediaHeight,
                             m.thumbUrl ?: "",
-                            m.mediaUrl
+                            m.mediaUrl,
+                            shareable
                         )
                         ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.id)
                     }

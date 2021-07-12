@@ -138,6 +138,7 @@ open class SendMessageJob(
         if (message.category == MessageCategory.PLAIN_TEXT.name ||
             message.category == MessageCategory.PLAIN_POST.name ||
             message.category == MessageCategory.PLAIN_TRANSCRIPT.name ||
+            message.category == MessageCategory.PLAIN_LIVE.name ||
             message.category == MessageCategory.PLAIN_LOCATION.name ||
             message.isCall() ||
             message.category == MessageCategory.APP_CARD.name
