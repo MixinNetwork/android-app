@@ -257,6 +257,9 @@ enum class MediaStatus { PENDING, DONE, CANCELED, EXPIRED, READ }
 
 fun mediaDownloaded(name: String?) = name == MediaStatus.DONE.name || name == MediaStatus.READ.name
 
+fun Message.isValidAttachment(): Boolean =
+    (isPlain() && mediaKey == null && mediaDigest == null) || ((isSignal() || isEncrypted()) && mediaKey != null && mediaDigest != null)
+
 fun createMessage(
     messageId: String,
     conversationId: String,
