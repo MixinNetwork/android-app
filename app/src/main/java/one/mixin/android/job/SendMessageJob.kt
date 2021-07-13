@@ -17,6 +17,7 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isKraken
+import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isText
@@ -138,6 +139,7 @@ open class SendMessageJob(
         if (message.category == MessageCategory.PLAIN_TEXT.name ||
             message.category == MessageCategory.PLAIN_POST.name ||
             message.category == MessageCategory.PLAIN_TRANSCRIPT.name ||
+            message.category == MessageCategory.PLAIN_LIVE.name ||
             message.category == MessageCategory.PLAIN_LOCATION.name ||
             message.isCall() ||
             message.category == MessageCategory.APP_CARD.name
@@ -186,6 +188,9 @@ open class SendMessageJob(
     }
 
     private fun encryptNormalMessage(): BlazeMessage {
+        if (message.isLive()) {
+            message.content = message.content?.base64Encode()
+        }
         return if (resendData != null) {
             signalProtocol.encryptSessionMessage(
                 message,

@@ -625,14 +625,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data.source)
             }
             data.category.endsWith("_LIVE") -> {
-                val decoded = Base64.decode(plainText)
-                val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
+                val plain = String(Base64.decode(plainText))
+                val liveData = gson.fromJson(plain, LiveMessagePayload::class.java)
                 if (liveData.width <= 0 || liveData.height <= 0) {
                     insertInvalidMessage(data)
                     return
                 }
                 val message = createLiveMessage(
-                    data.messageId, data.conversationId, data.userId, data.category, null,
+                    data.messageId, data.conversationId, data.userId, data.category, plain,
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt
                 )
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)

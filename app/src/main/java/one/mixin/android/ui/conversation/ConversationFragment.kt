@@ -3052,8 +3052,14 @@ class ConversationFragment() :
     }
 
     private fun checkAppCardForward(messageItem: MessageItem) {
-        if (messageItem.isAppCardShareable() == false) {
-            toast(R.string.app_card_shareable_false)
+        if (messageItem.isShareable() == false) {
+            toast(
+                if (messageItem.isLive()) {
+                    R.string.live_shareable_false
+                } else {
+                    R.string.app_card_shareable_false
+                }
+            )
         }
     }
 }

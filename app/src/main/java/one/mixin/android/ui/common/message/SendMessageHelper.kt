@@ -305,7 +305,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val category =
             if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
         val encoded =
-            GsonHelper.customGson.toJson(transferLiveData).base64Encode()
+            GsonHelper.customGson.toJson(transferLiveData)
         val message = createLiveMessage(
             UUID.randomUUID().toString(),
             conversationId,

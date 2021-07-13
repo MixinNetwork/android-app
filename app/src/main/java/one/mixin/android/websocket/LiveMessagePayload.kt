@@ -10,5 +10,6 @@ data class LiveMessagePayload(
     @SerializedName("thumb_url")
     val thumbUrl: String,
     @SerializedName("url")
-    val url: String
+    val url: String,
+    val shareable: Boolean?
 )

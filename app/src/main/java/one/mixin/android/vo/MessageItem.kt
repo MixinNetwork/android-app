@@ -34,6 +34,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.toLocationData
 import java.io.File
 import java.io.FileInputStream
@@ -108,12 +109,21 @@ data class MessageItem(
     @Ignore
     private var appCardShareable: Boolean? = null
 
-    fun isAppCardShareable(): Boolean? {
-        if (type != MessageCategory.APP_CARD.name) return null
-
-        if (appCardShareable == null) {
-            appCardShareable = GsonHelper.customGson.fromJson(content, AppCardData::class.java).shareable
+    fun isShareable(): Boolean? {
+        if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name) return null
+        try {
+            if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
+                appCardShareable =
+                    GsonHelper.customGson.fromJson(content, AppCardData::class.java).shareable
+            } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name) && appCardShareable == null) {
+                appCardShareable = GsonHelper.customGson.fromJson(
+                    content,
+                    LiveMessagePayload::class.java
+                ).shareable
+            }
+        } catch (e: Exception) {
         }
+
         return appCardShareable
     }
 
@@ -132,7 +142,8 @@ data class MessageItem(
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
         isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
         (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
-        (this.type == MessageCategory.APP_CARD.name && isAppCardShareable() == false)
+        (this.type == MessageCategory.APP_CARD.name && isShareable() == false) ||
+        (isLive() && isShareable() == false)
 
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
