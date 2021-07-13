@@ -26,6 +26,8 @@ import one.mixin.android.databinding.ViewBadgeCircleImageBinding
 import one.mixin.android.databinding.ViewTransactionsFragmentHeaderBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.databinding.ViewWalletTransactionsSendBottomBinding
+import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
@@ -181,7 +183,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     @SuppressLint("SetTextI18n")
     private fun updateHeader(asset: AssetItem) {
         headBinding.apply {
-            balance.text = try {
+            val amountText = try {
                 if (asset.balance.toFloat() == 0f) {
                     "0.00"
                 } else {
@@ -190,7 +192,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             } catch (ignored: NumberFormatException) {
                 asset.balance.numberFormat()
             }
-            symbolTv.text = asset.symbol
+            val color = requireContext().colorFromAttribute(R.attr.text_primary)
+            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
             balanceAs.text = try {
                 if (asset.fiat().toFloat() == 0f) {
                     "≈ ${Fiats.getSymbol()}0.00"
