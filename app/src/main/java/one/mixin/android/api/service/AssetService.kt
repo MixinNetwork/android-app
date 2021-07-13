@@ -85,7 +85,7 @@ interface AssetService {
     @GET("/snapshots/trace/{id}")
     suspend fun getTrace(@Path("id") traceId: String): MixinResponse<Snapshot>
 
-    @GET("/ticker")
+    @GET("network/ticker")
     suspend fun ticker(
         @Query("asset") assetId: String,
         @Query("offset") offset: String? = null
