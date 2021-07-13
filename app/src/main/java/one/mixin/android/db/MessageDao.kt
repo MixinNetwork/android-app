@@ -534,7 +534,7 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
         AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
-        AND media_status != 'EXPIRED'
+        AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
     """
     )

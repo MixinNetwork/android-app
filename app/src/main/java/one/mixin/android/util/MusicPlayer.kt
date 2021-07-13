@@ -8,6 +8,7 @@ import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlaybackException.TYPE_SOURCE
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_REMOVE
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -90,7 +91,7 @@ class MusicPlayer private constructor() {
 
         fun resetModeAndSpeed() {
             instance?.exoPlayer?.let {
-                it.setPlaybackParameters(PlaybackParameters(1f))
+                it.playbackParameters = PlaybackParameters(1f)
                 it.repeatMode = Player.REPEAT_MODE_OFF
             }
         }
@@ -114,10 +115,17 @@ class MusicPlayer private constructor() {
     init {
         recallDisposable = RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                Timber.d("recall: ${it.messageId}")
-                if (id == it.messageId) {
+            .subscribe { event ->
+                val index = currentPlaylistItems.indexOfFirst { it.description.mediaId == event.messageId }
+                Timber.d("recall: ${event.messageId}, index: $index, id: $id")
+                if (index != -1) {
+                    concatenatingMediaSource.removeMediaSource(index)
+                    currentPlaylistItems.removeAt(index)
+                }
+                if (id == event.messageId) {
                     pause()
+                    exoPlayer.setMediaSource(concatenatingMediaSource)
+                    exoPlayer.prepare()
                 }
             }
     }
@@ -187,6 +195,8 @@ class MusicPlayer private constructor() {
         }
 
         override fun onPositionDiscontinuity(reason: Int) {
+            if (reason == DISCONTINUITY_REASON_REMOVE) return
+
             val newMediaItem = exoPlayer.currentMediaItem ?: return
             if (newMediaItem.mediaId != id) {
                 id = newMediaItem.mediaId
@@ -209,7 +219,7 @@ class MusicPlayer private constructor() {
     private var messageItem: MessageItem? = null
     private var status = STATUS_PAUSE
 
-    var currentPlaylistItems: List<MediaMetadataCompat> = emptyList()
+    var currentPlaylistItems: MutableList<MediaMetadataCompat> = mutableListOf()
 
     private var concatenatingMediaSource = ConcatenatingMediaSource()
 
@@ -220,7 +230,7 @@ class MusicPlayer private constructor() {
         playbackStartPositionMs: Long = 0,
     ) {
         val downloadedList = metadataList.filter { it.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED }
-        currentPlaylistItems = downloadedList
+        currentPlaylistItems = downloadedList.toMutableList()
         playMusicList(downloadedList, itemToPlay, playWhenReady, playbackStartPositionMs)
     }
 
@@ -252,7 +262,7 @@ class MusicPlayer private constructor() {
             val itemToPlay = currentMediaItem?.mediaId
             val index = currentPlaylistItems.indexOfFirst { it.description.mediaId == itemToPlay }
             val remain = currentPlaylistItems.size - index
-            currentPlaylistItems = downloadedList
+            currentPlaylistItems = downloadedList.toMutableList()
             val initialWindowIndex = if (itemToPlay == null) 0 else downloadedList.indexOfFirst { it.description.mediaId == itemToPlay }
             if (initialWindowIndex == -1) {
                 val mediaSource = downloadedList.toMediaSource(dataSourceFactory, cacheDataSourceFactory)
@@ -281,6 +291,9 @@ class MusicPlayer private constructor() {
                 }
                 concatenatingMediaSource.addMediaSources(0, pre)
                 concatenatingMediaSource.addMediaSources(post)
+                if (index != -1) {
+                    currentPlaylistItems.removeAt(index)
+                }
             }
         }
     }
@@ -408,11 +421,11 @@ class MusicPlayer private constructor() {
         if (messageItem.isData() && MimeTypes.isAudio(messageItem.mediaMimeType)) {
             val mediaMetadata = buildFromMessageItem(messageItem)
             if (currentPlaylistItems.isNullOrEmpty() || currentPlaylistItems[0].album != messageItem.conversationId) {
-                currentPlaylistItems = listOf(mediaMetadata)
+                currentPlaylistItems = mutableListOf(mediaMetadata)
             } else {
                 val exists = currentPlaylistItems.find { it.description.mediaId == messageItem.messageId }
                 if (exists == null) {
-                    currentPlaylistItems = currentPlaylistItems + mediaMetadata
+                    currentPlaylistItems.add(mediaMetadata)
                 }
             }
         }

@@ -15,12 +15,14 @@ class ConversationLoader(
 ) : MusicLoader() {
 
     override suspend fun load(): List<MediaMetadataCompat> {
-        val messageItems = database.messageDao().findAudiosByConversationId(conversationId)
+        var messageItems = database.messageDao().findAudiosByConversationId(conversationId)
+        messageItems = messageItems.filter { !ignoreSet.contains(it.messageId) }
         return loadMessageItems(messageItems)
     }
 
     suspend fun loadByIds(items: Array<String>): List<MediaMetadataCompat> {
-        val messageItems = database.messageDao().suspendFindMessagesByIds(conversationId, items.toList())
+        var messageItems = database.messageDao().suspendFindMessagesByIds(conversationId, items.toList())
+        messageItems = messageItems.filter { !ignoreSet.contains(it.messageId) }
         return loadMessageItems(messageItems)
     }
 
