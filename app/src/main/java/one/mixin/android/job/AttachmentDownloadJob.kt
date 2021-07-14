@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import okhttp3.Call
 import okhttp3.Interceptor
@@ -26,7 +25,6 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
@@ -193,7 +191,7 @@ class AttachmentDownloadJob(
                     }
                 }
                 imageFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(imageFile.name, message.id)
                 messageDao.updateMediaSize(imageFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
@@ -207,7 +205,7 @@ class AttachmentDownloadJob(
                 val dataFile = MixinApplication.get().getDocumentPath()
                     .createDocumentTemp(message.conversationId, message.id, extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(MixinApplication.appContext.getUriForFile(dataFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(dataFile.name, message.id)
                 messageDao.updateMediaSize(dataFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
@@ -223,7 +221,7 @@ class AttachmentDownloadJob(
                 val videoFile = MixinApplication.get().getVideoPath()
                     .createVideoTemp(message.conversationId, message.id, extensionName)
                 videoFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(videoFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(videoFile.name, message.id)
                 messageDao.updateMediaSize(videoFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
@@ -236,7 +234,7 @@ class AttachmentDownloadJob(
                 val audioFile = MixinApplication.get().getAudioPath()
                     .createAudioTemp(message.conversationId, message.id, "ogg")
                 audioFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(audioFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(audioFile.name, message.id)
                 messageDao.updateMediaSize(audioFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
