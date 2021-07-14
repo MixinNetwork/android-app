@@ -12,6 +12,7 @@ import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.gallery.MimeType
@@ -65,7 +66,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
                 )
                 binding.gifTv.isVisible = true
             } else {
-                imageView.loadImageCenterCrop(item.mediaUrl, item.thumbImage)
+                imageView.loadImageCenterCrop(item.absolutePath(), item.thumbImage)
                 binding.gifTv.isVisible = false
             }
             binding.videoIv.isVisible = false
@@ -80,7 +81,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
                 binding.videoIv.isVisible = false
                 binding.durationTv.isVisible = false
             }
-            imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
+            imageView.loadImageCenterCrop(item.absolutePath(), R.drawable.image_holder)
         }
         itemView.setOnClickListener {
             onClickListener(binding.thumbnailIv, item)
