@@ -23,7 +23,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun snapshots(assetId: String): DataSource.Factory<Int, SnapshotItem>
 
     @RewriteQueriesToDropUnusedColumns
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount * a.price_usd) DESC, s.snapshot_id DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsOrderByAmount(assetId: String): DataSource.Factory<Int, SnapshotItem>
 
     @RewriteQueriesToDropUnusedColumns
@@ -31,7 +31,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun snapshotsByType(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
     @RewriteQueriesToDropUnusedColumns
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY abs(s.amount * a.price_usd) DESC, s.snapshot_id DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsByTypeOrderByAmount(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
     @RewriteQueriesToDropUnusedColumns
