@@ -396,7 +396,7 @@ internal constructor(
 
     fun updateMediaStatus(status: String, id: String) = messageDao.updateMediaStatus(status, id)
 
-    fun observeConversationNameById(cid: String) = conversationDao.observeConversationNameById(cid)
+    suspend fun getConversationNameById(cid: String) = conversationDao.getConversationNameById(cid)
 
     // DELETE
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String) {
