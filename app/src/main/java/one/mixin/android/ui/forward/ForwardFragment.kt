@@ -5,6 +5,7 @@ import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -14,6 +15,7 @@ import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
@@ -31,7 +33,10 @@ import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.databinding.FragmentForwardBinding
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -76,6 +81,7 @@ import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import java.io.File
+import java.io.FileInputStream
 import java.lang.Exception
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -519,8 +525,20 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             fallbackAction.invoke()
             return
         }
+        if (mediaUrl == null) {
+            fallbackAction.invoke()
+            return
+        }
+        val file = Uri.parse(mediaUrl).toFile()
+        if (!file.exists()) {
+            fallbackAction.invoke()
+            return
+        }
+        val messageId = UUID.randomUUID().toString()
+        val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
+        outfile.copyFromInputStream(FileInputStream(file))
         val message = Message(
-            UUID.randomUUID().toString(), conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), mediaUrl,
+            messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.toUri().toString(),
             payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
             payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
             caption = payload.caption,
@@ -534,9 +552,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             message.mediaKey, message.mediaDigest, attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
             message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform,
         )
+        val file = Uri.parse(message.mediaUrl).toFile()
+        val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
+        outfile.copyFromInputStream(FileInputStream(file))
         return Message(
             messageId, conversationId, sender.userId, category,
-            GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), message.mediaUrl, message.mediaMimeType,
+            GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), outfile.toUri().toString(), message.mediaMimeType,
             message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
             message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
             message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
