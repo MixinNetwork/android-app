@@ -28,7 +28,9 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCallBottomSheetBinding
 import one.mixin.android.extension.alertDialogBuilder
@@ -38,6 +40,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -111,7 +114,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val peekHeight by lazy {
-        470.dp
+        requireContext().realSize().y * 2 / 3
     }
 
     private var translationOffset by Delegates.notNull<Float>()
@@ -120,7 +123,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         PipCallView.get()
     }
 
-    @SuppressLint("RestrictedApi")
+    private var groupName: String? = null
+
+    @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         _binding = FragmentCallBottomSheetBinding.inflate(LayoutInflater.from(context), null, false)
@@ -157,9 +162,13 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 viewModel.findSelfCallUser(cid, Session.getAccountId()!!)
             }
             if (callState.isGroupCall()) {
-                binding.title.text = getString(R.string.chat_group_call_title)
+                withContext(Dispatchers.IO) {
+                    groupName = viewModel.getConversationNameById(requireNotNull(cid))
+                }
+                binding.title.text = "$groupName - getString(R.string.chat_group_call_title)"
                 binding.avatarLl.isVisible = false
                 binding.usersRv.isVisible = true
+                binding.userTotals.isVisible = true
                 if (userAdapter == null) {
                     userAdapter = CallUserAdapter(self) { userId ->
                         if (userId != null) {
@@ -435,16 +444,17 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun updateTitle(content: String) {
         binding.title.text = if (callState.isGroupCall()) {
+            "$groupName - ${
             getString(
-                R.string.chat_group_call_title_suffix,
-                content
+                R.string.chat_group_call_title
             )
+            }"
         } else {
             getString(
-                R.string.chat_call_title_suffix,
-                content
+                R.string.chat_call_title
             )
         }
+        binding.callStatus.text = content
     }
 
     private var userAdapter: CallUserAdapter? = null
@@ -486,6 +496,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             userAdapter?.submitList(users)
+            binding.userTotals.text = getString(R.string.title_participants, users.size)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
         val newGuestsNotConnected = callState.getPendingUsers(cid)

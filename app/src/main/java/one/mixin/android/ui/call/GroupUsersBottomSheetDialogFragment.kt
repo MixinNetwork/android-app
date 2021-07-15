@@ -84,7 +84,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = view
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
-            setCustomViewHeight((requireContext().realSize().y * .6f).toInt())
+            setCustomViewHeight(requireContext().realSize().y * 2 / 3)
         }
         val inGroupCallUsers = callState.getUsers(conversationId)
 
