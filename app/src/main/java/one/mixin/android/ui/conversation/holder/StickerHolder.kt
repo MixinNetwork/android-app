@@ -14,12 +14,8 @@ import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.image.ImageListener
-import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isLottie
 import one.mixin.android.vo.isSignal
-import one.mixin.android.widget.RLottieDrawable
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 

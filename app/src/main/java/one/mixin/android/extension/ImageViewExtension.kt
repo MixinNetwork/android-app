@@ -376,29 +376,33 @@ fun RLottieImageView.loadSticker(uri: String?, type: String?) {
     if (!isActivityNotDestroyed()) return
     uri?.let {
         when (type?.uppercase()) {
-            "JSON"->
-                LottieLoader.fromUrl(
-                    context,
-                    uri,
-                    uri,
-                   layoutParams.width,
-                    layoutParams.height
-                )
-                    .addListener(
-                        object : ImageListener<RLottieDrawable> {
-                            override fun onResult(result: RLottieDrawable) {
-                                setAnimation(result)
-                                playAnimation()
-                                setAutoRepeat(true)
-                            }
-                        }
-                    )
+            "JSON" ->
+                loadLottie(it)
             "GIF" -> {
                 loadGif(uri)
             }
             else -> loadImage(uri)
         }
     }
+}
+
+fun RLottieImageView.loadLottie(uri: String) {
+    LottieLoader.fromUrl(
+        context,
+        uri,
+        uri,
+        layoutParams.width,
+        layoutParams.height
+    )
+        .addListener(
+            object : ImageListener<RLottieDrawable> {
+                override fun onResult(result: RLottieDrawable) {
+                    setAnimation(result)
+                    playAnimation()
+                    setAutoRepeat(true)
+                }
+            }
+        )
 }
 
 fun ImageView.loadBase64(uri: ByteArray?, width: Int, height: Int, mark: Int) {
