@@ -28,15 +28,11 @@ import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.T
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
-import one.mixin.android.util.image.ImageListener
-import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
-import one.mixin.android.vo.isLottie
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
-import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.dip
 
@@ -206,24 +202,11 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                 item.setOnClickListener { listener?.onAddClick() }
             } else {
                 val s = stickers[if (needAdd) position - 1 else position]
-                if (s.isLottie()) {
-                    LottieLoader.fromUrl(ctx, s.assetUrl, s.assetUrl, size, size)
-                        .addListener(
-                            object : ImageListener<RLottieDrawable> {
-                                override fun onResult(result: RLottieDrawable) {
-                                    item.setAnimation(result)
-                                    item.playAnimation()
-                                    item.setAutoRepeat(true)
-                                }
-                            }
-                        )
-                } else {
-                    item.loadSticker(s.assetUrl, s.assetType)
-                }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size
                     height = size
                 }
+                item.loadSticker(s.assetUrl, s.assetType)
                 item.setOnClickListener { listener?.onItemClick(position, s.stickerId) }
             }
         }
