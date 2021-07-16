@@ -39,6 +39,7 @@ import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
+import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColor
 
@@ -196,7 +197,7 @@ class StickerManagementFragment : BaseFragment() {
             params.height = size
             params.width = size
             v.layoutParams = params
-            val imageView = (v as ViewGroup).getChildAt(0) as ImageView
+            val imageView = (v as ViewGroup).getChildAt(0) as RLottieImageView
             val cover = v.getChildAt(1)
             val cb = v.getChildAt(2) as CheckBox
             if (editing) {

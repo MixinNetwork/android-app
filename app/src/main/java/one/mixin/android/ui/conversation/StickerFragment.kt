@@ -206,24 +206,11 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                 item.setOnClickListener { listener?.onAddClick() }
             } else {
                 val s = stickers[if (needAdd) position - 1 else position]
-                if (s.isLottie()) {
-                    LottieLoader.fromUrl(ctx, s.assetUrl, s.assetUrl, size, size)
-                        .addListener(
-                            object : ImageListener<RLottieDrawable> {
-                                override fun onResult(result: RLottieDrawable) {
-                                    item.setAnimation(result)
-                                    item.playAnimation()
-                                    item.setAutoRepeat(true)
-                                }
-                            }
-                        )
-                } else {
-                    item.loadSticker(s.assetUrl, s.assetType)
-                }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size
                     height = size
                 }
+                item.loadSticker(s.assetUrl, s.assetType)
                 item.setOnClickListener { listener?.onItemClick(position, s.stickerId) }
             }
         }
