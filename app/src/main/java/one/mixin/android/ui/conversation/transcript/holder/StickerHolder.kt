@@ -14,12 +14,8 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
-import one.mixin.android.util.image.ImageListener
-import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.isLottie
-import one.mixin.android.widget.RLottieDrawable
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 
@@ -84,26 +80,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
             binding.chatTime.visibility = VISIBLE
         }
         messageItem.assetUrl?.let { url ->
-            if (messageItem.isLottie()) {
-                LottieLoader.fromUrl(
-                    itemView.context,
-                    url,
-                    url,
-                    binding.chatSticker.layoutParams.width,
-                    binding.chatSticker.layoutParams.height
-                )
-                    .addListener(
-                        object : ImageListener<RLottieDrawable> {
-                            override fun onResult(result: RLottieDrawable) {
-                                binding.chatSticker.setAnimation(result)
-                                binding.chatSticker.playAnimation()
-                                binding.chatSticker.setAutoRepeat(true)
-                            }
-                        }
-                    )
-            } else {
-                binding.chatSticker.loadSticker(url, messageItem.assetType)
-            }
+            binding.chatSticker.loadSticker(url, messageItem.assetType)
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
         if (isFirst && !isMe) {
