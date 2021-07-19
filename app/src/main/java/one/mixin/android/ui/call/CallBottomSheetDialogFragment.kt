@@ -165,7 +165,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 withContext(Dispatchers.IO) {
                     groupName = viewModel.getConversationNameById(requireNotNull(cid))
                 }
-                binding.title.text = "$groupName - getString(R.string.chat_group_call_title)"
+                binding.title.text = "$groupName - ${getString(R.string.chat_group_call_title)}"
                 binding.avatarLl.isVisible = false
                 binding.usersRv.isVisible = true
                 binding.participants.isVisible = true
