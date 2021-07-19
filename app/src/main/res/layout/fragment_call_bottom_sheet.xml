@@ -84,10 +84,13 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
-        android:id="@+id/user_totals"
+        android:id="@+id/participants"
         android:layout_width="match_parent"
         android:gravity="center"
-        android:padding="3dp"
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp"
+        android:paddingTop="30dp"
+        android:paddingBottom="30dp"
         android:visibility="gone"
         android:layout_above="@id/bottom_layout"
         android:layout_height="wrap_content" />
@@ -96,7 +99,7 @@
         android:id="@+id/users_rv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/user_totals"
+        android:layout_above="@id/participants"
         android:layout_below="@id/title_layout"
         android:paddingStart="6dp"
         android:paddingEnd="6dp"

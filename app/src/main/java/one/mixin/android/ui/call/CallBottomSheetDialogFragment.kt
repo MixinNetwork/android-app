@@ -168,7 +168,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 binding.title.text = "$groupName - getString(R.string.chat_group_call_title)"
                 binding.avatarLl.isVisible = false
                 binding.usersRv.isVisible = true
-                binding.userTotals.isVisible = true
+                binding.participants.isVisible = true
                 if (userAdapter == null) {
                     userAdapter = CallUserAdapter(self) { userId ->
                         if (userId != null) {
@@ -469,10 +469,12 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         if (calls.isNullOrEmpty()) {
             userAdapter?.submitList(null)
+            binding.participants.text = getString(R.string.title_participants, 0)
         } else {
             val last = calls.lastOrNull()
             if (calls.size == 1 && last == self.userId) {
                 userAdapter?.submitList(listOf(self))
+                binding.participants.text = getString(R.string.title_participants, 1)
                 return@launch
             }
             val users = viewModel.findMultiCallUsersByIds(cid, calls.toSet())
@@ -496,7 +498,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             userAdapter?.submitList(users)
-            binding.userTotals.text = getString(R.string.title_participants, users.size)
+            binding.participants.text = getString(R.string.title_participants, users.size)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
         val newGuestsNotConnected = callState.getPendingUsers(cid)
