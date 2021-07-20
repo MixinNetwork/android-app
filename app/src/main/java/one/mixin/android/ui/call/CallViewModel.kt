@@ -19,7 +19,7 @@ internal constructor(
     suspend fun findSelfCallUser(conversationId: String, userId: String) =
         userRepository.findSelfCallUser(conversationId, userId)
 
-    fun observeConversationNameById(cid: String) = conversationRepo.observeConversationNameById(cid)
+    suspend fun getConversationNameById(cid: String) = conversationRepo.getConversationNameById(cid)
 
     suspend fun suspendFindUserById(userId: String) = userRepository.suspendFindUserById(userId)
 }

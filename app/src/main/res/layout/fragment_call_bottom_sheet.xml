@@ -83,11 +83,23 @@
             app:layout_constraintTop_toTopOf="@+id/title" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <TextView
+        android:id="@+id/participants"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp"
+        android:paddingTop="30dp"
+        android:paddingBottom="30dp"
+        android:visibility="gone"
+        android:layout_above="@id/bottom_layout"
+        android:layout_height="wrap_content" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/users_rv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottom_layout"
+        android:layout_above="@id/participants"
         android:layout_below="@id/title_layout"
         android:paddingStart="6dp"
         android:paddingEnd="6dp"
@@ -100,6 +112,7 @@
         android:id="@+id/bottom_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="10dp"
         android:layout_alignParentBottom="true"
         android:background="?attr/bg_white"
         android:padding="16dp">
@@ -114,9 +127,10 @@
             app:ic_checked="@drawable/ic_call_speaker_checked"
             app:ic_disable="@drawable/ic_call_speaker_disable"
             app:ic_unchecked="@drawable/ic_call_speaker_unchecked"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_status"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="2dp"
             tools:ignore="ContentDescription" />
 
         <one.mixin.android.widget.CallButton
@@ -128,9 +142,10 @@
             android:foreground="@drawable/mixin_ripple"
             app:ic_checked="@drawable/ic_call_mute_checked"
             app:ic_unchecked="@drawable/ic_call_mute_unchecked"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_status"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="2dp"
             tools:ignore="ContentDescription" />
 
         <one.mixin.android.widget.CallButton
@@ -139,10 +154,11 @@
             android:layout_height="wrap_content"
             app:bg_circle_checked="@drawable/bg_call_hangup"
             app:ic_checked="@drawable/ic_call_end_white_48dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_status"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="2dp"
             tools:ignore="ContentDescription" />
 
         <one.mixin.android.widget.CallButton
@@ -151,11 +167,22 @@
             android:layout_height="wrap_content"
             app:bg_circle_checked="@drawable/bg_call_answer"
             app:ic_checked="@drawable/ic_call_end_white_48dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_status"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="2dp"
             tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/call_status"
+            android:layout_width="0dp"
+            android:gravity="center"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="?attr/text_minor"
+            android:layout_height="wrap_content" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
