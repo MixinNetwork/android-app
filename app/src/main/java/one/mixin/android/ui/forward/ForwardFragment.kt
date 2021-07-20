@@ -493,6 +493,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 return@withContext
             }
             val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra.attachmentId, message)
+            if (newMessage == null) {
+                fallbackAction.invoke()
+                return@withContext
+            }
             chatViewModel.sendMessage(newMessage)
         } else {
             fallbackAction.invoke()
@@ -534,35 +538,44 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             fallbackAction.invoke()
             return
         }
-        val messageId = UUID.randomUUID().toString()
-        val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
-        outfile.copyFromInputStream(FileInputStream(file))
-        val message = Message(
-            messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.toUri().toString(),
-            payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
-            payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
-            caption = payload.caption,
-        )
-        chatViewModel.sendMessage(message)
+        try {
+            val messageId = UUID.randomUUID().toString()
+            val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
+            outfile.copyFromInputStream(FileInputStream(file))
+            val message = Message(
+                messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.toUri().toString(),
+                payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
+                payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
+                caption = payload.caption,
+            )
+            chatViewModel.sendMessage(message)
+        } catch (e: Exception) {
+            fallbackAction.invoke()
+            return
+        }
     }
 
-    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentId: String, message: Message): Message {
-        val messageId = UUID.randomUUID().toString()
-        val attachmentMessagePayload = AttachmentMessagePayload(
-            message.mediaKey, message.mediaDigest, attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
-            message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform,
-        )
-        val file = Uri.parse(message.mediaUrl).toFile()
-        val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
-        outfile.copyFromInputStream(FileInputStream(file))
-        return Message(
-            messageId, conversationId, sender.userId, category,
-            GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), outfile.toUri().toString(), message.mediaMimeType,
-            message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
-            message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
-            message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
-            nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform,
-        )
+    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentId: String, message: Message): Message? {
+        try {
+            val messageId = UUID.randomUUID().toString()
+            val attachmentMessagePayload = AttachmentMessagePayload(
+                message.mediaKey, message.mediaDigest, attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
+                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform,
+            )
+            val file = Uri.parse(message.mediaUrl).toFile()
+            val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
+            outfile.copyFromInputStream(FileInputStream(file))
+            return Message(
+                messageId, conversationId, sender.userId, category,
+                GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), outfile.toUri().toString(), message.mediaMimeType,
+                message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
+                message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
+                message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
+                nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform,
+            )
+        } catch (e: Exception) {
+            return null
+        }
     }
 
     private fun sendDirectMessages(cid: String) = lifecycleScope.launch {
