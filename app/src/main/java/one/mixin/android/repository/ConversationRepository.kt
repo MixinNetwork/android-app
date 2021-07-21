@@ -482,6 +482,8 @@ internal constructor(
 
     suspend fun getTranscriptById(transcriptId: String, messageId: String) = transcriptMessageDao.getTranscriptById(transcriptId, messageId)
 
+    fun updateTranscriptMediaStatus(transcriptId: String, messageId: String, status: String) = transcriptMessageDao.updateMediaStatus(transcriptId, messageId, status)
+
     fun getMediaSizeTotalById(conversationId: String) = transcriptMessageDao.getMediaSizeTotalById(conversationId)
 
     fun countTranscriptById(conversationId: String) = transcriptMessageDao.countTranscriptByConversationId(conversationId)

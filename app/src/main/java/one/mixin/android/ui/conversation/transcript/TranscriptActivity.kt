@@ -51,6 +51,7 @@ import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.copy
@@ -236,6 +237,16 @@ class TranscriptActivity : BaseActivity() {
                     conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
                         jobManager.addJobInBackground(SendTranscriptAttachmentMessageJob(transcript, isPlain))
                     }
+                }
+            }
+
+            override fun onCancel(messageId: String) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    conversationRepository.getTranscriptById(transcriptId, messageId)
+                        ?.let { transcript ->
+                            jobManager.cancelJobByMixinJobId("${transcript.transcriptId}${transcript.messageId}")
+                            conversationRepository.updateTranscriptMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
+                        }
                 }
             }
 

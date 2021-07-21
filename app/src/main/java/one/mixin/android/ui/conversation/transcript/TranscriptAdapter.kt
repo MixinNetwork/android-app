@@ -436,7 +436,7 @@ class TranscriptAdapter(
 
         open fun onAudioFileClick(messageItem: TranscriptMessageItem) {}
 
-        open fun onCancel(id: String) {}
+        open fun onCancel(messageId: String) {}
 
         open fun onRetryUpload(messageId: String) {}
 

@@ -89,6 +89,9 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                     binding.progress.visibility = View.VISIBLE
                     binding.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
                     binding.progress.setBindOnly(messageItem.messageId)
+                    binding.progress.setOnClickListener {
+                        onItemListener.onCancel(messageItem.messageId)
+                    }
                     binding.chatImage.setOnClickListener { }
                 }
                 MediaStatus.DONE.name -> {

@@ -164,11 +164,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.bottomLayout.showText()
                     binding.bottomLayout.bindId = null
                     binding.fileProgress.setOnClickListener {
-                        if (isMe && messageItem.mediaUrl != null) {
-                            onItemListener.onRetryUpload(messageItem.messageId)
-                        } else {
-                            onItemListener.onRetryDownload(messageItem.messageId)
-                        }
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
                         handleClick(messageItem, onItemListener)

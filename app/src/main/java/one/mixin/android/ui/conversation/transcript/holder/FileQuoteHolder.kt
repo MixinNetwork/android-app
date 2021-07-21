@@ -130,6 +130,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                         onItemListener.onCancel(messageItem.messageId)
                     }
                     binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
@@ -174,11 +175,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     binding.fileProgress.setBindId(messageItem.messageId)
                     binding.fileProgress.setProgress(-1)
                     binding.fileProgress.setOnClickListener {
-                        if (isMe && messageItem.mediaUrl != null) {
-                            onItemListener.onRetryUpload(messageItem.messageId)
-                        } else {
-                            onItemListener.onRetryDownload(messageItem.messageId)
-                        }
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
                         handleClick(messageItem, onItemListener)
