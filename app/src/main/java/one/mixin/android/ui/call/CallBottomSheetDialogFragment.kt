@@ -40,7 +40,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -114,7 +113,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val peekHeight by lazy {
-        requireContext().realSize().y * 2 / 3
+        470.dp
     }
 
     private var translationOffset by Delegates.notNull<Float>()
@@ -444,11 +443,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun updateTitle(content: String) {
         binding.title.text = if (callState.isGroupCall()) {
-            "$groupName - ${
-            getString(
-                R.string.chat_group_call_title
-            )
-            }"
+            "$groupName"
         } else {
             getString(
                 R.string.chat_call_title
