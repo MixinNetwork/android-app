@@ -9,12 +9,14 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
+import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.GsonHelper
@@ -153,6 +155,7 @@ class SendTranscriptAttachmentMessageJob(
                 } catch (e: Exception) {
                     0f
                 }
+                RxBus.publish(ProgressEvent.loadingEvent("${transcriptMessage.transcriptId}${transcriptMessage.messageId}", pg))
             }
         val digest = try {
             if (isPlain) {

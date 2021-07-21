@@ -21,6 +21,7 @@ import java.io.File
 import java.io.FileInputStream
 
 class TranscriptMessageItem(
+    val transcriptId: String,
     val messageId: String,
     val userId: String?,
     val userFullName: String?,

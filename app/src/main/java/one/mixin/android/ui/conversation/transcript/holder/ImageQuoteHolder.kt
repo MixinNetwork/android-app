@@ -88,16 +88,16 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                     binding.chatWarning.visibility = View.GONE
                     binding.progress.visibility = View.VISIBLE
                     binding.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                    binding.progress.setBindOnly(messageItem.messageId)
+                    binding.progress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
                     binding.progress.setOnClickListener {
-                        onItemListener.onCancel(messageItem.messageId)
+                        onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }
                     binding.chatImage.setOnClickListener { }
                 }
                 MediaStatus.DONE.name -> {
                     binding.chatWarning.visibility = View.GONE
                     binding.progress.visibility = View.GONE
-                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
                     binding.chatImage.setOnClickListener {
                         onItemListener.onImageClick(messageItem, binding.chatImage)
                     }
@@ -110,14 +110,14 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                     } else {
                         binding.progress.enableDownload()
                     }
-                    binding.progress.setBindId(messageItem.messageId)
+                    binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
                     binding.progress.setProgress(-1)
 
                     binding.progress.setOnClickListener {
                         if (messageItem.mediaUrl.isNullOrEmpty()) {
-                            onItemListener.onRetryDownload(messageItem.messageId)
+                            onItemListener.onRetryDownload(messageItem.transcriptId, messageItem.messageId)
                         } else {
-                            onItemListener.onRetryUpload(messageItem.messageId)
+                            onItemListener.onRetryUpload(messageItem.transcriptId, messageItem.messageId)
                         }
                     }
                     binding.chatImage.setOnClickListener {}

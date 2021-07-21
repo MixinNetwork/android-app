@@ -224,7 +224,7 @@ class TranscriptActivity : BaseActivity() {
                 show(this@TranscriptActivity, messageItem.messageId, conversationId, isPlain)
             }
 
-            override fun onRetryDownload(messageId: String) {
+            override fun onRetryDownload(transcriptId: String, messageId: String) {
                 lifecycleScope.launch {
                     conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
                         jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(conversationId, transcript))
@@ -232,7 +232,7 @@ class TranscriptActivity : BaseActivity() {
                 }
             }
 
-            override fun onRetryUpload(messageId: String) {
+            override fun onRetryUpload(transcriptId: String, messageId: String) {
                 lifecycleScope.launch {
                     conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
                         jobManager.addJobInBackground(SendTranscriptAttachmentMessageJob(transcript, isPlain))
@@ -240,7 +240,7 @@ class TranscriptActivity : BaseActivity() {
                 }
             }
 
-            override fun onCancel(messageId: String) {
+            override fun onCancel(transcriptId: String, messageId: String) {
                 lifecycleScope.launch(Dispatchers.IO) {
                     conversationRepository.getTranscriptById(transcriptId, messageId)
                         ?.let { transcript ->
