@@ -27,8 +27,8 @@
             android:padding="8dp"
             android:paddingStart="@dimen/margin16"
             android:paddingEnd="@dimen/margin16"
-            android:textColor="@color/black"
-            android:textColorHint="@color/gray_50"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_minor"
             android:textSize="12sp" />
 
         <TextView
