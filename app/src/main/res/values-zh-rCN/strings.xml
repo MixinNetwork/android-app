@@ -326,7 +326,6 @@
     <string name="chat_group_call_cancel">%1$s 已取消群组语音</string>
     <string name="chat_group_call_end">群组语音结束，时长 %1$s</string>
     <string name="chat_group_call_remote_peer_closed">连接已结束，请重试</string>
-    <string name="chat_group_call_title">群组语音</string>
     <string name="chat_call_title">语音</string>
     <string name="chat_call_add">添加</string>
     <string name="chat_call_bad_network_you">当前通话网络不佳</string>
