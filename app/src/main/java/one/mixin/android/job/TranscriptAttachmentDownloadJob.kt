@@ -9,9 +9,11 @@ import okhttp3.Request
 import okio.buffer
 import okio.sink
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
+import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getTranscriptFile
@@ -35,8 +37,6 @@ class TranscriptAttachmentDownloadJob(
         .groupBy("transcript_download").requireNetwork().persist(),
     "${transcriptMessage.transcriptId}${transcriptMessage.messageId}"
 ) {
-
-    private val TAG = TranscriptAttachmentDownloadJob::class.java.simpleName
 
     companion object {
         private const val serialVersionUID = 1L
@@ -126,7 +126,7 @@ class TranscriptAttachmentDownloadJob(
                             } catch (e: Exception) {
                                 0f
                             }
-                            // todo
+                            RxBus.publish(ProgressEvent.loadingEvent("${transcriptMessage.transcriptId}${transcriptMessage.messageId}", progress))
                         }
                     }
                 ).build()

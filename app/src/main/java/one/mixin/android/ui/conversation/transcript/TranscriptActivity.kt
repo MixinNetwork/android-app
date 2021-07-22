@@ -51,6 +51,7 @@ import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.copy
@@ -223,7 +224,7 @@ class TranscriptActivity : BaseActivity() {
                 show(this@TranscriptActivity, messageItem.messageId, conversationId, isPlain)
             }
 
-            override fun onRetryDownload(messageId: String) {
+            override fun onRetryDownload(transcriptId: String, messageId: String) {
                 lifecycleScope.launch {
                     conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
                         jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(conversationId, transcript))
@@ -231,11 +232,21 @@ class TranscriptActivity : BaseActivity() {
                 }
             }
 
-            override fun onRetryUpload(messageId: String) {
+            override fun onRetryUpload(transcriptId: String, messageId: String) {
                 lifecycleScope.launch {
                     conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
                         jobManager.addJobInBackground(SendTranscriptAttachmentMessageJob(transcript, isPlain))
                     }
+                }
+            }
+
+            override fun onCancel(transcriptId: String, messageId: String) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    conversationRepository.getTranscriptById(transcriptId, messageId)
+                        ?.let { transcript ->
+                            jobManager.cancelJobByMixinJobId("${transcript.transcriptId}${transcript.messageId}")
+                            conversationRepository.updateTranscriptMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
+                        }
                 }
             }
 

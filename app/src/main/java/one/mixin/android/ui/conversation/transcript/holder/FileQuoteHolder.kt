@@ -125,19 +125,20 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
                     binding.fileProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
-                    binding.fileProgress.setBindOnly(messageItem.messageId)
+                    binding.fileProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
                     binding.fileProgress.setOnClickListener {
-                        onItemListener.onCancel(messageItem.messageId)
+                        onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }
                     binding.chatLayout.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                        binding.fileProgress.setBindOnly(messageItem.messageId)
-                        binding.bottomLayout.bindId = messageItem.messageId
+                        binding.fileProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                        binding.bottomLayout.bindId = "${messageItem.transcriptId}${messageItem.messageId}"
                         if (MusicPlayer.isPlay(messageItem.messageId)) {
                             binding.fileProgress.setPause()
                             binding.bottomLayout.showSeekBar()
@@ -171,14 +172,10 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     } else {
                         binding.fileProgress.enableDownload()
                     }
-                    binding.fileProgress.setBindId(messageItem.messageId)
+                    binding.fileProgress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
                     binding.fileProgress.setProgress(-1)
                     binding.fileProgress.setOnClickListener {
-                        if (isMe && messageItem.mediaUrl != null) {
-                            onItemListener.onRetryUpload(messageItem.messageId)
-                        } else {
-                            onItemListener.onRetryDownload(messageItem.messageId)
-                        }
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
                         handleClick(messageItem, onItemListener)
@@ -199,12 +196,12 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (messageItem.mediaUrl.isNullOrEmpty()) {
-                onItemListener.onRetryDownload(messageItem.messageId)
+                onItemListener.onRetryDownload(messageItem.transcriptId, messageItem.messageId)
             } else {
-                onItemListener.onRetryUpload(messageItem.messageId)
+                onItemListener.onRetryUpload(messageItem.transcriptId, messageItem.messageId)
             }
         } else if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
-            onItemListener.onCancel(messageItem.messageId)
+            onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
         } else if (messageItem.mediaStatus != MediaStatus.EXPIRED.name) {
             onItemListener.onFileClick(messageItem)
         }

@@ -70,7 +70,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             binding.progress.visibility = GONE
             binding.play.isVisible = true
             binding.liveTv.visibility = VISIBLE
-            binding.progress.setBindId(messageItem.messageId)
+            binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
             binding.progress.setOnClickListener {}
             binding.progress.setOnLongClickListener { false }
             binding.chatImage.setOnClickListener {
@@ -139,9 +139,9 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                         binding.progress.visibility = VISIBLE
                         binding.play.visibility = GONE
                         binding.progress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
-                        binding.progress.setBindOnly(messageItem.messageId)
+                        binding.progress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
                         binding.progress.setOnClickListener {
-                            onItemListener.onCancel(messageItem.messageId)
+                            onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                         }
                         binding.chatImage.setOnClickListener { }
                         binding.chatImage.setOnLongClickListener { false }
@@ -150,7 +150,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                         binding.chatWarning.visibility = GONE
                         binding.progress.visibility = GONE
                         binding.play.visibility = VISIBLE
-                        binding.progress.setBindId(messageItem.messageId)
+                        binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
                         binding.progress.setOnClickListener {}
                         binding.progress.setOnLongClickListener { false }
                         binding.chatImage.setOnClickListener {
@@ -166,13 +166,13 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                         } else {
                             binding.progress.enableDownload()
                         }
-                        binding.progress.setBindId(messageItem.messageId)
+                        binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
                         binding.progress.setProgress(-1)
                         binding.progress.setOnClickListener {
                             if (messageItem.mediaUrl.isNullOrEmpty()) {
-                                onItemListener.onRetryDownload(messageItem.messageId)
+                                onItemListener.onRetryDownload(messageItem.transcriptId, messageItem.messageId)
                             } else {
-                                onItemListener.onRetryUpload(messageItem.messageId)
+                                onItemListener.onRetryUpload(messageItem.transcriptId, messageItem.messageId)
                             }
                         }
                         binding.chatImage.setOnClickListener {}
