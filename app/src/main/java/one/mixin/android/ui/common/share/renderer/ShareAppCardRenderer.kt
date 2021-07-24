@@ -25,11 +25,12 @@ open class ShareAppCardRenderer(context: Context) : ShareMessageRenderer {
         binding.chatIcon.loadRoundImage(actionCard.iconUrl, 4.dp, R.drawable.holder_bot)
         binding.chatTitle.text = actionCard.title
         binding.chatDescription.text = actionCard.description
-        binding.chatLayout.setBackgroundResource(
+        binding.dataWrapper.chatFlag.isVisible = false
+        binding.chatContentLayout.setBackgroundResource(
             if (!isNightMode) {
-                R.drawable.bill_bubble_me_last
+                R.drawable.chat_bubble_other
             } else {
-                R.drawable.bill_bubble_me_last_night
+                R.drawable.chat_bubble_other_night
             }
         )
     }
