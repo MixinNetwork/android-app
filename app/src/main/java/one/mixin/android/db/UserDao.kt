@@ -128,7 +128,7 @@ interface UserDao : BaseDao<User> {
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id = :userId"""
     )
-    suspend fun findSelfCallUser(conversationId: String, userId: String): CallUser
+    suspend fun findSelfCallUser(conversationId: String, userId: String): CallUser?
 
     @Query("SELECT user_id FROM users WHERE identity_number IN (:identityNumbers)")
     fun findMultiUserIdsByIdentityNumbers(identityNumbers: Set<String>): List<String>

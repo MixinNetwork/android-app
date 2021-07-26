@@ -154,11 +154,16 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         join = requireArguments().getBoolean(EXTRA_JOIN, false)
         lifecycleScope.launchWhenCreated {
             val cid = callState.conversationId
+            val account = Session.getAccount()!!
             self = if (cid == null) {
-                val account = Session.getAccount()!!
                 CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
             } else {
-                viewModel.findSelfCallUser(cid, Session.getAccountId()!!)
+                var callUser = viewModel.findSelfCallUser(cid, account.userId)
+                if (callUser == null) {
+                    callUser = CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
+                    viewModel.refreshConversation(cid)
+                }
+                callUser
             }
             if (callState.isGroupCall()) {
                 withContext(Dispatchers.IO) {
