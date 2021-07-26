@@ -111,7 +111,7 @@ fun ICategory.canRecall(): Boolean {
 }
 
 private val mediaPath by lazy {
-    MixinApplication.appContext.getMediaPath()?.absolutePath
+    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
 }
 
 fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {

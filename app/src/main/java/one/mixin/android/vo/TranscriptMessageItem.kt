@@ -165,7 +165,7 @@ fun TranscriptMessageItem.toMessageItem(conversationId: String?): MessageItem {
 }
 
 fun TranscriptMessageItem.absolutePath(context: Context = MixinApplication.appContext): String? {
-    val mediaPath = context.getMediaPath()?.absolutePath ?: return null
+    val mediaPath = MixinApplication.appContext.getMediaPath()?.toUri()?.toString() ?: return null
     val url = mediaUrl
     return when {
         url == null -> null

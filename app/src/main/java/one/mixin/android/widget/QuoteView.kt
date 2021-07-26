@@ -485,7 +485,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
         conversationId: String,
         context: Context = MixinApplication.appContext
     ): String? {
-        val mediaPath = context.getMediaPath()?.absolutePath ?: return null
+        val mediaPath = context.getMediaPath()?.toUri()?.toString() ?: return null
         return when {
             mediaUrl == null -> null
             mediaUrl.startsWith(mediaPath) -> mediaUrl
