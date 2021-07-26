@@ -12,4 +12,8 @@ class RegexParser {
     static final String URL_PATTERN = "[a-zA-z]+://[^\\s]*(?<!\\))";
     static final String BOT_PATTERN = "7000\\d{6}";
 
+    static final String MARKDOWN_BOLD = "(\\*\\*|__)(.*?)\\1";
+    static final String MARKDOWN_ITALIC = "(\\*|_)(.*?)\\1";
+    static final String MARKDOWN_STRIKETHROUGH = "(\\~\\~)(.*?)\\~\\~";
+    static final String MARKDOWN_INLINE = "`(.*?)`";
 }

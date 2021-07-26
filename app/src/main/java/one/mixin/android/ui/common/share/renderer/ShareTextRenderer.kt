@@ -16,7 +16,14 @@ open class ShareTextRenderer(val context: Context) : ShareMessageRenderer {
     val contentView get() = binding.root
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.chatTv.addAutoLinkMode(
+            AutoLinkMode.MODE_URL,
+            AutoLinkMode.MODE_BOT,
+            AutoLinkMode.MODE_MARKDOWN_BOLD,
+            AutoLinkMode.MODE_MARKDOWN_ITALIC,
+            AutoLinkMode.MODE_MARKDOWN_STRIKETHROUGH,
+            AutoLinkMode.MODE_MARKDOWN_INLINE
+        )
     }
 
     fun render(content: String, isNightMode: Boolean) {
