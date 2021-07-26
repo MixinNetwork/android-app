@@ -361,6 +361,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun isConnected() = state == CallService.CallState.STATE_CONNECTED
     fun isRinging() = state == CallService.CallState.STATE_RINGING
     fun isBeforeAnswering() = state < CallService.CallState.STATE_ANSWERING
+    fun isInUse() = state == CallService.CallState.STATE_DIALING || state == CallService.CallState.STATE_RINGING || state == CallService.CallState.STATE_ANSWERING || state == CallService.CallState.STATE_CONNECTED
 
     fun inConversationAndAtLeastAnswering(conversationId: String) =
         state >= CallService.CallState.STATE_ANSWERING && conversationId == this.conversationId

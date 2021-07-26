@@ -38,6 +38,7 @@ class CallActivity : BaseActivity() {
         fun show(context: Context, join: Boolean = false) {
             Intent(context, CallActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 putExtra(EXTRA_JOIN, join)
             }.run {
                 context.startActivity(this)
