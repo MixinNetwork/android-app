@@ -604,7 +604,7 @@ internal constructor(
                             { url ->
                                 ForwardMessage(
                                     ShareCategory.Image,
-                                    GsonHelper.customGson.toJson(ShareImageData(url, m.content))
+                                    GsonHelper.customGson.toJson(ShareImageData(requireNotNull(m.absolutePath()), m.content))
                                 )
                             },
                             { null }
@@ -617,7 +617,7 @@ internal constructor(
                         m.mediaMimeType ?: continue
                         m.mediaSize ?: continue
                         val dataMessagePayload = DataMessagePayload(
-                            m.mediaUrl,
+                            requireNotNull(m.absolutePath()),
                             m.name,
                             m.mediaMimeType,
                             m.mediaSize,
@@ -630,7 +630,7 @@ internal constructor(
                             continue
                         }
                         val videoData = VideoMessagePayload(
-                            m.mediaUrl,
+                            requireNotNull(m.absolutePath()),
                             UUID.randomUUID().toString(),
                             nowInUtc(),
                             m.content,
@@ -650,7 +650,7 @@ internal constructor(
                         ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
                     }
                     m.category.endsWith("_AUDIO") -> {
-                        val url = m.mediaUrl?.getFilePath() ?: continue
+                        val url = m.absolutePath()?.getFilePath() ?: continue
                         if (!File(url).exists()) continue
 
                         val duration = m.mediaDuration?.toLongOrNull() ?: continue
