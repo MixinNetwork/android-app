@@ -722,12 +722,14 @@ fun ByteArray.encodeBitmap(): Bitmap? {
 
 fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
 
+private const val MAX_BLUR_HASH_DIMEN = 20
+
 fun String.toDrawable(width: Int, height: Int): Drawable? {
     return try {
         if (!Base83.isValid(this)) {
             this.decodeBase64().encodeBitmap()?.toDrawable()
         } else {
-            BlurHashDecoder.decode(this, maxOf(width, 64), maxOf(height, 64), 1.0)?.toDrawable()
+            BlurHashDecoder.decode(this, minOf(width, MAX_BLUR_HASH_DIMEN), minOf(height, MAX_BLUR_HASH_DIMEN), 1.0)?.toDrawable()
         }
     } catch (e: Exception) {
         null
