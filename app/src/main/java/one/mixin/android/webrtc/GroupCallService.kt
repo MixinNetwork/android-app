@@ -356,28 +356,42 @@ class GroupCallService : CallService() {
             }
             return
         }
+        val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
+        if (playRing) {
+            if (isDisconnected.compareAndSet(true, false)) {
+                callState.state = CallState.STATE_RINGING
+                callState.callType = CallType.Group
+                updateForegroundNotification()
+                callState.conversationId = cid
+                userId?.let {
+                    callState.setInviter(cid, it)
+                    callState.addPendingUsers(cid, arrayListOf(it))
+                }
+                callState.isOffer = false
+                timeoutFuture = timeoutExecutor.schedule(
+                    TimeoutRunnable(),
+                    DEFAULT_TIMEOUT_MINUTES,
+                    TimeUnit.MINUTES
+                )
+                CallActivity.show(this, !playRing)
+                audioManager.start(false, playRing)
+                startCheckPeers(cid)
 
-        if (isDisconnected.compareAndSet(true, false)) {
-            callState.state = CallState.STATE_RINGING
+                userId?.let {
+                    saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+                }
+            }
+        } else {
+            callState.state = CallState.STATE_IDLE
             callState.callType = CallType.Group
-            updateForegroundNotification()
             callState.conversationId = cid
             userId?.let {
                 callState.setInviter(cid, it)
                 callState.addPendingUsers(cid, arrayListOf(it))
             }
             callState.isOffer = false
-            val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
-            if (playRing) {
-                timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-            }
-            CallActivity.show(this, !playRing)
-            audioManager.start(false, playRing)
             startCheckPeers(cid)
-
-            userId?.let {
-                saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
-            }
+            CallActivity.show(this, !playRing)
         }
     }
 
@@ -433,6 +447,7 @@ class GroupCallService : CallService() {
         }
         if (callState.isAnswering()) return
 
+        isDisconnected.set(false)
         callState.state = CallState.STATE_ANSWERING
         callState.callType = CallType.Group
         updateForegroundNotification()

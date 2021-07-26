@@ -113,7 +113,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val peekHeight by lazy {
-        470.dp
+        480.dp
     }
 
     private var translationOffset by Delegates.notNull<Float>()
@@ -277,7 +277,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         refreshUsers()
                     }
                     if (state == CallService.CallState.STATE_IDLE) {
-                        contentView.post { handleDisconnected() }
                         return@Observer
                     }
                     if (uiState >= state) {
@@ -562,7 +561,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 return
             }
-            if (checkPipPermission()) {
+            if (callState.isInUse() && checkPipPermission()) {
                 pipCallView.show(requireActivity(), callState.connectedTime, callState)
             }
         }
