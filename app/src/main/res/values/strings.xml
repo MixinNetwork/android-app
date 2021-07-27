@@ -778,8 +778,9 @@
 
     <!--withdrawal-->
     <string name="withdrawal">Withdrawal</string>
-    <string name="withdrawal_fee">A transaction fee of %1$s is required for withdrawing %2$s</string>
-    <string name="withdrawal_fee_with_reserve">A transaction fee of %1$s is required for withdrawing %2$s. %3$s has a minimum %4$s %5$s reserve requirement.</string>
+    <string name="withdrawal_network_fee">Network fee:</string>
+    <string name="withdrawal_minimum_withdrawal">Minimum withdrawal:</string>
+    <string name="withdrawal_minimum_reserve">Minimum reserve:</string>
     <string name="withdrawal_addr_add">+ Add Address</string>
     <string name="withdrawal_addr_new">New %1$s Address</string>
     <string name="withdrawal_addr_modify">Modify %1$s Address</string>

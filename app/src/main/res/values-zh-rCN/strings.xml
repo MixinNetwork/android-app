@@ -762,8 +762,9 @@
 
     <!--withdrawal-->
     <string name="withdrawal">提现</string>
-    <string name="withdrawal_fee">需要 %1$s 作为 %2$s 的提现手续费。</string>
-    <string name="withdrawal_fee_with_reserve">需要 %1$s 作为 %2$s 的提现手续费。%3$s 最少需要保留 %4$s 个 %5$s。</string>
+    <string name="withdrawal_network_fee">网络手续费：</string>
+    <string name="withdrawal_minimum_withdrawal">最小提现数量：</string>
+    <string name="withdrawal_minimum_reserve">最少保留数量：</string>
     <string name="withdrawal_addr_add">+ 添加地址</string>
     <string name="withdrawal_addr_new">新 %1$s 地址</string>
     <string name="withdrawal_addr_modify">修改 %1$s 地址</string>

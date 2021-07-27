@@ -711,8 +711,6 @@
 
     <!--withdrawal-->
     <string name="withdrawal">Penarikan</string>
-    <string name="withdrawal_fee">Biaya transaksi sebesar %1$s diperlukan untuk penarikan %2$s</string>
-    <string name="withdrawal_fee_with_reserve">Biaya transaksi sebesar %1$s diperlukan untuk penarikan %2$s. %3$s memiliki minimal %4$s %5$s ketentuan cadang.</string>
     <string name="withdrawal_addr_add">+ Tambahkan Alamat</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baru</string>
     <string name="withdrawal_addr_modify">Ubah Alamat %1$s</string>

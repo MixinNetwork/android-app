@@ -749,8 +749,6 @@
     <string name="background_connection_enabled">Nod pesanan berjalan</string>
     <!--withdrawal-->
     <string name="withdrawal">Pengeluaran</string>
-    <string name="withdrawal_fee">Bayaran urus niaga %1$s diperlukan untuk pengeluaran %2$s</string>
-    <string name="withdrawal_fee_with_reserve">Bayaran urus niaga %1$s diperlukan untuk pengeluaran %2$s. %3$s mempunyai syarat simpanan minimum %4$s %5$s.</string>
     <string name="withdrawal_addr_add">+ Tambah Alamat</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baharu</string>
     <string name="withdrawal_addr_modify">Ubah suai Alamat %1$s</string>
