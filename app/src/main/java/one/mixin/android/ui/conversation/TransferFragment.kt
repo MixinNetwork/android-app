@@ -6,14 +6,10 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Typeface
 import android.text.Editable
 import android.text.InputFilter
-import android.text.Spannable
-import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.TextWatcher
-import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -25,6 +21,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.text.bold
+import androidx.core.text.buildSpannedString
+import androidx.core.text.color
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -45,6 +44,7 @@ import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
@@ -284,27 +284,38 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 address = it
                 binding.titleView.setSubTitle(getString(R.string.send_to, it.label), it.displayAddress().formatPublicKey())
                 binding.memoRl.isVisible = isInnerTransfer()
-                val bold = it.fee + " " + currentAsset!!.chainSymbol
-                val str = try {
-                    val reserveDouble = it.reserve.toDouble()
-                    if (reserveDouble > 0) {
-                        getString(R.string.withdrawal_fee_with_reserve, bold, currentAsset!!.symbol, currentAsset!!.name, it.reserve, currentAsset!!.symbol)
-                    } else {
-                        getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
-                    }
-                } catch (t: Throwable) {
-                    getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
-                }
-                val ssb = SpannableStringBuilder(str)
-                val start = str.indexOf(bold)
-                ssb.setSpan(
-                    StyleSpan(Typeface.BOLD),
-                    start,
-                    start + bold.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
+
                 binding.feeTv.visibility = VISIBLE
-                binding.feeTv.text = ssb
+                val reserveDouble = it.reserve.toDoubleOrNull()
+                val dustDouble = it.dust?.toDoubleOrNull()
+                val color = requireContext().colorFromAttribute(R.attr.text_primary)
+                binding.feeTv.text = buildSpannedString {
+                    append(getString(R.string.withdrawal_network_fee))
+                    bold {
+                        append(" ")
+                        color(color) {
+                            append(it.fee + " " + currentAsset!!.chainSymbol)
+                        }
+                    }
+                    if (dustDouble != null && dustDouble > 0) {
+                        append('\n')
+                        append(getString(R.string.withdrawal_minimum_withdrawal))
+                        color(color) {
+                            bold {
+                                append(" ${it.dust} ${currentAsset!!.symbol}")
+                            }
+                        }
+                    }
+                    if (reserveDouble != null && reserveDouble > 0) {
+                        append('\n')
+                        append(getString(R.string.withdrawal_minimum_reserve))
+                        color(color) {
+                            bold {
+                                append(" ${it.reserve} ${currentAsset!!.symbol}")
+                            }
+                        }
+                    }
+                }
             }
         )
     }

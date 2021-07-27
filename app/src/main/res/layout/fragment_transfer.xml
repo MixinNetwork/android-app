@@ -223,13 +223,11 @@
                 android:id="@+id/fee_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:layout_marginStart="32dp"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="@dimen/margin16"
-                android:text="@string/withdrawal_fee"
-                android:textColor="?attr/text_primary"
+                android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 android:visibility="gone"/>
 
