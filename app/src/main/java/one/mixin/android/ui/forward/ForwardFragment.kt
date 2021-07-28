@@ -571,7 +571,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             outfile.copyFromInputStream(FileInputStream(file))
             return Message(
                 messageId, conversationId, sender.userId, category,
-                GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), outfile.name,message.mediaMimeType,
+                GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), outfile.name, message.mediaMimeType,
                 message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
                 message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
                 message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
