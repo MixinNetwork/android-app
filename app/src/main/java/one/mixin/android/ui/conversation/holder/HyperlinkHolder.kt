@@ -27,6 +27,8 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
     init {
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
+        binding.chatTv.setMentionModeColor(LINK_COLOR)
+        binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxWidth = itemView.context.maxItemWidth()
     }
 
@@ -108,6 +110,9 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
+                }
+                AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
+                    onItemListener.onMentionClick(matchedText)
                 }
                 else -> {
                 }

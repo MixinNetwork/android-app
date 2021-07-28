@@ -49,6 +49,7 @@ import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.MediaStatus
@@ -184,7 +185,7 @@ class TranscriptActivity : BaseActivity() {
 
             override fun onMentionClick(identityNumber: String) {
                 lifecycleScope.launch {
-                    userRepository.findUserByIdentityNumberSuspend(identityNumber)?.let { user ->
+                    userRepository.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))?.let { user ->
                         UserBottomSheetDialogFragment.newInstance(user, conversationId)
                             .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
