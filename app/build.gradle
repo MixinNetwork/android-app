@@ -51,7 +51,7 @@ android {
         }
 
         kotlinOptions {
-            jvmTarget = "11"
+            jvmTarget = '11'
             freeCompilerArgs += ['-Xuse-experimental=kotlin.contracts.ExperimentalContracts']
         }
 
