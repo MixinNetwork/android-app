@@ -3,6 +3,8 @@ package one.mixin.android.webrtc
 import android.content.Context
 import androidx.collection.arrayMapOf
 import kotlinx.coroutines.delay
+import one.mixin.android.RxBus
+import one.mixin.android.event.VoiceEvent
 import one.mixin.android.session.Session
 import one.mixin.android.util.debug.measureTimeMillis
 import org.webrtc.AudioSource
@@ -47,12 +49,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private val offerReceiveAudioConstraint = MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true")
     private val offerReceiveVideoConstraint = MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false")
 
-    suspend fun observeStat(onChanged: (List<Pair<String, Boolean>>) -> Unit) {
+    suspend fun observeStat() {
         while (peerConnection != null && peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CONNECTED) {
             measureTimeMillis(TAG_CALL) {
                 peerConnection!!.getStats { report ->
                     val map = report.statsMap
-                    val userSpeakings = arrayListOf<Pair<String, Boolean>>()
                     map.entries.filter { it.key.startsWith("RTCMediaStreamTrack_receiver") }
                         .forEach { (_, v) ->
                             val trackIdentifier = v.members["trackIdentifier"]
@@ -60,10 +61,9 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                             Timber.d("$TAG_CALL trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
                             val userId = receiverIdUserIdMap[trackIdentifier]
                             if (userId != null && audioLevel != null) {
-                                userSpeakings.add(Pair(userId, audioLevel > 0.01))
+                                RxBus.publish(VoiceEvent(userId, audioLevel))
                             }
                         }
-                    onChanged.invoke(userSpeakings)
                 }
             }
             delay(200)

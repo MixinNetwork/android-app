@@ -213,7 +213,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callState.reconnecting = false
 
         lifecycleScope.launch(observeStats) {
-            peerConnectionClient.observeStat { callState.checkUserSpeaking(it) }
+            peerConnectionClient.observeStat()
         }
     }
 

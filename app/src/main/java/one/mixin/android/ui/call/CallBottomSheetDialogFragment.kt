@@ -50,7 +50,6 @@ import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
-import one.mixin.android.webrtc.TAG_CALL
 import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.acceptInvite
 import one.mixin.android.webrtc.answerCall
@@ -462,10 +461,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun refreshUsers() = lifecycleScope.launch {
         val cid = callState.conversationId ?: return@launch
-        val us = callState.getUsersWithSpeaking(cid)
-        val calls = mutableListOf<String>().apply {
-            us?.let { list -> addAll(list.map { it.first }) }
-        }
+        val us = callState.getUsers(cid)
+        val calls = mutableListOf<String>().apply { us?.let { addAll(it) } }
         if (binding.usersRv.layoutManager == null) {
             binding.usersRv.layoutManager = GridLayoutManager(requireContext(), 4)
         }
@@ -499,13 +496,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                     }
                 }
-            users.forEach { u ->
-                if (u.userId != self.userId) {
-                    u.speaking = us?.find { it.first == u.userId }?.second
-                    Timber.d("$TAG_CALL u: $u")
-                }
-            }
-            Timber.d("$TAG_CALL users: ${users.size}")
             userAdapter?.submitList(users)
             binding.participants.text = getString(R.string.title_participants, users.size)
         }
