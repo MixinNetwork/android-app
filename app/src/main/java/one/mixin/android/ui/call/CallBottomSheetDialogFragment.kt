@@ -277,6 +277,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         refreshUsers()
                     }
                     if (state == CallService.CallState.STATE_IDLE) {
+                        if (callState.isNoneCallType()) {
+                            handleDisconnected()
+                        }
                         return@Observer
                     }
                     if (uiState >= state) {
