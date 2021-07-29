@@ -60,8 +60,8 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                             val audioLevel = v.members["audioLevel"] as? Double?
                             Timber.d("$TAG_CALL trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
                             val userId = receiverIdUserIdMap[trackIdentifier]
-                            if (userId != null && audioLevel != null) {
-                                RxBus.publish(VoiceEvent(userId, audioLevel))
+                            if (userId != null) {
+                                RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
                             }
                         }
                 }
