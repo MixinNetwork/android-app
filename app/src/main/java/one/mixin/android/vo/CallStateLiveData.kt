@@ -16,7 +16,8 @@ import one.mixin.android.webrtc.localEnd
 
 data class GroupCallUser(
     val id: String,
-    var type: Type
+    var type: Type,
+    var speaking: Boolean = false,
 ) {
     enum class Type {
         Joined, Pending
@@ -30,6 +31,26 @@ data class GroupCallState(
     var users: List<GroupCallUser>? = null
 
     var lock = Any()
+
+    fun checkUserSpeaking(pairs: List<Pair<String, Boolean>>): Boolean {
+        var shouldUpdate = false
+        pairs.forEach { p ->
+            val u = users?.find { it.id == p.first }
+            if (u != null && u.speaking != p.second) {
+                shouldUpdate = true
+                u.speaking = p.second
+            }
+        }
+        return shouldUpdate
+    }
+
+    fun userIdsWithSpeaking(): List<Pair<String, Boolean>>? {
+        if (users.isNullOrEmpty()) return null
+
+        val ids = mutableListOf<Pair<String, Boolean>>()
+        users?.mapTo(ids) { Pair(it.id, it.speaking) }
+        return ids
+    }
 
     fun userIds(): List<String>? {
         if (users.isNullOrEmpty()) return null
@@ -260,6 +281,13 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             it.conversationId == conversationId
         }?.inviter
 
+    fun getUsersWithSpeaking(conversationId: String): List<Pair<String, Boolean>>? {
+        val groupCallState = groupCallStates.find {
+            it.conversationId == conversationId
+        } ?: return null
+        return groupCallState.userIdsWithSpeaking()
+    }
+
     fun getUsers(conversationId: String): List<String>? {
         val groupCallState = groupCallStates.find {
             it.conversationId == conversationId
@@ -353,6 +381,16 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         groupCallState.removeUser(userId)
 
         postValue(state)
+    }
+
+    fun checkUserSpeaking(pairs: List<Pair<String, Boolean>>) {
+        val groupCallState = groupCallStates.find {
+            it.conversationId == conversationId
+        } ?: return
+        val shouldUpdate = groupCallState.checkUserSpeaking(pairs)
+        if (shouldUpdate) {
+            postValue(state)
+        }
     }
 
     fun isIdle() = state == CallService.CallState.STATE_IDLE

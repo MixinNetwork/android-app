@@ -11,6 +11,8 @@ import one.mixin.android.databinding.ItemCallUserBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
 import one.mixin.android.vo.CallUser
+import one.mixin.android.webrtc.TAG_CALL
+import timber.log.Timber
 
 class CallUserAdapter(private val self: CallUser, private val callClicker: (String?) -> Unit) :
     ListAdapter<CallUser, RecyclerView.ViewHolder>(CallUser.DIFF_CALLBACK) {
@@ -96,6 +98,8 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
             val vis =
                 user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
             binding.loading.isVisible = vis
+            binding.icSpeaking.isVisible = user.speaking == true
+            Timber.d("$TAG_CALL user: $user")
             binding.cover.isVisible = vis
             setOnClickListener {
                 callClicker(user.userId)

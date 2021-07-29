@@ -3,7 +3,7 @@ package one.mixin.android.vo
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 
-class CallUser(
+data class CallUser(
     @ColumnInfo(name = "user_id")
     val userId: String,
     @ColumnInfo(name = "identity_number")
@@ -13,7 +13,8 @@ class CallUser(
     @ColumnInfo(name = "avatar_url")
     val avatarUrl: String?,
     @ColumnInfo(name = "role")
-    val role: String
+    val role: String,
+    var speaking: Boolean? = false
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<CallUser>() {
@@ -27,7 +28,7 @@ class CallUser(
 
     override fun equals(other: Any?): Boolean =
         other is CallUser && other.userId == userId && other.role == role &&
-            other.fullName == fullName && other.avatarUrl == avatarUrl
+            other.fullName == fullName && other.avatarUrl == avatarUrl && other.speaking == speaking
 
     override fun hashCode(): Int {
         var result = userId.hashCode()
