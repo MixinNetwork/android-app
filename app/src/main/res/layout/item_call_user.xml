@@ -4,6 +4,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <one.mixin.android.widget.BlinkRingView
+        android:id="@+id/ring"
+        android:layout_width="76dp"
+        android:layout_height="76dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar_view"
         android:layout_width="64dp"
@@ -46,17 +56,5 @@
         android:singleLine="true"
         android:layout_marginTop="3dp"
         android:layout_height="wrap_content" />
-
-    <ImageView
-        android:id="@+id/ic_speaking"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:src="@drawable/ic_call_speaker_checked"
-        app:tint="@color/white"
-        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

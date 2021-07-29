@@ -7,16 +7,17 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemCallAddBinding
 import one.mixin.android.databinding.ItemCallUserBinding
 import one.mixin.android.event.VoiceEvent
+import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.round
 import one.mixin.android.vo.CallUser
-import one.mixin.android.webrtc.TAG_CALL
-import timber.log.Timber
 
 class CallUserAdapter(private val self: CallUser, private val callClicker: (String?) -> Unit) :
     ListAdapter<CallUser, RecyclerView.ViewHolder>(CallUser.DIFF_CALLBACK) {
@@ -95,6 +96,8 @@ class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(b
     }
 }
 
+private val avatarColors = MixinApplication.appContext.resources.getIntArray(R.array.avatar_colors)
+
 class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder(binding.root) {
 
     init {
@@ -116,7 +119,7 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
             val vis =
                 user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
             binding.loading.isVisible = vis
-            Timber.d("$TAG_CALL user: $user")
+            binding.ring.setColor(avatarColors[user.userId.getColorCode(CodeType.Avatar(avatarColors.size))])
             binding.cover.isVisible = vis
             setOnClickListener {
                 callClicker(user.userId)
@@ -132,7 +135,7 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.userId == userId) {
-                        binding.icSpeaking.isVisible = it.audioLevel > 0.01f
+                        binding.ring.isVisible = it.audioLevel > 0.01f
                     }
                 }
         }
