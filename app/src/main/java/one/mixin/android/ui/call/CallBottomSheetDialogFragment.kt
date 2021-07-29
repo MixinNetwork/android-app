@@ -48,6 +48,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
@@ -135,6 +136,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         behavior.peekHeight = peekHeight
         binding.root.doOnPreDraw { root ->
             translationOffset = (peekHeight - root.measuredHeight).toFloat()
+            binding.participants.translationY = translationOffset
             binding.bottomLayout.translationY = translationOffset
         }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
@@ -143,6 +145,13 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                userAdapter?.let {
+                    if (it.itemCount > 8) {
+                        binding.participants.translationY = 0f
+                    } else {
+                        binding.participants.translationY = translationOffset * (1 - slideOffset)
+                    }
+                }
                 binding.bottomLayout.translationY = translationOffset * (1 - slideOffset)
             }
         })
@@ -474,6 +483,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (calls.size == 1 && last == self.userId) {
                 userAdapter?.submitList(listOf(self))
                 binding.participants.text = getString(R.string.title_participants, 1)
+                binding.participants.translationY = binding.bottomLayout.translationY
                 return@launch
             }
             val users = viewModel.findMultiCallUsersByIds(cid, calls.toSet())
@@ -496,7 +506,14 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                     }
                 }
-            userAdapter?.submitList(users)
+            userAdapter?.apply {
+                submitList(users)
+                if (itemCount > 8) {
+                    binding.participants.translationY = 0f
+                } else {
+                    binding.participants.translationY = binding.bottomLayout.translationY
+                }
+            }
             binding.participants.text = getString(R.string.title_participants, users.size)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
