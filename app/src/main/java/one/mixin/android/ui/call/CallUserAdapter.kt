@@ -119,7 +119,7 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
             val vis =
                 user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
             binding.loading.isVisible = vis
-            binding.ring.setColor(avatarColors[user.userId.getColorCode(CodeType.Avatar(avatarColors.size))])
+            binding.ring.setColor(R.color.call_voice)
             binding.cover.isVisible = vis
             setOnClickListener {
                 callClicker(user.userId)
@@ -135,7 +135,7 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.userId == userId) {
-                        binding.ring.isVisible = it.audioLevel > 0.01f
+                        binding.ring.updateAudioLevel(it.audioLevel)
                     }
                 }
         }

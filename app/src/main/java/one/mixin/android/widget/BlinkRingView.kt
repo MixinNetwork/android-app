@@ -9,9 +9,15 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
+import androidx.core.view.isVisible
+import com.mapbox.mapboxsdk.style.expressions.Expression.color
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
+import timber.log.Timber
+import kotlin.math.max
+import kotlin.math.min
 
 class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
@@ -19,34 +25,35 @@ class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context
 
     private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeWidth = initW
+        strokeWidth = 0f
+        width
     }
     private val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         color = context.colorFromAttribute(R.attr.bg_white)
     }
 
-    private var anim: ValueAnimator = ValueAnimator.ofFloat(0f, initW).apply {
-        duration = 500
-        addUpdateListener { va ->
-            val w = va.animatedValue as Float
-            ringPaint.strokeWidth = w
-            invalidate()
-        }
-        repeatMode = REVERSE
-        repeatCount = INFINITE
-    }
-
-    fun setColor(@ColorInt color: Int) {
-        ringPaint.color = color
-    }
-
-    override fun onVisibilityChanged(changedView: View, visibility: Int) {
-        if (visibility == VISIBLE) {
-            anim.start()
+    fun updateAudioLevel(audioLevel: Double) {
+        if (audioLevel < 0.01f) {
+            isVisible = false
+            return
         } else {
-            anim.cancel()
+            isVisible = true
         }
+        val toValue = min(max(audioLevel.toFloat(), 0.05f) * initW, initW)
+        ValueAnimator.ofFloat(ringPaint.strokeWidth, toValue).apply {
+            duration = 200
+            addUpdateListener { va ->
+                val w = va.animatedValue as Float
+                ringPaint.strokeWidth = w
+                invalidate()
+            }
+            repeatCount = INFINITE
+        }.start()
+    }
+
+    fun setColor(@ColorRes id: Int) {
+        ringPaint.color = context.resources.getColor(id, null)
     }
 
     override fun onDraw(canvas: Canvas) {

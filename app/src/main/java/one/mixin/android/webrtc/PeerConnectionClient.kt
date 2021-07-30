@@ -50,7 +50,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
     suspend fun observeStat() {
         while (peerConnection != null && peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CONNECTED) {
-            peerConnection!!.getStats { report ->
+            requireNotNull(peerConnection).getStats { report ->
                 val map = report.statsMap
                 map.entries.filter { it.key.startsWith("RTCMediaStreamTrack_receiver") }
                     .forEach { (_, v) ->
