@@ -7,15 +7,12 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemCallAddBinding
 import one.mixin.android.databinding.ItemCallUserBinding
 import one.mixin.android.event.VoiceEvent
-import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.round
 import one.mixin.android.vo.CallUser
 
@@ -95,8 +92,6 @@ class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(b
         }
     }
 }
-
-private val avatarColors = MixinApplication.appContext.resources.getIntArray(R.array.avatar_colors)
 
 class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder(binding.root) {
 

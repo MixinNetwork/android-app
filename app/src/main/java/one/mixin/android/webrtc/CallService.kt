@@ -44,7 +44,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     protected val callExecutor: ThreadPoolExecutor = Executors.newFixedThreadPool(1) as ThreadPoolExecutor
     protected val timeoutExecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
-    private val observeStats = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val observeStatsDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     protected var timeoutFuture: ScheduledFuture<*>? = null
 
     protected val peerConnectionClient: PeerConnectionClient by lazy {
@@ -212,8 +212,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callState.disconnected = false
         callState.reconnecting = false
 
-        lifecycleScope.launch(observeStats) {
-            peerConnectionClient.observeStat()
+        lifecycleScope.launch(observeStatsDispatcher) {
+            peerConnectionClient.observeStats()
         }
     }
 

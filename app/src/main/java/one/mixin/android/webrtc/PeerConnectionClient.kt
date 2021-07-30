@@ -48,7 +48,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private val offerReceiveAudioConstraint = MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true")
     private val offerReceiveVideoConstraint = MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false")
 
-    suspend fun observeStat() {
+    suspend fun observeStats() {
         while (peerConnection != null && peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CONNECTED) {
             requireNotNull(peerConnection).getStats { report ->
                 val map = report.statsMap

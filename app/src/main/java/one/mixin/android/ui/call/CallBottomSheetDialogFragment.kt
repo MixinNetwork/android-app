@@ -228,7 +228,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     pipCallView.show(requireActivity(), callState.connectedTime, callState)
                 }
-                dismissAllowingStateLoss()
+                dismiss()
             }
             binding.subTitle.setOnClickListener {
                 showE2EETip()
@@ -359,7 +359,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun hangup() {
         callState.handleHangup(requireContext(), join)
-        requireActivity().finishAndRemoveTask()
     }
 
     private fun handleAnswer() {
@@ -382,7 +381,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleDisconnected() {
-        dismissAllowingStateLoss()
+        dismiss()
     }
 
     private fun handleBusy() {
@@ -390,7 +389,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     override fun dismiss() {
-        dismissAllowingStateLoss()
+        safeDismiss()
     }
 
     private fun handleRinging() {
@@ -590,11 +589,26 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         instant = null
     }
 
-    override fun dismissAllowingStateLoss() {
-        try {
-            super.dismissAllowingStateLoss()
-        } catch (e: IllegalStateException) {
-            Timber.w(e)
+    private fun safeDismiss() {
+        if (isAdded) {
+            dialog?.dismiss()
+            dialog?.setOnDismissListener {
+                try {
+                    super.dismissAllowingStateLoss()
+                } catch (e: IllegalStateException) {
+                    Timber.w(e)
+                } finally {
+                    requireActivity().finish()
+                }
+            }
+        } else {
+            try {
+                super.dismissAllowingStateLoss()
+            } catch (e: IllegalStateException) {
+                Timber.w(e)
+            } finally {
+                requireActivity().finish()
+            }
         }
     }
 

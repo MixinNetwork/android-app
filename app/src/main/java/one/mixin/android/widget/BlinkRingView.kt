@@ -2,20 +2,16 @@ package one.mixin.android.widget
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.INFINITE
-import android.animation.ValueAnimator.REVERSE
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
-import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.core.view.isVisible
-import com.mapbox.mapboxsdk.style.expressions.Expression.color
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
-import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
 
