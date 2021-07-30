@@ -17,6 +17,8 @@ import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGroupBinding
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
@@ -163,9 +165,9 @@ class GroupFragment : BaseFragment() {
     private fun filterAndSet(keyword: String, userList: List<User>?) {
         groupFriendAdapter.setData(
             userList?.filter {
-                it.fullName!!.contains(keyword, true) ||
-                    it.identityNumber.contains(keyword, true)
-            }?.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword },
+                it.fullName!!.containsIgnoreCase(keyword) ||
+                    it.identityNumber.containsIgnoreCase(keyword)
+            }?.sortedByDescending { it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword) },
             keyword.isEmpty()
         )
     }

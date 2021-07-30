@@ -45,9 +45,11 @@ import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
@@ -398,8 +400,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     private fun filter(s: String) {
         val assetList = assets.filter {
-            it.name.contains(s, true) || it.symbol.contains(s, true)
-        }.sortedByDescending { it.name == s || it.symbol == s }
+            it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
+        }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
         adapter.submitList(assetList)
     }
 

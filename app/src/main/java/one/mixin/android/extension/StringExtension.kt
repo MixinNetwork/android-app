@@ -561,3 +561,8 @@ fun String?.containsCaseInsensitive(other: String?) =
     } else {
         this == other
     }
+
+fun String?.equalsIgnoreCase(other: String?): Boolean = this?.equals(other, true) == true
+fun String?.equalsIgnoreCase(other: CharSequence?): Boolean = equalsIgnoreCase(other.toString())
+fun String?.containsIgnoreCase(other: CharSequence?): Boolean = this?.contains(other.toString(), true) == true
+fun String?.startsWithIgnoreCase(other: CharSequence?): Boolean = this?.startsWith(other.toString(), true) == true

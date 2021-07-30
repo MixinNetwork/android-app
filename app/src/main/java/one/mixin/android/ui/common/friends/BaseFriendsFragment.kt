@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import one.mixin.android.databinding.FragmentFriendsBinding
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.User
@@ -71,9 +73,9 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() 
         adapter.submitList(
             if (keyWord.isNotBlank()) {
                 users.filter {
-                    it.fullName?.contains(keyWord, true) == true ||
-                        it.identityNumber.contains(keyWord, true)
-                }.sortedByDescending { it.fullName == keyWord || it.identityNumber == keyWord }
+                    it.fullName?.containsIgnoreCase(keyWord) == true ||
+                        it.identityNumber.containsIgnoreCase(keyWord)
+                }.sortedByDescending { it.fullName.equalsIgnoreCase(keyWord) || it.identityNumber.equalsIgnoreCase(keyWord) }
             } else {
                 users
             }
