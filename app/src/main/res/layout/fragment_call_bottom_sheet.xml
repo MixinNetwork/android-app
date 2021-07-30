@@ -87,18 +87,6 @@
             app:layout_constraintTop_toTopOf="@+id/title" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/participants"
-        android:layout_width="match_parent"
-        android:gravity="center"
-        android:paddingStart="3dp"
-        android:paddingEnd="3dp"
-        android:paddingTop="30dp"
-        android:paddingBottom="30dp"
-        android:visibility="gone"
-        android:layout_above="@id/bottom_layout"
-        android:layout_height="wrap_content" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/users_rv"
         android:layout_width="match_parent"
@@ -111,6 +99,19 @@
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="4"
         tools:listitem="@layout/item_bot_manager" />
+
+    <TextView
+        android:id="@+id/participants"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp"
+        android:paddingTop="30dp"
+        android:paddingBottom="30dp"
+        android:visibility="gone"
+        android:layout_above="@id/bottom_layout"
+        android:background="?attr/bg_white"
+        android:layout_height="wrap_content" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottom_layout"
