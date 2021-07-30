@@ -91,6 +91,10 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         binding.chatTv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
+                    onItemListener.onUrlClick(matchedText)
+                }
+                AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
+                    onItemListener.onMentionClick(matchedText)
                 }
                 else -> {
                 }

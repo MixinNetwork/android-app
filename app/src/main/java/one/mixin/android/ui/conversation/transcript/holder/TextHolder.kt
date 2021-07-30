@@ -84,7 +84,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
                 }
-                AutoLinkMode.MODE_MENTION -> {
+                AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
                     onItemListener.onMentionClick(matchedText)
                 }
                 else -> {
