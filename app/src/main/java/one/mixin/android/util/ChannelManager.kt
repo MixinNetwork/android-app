@@ -8,6 +8,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
+import androidx.annotation.IntDef
 import androidx.annotation.RequiresApi
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -24,15 +25,24 @@ class ChannelManager {
     companion object {
         private const val CHANNEL_GROUP = "channel_group"
         const val CHANNEL_MESSAGE = "channel_message"
+        const val CHANNEL_SILENCE_MESSAGE = "channel_silence_message"
         private const val CHANNEL_CURRENT_VERSION = "channel_current_version"
         private const val CHANNEL_CURRENT_USER_VERSION = "channel_current_user_version"
         private const val CHANNEL_VERSION = 1
+
+        const val MESSAGES = 0
+        const val GROUP = 1
+        const val SILENCE = 2
+
+        @IntDef(GROUP, MESSAGES, SILENCE)
+        @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+        annotation class ChannelCategory
 
         fun create(context: Context) {
             supportsOreo {
                 val messageChannel =
                     NotificationChannel(
-                        getChannelId(false),
+                        getChannelId(MESSAGES),
                         context.getString(R.string.notification_message),
                         NotificationManager.IMPORTANCE_HIGH
                     )
@@ -47,15 +57,20 @@ class ChannelManager {
                 )
                 messageChannel.enableVibration(true)
                 messageChannel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-                val groupChannel = copyChannel(messageChannel, getChannelId(true))
+                val groupChannel = copyChannel(messageChannel, getChannelId(GROUP))
+                val silenceChannel = copyChannel(messageChannel, getChannelId(SILENCE))
                 groupChannel.name = context.getString(R.string.notification_group)
+                silenceChannel.name = context.getString(R.string.notification_silence)
+                silenceChannel.setSound(null, null)
+                silenceChannel.enableVibration(false)
 
                 supportsQ {
                     groupChannel.setAllowBubbles(true)
                     messageChannel.setAllowBubbles(true)
+                    silenceChannel.setAllowBubbles(true)
                 }
                 context.notificationManager.createNotificationChannels(
-                    listOf(messageChannel, groupChannel)
+                    listOf(messageChannel, groupChannel, silenceChannel)
                 )
             }
         }
@@ -93,7 +108,7 @@ class ChannelManager {
                 context.notificationManager.notificationChannels ?: return
             try {
                 existingChannels.forEach {
-                    if (it.id.startsWith(CHANNEL_GROUP) || it.id.startsWith(CHANNEL_MESSAGE)) {
+                    if (it.id.startsWith(CHANNEL_GROUP) || it.id.startsWith(CHANNEL_MESSAGE) || it.id.startsWith(CHANNEL_SILENCE_MESSAGE)) {
                         context.notificationManager.deleteNotificationChannel(it.id)
                     }
                 }
@@ -102,12 +117,18 @@ class ChannelManager {
             }
         }
 
-        fun getChannelId(isGroup: Boolean): String {
+        fun getChannelId(@ChannelCategory category: Int): String {
             val currentUserVersion = MixinApplication.appContext.defaultSharedPreferences.getInt(CHANNEL_CURRENT_USER_VERSION, 0)
-            return if (isGroup) {
-                "${CHANNEL_GROUP}_$CHANNEL_VERSION.$currentUserVersion"
-            } else {
-                "${CHANNEL_MESSAGE}_$CHANNEL_VERSION.$currentUserVersion"
+            return when (category) {
+                GROUP -> {
+                    "${CHANNEL_GROUP}_$CHANNEL_VERSION.$currentUserVersion"
+                }
+                SILENCE -> {
+                    "${CHANNEL_SILENCE_MESSAGE}_$CHANNEL_VERSION.$currentUserVersion"
+                }
+                else -> {
+                    "${CHANNEL_MESSAGE}_$CHANNEL_VERSION.$currentUserVersion"
+                }
             }
         }
 

@@ -10,6 +10,8 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -23,6 +25,7 @@ import android.provider.Settings
 import android.support.v4.media.MediaDescriptionCompat.STATUS_DOWNLOADED
 import android.text.method.LinkMovementMethod
 import android.view.ContextThemeWrapper
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -30,6 +33,7 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
@@ -44,6 +48,7 @@ import androidx.core.view.children
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -133,6 +138,7 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
@@ -834,7 +840,7 @@ class ConversationFragment() :
             }
 
             override fun onSayHi() {
-                sendMessage("Hi")
+                sendTextMessage("Hi")
             }
 
             override fun onOpenHomePage() {
@@ -2016,11 +2022,11 @@ class ConversationFragment() :
         return null
     }
 
-    private fun sendMessage(message: String) {
+    private fun sendTextMessage(message: String, isSilentMessage: Boolean? = null) {
         if (message.isNotBlank()) {
             binding.chatControl.chatEt.setText("")
             createConversation {
-                chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
+                chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage(), isSilentMessage)
                 scrollToDown()
                 markRead()
             }
@@ -2035,7 +2041,7 @@ class ConversationFragment() :
         }
     }
 
-    private fun sendReplyTextMessage(message: String) {
+    private fun sendReplyTextMessage(message: String, isSilentMessage: Boolean? = null) {
         if (message.isNotBlank() && binding.chatControl.replyView.messageItem != null) {
             binding.chatControl.chatEt.setText("")
             createConversation {
@@ -2044,7 +2050,8 @@ class ConversationFragment() :
                     sender,
                     message,
                     binding.chatControl.replyView.messageItem!!,
-                    isPlainMessage()
+                    isPlainMessage(),
+                    isSilentMessage
                 )
                 binding.chatControl.replyView.animateHeight(53.dp, 0)
                 binding.chatControl.replyView.messageItem = null
@@ -2215,7 +2222,7 @@ class ConversationFragment() :
         if (action.startsWith("input:") && action.length > 6) {
             val msg = action.substring(6).trim()
             if (msg.isNotEmpty()) {
-                sendMessage(msg)
+                sendTextMessage(msg)
             }
             return true
         }
@@ -2788,12 +2795,31 @@ class ConversationFragment() :
             clickSticker()
         }
 
+        @SuppressLint("InflateParams")
         override fun onSendClick(text: String) {
             if (binding.chatControl.replyView.isVisible && binding.chatControl.replyView.messageItem != null) {
                 sendReplyTextMessage(text)
             } else {
-                sendMessage(text)
+                sendTextMessage(text)
             }
+        }
+
+        override fun onSendLongClick(text: String) {
+            val popupWindow = PopupWindow(requireContext())
+            popupWindow.isOutsideTouchable = true
+            popupWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            popupWindow.contentView = LayoutInflater.from(requireContext()).inflate(R.layout.view_silence, null, false).apply {
+                setOnClickListener {
+                    if (binding.chatControl.replyView.isVisible && binding.chatControl.replyView.messageItem != null) {
+                        sendReplyTextMessage(text, true)
+                    } else {
+                        sendTextMessage(text, true)
+                    }
+                    popupWindow.dismiss()
+                }
+            }
+            requireContext().vibrate(longArrayOf(0, 50L))
+            PopupWindowCompat.showAsDropDown(popupWindow, binding.chatControl.anchorView, -200.dp, -110.dp, Gravity.END)
         }
 
         override fun onRecordStart(audio: Boolean) {

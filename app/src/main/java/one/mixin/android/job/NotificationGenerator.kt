@@ -27,6 +27,9 @@ import one.mixin.android.extension.supportsNougat
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager
+import one.mixin.android.util.ChannelManager.Companion.GROUP
+import one.mixin.android.util.ChannelManager.Companion.MESSAGES
+import one.mixin.android.util.ChannelManager.Companion.SILENCE
 import one.mixin.android.util.mention.rendMentionContent
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -62,6 +65,7 @@ object NotificationGenerator : Injector() {
         message: Message,
         userMap: Map<String, String>? = null,
         force: Boolean = false,
+        isSilent: Boolean = false
     ) = lifecycleScope.launch(Dispatchers.IO) {
         ChannelManager.updateChannelSound(MixinApplication.appContext)
 
@@ -82,10 +86,12 @@ object NotificationGenerator : Injector() {
             .putIntent(context, message.conversationId)
 
         val notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (conversation.isGroupConversation()) {
-                NotificationCompat.Builder(context, ChannelManager.getChannelId(true))
+            if (isSilent) {
+                NotificationCompat.Builder(context, ChannelManager.getChannelId(SILENCE))
+            } else if (conversation.isGroupConversation()) {
+                NotificationCompat.Builder(context, ChannelManager.getChannelId(GROUP))
             } else {
-                NotificationCompat.Builder(context, ChannelManager.getChannelId(false))
+                NotificationCompat.Builder(context, ChannelManager.getChannelId(MESSAGES))
             }
         } else {
             NotificationCompat.Builder(context, ChannelManager.CHANNEL_MESSAGE)
@@ -329,11 +335,15 @@ object NotificationGenerator : Injector() {
         notificationBuilder.color = ContextCompat.getColor(context, R.color.colorLightBlue)
         notificationBuilder.setWhen(System.currentTimeMillis())
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (!isSilent && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             notificationBuilder.setSound(Uri.parse("android.resource://" + context.packageName + "/" + R.raw.mixin))
         }
         notificationBuilder.setAutoCancel(true)
-        notificationBuilder.priority = NotificationCompat.PRIORITY_HIGH
+        notificationBuilder.priority = if (isSilent) {
+            NotificationCompat.PRIORITY_MIN
+        } else {
+            NotificationCompat.PRIORITY_HIGH
+        }
         user.notNullWithElse(
             {
                 context.mainThread {

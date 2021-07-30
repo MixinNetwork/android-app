@@ -706,6 +706,7 @@
     <string name="bot_interact_hi">打招呼</string>
     <string name="notification_group">群组通知</string>
     <string name="notification_message">消息通知</string>
+    <string name="notification_silence">静音通知</string>
     <string name="notification_node">消息节点</string>
     <string name="notification_reply">回复</string>
     <string name="notification_mark">标记为已读</string>
@@ -794,6 +795,7 @@
     <string name="group_info_show_more_omit"> 显示更多</string>
     <string name="group_info_show_more">显示更多</string>
     <string name="send">发送</string>
+    <string name="send_silence">静音发送</string>
     <string name="send_file">将 \"%1$s\" 发送给 %2$s?</string>
     <string name="send_file_group">将 \"%1$s\" 发送给 \"%2$s\"?</string>
     <string name="action_open">在浏览器中打开</string>
