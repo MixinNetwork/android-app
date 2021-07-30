@@ -112,6 +112,8 @@
     <color name="text_color_error_tip">#F67070</color>
     <color name="call_light_green">#5DBC7A</color>
 
+    <color name="call_voice">#50BD5C</color>
+
     <array name="name_colors">
         <item>#8C8DFF</item>
         <item>#7983C2</item>

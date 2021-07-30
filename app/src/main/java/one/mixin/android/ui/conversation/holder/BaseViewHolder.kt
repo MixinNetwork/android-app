@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.view.View
+import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
@@ -30,6 +31,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         val LINK_COLOR = Color.parseColor("#5FA7E4")
         val SELECT_COLOR = Color.parseColor("#660D94FC")
 
+        @ColorInt
         fun getColorById(id: String) = colors[id.getColorCode(CodeType.Name(colors.size))]
     }
 

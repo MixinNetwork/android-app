@@ -4,8 +4,11 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import com.twilio.audioswitch.AudioSwitch
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
@@ -41,6 +44,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     protected val callExecutor: ThreadPoolExecutor = Executors.newFixedThreadPool(1) as ThreadPoolExecutor
     protected val timeoutExecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+    private val observeStatsDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     protected var timeoutFuture: ScheduledFuture<*>? = null
 
     protected val peerConnectionClient: PeerConnectionClient by lazy {
@@ -207,6 +211,10 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         peerConnectionClient.enableCommunication()
         callState.disconnected = false
         callState.reconnecting = false
+
+        lifecycleScope.launch(observeStatsDispatcher) {
+            peerConnectionClient.observeStats()
+        }
     }
 
     private fun handleMuteAudio(intent: Intent) {
