@@ -19,6 +19,8 @@ import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentCurrencyBottomSheetBinding
 import one.mixin.android.databinding.ItemCurrencyBinding
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
@@ -130,8 +132,8 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         currencyAdapter.submitList(
             if (s.isNotBlank()) {
                 currencies.filter {
-                    it.name.contains(s, true)
-                }.sortedByDescending { it.name == s }
+                    it.name.containsIgnoreCase(s)
+                }.sortedByDescending { it.name.equalsIgnoreCase(s) }
             } else currencies
         )
     }

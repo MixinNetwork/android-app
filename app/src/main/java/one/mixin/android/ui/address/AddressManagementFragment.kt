@@ -13,6 +13,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddressManagementBinding
 import one.mixin.android.databinding.ItemAddressBinding
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -130,8 +132,8 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         binding.searchEt.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
-                    it.label.contains(s.toString(), ignoreCase = true)
-                }?.sortedByDescending { it.label == s.toString() }?.toMutableList()
+                    it.label.containsIgnoreCase(s)
+                }?.sortedByDescending { it.label.equalsIgnoreCase(s) }?.toMutableList()
             }
 
             override fun onSearch() {

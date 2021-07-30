@@ -16,6 +16,8 @@ import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentAuthenticationsBinding
 import one.mixin.android.databinding.ItemAuthBinding
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.navTo
@@ -121,8 +123,8 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
         adapter.submitList(
             if (keyWord.isNotBlank()) {
                 list?.filter {
-                    it.name.contains(keyWord, true) || it.appNumber.contains(keyWord, true)
-                }?.sortedByDescending { it.name == keyWord || it.appNumber == keyWord }
+                    it.name.containsIgnoreCase(keyWord) || it.appNumber.containsIgnoreCase(keyWord)
+                }?.sortedByDescending { it.name.equalsIgnoreCase(keyWord) || it.appNumber.equalsIgnoreCase(keyWord) }
             } else {
                 list
             }
