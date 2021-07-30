@@ -706,6 +706,7 @@
     <string name="bot_interact_hi">打招呼</string>
     <string name="notification_group">群组通知</string>
     <string name="notification_message">消息通知</string>
+    <string name="notification_silence">静音通知</string>
     <string name="notification_node">消息节点</string>
     <string name="notification_reply">回复</string>
     <string name="notification_mark">标记为已读</string>

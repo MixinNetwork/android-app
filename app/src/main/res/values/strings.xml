@@ -722,6 +722,7 @@
     <string name="bot_interact_hi">Say Hi</string>
     <string name="notification_group">Group Notification</string>
     <string name="notification_message">Message Notification</string>
+    <string name="notification_silence">Silence Notification</string>
     <string name="notification_node">Messaging Node</string>
     <string name="notification_reply">Reply</string>
     <string name="notification_mark">Mark as read</string>
