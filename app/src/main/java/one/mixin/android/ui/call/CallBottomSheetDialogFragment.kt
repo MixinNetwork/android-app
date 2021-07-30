@@ -389,6 +389,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         handleDisconnected()
     }
 
+    override fun dismiss() {
+        dismissAllowingStateLoss()
+    }
+
     private fun handleRinging() {
         binding.voiceCb.isVisible = false
         binding.muteCb.isVisible = false
