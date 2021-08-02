@@ -48,7 +48,6 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ParticipantRole
-import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
@@ -452,6 +451,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             binding.hangupCb.fadeIn()
         }
         if (disconnected) {
+            stopTimer()
             updateTitle(getString(R.string.chat_call_bad_network_you))
         } else {
             startTimer()
