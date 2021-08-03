@@ -117,6 +117,8 @@
         android:id="@+id/bottom_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
         android:elevation="10dp"
         android:layout_alignParentBottom="true"
         android:background="?attr/bg_white"

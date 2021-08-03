@@ -52,8 +52,8 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         while (peerConnection != null && peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CONNECTED) {
             requireNotNull(peerConnection).getStats { report ->
                 val map = report.statsMap
-                map.entries.filter { it.key.startsWith("RTCMediaStreamTrack_receiver") }
-                    .forEach { (_, v) ->
+                map.entries.forEach { (k, v) ->
+                    if (k.startsWith("RTCMediaStreamTrack_receive")) {
                         val trackIdentifier = v.members["trackIdentifier"]
                         val audioLevel = v.members["audioLevel"] as? Double?
                         val userId = receiverIdUserIdMap[trackIdentifier]
@@ -61,7 +61,15 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                         if (userId != null) {
                             RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
                         }
+                    } else if (k.startsWith("RTCAudioSource")) {
+                        if (audioTrack?.enabled() == true) {
+                            val audioLevel = v.members["audioLevel"] as? Double?
+                            RxBus.publish(VoiceEvent(requireNotNull(Session.getAccountId()), audioLevel ?: 0.0))
+                        } else {
+                            RxBus.publish(VoiceEvent(requireNotNull(Session.getAccountId()), 0.0))
+                        }
                     }
+                }
             }
             delay(200)
         }
