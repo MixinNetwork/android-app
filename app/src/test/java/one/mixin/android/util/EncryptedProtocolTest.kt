@@ -17,6 +17,7 @@ import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@ExperimentalUnsignedTypes
 class EncryptedProtocolTest {
 
     @Test

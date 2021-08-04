@@ -27,18 +27,17 @@ class EncryptedProtocol {
         val senderPublicKey = publicKeyToCurve25519(pub)
         val version = byteArrayOf(0x01)
 
-        return version.run {
-            if (extensionSessionKey != null && extensionSessionId != null) {
-                plus(toLeByteArray(2.toUInt()))
-            } else {
-                plus(toLeByteArray(1.toUInt()))
-            }
-        }.plus(senderPublicKey).run {
-            extensionSessionKey ?: return this
-            extensionSessionId ?: return this
-            val emergencyMessageKey = encryptCipherMessageKey(privateKey.seed, extensionSessionKey, aesGcmKey)
-            plus(UUID.fromString(extensionSessionId).toByteArray().plus(emergencyMessageKey))
-        }.plus(messageKeyWithSession).plus(encryptedMessageData)
+        return if (extensionSessionKey != null && extensionSessionId != null) {
+            version.plus(toLeByteArray(2.toUInt())).plus(senderPublicKey).let {
+                val emergencyMessageKey =
+                    encryptCipherMessageKey(privateKey.seed, extensionSessionKey, aesGcmKey)
+                it.plus(UUID.fromString(extensionSessionId).toByteArray().plus(emergencyMessageKey))
+            }.plus(messageKeyWithSession).plus(encryptedMessageData)
+        } else {
+            version.plus(toLeByteArray(1.toUInt())).plus(senderPublicKey)
+                .plus(messageKeyWithSession)
+                .plus(encryptedMessageData)
+        }
     }
 
     private fun encryptCipherMessageKey(seed: ByteArray, publicKey: ByteArray, aesGcmKey: ByteArray): ByteArray {
