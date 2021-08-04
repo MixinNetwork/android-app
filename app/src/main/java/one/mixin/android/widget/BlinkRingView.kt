@@ -18,6 +18,7 @@ import kotlin.math.min
 class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
     private val initW = 8.dp.toFloat()
+    private val miniW = 1.5f.dp.toFloat()
 
     private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -29,14 +30,14 @@ class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context
         color = context.colorFromAttribute(R.attr.bg_white)
     }
 
-    fun updateAudioLevel(audioLevel: Double) {
-        if (audioLevel < 0.01f) {
+    fun updateAudioLevel(audioLevel: Float) {
+        if (audioLevel == 0f) {
             isVisible = false
             return
         } else {
             isVisible = true
         }
-        val toValue = min(max(audioLevel.toFloat(), 0.05f) * initW, initW)
+        val toValue = max(initW * audioLevel, miniW)
         ValueAnimator.ofFloat(ringPaint.strokeWidth, toValue).apply {
             duration = 200
             addUpdateListener { va ->
