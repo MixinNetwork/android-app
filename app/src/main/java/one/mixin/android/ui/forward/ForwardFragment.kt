@@ -533,8 +533,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             fallbackAction.invoke()
             return
         }
-        val file = Uri.parse(mediaUrl).toFile()
-        if (!file.exists()) {
+        val file = try {
+            Uri.parse(mediaUrl).toFile()
+        } catch (e: Exception) {
+            null
+        }
+        if (file?.exists() != true) {
             fallbackAction.invoke()
             return
         }
