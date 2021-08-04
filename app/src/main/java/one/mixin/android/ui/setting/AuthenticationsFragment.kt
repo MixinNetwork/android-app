@@ -126,7 +126,7 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                     it.name.containsIgnoreCase(keyWord) || it.appNumber.containsIgnoreCase(keyWord)
                 }?.sortedByDescending { it.name.equalsIgnoreCase(keyWord) || it.appNumber.equalsIgnoreCase(keyWord) }
             } else {
-                list
+                list?.toList()
             }
         )
     }
