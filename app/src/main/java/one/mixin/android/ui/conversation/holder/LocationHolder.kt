@@ -27,7 +27,7 @@ import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
 import one.mixin.android.ui.conversation.location.useMapbox
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
 import org.jetbrains.anko.dip
@@ -251,7 +251,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         val isMe = meId == messageItem.userId
 
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, location?.name == null && location?.address == null) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative, location?.name == null && location?.address == null) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)

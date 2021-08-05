@@ -19,7 +19,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.dip
 import kotlin.math.min
@@ -174,7 +174,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
                 }
             }
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)

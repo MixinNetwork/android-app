@@ -18,7 +18,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root) {
@@ -186,7 +186,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         setStatusIcon(
             isMe,
             messageItem.status,
-            messageItem.isSignal(),
+            messageItem.isSecret(),
             isRepresentative
         ) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null

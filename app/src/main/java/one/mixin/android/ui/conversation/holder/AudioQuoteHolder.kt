@@ -17,7 +17,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 
@@ -94,7 +94,7 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
         } else {
             binding.audioDuration.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)

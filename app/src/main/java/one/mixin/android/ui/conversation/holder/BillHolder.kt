@@ -13,7 +13,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 
 class BillHolder constructor(val binding: ItemChatBillBinding) : BaseViewHolder(binding.root) {
 
@@ -46,7 +46,7 @@ class BillHolder constructor(val binding: ItemChatBillBinding) : BaseViewHolder(
             }
         }
         binding.billSymbolTv.text = messageItem.assetSymbol
-        binding.billTime.chatSecret.isVisible = messageItem.isSignal()
+        binding.billTime.chatSecret.isVisible = messageItem.isSecret()
         itemView.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
