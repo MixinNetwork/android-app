@@ -309,7 +309,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideEncryptedProtocol(app: Application) = EncryptedProtocol()
+    fun provideEncryptedProtocol() = EncryptedProtocol()
 
     @Provides
     @Singleton
