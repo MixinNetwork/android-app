@@ -3,6 +3,7 @@ package one.mixin.android.ui.qr
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +12,9 @@ import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.FLASH_MODE_OFF
@@ -18,6 +22,7 @@ import androidx.camera.core.ImageCapture.FLASH_MODE_ON
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.UseCase
 import androidx.camera.core.VideoCapture
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
@@ -40,6 +45,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CameraOpView
@@ -47,17 +53,40 @@ import java.io.File
 import kotlin.math.max
 
 @AndroidEntryPoint
-class CaptureFragment : BaseCameraxFragment() {
+class CaptureFragment() : BaseCameraxFragment() {
     companion object {
         const val TAG = "CaptureFragment"
 
         fun newInstance() = CaptureFragment()
+
+        @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+        fun newInstance(testRegistry: ActivityResultRegistry) = CaptureFragment(testRegistry)
     }
 
     private var imageCaptureFile: File? = null
 
     private var imageCapture: ImageCapture? = null
     private var videoCapture: VideoCapture? = null
+
+    // for testing
+    private lateinit var resultRegistry: ActivityResultRegistry
+
+    // testing constructor
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    constructor(
+        testRegistry: ActivityResultRegistry,
+    ) : this() {
+        resultRegistry = testRegistry
+    }
+
+    lateinit var getEditResult: ActivityResultLauncher<Pair<String, Boolean>>
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+
+        getEditResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEdit)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -172,7 +201,8 @@ class CaptureFragment : BaseCameraxFragment() {
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             imageCaptureFile?.let { uri ->
-                openEdit(uri.toString(), false)
+                ImageEditorActivity.show(requireContext(), uri.toUri())
+                // openEdit(uri.toString(), false)
             }
         }
 
@@ -307,5 +337,8 @@ class CaptureFragment : BaseCameraxFragment() {
         binding.chronometer.base = SystemClock.elapsedRealtime()
         binding.chronometer.start()
         binding.op.startProgress()
+    }
+
+    private fun callbackEdit(data: Intent?) {
     }
 }
