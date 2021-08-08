@@ -195,6 +195,7 @@ open class SendMessageJob(
         }
         if (participantSessionKey.publicKey.isNullOrBlank()) {
             message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
+            messageDao.updateCategoryById(message.id, message.category)
             sendPlainMessage()
             return
         }

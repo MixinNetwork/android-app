@@ -993,6 +993,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         } catch (e: Exception) {
             reportDecryptFailed(data, e, null)
+            insertInvalidMessage(data)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 

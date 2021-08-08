@@ -596,4 +596,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category in ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
     suspend fun findTranscriptIdByConversationId(conversationId: String): List<String>
+
+    @Query("UPDATE messages SET category = :category WHERE id = :messageId")
+    fun updateCategoryById(messageId: String, category: String)
 }
