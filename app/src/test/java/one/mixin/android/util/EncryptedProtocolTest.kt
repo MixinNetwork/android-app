@@ -6,8 +6,10 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
+import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.crypto.generateAesKey
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toByteArray
@@ -95,5 +97,26 @@ class EncryptedProtocolTest {
         val decryptedContent = encryptedProtocol.decryptMessage(receiverPrivateKey, UUID.fromString(otherSessionId).toByteArray(), encodedContent)
 
         assert(decryptedContent.contentEquals(content))
+    }
+
+    @Test
+    fun calculateAgreement() {
+        val senderKeyPair = generateEd25519KeyPair()
+        val senderPrivateKey = senderKeyPair.private as EdDSAPrivateKey
+        val senderPublicKey = senderKeyPair.public as EdDSAPublicKey
+
+        val receiverKeyPair = generateEd25519KeyPair()
+        val receiverPrivateKey = receiverKeyPair.private as EdDSAPrivateKey
+        val receiverPublicKey = receiverKeyPair.public as EdDSAPublicKey
+
+        val senderPrivate = privateKeyToCurve25519(senderPrivateKey.seed)
+        val senderSecret =
+            calculateAgreement(publicKeyToCurve25519(receiverPublicKey), senderPrivate)
+
+        val receiverPrivate = privateKeyToCurve25519(receiverPrivateKey.seed)
+        val receiverSecret =
+            calculateAgreement(publicKeyToCurve25519(senderPublicKey), receiverPrivate)
+
+        assert(senderSecret.contentEquals(receiverSecret))
     }
 }
