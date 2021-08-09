@@ -13,7 +13,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import kotlin.math.max
-import kotlin.math.min
 
 class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
