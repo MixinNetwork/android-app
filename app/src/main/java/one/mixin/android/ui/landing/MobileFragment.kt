@@ -238,10 +238,31 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         val phone = Phone(number)
         return try {
             phoneNumber = phoneUtil.parse(phone.phone, mCountry.code)
-            phoneUtil.isValidNumber(phoneNumber)
+            var isValid = phoneUtil.isValidNumber(phoneNumber)
+
+            // workaround for old registered Ivory Coast user
+            // https://issuetracker.google.com/issues/190630271
+            if (!isValid && mCountry.code == "CI") {
+                isValid = addPrefixAndTry(phone.phone)
+            }
+
+            isValid
         } catch (e: NumberParseException) {
             false
         }
+    }
+
+    private val prefixList = listOf("07", "05", "01", "27", "25", "21")
+
+    private fun addPrefixAndTry(phoneNumber: String): Boolean {
+        val num = phoneNumber.removePrefix(mCountry.dialCode)
+        prefixList.forEach { p ->
+            val phone = phoneUtil.parse("${mCountry.dialCode}$p$num", mCountry.code)
+            if (phoneUtil.isValidNumber(phone)) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun showCountry() {
