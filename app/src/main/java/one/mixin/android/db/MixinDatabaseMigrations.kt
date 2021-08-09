@@ -283,10 +283,5 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_39_40: Migration = object : Migration(39, 40) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE apps ADD COLUMN `encrypted` INTEGER")
-            }
-        }
     }
 }

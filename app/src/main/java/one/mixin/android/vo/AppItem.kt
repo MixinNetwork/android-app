@@ -19,11 +19,10 @@ class AppItem(
     val resourcePatterns: ArrayList<String>?,
     val updatedAt: String? = null,
     val userId: String? = null,
-    val avatarUrl: String? = null,
-    val encrypted: Boolean? = null,
+    val avatarUrl: String? = null
 )
 
 fun AppItem.toApp() = App(
     appId, appNumber, homeUri, redirectUri, name, iconUrl, category, description,
-    appSecret, capabilities, creatorId, resourcePatterns, updatedAt, encrypted
+    appSecret, capabilities, creatorId, resourcePatterns, updatedAt
 )

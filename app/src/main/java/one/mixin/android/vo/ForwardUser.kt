@@ -1,17 +1,19 @@
 package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
+import androidx.room.TypeConverters
 
+@TypeConverters(ArrayConverters::class)
 data class ForwardUser(
     @ColumnInfo(name = "user_id")
     val userId: String,
     @ColumnInfo(name = "app_id")
     val appId: String?,
-    @ColumnInfo(name = "encrypted")
-    val encrypted: Boolean?,
+    @ColumnInfo(name = "capabilities")
+    val capabilities: List<String>?,
 )
 
-fun ForwardUser.encryptedCategory(): EncryptCategory = if (appId != null && encrypted == true) {
+fun ForwardUser.encryptedCategory(): EncryptCategory = if (appId != null && capabilities?.contains("ENCRYPTED") == true) {
     EncryptCategory.ENCRYPTED
 } else if (appId != null) {
     EncryptCategory.PLAIN

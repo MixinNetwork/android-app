@@ -59,10 +59,7 @@ data class App(
     val resourcePatterns: ArrayList<String>?,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
-    val updatedAt: String?,
-    @SerializedName("encrypted")
-    @ColumnInfo(name = "encrypted")
-    val encrypted: Boolean?
+    val updatedAt: String?
 ) : Parcelable, BotInterface {
 
     companion object {
