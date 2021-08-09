@@ -12,11 +12,13 @@ import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
+import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.widget.ConvertEvent
 import java.io.File
@@ -25,7 +27,7 @@ class ConvertVideoJob(
     private val conversationId: String,
     private val senderId: String,
     private val uri: Uri,
-    isEncrypted: Boolean,
+    encryptCategory: EncryptCategory,
     private val messageId: String,
     createdAt: String? = null,
     private val replyMessage: MessageItem? = null,
@@ -37,7 +39,11 @@ class ConvertVideoJob(
     }
 
     private val video: VideoEditedInfo? = getVideoModel(uri)
-    private val category = if (isEncrypted) MessageCategory.ENCRYPTED_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+    private val category = encryptCategory.toCategory(
+        MessageCategory.PLAIN_VIDEO,
+        MessageCategory.SIGNAL_VIDEO,
+        MessageCategory.ENCRYPTED_VIDEO
+    )
     private val createdAt: String = createdAt ?: nowInUtc()
     override fun onAdded() {
         val mimeType = getMimeType(uri)

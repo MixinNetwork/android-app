@@ -16,11 +16,14 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isVideo
 import org.threeten.bp.ZonedDateTime
 import javax.inject.Inject
@@ -131,7 +134,11 @@ class SharedMediaViewModel @Inject constructor(
                             it.conversationId,
                             it.userId,
                             Uri.parse(it.mediaUrl),
-                            it.category.startsWith("PLAIN"),
+                            when  {
+                                it.isSignal() -> EncryptCategory.SIGNAL
+                                it.isEncrypted() -> EncryptCategory.ENCRYPTED
+                                else -> EncryptCategory.PLAIN
+                            },
                             it.id,
                             it.createdAt
                         )

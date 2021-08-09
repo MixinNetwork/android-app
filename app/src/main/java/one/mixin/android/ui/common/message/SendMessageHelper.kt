@@ -36,6 +36,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.image.Compressor
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -69,6 +70,7 @@ import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
@@ -85,9 +87,19 @@ import javax.inject.Inject
 
 class SendMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository, private val conversationRepository: ConversationRepository) {
 
-    fun sendTextMessage(scope: CoroutineScope, conversationId: String, sender: User, content: String, isEncrypted: Boolean, isSilentMessage: Boolean? = null) {
-        val category =
-            if (isEncrypted) MessageCategory.ENCRYPTED_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+    fun sendTextMessage(
+        scope: CoroutineScope,
+        conversationId: String,
+        sender: User,
+        content: String,
+        encryptCategory: EncryptCategory,
+        isSilentMessage: Boolean? = null
+    ) {
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_TEXT,
+            MessageCategory.SIGNAL_TEXT,
+            MessageCategory.ENCRYPTED_TEXT
+        )
         val message = createMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -110,20 +122,64 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         }
     }
 
-    fun sendTranscriptMessage(messageId: String, conversationId: String, sender: User, transcriptMessages: List<TranscriptMessage>, isPlain: Boolean) {
-        val category = if (isPlain) MessageCategory.PLAIN_TRANSCRIPT.name else MessageCategory.SIGNAL_TRANSCRIPT.name
+    fun sendTranscriptMessage(messageId: String, conversationId: String, sender: User, transcriptMessages: List<TranscriptMessage>, encryptCategory: EncryptCategory) {
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_TRANSCRIPT,
+            MessageCategory.SIGNAL_TRANSCRIPT,
+            MessageCategory.ENCRYPTED_TRANSCRIPT
+        )
         transcriptMessages.onEach { t ->
             t.type = when {
-                t.isText() -> if (isPlain)MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
-                t.isAudio() -> if (isPlain)MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-                t.isContact() -> if (isPlain)MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
-                t.isData() -> if (isPlain)MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-                t.isImage() -> if (isPlain)MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
-                t.isLocation() -> if (isPlain)MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
-                t.isPost() -> if (isPlain)MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
-                t.isSticker() -> if (isPlain)MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
-                t.isVideo() -> if (isPlain)MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-                t.isLive() -> if (isPlain)MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
+                t.isText() -> encryptCategory.toCategory(
+                    MessageCategory.PLAIN_TEXT,
+                    MessageCategory.SIGNAL_TEXT,
+                    MessageCategory.ENCRYPTED_TEXT
+                )
+                t.isAudio() -> encryptCategory.toCategory(
+                    MessageCategory.PLAIN_AUDIO,
+                    MessageCategory.SIGNAL_AUDIO,
+                    MessageCategory.ENCRYPTED_AUDIO
+                )
+                t.isContact() ->encryptCategory.toCategory(
+                    MessageCategory.PLAIN_CONTACT,
+                    MessageCategory.SIGNAL_CONTACT,
+                    MessageCategory.ENCRYPTED_CONTACT
+                )
+                t.isData() -> encryptCategory.toCategory(
+                    MessageCategory.PLAIN_DATA,
+                    MessageCategory.SIGNAL_DATA,
+                    MessageCategory.ENCRYPTED_DATA
+                )
+                t.isImage() -> encryptCategory.toCategory(
+                    MessageCategory.PLAIN_IMAGE,
+                    MessageCategory.SIGNAL_IMAGE,
+                    MessageCategory.ENCRYPTED_IMAGE
+                )
+                t.isLocation() -> encryptCategory.toCategory(
+                    MessageCategory.PLAIN_LOCATION,
+                    MessageCategory.SIGNAL_LOCATION,
+                    MessageCategory.ENCRYPTED_LOCATION
+                )
+                t.isPost() -> encryptCategory.toCategory(
+                    MessageCategory.PLAIN_POST,
+                    MessageCategory.SIGNAL_POST,
+                    MessageCategory.ENCRYPTED_POST
+                )
+                t.isSticker() -> encryptCategory.toCategory(
+                    MessageCategory.PLAIN_STICKER,
+                    MessageCategory.SIGNAL_STICKER,
+                    MessageCategory.ENCRYPTED_STICKER
+                )
+                t.isVideo() -> encryptCategory.toCategory(
+                    MessageCategory.PLAIN_VIDEO,
+                    MessageCategory.SIGNAL_VIDEO,
+                    MessageCategory.ENCRYPTED_VIDEO
+                )
+                t.isLive()->encryptCategory.toCategory(
+                    MessageCategory.PLAIN_LIVE,
+                    MessageCategory.SIGNAL_LIVE,
+                    MessageCategory.ENCRYPTED_LIVE
+                )
                 t.isAppCard() -> MessageCategory.APP_CARD.name
                 else -> throw IllegalArgumentException("Unknown type")
             }
@@ -149,11 +205,14 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         sender: User,
         content: String,
         replyMessage: MessageItem,
-        isEncrypted: Boolean,
+        encryptCategory: EncryptCategory,
         isSilentMessage: Boolean? = null
     ) {
-        val category =
-            if (isEncrypted) MessageCategory.ENCRYPTED_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_TEXT,
+            MessageCategory.SIGNAL_TEXT,
+            MessageCategory.ENCRYPTED_TEXT
+        )
         val message = createReplyTextMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -168,9 +227,12 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         jobManager.addJobInBackground(SendMessageJob(message, isSilent = isSilentMessage))
     }
 
-    fun sendPostMessage(conversationId: String, sender: User, content: String, isEncrypted: Boolean) {
-        val category =
-            if (isEncrypted) MessageCategory.ENCRYPTED_POST.name else MessageCategory.SIGNAL_POST.name
+    fun sendPostMessage(conversationId: String, sender: User, content: String, encryptCategory: EncryptCategory) {
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_POST,
+            MessageCategory.SIGNAL_POST,
+            MessageCategory.ENCRYPTED_POST
+        )
         val message = createPostMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -196,8 +258,12 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
-    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isEncrypted: Boolean, replyMessage: MessageItem? = null) {
-        val category = if (isEncrypted) MessageCategory.ENCRYPTED_DATA.name else MessageCategory.SIGNAL_DATA.name
+    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, encryptCategory: EncryptCategory, replyMessage: MessageItem? = null) {
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_DATA,
+            MessageCategory.SIGNAL_DATA,
+            MessageCategory.ENCRYPTED_DATA
+        )
         val message = createAttachmentMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
@@ -214,10 +280,14 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         file: File,
         duration: Long,
         waveForm: ByteArray,
-        isEncrypted: Boolean,
+        encryptCategory: EncryptCategory,
         replyMessage: MessageItem? = null,
     ) {
-        val category = if (isEncrypted) MessageCategory.ENCRYPTED_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_AUDIO,
+            MessageCategory.SIGNAL_AUDIO,
+            MessageCategory.ENCRYPTED_AUDIO
+        )
         val message = createAudioMessage(
             messageId, conversationId, sender.userId, null, category,
             file.length(), file.name, duration.toString(), nowInUtc(), waveForm, null, null,
@@ -230,10 +300,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         sender: User,
         transferStickerData: StickerMessagePayload,
-        isEncrypted: Boolean
+        encryptCategory: EncryptCategory
     ) {
-        val category =
-            if (isEncrypted) MessageCategory.ENCRYPTED_STICKER.name else MessageCategory.SIGNAL_STICKER.name
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_STICKER,
+            MessageCategory.SIGNAL_STICKER,
+            MessageCategory.ENCRYPTED_STICKER
+        )
         val encoded = GsonHelper.customGson.toJson(transferStickerData).base64Encode()
         transferStickerData.stickerId?.let {
             val message = createStickerMessage(
@@ -257,10 +330,14 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         sender: User,
         shareUserId: String,
         shareUserFullName: String? = null,
-        isEncrypted: Boolean,
+        encryptCategory: EncryptCategory,
         replyMessage: MessageItem? = null
     ) {
-        val category = if (isEncrypted) MessageCategory.ENCRYPTED_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_CONTACT,
+            MessageCategory.SIGNAL_CONTACT,
+            MessageCategory.ENCRYPTED_CONTACT
+        )
         val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
         val message = createContactMessage(
@@ -274,13 +351,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         senderId: String,
         uri: Uri,
-        isEncrypted: Boolean,
+        encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
         replyMessage: MessageItem? = null,
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
-        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isEncrypted, mid, createdAt, replyMessage))
+        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, encryptCategory, mid, createdAt, replyMessage))
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -380,10 +457,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         sender: User,
         transferLiveData: LiveMessagePayload,
-        isEncrypted: Boolean
+        encryptCategory: EncryptCategory
     ) {
-        val category =
-            if (isEncrypted) MessageCategory.ENCRYPTED_LIVE.name else MessageCategory.SIGNAL_LIVE.name
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_LIVE,
+            MessageCategory.SIGNAL_LIVE,
+            MessageCategory.ENCRYPTED_LIVE
+        )
         val encoded =
             GsonHelper.customGson.toJson(transferLiveData)
         val message = createLiveMessage(
@@ -406,11 +486,14 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         senderId: String,
         image: Image,
-        isEncrypted: Boolean,
+        encryptCategory: EncryptCategory,
         previewUrl: String
     ) {
-        val category =
-            if (isEncrypted) MessageCategory.ENCRYPTED_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_IMAGE,
+            MessageCategory.SIGNAL_IMAGE,
+            MessageCategory.ENCRYPTED_IMAGE
+        )
         jobManager.addJobInBackground(
             SendGiphyJob(
                 conversationId, senderId, image.url, image.width, image.height, image.size.toLong(),
@@ -419,8 +502,12 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         )
     }
 
-    fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, isEncrypted: Boolean) {
-        val category = if (isEncrypted) MessageCategory.ENCRYPTED_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
+    fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, encryptCategory: EncryptCategory) {
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_LOCATION,
+            MessageCategory.SIGNAL_LOCATION,
+            MessageCategory.ENCRYPTED_LOCATION
+        )
         jobManager.addJobInBackground(
             SendMessageJob(
                 createLocationMessage(
@@ -447,12 +534,15 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         sender: User,
         uri: Uri,
-        isEncrypted: Boolean,
+        encryptCategory: EncryptCategory,
         mime: String? = null,
         replyMessage: MessageItem? = null,
     ): Int {
-        val category =
-            if (isEncrypted) MessageCategory.ENCRYPTED_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+        val category = encryptCategory.toCategory(
+            MessageCategory.PLAIN_IMAGE,
+            MessageCategory.SIGNAL_IMAGE,
+            MessageCategory.ENCRYPTED_IMAGE
+        )
         var mimeType = mime
         if (mimeType == null) {
             mimeType = getMimeType(uri, true)
