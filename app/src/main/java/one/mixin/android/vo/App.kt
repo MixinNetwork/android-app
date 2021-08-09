@@ -57,6 +57,7 @@ data class App(
     @SerializedName("resource_patterns")
     @ColumnInfo(name = "resource_patterns")
     val resourcePatterns: ArrayList<String>?,
+    @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String?
 ) : Parcelable, BotInterface {
