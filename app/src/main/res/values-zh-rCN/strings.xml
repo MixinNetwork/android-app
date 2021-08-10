@@ -91,6 +91,7 @@
     <string name="try_again">请重试</string>
     <string name="ok">好的</string>
     <string name="verify_by_PIN">用密码来验证</string>
+    <string name="login_by_PIN">用密码来登录</string>
     <string name="verify_by_biometric">用生物识别来验证</string>
     <string name="transfer_without_pin">转账前请先设置密码</string>
     <string name="voice_call">语音通话</string>
