@@ -130,19 +130,18 @@ class AttachmentDownloadJob(
                 val originalResponse = chain.proceed(chain.request())
                 originalResponse.newBuilder().body(
                     ProgressResponseBody(
-                        originalResponse.body,
-                        ProgressListener { bytesRead, contentLength, done ->
-                            if (!done) {
-                                val progress = try {
-                                    bytesRead.toFloat() / contentLength.toFloat()
-                                } catch (e: Exception) {
-                                    0f
-                                }
-                                attachmentProcess[message.id] = (progress * 100).toInt()
-                                RxBus.publish(loadingEvent(message.id, progress))
+                        originalResponse.body
+                    ) { bytesRead, contentLength, done ->
+                        if (!done) {
+                            val progress = try {
+                                bytesRead.toFloat() / contentLength.toFloat()
+                            } catch (e: Exception) {
+                                0f
                             }
+                            attachmentProcess[message.id] = (progress * 100).toInt()
+                            RxBus.publish(loadingEvent(message.id, progress))
                         }
-                    )
+                    }
                 ).build()
             }
             .build()
@@ -168,7 +167,7 @@ class AttachmentDownloadJob(
             sink.writeAll(response.body!!.source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
-                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {
+                val attachmentCipherInputStream = if (message.mediaKey!=null && message.mediaDigest!=null) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -196,7 +195,7 @@ class AttachmentDownloadJob(
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_DATA")) {
-                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_DATA.name) {
+                val attachmentCipherInputStream = if (message.mediaKey!=null && message.mediaDigest!=null) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -210,7 +209,7 @@ class AttachmentDownloadJob(
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_VIDEO")) {
-                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_VIDEO.name) {
+                val attachmentCipherInputStream = if (message.mediaKey!=null && message.mediaDigest!=null) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -226,7 +225,7 @@ class AttachmentDownloadJob(
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_AUDIO")) {
-                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_AUDIO.name) {
+                val attachmentCipherInputStream = if (message.mediaKey!=null && message.mediaDigest!=null) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
