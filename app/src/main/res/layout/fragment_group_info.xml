@@ -12,13 +12,13 @@
         android:layout_height="wrap_content"
         app:titleText="@string/group_info_title" />
 
-    <EditText
+    <one.mixin.android.widget.SearchView
         android:id="@+id/search_et"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="?attr/bg_white"
         android:drawablePadding="8dp"
-        android:drawableStart="@drawable/ic_search"
+        android:gravity="center_vertical"
         android:singleLine="true"
         android:imeOptions="actionSearch"
         android:hint="@string/search"

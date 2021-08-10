@@ -12,23 +12,45 @@ import android.widget.TextView.OnEditorActionListener
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.content.ContextCompat
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 
-class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(context, attrs) {
+class SearchView : AppCompatEditText {
+    constructor(context: Context) : this(context, null)
+    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
+        val typedArray = context.obtainStyledAttributes(
+            attrs,
+            R.styleable.SearchView,
+            defStyleAttr,
+            0
+        )
+        val circleClearIcon = typedArray.getBoolean(R.styleable.SearchView_circle_clear_icon, false)
+        val size = if (circleClearIcon) small else medium
+        val clearIcon = if (circleClearIcon) R.drawable.ic_asset_add_search_clear else R.drawable.ic_close_black
+        iconClear = ContextCompat.getDrawable(context, clearIcon).apply {
+            this?.setBounds(0, 0, size, size)
+        }!!
+        typedArray.recycle()
 
-    private val iconClear: Drawable by lazy {
-        val size = context.dpToPx(24f)
-        ContextCompat.getDrawable(context, R.drawable.ic_close_black).apply {
-            this?.setBounds(0, 0, size, size)
-        }!!
+        hint = resources.getString(R.string.search)
+        addTextChangedListener(watcher)
+        setOnEditorActionListener(onEditorActionListener)
+        setOnTouchListener(onTouchListener)
+        setOnFocusChangeListener(onFocusChangeListener)
+
+        remainFocusable()
     }
-    private val iconSearch: Drawable by lazy {
-        val size = context.dpToPx(16f)
-        ContextCompat.getDrawable(context, R.drawable.ic_search_home).apply {
-            this?.setBounds(0, 0, size, size)
-        }!!
-    }
+
+    private val medium = 24.dp
+    private val small = 16.dp
+
+    private var iconClear: Drawable
 
     private val watcher: TextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -75,16 +97,6 @@ class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(con
         }
     }
 
-    init {
-        hint = resources.getString(R.string.search)
-        addTextChangedListener(watcher)
-        setOnEditorActionListener(onEditorActionListener)
-        setOnTouchListener(onTouchListener)
-        setOnFocusChangeListener(onFocusChangeListener)
-
-        remainFocusable()
-    }
-
     // remove focus but remain focusable
     fun remainFocusable() {
         post {
@@ -109,7 +121,7 @@ class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(con
         } else if (hasText) {
             setCompoundDrawables(null, null, iconClear, null)
         } else {
-            setCompoundDrawables(iconSearch, null, null, null)
+            setCompoundDrawables(null, null, null, null)
         }
     }
 
