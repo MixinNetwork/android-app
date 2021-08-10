@@ -18,14 +18,14 @@ import one.mixin.android.extension.hideKeyboard
 class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(context, attrs) {
 
     private val iconClear: Drawable by lazy {
-        val size = context.dpToPx(16f)
-        ContextCompat.getDrawable(context, R.drawable.ic_asset_add_search_clear).apply {
+        val size = context.dpToPx(24f)
+        ContextCompat.getDrawable(context, R.drawable.ic_close_black).apply {
             this?.setBounds(0, 0, size, size)
         }!!
     }
     private val iconSearch: Drawable by lazy {
         val size = context.dpToPx(16f)
-        ContextCompat.getDrawable(context, R.drawable.ic_asset_add_search).apply {
+        ContextCompat.getDrawable(context, R.drawable.ic_search_home).apply {
             this?.setBounds(0, 0, size, size)
         }!!
     }

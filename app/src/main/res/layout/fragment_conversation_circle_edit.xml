@@ -18,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:background="?attr/bg_white"
-        android:drawableStart="@drawable/ic_asset_add_search"
+        android:drawableStart="@drawable/ic_search_home"
         android:paddingStart="@dimen/margin_start"
         android:paddingEnd="@dimen/margin_start"
         android:drawablePadding="8dp"
