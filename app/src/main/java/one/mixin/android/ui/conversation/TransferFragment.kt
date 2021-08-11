@@ -170,7 +170,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         builder.setCustomView(assetsViewBinding.root)
         bottomSheet.setOnDismissListener {
             if (isAdded) {
-                assetsViewBinding.searchEt.text?.clear()
+                assetsViewBinding.searchEt.et.text?.clear()
                 operateKeyboard(true)
             }
         }

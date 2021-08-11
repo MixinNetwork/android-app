@@ -110,7 +110,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
             stickerRv.adapter = adapter
             stickerRv.addOnScrollListener(onScrollListener)
-            searchEt.setOnEditorActionListener(onEditorActionListener)
+            searchEt.et.setOnEditorActionListener(onEditorActionListener)
             closeIv.setOnClickListener {
                 contentView.hideKeyboard()
                 dismiss()
@@ -131,7 +131,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             binding.stickerVa.displayedChild = POS_PB
         }
         if (searching) {
-            val query = binding.searchEt.text.toString()
+            val query = binding.searchEt.et.text.toString()
             bottomViewModel.searchGifs(query, LIMIT, offset)
         } else {
             bottomViewModel.trendingGifs(LIMIT, offset)
@@ -180,7 +180,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
             if (!fetching) {
                 offset = 0
-                searching = binding.searchEt.text.toString().trim().isNotEmpty()
+                searching = binding.searchEt.et.text.toString().trim().isNotEmpty()
                 noMore = false
                 totalGifs.clear()
                 binding.stickerRv.scrollToPosition(0)

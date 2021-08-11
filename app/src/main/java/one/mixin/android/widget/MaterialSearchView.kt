@@ -29,7 +29,7 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
-import one.mixin.android.databinding.ViewSearchBinding
+import one.mixin.android.databinding.ViewMaterialSearchBinding
 import one.mixin.android.extension.ANIMATION_DURATION_SHORT
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.colorFromAttribute
@@ -58,7 +58,8 @@ class MaterialSearchView : FrameLayout {
     private var mSearchViewListener: SearchViewListener? = null
 
     private var disposable: Disposable? = null
-    private var binding: ViewSearchBinding
+    private var binding: ViewMaterialSearchBinding =
+        ViewMaterialSearchBinding.inflate(LayoutInflater.from(context), this, true)
     val actionVa get() = binding.actionVa
     val logo get() = binding.logo
     val dot get() = binding.dot
@@ -71,7 +72,6 @@ class MaterialSearchView : FrameLayout {
         attrs,
         defStyleAttr
     ) {
-        binding = ViewSearchBinding.inflate(LayoutInflater.from(context), this, true)
         initStyle(attrs, defStyleAttr)
         initSearchView()
     }

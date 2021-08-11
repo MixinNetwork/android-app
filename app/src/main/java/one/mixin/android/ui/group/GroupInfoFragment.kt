@@ -215,7 +215,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
             }
         )
 
-        binding.searchEt.addTextChangedListener(
+        binding.searchEt.et.addTextChangedListener(
             object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 

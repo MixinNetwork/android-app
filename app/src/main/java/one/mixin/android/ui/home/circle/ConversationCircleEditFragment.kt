@@ -140,7 +140,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                 }
             }
         )
-        binding.searchEt.addTextChangedListener(mWatcher)
+        binding.searchEt.et.addTextChangedListener(mWatcher)
         loadData()
     }
 
