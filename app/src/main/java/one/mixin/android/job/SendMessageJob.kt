@@ -204,7 +204,7 @@ open class SendMessageJob(
             Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, it) }, null)
 
         val privateKey = Session.getEd25519PrivateKey() ?: return
-        val content = encryptedProtocol.encryptMessage(
+        val encryptContent = encryptedProtocol.encryptMessage(
             privateKey, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId,
             extensionSessionKey?.publicKey?.base64RawUrlDecode(), extensionSessionKey?.sessionId
         )
@@ -214,7 +214,7 @@ open class SendMessageJob(
             recipientId,
             message.id,
             message.category,
-            content.base64Encode(),
+            encryptContent.base64Encode(),
             quote_message_id = message.quoteMessageId,
             mentions = getMentionData(message.id),
             recipient_ids = recipientIds

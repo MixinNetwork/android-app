@@ -375,7 +375,7 @@ internal constructor(
                                 it.conversationId,
                                 it.userId,
                                 Uri.parse(it.mediaUrl),
-                                when  {
+                                when {
                                     it.isSignal() -> EncryptCategory.SIGNAL
                                     it.isEncrypted() -> EncryptCategory.ENCRYPTED
                                     else -> EncryptCategory.PLAIN

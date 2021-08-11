@@ -140,7 +140,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                     MessageCategory.SIGNAL_AUDIO,
                     MessageCategory.ENCRYPTED_AUDIO
                 )
-                t.isContact() ->encryptCategory.toCategory(
+                t.isContact() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_CONTACT,
                     MessageCategory.SIGNAL_CONTACT,
                     MessageCategory.ENCRYPTED_CONTACT
