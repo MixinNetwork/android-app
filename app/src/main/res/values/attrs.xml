@@ -124,4 +124,9 @@
     <declare-styleable name="KeyboardLayout">
         <attr name="input_aera_id" format="reference"/>
     </declare-styleable>
+    <declare-styleable name="SearchView">
+        <attr name="circle_clear_icon" format="boolean" />
+        <attr name="android:hint" format="string"/>
+        <attr name="android:imeOptions" format="integer" />
+    </declare-styleable>
 </resources>

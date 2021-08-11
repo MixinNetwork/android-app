@@ -164,7 +164,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         lifecycleScope.launch {
             val users = bottomViewModel.getParticipantsWithoutBot(conversationId)
             this@GroupUsersBottomSheetDialogFragment.users = users
-            filter(binding.searchEt.text.toString().trim(), users)
+            filter(binding.searchEt.et.text.toString().trim(), users)
         }
     }
 
