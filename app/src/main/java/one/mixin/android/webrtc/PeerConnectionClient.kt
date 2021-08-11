@@ -48,25 +48,37 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private val offerReceiveAudioConstraint = MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true")
     private val offerReceiveVideoConstraint = MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false")
 
-    suspend fun observeStats() {
+    suspend fun observeStats(callPipShown: () -> Boolean) {
         while (peerConnection != null && peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CONNECTED) {
-            requireNotNull(peerConnection).getStats { report ->
-                val map = report.statsMap
-                map.entries.forEach { (k, v) ->
-                    if (k.startsWith("RTCMediaStreamTrack_receive")) {
-                        val trackIdentifier = v.members["trackIdentifier"]
-                        val audioLevel = v.members["audioLevel"] as? Double?
-                        val userId = receiverIdUserIdMap[trackIdentifier]
-                        // Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
-                        if (userId != null) {
-                            RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
-                        }
-                    } else if (k.startsWith("RTCAudioSource")) {
-                        if (audioTrack?.enabled() == true) {
+            if (!callPipShown.invoke()) {
+                requireNotNull(peerConnection).getStats { report ->
+                    val map = report.statsMap
+                    map.entries.forEach { (k, v) ->
+                        if (k.startsWith("RTCMediaStreamTrack_receive")) {
+                            val trackIdentifier = v.members["trackIdentifier"]
                             val audioLevel = v.members["audioLevel"] as? Double?
-                            RxBus.publish(VoiceEvent(requireNotNull(Session.getAccountId()), audioLevel ?: 0.0))
-                        } else {
-                            RxBus.publish(VoiceEvent(requireNotNull(Session.getAccountId()), 0.0))
+                            val userId = receiverIdUserIdMap[trackIdentifier]
+                            Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
+                            if (userId != null) {
+                                RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
+                            }
+                        } else if (k.startsWith("RTCAudioSource")) {
+                            if (audioTrack?.enabled() == true) {
+                                val audioLevel = v.members["audioLevel"] as? Double?
+                                RxBus.publish(
+                                    VoiceEvent(
+                                        requireNotNull(Session.getAccountId()),
+                                        audioLevel ?: 0.0
+                                    )
+                                )
+                            } else {
+                                RxBus.publish(
+                                    VoiceEvent(
+                                        requireNotNull(Session.getAccountId()),
+                                        0.0
+                                    )
+                                )
+                            }
                         }
                     }
                 }

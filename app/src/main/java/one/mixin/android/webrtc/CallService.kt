@@ -213,7 +213,9 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callState.reconnecting = false
 
         lifecycleScope.launch(observeStatsDispatcher) {
-            peerConnectionClient.observeStats()
+            peerConnectionClient.observeStats {
+                pipCallView.shown
+            }
         }
     }
 
