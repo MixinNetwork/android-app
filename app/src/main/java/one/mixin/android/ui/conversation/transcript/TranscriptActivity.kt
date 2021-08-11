@@ -46,6 +46,7 @@ import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
+import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
@@ -222,6 +223,10 @@ class TranscriptActivity : BaseActivity() {
 
             override fun onTranscriptClick(messageItem: TranscriptMessageItem) {
                 show(this@TranscriptActivity, messageItem.messageId, conversationId, isPlain)
+            }
+
+            override fun onTextDoubleClick(messageItem: TranscriptMessageItem) {
+                TextPreviewActivity.show(this@TranscriptActivity, messageItem.toMessageItem(conversationId))
             }
 
             override fun onRetryDownload(transcriptId: String, messageId: String) {
