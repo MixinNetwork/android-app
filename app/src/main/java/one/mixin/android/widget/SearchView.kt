@@ -27,13 +27,13 @@ class SearchView : FrameLayout {
         attrs,
         defStyleAttr
     ) {
-        val typedArray = context.obtainStyledAttributes(
+        val ta = context.obtainStyledAttributes(
             attrs,
             R.styleable.SearchView,
             defStyleAttr,
             0
         )
-        val circleClearIcon = typedArray.getBoolean(R.styleable.SearchView_circle_clear_icon, false)
+        val circleClearIcon = ta.getBoolean(R.styleable.SearchView_circle_clear_icon, false)
         val size = if (circleClearIcon) small else medium
         val clearIcon = if (circleClearIcon) R.drawable.ic_asset_add_search_clear else R.drawable.ic_close_black
         binding.rightClear.setImageResource(clearIcon)
@@ -41,7 +41,15 @@ class SearchView : FrameLayout {
             width = size
             height = size
         }
-        typedArray.recycle()
+
+        if (ta.hasValue(R.styleable.SearchView_android_hint)) {
+            binding.searchEt.hint = ta.getString(R.styleable.SearchView_android_hint)
+        }
+        if (ta.hasValue(R.styleable.SearchView_android_imeOptions)) {
+            binding.searchEt.imeOptions = ta.getInt(R.styleable.SearchView_android_imeOptions, EditorInfo.IME_ACTION_SEARCH)
+        }
+
+        ta.recycle()
 
         binding.searchEt.apply {
             hint = resources.getString(R.string.search)
