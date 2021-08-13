@@ -52,13 +52,13 @@ fun ImageView.loadImage(uri: String?, width: Int, height: Int) {
     Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
 }
 
-fun ImageView.loadBase64ImageCenterCrop(imageByteArray: ByteArray?, @DrawableRes holder: Int? = null) {
+fun ImageView.loadImageCenterCrop(uri: String?, holder: String? = null) {
     if (!isActivityNotDestroyed()) return
-    Glide.with(this).asBitmap().load(imageByteArray)
+    Glide.with(this).load(uri)
         .apply(
             RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
                 if (holder != null) {
-                    this.placeholder(holder)
+                    this.placeholder(holder.toDrawable(this@loadImageCenterCrop.width, this@loadImageCenterCrop.height))
                 }
             }
         ).into(this)
