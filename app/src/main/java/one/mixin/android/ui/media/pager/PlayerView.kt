@@ -9,12 +9,10 @@ import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.PlaybackPreparer
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.BehindLiveWindowException
-import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPlayerViewBinding
 import one.mixin.android.util.VideoPlayer
@@ -166,10 +164,10 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         binding.playerControlView.switchFullscreen(fullscreen)
     }
 
-    fun setPlaybackPrepare(playbackPreparer: PlaybackPreparer) {
+    fun setPlaybackPrepare(preparePlayback: () -> Unit) {
         if (!useController) return
 
-        binding.playerControlView.playbackPreparer = playbackPreparer
+        binding.playerControlView.preparePlayback = preparePlayback
     }
 
     fun showPb() {
@@ -190,8 +188,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     }
 
     inner class ComponentListener :
-        Player.EventListener,
-        VideoListener,
+        Player.Listener,
         OnLayoutChangeListener,
         OnClickListener {
         override fun onLayoutChange(
@@ -260,7 +257,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             }
         }
 
-        override fun onPlayerError(error: ExoPlaybackException) {
+        override fun onPlayerError(error: PlaybackException) {
             if (VideoPlayer.player().mId == currentMessageId) {
                 binding.pbView.isVisible = false
                 updateRefreshViewVisibility(true)
