@@ -113,7 +113,7 @@ inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(category: T): 
     return url.systemMediaToMessage(category)
 }
 
-inline fun <reified T : ForwardCategory> String.systemMediaToMessage(category: T): ForwardMessage =
+inline fun <reified T : ForwardCategory> String.systemMediaToMessage(category: T, name: String? = null): ForwardMessage =
     ForwardMessage(
         category,
         GsonHelper.customGson.toJson(
@@ -122,7 +122,7 @@ inline fun <reified T : ForwardCategory> String.systemMediaToMessage(category: T
                 ForwardCategory.Video -> VideoMessagePayload(this)
                 ForwardCategory.Data -> {
                     val attachment = MixinApplication.get().getAttachment(this.toUri())
-                    attachment?.toDataMessagePayload()
+                    attachment?.toDataMessagePayload(name)
                 }
                 else -> null
             }

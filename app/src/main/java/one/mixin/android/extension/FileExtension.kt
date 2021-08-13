@@ -434,8 +434,22 @@ fun File.createDocumentTemp(conversationId: String, messageId: String, type: Str
     )
 }
 
-private fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair<File, Boolean> {
-    val defaultName = "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())}"
+private fun File.createDocumentFile(
+    noMedia: Boolean = true,
+    name: String? = null,
+    extensionName: String? = null
+): Pair<File, Boolean> {
+    val defaultName = "FILE_${
+        SimpleDateFormat(
+            "yyyyMMdd_HHmmss_SSS", Locale.US
+        ).format(Date())
+    }${
+        if (extensionName == null) {
+            ""
+        } else {
+            ".$extensionName"
+        }
+    }"
     val fileName = name ?: defaultName
     if (!this.exists()) {
         this.mkdirs()
@@ -572,8 +586,10 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
     if (this.authority != null) {
         var input: InputStream? = null
         return try {
+            val extensionName = getFileName(context).getExtensionName()
             input = context.contentResolver.openInputStream(this) ?: return null
-            val pair = context.getDocumentPath().createDocumentFile(name = name)
+            val pair = context.getDocumentPath()
+                .createDocumentFile(name = name, extensionName = extensionName)
             val outFile = pair.first
             if (!pair.second) {
                 outFile.copyFromInputStream(input)
