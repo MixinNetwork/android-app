@@ -9,6 +9,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.exoplayer2.DefaultControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import kotlinx.coroutines.CoroutineScope
@@ -32,27 +33,22 @@ class MusicNotificationManager(
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private val notificationManager: PlayerNotificationManager
+    private val controlDispatcher = DefaultControlDispatcher(0, 0) // Don't display the rewind or fast-forward buttons
 
     init {
         val mediaController = MediaControllerCompat(context, sessionToken)
 
-        notificationManager = PlayerNotificationManager.createWithNotificationChannel(
-            context,
-            NOW_PLAYING_CHANNEL_ID,
-            R.string.notification_channel,
-            R.string.notification_channel_description,
-            NOW_PLAYING_NOTIFICATION_ID,
-            DescriptionAdapter(mediaController),
-            notificationListener
-        ).apply {
+        notificationManager = PlayerNotificationManager.Builder(context, NOW_PLAYING_NOTIFICATION_ID, NOW_PLAYING_CHANNEL_ID, DescriptionAdapter(mediaController))
+            .setChannelNameResourceId(R.string.notification_channel)
+            .setChannelDescriptionResourceId(R.string.notification_channel_description)
+            .setNotificationListener(notificationListener)
+            .build()
+            .apply {
 
-            setMediaSessionToken(sessionToken)
-            setSmallIcon(R.drawable.ic_msg_default)
-
-            // Don't display the rewind or fast-forward buttons.
-            setRewindIncrementMs(0)
-            setFastForwardIncrementMs(0)
-        }
+                setMediaSessionToken(sessionToken)
+                setSmallIcon(R.drawable.ic_msg_default)
+                setControlDispatcher(controlDispatcher)
+            }
     }
 
     fun hideNotification() {

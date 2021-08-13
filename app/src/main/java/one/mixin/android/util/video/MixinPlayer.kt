@@ -5,6 +5,7 @@ import android.view.TextureView
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
@@ -23,7 +24,6 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import com.google.android.exoplayer2.video.VideoListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,7 +36,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Suppress("unused")
-class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoListener {
+class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
 
     val player: SimpleExoPlayer by lazy {
         val trackSelector = if (isAudio) {
@@ -241,17 +241,19 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
     }
 
-    override fun onPlayerError(error: ExoPlaybackException) {
-        if (isBehindLiveWindow(error)) {
-            mediaSource?.let {
-                player.setMediaSource(it)
-                player.prepare()
+    override fun onPlayerError(error: PlaybackException) {
+        if (error is ExoPlaybackException) {
+            if (isBehindLiveWindow(error)) {
+                mediaSource?.let {
+                    player.setMediaSource(it)
+                    player.prepare()
+                }
             }
-        }
-        // HttpDataSourceException
-        onVideoPlayerListener?.onPlayerError(error)
-        mId?.let {
-            onMediaPlayerListener?.onPlayerError(it, error)
+            // HttpDataSourceException
+            onVideoPlayerListener?.onPlayerError(error)
+            mId?.let {
+                onMediaPlayerListener?.onPlayerError(it, error)
+            }
         }
 
         reportExoPlayerException("MixinPlayer", error)

@@ -6,6 +6,7 @@ import android.support.v4.media.MediaMetadataCompat
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlaybackException.TYPE_SOURCE
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_REMOVE
@@ -145,7 +146,7 @@ class MusicPlayer private constructor() {
         }
     }
 
-    private inner class PlayerListener : Player.EventListener {
+    private inner class PlayerListener : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) {
                 id?.let { id -> RxBus.publish(pauseEvent(id)) }
@@ -172,7 +173,7 @@ class MusicPlayer private constructor() {
             }
         }
 
-        override fun onPlayerError(error: ExoPlaybackException) {
+        override fun onPlayerError(error: PlaybackException) {
             if (error.cause is UnrecognizedInputFormatException) {
                 status = STATUS_ERROR
                 id?.let { id -> RxBus.publish(errorEvent(id)) }
@@ -181,7 +182,7 @@ class MusicPlayer private constructor() {
                     MixinApplication.appContext.openMedia(it)
                 }
             } else {
-                if (error.type == TYPE_SOURCE) {
+                if (error is ExoPlaybackException && error.type == TYPE_SOURCE) {
                     MixinApplication.appContext.toast(R.string.player_playback_failed)
                 }
 

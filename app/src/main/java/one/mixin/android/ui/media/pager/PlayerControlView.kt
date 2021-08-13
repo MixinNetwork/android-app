@@ -12,13 +12,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.DefaultControlDispatcher
-import com.google.android.exoplayer2.PlaybackPreparer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Util
-import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerControlBinding
 import one.mixin.android.extension.dp
@@ -70,7 +68,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     var showTimeoutMs = DEFAULT_SHOW_TIMEOUT_MS
     var scrubbing = false
 
-    var playbackPreparer: PlaybackPreparer? = null
+    var preparePlayback: (() -> Unit)? = null
 
     var player: Player? = null
         set(value) {
@@ -437,10 +435,9 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     inner class ComponentListener :
-        Player.EventListener,
+        Player.Listener,
         TimeBar.OnScrubListener,
-        OnClickListener,
-        VideoListener {
+        OnClickListener {
         override fun onScrubMove(timeBar: TimeBar, position: Long) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
@@ -483,7 +480,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                 when (playView.status) {
                     STATUS_IDLE -> {
                         if (player.playbackState == Player.STATE_IDLE) {
-                            playbackPreparer?.preparePlayback()
+                            controlDispatcher.dispatchPrepare(player)
+                            preparePlayback?.invoke()
                         } else if (player.playbackState == Player.STATE_ENDED) {
                             seekTo(player, player.currentWindowIndex, C.TIME_UNSET)
                         }
