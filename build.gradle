@@ -29,7 +29,7 @@ buildscript {
         ext.cameraxviewVersion = '1.0.0-alpha27'
         ext.glideVersion = '4.12.0'
         ext.webpdecoderVesion = '2.0.4.12.0'
-        ext.timberVersion = '5.0.0'
+        ext.timberVersion = '5.0.1'
         ext.okhttpVersion = '4.9.1'
         ext.rxJavaVersion = '2.2.21'
         ext.rxAndroidVersion = '2.1.1'
