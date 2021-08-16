@@ -440,15 +440,15 @@ private fun File.createDocumentFile(
     extensionName: String? = null
 ): Pair<File, Boolean> {
     val defaultName = "FILE_${
-        SimpleDateFormat(
-            "yyyyMMdd_HHmmss_SSS", Locale.US
-        ).format(Date())
+    SimpleDateFormat(
+        "yyyyMMdd_HHmmss_SSS", Locale.US
+    ).format(Date())
     }${
-        if (extensionName == null) {
-            ""
-        } else {
-            ".$extensionName"
-        }
+    if (extensionName == null) {
+        ""
+    } else {
+        ".$extensionName"
+    }
     }"
     val fileName = name ?: defaultName
     if (!this.exists()) {

@@ -38,7 +38,7 @@ class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context
         }
         val toValue = max(initW * audioLevel, miniW)
         ValueAnimator.ofFloat(ringPaint.strokeWidth, toValue).apply {
-            duration = 200
+            duration = 500
             addUpdateListener { va ->
                 val w = va.animatedValue as Float
                 ringPaint.strokeWidth = w
