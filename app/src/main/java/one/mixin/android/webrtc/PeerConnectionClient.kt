@@ -58,7 +58,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                             val trackIdentifier = v.members["trackIdentifier"]
                             val audioLevel = v.members["audioLevel"] as? Double?
                             val userId = receiverIdUserIdMap[trackIdentifier]
-                            Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
+                            // Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
                             if (userId != null) {
                                 RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
                             }
@@ -83,7 +83,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                     }
                 }
             }
-            delay(200)
+            delay(500)
         }
     }
 

@@ -908,18 +908,22 @@ class GroupCallService : CallService() {
     }
 
     private fun syncConversation(conversationId: String) {
-        val response = conversationApi.getConversation(conversationId).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let { data ->
-                val remote = data.participants.map {
-                    Participant(conversationId, it.userId, it.role, it.createdAt!!)
-                }
-                participantDao.replaceAll(conversationId, remote)
+        try {
+            val response = conversationApi.getConversation(conversationId).execute().body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { data ->
+                    val remote = data.participants.map {
+                        Participant(conversationId, it.userId, it.role, it.createdAt!!)
+                    }
+                    participantDao.replaceAll(conversationId, remote)
 
-                data.participantSessions?.let {
-                    syncParticipantSession(conversationId, it)
+                    data.participantSessions?.let {
+                        syncParticipantSession(conversationId, it)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Timber.w(e)
         }
     }
 
