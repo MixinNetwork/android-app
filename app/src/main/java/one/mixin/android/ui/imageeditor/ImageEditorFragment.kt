@@ -1,5 +1,8 @@
 package one.mixin.android.ui.imageeditor
 
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
@@ -7,19 +10,35 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import com.warkiz.widget.IndicatorSeekBar
 import com.warkiz.widget.OnSeekChangeListener
 import com.warkiz.widget.SeekParams
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentImageEditorBinding
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getImageCachePath
+import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.save
+import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITOR_RESULT
+import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_IMAGE_URI
 import one.mixin.android.widget.PrevNextView
 import one.mixin.android.widget.imageeditor.ColorableRenderer
 import one.mixin.android.widget.imageeditor.ImageEditorView
@@ -30,7 +49,6 @@ import one.mixin.android.widget.imageeditor.renderers.MultiLineTextRenderer
 class ImageEditorFragment : BaseFragment() {
     companion object {
         const val TAG = "ImageEditorFragment"
-        const val ARGS_IMAGE_URI = "args_image_uri"
 
         private const val MAX_IMAGE_SIZE = 4096
 
@@ -101,6 +119,7 @@ class ImageEditorFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             closeIv.setOnClickListener { activity?.onBackPressed() }
+            nextTv.setOnClickListener { goNext() }
             cropLl.setOnClickListener { setMode(Mode.Crop) }
             textLl.setOnClickListener { setMode(Mode.Text) }
             drawLl.setOnClickListener { setMode(Mode.Draw) }
@@ -179,6 +198,19 @@ class ImageEditorFragment : BaseFragment() {
         if (notify) {
             onModeSet(mode)
         }
+    }
+
+    private fun goNext() {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .autoDispose(stopScope)
+            .subscribe { granted ->
+                if (granted) {
+                    renderAndSave()
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }
     }
 
     private fun cancel() {
@@ -278,6 +310,36 @@ class ImageEditorFragment : BaseFragment() {
     private fun PrevNextView.updatePrevNextView() {
         prev.isEnabled = undoAvailable
         next.isEnabled = redoAvailable
+    }
+
+    private fun renderAndSave() = lifecycleScope.launch {
+        if (viewDestroyed()) return@launch
+
+        val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            setCancelable(false)
+        }
+        val file = requireContext().getImageCachePath().createImageTemp()
+        val saveResult = withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                val image = binding.imageEditorView.model.render(requireContext())
+                image.save(file)
+            }
+        }
+        dialog.dismiss()
+
+        if (saveResult.isFailure) {
+            file.delete()
+            toast(R.string.save_failure)
+            return@launch
+        }
+
+        val result = Intent().apply {
+            putExtra(ARGS_EDITOR_RESULT, file.toUri())
+        }
+        requireActivity().apply {
+            setResult(Activity.RESULT_OK, result)
+            finish()
+        }
     }
 
     private val onSeekChangeListener = object : OnSeekChangeListener {

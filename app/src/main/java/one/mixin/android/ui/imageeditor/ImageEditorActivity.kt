@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.imageeditor.ImageEditorFragment.Companion.ARGS_IMAGE_URI
 import one.mixin.android.util.viewBinding
 
 class ImageEditorActivity : BaseActivity() {
@@ -24,10 +23,10 @@ class ImageEditorActivity : BaseActivity() {
         replaceFragment(ImageEditorFragment.newInstance(requireNotNull(imageUri)), R.id.container, ImageEditorFragment.TAG)
     }
 
-    class ImageEditorContract : ActivityResultContract<Pair<String, Boolean>, Intent?>() {
-        override fun createIntent(context: Context, input: Pair<String, Boolean>): Intent {
+    class ImageEditorContract : ActivityResultContract<Uri, Intent?>() {
+        override fun createIntent(context: Context, input: Uri): Intent {
             return Intent(context, ImageEditorActivity::class.java).apply {
-                putExtra(input.first, input.second)
+                putExtra(ARGS_IMAGE_URI, input)
             }
         }
 
@@ -38,6 +37,9 @@ class ImageEditorActivity : BaseActivity() {
     }
 
     companion object {
+        const val ARGS_EDITOR_RESULT = "args_editor_result"
+        const val ARGS_IMAGE_URI = "args_image_uri"
+
         fun show(context: Context, imageUri: Uri) {
             context.startActivity(
                 Intent(context, ImageEditorActivity::class.java).apply {

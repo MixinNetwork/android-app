@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -29,6 +30,7 @@ import androidx.core.view.updateLayoutParams
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCaptureBinding
 import one.mixin.android.extension.bounce
@@ -37,6 +39,7 @@ import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasNavigationBar
@@ -46,6 +49,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
+import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITOR_RESULT
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CameraOpView
@@ -79,7 +83,7 @@ class CaptureFragment() : BaseCameraxFragment() {
         resultRegistry = testRegistry
     }
 
-    lateinit var getEditResult: ActivityResultLauncher<Pair<String, Boolean>>
+    lateinit var getEditResult: ActivityResultLauncher<Uri>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -201,8 +205,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             imageCaptureFile?.let { uri ->
-                ImageEditorActivity.show(requireContext(), uri.toUri())
-                // openEdit(uri.toString(), false)
+                getEditResult.launch(uri.toUri())
             }
         }
 
@@ -340,5 +343,14 @@ class CaptureFragment() : BaseCameraxFragment() {
     }
 
     private fun callbackEdit(data: Intent?) {
+        val uri = data?.getParcelableExtra<Uri>(ARGS_EDITOR_RESULT)
+        if (uri != null) {
+            val path = uri.getFilePath(MixinApplication.get())
+            if (path == null) {
+                context?.toast(R.string.error_image)
+            } else {
+                openEdit(path, false)
+            }
+        }
     }
 }
