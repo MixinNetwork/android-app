@@ -24,20 +24,7 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.db.AppDao
-import one.mixin.android.db.CircleConversationDao
-import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.JobDao
-import one.mixin.android.db.MessageDao
-import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MessageProvider
-import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.batchMarkReadAndTake
-import one.mixin.android.db.deleteMessage
-import one.mixin.android.db.insertNoReplace
+import one.mixin.android.db.*
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
@@ -54,24 +41,7 @@ import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.vo.ChatMinimal
-import one.mixin.android.vo.CircleConversation
-import one.mixin.android.vo.Conversation
-import one.mixin.android.vo.ConversationBuilder
-import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.ConversationItem
-import one.mixin.android.vo.ConversationMinimal
-import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.ConversationStorageUsage
-import one.mixin.android.vo.Job
-import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageMentionStatus
-import one.mixin.android.vo.MessageMinimal
-import one.mixin.android.vo.Participant
-import one.mixin.android.vo.ParticipantRole
-import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.SearchMessageItem
-import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.*
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
 import javax.inject.Inject
@@ -91,6 +61,7 @@ internal constructor(
     private val appDao: AppDao,
     private val jobDao: JobDao,
     private val transcriptMessageDao: TranscriptMessageDao,
+    private val pinMessageDao: PinMessageDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager
@@ -563,5 +534,18 @@ internal constructor(
         if (add.isNotEmpty()) {
             participantSessionDao.insertList(add)
         }
+    }
+
+    fun getLastPinMessages(conversationId: String) =
+        pinMessageDao.getLastPinMessages(conversationId)
+
+    fun insertPinMessages(pinMessages: List<PinMessage>) {
+        pinMessages.forEach { message ->
+            pinMessageDao.insert(message)
+        }
+    }
+
+    fun deletePinMessageByIds(messageIds: List<String>) {
+        pinMessageDao.deleteByIds(messageIds)
     }
 }

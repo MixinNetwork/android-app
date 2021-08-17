@@ -207,6 +207,7 @@ enum class MessageCategory {
     PLAIN_LOCATION,
     PLAIN_TRANSCRIPT,
     MESSAGE_RECALL,
+    MESSAGE_PIN,
     STRANGER,
     SECRET,
     SYSTEM_CONVERSATION,

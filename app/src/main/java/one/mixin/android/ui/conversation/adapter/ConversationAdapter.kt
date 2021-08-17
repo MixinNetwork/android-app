@@ -86,26 +86,7 @@ import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.util.markdown.MarkwonUtil
-import one.mixin.android.vo.AppCardData
-import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.User
-import one.mixin.android.vo.create
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isCallMessage
-import one.mixin.android.vo.isContact
-import one.mixin.android.vo.isData
-import one.mixin.android.vo.isGroupCall
-import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isLocation
-import one.mixin.android.vo.isPost
-import one.mixin.android.vo.isRecall
-import one.mixin.android.vo.isSticker
-import one.mixin.android.vo.isText
-import one.mixin.android.vo.isTranscript
-import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.*
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -494,6 +475,14 @@ class ConversationAdapter(
                         onItemListener
                     )
                 }
+                PIN_TYPE -> {
+                    (holder as SystemHolder).bind(
+                        it,
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
                 else -> {
                 }
             }
@@ -764,6 +753,9 @@ class ConversationAdapter(
             TRANSCRIPT_TYPE -> {
                 TranscriptHolder(ItemChatTranscriptBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+            PIN_TYPE -> {
+                SystemHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
             else -> {
                 TransparentHolder(ItemChatTransparentBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
@@ -845,6 +837,7 @@ class ConversationAdapter(
                     item.isLocation() -> LOCATION_TYPE
                     item.isGroupCall() -> GROUP_CALL_TYPE
                     item.isTranscript() -> TRANSCRIPT_TYPE
+                    item.isPin() -> PIN_TYPE
                     else -> UNKNOWN_TYPE
                 }
             },
@@ -884,6 +877,7 @@ class ConversationAdapter(
         const val LOCATION_TYPE = 20
         const val GROUP_CALL_TYPE = 21
         const val TRANSCRIPT_TYPE = 22
+        const val PIN_TYPE = 23
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {

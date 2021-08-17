@@ -45,80 +45,8 @@ import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
-import one.mixin.android.vo.AppButtonData
-import one.mixin.android.vo.AppCardData
-import one.mixin.android.vo.CircleConversation
-import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.Message
-import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageHistory
-import one.mixin.android.vo.MessageMention
-import one.mixin.android.vo.MessageMentionStatus
-import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.Participant
-import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.ResendSessionMessage
-import one.mixin.android.vo.SYSTEM_USER
-import one.mixin.android.vo.Snapshot
-import one.mixin.android.vo.SnapshotType
-import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.TranscriptMinimal
-import one.mixin.android.vo.createAckJob
-import one.mixin.android.vo.createAttachmentMessage
-import one.mixin.android.vo.createAudioMessage
-import one.mixin.android.vo.createContactMessage
-import one.mixin.android.vo.createLiveMessage
-import one.mixin.android.vo.createLocationMessage
-import one.mixin.android.vo.createMediaMessage
-import one.mixin.android.vo.createMessage
-import one.mixin.android.vo.createPostMessage
-import one.mixin.android.vo.createReplyTextMessage
-import one.mixin.android.vo.createStickerMessage
-import one.mixin.android.vo.createSystemUser
-import one.mixin.android.vo.createTranscriptMessage
-import one.mixin.android.vo.createVideoMessage
-import one.mixin.android.vo.generateConversationId
-import one.mixin.android.vo.isAttachment
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isContact
-import one.mixin.android.vo.isData
-import one.mixin.android.vo.isIllegalMessageCategory
-import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isPost
-import one.mixin.android.vo.isSticker
-import one.mixin.android.vo.isText
-import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.mediaDownloaded
-import one.mixin.android.vo.toJson
-import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
-import one.mixin.android.websocket.AttachmentMessagePayload
-import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.BlazeMessageData
-import one.mixin.android.websocket.ContactMessagePayload
-import one.mixin.android.websocket.LIST_PENDING_MESSAGES
-import one.mixin.android.websocket.LiveMessagePayload
-import one.mixin.android.websocket.PlainDataAction
-import one.mixin.android.websocket.PlainJsonMessagePayload
-import one.mixin.android.websocket.RecallMessagePayload
-import one.mixin.android.websocket.ResendData
-import one.mixin.android.websocket.StickerMessagePayload
-import one.mixin.android.websocket.SystemCircleMessageAction
-import one.mixin.android.websocket.SystemCircleMessagePayload
-import one.mixin.android.websocket.SystemConversationAction
-import one.mixin.android.websocket.SystemConversationMessagePayload
-import one.mixin.android.websocket.SystemSessionMessageAction
-import one.mixin.android.websocket.SystemSessionMessagePayload
-import one.mixin.android.websocket.SystemUserMessageAction
-import one.mixin.android.websocket.SystemUserMessagePayload
-import one.mixin.android.websocket.checkLocationData
-import one.mixin.android.websocket.createCountSignalKeys
-import one.mixin.android.websocket.createParamBlazeMessage
-import one.mixin.android.websocket.createPlainJsonParam
-import one.mixin.android.websocket.createSyncSignalKeys
-import one.mixin.android.websocket.createSyncSignalKeysParam
-import one.mixin.android.websocket.invalidData
+import one.mixin.android.vo.*
+import one.mixin.android.websocket.*
 import org.threeten.bp.ZonedDateTime
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -179,6 +107,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 processAppButton(data)
             } else if (data.category == MessageCategory.APP_CARD.name) {
                 processAppCard(data)
+            } else if (data.category == MessageCategory.MESSAGE_PIN.name) {
+                processPinMessage(data)
             } else if (data.category == MessageCategory.MESSAGE_RECALL.name) {
                 processRecallMessage(data)
             }
@@ -290,6 +220,25 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private val notificationManager: NotificationManager by lazy {
         MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    private fun processPinMessage(data: BlazeMessageData) {
+        if (data.category == MessageCategory.MESSAGE_PIN.name) {
+            val decoded = Base64.decode(data.data)
+            val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
+            if (transferPinData.action == PinAction.PIN.name) {
+                transferPinData.messageIds.forEach { id ->
+                    val message = messageDao.findMessageById(id)
+                    if (message != null) {
+                        pinMessageDao.insert(PinMessage(id, message.conversationId, data.createdAt))
+                    }
+                }
+            } else if (transferPinData.action == PinAction.UNPIN.name) {
+                pinMessageDao.deleteByIds(transferPinData.messageIds)
+            }
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            messageHistoryDao.insert(MessageHistory(data.messageId))
+        }
     }
 
     private fun processRecallMessage(data: BlazeMessageData) {

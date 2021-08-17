@@ -273,13 +273,20 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        // Remaining works
         val MIGRATION_38_39: Migration = object : Migration(38, 39) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `pin_messages` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`), FOREIGN KEY(`conversation_id`) REFERENCES `conversations`(`conversation_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`message_id`) REFERENCES `messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )")
+            }
+        }
+
+        // Remaining works
+        val MIGRATION_39_40: Migration = object : Migration(39, 40) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_user_id_status_created_at`")
                 database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_status_user_id`")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id_created_at` ON `messages` (`conversation_id`, `status`,`user_id`, `created_at`)")
             }
         }
+
     }
 }

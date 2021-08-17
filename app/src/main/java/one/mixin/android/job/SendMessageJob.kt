@@ -12,16 +12,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
-import one.mixin.android.vo.MentionUser
-import one.mixin.android.vo.Message
-import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.isCall
-import one.mixin.android.vo.isKraken
-import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isPlain
-import one.mixin.android.vo.isRecall
-import one.mixin.android.vo.isText
-import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.*
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.KrakenParam
@@ -125,7 +116,7 @@ open class SendMessageJob(
             return
         }
         jobManager.saveJob(this)
-        if (message.isPlain() || message.isCall() || message.isRecall() || message.category == MessageCategory.APP_CARD.name) {
+        if (message.isPlain() || message.isCall() || message.isRecall() || message.isPin() || message.category == MessageCategory.APP_CARD.name) {
             sendPlainMessage()
         } else {
             sendSignalMessage()

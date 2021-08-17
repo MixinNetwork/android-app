@@ -13,27 +13,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
-import one.mixin.android.db.AppDao
-import one.mixin.android.db.AssetDao
-import one.mixin.android.db.CircleConversationDao
-import one.mixin.android.db.CircleDao
-import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.HyperlinkDao
-import one.mixin.android.db.JobDao
-import one.mixin.android.db.MessageDao
-import one.mixin.android.db.MessageHistoryDao
-import one.mixin.android.db.MessageMentionDao
-import one.mixin.android.db.MessagesFts4Dao
-import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.ResendSessionMessageDao
-import one.mixin.android.db.SnapshotDao
-import one.mixin.android.db.StickerDao
-import one.mixin.android.db.TraceDao
-import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.*
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
@@ -102,6 +82,8 @@ open class Injector {
     lateinit var transcriptMessageDao: TranscriptMessageDao
     @Inject
     lateinit var messagesFts4Dao: MessagesFts4Dao
+    @Inject
+    lateinit var pinMessageDao: PinMessageDao
     @Inject
     lateinit var database: MixinDatabase
 

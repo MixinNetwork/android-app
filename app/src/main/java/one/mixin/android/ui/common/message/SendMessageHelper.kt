@@ -65,11 +65,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toQuoteMessageItem
-import one.mixin.android.websocket.ContactMessagePayload
-import one.mixin.android.websocket.LiveMessagePayload
-import one.mixin.android.websocket.LocationPayload
-import one.mixin.android.websocket.RecallMessagePayload
-import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.*
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.io.FileInputStream
@@ -295,6 +291,30 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 )
             )
         }
+    }
+
+    fun sendPinMessage(
+        conversationId: String,
+        sender: User,
+        action: PinAction,
+        list: Collection<MessageItem>
+    ) {
+        val transferPinData = PinMessagePayload(action.name, list.map { it.messageId })
+        val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
+        val message = createRecallMessage(
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            MessageCategory.MESSAGE_PIN.name,
+            encoded,
+            MessageStatus.SENDING.name,
+            nowInUtc()
+        )
+        jobManager.addJobInBackground(
+            SendMessageJob(
+                message
+            )
+        )
     }
 
     fun sendLiveMessage(

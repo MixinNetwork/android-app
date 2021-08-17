@@ -229,6 +229,7 @@ import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.websocket.LocationPayload
+import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
@@ -1484,6 +1485,14 @@ class ConversationFragment() :
             displayReplyView()
             closeTool()
         }
+
+        binding.toolView.pinIv.setOnClickListener {
+            if (conversationAdapter.selectSet.isEmpty()) {
+                return@setOnClickListener
+            }
+            pinMessage(conversationAdapter.selectSet)
+            closeTool()
+        }
         binding.toolView.shareIv.setOnClickListener {
             val messageItem = conversationAdapter.selectSet.valueAt(0)
             Intent().apply {
@@ -1604,6 +1613,7 @@ class ConversationFragment() :
             }
         )
         bindData()
+        bindPinMessage()
     }
 
     lateinit var itemTouchHelper: ItemTouchHelper
@@ -1846,6 +1856,19 @@ class ConversationFragment() :
             binding.chatControl.hideBot()
         }
         liveDataAppList()
+    }
+
+    private fun bindPinMessage() {
+        Timber.e(conversationId)
+        chatViewModel.getLastPinMessages(conversationId)
+            .observe(viewLifecycleOwner, { messageItem ->
+                if (messageItem != null) {
+                    binding.pinMessageLayout.isVisible = true
+                    binding.pinMessageLayout.bind(messageItem)
+                } else {
+                    binding.pinMessageLayout.isVisible = false
+                }
+            })
     }
 
     private fun liveDataAppList() {
@@ -2956,6 +2979,12 @@ class ConversationFragment() :
         val firstVisiblePosition: Int = lm.findFirstVisibleItemPosition()
         val firstKeyToLoad: Int = if (unreadCount <= 0) firstVisiblePosition else unreadCount
         chatViewModel.keyLivePagedListBuilder?.setFirstKeyToLoad(firstKeyToLoad)
+    }
+
+    private fun pinMessage(messages: Set<MessageItem>) {
+        lifecycleScope.launch {
+            chatViewModel.sendPinMessage(conversationId, sender, PinAction.PIN, messages)
+        }
     }
 
     private var transcriptDialog: AlertDialog? = null
