@@ -412,6 +412,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 PinAddrBottomSheetDialogFragment.newInstance(
                                     assetId = assetId,
                                     assetUrl = asset.iconUrl,
+                                    assetSymbol = asset.symbol,
                                     chainId = asset.chainId,
                                     chainIconUrl = asset.chainIconUrl,
                                     assetName = asset.name,
@@ -446,6 +447,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             PinAddrBottomSheetDialogFragment.newInstance(
                                 assetId = assetId,
                                 assetUrl = asset.iconUrl,
+                                assetSymbol = asset.symbol,
                                 chainId = asset.chainId,
                                 chainIconUrl = asset.chainIconUrl,
                                 assetName = asset.name,

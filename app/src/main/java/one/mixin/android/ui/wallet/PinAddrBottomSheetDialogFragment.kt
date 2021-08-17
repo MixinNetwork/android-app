@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentPinBottomSheetAddressBinding
@@ -31,6 +32,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         const val ARGS_ASSET_ID = "args_asset_id"
         const val ARGS_ASSET_NAME = "args_asset_name"
         const val ARGS_ASSET_URL = "args_asset_url"
+        const val ARGS_ASSET_SYMBOL = "args_asset_symbol"
         const val ARGS_CHAIN_ID = "args_chain_id"
         const val ARGS_CHAIN_URL = "args_chain_url"
         const val ARGS_LABEL = "args_label"
@@ -43,6 +45,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             assetId: String? = null,
             assetName: String? = null,
             assetUrl: String? = null,
+            assetSymbol: String? = null,
             chainId: String? = null,
             chainIconUrl: String? = null,
             label: String,
@@ -55,6 +58,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 ARGS_ASSET_ID to assetId,
                 ARGS_ASSET_NAME to assetName,
                 ARGS_ASSET_URL to assetUrl,
+                ARGS_ASSET_SYMBOL to assetSymbol,
                 ARGS_CHAIN_ID to chainId,
                 ARGS_CHAIN_URL to chainIconUrl,
                 ARGS_LABEL to label,
@@ -70,6 +74,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val assetName: String? by lazy { requireArguments().getString(ARGS_ASSET_NAME) }
     private val assetUrl: String? by lazy { requireArguments().getString(ARGS_ASSET_URL) }
+    private val assetSymbol: String? by lazy { requireArguments().getString(ARGS_ASSET_SYMBOL) }
     private val chainId: String? by lazy { requireArguments().getString(ARGS_CHAIN_ID) }
     private val chainIconUrl: String? by lazy { requireArguments().getString(ARGS_CHAIN_URL) }
     private val label: String? by lazy { requireArguments().getString(ARGS_LABEL) }
@@ -129,12 +134,17 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     override suspend fun doWithMixinErrorCode(errorCode: Int, pin: String): String? {
         return if (errorCode == INVALID_ADDRESS) {
-            getString(
-                if (chainId == EOS_CHAIN_ID) {
-                    R.string.error_invalid_address_eos
-                } else R.string.error_invalid_address,
-                INVALID_ADDRESS
-            )
+            when (chainId) {
+                EOS_CHAIN_ID -> {
+                    getString(R.string.error_invalid_address_eos, INVALID_ADDRESS)
+                }
+                ETHEREUM_CHAIN_ID -> {
+                    getString(R.string.error_invalid_address_eth, INVALID_ADDRESS, "Ethereum(ERC20)", assetSymbol)
+                }
+                else -> {
+                    getString(R.string.error_invalid_address, INVALID_ADDRESS)
+                }
+            }
         } else null
     }
 

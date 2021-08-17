@@ -103,6 +103,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                     asset.assetId,
                     asset.name,
                     assetUrl = asset.iconUrl,
+                    assetSymbol = asset.symbol,
                     chainId = asset.chainId,
                     chainIconUrl = asset.chainIconUrl,
                     label = binding.labelEt.text.toString(),
