@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/pin"
-        android:layout_width="38dp"
-        android:layout_height="38dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:foreground="@drawable/mixin_ripple"
         android:src="@drawable/ic_pin_message"
         android:layout_marginEnd="12dp"

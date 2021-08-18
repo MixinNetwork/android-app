@@ -1490,8 +1490,10 @@ class ConversationFragment() :
             if (conversationAdapter.selectSet.isEmpty()) {
                 return@setOnClickListener
             }
-            pinMessage(conversationAdapter.selectSet)
-            closeTool()
+            lifecycleScope.launch {
+                chatViewModel.sendPinMessage(conversationId, sender, PinAction.PIN, conversationAdapter.selectSet)
+                closeTool()
+            }
         }
         binding.toolView.shareIv.setOnClickListener {
             val messageItem = conversationAdapter.selectSet.valueAt(0)
@@ -1859,7 +1861,6 @@ class ConversationFragment() :
     }
 
     private fun bindPinMessage() {
-        Timber.e(conversationId)
         chatViewModel.getLastPinMessages(conversationId)
             .observe(viewLifecycleOwner, { messageItem ->
                 if (messageItem != null) {
@@ -2979,12 +2980,6 @@ class ConversationFragment() :
         val firstVisiblePosition: Int = lm.findFirstVisibleItemPosition()
         val firstKeyToLoad: Int = if (unreadCount <= 0) firstVisiblePosition else unreadCount
         chatViewModel.keyLivePagedListBuilder?.setFirstKeyToLoad(firstKeyToLoad)
-    }
-
-    private fun pinMessage(messages: Set<MessageItem>) {
-        lifecycleScope.launch {
-            chatViewModel.sendPinMessage(conversationId, sender, PinAction.PIN, messages)
-        }
     }
 
     private var transcriptDialog: AlertDialog? = null
