@@ -1,63 +1,33 @@
-package one.mixin.android.ui.conversation.transcript.holder
+package one.mixin.android.ui.conversation.chathistory.holder
 
+import android.annotation.SuppressLint
 import android.view.Gravity
 import android.view.View
+import android.widget.LinearLayout
 import android.widget.SeekBar
-import androidx.core.widget.TextViewCompat
+import androidx.core.view.isVisible
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemChatFileQuoteBinding
+import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.TranscriptMessageItem
+import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.textResource
 
-class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root) {
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
-        super.chatLayout(isMe, isLast, isBlink)
-        if (isMe) {
-            binding.chatMsgLayout.gravity = Gravity.END
-            if (isLast) {
-                setItemBackgroundResource(
-                    binding.chatLayout,
-                    R.drawable.chat_bubble_reply_me_last,
-                    R.drawable.chat_bubble_reply_me_last_night
-                )
-            } else {
-                setItemBackgroundResource(
-                    binding.chatLayout,
-                    R.drawable.chat_bubble_reply_me,
-                    R.drawable.chat_bubble_reply_me_night
-                )
-            }
-        } else {
-            binding.chatMsgLayout.gravity = Gravity.START
-
-            if (isLast) {
-                setItemBackgroundResource(
-                    binding.chatLayout,
-                    R.drawable.chat_bubble_reply_other_last,
-                    R.drawable.chat_bubble_reply_other_last_night
-                )
-            } else {
-                setItemBackgroundResource(
-                    binding.chatLayout,
-                    R.drawable.chat_bubble_reply_other,
-                    R.drawable.chat_bubble_reply_other_night
-                )
-            }
-        }
+class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
+    init {
+        binding.billTime.chatFlag.visibility = View.GONE
     }
 
+    @SuppressLint("SetTextI18n")
     fun bind(
         messageItem: TranscriptMessageItem,
         isLast: Boolean,
@@ -66,6 +36,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
+        binding.billTime.chatSecret.isVisible = messageItem.isSignal()
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
@@ -81,21 +52,32 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         } else {
             binding.chatName.visibility = View.GONE
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
-
+        binding.billTime.chatTime.timeAgoClock(messageItem.createdAt)
         binding.fileNameTv.text = messageItem.mediaName
-        if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
-            binding.bottomLayout.fileSizeTv.textResource = R.string.chat_expired
-        } else {
-            binding.bottomLayout.fileSizeTv.text = "${messageItem.mediaSize?.fileSize()}"
+        when (messageItem.mediaStatus) {
+            MediaStatus.EXPIRED.name -> {
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.chat_expired))
+            }
+            MediaStatus.PENDING.name -> {
+                messageItem.mediaSize?.notNullWithElse(
+                    { it ->
+                        binding.bottomLayout.fileSizeTv.setBindId(messageItem.messageId, it)
+                    },
+                    {
+                        binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize.fileSize())
+                    }
+                )
+            }
+            else -> {
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())
+            }
         }
-
+        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
+            binding.billTime.chatFlag.isVisible = statusIcon != null
+            binding.billTime.chatFlag.setImageDrawable(statusIcon)
+            binding.billTime.chatSecret.isVisible = secretIcon != null
+            binding.billTime.chatRepresentative.isVisible = representativeIcon != null
+        }
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -118,6 +100,8 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 MediaStatus.EXPIRED.name -> {
                     binding.fileExpired.visibility = View.VISIBLE
                     binding.fileProgress.visibility = View.INVISIBLE
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.chatLayout.setOnClickListener {
                     }
                 }
@@ -126,6 +110,8 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     binding.fileProgress.visibility = View.VISIBLE
                     binding.fileProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
                     binding.fileProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }
@@ -154,6 +140,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                         binding.fileProgress.setBindId(null)
                         binding.bottomLayout.bindId = null
                         binding.fileProgress.setOnClickListener {
+                            handleClick(messageItem, onItemListener)
                         }
                     }
                     binding.chatLayout.setOnClickListener {
@@ -174,6 +161,8 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     }
                     binding.fileProgress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
                     binding.fileProgress.setProgress(-1)
+                    binding.bottomLayout.showText()
+                    binding.bottomLayout.bindId = null
                     binding.fileProgress.setOnClickListener {
                         handleClick(messageItem, onItemListener)
                     }
@@ -182,11 +171,6 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     }
                 }
             }
-        }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
-        binding.chatQuote.setOnClickListener {
-            onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }
     }
 
@@ -204,6 +188,41 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
         } else if (messageItem.mediaStatus != MediaStatus.EXPIRED.name) {
             onItemListener.onFileClick(messageItem)
+        }
+    }
+
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
+        if (isMe) {
+            if (isLast) {
+                setItemBackgroundResource(
+                    binding.chatLayout,
+                    R.drawable.bill_bubble_me_last,
+                    R.drawable.bill_bubble_me_last_night
+                )
+            } else {
+                setItemBackgroundResource(
+                    binding.chatLayout,
+                    R.drawable.bill_bubble_me,
+                    R.drawable.bill_bubble_me_night
+                )
+            }
+            (binding.chatLayout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
+        } else {
+            (binding.chatLayout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
+            if (isLast) {
+                setItemBackgroundResource(
+                    binding.chatLayout,
+                    R.drawable.chat_bubble_other_last,
+                    R.drawable.chat_bubble_other_last_night
+                )
+            } else {
+                setItemBackgroundResource(
+                    binding.chatLayout,
+                    R.drawable.chat_bubble_other,
+                    R.drawable.chat_bubble_other_night
+                )
+            }
         }
     }
 }

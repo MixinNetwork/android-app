@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.transcript.holder
+package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.view.Gravity
 import android.view.View.GONE
@@ -20,7 +20,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus

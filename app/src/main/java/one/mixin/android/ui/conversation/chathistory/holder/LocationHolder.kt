@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.transcript.holder
+package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.view.Gravity
 import android.view.View
@@ -26,7 +26,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
 import one.mixin.android.ui.conversation.location.useMapbox
-import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.websocket.LocationPayload

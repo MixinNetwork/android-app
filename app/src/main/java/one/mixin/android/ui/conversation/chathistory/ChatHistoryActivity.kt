@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.transcript
+package one.mixin.android.ui.conversation.chathistory
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -69,7 +69,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class TranscriptActivity : BaseActivity() {
+class ChatHistoryActivity : BaseActivity() {
     private lateinit var binding: ActivityTranscriptBinding
 
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
@@ -143,7 +143,7 @@ class TranscriptActivity : BaseActivity() {
         object : TranscriptAdapter.OnItemListener() {
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(
-                    this@TranscriptActivity,
+                    this@ChatHistoryActivity,
                     conversationId,
                     supportFragmentManager,
                     lifecycleScope
@@ -151,13 +151,13 @@ class TranscriptActivity : BaseActivity() {
             }
 
             override fun onPostClick(view: View, messageItem: TranscriptMessageItem) {
-                MarkdownActivity.show(this@TranscriptActivity, messageItem.content!!, conversationId)
+                MarkdownActivity.show(this@ChatHistoryActivity, messageItem.content!!, conversationId)
             }
 
             override fun onUrlLongClick(url: String) {
-                val builder = BottomSheet.Builder(this@TranscriptActivity)
+                val builder = BottomSheet.Builder(this@ChatHistoryActivity)
                 val view = View.inflate(
-                    ContextThemeWrapper(this@TranscriptActivity, R.style.Custom),
+                    ContextThemeWrapper(this@ChatHistoryActivity, R.style.Custom),
                     R.layout.view_url_bottom,
                     null
                 )
@@ -167,7 +167,7 @@ class TranscriptActivity : BaseActivity() {
                 viewBinding.urlTv.text = url
                 viewBinding.openTv.setOnClickListener {
                     url.openAsUrlOrWeb(
-                        this@TranscriptActivity,
+                        this@ChatHistoryActivity,
                         conversationId,
                         supportFragmentManager,
                         lifecycleScope
@@ -175,9 +175,9 @@ class TranscriptActivity : BaseActivity() {
                     bottomSheet.dismiss()
                 }
                 viewBinding.copyTv.setOnClickListener {
-                    this@TranscriptActivity.getClipboardManager()
+                    this@ChatHistoryActivity.getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
-                    this@TranscriptActivity.toast(R.string.copy_success)
+                    this@ChatHistoryActivity.toast(R.string.copy_success)
                     bottomSheet.dismiss()
                 }
                 bottomSheet.show()
@@ -196,13 +196,13 @@ class TranscriptActivity : BaseActivity() {
                 quoteMessageId?.let { msgId ->
                     lifecycleScope.launch {
                         val index = conversationRepository.findTranscriptMessageIndex(transcriptId, msgId)
-                        scrollTo(index, this@TranscriptActivity.screenHeight() * 3 / 4)
+                        scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4)
                     }
                 }
             }
 
             override fun onImageClick(messageItem: TranscriptMessageItem, view: View) {
-                TranscriptMediaPagerActivity.show(this@TranscriptActivity, view, transcriptId, messageItem.messageId)
+                TranscriptMediaPagerActivity.show(this@ChatHistoryActivity, view, transcriptId, messageItem.messageId)
             }
 
             override fun onAudioClick(messageItem: TranscriptMessageItem) {
@@ -212,7 +212,7 @@ class TranscriptActivity : BaseActivity() {
                 ) {
                     AudioPlayer.pause()
                 } else {
-                    AudioPlayer.play(messageItem.toMessageItem(this@TranscriptActivity.conversationId))
+                    AudioPlayer.play(messageItem.toMessageItem(this@ChatHistoryActivity.conversationId))
                 }
             }
 
@@ -222,11 +222,11 @@ class TranscriptActivity : BaseActivity() {
             }
 
             override fun onTranscriptClick(messageItem: TranscriptMessageItem) {
-                show(this@TranscriptActivity, messageItem.messageId, conversationId, isPlain)
+                show(this@ChatHistoryActivity, messageItem.messageId, conversationId, isPlain)
             }
 
             override fun onTextDoubleClick(messageItem: TranscriptMessageItem) {
-                TextPreviewActivity.show(this@TranscriptActivity, messageItem.toMessageItem(conversationId))
+                TextPreviewActivity.show(this@ChatHistoryActivity, messageItem.toMessageItem(conversationId))
             }
 
             override fun onRetryDownload(transcriptId: String, messageId: String) {
@@ -257,7 +257,7 @@ class TranscriptActivity : BaseActivity() {
 
             override fun onLocationClick(messageItem: TranscriptMessageItem) {
                 val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
-                LocationActivity.show(this@TranscriptActivity, location)
+                LocationActivity.show(this@ChatHistoryActivity, location)
             }
 
             override fun onContactCardClick(userId: String) {
@@ -280,7 +280,7 @@ class TranscriptActivity : BaseActivity() {
                             true
                         )
                 ) {
-                    if (this@TranscriptActivity.packageManager.canRequestPackageInstalls()) {
+                    if (this@ChatHistoryActivity.packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)
                     } else {
                         startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
@@ -440,10 +440,10 @@ class TranscriptActivity : BaseActivity() {
                 }
                 val transcriptId = UUID.randomUUID().toString()
                 ForwardActivity.combineForward(
-                    this@TranscriptActivity,
+                    this@ChatHistoryActivity,
                     arrayListOf<TranscriptMessage>().apply {
                         addAll(
-                            conversationRepository.getTranscriptsById(this@TranscriptActivity.transcriptId).map {
+                            conversationRepository.getTranscriptsById(this@ChatHistoryActivity.transcriptId).map {
                                 it.copy(transcriptId)
                             }
                         )
@@ -459,13 +459,27 @@ class TranscriptActivity : BaseActivity() {
         private const val MESSAGE_ID = "transcript_id"
         private const val CONVERSATION_ID = "conversation_id"
         private const val IS_PLAIN = "is_plain"
+        private const val CATEGORY = "category"
+        private const val TRANSCRIPT = 0
+        private const val CHAT_HISTORY = 1
         fun show(context: Context, messageId: String, conversationId: String, isPlain: Boolean) {
             refreshScreenshot(context)
             context.startActivity(
-                Intent(context, TranscriptActivity::class.java).apply {
+                Intent(context, ChatHistoryActivity::class.java).apply {
                     putExtra(MESSAGE_ID, messageId)
                     putExtra(CONVERSATION_ID, conversationId)
                     putExtra(IS_PLAIN, isPlain)
+                    putExtra(CATEGORY, TRANSCRIPT)
+                }
+            )
+        }
+
+        fun show(context: Context, conversationId: String) {
+            refreshScreenshot(context)
+            context.startActivity(
+                Intent(context, ChatHistoryActivity::class.java).apply {
+                    putExtra(CONVERSATION_ID, conversationId)
+                    putExtra(CATEGORY, CHAT_HISTORY)
                 }
             )
         }

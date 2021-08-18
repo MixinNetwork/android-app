@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.transcript.holder
+package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator

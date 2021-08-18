@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.transcript.holder
+package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.view.GestureDetector
 import android.view.Gravity
@@ -13,7 +13,7 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageStatus

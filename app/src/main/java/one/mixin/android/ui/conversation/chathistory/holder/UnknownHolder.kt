@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.transcript.holder
+package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.view.Gravity
 import android.view.View
@@ -8,7 +8,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.ui.conversation.transcript.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.TranscriptMessageItem
 import org.jetbrains.anko.dip
 

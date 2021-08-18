@@ -133,7 +133,7 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"/>
 
         <activity
-            android:name=".ui.conversation.transcript.TranscriptActivity"
+            android:name=".ui.conversation.chathistory.ChatHistoryActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Blur"
