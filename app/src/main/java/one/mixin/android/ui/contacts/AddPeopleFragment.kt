@@ -7,7 +7,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.fragment.app.viewModels
-import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,8 +19,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
-import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -98,14 +97,9 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
 
     private fun valid(number: String): Boolean {
         if (number.startsWith("+")) {
-            val phone = MobileFragment.Phone(number)
             val phoneUtil = PhoneNumberUtil.getInstance()
-            return try {
-                val phoneNumber = phoneUtil.parse(phone.phone, Locale.getDefault().country)
-                phoneUtil.isValidNumber(phoneNumber)
-            } catch (e: NumberParseException) {
-                false
-            }
+            val validationResult = isValidNumber(phoneUtil, number, Locale.getDefault().country)
+            return validationResult.first
         }
         if (number.length >= 2) {
             return true
