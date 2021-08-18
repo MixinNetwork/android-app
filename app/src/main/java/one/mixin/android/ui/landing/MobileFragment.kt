@@ -13,7 +13,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.fragment.app.viewModels
-import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
@@ -37,6 +36,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
@@ -219,7 +219,9 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private fun handleEditView(str: String) {
         binding.apply {
             mobileEt.setSelection(mobileEt.text.toString().length)
-            if (str.isNotEmpty() && isValidNumber(mCountry.dialCode + str)) {
+            val validResult = isValidNumber(phoneUtil, mCountry.dialCode + str, mCountry.code, mCountry.dialCode)
+            phoneNumber = validResult.second
+            if (str.isNotEmpty() && validResult.first) {
                 mobileFab.visibility = VISIBLE
             } else {
                 mobileFab.visibility = INVISIBLE
@@ -232,37 +234,6 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         binding.countryIconIv.setImageResource(mCountry.flag)
         binding.countryCodeTv.text = mCountry.dialCode
         countryPicker.setLocationCountry(mCountry)
-    }
-
-    private fun isValidNumber(number: String): Boolean {
-        val phone = Phone(number)
-        return try {
-            phoneNumber = phoneUtil.parse(phone.phone, mCountry.code)
-            var isValid = phoneUtil.isValidNumber(phoneNumber)
-
-            // workaround for old registered Ivory Coast user
-            // https://issuetracker.google.com/issues/190630271
-            if (!isValid && mCountry.code == "CI") {
-                isValid = addPrefixAndTry(phone.phone)
-            }
-
-            isValid
-        } catch (e: NumberParseException) {
-            false
-        }
-    }
-
-    private val prefixList = listOf("07", "05", "01", "27", "25", "21")
-
-    private fun addPrefixAndTry(phoneNumber: String): Boolean {
-        val num = phoneNumber.removePrefix(mCountry.dialCode)
-        prefixList.forEach { p ->
-            val phone = phoneUtil.parse("${mCountry.dialCode}$p$num", mCountry.code)
-            if (phoneUtil.isValidNumber(phone)) {
-                return true
-            }
-        }
-        return false
     }
 
     private fun showCountry() {
@@ -340,6 +311,4 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             handleEditView(s.toString())
         }
     }
-
-    class Phone(var phone: String)
 }

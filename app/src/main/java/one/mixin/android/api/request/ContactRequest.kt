@@ -3,6 +3,7 @@ package one.mixin.android.api.request
 import com.google.gson.annotations.SerializedName
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import ir.mirrajabi.rxcontacts.Contact
+import one.mixin.android.util.isValidNumber
 import java.util.Locale
 
 data class ContactRequest(
@@ -13,15 +14,17 @@ data class ContactRequest(
 
 fun createContactsRequests(contacts: List<Contact>): List<ContactRequest> {
     val mutableList = mutableListOf<ContactRequest>()
+    val phoneNumberUtil = PhoneNumberUtil.getInstance()
     for (item in contacts) {
         for (p in item.phoneNumbers) {
             if (p == null) {
                 continue
             }
             try {
-                val phoneNum = PhoneNumberUtil.getInstance().parse(p, Locale.getDefault().country)
-                if (!PhoneNumberUtil.getInstance().isValidNumber(phoneNum)) continue
-                val phone = PhoneNumberUtil.getInstance().format(phoneNum, PhoneNumberUtil.PhoneNumberFormat.E164)
+                val validationResult = isValidNumber(phoneNumberUtil, p, Locale.getDefault().country)
+                val phoneNum = validationResult.second
+                if (!validationResult.first) continue
+                val phone = phoneNumberUtil.format(phoneNum, PhoneNumberUtil.PhoneNumberFormat.E164)
                 if (phone != null) {
                     mutableList.add(ContactRequest(phone, item.displayName))
                 }
