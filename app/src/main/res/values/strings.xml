@@ -138,6 +138,7 @@
     <string name="disabled">Disabled</string>
     <string name="not_recognized">Not recognized</string>
     <string name="hi">Hi</string>
+    <string name="eos_contract_address">EOS contract address</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -174,9 +175,8 @@
     <string name="error_insufficient_transaction_fee">ERROR %1$d: Insufficient transaction fee.</string>
     <string name="error_insufficient_transaction_fee_with_amount">ERROR %1$d: Insufficient transaction fee. Please make sure your wallet has %2$s as fee</string>
     <string name="error_blockchain">ERROR %1$d: Blockchain not in sync, please try again later.</string>
-    <string name="error_invalid_address">ERROR %1$d: Invalid address format.</string>
-    <string name="error_invalid_address_eos">ERROR %1$d: Invalid address format. Mixin does not support withdrawal to the EOS contract address!</string>
-    <string name="error_invalid_address_eth">ERROR %1$d: Invalid address format. Please enter the correct %2$s %3$s address!</string>
+    <string name="error_invalid_address_plain">ERROR %1$d: Invalid address format.</string>
+    <string name="error_invalid_address">ERROR %1$d: Invalid address format. Please enter the correct %2$s %3$s address!</string>
     <string name="error_phone_verification_code_expired">ERROR %1$d: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR %1$d: Invalid phone verification code</string>
     <string name="error_phone_invalid_format">ERROR %1$d: Invalid phone number</string>
@@ -471,6 +471,7 @@
     <string name="wallet_transfer_no_available_assets">No Available Assets</string>
     <string name="wallet_withdrawal_changed">The withdrawal fee has been changed from %1$s to %2$s, would you like to proceed  with the request?</string>
     <string name="wallet_refresh_address_failed">The withdrawal fee has been changed and the refresh fails, please try again.</string>
+    <string name="wallet_address_add_tip">Mixin does not support withdrawal to the</string>
     <!--pin logs-->
     <string name="logs">Logs</string>
     <string name="log_category_pin_incorrect">PIN incorrect</string>

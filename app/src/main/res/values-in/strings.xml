@@ -155,7 +155,7 @@
     <string name="error_used_phone">KESALAHAN %1$d: Ponsel digunakan oleh orang lain.</string>
     <string name="error_insufficient_transaction_fee">KESALAHAN %1$d: Biaya transaksi tidak cukup.</string>
     <string name="error_blockchain">KESALAHAN %1$d: Blockchain tidak sinkron, coba lagi nanti.</string>
-    <string name="error_invalid_address">KESALAHAN %1$d: Format alamat tidak valid.</string>
+    <string name="error_invalid_address_plain">KESALAHAN %1$d: Format alamat tidak valid.</string>
     <string name="error_phone_verification_code_expired">KESALAHAN %1$d: Kode verifikasi telepon sudah tidak berlaku</string>
     <string name="error_phone_verification_code_invalid">KESALAHAN %1$d: Kode verifikasi telepon tidak valid</string>
     <string name="error_phone_invalid_format">KESALAHAN %1$d: Nomor telepon tidak valid</string>

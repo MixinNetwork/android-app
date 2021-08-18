@@ -148,6 +148,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
             assetUrl = asset.iconUrl,
             assetSymbol = asset.symbol,
             chainId = asset.chainId,
+            chainName = asset.chainName,
             chainIconUrl = asset.chainIconUrl,
             destination = addr.destination,
             label = addr.label,
