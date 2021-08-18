@@ -115,6 +115,7 @@ fun ICategory.canRecall(): Boolean {
         type == MessageCategory.PLAIN_POST.name ||
         type == MessageCategory.PLAIN_LOCATION.name ||
         type == MessageCategory.PLAIN_TRANSCRIPT.name ||
+        type == MessageCategory.APP_CARD.name||
         type == MessageCategory.ENCRYPTED_TEXT.name ||
         type == MessageCategory.ENCRYPTED_IMAGE.name ||
         type == MessageCategory.ENCRYPTED_VIDEO.name ||
