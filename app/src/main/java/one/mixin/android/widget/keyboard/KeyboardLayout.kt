@@ -193,7 +193,7 @@ class KeyboardLayout : LinearLayout {
                     animation: WindowInsetsAnimationCompat,
                     bounds: WindowInsetsAnimationCompat.BoundsCompat
                 ): WindowInsetsAnimationCompat.BoundsCompat {
-                    keyboardHeight = bounds.upperBound.bottom
+                    keyboardHeight = ViewCompat.getRootWindowInsets(this@KeyboardLayout)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
                     return super.onStart(animation, bounds)
                 }
             }
