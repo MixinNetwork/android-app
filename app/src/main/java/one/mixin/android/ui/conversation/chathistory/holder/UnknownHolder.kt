@@ -9,7 +9,7 @@ import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
-import one.mixin.android.vo.TranscriptMessageItem
+import one.mixin.android.vo.ChatHistoryMessageItem
 import org.jetbrains.anko.dip
 
 class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewHolder(binding.root) {
@@ -50,7 +50,7 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
         onItemListener: TranscriptAdapter.OnItemListener

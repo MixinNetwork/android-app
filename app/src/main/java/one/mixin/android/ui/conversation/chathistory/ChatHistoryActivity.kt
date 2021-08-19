@@ -6,6 +6,7 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -35,9 +36,7 @@ import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.SendTranscriptAttachmentMessageJob
-import one.mixin.android.job.TranscriptAttachmentDownloadJob
+import one.mixin.android.job.*
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BaseActivity
@@ -59,7 +58,6 @@ import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.WebControlView
 import one.mixin.android.widget.buildBottomSheetView
-import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
@@ -140,7 +138,7 @@ class ChatHistoryActivity : BaseActivity() {
                             finish()
                         }
                     }
-                    adapter.transcripts = list.map { it.toTranscriptMessageItem("")}
+                    adapter.transcripts = list
                 }
         }
     }
@@ -165,7 +163,7 @@ class ChatHistoryActivity : BaseActivity() {
                 )
             }
 
-            override fun onPostClick(view: View, messageItem: TranscriptMessageItem) {
+            override fun onPostClick(view: View, messageItem: ChatHistoryMessageItem) {
                 MarkdownActivity.show(
                     this@ChatHistoryActivity,
                     messageItem.content!!,
@@ -222,7 +220,7 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
 
-            override fun onImageClick(messageItem: TranscriptMessageItem, view: View) {
+            override fun onImageClick(messageItem: ChatHistoryMessageItem, view: View) {
                 TranscriptMediaPagerActivity.show(
                     this@ChatHistoryActivity,
                     view,
@@ -231,8 +229,7 @@ class ChatHistoryActivity : BaseActivity() {
                 )
             }
 
-            override fun onAudioClick(messageItem: TranscriptMessageItem) {
-                Timber.d(messageItem.messageId)
+            override fun onAudioClick(messageItem: ChatHistoryMessageItem) {
                 if (
                     AudioPlayer.isPlay(messageItem.messageId)
                 ) {
@@ -242,63 +239,110 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
 
-            override fun onAudioFileClick(messageItem: TranscriptMessageItem) {
+            override fun onAudioFileClick(messageItem: ChatHistoryMessageItem) {
             }
 
-            override fun onTranscriptClick(messageItem: TranscriptMessageItem) {
+            override fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {
                 show(this@ChatHistoryActivity, messageItem.messageId, conversationId, isPlain)
             }
 
-            override fun onTextDoubleClick(messageItem: TranscriptMessageItem) {
+            override fun onTextDoubleClick(messageItem: ChatHistoryMessageItem) {
                 TextPreviewActivity.show(
                     this@ChatHistoryActivity,
                     messageItem.toMessageItem(conversationId)
                 )
             }
 
-            override fun onRetryDownload(transcriptId: String, messageId: String) {
+            override fun onRetryDownload(transcriptId: String?, messageId: String) {
                 lifecycleScope.launch {
-                    conversationRepository.getTranscriptById(transcriptId, messageId)
-                        ?.let { transcript ->
-                            jobManager.addJobInBackground(
-                                TranscriptAttachmentDownloadJob(
-                                    conversationId,
-                                    transcript
+                    if (transcriptId != null) {
+                        conversationRepository.getTranscriptById(transcriptId, messageId)
+                            ?.let { transcript ->
+                                jobManager.addJobInBackground(
+                                    TranscriptAttachmentDownloadJob(
+                                        conversationId,
+                                        transcript
+                                    )
                                 )
+                            }
+                    } else {
+                        RxPermissions(this@ChatHistoryActivity)
+                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .autoDispose(stopScope)
+                            .subscribe(
+                                { granted ->
+                                    if (granted) {
+                                        retryDownload(messageId)
+                                    } else {
+                                        this@ChatHistoryActivity.openPermissionSetting()
+                                    }
+                                },
+                                {
+                                }
                             )
-                        }
+                    }
                 }
             }
 
-            override fun onRetryUpload(transcriptId: String, messageId: String) {
+            override fun onRetryUpload(transcriptId: String?, messageId: String) {
                 lifecycleScope.launch {
-                    conversationRepository.getTranscriptById(transcriptId, messageId)
-                        ?.let { transcript ->
-                            jobManager.addJobInBackground(
-                                SendTranscriptAttachmentMessageJob(
-                                    transcript,
-                                    isPlain
+                    if (transcriptId != null) {
+                        conversationRepository.getTranscriptById(transcriptId, messageId)
+                            ?.let { transcript ->
+                                jobManager.addJobInBackground(
+                                    SendTranscriptAttachmentMessageJob(
+                                        transcript,
+                                        isPlain
+                                    )
                                 )
+                            }
+                    } else {
+                        RxPermissions(this@ChatHistoryActivity)
+                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .autoDispose(stopScope)
+                            .subscribe(
+                                { granted ->
+                                    if (granted) {
+                                        retryUpload(messageId) {
+                                            toast(R.string.error_retry_upload)
+                                        }
+                                    } else {
+                                        this@ChatHistoryActivity.openPermissionSetting()
+                                    }
+                                },
+                                {
+                                }
                             )
-                        }
+                    }
                 }
             }
 
-            override fun onCancel(transcriptId: String, messageId: String) {
+            override fun onCancel(transcriptId: String?, messageId: String) {
                 lifecycleScope.launch(Dispatchers.IO) {
-                    conversationRepository.getTranscriptById(transcriptId, messageId)
-                        ?.let { transcript ->
-                            jobManager.cancelJobByMixinJobId("${transcript.transcriptId}${transcript.messageId}")
-                            conversationRepository.updateTranscriptMediaStatus(
-                                transcript.transcriptId,
-                                transcript.messageId,
-                                MediaStatus.CANCELED.name
-                            )
+                    if (transcriptId != null) {
+                        conversationRepository.getTranscriptById(transcriptId, messageId)
+                            ?.let { transcript ->
+                                jobManager.cancelJobByMixinJobId("${transcript.transcriptId}${transcript.messageId}")
+                                conversationRepository.updateTranscriptMediaStatus(
+                                    transcript.transcriptId,
+                                    transcript.messageId,
+                                    MediaStatus.CANCELED.name
+                                )
+                            }
+                    } else {
+                        jobManager.cancelJobByMixinJobId(messageId) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                conversationRepository.updateMediaStatusSuspend(
+                                    MediaStatus.CANCELED.name,
+                                    messageId
+                                )
+                            }
                         }
+                    }
                 }
             }
 
-            override fun onLocationClick(messageItem: TranscriptMessageItem) {
+            override fun onLocationClick(messageItem: ChatHistoryMessageItem) {
                 val location =
                     GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
                 LocationActivity.show(this@ChatHistoryActivity, location)
@@ -320,12 +364,12 @@ class ChatHistoryActivity : BaseActivity() {
                 }
             }
 
-            override fun onFileClick(messageItem: TranscriptMessageItem) {
+            override fun onFileClick(messageItem: ChatHistoryMessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true
-                    )
+                            "application/vnd.android.package-archive",
+                            true
+                        )
                 ) {
                     if (this@ChatHistoryActivity.packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)
@@ -396,7 +440,7 @@ class ChatHistoryActivity : BaseActivity() {
         )
     }
 
-    private fun showBottomSheet(messageItem: TranscriptMessageItem) {
+    private fun showBottomSheet(messageItem: ChatHistoryMessageItem) {
         var bottomSheet: BottomSheet? = null
         val builder = BottomSheet.Builder(this)
         val items = arrayListOf<BottomSheetItem>()
@@ -448,7 +492,7 @@ class ChatHistoryActivity : BaseActivity() {
         bottomSheet.show()
     }
 
-    private fun checkWritePermissionAndSave(messageItem: TranscriptMessageItem) {
+    private fun checkWritePermissionAndSave(messageItem: ChatHistoryMessageItem) {
         RxPermissions(this)
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .autoDispose(stopScope)
@@ -504,6 +548,54 @@ class ChatHistoryActivity : BaseActivity() {
             }
         }
         bottomSheet.show()
+    }
+
+    private fun retryUpload(id: String, onError: () -> Unit) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            conversationRepository.findMessageById(id)?.let {
+                if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
+                    try {
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                        jobManager.addJobInBackground(
+                            ConvertVideoJob(
+                                it.conversationId,
+                                it.userId,
+                                Uri.parse(it.mediaUrl),
+                                it.category.startsWith("PLAIN"),
+                                it.id,
+                                it.createdAt
+                            )
+                        )
+                    } catch (e: NullPointerException) {
+                        onError.invoke()
+                    }
+                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
+                    val category =
+                        if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                    try {
+                        jobManager.addJobInBackground(
+                            SendGiphyJob(
+                                it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
+                                it.mediaSize, category, it.id, it.thumbImage ?: "", it.createdAt
+                            )
+                        )
+                    } catch (e: NullPointerException) {
+                        onError.invoke()
+                    }
+                } else {
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                    jobManager.addJobInBackground(SendAttachmentMessageJob(it))
+                }
+            }
+        }
+    }
+
+    private fun retryDownload(id: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            conversationRepository.findMessageById(id)?.let {
+                jobManager.addJobInBackground(AttachmentDownloadJob(it))
+            }
+        }
     }
 
     companion object {

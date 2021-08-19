@@ -14,8 +14,8 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 
@@ -36,7 +36,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isFirst: Boolean,
         onItemListener: TranscriptAdapter.OnItemListener
     ) {

@@ -14,8 +14,8 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.mention.MentionRenderCache
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(binding.root) {
@@ -65,7 +65,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener
@@ -159,7 +159,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
     private var textGestureListener: TextGestureListener? = null
 
     private class TextGestureListener(
-        var messageItem: TranscriptMessageItem,
+        var messageItem: ChatHistoryMessageItem,
         var onItemListener: TranscriptAdapter.OnItemListener,
         var absoluteAdapterPosition: Int = 0
     ) : GestureDetector.SimpleOnGestureListener() {

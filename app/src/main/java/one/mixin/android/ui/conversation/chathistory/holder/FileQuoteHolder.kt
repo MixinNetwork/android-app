@@ -14,10 +14,10 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.SnakeQuoteMessageItem
-import one.mixin.android.vo.TranscriptMessageItem
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
@@ -59,7 +59,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener
@@ -191,7 +191,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
     }
 
     private fun handleClick(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {

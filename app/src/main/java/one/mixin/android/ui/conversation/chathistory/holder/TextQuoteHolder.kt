@@ -16,9 +16,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.SnakeQuoteMessageItem
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
@@ -72,7 +72,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener
@@ -169,7 +169,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
     private var textQuoteGestureListener: TextQuoteGestureListener? = null
 
     private class TextQuoteGestureListener(
-        var messageItem: TranscriptMessageItem,
+        var messageItem: ChatHistoryMessageItem,
         var onItemListener: TranscriptAdapter.OnItemListener,
     ) : GestureDetector.SimpleOnGestureListener() {
         override fun onDoubleTap(e: MotionEvent?): Boolean {

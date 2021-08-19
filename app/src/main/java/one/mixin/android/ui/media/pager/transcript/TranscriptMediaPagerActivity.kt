@@ -70,8 +70,8 @@ import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isMedia
@@ -238,7 +238,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         }
     }
 
-    private fun showVideoBottom(messageItem: TranscriptMessageItem) {
+    private fun showVideoBottom(messageItem: ChatHistoryMessageItem) {
         val builder = BottomSheet.Builder(this)
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
@@ -276,7 +276,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         bottomSheet.show()
     }
 
-    private fun showImageBottom(item: TranscriptMessageItem, pagerItemView: View) {
+    private fun showImageBottom(item: ChatHistoryMessageItem, pagerItemView: View) {
         val builder = BottomSheet.Builder(this)
         val view = View.inflate(
             ContextThemeWrapper(this, R.style.Custom),
@@ -418,7 +418,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     private var pipAnimationInProgress = false
-    private fun switchToPip(messageItem: TranscriptMessageItem, view: View) {
+    private fun switchToPip(messageItem: ChatHistoryMessageItem, view: View) {
         if (!checkPipPermission() || pipAnimationInProgress) {
             return
         }
@@ -553,7 +553,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         return false
     }
 
-    private fun getMessageItemByPosition(position: Int): TranscriptMessageItem? =
+    private fun getMessageItemByPosition(position: Int): ChatHistoryMessageItem? =
         try {
             adapter.getItem(position)
         } catch (e: IndexOutOfBoundsException) {
@@ -572,7 +572,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         }
     }
 
-    private fun loadVideoMessage(messageItem: TranscriptMessageItem) {
+    private fun loadVideoMessage(messageItem: ChatHistoryMessageItem) {
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.loadVideoOrLive {
                 val view =
@@ -702,11 +702,11 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     private val mediaPagerAdapterListener = object : MediaPagerAdapterListener {
-        override fun onClick(messageItem: TranscriptMessageItem) {
+        override fun onClick(messageItem: ChatHistoryMessageItem) {
             finishAfterTransition()
         }
 
-        override fun onLongClick(messageItem: TranscriptMessageItem, view: View) {
+        override fun onLongClick(messageItem: ChatHistoryMessageItem, view: View) {
             if (messageItem.isImage()) {
                 showImageBottom(messageItem, view)
             } else if (messageItem.isVideo()) {
@@ -714,7 +714,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             }
         }
 
-        override fun onCircleProgressClick(messageItem: TranscriptMessageItem) {
+        override fun onCircleProgressClick(messageItem: ChatHistoryMessageItem) {
             when (messageItem.mediaStatus) {
                 MediaStatus.CANCELED.name -> {
                     if (Session.getAccountId() == messageItem.userId) {
@@ -730,7 +730,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             setStartPostTransition(view)
         }
 
-        override fun switchToPin(messageItem: TranscriptMessageItem, view: View) {
+        override fun switchToPin(messageItem: ChatHistoryMessageItem, view: View) {
             switchToPip(messageItem, view)
         }
 

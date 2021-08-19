@@ -13,10 +13,10 @@ import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.SnakeQuoteMessageItem
-import one.mixin.android.vo.TranscriptMessageItem
 import org.jetbrains.anko.dip
 import kotlin.math.min
 
@@ -68,7 +68,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
     private var onItemListener: TranscriptAdapter.OnItemListener? = null
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener

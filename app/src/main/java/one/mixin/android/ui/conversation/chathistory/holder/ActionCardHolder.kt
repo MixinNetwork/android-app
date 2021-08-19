@@ -14,8 +14,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 
 class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
     BaseViewHolder(binding.root) {
@@ -24,7 +24,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener

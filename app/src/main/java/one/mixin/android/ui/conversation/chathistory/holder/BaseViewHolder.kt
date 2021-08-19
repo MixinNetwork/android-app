@@ -19,8 +19,8 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.session.Session
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 
 abstract class BaseViewHolder constructor(containerView: View) :
     RecyclerView.ViewHolder(containerView) {
@@ -48,7 +48,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
 
     protected var isMe = false
 
-    protected open fun bind(messageItem: TranscriptMessageItem) {}
+    protected open fun bind(messageItem: ChatHistoryMessageItem) {}
 
     protected open fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean = false) {
         this.isMe = isMe

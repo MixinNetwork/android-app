@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewAnimationUtils
-import android.widget.RelativeLayout
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -21,7 +20,6 @@ import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
-import kotlin.math.hypot
 
 class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     ConstraintLayout(context, attrs) {

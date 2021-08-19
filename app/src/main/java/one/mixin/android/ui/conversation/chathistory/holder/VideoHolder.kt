@@ -21,10 +21,10 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isLive
 import org.jetbrains.anko.dip
 
@@ -42,7 +42,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
         onItemListener: TranscriptAdapter.OnItemListener

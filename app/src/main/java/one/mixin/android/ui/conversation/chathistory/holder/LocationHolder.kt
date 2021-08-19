@@ -23,12 +23,12 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
+import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
 import one.mixin.android.ui.conversation.location.useMapbox
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
 import org.jetbrains.anko.dip
@@ -164,7 +164,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
 
     private var location: LocationPayload? = null
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener

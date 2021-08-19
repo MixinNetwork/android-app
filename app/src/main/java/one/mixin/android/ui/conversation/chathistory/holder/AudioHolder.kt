@@ -13,9 +13,9 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 import kotlin.math.min
@@ -38,7 +38,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener
@@ -158,7 +158,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
     }
 
     private fun handleClick(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {

@@ -16,9 +16,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.TranscriptMinimal
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isContact
@@ -97,7 +97,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener

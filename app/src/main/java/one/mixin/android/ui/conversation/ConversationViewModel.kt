@@ -240,7 +240,6 @@ internal constructor(
                         )
                     }
                 )
-              
             } else if (action == PinAction.UNPIN) {
                 conversationRepository.deletePinMessageByIds(list.map { it.messageId })
             }

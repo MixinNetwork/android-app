@@ -29,7 +29,6 @@ import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.ui.conversation.chathistory.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.chathistory.holder.AudioHolder
 import one.mixin.android.ui.conversation.chathistory.holder.AudioQuoteHolder
@@ -49,10 +48,11 @@ import one.mixin.android.ui.conversation.chathistory.holder.TranscriptHolder
 import one.mixin.android.ui.conversation.chathistory.holder.UnknownHolder
 import one.mixin.android.ui.conversation.chathistory.holder.VideoHolder
 import one.mixin.android.ui.conversation.chathistory.holder.VideoQuoteHolder
+import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
@@ -343,7 +343,7 @@ class TranscriptAdapter(
         }
     }
 
-    private fun getItem(position: Int): TranscriptMessageItem {
+    private fun getItem(position: Int): ChatHistoryMessageItem {
         return transcripts[position]
     }
 
@@ -355,7 +355,7 @@ class TranscriptAdapter(
 
     override fun onBindAttachView(view: View) {}
 
-    private fun previous(position: Int): TranscriptMessageItem? {
+    private fun previous(position: Int): ChatHistoryMessageItem? {
         return if (position > 0) {
             getItem(position - 1)
         } else {
@@ -363,7 +363,7 @@ class TranscriptAdapter(
         }
     }
 
-    private fun next(position: Int): TranscriptMessageItem? {
+    private fun next(position: Int): ChatHistoryMessageItem? {
         return if (position < itemCount - 1) {
             getItem(position + 1)
         } else {
@@ -421,7 +421,7 @@ class TranscriptAdapter(
         }
     }
 
-    var transcripts: List<TranscriptMessageItem> = emptyList()
+    var transcripts: List<ChatHistoryMessageItem> = emptyList()
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
@@ -430,17 +430,17 @@ class TranscriptAdapter(
 
     open class OnItemListener {
 
-        open fun onImageClick(messageItem: TranscriptMessageItem, view: View) {}
+        open fun onImageClick(messageItem: ChatHistoryMessageItem, view: View) {}
 
-        open fun onFileClick(messageItem: TranscriptMessageItem) {}
+        open fun onFileClick(messageItem: ChatHistoryMessageItem) {}
 
-        open fun onAudioFileClick(messageItem: TranscriptMessageItem) {}
+        open fun onAudioFileClick(messageItem: ChatHistoryMessageItem) {}
 
-        open fun onCancel(transcriptId: String, messageId: String) {}
+        open fun onCancel(transcriptId: String?, messageId: String) {}
 
-        open fun onRetryUpload(transcriptId: String, messageId: String) {}
+        open fun onRetryUpload(transcriptId: String?, messageId: String) {}
 
-        open fun onRetryDownload(transcriptId: String, messageId: String) {}
+        open fun onRetryDownload(transcriptId: String?, messageId: String) {}
 
         open fun onUserClick(userId: String?) {}
 
@@ -454,18 +454,18 @@ class TranscriptAdapter(
 
         open fun onAppCardClick(appCard: AppCardData, userId: String?) {}
 
-        open fun onAudioClick(messageItem: TranscriptMessageItem) {}
+        open fun onAudioClick(messageItem: ChatHistoryMessageItem) {}
 
         open fun onContactCardClick(userId: String) {}
 
         open fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {}
 
-        open fun onPostClick(view: View, messageItem: TranscriptMessageItem) {}
+        open fun onPostClick(view: View, messageItem: ChatHistoryMessageItem) {}
 
-        open fun onLocationClick(messageItem: TranscriptMessageItem) {}
+        open fun onLocationClick(messageItem: ChatHistoryMessageItem) {}
 
-        open fun onTextDoubleClick(messageItem: TranscriptMessageItem) {}
+        open fun onTextDoubleClick(messageItem: ChatHistoryMessageItem) {}
 
-        open fun onTranscriptClick(messageItem: TranscriptMessageItem) {}
+        open fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {}
     }
 }

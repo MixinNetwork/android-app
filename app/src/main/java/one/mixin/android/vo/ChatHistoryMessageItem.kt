@@ -20,8 +20,8 @@ import one.mixin.android.util.VideoPlayer
 import java.io.File
 import java.io.FileInputStream
 
-class TranscriptMessageItem(
-    val transcriptId: String,
+class ChatHistoryMessageItem(
+    val transcriptId: String? = null,
     val messageId: String,
     val userId: String?,
     val userFullName: String?,
@@ -56,9 +56,9 @@ class TranscriptMessageItem(
     val mentions: String? = null,
 ) : ICategory
 
-fun TranscriptMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
+fun ChatHistoryMessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
 
-fun TranscriptMessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
+fun ChatHistoryMessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     when {
         sharedUserIsVerified == true -> {
             verifiedView.isVisible = true
@@ -75,7 +75,7 @@ fun TranscriptMessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     }
 }
 
-fun TranscriptMessageItem.saveToLocal(context: Context) {
+fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     if (!hasWritePermission()) return
 
     val filePath = mediaUrl?.toUri()?.getFilePath()
@@ -101,7 +101,7 @@ fun TranscriptMessageItem.saveToLocal(context: Context) {
     MixinApplication.appContext.toast(MixinApplication.appContext.getString(R.string.save_to, outFile.absolutePath))
 }
 
-fun TranscriptMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
+fun ChatHistoryMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
     mediaUrl?.let {
         if (isLive()) {
             VideoPlayer.player().loadHlsVideo(it, messageId)
@@ -112,7 +112,7 @@ fun TranscriptMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null)
     }
 }
 
-fun TranscriptMessageItem.toMessageItem(conversationId: String?): MessageItem {
+fun ChatHistoryMessageItem.toMessageItem(conversationId: String?): MessageItem {
     return MessageItem(
         messageId,
         conversationId ?: "",

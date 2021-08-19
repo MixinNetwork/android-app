@@ -18,9 +18,9 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.dip
 import kotlin.math.min
@@ -35,7 +35,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
         onItemListener: TranscriptAdapter.OnItemListener

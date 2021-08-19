@@ -14,8 +14,8 @@ import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import org.jetbrains.anko.dip
 
 class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root) {
@@ -79,7 +79,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         onItemListener: TranscriptAdapter.OnItemListener,

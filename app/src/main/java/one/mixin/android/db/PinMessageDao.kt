@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.PinMessage
 
@@ -38,7 +39,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
         LEFT JOIN message_mentions mm ON m.id = mm.message_id  WHERE m.conversation_id = :conversationId ORDER BY m.created_at ASC"""
     )
-    fun getPinMessages(conversationId: String): LiveData<List<MessageItem>>
+    fun getPinMessages(conversationId: String): LiveData<List<ChatHistoryMessageItem>>
 
     @Query(
         """
