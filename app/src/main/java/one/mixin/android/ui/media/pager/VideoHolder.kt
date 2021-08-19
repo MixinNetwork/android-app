@@ -96,7 +96,7 @@ class VideoHolder(
                 }
             }
         }
-        val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
+        val ratio = (messageItem.mediaWidth ?: 1).toFloat() / (messageItem.mediaHeight ?: 1).toFloat()
         setSize(context, ratio, itemView)
         itemView.tag = "$PREFIX${messageItem.messageId}"
         if (messageItem.isLive()) {
@@ -125,7 +125,7 @@ class VideoHolder(
                         circleProgress.enableDownload()
                     }
                 } else {
-                    // TODO expired
+                    circleProgress.isVisible = false
                 }
                 circleProgress.setOnClickListener {
                     mediaPagerAdapterListener.onCircleProgressClick(messageItem)
