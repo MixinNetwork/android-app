@@ -209,7 +209,7 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_blockchain, ErrorHandler.BLOCKCHAIN_ERROR)
         }
         ErrorHandler.INVALID_ADDRESS -> {
-            getString(R.string.error_invalid_address, ErrorHandler.INVALID_ADDRESS)
+            getString(R.string.error_invalid_address_plain, ErrorHandler.INVALID_ADDRESS)
         }
         ErrorHandler.WITHDRAWAL_AMOUNT_SMALL -> {
             getString(

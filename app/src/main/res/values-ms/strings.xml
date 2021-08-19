@@ -132,6 +132,7 @@
     <string name="strikethrough">mencoret</string>
     <string name="italic">Italik</string>
     <string name="bold">tebal</string>
+    <string name="eos_contract_address">alamat kontrak EOS</string>
     <!--error-->
     <string name="error_no_connection">Tiada sambungan rangkaian</string>
     <string name="error_connection_timeout">Tamat masa sambungan rangkaian</string>
@@ -166,8 +167,7 @@
     <string name="error_used_phone">RALAT %1$d: Telefon digunakan oleh orang lain.</string>
     <string name="error_insufficient_transaction_fee">RALAT %1$d: Bayaran transaksi tidak mencukupi.</string>
     <string name="error_blockchain">RALAT %1$d: Rantai blok tidak diselaraskan, sila cuba sebentar lagi.</string>
-    <string name="error_invalid_address">RALAT %1$d: Format alamat tidak sah.</string>
-    <string name="error_invalid_address_eos">RALAT %1$d: Format alamat tidak sah. Mixin tidak menyokong penarikan ke alamat kontrak EOS!</string>
+    <string name="error_invalid_address_plain">RALAT %1$d: Format alamat tidak sah.</string>
     <string name="error_phone_verification_code_expired">RALAT %1$d: Kod pengesahan telefon yang telah tamat tempoh</string>
     <string name="error_phone_verification_code_invalid">RALAT %1$d: Kod pengesahan telefon tidak sah</string>
     <string name="error_phone_invalid_format">RALAT %1$d: Nombor telefon tidak sah</string>
@@ -447,6 +447,7 @@
     <string name="wallet_trending">Sohor Kini</string>
     <string name="wallet_recent_search">Carian terkini</string>
     <string name="wallet_transfer_no_available_assets">Tiada Aset Yang Tersedia</string>
+    <string name="wallet_address_add_tip">Mixin tidak menyokong penarikan ke</string>
     <!--pin logs-->
     <string name="logs">Log</string>
     <string name="log_category_pin_incorrect">PIN tidak betul</string>
