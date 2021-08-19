@@ -542,6 +542,9 @@ internal constructor(
     fun getLastPinMessages(conversationId: String) =
         pinMessageDao.getLastPinMessages(conversationId)
 
+    fun countPinMessages(conversationId: String) =
+        pinMessageDao.countPinMessages(conversationId)
+
     fun insertPinMessages(pinMessages: List<PinMessage>) {
         pinMessages.forEach { message ->
             pinMessageDao.insert(message)

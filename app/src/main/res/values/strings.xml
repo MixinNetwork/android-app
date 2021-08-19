@@ -1017,4 +1017,7 @@
     <string name="enable_immediately">Enabled immediately</string>
     <string name="enable_after_1_minute">Enabled after 1 minute</string>
     <string name="enable_after_30_minutes">Enabled after 30 minutes</string>
+    <!--  Pin message  -->
+    <string name="unpin_all">Cancel all pinned message</string>
+    <string name="pinned_message">Pinned Messages</string>
 </resources>

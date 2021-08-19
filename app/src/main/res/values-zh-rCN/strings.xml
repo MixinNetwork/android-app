@@ -998,4 +998,6 @@
     <string name="enable_immediately">立即启动</string>
     <string name="enable_after_1_minute">在 1 分钟之后启动</string>
     <string name="enable_after_30_minutes">在 30 分钟后启动</string>
+    <string name="unpin_all">取消置顶所有消息</string>
+    <string name="pinned_message">Pinned Message</string>
 </resources>

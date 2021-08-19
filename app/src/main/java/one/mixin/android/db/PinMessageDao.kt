@@ -70,4 +70,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         LIMIT 1"""
     )
     fun getLastPinMessages(conversationId: String): LiveData<MessageItem?>
+
+    @Query("SELECT count(*) FROM pin_messages WHERE conversation_id = :conversationId")
+    fun countPinMessages(conversationId: String): LiveData<Int>
 }

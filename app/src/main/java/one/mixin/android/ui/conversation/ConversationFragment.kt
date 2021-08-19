@@ -1873,6 +1873,10 @@ class ConversationFragment() :
                     binding.pinMessageLayout.isVisible = false
                 }
             })
+        chatViewModel.countPinMessages(conversationId)
+            .observe(viewLifecycleOwner, { count ->
+                    binding.pinMessageLayout.pinCount.text ="$count"
+            })
     }
 
     private fun liveDataAppList() {

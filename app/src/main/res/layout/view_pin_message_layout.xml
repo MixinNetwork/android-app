@@ -18,6 +18,22 @@
         app:layout_constraintBottom_toBottomOf="parent"
         tools:ignore="ContentDescription" />
 
+    <TextView
+        android:id="@+id/pin_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/bg_unread_mute"
+        android:textColor="@color/text_white"
+        android:fontFamily="monospace"
+        android:textSize="12sp"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@id/pin"
+        app:layout_constraintEnd_toEndOf="@id/pin"
+        app:layout_constraintBottom_toTopOf="@id/pin"
+        android:layout_marginBottom="-8dp"
+        tools:text="1"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/pin_content"
         android:background="@drawable/chat_bubble_pin_message"
@@ -83,7 +99,7 @@
             android:singleLine="true"
             android:textColor="?attr/text_primary"
             android:textSize="14sp"
-            android:text="Pinned Message"
+            android:text="@string/pinned_message"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toEndOf="@id/pin_iv"

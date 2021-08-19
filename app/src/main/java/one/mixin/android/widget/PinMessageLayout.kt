@@ -31,6 +31,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     private val pinSubtitleTv = binding.pinSubtitleTv
     private val pinContentTv = binding.pinContentTv
     private val pinContent = binding.pinContent
+    val pinCount = binding.pinCount
     val pinClose = binding.pinClose
     val pin = binding.pin
 

@@ -844,4 +844,7 @@ internal constructor(
 
     fun getLastPinMessages(conversationId: String) =
         conversationRepository.getLastPinMessages(conversationId)
+
+    fun countPinMessages(conversationId: String) =
+        conversationRepository.countPinMessages(conversationId)
 }

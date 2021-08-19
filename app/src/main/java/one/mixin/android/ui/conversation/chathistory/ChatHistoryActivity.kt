@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.exoplayer2.util.MimeTypes
@@ -23,7 +24,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
-import one.mixin.android.databinding.ActivityTranscriptBinding
+import one.mixin.android.extension.dp
+import one.mixin.android.databinding.ActivityChatHistoryBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.extension.alert
@@ -63,7 +65,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ChatHistoryActivity : BaseActivity() {
-    private lateinit var binding: ActivityTranscriptBinding
+    private lateinit var binding: ActivityChatHistoryBinding
 
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
 
@@ -100,7 +102,7 @@ class ChatHistoryActivity : BaseActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityTranscriptBinding.inflate(layoutInflater)
+        binding = ActivityChatHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
         SystemUIManager.transparentDraws(window)
         getScreenshot()?.let {
@@ -113,6 +115,7 @@ class ChatHistoryActivity : BaseActivity() {
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
         if (isTranscript) {
+            binding.unpinTv.isVisible = false
             conversationRepository.findTranscriptMessageItemById(transcriptId)
                 .observe(this) { transcripts ->
                     binding.control.callback = object : WebControlView.Callback {
@@ -127,11 +130,16 @@ class ChatHistoryActivity : BaseActivity() {
                     adapter.transcripts = transcripts
                 }
         } else {
+            binding.unpinTv.isVisible = true
+            binding.unpinTv.setOnClickListener {
+                // todo cancel all pinned messages
+            }
+            binding.control.hideMore()
+            binding.control.layoutParams = binding.control.layoutParams.apply { width = 44.dp }
             conversationRepository.getPinMessages(conversationId)
                 .observe(this) { list ->
                     binding.control.callback = object : WebControlView.Callback {
                         override fun onMoreClick() {
-                            showBottomSheet()
                         }
 
                         override fun onCloseClick() {
