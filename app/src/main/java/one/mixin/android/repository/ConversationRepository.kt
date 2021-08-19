@@ -3,6 +3,7 @@ package one.mixin.android.repository
 import android.annotation.SuppressLint
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
@@ -14,6 +15,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.Constants.DB_DELETE_THRESHOLD
 import one.mixin.android.MixinApplication
+import one.mixin.android.MixinApplication.Companion.conversationId
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -438,6 +440,8 @@ internal constructor(
         conversationService.participants(id, action, requests)
 
     fun findTranscriptMessageItemById(transcriptId: String) = transcriptMessageDao.getTranscriptMessages(transcriptId)
+
+    fun getPinMessages(conversationId: String) = pinMessageDao.getPinMessages(conversationId)
 
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptMessageDao.findTranscriptMessageIndex(transcriptId, messageId)
 

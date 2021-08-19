@@ -1866,6 +1866,9 @@ class ConversationFragment() :
                 if (messageItem != null) {
                     binding.pinMessageLayout.isVisible = true
                     binding.pinMessageLayout.bind(messageItem)
+                    binding.pinMessageLayout.setOnClickListener {
+                        ChatHistoryActivity.show(requireContext(), conversationId)
+                    }
                 } else {
                     binding.pinMessageLayout.isVisible = false
                 }

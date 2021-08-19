@@ -29,6 +29,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
         ViewPinMessageLayoutBinding.inflate(LayoutInflater.from(context), this)
     private val pinIv = binding.pinIv
     private val pinAvatar = binding.pinAvatar
+    private val pinTitleTv = binding.pinTitleTv
     private val pinSubtitleTv = binding.pinSubtitleTv
     private val pinContentTv = binding.pinContentTv
     private val pinContent = binding.pinContent
@@ -44,7 +45,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
             }
         }
         pinClose.setOnClickListener {
-
+            if (pinContent.isVisible) {
+                collapse()
+            }
         }
         pinIv.round(dip(3))
     }
@@ -88,6 +91,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 } else {
                     pinContentTv.text = message.content
                 }
+                pinContentTv.visibility = View.VISIBLE
+                pinSubtitleTv.visibility = View.GONE
+                pinTitleTv.visibility = View.GONE
                 pinIv.visibility = View.GONE
                 pinAvatar.visibility = View.GONE
                 setIcon()
@@ -102,6 +108,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 )
                 pinIv.visibility = View.GONE
                 pinAvatar.visibility = View.GONE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
                 setIcon(R.drawable.ic_type_recall)
             }
             message.type.endsWith("_IMAGE") -> {
@@ -113,6 +122,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 setIcon(R.drawable.ic_type_pic)
                 pinAvatar.visibility = View.GONE
                 pinIv.visibility = View.VISIBLE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_VIDEO") -> {
                 pinIv.loadImageCenterCrop(
@@ -123,6 +135,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 setIcon(R.drawable.ic_type_video)
                 pinAvatar.visibility = View.GONE
                 pinIv.visibility = View.VISIBLE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_LIVE") -> {
                 pinIv.loadImageCenterCrop(
@@ -133,6 +148,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 setIcon(R.drawable.ic_type_live)
                 pinAvatar.visibility = View.GONE
                 pinIv.visibility = View.VISIBLE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_DATA") -> {
                 message.mediaName.notNullWithElse(
@@ -146,24 +164,36 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 setIcon(R.drawable.ic_type_file)
                 pinAvatar.visibility = View.GONE
                 pinIv.visibility = View.GONE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_POST") -> {
                 pinSubtitleTv.setText(R.string.post)
                 setIcon(R.drawable.ic_type_file)
                 pinAvatar.visibility = View.GONE
                 pinIv.visibility = View.GONE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_TRANSCRIPT") -> {
                 pinSubtitleTv.setText(R.string.transcript)
                 setIcon(R.drawable.ic_type_transcript)
                 pinAvatar.visibility = View.GONE
                 pinIv.visibility = View.GONE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_LOCATION") -> {
                 pinSubtitleTv.setText(R.string.location)
                 setIcon(R.drawable.ic_type_location)
                 pinAvatar.visibility = View.GONE
                 pinIv.visibility = View.GONE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_AUDIO") -> {
                 message.mediaDuration.notNullWithElse(
@@ -177,6 +207,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 setIcon(R.drawable.ic_type_audio)
                 pinIv.visibility = View.GONE
                 pinAvatar.visibility = View.GONE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_STICKER") -> {
                 pinSubtitleTv.setText(R.string.common_sticker)
@@ -187,6 +220,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 )
                 pinAvatar.visibility = View.GONE
                 pinIv.visibility = View.VISIBLE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type.endsWith("_CONTACT") -> {
                 pinSubtitleTv.text = message.sharedUserIdentityNumber
@@ -199,12 +235,18 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 )
                 pinAvatar.visibility = View.VISIBLE
                 pinIv.visibility = View.INVISIBLE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             message.type == MessageCategory.APP_BUTTON_GROUP.name || message.type == MessageCategory.APP_CARD.name -> {
                 pinSubtitleTv.setText(R.string.extensions)
                 setIcon(R.drawable.ic_type_touch_app)
                 pinIv.visibility = View.GONE
                 pinAvatar.visibility = View.GONE
+                pinContentTv.visibility = View.GONE
+                pinSubtitleTv.visibility = View.VISIBLE
+                pinTitleTv.visibility = View.VISIBLE
             }
             else -> {
                 pinAvatar.visibility = View.GONE

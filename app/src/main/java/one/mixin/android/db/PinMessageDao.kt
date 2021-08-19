@@ -36,7 +36,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
         LEFT JOIN users su ON m.shared_user_id = su.user_id
         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id  WHERE m.conversation_id = :conversationId ORDER BY m.created_at DESC"""
+        LEFT JOIN message_mentions mm ON m.id = mm.message_id  WHERE m.conversation_id = :conversationId ORDER BY m.created_at ASC"""
     )
     fun getPinMessages(conversationId: String): LiveData<List<MessageItem>>
 

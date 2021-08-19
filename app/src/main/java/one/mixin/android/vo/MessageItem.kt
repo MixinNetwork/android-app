@@ -293,6 +293,44 @@ class FixedMessageDataSource(private val messageItems: List<MessageItem>) : Posi
     }
 }
 
+fun MessageItem.toTranscriptMessageItem(transcriptId: String): TranscriptMessageItem {
+    return TranscriptMessageItem(
+        transcriptId,
+        messageId,
+        userId,
+        userFullName,
+        userIdentityNumber,
+        type ?: "",
+        appId,
+        content,
+        createdAt,
+        mediaStatus,
+        mediaName,
+        mediaMimeType,
+        mediaSize,
+        thumbUrl,
+        mediaWidth,
+        mediaHeight,
+        thumbImage,
+        mediaUrl,
+        mediaDuration,
+        mediaWaveform,
+        assetWidth,
+        assetHeight,
+        assetUrl,
+        assetType,
+        sharedUserId,
+        sharedUserFullName,
+        sharedUserAvatarUrl,
+        sharedUserIdentityNumber,
+        sharedUserIsVerified,
+        sharedUserAppId,
+        quoteId,
+        quoteContent,
+        mentions,
+    )
+}
+
 fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
     val thumb = if (thumbImage != null && !Base83.isValid(thumbImage)) {
         try {

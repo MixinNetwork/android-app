@@ -52,12 +52,7 @@ import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.TranscriptMessageItem
-import one.mixin.android.vo.copy
-import one.mixin.android.vo.saveToLocal
-import one.mixin.android.vo.toMessageItem
+import one.mixin.android.vo.*
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
@@ -101,6 +96,10 @@ class ChatHistoryActivity : BaseActivity() {
         intent.getBooleanExtra(IS_PLAIN, true)
     }
 
+    private val isTranscript by lazy {
+        intent.getIntExtra(CATEGORY, TRANSCRIPT) == TRANSCRIPT
+    }
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTranscriptBinding.inflate(layoutInflater)
@@ -115,19 +114,35 @@ class ChatHistoryActivity : BaseActivity() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
-        conversationRepository.findTranscriptMessageItemById(transcriptId)
-            .observe(this) { transcripts ->
-                binding.control.callback = object : WebControlView.Callback {
-                    override fun onMoreClick() {
-                        showBottomSheet()
-                    }
+        if (isTranscript) {
+            conversationRepository.findTranscriptMessageItemById(transcriptId)
+                .observe(this) { transcripts ->
+                    binding.control.callback = object : WebControlView.Callback {
+                        override fun onMoreClick() {
+                            showBottomSheet()
+                        }
 
-                    override fun onCloseClick() {
-                        finish()
+                        override fun onCloseClick() {
+                            finish()
+                        }
                     }
+                    adapter.transcripts = transcripts
                 }
-                adapter.transcripts = transcripts
-            }
+        } else {
+            conversationRepository.getPinMessages(conversationId)
+                .observe(this) { list ->
+                    binding.control.callback = object : WebControlView.Callback {
+                        override fun onMoreClick() {
+                            showBottomSheet()
+                        }
+
+                        override fun onCloseClick() {
+                            finish()
+                        }
+                    }
+                    adapter.transcripts = list.map { it.toTranscriptMessageItem("")}
+                }
+        }
     }
 
     override fun onStop() {
@@ -151,7 +166,11 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onPostClick(view: View, messageItem: TranscriptMessageItem) {
-                MarkdownActivity.show(this@ChatHistoryActivity, messageItem.content!!, conversationId)
+                MarkdownActivity.show(
+                    this@ChatHistoryActivity,
+                    messageItem.content!!,
+                    conversationId
+                )
             }
 
             override fun onUrlLongClick(url: String) {
@@ -185,24 +204,31 @@ class ChatHistoryActivity : BaseActivity() {
 
             override fun onMentionClick(identityNumber: String) {
                 lifecycleScope.launch {
-                    userRepository.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))?.let { user ->
-                        UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                            .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
-                    }
+                    userRepository.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))
+                        ?.let { user ->
+                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        }
                 }
             }
 
             override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {
                 quoteMessageId?.let { msgId ->
                     lifecycleScope.launch {
-                        val index = conversationRepository.findTranscriptMessageIndex(transcriptId, msgId)
+                        val index =
+                            conversationRepository.findTranscriptMessageIndex(transcriptId, msgId)
                         scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4)
                     }
                 }
             }
 
             override fun onImageClick(messageItem: TranscriptMessageItem, view: View) {
-                TranscriptMediaPagerActivity.show(this@ChatHistoryActivity, view, transcriptId, messageItem.messageId)
+                TranscriptMediaPagerActivity.show(
+                    this@ChatHistoryActivity,
+                    view,
+                    transcriptId,
+                    messageItem.messageId
+                )
             }
 
             override fun onAudioClick(messageItem: TranscriptMessageItem) {
@@ -217,8 +243,6 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onAudioFileClick(messageItem: TranscriptMessageItem) {
-                // todo
-                Timber.d(messageItem.messageId)
             }
 
             override fun onTranscriptClick(messageItem: TranscriptMessageItem) {
@@ -226,22 +250,37 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onTextDoubleClick(messageItem: TranscriptMessageItem) {
-                TextPreviewActivity.show(this@ChatHistoryActivity, messageItem.toMessageItem(conversationId))
+                TextPreviewActivity.show(
+                    this@ChatHistoryActivity,
+                    messageItem.toMessageItem(conversationId)
+                )
             }
 
             override fun onRetryDownload(transcriptId: String, messageId: String) {
                 lifecycleScope.launch {
-                    conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
-                        jobManager.addJobInBackground(TranscriptAttachmentDownloadJob(conversationId, transcript))
-                    }
+                    conversationRepository.getTranscriptById(transcriptId, messageId)
+                        ?.let { transcript ->
+                            jobManager.addJobInBackground(
+                                TranscriptAttachmentDownloadJob(
+                                    conversationId,
+                                    transcript
+                                )
+                            )
+                        }
                 }
             }
 
             override fun onRetryUpload(transcriptId: String, messageId: String) {
                 lifecycleScope.launch {
-                    conversationRepository.getTranscriptById(transcriptId, messageId)?.let { transcript ->
-                        jobManager.addJobInBackground(SendTranscriptAttachmentMessageJob(transcript, isPlain))
-                    }
+                    conversationRepository.getTranscriptById(transcriptId, messageId)
+                        ?.let { transcript ->
+                            jobManager.addJobInBackground(
+                                SendTranscriptAttachmentMessageJob(
+                                    transcript,
+                                    isPlain
+                                )
+                            )
+                        }
                 }
             }
 
@@ -250,13 +289,18 @@ class ChatHistoryActivity : BaseActivity() {
                     conversationRepository.getTranscriptById(transcriptId, messageId)
                         ?.let { transcript ->
                             jobManager.cancelJobByMixinJobId("${transcript.transcriptId}${transcript.messageId}")
-                            conversationRepository.updateTranscriptMediaStatus(transcript.transcriptId, transcript.messageId, MediaStatus.CANCELED.name)
+                            conversationRepository.updateTranscriptMediaStatus(
+                                transcript.transcriptId,
+                                transcript.messageId,
+                                MediaStatus.CANCELED.name
+                            )
                         }
                 }
             }
 
             override fun onLocationClick(messageItem: TranscriptMessageItem) {
-                val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
+                val location =
+                    GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
                 LocationActivity.show(this@ChatHistoryActivity, location)
             }
 
@@ -266,7 +310,10 @@ class ChatHistoryActivity : BaseActivity() {
                         userRepository.getUserById(userId)?.let { user ->
                             withContext(Dispatchers.Main) {
                                 UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                    .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                    .showNow(
+                                        supportFragmentManager,
+                                        UserBottomSheetDialogFragment.TAG
+                                    )
                             }
                         }
                     }
@@ -276,9 +323,9 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onFileClick(messageItem: TranscriptMessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                            "application/vnd.android.package-archive",
-                            true
-                        )
+                        "application/vnd.android.package-archive",
+                        true
+                    )
                 ) {
                     if (this@ChatHistoryActivity.packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)
@@ -299,7 +346,10 @@ class ChatHistoryActivity : BaseActivity() {
                             userRepository.getUserById(uid)?.let { user ->
                                 withContext(Dispatchers.Main) {
                                     UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                        .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                        .showNow(
+                                            supportFragmentManager,
+                                            UserBottomSheetDialogFragment.TAG
+                                        )
                                 }
                             }
                         }
@@ -443,9 +493,10 @@ class ChatHistoryActivity : BaseActivity() {
                     this@ChatHistoryActivity,
                     arrayListOf<TranscriptMessage>().apply {
                         addAll(
-                            conversationRepository.getTranscriptsById(this@ChatHistoryActivity.transcriptId).map {
-                                it.copy(transcriptId)
-                            }
+                            conversationRepository.getTranscriptsById(this@ChatHistoryActivity.transcriptId)
+                                .map {
+                                    it.copy(transcriptId)
+                                }
                         )
                     }
                 )
