@@ -554,4 +554,8 @@ internal constructor(
     fun deletePinMessageByIds(messageIds: List<String>) {
         pinMessageDao.deleteByIds(messageIds)
     }
+
+    fun insertMessage(message: Message) {
+        messageDao.insert(message)
+    }
 }

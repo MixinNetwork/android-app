@@ -52,39 +52,7 @@ import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
-import one.mixin.android.ui.conversation.holder.ActionCardHolder
-import one.mixin.android.ui.conversation.holder.ActionHolder
-import one.mixin.android.ui.conversation.holder.AudioHolder
-import one.mixin.android.ui.conversation.holder.AudioQuoteHolder
-import one.mixin.android.ui.conversation.holder.BaseMentionHolder
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.holder.BillHolder
-import one.mixin.android.ui.conversation.holder.CallHolder
-import one.mixin.android.ui.conversation.holder.CardHolder
-import one.mixin.android.ui.conversation.holder.ContactCardHolder
-import one.mixin.android.ui.conversation.holder.ContactCardQuoteHolder
-import one.mixin.android.ui.conversation.holder.FileHolder
-import one.mixin.android.ui.conversation.holder.FileQuoteHolder
-import one.mixin.android.ui.conversation.holder.GroupCallHolder
-import one.mixin.android.ui.conversation.holder.HyperlinkHolder
-import one.mixin.android.ui.conversation.holder.ImageHolder
-import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
-import one.mixin.android.ui.conversation.holder.LocationHolder
-import one.mixin.android.ui.conversation.holder.PostHolder
-import one.mixin.android.ui.conversation.holder.RecallHolder
-import one.mixin.android.ui.conversation.holder.SecretHolder
-import one.mixin.android.ui.conversation.holder.StickerHolder
-import one.mixin.android.ui.conversation.holder.StrangerHolder
-import one.mixin.android.ui.conversation.holder.SystemHolder
-import one.mixin.android.ui.conversation.holder.TextHolder
-import one.mixin.android.ui.conversation.holder.TextQuoteHolder
-import one.mixin.android.ui.conversation.holder.TimeHolder
-import one.mixin.android.ui.conversation.holder.TranscriptHolder
-import one.mixin.android.ui.conversation.holder.TransparentHolder
-import one.mixin.android.ui.conversation.holder.UnknownHolder
-import one.mixin.android.ui.conversation.holder.VideoHolder
-import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
-import one.mixin.android.ui.conversation.holder.WaitingHolder
+import one.mixin.android.ui.conversation.holder.*
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.*
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
@@ -476,7 +444,7 @@ class ConversationAdapter(
                     )
                 }
                 PIN_TYPE -> {
-                    (holder as SystemHolder).bind(
+                    (holder as PinMessageHolder).bind(
                         it,
                         selectSet.size > 0,
                         isSelect(position),
@@ -754,7 +722,7 @@ class ConversationAdapter(
                 TranscriptHolder(ItemChatTranscriptBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             PIN_TYPE -> {
-                SystemHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+                PinMessageHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             else -> {
                 TransparentHolder(ItemChatTransparentBinding.inflate(LayoutInflater.from(parent.context), parent, false))

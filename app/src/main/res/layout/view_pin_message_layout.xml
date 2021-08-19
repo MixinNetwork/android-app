@@ -44,7 +44,6 @@
         android:orientation="horizontal"
         android:layout_height="wrap_content"
         android:layout_width="0dp"
-        android:foreground="?attr/selectableItemBackground"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/pin"
         app:layout_constraintTop_toTopOf="parent"

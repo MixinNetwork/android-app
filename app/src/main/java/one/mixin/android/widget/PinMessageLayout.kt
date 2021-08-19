@@ -31,23 +31,11 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     private val pinSubtitleTv = binding.pinSubtitleTv
     private val pinContentTv = binding.pinContentTv
     private val pinContent = binding.pinContent
+    private val pinClose = binding.pinClose
     val pinCount = binding.pinCount
-    val pinClose = binding.pinClose
     val pin = binding.pin
 
     init {
-        pin.setOnClickListener {
-            if (pinContent.isVisible) {
-                collapse()
-            } else {
-                expand()
-            }
-        }
-        pinClose.setOnClickListener {
-            if (pinContent.isVisible) {
-                collapse()
-            }
-        }
         pinIv.round(dip(3))
     }
 
@@ -75,7 +63,13 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
         anim.start()
     }
 
-    fun bind(message: MessageItem) {
+    fun bind(message: MessageItem, closeAction: () -> Unit) {
+        pinClose.setOnClickListener {
+            if (pinContent.isVisible) {
+                collapse()
+            }
+            closeAction.invoke()
+        }
         when {
             message.type == null -> {
                 pinIv.visibility = View.GONE

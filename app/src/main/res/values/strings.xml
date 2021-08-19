@@ -1017,7 +1017,19 @@
     <string name="enable_immediately">Enabled immediately</string>
     <string name="enable_after_1_minute">Enabled after 1 minute</string>
     <string name="enable_after_30_minutes">Enabled after 30 minutes</string>
+
     <!--  Pin message  -->
     <string name="unpin_all">Cancel all pinned message</string>
     <string name="pinned_message">Pinned Messages</string>
+    <string name="chat_pin_message">%1$s pinned %2$s</string>
+    <string name="chat_pin_image_message">a photo</string>
+    <string name="chat_pin_video_message">a video</string>
+    <string name="chat_pin_live_message">a live</string>
+    <string name="chat_pin_data_message">a file</string>
+    <string name="chat_pin_audio_message">an audio</string>
+    <string name="chat_pin_sticker_message">a sticker</string>
+    <string name="chat_pin_contact_message">a contact</string>
+    <string name="chat_pin_post_message">a post</string>
+    <string name="chat_pin_location_message">a location</string>
+    <string name="chat_pin_transcript_message">a transcript</string>
 </resources>

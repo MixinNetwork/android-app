@@ -1865,8 +1865,10 @@ class ConversationFragment() :
             .observe(viewLifecycleOwner, { messageItem ->
                 if (messageItem != null) {
                     binding.pinMessageLayout.isVisible = true
-                    binding.pinMessageLayout.bind(messageItem)
-                    binding.pinMessageLayout.setOnClickListener {
+                    binding.pinMessageLayout.bind(messageItem) {
+                        // Todo close pin message
+                    }
+                    binding.pinMessageLayout.pin.setOnClickListener {
                         ChatHistoryActivity.show(requireContext(), conversationId)
                     }
                 } else {
@@ -1875,7 +1877,7 @@ class ConversationFragment() :
             })
         chatViewModel.countPinMessages(conversationId)
             .observe(viewLifecycleOwner, { count ->
-                    binding.pinMessageLayout.pinCount.text ="$count"
+                binding.pinMessageLayout.pinCount.text = "$count"
             })
     }
 

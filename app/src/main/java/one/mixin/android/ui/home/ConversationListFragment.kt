@@ -91,29 +91,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.AppButtonData
-import one.mixin.android.vo.AppCardData
-import one.mixin.android.vo.ConversationItem
-import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isCallMessage
-import one.mixin.android.vo.isContact
-import one.mixin.android.vo.isContactConversation
-import one.mixin.android.vo.isData
-import one.mixin.android.vo.isGroupCall
-import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isLocation
-import one.mixin.android.vo.isPost
-import one.mixin.android.vo.isRecall
-import one.mixin.android.vo.isSticker
-import one.mixin.android.vo.isText
-import one.mixin.android.vo.isTranscript
-import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.showVerifiedOrBot
+import one.mixin.android.vo.*
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
@@ -806,6 +784,31 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.setText(R.string.conversation_status_group_call)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
+                conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
+                    val pinMessage = GsonHelper.customGson.fromJson(conversationItem.content, PinMessageMinimal::class.java)
+                    binding.msgTv.text = String.format(
+                        getText(R.string.chat_pin_message),
+                        if (id == conversationItem.senderId) {
+                            getText(R.string.chat_you_start)
+                        } else {
+                            conversationItem.senderFullName
+                        },
+                        when {
+                            pinMessage.isImage() -> getText(R.string.chat_pin_image_message)
+                            pinMessage.isVideo() -> getText(R.string.chat_pin_video_message)
+                            pinMessage.isLive() -> getText(R.string.chat_pin_live_message)
+                            pinMessage.isData() -> getText(R.string.chat_pin_data_message)
+                            pinMessage.isAudio() -> getText(R.string.chat_pin_audio_message)
+                            pinMessage.isSticker() -> getText(R.string.chat_pin_sticker_message)
+                            pinMessage.isContact() -> getText(R.string.chat_pin_contact_message)
+                            pinMessage.isPost() -> getText(R.string.chat_pin_post_message)
+                            pinMessage.isLocation() -> getText(R.string.chat_pin_location_message)
+                            pinMessage.isTranscript() -> getText(R.string.chat_pin_transcript_message)
+                            else -> pinMessage.content
+                        }
+                    )
+                    null
+                }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
                     when (conversationItem.actionName) {
                         SystemConversationAction.CREATE.name -> {
@@ -909,7 +912,8 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
                 !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
-                !conversationItem.isGroupCall()
+                !conversationItem.isGroupCall() &&
+                !conversationItem.isPin()
             ) {
                 when (conversationItem.messageStatus) {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(

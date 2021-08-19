@@ -243,8 +243,7 @@ internal constructor(
             } else if (action == PinAction.UNPIN) {
                 conversationRepository.deletePinMessageByIds(list.map { it.messageId })
             }
-            // Todo send pin message
-            // messenger.sendPinMessage(conversationId, sender, action, list)
+            messenger.sendPinMessage(conversationId, sender, action, list)
         }
     }
 

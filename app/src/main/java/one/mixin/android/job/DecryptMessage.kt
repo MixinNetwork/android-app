@@ -231,6 +231,24 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     val message = messageDao.findMessageById(id)
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(id, message.conversationId, data.createdAt))
+                        messageDao.insert(
+                            createPinMessage(
+                                UUID.randomUUID().toString(),
+                                data.conversationId,
+                                data.userId,
+                                PinMessageMinimal(
+                                    message.id,
+                                    message.category,
+                                    if (message.category.endsWith("_TEXT")) {
+                                        message.content
+                                    } else {
+                                        null
+                                    }
+                                ),
+                                nowInUtc(),
+                                MessageStatus.READ.name
+                            )
+                        )
                     }
                 }
             } else if (transferPinData.action == PinAction.UNPIN.name) {

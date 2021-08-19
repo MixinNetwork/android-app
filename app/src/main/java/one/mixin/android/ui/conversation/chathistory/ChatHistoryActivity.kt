@@ -24,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
-import one.mixin.android.extension.dp
 import one.mixin.android.databinding.ActivityChatHistoryBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
@@ -135,7 +134,6 @@ class ChatHistoryActivity : BaseActivity() {
                 // todo cancel all pinned messages
             }
             binding.control.hideMore()
-            binding.control.layoutParams = binding.control.layoutParams.apply { width = 44.dp }
             conversationRepository.getPinMessages(conversationId)
                 .observe(this) { list ->
                     binding.control.callback = object : WebControlView.Callback {

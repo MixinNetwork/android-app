@@ -29,42 +29,13 @@ import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.SendTranscriptJob
+import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.image.Compressor
-import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.TranscriptMinimal
-import one.mixin.android.vo.User
-import one.mixin.android.vo.createAppCardMessage
-import one.mixin.android.vo.createAttachmentMessage
-import one.mixin.android.vo.createAudioMessage
-import one.mixin.android.vo.createContactMessage
-import one.mixin.android.vo.createLiveMessage
-import one.mixin.android.vo.createLocationMessage
-import one.mixin.android.vo.createMediaMessage
-import one.mixin.android.vo.createMessage
-import one.mixin.android.vo.createPostMessage
-import one.mixin.android.vo.createRecallMessage
-import one.mixin.android.vo.createReplyTextMessage
-import one.mixin.android.vo.createStickerMessage
+import one.mixin.android.vo.*
 import one.mixin.android.vo.giphy.Image
-import one.mixin.android.vo.isAppCard
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isContact
-import one.mixin.android.vo.isData
-import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isLocation
-import one.mixin.android.vo.isPost
-import one.mixin.android.vo.isSticker
-import one.mixin.android.vo.isText
-import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.websocket.*
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
@@ -72,7 +43,7 @@ import java.io.FileInputStream
 import java.util.UUID
 import javax.inject.Inject
 
-class SendMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository) {
+class SendMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository, private val conversationRepository: ConversationRepository) {
 
     fun sendTextMessage(scope: CoroutineScope, conversationId: String, sender: User, content: String, isPlain: Boolean, isSilentMessage: Boolean? = null) {
         val category =
@@ -310,11 +281,32 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageStatus.SENDING.name,
             nowInUtc()
         )
-        jobManager.addJobInBackground(
-            SendMessageJob(
-                message
-            )
-        )
+        if (action == PinAction.PIN) {
+            list.forEach { msg ->
+                val category = msg.type ?: return@forEach
+                val content = if (msg.isText()) {
+                    msg.content
+                } else {
+                    null
+                }
+                conversationRepository.insertMessage(
+                    createPinMessage(
+                        UUID.randomUUID().toString(),
+                        conversationId,
+                        sender.userId,
+                        PinMessageMinimal(msg.messageId, category, content),
+                        nowInUtc(),
+                        MessageStatus.READ.name
+                    )
+                )
+            }
+        }
+        // Todo send message
+        // jobManager.addJobInBackground(
+        //     SendMessageJob(
+        //         message
+        //     )
+        // )
     }
 
     fun sendLiveMessage(
