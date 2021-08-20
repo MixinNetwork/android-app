@@ -12,9 +12,14 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ViewPinMessageLayoutBinding
+import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.extension.*
+import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageCategory
@@ -35,6 +40,16 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     val pinCount = binding.pinCount
     val pin = binding.pin
 
+    var conversationId: String? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                pinContent.isVisible =
+                    context.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                        .getBoolean("Pin_$conversationId", true)
+            }
+        }
+
     init {
         pinIv.round(dip(3))
     }
@@ -54,6 +69,26 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
         anim.start()
     }
 
+
+    private var disposable: Disposable? = null
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        disposable = RxBus.listen(PinMessageEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                if (it.conversationId == conversationId) {
+                    context.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                        .putBoolean("Pin_$conversationId", false)
+                    expand()
+                }
+            }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        disposable?.dispose()
+    }
+
     private fun expand() {
         val cx = pinContent.width
         val cy = pinContent.height / 2
@@ -63,12 +98,16 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
         anim.start()
     }
 
-    fun bind(message: MessageItem, closeAction: () -> Unit) {
+    fun bind(message: MessageItem, clickAction: (String) -> Unit) {
         pinClose.setOnClickListener {
             if (pinContent.isVisible) {
                 collapse()
             }
-            closeAction.invoke()
+            context.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                .putBoolean("Pin_$conversationId", false)
+        }
+        pinContent.setOnClickListener {
+            clickAction.invoke(message.messageId)
         }
         when {
             message.type == null -> {

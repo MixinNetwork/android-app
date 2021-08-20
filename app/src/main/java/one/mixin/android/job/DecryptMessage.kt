@@ -22,6 +22,7 @@ import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
+import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.extension.autoDownload
@@ -227,7 +228,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val decoded = Base64.decode(data.data)
             val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
             if (transferPinData.action == PinAction.PIN.name) {
-                transferPinData.messageIds.forEach { id ->
+                transferPinData.messageIds.forEachIndexed {index, id ->
                     val message = messageDao.findMessageById(id)
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(id, message.conversationId, data.createdAt))
@@ -249,6 +250,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 MessageStatus.READ.name
                             )
                         )
+                    }
+                    if (index == transferPinData.messageIds.size - 1) {
+                        RxBus.publish(PinMessageEvent(data.conversationId, id))
                     }
                 }
             } else if (transferPinData.action == PinAction.UNPIN.name) {

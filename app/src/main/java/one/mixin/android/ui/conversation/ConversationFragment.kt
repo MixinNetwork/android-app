@@ -1861,12 +1861,13 @@ class ConversationFragment() :
     }
 
     private fun bindPinMessage() {
+        binding.pinMessageLayout.conversationId = conversationId
         chatViewModel.getLastPinMessages(conversationId)
             .observe(viewLifecycleOwner, { messageItem ->
                 if (messageItem != null) {
                     binding.pinMessageLayout.isVisible = true
-                    binding.pinMessageLayout.bind(messageItem) {
-                        // Todo close pin message
+                    binding.pinMessageLayout.bind(messageItem) { messageId ->
+                        scrollToMessage(messageId)
                     }
                     binding.pinMessageLayout.pin.setOnClickListener {
                         ChatHistoryActivity.show(requireContext(), conversationId)

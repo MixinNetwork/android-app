@@ -8,6 +8,8 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
+import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
@@ -282,8 +284,8 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             nowInUtc()
         )
         if (action == PinAction.PIN) {
-            list.forEach { msg ->
-                val category = msg.type ?: return@forEach
+            list.forEachIndexed { index, msg ->
+                val category = msg.type ?: return@forEachIndexed
                 val content = if (msg.isText()) {
                     msg.content
                 } else {
@@ -299,6 +301,9 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                         MessageStatus.READ.name
                     )
                 )
+                if (index == list.size - 1) {
+                    RxBus.publish(PinMessageEvent(conversationId, msg.messageId))
+                }
             }
         }
         // Todo send message
