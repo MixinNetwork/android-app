@@ -270,7 +270,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         conversationId: String,
         sender: User,
         action: PinAction,
-        list: Collection<MessageItem>
+        list: Collection<PinMessageMinimal>
     ) {
         val transferPinData = PinMessagePayload(action.name, list.map { it.messageId })
         val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
@@ -285,7 +285,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         )
         if (action == PinAction.PIN) {
             list.forEachIndexed { index, msg ->
-                val category = msg.type ?: return@forEachIndexed
+                val category = msg.type
                 val content = if (msg.isText()) {
                     msg.content
                 } else {
@@ -306,12 +306,11 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 }
             }
         }
-        // Todo send message
-        // jobManager.addJobInBackground(
-        //     SendMessageJob(
-        //         message
-        //     )
-        // )
+        jobManager.addJobInBackground(
+            SendMessageJob(
+                message
+            )
+        )
     }
 
     fun sendLiveMessage(

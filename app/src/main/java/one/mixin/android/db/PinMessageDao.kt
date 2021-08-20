@@ -6,12 +6,25 @@ import androidx.room.Query
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.PinMessageMinimal
 
 @Dao
 interface PinMessageDao : BaseDao<PinMessage> {
 
     @Query("DELETE FROM pin_messages WHERE message_id IN (:messageIds)")
     fun deleteByIds(messageIds: List<String>)
+
+    @Query("SELECT * FROM pin_messages WHERE message_id = :messageId")
+    suspend fun findPinMessageById(messageId: String): PinMessage?
+
+    @Query(
+        """
+        SELECT m.id AS messageId,m.category AS type  FROM pin_messages pm
+        LEFT JOIN messages m ON m.id = pm.message_id
+        WHERE pm.conversation_id = :conversationId
+      """
+    )
+    suspend fun getPinMessageMinimals(conversationId: String): List<PinMessageMinimal>
 
     @Query(
         """
@@ -55,8 +68,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead,
         c.name AS groupName
-        FROM pin_messages pm
-        LEFT JOIN messages m ON m.id = pm.message_id
+        FROM messages m
         INNER JOIN users u ON m.user_id = u.user_id
         LEFT JOIN users u1 ON m.participant_id = u1.user_id
         LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
@@ -65,8 +77,8 @@ interface PinMessageDao : BaseDao<PinMessage> {
         LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
         LEFT JOIN users su ON m.shared_user_id = su.user_id
         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id  WHERE pm.conversation_id = :conversationId
-        ORDER BY pm.created_at DESC
+        LEFT JOIN message_mentions mm ON m.id = mm.message_id  WHERE m.conversation_id = :conversationId AND m.category = 'MESSAGE_PIN'
+        ORDER BY m.created_at DESC
         LIMIT 1"""
     )
     fun getLastPinMessages(conversationId: String): LiveData<MessageItem?>

@@ -151,7 +151,10 @@ data class MessageItem(
             unfinishedAttachment() ||
             isCallMessage() || isRecall() || isGroupCall()
 
-    fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
+    fun canNotPin() =
+        canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
+
+    private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 }
 
 fun create(type: String, createdAt: String? = null) = MessageItem(

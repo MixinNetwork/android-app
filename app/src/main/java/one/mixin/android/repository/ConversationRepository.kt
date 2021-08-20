@@ -558,4 +558,8 @@ internal constructor(
     fun insertMessage(message: Message) {
         messageDao.insert(message)
     }
+
+    suspend fun findPinMessageById(messageId: String) = pinMessageDao.findPinMessageById(messageId)
+
+    suspend fun getPinMessageMinimals(conversationId: String) = pinMessageDao.getPinMessageMinimals(conversationId)
 }

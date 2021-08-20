@@ -97,7 +97,7 @@
         android:layout_toStartOf="@id/reply_iv"
         android:background="@drawable/mixin_ripple"
         android:padding="8dp"
-        android:src="@drawable/ic_pin"
+        android:src="@drawable/ic_message_pin"
         android:layout_marginEnd="8dp"
         tools:ignore="ContentDescription" />
 

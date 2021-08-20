@@ -58,7 +58,7 @@ open class SendMessageJob(
         if (conversation != null) {
             if (message.isRecall()) {
                 recallMessage()
-            } else {
+            } else if (!message.isPin()) {
                 if (message.isText()) {
                     message.content?.let { content ->
                         content.findLastUrl()?.let {

@@ -74,6 +74,7 @@
                 app:layout_constraintStart_toStartOf="parent" />
 
             <LinearLayout
+                android:id="@+id/group_flag_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -189,7 +190,7 @@
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/state_layout" />
+                app:layout_constraintTop_toBottomOf="@id/group_flag_layout" />
 
             <one.mixin.android.widget.FloatingLayout
                 android:id="@+id/floating_layout"

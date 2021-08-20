@@ -228,7 +228,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val decoded = Base64.decode(data.data)
             val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
             if (transferPinData.action == PinAction.PIN.name) {
-                transferPinData.messageIds.forEachIndexed {index, id ->
+                transferPinData.messageIds.forEachIndexed { index, id ->
                     val message = messageDao.findMessageById(id)
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(id, message.conversationId, data.createdAt))
@@ -257,6 +257,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             } else if (transferPinData.action == PinAction.UNPIN.name) {
                 pinMessageDao.deleteByIds(transferPinData.messageIds)
+
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))

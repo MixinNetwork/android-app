@@ -11,10 +11,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.ChatHistoryMessageItem
-import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.SnakeQuoteMessageItem
-import one.mixin.android.vo.showVerifiedOrBot
+import one.mixin.android.vo.*
 import org.jetbrains.anko.dip
 
 class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBinding) : MediaHolder(binding.root) {
@@ -98,16 +95,15 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             onItemListener.onContactCardClick(messageItem.sharedUserId!!)
         }
 
-        val quoteMessage = try {
-            GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java)
+        try {
+            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
         } catch (e: Exception) {
-            null
+            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
         }
 
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }
-        binding.chatQuote.bind(quoteMessage)
 
         setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)

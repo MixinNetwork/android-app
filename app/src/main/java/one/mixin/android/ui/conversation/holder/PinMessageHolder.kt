@@ -62,7 +62,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) : BaseVie
                     pinMessage.isPost() -> getText(R.string.chat_pin_post_message)
                     pinMessage.isLocation() -> getText(R.string.chat_pin_location_message)
                     pinMessage.isTranscript() -> getText(R.string.chat_pin_transcript_message)
-                    else -> pinMessage.content
+                    else -> " \"${pinMessage.content}\""
                 }
             )
     }

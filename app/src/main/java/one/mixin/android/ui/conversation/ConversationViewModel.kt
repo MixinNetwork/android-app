@@ -243,7 +243,12 @@ internal constructor(
             } else if (action == PinAction.UNPIN) {
                 conversationRepository.deletePinMessageByIds(list.map { it.messageId })
             }
-            messenger.sendPinMessage(conversationId, sender, action, list)
+            messenger.sendPinMessage(
+                conversationId, sender, action,
+                list.map {
+                    PinMessageMinimal(it.messageId, requireNotNull(it.type), it.content)
+                }
+            )
         }
     }
 
@@ -846,4 +851,8 @@ internal constructor(
 
     fun countPinMessages(conversationId: String) =
         conversationRepository.countPinMessages(conversationId)
+
+    suspend fun findPinMessageById(messageId: String) = withContext(Dispatchers.IO) {
+        conversationRepository.findPinMessageById(messageId)
+    }
 }

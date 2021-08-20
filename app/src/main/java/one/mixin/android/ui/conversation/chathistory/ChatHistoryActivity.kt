@@ -40,8 +40,10 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.*
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
@@ -54,11 +56,13 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.*
 import one.mixin.android.websocket.LocationPayload
+import one.mixin.android.websocket.PinAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.WebControlView
 import one.mixin.android.widget.buildBottomSheetView
+import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
@@ -79,6 +83,9 @@ class ChatHistoryActivity : BaseActivity() {
 
     @Inject
     lateinit var conversationRepository: ConversationRepository
+
+    @Inject
+    lateinit var messenger: SendMessageHelper
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -131,7 +138,20 @@ class ChatHistoryActivity : BaseActivity() {
         } else {
             binding.unpinTv.isVisible = true
             binding.unpinTv.setOnClickListener {
-                // todo cancel all pinned messages
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        conversationRepository.getPinMessageMinimals(conversationId)
+                            .chunked(128) { list ->
+                                conversationRepository.deletePinMessageByIds(list.map { it.messageId })
+                                Timber.e((list.map { it.messageId }.toString()))
+                                messenger.sendPinMessage(
+                                    conversationId, requireNotNull(Session.getAccount()).toUser(),
+                                    PinAction.UNPIN, list
+                                )
+                            }
+                    }
+                    finish()
+                }
             }
             binding.control.hideMore()
             conversationRepository.getPinMessages(conversationId)
@@ -581,8 +601,16 @@ class ChatHistoryActivity : BaseActivity() {
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize, category, it.id, it.thumbImage ?: "", it.createdAt
+                                it.conversationId,
+                                it.userId,
+                                it.mediaUrl!!,
+                                it.mediaWidth!!,
+                                it.mediaHeight!!,
+                                it.mediaSize,
+                                category,
+                                it.id,
+                                it.thumbImage ?: "",
+                                it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {

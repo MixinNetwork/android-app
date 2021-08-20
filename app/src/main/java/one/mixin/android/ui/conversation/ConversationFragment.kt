@@ -446,6 +446,26 @@ class ConversationFragment() :
         }
     }
 
+    private fun checkPinMessage() {
+        if (conversationAdapter.selectSet.valueAt(0)?.canNotPin() == true) {
+            binding.toolView.pinIv.visibility = GONE
+        } else {
+            conversationAdapter.selectSet.valueAt(0)?.messageId?.let { messageId ->
+                lifecycleScope.launch {
+                    val pinMessage = chatViewModel.findPinMessageById(messageId)
+                    if (pinMessage == null) {
+                        binding.toolView.pinIv.tag = PinAction.PIN
+                        binding.toolView.pinIv.setImageResource(R.drawable.ic_message_pin)
+                    } else {
+                        binding.toolView.pinIv.tag = PinAction.UNPIN
+                        binding.toolView.pinIv.setImageResource(R.drawable.ic_message_unpin)
+                    }
+                    binding.toolView.pinIv.visibility = VISIBLE
+                }
+            }
+        }
+    }
+
     private val onItemListener: ConversationAdapter.OnItemListener by lazy {
         object : ConversationAdapter.OnItemListener() {
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
@@ -487,6 +507,7 @@ class ConversationFragment() :
                         } else {
                             binding.toolView.replyIv.visibility = VISIBLE
                         }
+                        checkPinMessage()
                     }
                     else -> {
                         binding.toolView.forwardIv.visibility = VISIBLE
@@ -494,6 +515,7 @@ class ConversationFragment() :
                         binding.toolView.copyIv.visibility = GONE
                         binding.toolView.addStickerIv.visibility = GONE
                         binding.toolView.shareIv.visibility = GONE
+                        binding.toolView.pinIv.visibility = GONE
                     }
                 }
                 if (conversationAdapter.selectSet.size > 99 || conversationAdapter.selectSet.any { it.canNotForward() }) {
@@ -504,6 +526,7 @@ class ConversationFragment() :
                 conversationAdapter.notifyDataSetChanged()
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
                 checkAppCardForward(messageItem)
                 val b = conversationAdapter.addSelect(messageItem)
@@ -540,6 +563,7 @@ class ConversationFragment() :
                     } else {
                         binding.toolView.replyIv.visibility = VISIBLE
                     }
+                    checkPinMessage()
                     conversationAdapter.notifyDataSetChanged()
                     binding.toolView.fadeIn()
                 }
@@ -1491,7 +1515,12 @@ class ConversationFragment() :
                 return@setOnClickListener
             }
             lifecycleScope.launch {
-                chatViewModel.sendPinMessage(conversationId, sender, PinAction.PIN, conversationAdapter.selectSet)
+                chatViewModel.sendPinMessage(
+                    conversationId,
+                    sender,
+                    (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
+                    conversationAdapter.selectSet
+                )
                 closeTool()
             }
         }
@@ -1865,19 +1894,17 @@ class ConversationFragment() :
         chatViewModel.getLastPinMessages(conversationId)
             .observe(viewLifecycleOwner, { messageItem ->
                 if (messageItem != null) {
-                    binding.pinMessageLayout.isVisible = true
                     binding.pinMessageLayout.bind(messageItem) { messageId ->
                         scrollToMessage(messageId)
                     }
                     binding.pinMessageLayout.pin.setOnClickListener {
                         ChatHistoryActivity.show(requireContext(), conversationId)
                     }
-                } else {
-                    binding.pinMessageLayout.isVisible = false
                 }
             })
         chatViewModel.countPinMessages(conversationId)
             .observe(viewLifecycleOwner, { count ->
+                binding.pinMessageLayout.isVisible = count > 0
                 binding.pinMessageLayout.pinCount.text = "$count"
             })
     }
