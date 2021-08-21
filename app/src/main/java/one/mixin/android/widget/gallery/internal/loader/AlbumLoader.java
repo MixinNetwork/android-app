@@ -12,12 +12,14 @@ import android.util.SparseArray;
 import androidx.loader.content.CursorLoader;
 import one.mixin.android.widget.gallery.internal.entity.Album;
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec;
+import timber.log.Timber;
 
 
 /**
  * Load all albums (grouped by bucket_id) into a single cursor.
  */
 public class AlbumLoader extends CursorLoader {
+    private static final String TAG = "AlbumLoader";
     private static final String COLUMN_BUCKET_ID = "bucket_id";
     private static final String COLUMN_BUCKET_DISPLAY_NAME = "bucket_display_name";
     public static final String COLUMN_COUNT = "count";
@@ -106,6 +108,7 @@ public class AlbumLoader extends CursorLoader {
     }
 
     public static CursorLoader newInstance(Context context) {
+        Timber.e("%s newInstance", TAG);
         String selection;
         String[] selectionArgs;
         if (SelectionSpec.getInstance().onlyShowImages()) {
@@ -123,18 +126,23 @@ public class AlbumLoader extends CursorLoader {
 
     @Override
     public Cursor loadInBackground() {
+        Timber.e("%s loadInBackground", TAG);
         Cursor albums = super.loadInBackground();
+        Timber.e("%s after super.loadInBackground() albums cursor: %s", TAG, albums);
         MatrixCursor allAlbum = new MatrixCursor(COLUMNS);
 
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            Timber.e("%s loadInBackground sdk_int < Q", TAG);
             int totalCount = 0;
             String allAlbumCoverPath = "";
             if (albums != null) {
                 while (albums.moveToNext()) {
                     totalCount += albums.getInt(albums.getColumnIndex(COLUMN_COUNT));
+                    Timber.e("%s loadInBackground totalCount: %d", TAG, totalCount);
                 }
                 if (albums.moveToFirst()) {
                     allAlbumCoverPath = albums.getString(albums.getColumnIndex(MediaStore.MediaColumns.DATA));
+                    Timber.e("%s loadInBackground allAlbumCoverPath: %s", TAG, allAlbumCoverPath);
                 }
             }
 
@@ -149,6 +157,7 @@ public class AlbumLoader extends CursorLoader {
             if (albums != null) {
                 while (albums.moveToNext()) {
                     String albumCoverPath = albums.getString(albums.getColumnIndex(MediaStore.MediaColumns.DATA));
+                    Timber.e("%s loadInBackground albumCoverPath: %s", TAG, albumCoverPath);
                     if ("".equals(allAlbumCoverPath)) {
                         allAlbumCoverPath = albumCoverPath;
                     }
@@ -156,19 +165,23 @@ public class AlbumLoader extends CursorLoader {
                     String bucketDisplayName = albums.getString(albums.getColumnIndex(COLUMN_BUCKET_DISPLAY_NAME));
                     Album album = albumList.get(bucketId);
                     if (album == null) {
+                        Timber.e("%s loadInBackground album empty", TAG);
                         album = new Album(String.valueOf(bucketId), albumCoverPath, bucketDisplayName, 0);
                         albumList.append(bucketId, album);
                     }
+                    Timber.e("%s loadInBackground album: %s", TAG, album);
                     album.addCaptureCount();
                     totalCount++;
                 }
             }
+            Timber.e("%s loadInBackground totalCount: %d", TAG, totalCount);
 
             allAlbum.addRow(new String[]{Album.ALBUM_ID_ALL, Album.ALBUM_ID_ALL, Album.ALBUM_NAME_ALL, allAlbumCoverPath, null,
                     String.valueOf(totalCount)});
 
             for (int i = 0, size = albumList.size(); i < size; i++) {
                 Album album = albumList.valueAt(i);
+                Timber.e("%s loadInBackground foreach albumList album: %s", TAG, album);
                 allAlbum.addRow(new String[]{album.getId(), album.getId(), album.getDisplayName(null), album.getCoverPath(), null,
                         String.valueOf(album.getCount())});
             }
@@ -181,6 +194,7 @@ public class AlbumLoader extends CursorLoader {
 
     @Override
     public void onContentChanged() {
+        Timber.e("%s onContentChanged", TAG);
         // FIXME a dirty way to fix loading multiple times
     }
 }

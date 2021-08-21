@@ -10,8 +10,10 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import java.lang.ref.WeakReference;
 import one.mixin.android.widget.gallery.internal.loader.AlbumLoader;
+import timber.log.Timber;
 
 public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String TAG = "AlumCollection";
     private static final int LOADER_ID = 1;
     private static final String STATE_CURRENT_SELECTION = "state_current_selection";
     private WeakReference<Context> mContext;
@@ -22,6 +24,7 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Timber.e("%s onCreateLoader", TAG);
         Context context = mContext.get();
         if (context == null) {
             return null;
@@ -32,6 +35,7 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
         Context context = mContext.get();
+        Timber.e("%s onLoadFinished data cursor: %s, context: %s", TAG, data, context);
         if (context == null) {
             return;
         }
@@ -41,6 +45,7 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        Timber.e("%s onLoaderReset", TAG);
         Context context = mContext.get();
         if (context == null) {
             return;
@@ -50,18 +55,21 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     }
 
     public void onCreate(FragmentActivity activity, AlbumCallbacks callbacks) {
+        Timber.e("%s onCreate", TAG);
         mContext = new WeakReference<>(activity);
         mLoaderManager = LoaderManager.getInstance(activity);
         mCallbacks = callbacks;
     }
 
     public void onCreate(Fragment fragment, AlbumCallbacks callbacks) {
+        Timber.e("%s onCreate", TAG);
         mContext = new WeakReference<>(fragment.requireContext());
         mLoaderManager = LoaderManager.getInstance(fragment);
         mCallbacks = callbacks;
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
+        Timber.e("%s onRestoreInstanceState", TAG);
         if (savedInstanceState == null) {
             return;
         }
@@ -70,10 +78,12 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     }
 
     public void onSaveInstanceState(Bundle outState) {
+        Timber.e("%s onSaveInstanceState", TAG);
         outState.putInt(STATE_CURRENT_SELECTION, mCurrentSelection);
     }
 
     public void onDestroy() {
+        Timber.e("%s onDestroy", TAG);
         if (mLoaderManager != null) {
             mLoaderManager.destroyLoader(LOADER_ID);
         }
@@ -81,14 +91,17 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     }
 
     public void restartLoader() {
+        Timber.e("%s restartLoader", TAG);
         mLoaderManager.restartLoader(LOADER_ID, null, this);
     }
 
     public void loadAlbums() {
+        Timber.e("%s loadAlbums", TAG);
         mLoaderManager.initLoader(LOADER_ID, null, this);
     }
 
     public int getCurrentSelection() {
+        Timber.e("%s getCurrentSelection", TAG);
         return mCurrentSelection;
     }
 

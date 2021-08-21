@@ -19,6 +19,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.model.AlbumCollection
+import timber.log.Timber
 
 class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCollection.AlbumCallbacks {
 
@@ -81,6 +82,7 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         albumCollection.onCreate(this, this)
         albumCollection.onRestoreInstanceState(savedInstanceState)
         albumCollection.loadAlbums()
+        Timber.e("$TAG albumCollection init and start load albums")
 
         requireContext().contentResolver.registerContentObserver(
             android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalObserver
@@ -114,16 +116,20 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
     }
 
     override fun onAlbumLoad(cursor: Cursor?) {
+        Timber.e("$TAG onAlbumLoad cursor: $cursor")
         if (cursor == null || cursor.isClosed) return
 
         binding.apply {
             va.post {
+                Timber.e("$TAG onAlbumLoad before loop cursor")
                 val albums = arrayListOf<Album>()
                 va.displayedChild = POS_CONTENT
                 while (!cursor.isClosed && cursor.moveToNext()) {
                     val album = Album.valueOf(cursor)
+                    Timber.e("$TAG onAlbumLoad loop cursor album: $album")
                     albums.add(album)
                 }
+                Timber.e("$TAG onAlbumLoad albums size: ${albums.size}")
                 if (albums.isNullOrEmpty()) return@post
 
                 if (albumTl.tabCount == 0) {
@@ -136,7 +142,9 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         }
     }
 
-    override fun onAlbumReset() {}
+    override fun onAlbumReset() {
+        Timber.e("$TAG onAlbumReset")
+    }
 
     private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageScrollStateChanged(state: Int) {
@@ -148,12 +156,14 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
 
     private val internalObserver = object : ContentObserver(Handler()) {
         override fun onChange(selfChange: Boolean) {
+            Timber.e("$TAG internalObserver onChange selfChange: $selfChange")
             binding.va.postDelayed(restartLoadRunnable, 2000)
         }
     }
 
     private val externalObserver = object : ContentObserver(Handler()) {
         override fun onChange(selfChange: Boolean) {
+            Timber.e("$TAG externalObserver onChange selfChange: $selfChange")
             binding.va.postDelayed(restartLoadRunnable, 2000)
         }
     }

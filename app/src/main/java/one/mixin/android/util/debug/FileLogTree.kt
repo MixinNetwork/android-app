@@ -10,7 +10,6 @@ import java.io.IOException
 class FileLogTree : Timber.Tree() {
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-
         if (priority >= Log.ERROR) {
             try {
                 val directory = MixinApplication.appContext.cacheDir
