@@ -96,18 +96,18 @@ public class AlbumLoader extends CursorLoader {
 
     private static final String BUCKET_ORDER_BY = "datetaken DESC";
 
-    private AlbumLoader(Context context, String selection, String[] selectionArgs) {
+    private AlbumLoader(Context context, String selection, String[] selectionArgs, String order) {
         super(
                 context,
                 QUERY_URI,
                 android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ? PROJECTION : PROJECTION_29,
                 selection,
                 selectionArgs,
-                BUCKET_ORDER_BY
+                order
         );
     }
 
-    public static CursorLoader newInstance(Context context) {
+    public static CursorLoader newInstance(Context context, String limitOffset) {
         Timber.e("%s newInstance", TAG);
         String selection;
         String[] selectionArgs;
@@ -121,7 +121,11 @@ public class AlbumLoader extends CursorLoader {
             selection = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ? SELECTION : SELECTION_29;
             selectionArgs = SELECTION_ARGS;
         }
-        return new AlbumLoader(context, selection, selectionArgs);
+        String order = BUCKET_ORDER_BY;
+        if (limitOffset != null) {
+            order = order + " " + limitOffset;
+        }
+        return new AlbumLoader(context, selection, selectionArgs, order);
     }
 
     @Override
@@ -169,19 +173,19 @@ public class AlbumLoader extends CursorLoader {
                         album = new Album(String.valueOf(bucketId), albumCoverPath, bucketDisplayName, 0);
                         albumList.append(bucketId, album);
                     }
-                    Timber.e("%s loadInBackground album: %s", TAG, album);
+                    Timber.e("%s loadInBackground album: %s", TAG, album.getDisplayName(getContext()));
                     album.addCaptureCount();
                     totalCount++;
                 }
             }
-            Timber.e("%s loadInBackground totalCount: %d", TAG, totalCount);
+            Timber.e("%s loadInBackground totalCount: %d, albumList size: %d", TAG, totalCount, albumList.size());
 
             allAlbum.addRow(new String[]{Album.ALBUM_ID_ALL, Album.ALBUM_ID_ALL, Album.ALBUM_NAME_ALL, allAlbumCoverPath, null,
                     String.valueOf(totalCount)});
 
             for (int i = 0, size = albumList.size(); i < size; i++) {
                 Album album = albumList.valueAt(i);
-                Timber.e("%s loadInBackground foreach albumList album: %s", TAG, album);
+                Timber.e("%s loadInBackground foreach albumList album: %s", TAG, album.getDisplayName(getContext()));
                 allAlbum.addRow(new String[]{album.getId(), album.getId(), album.getDisplayName(null), album.getCoverPath(), null,
                         String.valueOf(album.getCount())});
             }

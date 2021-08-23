@@ -52,7 +52,9 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
                 viewPager
             ) { tab, position ->
                 context?.let {
-                    tab.text = albumAdapter.albums?.get(position)?.getDisplayName(it)
+                    val cursor = albumAdapter.cursor!!
+                    cursor.moveToPosition(position)
+                    tab.text = cursor.getString(cursor.getColumnIndex("bucket_display_name"))
                     viewPager.setCurrentItem(tab.position, true)
                 }
             }.attach()
@@ -124,20 +126,21 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
                 Timber.e("$TAG onAlbumLoad before loop cursor")
                 val albums = arrayListOf<Album>()
                 va.displayedChild = POS_CONTENT
-                while (!cursor.isClosed && cursor.moveToNext()) {
-                    val album = Album.valueOf(cursor)
-                    Timber.e("$TAG onAlbumLoad loop cursor album: $album")
-                    albums.add(album)
-                }
-                Timber.e("$TAG onAlbumLoad albums size: ${albums.size}")
-                if (albums.isNullOrEmpty()) return@post
-
-                if (albumTl.tabCount == 0) {
-                    albums.forEach { album ->
-                        albumTl.addTab(albumTl.newTab().setText(album.getDisplayName(requireContext())))
-                    }
-                }
-                albumAdapter.albums = albums
+                // while (!cursor.isClosed && cursor.moveToNext()) {
+                //     val album = Album.valueOf(cursor)
+                //     Timber.e("$TAG onAlbumLoad loop cursor album: ${album.getDisplayName(requireContext())}")
+                //     albums.add(album)
+                // }
+                // Timber.e("$TAG onAlbumLoad albums size: ${albums.size}")
+                // if (albums.isNullOrEmpty()) return@post
+                //
+                // if (albumTl.tabCount == 0) {
+                //     albums.forEach { album ->
+                //         albumTl.addTab(albumTl.newTab().setText(album.getDisplayName(requireContext())))
+                //     }
+                // }
+                // cursor.moveToFirst()
+                albumAdapter.swapCursor(cursor)
             }
         }
     }
@@ -150,6 +153,13 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         override fun onPageScrollStateChanged(state: Int) {
             if (state != ViewPager.SCROLL_STATE_IDLE) {
                 albumAdapter.getFragment(binding.viewPager.currentItem)?.hideBlur()
+            }
+            val curPos = binding.viewPager.currentItem
+            Timber.e("@@@ curPos: $curPos, count: ${albumAdapter.itemCount}, cursor count: ${albumAdapter.cursor?.count}")
+            val count = albumAdapter.cursor?.count ?: 0
+            if (curPos >= count - 1) {
+                albumCollection.incrementPage()
+                albumCollection.restartLoader()
             }
         }
     }

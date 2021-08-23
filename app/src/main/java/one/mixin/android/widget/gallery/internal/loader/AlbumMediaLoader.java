@@ -7,10 +7,14 @@ import android.database.MergeCursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import androidx.loader.content.CursorLoader;
+
+import java.util.Arrays;
+
 import one.mixin.android.widget.gallery.internal.entity.Album;
 import one.mixin.android.widget.gallery.internal.entity.Item;
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec;
 import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat;
+import timber.log.Timber;
 
 public class AlbumMediaLoader extends CursorLoader {
     private static final Uri QUERY_URI = MediaStore.Files.getContentUri("external");
@@ -143,6 +147,8 @@ public class AlbumMediaLoader extends CursorLoader {
             }
             enableCapture = false;
         }
+        Timber.e("@@@ selection: %s", selection);
+        Timber.e("@@@ selection: %s", Arrays.toString(selectionArgs));
         return new AlbumMediaLoader(context, selection, selectionArgs, enableCapture);
     }
 

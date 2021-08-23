@@ -21,6 +21,10 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     private AlbumCallbacks mCallbacks;
     private int mCurrentSelection;
 
+    private final int size = 1000;
+    private int page = 0;
+    private boolean loadingMore = false;
+
     @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -29,12 +33,13 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
         if (context == null) {
             return null;
         }
-        return AlbumLoader.newInstance(context);
+        return AlbumLoader.newInstance(context, "LIMIT " + size + " OFFSET " + size * page);
     }
 
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
         Context context = mContext.get();
+        loadingMore = false;
         Timber.e("%s onLoadFinished data cursor: %s, context: %s", TAG, data, context);
         if (context == null) {
             return;
@@ -46,6 +51,7 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.e("%s onLoaderReset", TAG);
+        loadingMore = false;
         Context context = mContext.get();
         if (context == null) {
             return;
@@ -82,6 +88,10 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
         outState.putInt(STATE_CURRENT_SELECTION, mCurrentSelection);
     }
 
+    public void incrementPage() {
+        page++;
+    }
+
     public void onDestroy() {
         Timber.e("%s onDestroy", TAG);
         if (mLoaderManager != null) {
@@ -93,6 +103,7 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     public void restartLoader() {
         Timber.e("%s restartLoader", TAG);
         mLoaderManager.restartLoader(LOADER_ID, null, this);
+        loadingMore = true;
     }
 
     public void loadAlbums() {

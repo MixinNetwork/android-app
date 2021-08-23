@@ -29,6 +29,7 @@ import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumMediaCollection
 import org.jetbrains.anko.dip
+import timber.log.Timber
 
 class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view), AlbumMediaCollection.AlbumMediaCallbacks {
     companion object {
@@ -121,6 +122,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
     }
 
     override fun onAlbumMediaLoad(cursor: Cursor?) {
+        Timber.e("$TAG onAlbumMediaLoad cursor: $cursor")
         if (cursor == null || cursor.isClosed) return
 
         binding.rv.post {
@@ -131,6 +133,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
             }
             if (itemList.isNullOrEmpty()) return@post
 
+            Timber.e("$TAG onAlbumMediaLoad itemList size: ${itemList.size}")
             adapter.items = itemList
         }
     }
