@@ -7,8 +7,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.view.children
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -23,10 +21,10 @@ import one.mixin.android.databinding.ViewMarkdownBinding
 import one.mixin.android.extension.*
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.markdown.pdf.PDFGenerateListener
+import one.mixin.android.ui.conversation.markdown.pdf.generatePDF
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.PDFGenerateListener
-import one.mixin.android.util.generatePDF
 import one.mixin.android.util.markdown.DefaultEntry
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.markdown.SimpleEntry
@@ -115,11 +113,17 @@ class MarkdownActivity : BaseActivity() {
                 val pdfFile = this@MarkdownActivity.getDocumentPath()
                     .createDocumentTemp("Test", "Test", "pdf")
                 generatePDF(
-                    binding.recyclerView.children,
+                    binding.recyclerView,
                     pdfFile.absolutePath,
                     object :
                         PDFGenerateListener {
                         override fun pdfGenerationSuccess() {
+                            this@MarkdownActivity.toast(
+                                getString(
+                                    R.string.save_to,
+                                    pdfFile.absoluteFile
+                                )
+                            )
                         }
 
                         override fun pdfGenerationFailure(exception: Exception) {
