@@ -396,6 +396,15 @@ fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
     }
 }
 
+fun File.createPdfTemp(prefix: String? = null): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
+    return if (prefix != null) {
+        newTempFile("${prefix}_POST_$time", ".pdf", false)
+    } else {
+        newTempFile("POST_$time", ".pdf", false)
+    }
+}
+
 fun File.createGifTemp(conversationId: String, messageId: String, noMedia: Boolean = true): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(messageId, ".gif", noMedia)

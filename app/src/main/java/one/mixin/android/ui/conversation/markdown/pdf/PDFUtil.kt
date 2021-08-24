@@ -1,21 +1,19 @@
 package one.mixin.android.ui.conversation.markdown.pdf
 
+import android.graphics.Paint
+import android.graphics.Point
 import android.graphics.pdf.PdfDocument
 import android.view.View
+import androidx.core.view.drawToBitmap
+import androidx.recyclerview.widget.RecyclerView
+import io.noties.markwon.recycler.MarkwonAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import android.graphics.Paint
-import android.graphics.Point
-import androidx.core.view.drawToBitmap
-
-import androidx.recyclerview.widget.RecyclerView
-import io.noties.markwon.recycler.MarkwonAdapter
-import one.mixin.android.extension.newTempFile
-import one.mixin.android.extension.save
-import timber.log.Timber
 
 private fun newPage(
     pdfDocument: PdfDocument,
@@ -33,10 +31,12 @@ private fun newPage(
 }
 
 suspend fun generatePDF(
-    recyclerView: RecyclerView, filePath: String,
+    recyclerView: RecyclerView,
+    filePath: String,
     listener: PDFGenerateListener
 ) {
     val adapter = (recyclerView.adapter as MarkwonAdapter?) ?: return
+    val background = recyclerView.context.colorFromAttribute(R.attr.bg_post)
     val size = adapter.itemCount
     val paint = Paint()
     val pageSize = Point(
@@ -49,6 +49,7 @@ suspend fun generatePDF(
         var pageIndex = 0
         var page = newPage(pdfDocument, pageIndex, pageSize.x, pageSize.y)
         var pageCanvas = page.canvas
+        pageCanvas.drawColor(background)
         pageCanvas.scale(1f, 1f)
         val pageWidth = pageCanvas.width
         val pageHeight = pageCanvas.height
@@ -72,23 +73,17 @@ suspend fun generatePDF(
                 pageIndex++
                 page = newPage(pdfDocument, pageIndex, pageSize.x, pageSize.y)
                 pageCanvas = page.canvas
+                pageCanvas.drawColor(background)
                 currentHeight = 0f
             }
-            if (holder.itemView.measuredHeight > pageHeight) {
-                // todo
-                Timber.e("todo oooooo!")
-            } else {
-                pageCanvas.drawBitmap(
-                    holder.itemView.drawToBitmap(),
-                    0f,
-                    currentHeight,
-                    paint
-                )
-                // todo remove test code
-                holder.itemView.drawToBitmap()
-                    .save(file.parentFile.newTempFile("p_$i", ".png", true))
-                currentHeight += holder.itemView.measuredHeight
-            }
+
+            pageCanvas.drawBitmap(
+                holder.itemView.drawToBitmap(),
+                0f,
+                currentHeight,
+                paint
+            )
+            currentHeight += holder.itemView.measuredHeight
         }
         pdfDocument.finishPage(page)
         var fos: FileOutputStream? = null

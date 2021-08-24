@@ -10,6 +10,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.noties.markwon.recycler.MarkwonAdapter
 import kotlinx.coroutines.Dispatchers
@@ -109,27 +110,25 @@ class MarkdownActivity : BaseActivity() {
             bottomSheet.dismiss()
         }
         viewBinding.pdf.setOnClickListener {
-            lifecycleScope.launch {
-                val pdfFile = this@MarkdownActivity.getDocumentPath()
-                    .createDocumentTemp("Test", "Test", "pdf")
-                generatePDF(
-                    binding.recyclerView,
-                    pdfFile.absolutePath,
-                    object :
-                        PDFGenerateListener {
-                        override fun pdfGenerationSuccess() {
-                            this@MarkdownActivity.toast(
-                                getString(
-                                    R.string.save_to,
-                                    pdfFile.absoluteFile
-                                )
-                            )
+            RxPermissions(this@MarkdownActivity)
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                savePdf {
+                                    bottomSheet.dismiss()
+                                }
+                            }
+                        } else {
+                            this@MarkdownActivity.openPermissionSetting()
                         }
-
-                        override fun pdfGenerationFailure(exception: Exception) {
-                        }
-                    })
-            }
+                    },
+                    {
+                        this@MarkdownActivity.toast(R.string.save_failure)
+                    }
+                )
         }
         viewBinding.save.setOnClickListener {
             RxPermissions(this)
@@ -148,6 +147,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
+                        this@MarkdownActivity.toast(R.string.save_failure)
                     }
                 )
         }
@@ -172,6 +172,44 @@ class MarkdownActivity : BaseActivity() {
                 toast(R.string.save_failure)
             }
             dismissAction()
+        }
+    }
+
+    private fun savePdf(dismissAction: () -> Unit) {
+        lifecycleScope.launch {
+            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                setCancelable(false)
+            }
+            dialog.show()
+            binding.recyclerView.layoutManager?.smoothScrollToPosition(
+                binding.recyclerView,
+                null,
+                binding.recyclerView.adapter?.itemCount ?: 0
+            )
+            val pdfFile = this@MarkdownActivity.getPublicDocumentPath()
+                .createPdfTemp()
+            generatePDF(
+                binding.recyclerView,
+                pdfFile.absolutePath,
+                object :
+                    PDFGenerateListener {
+                    override fun pdfGenerationSuccess() {
+                        this@MarkdownActivity.toast(
+                            getString(
+                                R.string.save_to,
+                                pdfFile.absoluteFile
+                            )
+                        )
+                        dismissAction.invoke()
+                        dialog.dismiss()
+                    }
+
+                    override fun pdfGenerationFailure(exception: Exception) {
+                        dialog.dismiss()
+                        toast(R.string.save_failure)
+                    }
+                }
+            )
         }
     }
 
