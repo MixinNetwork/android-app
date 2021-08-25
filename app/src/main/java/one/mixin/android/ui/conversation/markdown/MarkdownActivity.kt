@@ -10,6 +10,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.noties.markwon.recycler.MarkwonAdapter
 import kotlinx.coroutines.Dispatchers
@@ -18,13 +19,17 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMarkdownBinding
 import one.mixin.android.databinding.ViewMarkdownBinding
+import one.mixin.android.extension.createPdfTemp
 import one.mixin.android.extension.createPostTemp
 import one.mixin.android.extension.getPublicDocumentPath
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.markdown.pdf.PDFGenerateListener
+import one.mixin.android.ui.conversation.markdown.pdf.generatePDF
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.markdown.DefaultEntry
@@ -90,7 +95,7 @@ class MarkdownActivity : BaseActivity() {
         adapter.notifyDataSetChanged()
     }
 
-    @SuppressLint("AutoDispose")
+    @SuppressLint("AutoDispose", "CheckResult")
     private fun showBottomSheet() {
         val builder = BottomSheet.Builder(this)
         val view = View.inflate(
@@ -103,12 +108,40 @@ class MarkdownActivity : BaseActivity() {
         val bottomSheet = builder.create()
         viewBinding.forward.setOnClickListener {
             val markdown = intent.getStringExtra(CONTENT) ?: return@setOnClickListener
-            ForwardActivity.show(this, arrayListOf(ForwardMessage(ShareCategory.Post, markdown)), ForwardAction.App.Resultless())
+            ForwardActivity.show(
+                this,
+                arrayListOf(ForwardMessage(ShareCategory.Post, markdown)),
+                ForwardAction.App.Resultless()
+            )
             bottomSheet.dismiss()
+        }
+        viewBinding.pdf.setOnClickListener {
+            RxPermissions(this@MarkdownActivity)
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                savePdf {
+                                    bottomSheet.dismiss()
+                                }
+                            }
+                        } else {
+                            this@MarkdownActivity.openPermissionSetting()
+                        }
+                    },
+                    {
+                        this@MarkdownActivity.toast(R.string.save_failure)
+                    }
+                )
         }
         viewBinding.save.setOnClickListener {
             RxPermissions(this)
-                .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .request(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
                 .subscribe(
                     { granted ->
                         if (granted) {
@@ -120,6 +153,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
+                        this@MarkdownActivity.toast(R.string.save_failure)
                     }
                 )
         }
@@ -144,6 +178,44 @@ class MarkdownActivity : BaseActivity() {
                 toast(R.string.save_failure)
             }
             dismissAction()
+        }
+    }
+
+    private fun savePdf(dismissAction: () -> Unit) {
+        lifecycleScope.launch {
+            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                setCancelable(false)
+            }
+            dialog.show()
+            binding.recyclerView.layoutManager?.smoothScrollToPosition(
+                binding.recyclerView,
+                null,
+                binding.recyclerView.adapter?.itemCount ?: 0
+            )
+            val pdfFile = this@MarkdownActivity.getPublicDocumentPath()
+                .createPdfTemp()
+            generatePDF(
+                binding.recyclerView,
+                pdfFile.absolutePath,
+                object :
+                    PDFGenerateListener {
+                    override fun pdfGenerationSuccess() {
+                        this@MarkdownActivity.toast(
+                            getString(
+                                R.string.save_to,
+                                pdfFile.absoluteFile
+                            )
+                        )
+                        dismissAction.invoke()
+                        dialog.dismiss()
+                    }
+
+                    override fun pdfGenerationFailure(exception: Exception) {
+                        dialog.dismiss()
+                        toast(R.string.save_failure)
+                    }
+                }
+            )
         }
     }
 

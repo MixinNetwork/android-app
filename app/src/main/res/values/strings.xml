@@ -139,6 +139,8 @@
     <string name="not_recognized">Not recognized</string>
     <string name="hi">Hi</string>
     <string name="eos_contract_address">EOS contract address</string>
+    <string name="save_md">Save markdown</string>
+    <string name="save_pdf">Save pdf</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
