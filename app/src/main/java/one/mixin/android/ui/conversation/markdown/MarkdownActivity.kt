@@ -19,7 +19,13 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMarkdownBinding
 import one.mixin.android.databinding.ViewMarkdownBinding
-import one.mixin.android.extension.*
+import one.mixin.android.extension.createPdfTemp
+import one.mixin.android.extension.createPostTemp
+import one.mixin.android.extension.getPublicDocumentPath
+import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.markdown.pdf.PDFGenerateListener
