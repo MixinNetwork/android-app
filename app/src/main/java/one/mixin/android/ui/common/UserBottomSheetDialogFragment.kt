@@ -838,7 +838,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             getString(R.string.contact_mute_1week),
             getString(R.string.contact_mute_1year)
         )
-        var duration = MUTE_8_HOURS
+        var duration = MUTE_1_HOUR
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
