@@ -10,6 +10,7 @@ import io.noties.markwon.recycler.MarkwonAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.colorFromAttribute
 import java.io.File
 import java.io.FileOutputStream
@@ -29,6 +30,8 @@ private fun newPage(
         ).create()
     )
 }
+
+private val padding  = 8.dp
 
 suspend fun generatePDF(
     recyclerView: RecyclerView,
@@ -53,19 +56,19 @@ suspend fun generatePDF(
         pageCanvas.scale(1f, 1f)
         val pageWidth = pageCanvas.width
         val pageHeight = pageCanvas.height
-        var currentHeight = 0f
+        var currentHeight = padding
         for (i in 0 until size) {
             val itemViewType = adapter.getItemViewType(i)
             val holder = adapter.createViewHolder(recyclerView, itemViewType)
             adapter.onBindViewHolder(holder, i)
             holder.itemView.measure(
-                View.MeasureSpec.makeMeasureSpec(pageWidth, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(pageWidth - padding * 2, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
             )
             holder.itemView.layout(
+                padding,
                 0,
-                0,
-                holder.itemView.measuredWidth,
+                padding + holder.itemView.measuredWidth,
                 holder.itemView.measuredHeight
             )
             if (currentHeight + holder.itemView.measuredHeight > pageHeight) {
@@ -74,13 +77,13 @@ suspend fun generatePDF(
                 page = newPage(pdfDocument, pageIndex, pageSize.x, pageSize.y)
                 pageCanvas = page.canvas
                 pageCanvas.drawColor(background)
-                currentHeight = 0f
+                currentHeight = padding
             }
 
             pageCanvas.drawBitmap(
                 holder.itemView.drawToBitmap(),
-                0f,
-                currentHeight,
+                padding.toFloat(),
+                currentHeight.toFloat(),
                 paint
             )
             currentHeight += holder.itemView.measuredHeight
