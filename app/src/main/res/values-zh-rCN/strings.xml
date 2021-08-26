@@ -131,8 +131,8 @@
     <string name="not_recognized">无法识别</string>
     <string name="hi">你好</string>
     <string name="eos_contract_address">EOS 合约地址</string>
-    <string name="save_md">保存为 Markdown</string>
-    <string name="save_pdf">保存为 Pdf</string>
+    <string name="share_md">分享 Markdown</string>
+    <string name="share_pdf">分享 Pdf</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

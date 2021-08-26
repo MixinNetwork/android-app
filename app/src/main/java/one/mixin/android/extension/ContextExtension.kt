@@ -40,6 +40,7 @@ import android.view.WindowManager
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -852,6 +853,29 @@ fun Context.openMarket() {
     } else {
         openUrl(getString(R.string.website))
     }
+}
+
+fun Context.shareFile(file: File, type: String) {
+    var uri: Uri
+    val sendIntent = Intent().apply {
+        action = Intent.ACTION_SEND
+        uri = getUriForFile(file)
+        putExtra(Intent.EXTRA_STREAM, uri)
+        this.type = type
+    }
+    val chooser = Intent.createChooser(
+        sendIntent,
+        getString(R.string.share_to, getString(R.string.post))
+    )
+    val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
+    resInfoList.forEach {
+        val packageName = it.activityInfo.packageName
+        grantUriPermission(
+            packageName, uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        )
+    }
+    startActivity(chooser)
 }
 
 @Suppress("DEPRECATION") // Deprecated for third party Services.
