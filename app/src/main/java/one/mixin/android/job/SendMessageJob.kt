@@ -189,7 +189,7 @@ open class SendMessageJob(
         val conversation = conversationDao.findConversationById(message.conversationId) ?: return
         checkConversationExist(conversation)
         val participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
-        if (participantSessionKey == null) {
+        if (participantSessionKey == null || participantSessionKey.publicKey.isNullOrBlank()) {
             syncConversation(message.conversationId)
             throw ChecksumException()
         }
