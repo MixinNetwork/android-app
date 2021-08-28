@@ -269,7 +269,7 @@
     <string name="contact_my_qr_tip">Scan the QR code to add me on Mixin</string>
     <string name="contact_my_share_apps">My shared apps</string>
     <string name="contact_receive_money">Receive Money</string>
-    <string name="contact_receive_tip">Scan the QR Code to pay me</string>
+    <string name="contact_receive_tip">Scan QR code payment</string>
     <string name="add_contact">+ Add Contact</string>
     <string name="add_bot">+ Add Bot</string>
     <string name="contact_search_hint">Name, Mixin ID</string>
