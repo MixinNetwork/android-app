@@ -857,7 +857,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             signalProtocol.deleteSession(systemSession.userId)
             val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
             val ps = conversations.map {
-                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
+                ParticipantSession(it, systemSession.userId, systemSession.sessionId, publicKey = systemSession.publicKey)
             }
             if (ps.isNotEmpty()) {
                 participantSessionDao.insertList(ps)
