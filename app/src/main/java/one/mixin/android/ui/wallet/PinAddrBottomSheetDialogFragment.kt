@@ -101,7 +101,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             assetIcon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
             assetIcon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
             assetName.text = label
-            assetAddress.text = destination
+            assetAddress.text = if (addressTag.isNullOrBlank()) destination else "$destination:$addressTag"
             biometricLayout.payTv.text = getTipText()
             biometricLayout.biometricTv.text = getBiometricText()
         }
