@@ -983,6 +983,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun processEncryptedMessage(data: BlazeMessageData) {
         val privateKey = Session.getEd25519PrivateKey() ?: return
         val sessionId = Session.getSessionId() ?: return
+        if (!data.representativeId.isNullOrBlank()) {
+            data.userId = data.representativeId
+        }
         try {
             val decryptedContent = encryptedProtocol.decryptMessage(privateKey, UUID.fromString(sessionId).toByteArray(), data.data.decodeBase64())
             val plaintext = String(decryptedContent)
