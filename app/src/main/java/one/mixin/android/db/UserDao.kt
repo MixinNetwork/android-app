@@ -54,7 +54,7 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId")
     fun findPlainUserByConversationId(conversationId: String): User?
 
-    @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u, conversations c INNER JOIN apps a on u.app_id = a.app_id WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
+    @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u, conversations c LEFT JOIN apps a on u.app_id = a.app_id WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     fun findContactByConversationId(conversationId: String): ForwardUser?
 
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
