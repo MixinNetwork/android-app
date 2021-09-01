@@ -581,8 +581,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
             data.category.endsWith("_IMAGE") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val mediaData = gson.fromJson(
+                    encryptedAttachmentContentDecode(data, plainText),
+                    AttachmentMessagePayload::class.java
+                )
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
@@ -604,8 +606,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_VIDEO") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val mediaData = gson.fromJson(
+                    encryptedAttachmentContentDecode(data, plainText),
+                    AttachmentMessagePayload::class.java
+                )
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
@@ -628,8 +632,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_DATA") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val mediaData = gson.fromJson(
+                    encryptedAttachmentContentDecode(data, plainText),
+                    AttachmentMessagePayload::class.java
+                )
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAttachmentMessage(
                         data.messageId, data.conversationId, data.userId,
@@ -648,8 +654,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_AUDIO") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val mediaData = gson.fromJson(
+                    encryptedAttachmentContentDecode(data, plainText),
+                    AttachmentMessagePayload::class.java
+                )
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAudioMessage(
                         data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
@@ -1231,6 +1239,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         val result = signalKeysChannel(bm)
         if (result == null) {
             Log.w(TAG, "Registering new pre keys...")
+        }
+    }
+
+    private fun encryptedAttachmentContentDecode(
+        data: BlazeMessageData,
+        plainText: String
+    ): String {
+        return if (data.category.startsWith("ENCRYPTED")) {
+            plainText
+        } else {
+            String(Base64.decode(plainText))
         }
     }
 

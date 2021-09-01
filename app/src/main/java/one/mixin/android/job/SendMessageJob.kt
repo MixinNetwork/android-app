@@ -205,7 +205,14 @@ open class SendMessageJob(
 
         val privateKey = Session.getEd25519PrivateKey() ?: return
         val encryptContent = encryptedProtocol.encryptMessage(
-            privateKey, message.content!!.toByteArray(), participantSessionKey.publicKey.base64RawUrlDecode(), participantSessionKey.sessionId,
+            privateKey,
+            if (message.isAttachment()) {
+                message.content!!.base64RawUrlDecode()
+            } else {
+                message.content!!.toByteArray()
+            },
+            participantSessionKey.publicKey.base64RawUrlDecode(),
+            participantSessionKey.sessionId,
             extensionSessionKey?.publicKey?.base64RawUrlDecode(), extensionSessionKey?.sessionId
         )
 
