@@ -20,12 +20,14 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
+import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.BlazeMessage
@@ -207,7 +209,7 @@ open class SendMessageJob(
         val privateKey = Session.getEd25519PrivateKey() ?: return
         val encryptContent = encryptedProtocol.encryptMessage(
             privateKey,
-            if (message.isAttachment()) {
+            if (message.isAttachment() || message.isSticker() || message.isContact()) {
                 message.content!!.base64RawUrlDecode()
             } else {
                 message.content!!.toByteArray()

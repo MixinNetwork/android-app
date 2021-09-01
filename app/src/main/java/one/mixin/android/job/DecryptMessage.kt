@@ -672,8 +672,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_STICKER") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
+                val decoded = if (data.category.startsWith("ENCRYPTED_")) {
+                    plainText
+                } else {
+                    String(Base64.decode(plainText))
+                }
+                val mediaData = gson.fromJson(decoded, StickerMessagePayload::class.java)
                 val message = if (mediaData.stickerId == null) {
                     val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
                     if (sticker != null) {
@@ -698,8 +702,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_CONTACT") -> {
-                val decoded = Base64.decode(plainText)
-                val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
+                val decoded = if (data.category.startsWith("ENCRYPTED_")) {
+                    plainText
+                } else {
+                    String(Base64.decode(plainText))
+                }
+                val contactData = gson.fromJson(decoded, ContactMessagePayload::class.java)
                 val user = syncUser(contactData.userId)
                 val message = generateMessage(data) { quoteMessageItem ->
                     createContactMessage(
