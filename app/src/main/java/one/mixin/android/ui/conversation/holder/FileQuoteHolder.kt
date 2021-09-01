@@ -7,7 +7,6 @@ import android.text.style.BackgroundColorSpan
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
@@ -98,7 +97,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
+            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
         }
         keyword.notNullWithElse(
             { k ->

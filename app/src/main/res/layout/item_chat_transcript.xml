@@ -105,21 +105,14 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <TextView
+        <one.mixin.android.widget.TimeView
             android:id="@+id/chat_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
             android:layout_marginBottom="6dp"
             android:background="@drawable/bg_bubble_shadow"
-            android:drawablePadding="3dp"
-            android:fontFamily="@font/roboto_light"
-            android:gravity="end|bottom"
-            android:textColor="@color/white"
-            android:textSize="@dimen/chat_date_size"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:text="7:48AM" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <ImageView
             android:id="@+id/chat_post"

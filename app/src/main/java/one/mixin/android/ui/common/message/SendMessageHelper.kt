@@ -175,7 +175,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                     MessageCategory.SIGNAL_VIDEO,
                     MessageCategory.ENCRYPTED_VIDEO
                 )
-                t.isLive()->encryptCategory.toCategory(
+                t.isLive() -> encryptCategory.toCategory(
                     MessageCategory.PLAIN_LIVE,
                     MessageCategory.SIGNAL_LIVE,
                     MessageCategory.ENCRYPTED_LIVE

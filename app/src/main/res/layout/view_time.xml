@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    tools:parentTag="LinearLayout">
+
+    <ImageView
+        android:id="@+id/secret_icon"
+        android:visibility="gone"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_marginEnd="3dp"
+        android:contentDescription="@null" />
+
+    <ImageView
+        android:id="@+id/representative_icon"
+        android:visibility="gone"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_marginEnd="3dp"
+        android:contentDescription="@null" />
+
+    <TextView
+        android:id="@+id/chat_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_light"
+        android:drawablePadding="3dp"
+        android:gravity="end|bottom"
+        android:textColor="@color/white"
+        android:textSize="@dimen/chat_date_size"
+        tools:text="7:48AM" />
+</merge>
