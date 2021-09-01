@@ -51,12 +51,12 @@ fun Context.alert(
     }
 }
 
-fun Fragment.alertDialogBuilder(): AlertDialog.Builder {
-    return requireContext().alertDialogBuilder()
+fun Fragment.alertDialogBuilder(overrideThemeResId: Int = R.style.MixinAlertDialogTheme): AlertDialog.Builder {
+    return requireContext().alertDialogBuilder(overrideThemeResId)
 }
 
-fun Context.alertDialogBuilder(): AlertDialog.Builder {
-    return MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme)
+fun Context.alertDialogBuilder(overrideThemeResId: Int = R.style.MixinAlertDialogTheme): AlertDialog.Builder {
+    return MaterialAlertDialogBuilder(this, overrideThemeResId)
 }
 
 fun Fragment.indeterminateProgressDialog(message: String? = null, title: String? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {

@@ -2,7 +2,10 @@ package one.mixin.android.extension
 
 import android.content.Context
 import android.graphics.Typeface
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.BulletSpan
 import androidx.annotation.ColorInt
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.buildSpannedString
@@ -37,4 +40,18 @@ internal fun buildAmountSymbol(
     color(symbolColor) {
         append(symbol)
     }
+}
+
+internal fun buildBulletLines(context: Context, vararg lines: CharSequence): CharSequence {
+    val builder = SpannableStringBuilder()
+    lines.forEachIndexed { i, l ->
+        if (l.isBlank()) return@forEachIndexed
+
+        val line = "$l${if (i < lines.size - 1) "\n\n" else ""}"
+        val spannable = SpannableString(line)
+        val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_minor))
+        spannable.setSpan(bulletSpan, 0, spannable.length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+        builder.append(spannable)
+    }
+    return builder
 }

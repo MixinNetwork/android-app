@@ -17,6 +17,8 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositAccountBinding
+import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getTipsByAsset
@@ -39,7 +41,7 @@ class DepositAccountFragment : DepositFragment() {
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDepositAccountBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
         return binding.root
     }
@@ -65,11 +67,12 @@ class DepositAccountFragment : DepositFragment() {
             accountMemoQrAvatar.setBorder()
             accountNameKeyCode.text = asset.destination
             accountMemoKeyCode.text = asset.tag
-            tipTv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
             val reserveTip = if (asset.needShowReserve()) {
                 getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
             } else ""
-            warningTv.text = "${getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
+            val confirmation = getString(R.string.deposit_confirmation, asset.confirmations)
+            warningTv.text = getString(R.string.deposit_memo_notice, asset.symbol)
+            tipTv.text = buildBulletLines(requireContext(), getTipsByAsset(asset), confirmation, reserveTip)
             accountNameQrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
@@ -91,7 +94,13 @@ class DepositAccountFragment : DepositFragment() {
                 showQR(accountMemoQr, accountMemoQrAvatar, asset.tag!!)
             }
         }
-        showTip()
+        alertDialogBuilder(R.style.MixinAlertDialogWarningTheme)
+            .setTitle(R.string.notice)
+            .setCancelable(false)
+            .setMessage(getString(R.string.deposit_memo_notice, asset.symbol))
+            .setPositiveButton(R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }.show()
     }
 
     override fun onDestroyView() {

@@ -9,18 +9,4 @@ abstract class DepositFragment : Fragment() {
     val asset: AssetItem by lazy {
         requireArguments().getParcelable(ARGS_ASSET)!!
     }
-
-    override fun onStop() {
-        super.onStop()
-        view?.removeCallbacks(showTipRunnable)
-    }
-
-    protected fun showTip() {
-        view?.post(showTipRunnable)
-    }
-
-    private val showTipRunnable = Runnable {
-        DepositTipBottomSheetDialogFragment.newInstance(asset)
-            .showNow(parentFragmentManager, DepositTipBottomSheetDialogFragment.TAG)
-    }
 }

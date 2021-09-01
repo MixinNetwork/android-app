@@ -16,6 +16,7 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositKeyBinding
+import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getTipsByAsset
@@ -65,7 +66,7 @@ class DepositPublicKeyFragment : DepositFragment() {
             val reserveTip = if (asset.needShowReserve()) {
                 getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
             } else ""
-            warningTv.text = "${getString(R.string.deposit_attention)} $reserveTip"
+            confirmTv.text = buildBulletLines(requireContext(), getTipsByAsset(asset), getString(R.string.deposit_confirmation, asset.confirmations), reserveTip)
             qrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
@@ -89,7 +90,6 @@ class DepositPublicKeyFragment : DepositFragment() {
                     )
             }
         }
-        showTip()
     }
 
     override fun onDestroyView() {
