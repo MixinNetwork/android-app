@@ -197,6 +197,7 @@ import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
+import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
@@ -1971,7 +1972,7 @@ class ConversationFragment() :
     }
 
     private fun encryptCategory(): EncryptCategory {
-        return if (isBot && app?.capabilities?.contains("ENCRYPTED") == true) {
+        return if (isBot && app?.capabilities?.contains(AppCap.ENCRYPTED.name) == true) {
             EncryptCategory.ENCRYPTED
         } else if (isBot) {
             EncryptCategory.PLAIN

@@ -49,6 +49,7 @@ import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationStatus
@@ -864,8 +865,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             Session.storeExtensionSessionId(systemSession.sessionId)
             signalProtocol.deleteSession(systemSession.userId)
             val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
-            val ps = conversations.map {
-                ParticipantSession(it, systemSession.userId, systemSession.sessionId, publicKey = systemSession.publicKey)
+            val ps = conversations.filter {
+                it.appId == null || it.capabilities?.contains(AppCap.ENCRYPTED.name) == true
+            }.map {
+                ParticipantSession(it.conversationId, systemSession.userId, systemSession.sessionId, publicKey = systemSession.publicKey)
             }
             if (ps.isNotEmpty()) {
                 participantSessionDao.insertList(ps)

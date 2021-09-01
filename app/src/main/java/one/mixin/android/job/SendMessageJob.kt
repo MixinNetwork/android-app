@@ -18,6 +18,7 @@ import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isKraken
