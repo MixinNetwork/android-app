@@ -26,7 +26,7 @@ internal fun buildAmountSymbol(
 ) = buildSpannedString {
     scale(3f) {
         font(
-            ResourcesCompat.getFont(context, R.font.mixin_condensed)
+            ResourcesCompat.getFont(context, R.font.mixin_font)
         ) {
             color(amountColor) {
                 append(amount)
