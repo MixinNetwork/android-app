@@ -840,6 +840,7 @@
     <string name="sticker_add_invalid_format">贴纸格式不支持</string>
     <string name="sticker_search_giphy">搜索 GIPHY</string>
     <string name="sticker_no_result">未找到相关结果</string>
+    <string name="sticker_shop">表情商店</string>
     <!--filter-->
     <string name="filters_title">筛选</string>
     <string name="filters_apply">应用</string>

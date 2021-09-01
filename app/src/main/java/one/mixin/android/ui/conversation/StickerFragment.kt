@@ -144,7 +144,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                     }
 
                     override fun onAddClick() {
-                        StickerActivity.show(requireContext(), personalAlbumId)
+                        StickerActivity.show(requireActivity(), personalAlbumId)
                     }
                 }
             )

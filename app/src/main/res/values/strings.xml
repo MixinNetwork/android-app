@@ -857,6 +857,7 @@
     <string name="sticker_add_invalid_format">Invalid sticker format</string>
     <string name="sticker_search_giphy">Search GIPHY</string>
     <string name="sticker_no_result">No result</string>
+    <string name="sticker_shop">Sticker Shop</string>
     <!--avatar-->
     <string name="avatar_transition_name" translatable="false">avatar_transition_name</string>
     <!--filter-->
