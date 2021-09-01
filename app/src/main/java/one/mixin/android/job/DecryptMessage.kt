@@ -724,7 +724,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_LIVE") -> {
-                val plain = String(Base64.decode(plainText))
+                val plain = if (data.category.startsWith("ENCRYPTED")) {
+                    plainText
+                } else {
+                    String(Base64.decode(plainText))
+                }
                 val liveData = gson.fromJson(plain, LiveMessagePayload::class.java)
                 if (liveData.width <= 0 || liveData.height <= 0) {
                     insertInvalidMessage(data)
