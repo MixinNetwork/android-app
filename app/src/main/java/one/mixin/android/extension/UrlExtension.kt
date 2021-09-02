@@ -14,7 +14,7 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.device.ConfirmNoPinBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.ui.web.WebActivity
@@ -100,7 +100,7 @@ fun String.openAsUrl(
             }
         )
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
-        ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
+        ConfirmNoPinBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
     } else {

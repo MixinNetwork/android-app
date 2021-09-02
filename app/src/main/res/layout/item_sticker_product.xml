@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp">
+
+    <TextView
+        android:text="Add"
+        android:textSize="12sp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:textColor="@color/white"
+        android:background="@drawable/selector_round_bn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/sticker_title"
+        app:layout_constraintBottom_toBottomOf="@id/sticker_title"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/sticker_title"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:textColor="?attr/text_primary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <one.mixin.android.widget.RLottieImageView
+        android:id="@+id/chat_sticker_1"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/default_avatar"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintTop_toBottomOf="@id/sticker_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/chat_sticker_2" />
+
+    <one.mixin.android.widget.RLottieImageView
+        android:id="@+id/chat_sticker_2"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/default_avatar"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintTop_toBottomOf="@id/sticker_title"
+        app:layout_constraintStart_toEndOf="@id/chat_sticker_1"
+        app:layout_constraintEnd_toStartOf="@id/chat_sticker_3" />
+
+    <one.mixin.android.widget.RLottieImageView
+        android:id="@+id/chat_sticker_3"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/default_avatar"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintTop_toBottomOf="@id/sticker_title"
+        app:layout_constraintStart_toEndOf="@id/chat_sticker_1"
+        app:layout_constraintEnd_toStartOf="@id/chat_sticker_4" />
+
+    <one.mixin.android.widget.RLottieImageView
+        android:id="@+id/chat_sticker_4"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/default_avatar"
+        android:layout_marginStart="16dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintTop_toBottomOf="@id/sticker_title"
+        app:layout_constraintStart_toEndOf="@id/chat_sticker_3" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

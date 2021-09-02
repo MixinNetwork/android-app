@@ -12,7 +12,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.device.ConfirmNoPinBottomFragment
 import timber.log.Timber
 import kotlin.IllegalStateException
 
@@ -78,7 +78,7 @@ class UrlInterpreterActivity : BaseActivity() {
                 }
             }
             DEVICE -> {
-                ConfirmBottomFragment.show(this, supportFragmentManager, uri.toString())
+                ConfirmNoPinBottomFragment.show(this, supportFragmentManager, uri.toString())
             }
             SEND -> {
                 uri.handleSchemeSend(

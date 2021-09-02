@@ -6,6 +6,8 @@ import android.content.Context
 import android.net.Uri
 import android.net.UrlQuerySanitizer
 import android.text.TextUtils
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -13,21 +15,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ProvisioningRequest
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.IdentityKeyUtil
 import one.mixin.android.crypto.ProvisionMessage
 import one.mixin.android.crypto.ProvisioningCipher
-import one.mixin.android.databinding.FragmentConfirmBinding
+import one.mixin.android.databinding.FragmentConfirmNoPinBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.AvatarActivity
-import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.util.viewBinding
@@ -36,7 +36,7 @@ import org.whispersystems.libsignal.ecc.Curve
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
+class ConfirmNoPinBottomFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "ConfirmBottomFragment"
@@ -44,7 +44,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         private fun newInstance(
             url: String,
             action: (() -> Unit)? = null
-        ) = ConfirmBottomFragment().withArgs {
+        ) = ConfirmNoPinBottomFragment().withArgs {
             putString(AvatarActivity.ARGS_URL, url)
         }.apply {
             action?.let {
@@ -82,6 +82,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             }
         } catch (t: Throwable) {
             context?.toast(R.string.setting_desktop_sigin_failed)
+            refreshUI(false)
             ErrorHandler.handleError(t)
             return@launch
         }
@@ -92,6 +93,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
                 }
             } catch (t: Throwable) {
                 context?.toast(R.string.setting_desktop_sigin_failed)
+                refreshUI(false)
                 ErrorHandler.handleError(t)
                 return@launch
             }
@@ -112,47 +114,47 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    private val binding by viewBinding(FragmentConfirmBinding::inflate)
+    private val binding by viewBinding(FragmentConfirmNoPinBinding::inflate)
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
-        setBiometricLayout()
-        binding.biometricLayout.apply {
-            biometricTv.setText(R.string.verify_by_biometric)
-            payTv.setText(R.string.login_by_PIN)
-        }
-    }
 
-    override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        return bottomViewModel.verifyPin(pin)
-    }
-
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
-        response.data?.let {
-            isCancelable = false
-            val uri = Uri.parse(url)
-            val ephemeralId = uri.getQueryParameter("id")
-            if (ephemeralId == null) {
-                context?.toast(R.string.setting_desktop_sigin_failed)
-                dismiss()
-                return@let
+        binding.apply {
+            confirm.setOnClickListener {
+                refreshUI(true)
+                isCancelable = false
+                val uri = Uri.parse(url)
+                val ephemeralId = uri.getQueryParameter("id")
+                if (ephemeralId == null) {
+                    context?.toast(R.string.setting_desktop_sigin_failed)
+                    dismiss()
+                    return@setOnClickListener
+                }
+                sanitizer.parseUrl(url)
+                val publicKeyEncoded = sanitizer.getValue("pub_key")
+                authDevice(ephemeralId, publicKeyEncoded)
             }
-            sanitizer.parseUrl(url)
-            val publicKeyEncoded = sanitizer.getValue("pub_key")
-            authDevice(ephemeralId, publicKeyEncoded)
+            close.setOnClickListener {
+                dismiss()
+            }
+            cancel.setOnClickListener {
+                dismiss()
+            }
         }
-        return false
     }
 
-    override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.verify_by_biometric),
-        "",
-        "",
-        getString(R.string.login_by_PIN)
-    )
+    private fun refreshUI(showPb: Boolean) {
+        if (!isAdded) return
+        binding.apply {
+            progress.isVisible = showPb
+            confirm.isInvisible = showPb
+            cancel.isInvisible = showPb
+            close.isInvisible = showPb
+        }
+    }
 
     private suspend fun encryptKey(
         ctx: Context,
