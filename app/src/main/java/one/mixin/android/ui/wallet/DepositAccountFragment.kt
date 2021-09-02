@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.view.isVisible
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -100,6 +101,7 @@ class DepositAccountFragment : DepositFragment() {
             .setMessage(getString(R.string.deposit_memo_notice, asset.symbol))
             .setPositiveButton(R.string.ok) { dialog, _ ->
                 dialog.dismiss()
+                binding.warningFl.isVisible = true
             }.show()
     }
 
