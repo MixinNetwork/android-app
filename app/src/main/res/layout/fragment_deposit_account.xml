@@ -50,94 +50,6 @@
                 android:background="?attr/bg_white">
 
                 <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_line1"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.4" />
-
-                <TextView
-                    android:id="@+id/account_name_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="32dp"
-                    android:text="@string/address"
-                    android:textColor="?attr/text_assist"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/account_name_key_code"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/account_name_title"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="@dimen/margin16"
-                    android:layout_marginEnd="32dp"
-                    android:layout_marginBottom="@dimen/margin16"
-                    android:layout_toStartOf="@+id/account_name_qr_fl"
-                    android:textColor="?attr/text_primary"
-                    app:layout_constraintBottom_toTopOf="@id/account_name_copy_tv"
-                    app:layout_constraintEnd_toStartOf="@id/guide_line1"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/account_name_title"
-                    app:layout_constraintVertical_bias="0" />
-
-                <Button
-                    android:id="@+id/account_name_copy_tv"
-                    style="@style/AppTheme.MaterialButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginBottom="@dimen/margin16"
-                    android:minWidth="70dp"
-                    android:minHeight="30dp"
-                    android:text="@string/copy"
-                    android:textSize="14sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <FrameLayout
-                    android:id="@+id/account_name_qr_fl"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginTop="@dimen/margin16"
-                    android:layout_marginBottom="@dimen/margin16"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="@id/guide_line1"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <ImageView
-                        android:id="@+id/account_name_qr"
-                        android:layout_width="200dp"
-                        android:layout_height="200dp"
-                        tools:ignore="ContentDescription" />
-
-                    <one.mixin.android.widget.BadgeCircleImageView
-                        android:id="@+id/account_name_qr_avatar"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_gravity="center" />
-                </FrameLayout>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="10dp"
-                android:background="?attr/bg_window" />
-
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/bg_white">
-
-                <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guide_line2"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
@@ -209,6 +121,93 @@
 
                     <one.mixin.android.widget.BadgeCircleImageView
                         android:id="@+id/account_memo_qr_avatar"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="?attr/bg_window" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/bg_white">
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guide_line1"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.4" />
+
+                <TextView
+                    android:id="@+id/account_name_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginTop="32dp"
+                    android:text="@string/address"
+                    android:textColor="?attr/text_assist"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/account_name_key_code"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/account_name_title"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginTop="@dimen/margin16"
+                    android:layout_marginEnd="32dp"
+                    android:layout_marginBottom="@dimen/margin16"
+                    android:layout_toStartOf="@+id/account_name_qr_fl"
+                    android:textColor="?attr/text_primary"
+                    app:layout_constraintBottom_toTopOf="@id/account_name_copy_tv"
+                    app:layout_constraintEnd_toStartOf="@id/guide_line1"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/account_name_title"
+                    app:layout_constraintVertical_bias="0" />
+
+                <Button
+                    android:id="@+id/account_name_copy_tv"
+                    style="@style/AppTheme.MaterialButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginBottom="@dimen/margin16"
+                    android:minWidth="70dp"
+                    android:minHeight="30dp"
+                    android:text="@string/copy"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <FrameLayout
+                    android:id="@+id/account_name_qr_fl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop="@dimen/margin16"
+                    android:layout_marginBottom="@dimen/margin16"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@id/guide_line1"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageView
+                        android:id="@+id/account_name_qr"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
+                        tools:ignore="ContentDescription" />
+
+                    <one.mixin.android.widget.BadgeCircleImageView
+                        android:id="@+id/account_name_qr_avatar"
                         android:layout_width="36dp"
                         android:layout_height="36dp"
                         android:layout_gravity="center" />
