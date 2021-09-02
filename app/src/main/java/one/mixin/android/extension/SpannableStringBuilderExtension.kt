@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.AbsoluteSizeSpan
 import android.text.style.BulletSpan
 import android.text.style.StyleSpan
 import android.text.style.TextAppearanceSpan
@@ -49,7 +50,10 @@ internal fun buildBulletLines(context: Context, vararg lines: SpannableStringBui
     lines.forEachIndexed { i, l ->
         if (l.isBlank()) return@forEachIndexed
 
-        l.append(if (i < lines.size - 1) "\n\n" else "")
+        if (i < lines.size - 1) {
+            l.append("\n\n")
+            l.setSpan(AbsoluteSizeSpan(8, true), l.length - 2, l.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
         val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_minor))
         l.setSpan(bulletSpan, 0, l.length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
         builder.append(l)
