@@ -151,7 +151,8 @@
                         android:layout_alignParentBottom="true"
                         android:layout_gravity="bottom|end"
                         android:drawablePadding="3dp"
-                        android:gravity="center_vertical" />
+                        android:gravity="center_vertical"
+                        app:text_color="@color/color_chat_date"/>
                 </RelativeLayout>
 
             </one.mixin.android.widget.InterceptLinearLayout>

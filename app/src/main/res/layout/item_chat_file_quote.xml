@@ -155,6 +155,7 @@
                     android:layout_marginEnd="4dp"
                     android:layout_marginBottom="4dp"
                     android:gravity="end|center_vertical"
+                    app:text_color="@color/color_chat_date"
                     tools:text="7:48AM" />
 
             </one.mixin.android.widget.QuoteLayout>

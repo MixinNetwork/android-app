@@ -158,7 +158,8 @@
                     android:layout_gravity="bottom|end"
                     android:layout_marginEnd="4dp"
                     android:layout_marginBottom="4dp"
-                    android:gravity="center_vertical|bottom" />
+                    android:gravity="end|center_vertical"
+                    app:text_color="@color/color_chat_date" />
 
             </one.mixin.android.widget.QuoteLayout>
         </FrameLayout>
