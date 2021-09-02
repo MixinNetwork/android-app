@@ -107,5 +107,5 @@
         android:paddingEnd="8dp"
         android:paddingBottom="3dp"
         android:textColor="?attr/text_minor"
-        android:textSize="12sp"/>
+        android:textSize="13sp"/>
 </LinearLayout>

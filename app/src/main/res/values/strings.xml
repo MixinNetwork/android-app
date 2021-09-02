@@ -837,7 +837,7 @@
     <string name="deposit_memo_notice">Both Memo and Address are required to deposit your %1$s to you account.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
     <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
-    <string name="deposit_reserve">Deposit at least %1$s %2$s for the first time.</string>
+    <string name="deposit_reserve">Deposit at least %1$s for the first time.</string>
     <string name="bottom_withdrawal_title">%1$s Withdrawal</string>
     <string name="bottom_withdrawal_change_amount">Change Amount</string>
     <string name="bottom_withdrawal_change_amount_count">Change Amount (%1$d)</string>

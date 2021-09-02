@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +24,7 @@ import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -69,11 +71,11 @@ class DepositAccountFragment : DepositFragment() {
             accountNameKeyCode.text = asset.destination
             accountMemoKeyCode.text = asset.tag
             val reserveTip = if (asset.needShowReserve()) {
-                getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
-            } else ""
-            val confirmation = getString(R.string.deposit_confirmation, asset.confirmations)
+                getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}").highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
+            } else SpannableStringBuilder()
+            val confirmation = getString(R.string.deposit_confirmation, asset.confirmations).highLight(requireContext(), asset.confirmations.toString())
             warningTv.text = getString(R.string.deposit_memo_notice, asset.symbol)
-            tipTv.text = buildBulletLines(requireContext(), getTipsByAsset(asset), confirmation, reserveTip)
+            tipTv.text = buildBulletLines(requireContext(), SpannableStringBuilder(getTipsByAsset(asset)), confirmation, reserveTip)
             accountNameQrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -62,11 +64,19 @@ class DepositPublicKeyFragment : DepositFragment() {
                 context?.toast(R.string.copy_success)
             }
             keyCode.text = asset.destination
-            confirmTv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
+
+            val confirmation = getString(R.string.deposit_confirmation, asset.confirmations)
+                .highLight(requireContext(), asset.confirmations.toString())
             val reserveTip = if (asset.needShowReserve()) {
-                getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
-            } else ""
-            confirmTv.text = buildBulletLines(requireContext(), getTipsByAsset(asset), getString(R.string.deposit_confirmation, asset.confirmations), reserveTip)
+                getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
+                    .highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
+            } else SpannableStringBuilder()
+            confirmTv.text = buildBulletLines(
+                requireContext(),
+                SpannableStringBuilder(getTipsByAsset(asset)),
+                confirmation,
+                reserveTip
+            )
             qrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
