@@ -919,6 +919,7 @@
     <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>
 
     <string name="desktop_upgrade">请升级 Mixin Messenger 桌面端至最新版！</string>
+    <string name="desktop_login_no_pin">为了您的安全，登录桌面前请先设置 PIN 码！</string>
     <!-- location -->
     <string name="location_send_current_location">发送您当前的位置</string>
     <string name="location_send_this_location">发送这个位置</string>

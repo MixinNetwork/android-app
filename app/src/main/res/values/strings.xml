@@ -938,6 +938,7 @@
     <string name="multisig_state_unlocked">This multisig link has already been unlocked by someone, you can not make a duplicate operation.</string>
 
     <string name="desktop_upgrade">Please upgrade Mixin Messenger Desktop to the latest version.</string>
+    <string name="desktop_login_no_pin">For your account security, please set up the PIN before logging into the desktop app.</string>
     <!-- location -->
     <string name="location_send_current_location">Send your Current Location</string>
     <string name="location_send_this_location">Send This Location</string>
