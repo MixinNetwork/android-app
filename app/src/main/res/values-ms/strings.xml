@@ -796,7 +796,7 @@
     <string name="deposit_account_attention">Perhatian: Cuba sebilangan kecil untuk deposit pertama. Kedua-dua Memo dan Alamat diperlukan untuk memasukkan deposit anda dengan jayanya %1$s ke Mixin Messenger.</string>
     <string name="deposit_attention">Cuba sedikit untuk deposit pertama.</string>
     <string name="deposit_confirmation">Deposit akan tiba setelah sekurang-kurangnya %1$d pengesahan sekatan</string>
-    <string name="deposit_reserve">Deposit sekurang-kurangnya %1$s %2$s untuk pertama kalinya.</string>
+    <string name="deposit_reserve">Deposit sekurang-kurangnya %1$s untuk pertama kalinya.</string>
     <string name="bottom_withdrawal_title">%1$s Pengeluaran</string>
     <string name="bottom_withdrawal_change_amount">Tukar Jumlah</string>
     <string name="bottom_withdrawal_change_amount_count">Tukar Jumlah (%1$d)</string>

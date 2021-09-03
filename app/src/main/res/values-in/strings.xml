@@ -756,7 +756,7 @@
     <string name="deposit_account_attention">Perhatian: Harap coba jumlah kecil untuk deposit pertama. Memo dan Alamat diperlukan agar deposit %1$s Anda ke Mixin Messenger dapat dilakukan dengan sukses.</string>
     <string name="deposit_attention">Harap coba jumlah kecil untuk deposit pertama.</string>
     <string name="deposit_confirmation">Deposit akan tiba setelah setidaknya %1$d konfirmasi block</string>
-    <string name="deposit_reserve">Deposit minimal %1$s %2$s untuk pertama kali.</string>
+    <string name="deposit_reserve">Deposit minimal %1$s untuk pertama kali.</string>
     <string name="bottom_withdrawal_title">%1$s Penarikan</string>
     <string name="bottom_withdrawal_change_amount">Ubah Jumlah</string>
     <string name="bottom_withdrawal_change_amount_count">Ubah Jumlah (%1$d)</string>

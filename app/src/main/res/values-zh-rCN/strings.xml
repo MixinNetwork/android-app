@@ -133,6 +133,7 @@
     <string name="eos_contract_address">EOS 合约地址</string>
     <string name="save_md">保存为 Markdown</string>
     <string name="save_pdf">保存为 Pdf</string>
+    <string name="notice">注意</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -816,9 +817,10 @@
     <string name="withdrawal_address">提现地址</string>
     <string name="withdrawal_no_tag">没有标签（Memo）</string>
     <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址 和 Memo（标签）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
+    <string name="deposit_memo_notice">地址 和 Memo（标签）同时使用才能充值 %1$s 到你的账号。</string>
     <string name="deposit_attention">首次充值建议小额尝试！</string>
     <string name="deposit_confirmation">充值到账至少需要 %1$d 个区块确认。</string>
-    <string name="deposit_reserve">首次充值至少 %1$s %2$s！</string>
+    <string name="deposit_reserve">首次充值至少 %1$s ！</string>
     <string name="bottom_withdrawal_title">%1$s 提现</string>
     <string name="bottom_withdrawal_change_amount">修改金额</string>
     <string name="bottom_withdrawal_change_amount_count">修改金额 （%1$d）</string>
