@@ -54,7 +54,16 @@ import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.*
+import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.copy
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.saveToLocal
+import one.mixin.android.vo.toMessageItem
+import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
 import one.mixin.android.widget.BottomSheet

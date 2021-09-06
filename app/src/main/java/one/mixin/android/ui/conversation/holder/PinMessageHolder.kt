@@ -8,7 +8,18 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.*
+import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.PinMessageMinimal
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isData
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.isVideo
 
 class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
     BaseViewHolder(binding.root) {

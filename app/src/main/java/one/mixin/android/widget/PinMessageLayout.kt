@@ -16,12 +16,25 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ViewPinMessageLayoutBinding
 import one.mixin.android.event.PinMessageEvent
-import one.mixin.android.extension.*
+import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.renderMessage
+import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.*
+import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.PinMessageMinimal
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isData
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.isVideo
 
 class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     ConstraintLayout(context, attrs) {

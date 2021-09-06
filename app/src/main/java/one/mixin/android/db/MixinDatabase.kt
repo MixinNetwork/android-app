@@ -42,7 +42,36 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_38_39
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
-import one.mixin.android.vo.*
+import one.mixin.android.vo.Address
+import one.mixin.android.vo.App
+import one.mixin.android.vo.Asset
+import one.mixin.android.vo.AssetsExtra
+import one.mixin.android.vo.Circle
+import one.mixin.android.vo.CircleConversation
+import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.FavoriteApp
+import one.mixin.android.vo.FloodMessage
+import one.mixin.android.vo.Hyperlink
+import one.mixin.android.vo.Job
+import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageFts4
+import one.mixin.android.vo.MessageHistory
+import one.mixin.android.vo.MessageMention
+import one.mixin.android.vo.Offset
+import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.ResendMessage
+import one.mixin.android.vo.ResendSessionMessage
+import one.mixin.android.vo.SentSenderKey
+import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerAlbum
+import one.mixin.android.vo.StickerRelationship
+import one.mixin.android.vo.TopAsset
+import one.mixin.android.vo.Trace
+import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.User
 
 @Database(
     entities = [

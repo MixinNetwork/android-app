@@ -41,7 +41,6 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/pin_content"
         android:background="?attr/bg_pin_content"
-        android:foreground="?android:selectableItemBackground"
         android:layout_marginBottom="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginStart="10dp"
@@ -83,6 +82,7 @@
             android:gravity="center_vertical"
             android:maxLines="2"
             android:text="@string/pinned_message"
+            android:foreground="?android:selectableItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/pin_close"
             app:layout_constraintBottom_toBottomOf="parent"

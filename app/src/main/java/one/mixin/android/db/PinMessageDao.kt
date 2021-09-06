@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RoomWarnings
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.PinMessage
@@ -26,6 +27,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
     )
     suspend fun getPinMessageMinimals(conversationId: String): List<PinMessageMinimal>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -54,6 +56,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
     )
     fun getPinMessages(conversationId: String): LiveData<List<ChatHistoryMessageItem>>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,

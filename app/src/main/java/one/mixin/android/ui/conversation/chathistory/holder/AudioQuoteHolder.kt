@@ -14,7 +14,11 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.*
+import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.SnakeQuoteMessageItem
 import org.jetbrains.anko.dip
 
 class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : MediaHolder(binding.root) {

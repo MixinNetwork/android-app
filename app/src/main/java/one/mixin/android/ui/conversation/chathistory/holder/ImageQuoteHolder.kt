@@ -13,7 +13,12 @@ import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.*
+import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.SnakeQuoteMessageItem
+import one.mixin.android.vo.absolutePath
 import org.jetbrains.anko.dip
 import kotlin.math.min
 
