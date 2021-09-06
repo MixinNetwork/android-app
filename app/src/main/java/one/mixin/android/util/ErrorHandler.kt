@@ -196,12 +196,6 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
         ErrorHandler.USED_PHONE -> {
             getString(R.string.error_used_phone, ErrorHandler.USED_PHONE)
         }
-        ErrorHandler.INSUFFICIENT_TRANSACTION_FEE -> {
-            getString(
-                R.string.error_insufficient_transaction_fee,
-                ErrorHandler.INSUFFICIENT_TRANSACTION_FEE
-            )
-        }
         ErrorHandler.TOO_MANY_STICKERS -> {
             getString(R.string.error_too_many_stickers, ErrorHandler.TOO_MANY_STICKERS)
         }
