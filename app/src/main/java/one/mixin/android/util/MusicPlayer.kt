@@ -44,6 +44,7 @@ import one.mixin.android.ui.player.internal.title
 import one.mixin.android.ui.player.internal.toMediaSource
 import one.mixin.android.ui.player.isMusicServiceRunning
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isData
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
@@ -239,7 +240,7 @@ class MusicPlayer private constructor() {
         if (messageItem.mediaUrl == null) {
             MixinApplication.appContext.toast(R.string.error_bad_data)
             return
-        } else if (!messageItem.mediaUrl.fileExists()) {
+        } else if (!messageItem.absolutePath()!!.fileExists()) {
             MixinApplication.appContext.toast(R.string.error_file_exists)
             return
         }
@@ -437,7 +438,7 @@ class MusicPlayer private constructor() {
             id = messageItem.messageId
             title = messageItem.mediaName
             album = messageItem.conversationId
-            mediaUri = messageItem.mediaUrl
+            mediaUri = messageItem.absolutePath()
             flag = MediaBrowser.MediaItem.FLAG_PLAYABLE
         }.build()
 }
