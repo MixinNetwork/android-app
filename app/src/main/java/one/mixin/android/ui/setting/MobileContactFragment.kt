@@ -104,14 +104,21 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
                     .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
+                            opPb.isVisible = true
+                            opRl.isEnabled = false
                             RxContacts.fetch(requireContext())
                                 .toSortedList(Contact::compareTo)
                                 .autoDispose(stopScope)
                                 .subscribe(
                                     { contacts ->
+                                        opRl.isEnabled = true
                                         updateContacts(contacts)
                                     },
                                     {
+                                        if (!viewDestroyed()) {
+                                            binding.opPb.isVisible = false
+                                            opRl.isEnabled = true
+                                        }
                                     }
                                 )
                         } else {
