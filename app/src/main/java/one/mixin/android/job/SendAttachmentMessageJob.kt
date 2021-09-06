@@ -203,7 +203,6 @@ class SendAttachmentMessageJob(
     }
 
     private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
-        Timber.d("@@@ uploadAttachment url: $url")
         val dataSize = AttachmentCipherOutputStream.getCiphertextLength(attachment.dataSize)
         return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }

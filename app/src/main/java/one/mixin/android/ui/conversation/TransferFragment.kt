@@ -8,6 +8,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.text.Editable
 import android.text.InputFilter
+import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -22,7 +23,6 @@ import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.bold
-import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -43,6 +43,7 @@ import one.mixin.android.databinding.FragmentTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.containsIgnoreCase
@@ -291,16 +292,17 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 val reserveDouble = it.reserve.toDoubleOrNull()
                 val dustDouble = it.dust?.toDoubleOrNull()
                 val color = requireContext().colorFromAttribute(R.attr.text_primary)
-                binding.feeTv.text = buildSpannedString {
-                    append(getString(R.string.withdrawal_network_fee))
+
+                val networkSpan = SpannableStringBuilder(getString(R.string.withdrawal_network_fee)).apply {
                     bold {
-                        append(" ")
+                        append(' ')
                         color(color) {
                             append(it.fee + " " + currentAsset!!.chainSymbol)
                         }
                     }
-                    if (dustDouble != null && dustDouble > 0) {
-                        append('\n')
+                }
+                val dustSpan = if (dustDouble != null && dustDouble > 0) {
+                    SpannableStringBuilder().apply {
                         append(getString(R.string.withdrawal_minimum_withdrawal))
                         color(color) {
                             bold {
@@ -308,8 +310,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                             }
                         }
                     }
-                    if (reserveDouble != null && reserveDouble > 0) {
-                        append('\n')
+                } else SpannableStringBuilder()
+                val reserveSpan = if (reserveDouble != null && reserveDouble > 0) {
+                    SpannableStringBuilder().apply {
                         append(getString(R.string.withdrawal_minimum_reserve))
                         color(color) {
                             bold {
@@ -317,7 +320,8 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                             }
                         }
                     }
-                }
+                } else SpannableStringBuilder()
+                binding.feeTv.text = buildBulletLines(requireContext(), networkSpan, dustSpan, reserveSpan)
             }
         )
     }
@@ -550,11 +554,11 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             toast("${binding.transferMemo.hint} ${getString(R.string.group_edit_too_long)}")
             return@launch
         }
-        binding.continueVa?.displayedChild = POST_PB
+        binding.continueVa.displayedChild = POST_PB
         val traceId = UUID.randomUUID().toString()
         val pair = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
         if (pair.second) {
-            binding.continueVa?.displayedChild = POST_TEXT
+            binding.continueVa.displayedChild = POST_TEXT
             return@launch
         }
 
@@ -567,7 +571,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                 currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace
             )
         }
-        binding.continueVa?.displayedChild = POST_TEXT
+        binding.continueVa.displayedChild = POST_TEXT
 
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_TRANSFER)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
