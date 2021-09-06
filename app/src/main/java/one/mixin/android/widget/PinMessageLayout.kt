@@ -20,6 +20,7 @@ import one.mixin.android.extension.*
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.*
 
 class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
@@ -98,28 +99,45 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
         pinContent.setOnClickListener {
             clickAction.invoke(pinMessage.messageId)
         }
-        pinContentTv.text =
-            String.format(
-                getText(R.string.chat_pin_message),
-                if (Session.getAccountId() == message.userId) {
-                    getText(R.string.chat_you_start)
-                } else {
-                    message.participantFullName
-                },
-                when {
-                    pinMessage.isImage() -> getText(R.string.chat_pin_image_message)
-                    pinMessage.isVideo() -> getText(R.string.chat_pin_video_message)
-                    pinMessage.isLive() -> getText(R.string.chat_pin_live_message)
-                    pinMessage.isData() -> getText(R.string.chat_pin_data_message)
-                    pinMessage.isAudio() -> getText(R.string.chat_pin_audio_message)
-                    pinMessage.isSticker() -> getText(R.string.chat_pin_sticker_message)
-                    pinMessage.isContact() -> getText(R.string.chat_pin_contact_message)
-                    pinMessage.isPost() -> getText(R.string.chat_pin_post_message)
-                    pinMessage.isLocation() -> getText(R.string.chat_pin_location_message)
-                    pinMessage.isTranscript() -> getText(R.string.chat_pin_transcript_message)
-                    else -> " \"${pinMessage.content}\""
-                }
+        if (message.mentions != null) {
+            pinContentTv.renderMessage(
+                String.format(
+                    getText(R.string.chat_pin_message),
+                    if (Session.getAccountId() == message.userId) {
+                        getText(R.string.chat_you_start)
+                    } else {
+                        message.participantFullName
+                    },
+                    " \"${pinMessage.content}\""
+                ),
+                MentionRenderCache.singleton.getMentionRenderContext(
+                    message.mentions
+                )
             )
+        } else {
+            pinContentTv.text =
+                String.format(
+                    getText(R.string.chat_pin_message),
+                    if (Session.getAccountId() == message.userId) {
+                        getText(R.string.chat_you_start)
+                    } else {
+                        message.participantFullName
+                    },
+                    when {
+                        pinMessage.isImage() -> getText(R.string.chat_pin_image_message)
+                        pinMessage.isVideo() -> getText(R.string.chat_pin_video_message)
+                        pinMessage.isLive() -> getText(R.string.chat_pin_live_message)
+                        pinMessage.isData() -> getText(R.string.chat_pin_data_message)
+                        pinMessage.isAudio() -> getText(R.string.chat_pin_audio_message)
+                        pinMessage.isSticker() -> getText(R.string.chat_pin_sticker_message)
+                        pinMessage.isContact() -> getText(R.string.chat_pin_contact_message)
+                        pinMessage.isPost() -> getText(R.string.chat_pin_post_message)
+                        pinMessage.isLocation() -> getText(R.string.chat_pin_location_message)
+                        pinMessage.isTranscript() -> getText(R.string.chat_pin_transcript_message)
+                        else -> " \"${pinMessage.content}\""
+                    }
+                )
+        }
     }
 
     private fun getText(@StringRes res: Int): String {

@@ -562,4 +562,17 @@ internal constructor(
     suspend fun findPinMessageById(messageId: String) = pinMessageDao.findPinMessageById(messageId)
 
     suspend fun getPinMessageMinimals(conversationId: String) = pinMessageDao.getPinMessageMinimals(conversationId)
+
+    fun syncMention(messageId: String, pinMessageId: String) {
+        messageMentionDao.findMessageMentionById(messageId)?.let { mention ->
+            messageMentionDao.insert(
+                MessageMention(
+                    pinMessageId,
+                    mention.conversationId,
+                    mention.mentions,
+                    true
+                )
+            )
+        }
+    }
 }

@@ -70,6 +70,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         c.name AS groupName
         FROM messages m
         INNER JOIN users u ON m.user_id = u.user_id
+        INNER JOIN message_mentions mm ON m.id = mm.message_id
         LEFT JOIN users u1 ON m.participant_id = u1.user_id
         LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
         LEFT JOIN assets a ON s.asset_id = a.asset_id
@@ -77,7 +78,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
         LEFT JOIN users su ON m.shared_user_id = su.user_id
         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-        LEFT JOIN message_mentions mm ON m.id = mm.message_id  WHERE m.conversation_id = :conversationId AND m.category = 'MESSAGE_PIN'
+        WHERE m.conversation_id = :conversationId AND m.category = 'MESSAGE_PIN'
         ORDER BY m.created_at DESC
         LIMIT 1"""
     )

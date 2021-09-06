@@ -291,9 +291,10 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 } else {
                     null
                 }
+                val mId = UUID.randomUUID().toString()
                 conversationRepository.insertMessage(
                     createPinMessage(
-                        UUID.randomUUID().toString(),
+                        mId,
                         conversationId,
                         sender.userId,
                         PinMessageMinimal(msg.messageId, category, content),
@@ -301,6 +302,9 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                         MessageStatus.READ.name
                     )
                 )
+                if (msg.isText()) {
+                    conversationRepository.syncMention(msg.messageId, mId)
+                }
                 if (index == list.size - 1) {
                     RxBus.publish(PinMessageEvent(conversationId, msg.messageId))
                 }

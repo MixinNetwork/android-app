@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
+import one.mixin.android.MixinApplication.Companion.conversationId
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.SignalKeyCount
@@ -232,9 +233,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     val message = messageDao.findMessageById(id)
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(id, message.conversationId, data.createdAt))
+                        val mid = UUID.randomUUID().toString()
                         messageDao.insert(
                             createPinMessage(
-                                UUID.randomUUID().toString(),
+                                mid,
                                 data.conversationId,
                                 data.userId,
                                 PinMessageMinimal(
@@ -250,6 +252,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 MessageStatus.READ.name
                             )
                         )
+                        if (message.category.endsWith("_TEXT")) {
+                            messageMentionDao.findMessageMentionById(message.id)?.let { mention ->
+                                messageMentionDao.insert(
+                                    MessageMention(
+                                        mid,
+                                        message.conversationId,
+                                        mention.mentions,
+                                        true
+                                    )
+                                )
+                            }
+                        }
                     }
                     if (index == transferPinData.messageIds.size - 1) {
                         RxBus.publish(PinMessageEvent(data.conversationId, id))
@@ -257,7 +271,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             } else if (transferPinData.action == PinAction.UNPIN.name) {
                 pinMessageDao.deleteByIds(transferPinData.messageIds)
-
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
