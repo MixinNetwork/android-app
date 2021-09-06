@@ -98,6 +98,7 @@ import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.websocket.toLocationData
+import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -352,14 +353,14 @@ internal constructor(
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
+                } else if (it.isImage() && it.mediaMimeType == MimeType.GIF.toString() && it.mediaUrl?.startsWith("http") == true) { // un-downloaded GIPHY
                     val category =
                         if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
                                 it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize, category, it.id, it.thumbImage ?: "", it.createdAt
+                                it.mediaSize ?: 0L, category, it.id, it.thumbImage ?: "", it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
