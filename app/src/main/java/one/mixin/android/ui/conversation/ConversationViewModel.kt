@@ -60,6 +60,7 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.*
+import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -343,14 +344,14 @@ internal constructor(
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
+                } else if (it.isImage() && it.mediaMimeType == MimeType.GIF.toString() && it.mediaUrl?.startsWith("http") == true) { // un-downloaded GIPHY
                     val category =
                         if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
                                 it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize, category, it.id, it.thumbImage ?: "", it.createdAt
+                                it.mediaSize ?: 0L, category, it.id, it.thumbImage ?: "", it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
@@ -418,7 +419,7 @@ internal constructor(
             list.forEach { item ->
                 conversationRepository.deleteMessage(
                     item.messageId,
-                    item.mediaUrl,
+                    item.absolutePath(),
                     item.mediaStatus == MediaStatus.DONE.name
                 )
                 if (item.isTranscript()) {
@@ -595,7 +596,7 @@ internal constructor(
                             { url ->
                                 ForwardMessage(
                                     ShareCategory.Image,
-                                    GsonHelper.customGson.toJson(ShareImageData(url, m.content))
+                                    GsonHelper.customGson.toJson(ShareImageData(requireNotNull(m.absolutePath()), m.content))
                                 )
                             },
                             { null }
@@ -608,7 +609,7 @@ internal constructor(
                         m.mediaMimeType ?: continue
                         m.mediaSize ?: continue
                         val dataMessagePayload = DataMessagePayload(
-                            m.mediaUrl,
+                            requireNotNull(m.absolutePath()),
                             m.name,
                             m.mediaMimeType,
                             m.mediaSize,
@@ -621,7 +622,7 @@ internal constructor(
                             continue
                         }
                         val videoData = VideoMessagePayload(
-                            m.mediaUrl,
+                            requireNotNull(m.absolutePath()),
                             UUID.randomUUID().toString(),
                             nowInUtc(),
                             m.content,
@@ -641,7 +642,7 @@ internal constructor(
                         ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
                     }
                     m.category.endsWith("_AUDIO") -> {
-                        val url = m.mediaUrl?.getFilePath() ?: continue
+                        val url = m.absolutePath()?.getFilePath() ?: continue
                         if (!File(url).exists()) continue
 
                         val duration = m.mediaDuration?.toLongOrNull() ?: continue

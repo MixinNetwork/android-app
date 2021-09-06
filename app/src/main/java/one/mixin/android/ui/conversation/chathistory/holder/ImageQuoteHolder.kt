@@ -134,7 +134,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
             binding.chatImage.layoutParams.height =
                 min(width * dataHeight / dataWidth, mediaHeight)
         }
-        binding.chatImage.loadLongImageMark(messageItem.mediaUrl, null)
+        binding.chatImage.loadLongImageMark(messageItem.absolutePath(), null)
 
         val isMe = messageItem.userId == Session.getAccountId()
         if (isFirst && !isMe) {

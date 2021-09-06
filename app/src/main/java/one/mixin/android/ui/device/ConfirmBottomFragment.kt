@@ -21,6 +21,7 @@ import one.mixin.android.crypto.IdentityKeyUtil
 import one.mixin.android.crypto.ProvisionMessage
 import one.mixin.android.crypto.ProvisioningCipher
 import one.mixin.android.databinding.FragmentConfirmBinding
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -62,6 +63,12 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             val ephemeralId = uri.getQueryParameter("id")
             if (ephemeralId == null) {
                 context.toast(R.string.desktop_upgrade)
+            } else if (Session.getAccount()?.hasPin == false) {
+                context.alert(context.getString(R.string.desktop_login_no_pin))
+                    .setPositiveButton(android.R.string.yes) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
             } else {
                 newInstance(url, action).showNow(fragmentManager, TAG)
             }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 39,
-    "identityHash": "4f3033a6109f4859a59ee4f8905f7134",
+    "identityHash": "4e72bd887f31173642845390e11b7c28",
     "entities": [
       {
         "tableName": "users",
@@ -2010,7 +2010,7 @@
       },
       {
         "tableName": "pin_messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`), FOREIGN KEY(`conversation_id`) REFERENCES `conversations`(`conversation_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`message_id`) REFERENCES `messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`), FOREIGN KEY(`message_id`) REFERENCES `messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "messageId",
@@ -2040,17 +2040,6 @@
         "indices": [],
         "foreignKeys": [
           {
-            "table": "conversations",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "conversation_id"
-            ],
-            "referencedColumns": [
-              "conversation_id"
-            ]
-          },
-          {
             "table": "messages",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
@@ -2067,7 +2056,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4f3033a6109f4859a59ee4f8905f7134')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4e72bd887f31173642845390e11b7c28')"
     ]
   }
 }

@@ -20,7 +20,7 @@ buildscript {
         ext.preference_version = '1.1.1'
         ext.hiltVersion = '2.38.1'
         ext.hiltAndroidxVersion = '1.0.0'
-        ext.androidxVersion = '1.7.0-alpha02'
+        ext.androidxVersion = '1.7.0-alpha01'
         ext.viewpagerVersion = '1.1.0-beta01'
         ext.sharetargetVersion = '1.1.0'
         ext.coordinatorVersion = '1.1.0'
@@ -40,7 +40,7 @@ buildscript {
         ext.kotlin_version = '1.5.30'
         ext.libphonenumberVersion = '8.12.31'
         ext.anko_version = '0.10.8'
-        ext.coroutines_version = '1.5.1'
+        ext.coroutines_version = '1.5.2'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
         ext.firebaseDylinkVersion = '19.1.1'
@@ -112,7 +112,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath 'com.android.tools.build:gradle:7.0.1'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.3.10'

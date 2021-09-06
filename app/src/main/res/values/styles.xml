@@ -118,6 +118,10 @@
         <item name="android:textColor">?attr/text_primary</item>
     </style>
 
+    <style name="MixinAlertDialogWarningTheme" parent="MixinAlertDialogTheme">
+        <item name="android:textColorPrimary">@color/colorRed</item>
+    </style>
+
     <style name="PositiveButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
         <item name="android:textColor">@color/selector_dialog_tv</item>
     </style>

@@ -182,7 +182,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
         }
 
         binding.chatImage.loadVideo(
-            messageItem.mediaUrl,
+            messageItem.absolutePath(),
             messageItem.thumbImage,
             minWidth,
             minWidth * messageItem.mediaHeight / messageItem.mediaWidth

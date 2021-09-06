@@ -133,6 +133,7 @@
     <string name="eos_contract_address">EOS 合约地址</string>
     <string name="save_md">保存为 Markdown</string>
     <string name="save_pdf">保存为 Pdf</string>
+    <string name="notice">注意</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -163,8 +164,7 @@
     <string name="error_asset_exists">没有相关资产</string>
     <string name="error_pin_check_too_many_request">你已经尝试了超过5次，请等待24小时后再次尝试。</string>
     <string name="error_used_phone">错误 %1$d：电话号码已经被占用。</string>
-    <string name="error_insufficient_transaction_fee">错误 %1$d：交易费不足。</string>
-    <string name="error_insufficient_transaction_fee_with_amount">错误 %1$d：交易费不足。请确保钱包至少有 %2$s 当作交易费。</string>
+    <string name="error_insufficient_transaction_fee_with_amount">错误 %1$d：手续费不足。请确保钱包至少有 %2$s 当作手续费。</string>
     <string name="error_blockchain">错误 %1$d：区块链同步异常，请稍后重试</string>
     <string name="error_invalid_address_plain">错误 %1$d：地址格式错误。</string>
     <string name="error_invalid_address">错误 %1$d：地址格式错误。请输入正确的 %2$s %3$s 的地址！</string>
@@ -816,9 +816,10 @@
     <string name="withdrawal_address">提现地址</string>
     <string name="withdrawal_no_tag">没有标签（Memo）</string>
     <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址 和 Memo（标签）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
+    <string name="deposit_memo_notice">地址 和 Memo（标签）同时使用才能充值 %1$s 到你的账号。</string>
     <string name="deposit_attention">首次充值建议小额尝试！</string>
     <string name="deposit_confirmation">充值到账至少需要 %1$d 个区块确认。</string>
-    <string name="deposit_reserve">首次充值至少 %1$s %2$s！</string>
+    <string name="deposit_reserve">首次充值至少 %1$s ！</string>
     <string name="bottom_withdrawal_title">%1$s 提现</string>
     <string name="bottom_withdrawal_change_amount">修改金额</string>
     <string name="bottom_withdrawal_change_amount_count">修改金额 （%1$d）</string>
@@ -917,6 +918,7 @@
     <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>
 
     <string name="desktop_upgrade">请升级 Mixin Messenger 桌面端至最新版！</string>
+    <string name="desktop_login_no_pin">为了您的安全，登录桌面前请先设置 PIN 码！</string>
     <!-- location -->
     <string name="location_send_current_location">发送您当前的位置</string>
     <string name="location_send_this_location">发送这个位置</string>

@@ -152,7 +152,7 @@ data class MessageItem(
             isCallMessage() || isRecall() || isGroupCall()
 
     fun canNotPin() =
-        canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
+        canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.SENT.name && status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
 
     private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 }
@@ -193,7 +193,8 @@ fun String.isGroupCallType() =
 
 fun MessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
 
-fun MessageItem.mediaDownloaded() = mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name
+fun MessageItem.mediaDownloaded() =
+    mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name
 
 fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     when {
@@ -215,7 +216,7 @@ fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
 fun MessageItem.saveToLocal(context: Context) {
     if (!hasWritePermission()) return
 
-    val filePath = mediaUrl?.toUri()?.getFilePath()
+    val filePath = absolutePath()?.toUri()?.getFilePath()
     if (filePath == null) {
         MixinApplication.appContext.toast(R.string.save_failure)
         return
@@ -235,11 +236,16 @@ fun MessageItem.saveToLocal(context: Context) {
     }
     outFile.copyFromInputStream(FileInputStream(file))
     context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-    MixinApplication.appContext.toast(MixinApplication.appContext.getString(R.string.save_to, outFile.absolutePath))
+    MixinApplication.appContext.toast(
+        MixinApplication.appContext.getString(
+            R.string.save_to,
+            outFile.absolutePath
+        )
+    )
 }
 
 fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
-    mediaUrl?.let {
+    absolutePath()?.let {
         if (isLive()) {
             VideoPlayer.player().loadHlsVideo(it, messageId)
         } else {
@@ -283,7 +289,8 @@ private fun MessageItem.simpleChat(): String {
     }
 }
 
-class FixedMessageDataSource(private val messageItems: List<MessageItem>) : PositionalDataSource<MessageItem>() {
+class FixedMessageDataSource(private val messageItems: List<MessageItem>) :
+    PositionalDataSource<MessageItem>() {
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MessageItem>) {
         callback.onResult(messageItems)
     }
@@ -315,7 +322,7 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
         requireNotNull(type),
         createdAt,
         content,
-        mediaUrl ?: assetUrl,
+        absolutePath() ?: assetUrl,
         mediaName,
         mediaSize,
         mediaWidth,
@@ -335,4 +342,8 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
         quoteId,
         quoteContent
     )
+}
+
+fun MessageItem.absolutePath(context: Context = MixinApplication.appContext): String? {
+    return absolutePath(context, conversationId, mediaUrl)
 }

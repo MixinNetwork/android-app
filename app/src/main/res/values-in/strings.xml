@@ -153,7 +153,6 @@
     <string name="error_asset_exists">Aset tidak ada</string>
     <string name="error_pin_check_too_many_request">Anda telah mencoba lebih dari 5 kali, harap tunggu setidaknya 24 jam untuk mencoba lagi.</string>
     <string name="error_used_phone">KESALAHAN %1$d: Ponsel digunakan oleh orang lain.</string>
-    <string name="error_insufficient_transaction_fee">KESALAHAN %1$d: Biaya transaksi tidak cukup.</string>
     <string name="error_blockchain">KESALAHAN %1$d: Blockchain tidak sinkron, coba lagi nanti.</string>
     <string name="error_invalid_address_plain">KESALAHAN %1$d: Format alamat tidak valid.</string>
     <string name="error_phone_verification_code_expired">KESALAHAN %1$d: Kode verifikasi telepon sudah tidak berlaku</string>
@@ -756,7 +755,7 @@
     <string name="deposit_account_attention">Perhatian: Harap coba jumlah kecil untuk deposit pertama. Memo dan Alamat diperlukan agar deposit %1$s Anda ke Mixin Messenger dapat dilakukan dengan sukses.</string>
     <string name="deposit_attention">Harap coba jumlah kecil untuk deposit pertama.</string>
     <string name="deposit_confirmation">Deposit akan tiba setelah setidaknya %1$d konfirmasi block</string>
-    <string name="deposit_reserve">Deposit minimal %1$s %2$s untuk pertama kali.</string>
+    <string name="deposit_reserve">Deposit minimal %1$s untuk pertama kali.</string>
     <string name="bottom_withdrawal_title">%1$s Penarikan</string>
     <string name="bottom_withdrawal_change_amount">Ubah Jumlah</string>
     <string name="bottom_withdrawal_change_amount_count">Ubah Jumlah (%1$d)</string>

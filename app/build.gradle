@@ -11,8 +11,8 @@ apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-parcelize'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 31
+    buildToolsVersion "31.0.0"
     ndkVersion "21.3.6528147"
     defaultConfig {
         applicationId "one.mixin.messenger"
