@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 39,
-    "identityHash": "4e72bd887f31173642845390e11b7c28",
+    "identityHash": "96fcc8db58b5f3165e468be642c47816",
     "entities": [
       {
         "tableName": "users",
@@ -446,27 +446,6 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_created_at` ON `${TABLE_NAME}` (`conversation_id`, `created_at`)"
           },
           {
-            "name": "index_messages_conversation_id_user_id_status_created_at",
-            "unique": false,
-            "columnNames": [
-              "conversation_id",
-              "user_id",
-              "status",
-              "created_at"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_user_id_status_created_at` ON `${TABLE_NAME}` (`conversation_id`, `user_id`, `status`, `created_at`)"
-          },
-          {
-            "name": "index_messages_conversation_id_status_user_id",
-            "unique": false,
-            "columnNames": [
-              "conversation_id",
-              "status",
-              "user_id"
-            ],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id` ON `${TABLE_NAME}` (`conversation_id`, `status`, `user_id`)"
-          },
-          {
             "name": "index_messages_conversation_id_category",
             "unique": false,
             "columnNames": [
@@ -483,6 +462,17 @@
               "quote_message_id"
             ],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_quote_message_id` ON `${TABLE_NAME}` (`conversation_id`, `quote_message_id`)"
+          },
+          {
+            "name": "index_messages_conversation_id_status_user_id_created_at",
+            "unique": false,
+            "columnNames": [
+              "conversation_id",
+              "status",
+              "user_id",
+              "created_at"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id_created_at` ON `${TABLE_NAME}` (`conversation_id`, `status`, `user_id`, `created_at`)"
           }
         ],
         "foreignKeys": [
@@ -2056,7 +2046,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4e72bd887f31173642845390e11b7c28')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '96fcc8db58b5f3165e468be642c47816')"
     ]
   }
 }
