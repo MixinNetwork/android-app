@@ -305,16 +305,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val decoded = Base64.decode(data.data)
             val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
             if (transferPinData.action == PinAction.PIN.name) {
-                transferPinData.messageIds.forEachIndexed { index, id ->
-                    val message = messageDao.findMessageById(id)
+                transferPinData.messageIds.forEachIndexed { index, messageId ->
+                    val message = messageDao.findMessageById(messageId)
                     if (message != null) {
-                        pinMessageDao.insert(PinMessage(id, message.conversationId, data.createdAt))
+                        pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
                         val mid = UUID.randomUUID().toString()
                         messageDao.insert(
                             createPinMessage(
                                 mid,
                                 data.conversationId,
                                 data.userId,
+                                messageId,
                                 PinMessageMinimal(
                                     message.id,
                                     message.category,
@@ -342,7 +343,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                     }
                     if (index == transferPinData.messageIds.size - 1) {
-                        RxBus.publish(PinMessageEvent(data.conversationId, id))
+                        RxBus.publish(PinMessageEvent(data.conversationId, messageId))
                     }
                 }
             } else if (transferPinData.action == PinAction.UNPIN.name) {

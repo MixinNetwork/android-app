@@ -594,12 +594,14 @@ fun createPinMessage(
     messageId: String,
     conversationId: String,
     userId: String,
+    quoteMessageId: String,
     pinMessages: PinMessageMinimal,
     createdAt: String,
     status: String
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.MESSAGE_PIN.name, status, createdAt)
     .setContent(GsonHelper.customGson.toJson(pinMessages))
     .setParticipantId(userId)
+    .setQuoteMessageId(quoteMessageId)
     .build()
 
 fun Message.absolutePath(context: Context = MixinApplication.appContext): String? {
