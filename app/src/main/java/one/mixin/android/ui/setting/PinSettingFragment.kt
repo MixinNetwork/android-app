@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPinSettingBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
@@ -38,7 +39,10 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            title.leftIb.setOnClickListener { activity?.onBackPressed() }
+            title.apply {
+                leftIb.setOnClickListener { activity?.onBackPressed() }
+                rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.TIP) }
+            }
             changeTv.setOnClickListener {
                 navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
             }
