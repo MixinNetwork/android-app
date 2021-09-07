@@ -37,7 +37,13 @@ import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
-import one.mixin.android.job.*
+import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConvertVideoJob
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SendAttachmentMessageJob
+import one.mixin.android.job.SendGiphyJob
+import one.mixin.android.job.SendTranscriptAttachmentMessageJob
+import one.mixin.android.job.TranscriptAttachmentDownloadJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session

@@ -80,7 +80,7 @@ import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.io.FileInputStream
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 class SendMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository, private val conversationRepository: ConversationRepository) {
