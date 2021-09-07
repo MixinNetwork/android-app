@@ -73,7 +73,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
         c.name AS groupName
         FROM messages m
         INNER JOIN users u ON m.user_id = u.user_id
-        INNER JOIN message_mentions mm ON m.id = mm.message_id
+        LEFT JOIN message_mentions mm ON m.id = mm.message_id
         LEFT JOIN users u1 ON m.participant_id = u1.user_id
         LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
         LEFT JOIN assets a ON s.asset_id = a.asset_id

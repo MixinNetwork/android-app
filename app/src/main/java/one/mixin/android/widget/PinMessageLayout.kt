@@ -57,18 +57,20 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
         }
 
     private fun collapse() {
-        val cx = pinContent.width
-        val cy = pinContent.height / 2
-        val initialRadius = pinContent.width.toFloat()
-        val anim = ViewAnimationUtils.createCircularReveal(pinContent, cx, cy, initialRadius, 0f)
-        anim.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                super.onAnimationEnd(animation)
-                pinContent.visibility = View.INVISIBLE
-            }
-        })
-
-        anim.start()
+        if (pinContent.isVisible) {
+            val cx = pinContent.width
+            val cy = pinContent.height / 2
+            val initialRadius = pinContent.width.toFloat()
+            val anim =
+                ViewAnimationUtils.createCircularReveal(pinContent, cx, cy, initialRadius, 0f)
+            anim.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    super.onAnimationEnd(animation)
+                    pinContent.visibility = View.INVISIBLE
+                }
+            })
+            anim.start()
+        }
     }
 
     private var disposable: Disposable? = null
@@ -91,12 +93,14 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     }
 
     private fun expand() {
-        val cx = pinContent.width
-        val cy = pinContent.height / 2
-        val finalRadius = pinContent.width.toFloat()
-        val anim = ViewAnimationUtils.createCircularReveal(pinContent, cx, cy, 0f, finalRadius)
-        pinContent.visibility = View.VISIBLE
-        anim.start()
+        if (!pinContent.isVisible) {
+            val cx = pinContent.width
+            val cy = pinContent.height / 2
+            val finalRadius = pinContent.width.toFloat()
+            val anim = ViewAnimationUtils.createCircularReveal(pinContent, cx, cy, 0f, finalRadius)
+            pinContent.visibility = View.VISIBLE
+            anim.start()
+        }
     }
 
     fun bind(message: MessageItem, clickAction: (String) -> Unit) {
