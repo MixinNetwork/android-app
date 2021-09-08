@@ -192,6 +192,7 @@
     <string name="title_home">Kenalan</string>
     <string name="search_hint">aset, kenalan dan mesej</string>
     <string name="conversation_waiting">Menunggu mesej ini.</string>
+    <string name="conversation_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini.</string>
     <string name="text_qr">KOD QR TEKS</string>
     <string name="detect_qr_tip">Mengesan kod QR Mixin, ketuk untuk mengenali</string>
     <string name="qr_code_camera">Kamera Kod QR</string>

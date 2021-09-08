@@ -700,6 +700,15 @@ class ConversationListFragment : LinkFragment() {
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
                 }
+                conversationItem.messageStatus == MessageStatus.UNKNOWN.name -> {
+                    conversationItem.content?.let {
+                        conversationItem.content.let {
+                            setConversationName(conversationItem)
+                            binding.msgTv.setText(R.string.conversation_not_support)
+                        }
+                    }
+                    null
+                }
                 conversationItem.isText() -> {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)

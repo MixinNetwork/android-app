@@ -194,6 +194,7 @@
     <string name="title_home">联系人</string>
     <string name="search_hint">搜索资产，联系人，消息</string>
     <string name="conversation_waiting">Waiting for this message.</string>
+    <string name="conversation_not_support">不支持此类型消息。请升级 Mixin 查看。</string>
     <string name="text_qr">文本二维码</string>
     <string name="detect_qr_tip">检测到一个 Mixin 二维码，点击识别</string>
     <string name="qr_code_camera">自动识别二维码</string>
