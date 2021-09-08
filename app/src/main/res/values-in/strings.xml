@@ -180,6 +180,7 @@
     <string name="title_home">Kontak</string>
     <string name="search_hint">aset, kontak, dan pesan</string>
     <string name="conversation_waiting">Menunggu pesan ini.</string>
+    <string name="conversation_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru.</string>
     <string name="text_qr">KODE QR TEKS</string>
     <string name="detect_qr_tip">Mendeteksi kode QR Mixin, ketuk untuk mengenali</string>
     <string name="qr_code_camera">Kode QR Kamera</string>

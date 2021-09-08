@@ -205,6 +205,7 @@
     <string name="title_home">Contacts</string>
     <string name="search_hint">assets, contacts and messages</string>
     <string name="conversation_waiting">Waiting for this message.</string>
+    <string name="conversation_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
     <string name="text_qr">TEXT QR CODE</string>
     <string name="detect_qr_tip">Detected a Mixin QR code, tap to recognize</string>
     <string name="qr_code_camera">QR Code Camera</string>
