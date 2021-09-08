@@ -39,8 +39,11 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        val pinMessage =
+        val pinMessage = try {
             GsonHelper.customGson.fromJson(messageItem.content, PinMessageMinimal::class.java)
+        } catch (e: Exception) {
+            null
+        } ?: return
         itemView.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)

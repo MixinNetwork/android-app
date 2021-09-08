@@ -62,6 +62,7 @@ import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs
@@ -193,6 +194,13 @@ class TranscriptAdapter(
                     false
                 )
             )
+            12 -> TranscriptHolder(
+                ItemChatTranscriptBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
             else -> UnknownHolder(
                 ItemChatUnknownBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -311,6 +319,12 @@ class TranscriptAdapter(
                 onItemListener,
                 miniMarkwon
             )
+            12 -> (holder as TranscriptHolder).bind(
+                transcripts[position],
+                isLast = isLast(position),
+                isFirst = isFirst(position),
+                onItemListener
+            )
             else -> (holder as UnknownHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
@@ -339,6 +353,7 @@ class TranscriptAdapter(
             item.isLocation() -> 9
             item.type == MessageCategory.APP_CARD.name -> 10
             item.isPost() -> 11
+            item.isTranscript() -> 12
             else -> -99
         }
     }

@@ -809,7 +809,14 @@ class ConversationListFragment : LinkFragment() {
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
                 conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
-                    val pinMessage = GsonHelper.customGson.fromJson(conversationItem.content, PinMessageMinimal::class.java)
+                    val pinMessage = try {
+                        GsonHelper.customGson.fromJson(
+                            conversationItem.content,
+                            PinMessageMinimal::class.java
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
                     if (conversationItem.mentions != null) {
                         binding.msgTv.renderMessage(
                             String.format(
@@ -819,13 +826,13 @@ class ConversationListFragment : LinkFragment() {
                                 } else {
                                     conversationItem.participantFullName
                                 },
-                                " \"${pinMessage.content}\""
+                                " \"${pinMessage?.content}\""
                             ),
                             MentionRenderCache.singleton.getMentionRenderContext(
                                 conversationItem.mentions
                             )
                         )
-                    } else {
+                    } else if (pinMessage != null) {
                         binding.msgTv.text = String.format(
                             getText(R.string.chat_pin_message),
                             if (id == conversationItem.senderId) {
