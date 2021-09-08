@@ -477,6 +477,8 @@ internal constructor(
 
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptMessageDao.findTranscriptMessageIndex(transcriptId, messageId)
 
+    suspend fun findPinMessageIndex(transcriptId: String, messageId: String) = pinMessageDao.findPinMessageIndex(transcriptId, messageId)
+
     suspend fun getTranscriptMediaMessage(transcriptId: String) = withContext(Dispatchers.IO) {
         transcriptMessageDao.getTranscriptMediaMessage(transcriptId)
     }

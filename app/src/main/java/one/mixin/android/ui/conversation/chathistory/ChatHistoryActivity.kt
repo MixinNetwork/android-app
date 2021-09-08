@@ -53,6 +53,7 @@ import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.web.getScreenshot
@@ -84,11 +85,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ChatHistoryActivity : BaseActivity() {
     private lateinit var binding: ActivityChatHistoryBinding
-
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
-
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
-
     private val decoration by lazy {
         MixinHeadersDecoration(adapter)
     }
@@ -104,19 +102,15 @@ class ChatHistoryActivity : BaseActivity() {
 
     @Inject
     lateinit var jobManager: MixinJobManager
-
     private val conversationId by lazy {
         requireNotNull(intent.getStringExtra(CONVERSATION_ID))
     }
-
     private val transcriptId by lazy {
         requireNotNull(intent.getStringExtra(MESSAGE_ID))
     }
-
     private val isPlain by lazy {
         intent.getBooleanExtra(IS_PLAIN, true)
     }
-
     private val isTranscript by lazy {
         intent.getIntExtra(CATEGORY, TRANSCRIPT) == TRANSCRIPT
     }
@@ -192,7 +186,6 @@ class ChatHistoryActivity : BaseActivity() {
     private val adapter by lazy {
         TranscriptAdapter(onItemListener, this)
     }
-
     private val onItemListener by lazy {
         object : TranscriptAdapter.OnItemListener() {
             override fun onUrlClick(url: String) {
@@ -254,20 +247,39 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {
                 quoteMessageId?.let { msgId ->
                     lifecycleScope.launch {
-                        val index =
-                            conversationRepository.findTranscriptMessageIndex(transcriptId, msgId)
+                        val index = if (isTranscript) {
+                            conversationRepository.findTranscriptMessageIndex(
+                                transcriptId,
+                                msgId
+                            )
+                        } else {
+                            conversationRepository.findPinMessageIndex(
+                                conversationId,
+                                msgId
+                            )
+                        }
                         scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4)
                     }
                 }
             }
 
             override fun onImageClick(messageItem: ChatHistoryMessageItem, view: View) {
-                TranscriptMediaPagerActivity.show(
-                    this@ChatHistoryActivity,
-                    view,
-                    transcriptId,
-                    messageItem.messageId
-                )
+                if (isTranscript) {
+                    TranscriptMediaPagerActivity.show(
+                        this@ChatHistoryActivity,
+                        view,
+                        transcriptId,
+                        messageItem.messageId
+                    )
+                } else {
+                    MediaPagerActivity.show(
+                        this@ChatHistoryActivity,
+                        view,
+                        messageItem.conversationId!!,
+                        messageItem.messageId,
+                        messageItem.toMessageItem(messageItem.conversationId),
+                    )
+                }
             }
 
             override fun onAudioClick(messageItem: ChatHistoryMessageItem) {
@@ -452,7 +464,6 @@ class ChatHistoryActivity : BaseActivity() {
     ) {
         binding.recyclerView.postDelayed(
             {
-
                 if (position == 0 && offset == 0) {
                     binding.recyclerView.layoutManager?.scrollToPosition(0)
                 } else if (offset == -1) {

@@ -126,7 +126,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
                     binding.fileProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
-                    binding.fileProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.fileProgress.setBindOnly("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }
@@ -138,8 +138,8 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                        binding.fileProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
-                        binding.bottomLayout.bindId = "${messageItem.transcriptId}${messageItem.messageId}"
+                        binding.fileProgress.setBindOnly("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
+                        binding.bottomLayout.bindId = "${messageItem.transcriptId ?: ""}${messageItem.messageId}"
                         if (MusicPlayer.isPlay(messageItem.messageId)) {
                             binding.fileProgress.setPause()
                             binding.bottomLayout.showSeekBar()
@@ -173,7 +173,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     } else {
                         binding.fileProgress.enableDownload()
                     }
-                    binding.fileProgress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.fileProgress.setBindId("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.fileProgress.setProgress(-1)
                     binding.fileProgress.setOnClickListener {
                         handleClick(messageItem, onItemListener)

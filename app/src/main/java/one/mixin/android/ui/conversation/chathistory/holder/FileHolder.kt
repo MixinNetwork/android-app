@@ -109,7 +109,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
                     binding.fileProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
-                    binding.fileProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.fileProgress.setBindOnly("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.bottomLayout.showText()
                     binding.bottomLayout.bindId = null
                     binding.fileProgress.setOnClickListener {
@@ -123,8 +123,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                        binding.fileProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
-                        binding.bottomLayout.bindId = "${messageItem.transcriptId}${messageItem.messageId}"
+                        binding.fileProgress.setBindOnly("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
+                        binding.bottomLayout.bindId = "${messageItem.transcriptId ?: ""}${messageItem.messageId}"
                         if (MusicPlayer.isPlay(messageItem.messageId)) {
                             binding.fileProgress.setPause()
                             binding.bottomLayout.showSeekBar()
@@ -159,7 +159,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     } else {
                         binding.fileProgress.enableDownload()
                     }
-                    binding.fileProgress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.fileProgress.setBindId("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.fileProgress.setProgress(-1)
                     binding.bottomLayout.showText()
                     binding.bottomLayout.bindId = null

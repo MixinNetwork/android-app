@@ -147,7 +147,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
                     binding.progress.visibility = View.VISIBLE
                     binding.play.visibility = View.GONE
                     binding.progress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
-                    binding.progress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.progress.setBindOnly("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.progress.setOnClickListener {
                         onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }
@@ -157,7 +157,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
                     binding.chatWarning.visibility = View.GONE
                     binding.progress.visibility = View.GONE
                     binding.play.visibility = View.VISIBLE
-                    binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.progress.setBindId("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.progress.setOnClickListener {}
                     binding.chatImage.setOnClickListener {
                         onItemListener.onImageClick(messageItem, binding.chatImage)
@@ -172,7 +172,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
                     } else {
                         binding.progress.enableDownload()
                     }
-                    binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.progress.setBindId("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.progress.setProgress(-1)
                     binding.progress.setOnClickListener {
                         if (messageItem.mediaUrl.isNullOrEmpty()) {

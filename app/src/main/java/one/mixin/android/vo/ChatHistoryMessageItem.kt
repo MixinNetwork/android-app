@@ -11,10 +11,15 @@ import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.generateConversationPath
+import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getTranscriptDirPath
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.toast
@@ -24,6 +29,7 @@ import java.io.FileInputStream
 
 class ChatHistoryMessageItem(
     val transcriptId: String? = null,
+    val conversationId: String? = null,
     val messageId: String,
     val userId: String?,
     val userFullName: String?,
@@ -164,7 +170,23 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String?): MessageItem {
     )
 }
 
+private val mediaPath by lazy {
+    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
+}
 fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appContext): String? {
+    if (transcriptId == null && conversationId != null) {
+        val dirPath = mediaPath ?: return null
+        return when {
+            mediaUrl == null -> null
+            mediaUrl.startsWith(dirPath) -> mediaUrl
+            isImage() -> File(context.getImagePath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+            isVideo() -> File(context.getVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+            isAudio() -> File(context.getAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+            isData() -> File(context.getDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+            isTranscript() -> File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
+            else -> null
+        }
+    }
     val mediaPath = MixinApplication.appContext.getMediaPath()?.toUri()?.toString() ?: return null
     val url = mediaUrl
     return when {

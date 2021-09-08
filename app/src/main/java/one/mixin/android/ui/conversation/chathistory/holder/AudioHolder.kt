@@ -111,7 +111,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                     binding.audioExpired.visibility = View.GONE
                     binding.audioProgress.visibility = View.VISIBLE
                     binding.audioProgress.enableLoading(MixinJobManager.getAttachmentProcess(messageItem.messageId))
-                    binding.audioProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.audioProgress.setBindOnly(messageItem.messageId)
                     binding.audioProgress.setOnClickListener {
                         handleClick(messageItem, onItemListener)
                     }
@@ -122,7 +122,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
                     binding.audioExpired.visibility = View.GONE
                     binding.audioProgress.visibility = View.VISIBLE
-                    binding.audioProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.audioProgress.setBindOnly(messageItem.messageId)
                     binding.audioWaveform.setBind(messageItem.messageId)
                     if (AudioPlayer.isPlay(messageItem.messageId)) {
                         binding.audioProgress.setPause()
@@ -144,7 +144,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                     } else {
                         binding.audioProgress.enableDownload()
                     }
-                    binding.audioProgress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.audioProgress.setBindOnly(messageItem.messageId)
                     binding.audioProgress.setProgress(-1)
                     binding.audioProgress.setOnClickListener {
                         handleClick(messageItem, onItemListener)

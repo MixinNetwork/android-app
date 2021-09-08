@@ -90,7 +90,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                     binding.chatWarning.visibility = View.GONE
                     binding.progress.visibility = View.VISIBLE
                     binding.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                    binding.progress.setBindOnly("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.progress.setBindOnly("${messageItem.transcriptId ?: "" ?: ""}${messageItem.messageId}")
                     binding.progress.setOnClickListener {
                         onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }
@@ -99,7 +99,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                 MediaStatus.DONE.name -> {
                     binding.chatWarning.visibility = View.GONE
                     binding.progress.visibility = View.GONE
-                    binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.progress.setBindId("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.chatImage.setOnClickListener {
                         onItemListener.onImageClick(messageItem, binding.chatImage)
                     }
@@ -112,7 +112,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                     } else {
                         binding.progress.enableDownload()
                     }
-                    binding.progress.setBindId("${messageItem.transcriptId}${messageItem.messageId}")
+                    binding.progress.setBindId("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.progress.setProgress(-1)
 
                     binding.progress.setOnClickListener {
