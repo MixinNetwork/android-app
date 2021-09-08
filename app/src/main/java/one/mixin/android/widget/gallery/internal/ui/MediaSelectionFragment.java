@@ -1,17 +1,16 @@
 package one.mixin.android.widget.gallery.internal.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import one.mixin.android.R;
 import one.mixin.android.widget.gallery.internal.entity.Album;
 import one.mixin.android.widget.gallery.internal.entity.Item;
@@ -70,6 +69,7 @@ public class MediaSelectionFragment extends Fragment implements
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mRecyclerView = view.findViewById(R.id.recyclerview);
+        assert getArguments() != null;
         Album album = getArguments().getParcelable(EXTRA_ALBUM);
         mAdapter = new AlbumMediaAdapter(getContext(),
                 mSelectionProvider.provideSelectedItemCollection(), mRecyclerView);
@@ -80,7 +80,7 @@ public class MediaSelectionFragment extends Fragment implements
         int spanCount;
         SelectionSpec selectionSpec = SelectionSpec.getInstance();
         if (selectionSpec.gridExpectedSize > 0) {
-            spanCount = UIUtils.spanCount(getContext(), selectionSpec.gridExpectedSize);
+            spanCount = UIUtils.spanCount(requireContext(), selectionSpec.gridExpectedSize);
         } else {
             spanCount = selectionSpec.spanCount;
         }
@@ -89,8 +89,8 @@ public class MediaSelectionFragment extends Fragment implements
         int spacing = getResources().getDimensionPixelSize(R.dimen.media_grid_spacing);
         mRecyclerView.addItemDecoration(new MediaGridInset(spanCount, spacing, false));
         mRecyclerView.setAdapter(mAdapter);
-        mAlbumMediaCollection.onCreate(getActivity(), this);
-        mAlbumMediaCollection.load(album, selectionSpec.capture);
+        mAlbumMediaCollection.onCreate(this, this);
+        mAlbumMediaCollection.load(album);
     }
 
     @Override
@@ -99,6 +99,7 @@ public class MediaSelectionFragment extends Fragment implements
         mAlbumMediaCollection.onDestroy();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void refreshMediaGrid() {
         mAdapter.notifyDataSetChanged();
     }
