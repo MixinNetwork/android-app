@@ -55,7 +55,6 @@ import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createPinMessage
 import one.mixin.android.vo.createPostMessage
-import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.giphy.Image
@@ -286,14 +285,14 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         list.forEach { messageItem ->
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
             val encoded = GsonHelper.customGson.toJson(transferRecallData).base64Encode()
-            val message = createRecallMessage(
+            val message = createMessage(
                 UUID.randomUUID().toString(),
                 conversationId,
                 sender.userId,
                 MessageCategory.MESSAGE_RECALL.name,
                 encoded,
-                MessageStatus.SENDING.name,
-                nowInUtc()
+                nowInUtc(),
+                MessageStatus.SENDING.name
             )
             jobManager.addJobInBackground(
                 SendMessageJob(
@@ -312,14 +311,14 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
     ) {
         val transferPinData = PinMessagePayload(action.name, list.map { it.messageId })
         val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
-        val message = createRecallMessage(
+        val message = createMessage(
             UUID.randomUUID().toString(),
             conversationId,
             sender.userId,
             MessageCategory.MESSAGE_PIN.name,
             encoded,
-            MessageStatus.SENDING.name,
-            nowInUtc()
+            nowInUtc(),
+            MessageStatus.SENDING.name
         )
         if (action == PinAction.PIN) {
             list.forEachIndexed { index, msg ->

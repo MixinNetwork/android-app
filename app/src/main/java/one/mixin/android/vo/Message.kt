@@ -533,18 +533,6 @@ fun createContactMessage(
     .setQuoteContent(quoteContent)
     .build()
 
-fun createRecallMessage(
-    messageId: String,
-    conversationId: String,
-    userId: String,
-    category: String,
-    content: String,
-    status: String,
-    createdAt: String
-) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
-    .setContent(content)
-    .build()
-
 fun createAudioMessage(
     messageId: String,
     conversationId: String,
