@@ -18,6 +18,7 @@ import one.mixin.android.databinding.ItemChatImageBinding
 import one.mixin.android.databinding.ItemChatImageQuoteBinding
 import one.mixin.android.databinding.ItemChatLocationBinding
 import one.mixin.android.databinding.ItemChatPostBinding
+import one.mixin.android.databinding.ItemChatRecallBinding
 import one.mixin.android.databinding.ItemChatStickerBinding
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
@@ -41,6 +42,7 @@ import one.mixin.android.ui.conversation.chathistory.holder.ImageHolder
 import one.mixin.android.ui.conversation.chathistory.holder.ImageQuoteHolder
 import one.mixin.android.ui.conversation.chathistory.holder.LocationHolder
 import one.mixin.android.ui.conversation.chathistory.holder.PostHolder
+import one.mixin.android.ui.conversation.chathistory.holder.RecallHolder
 import one.mixin.android.ui.conversation.chathistory.holder.StickerHolder
 import one.mixin.android.ui.conversation.chathistory.holder.TextHolder
 import one.mixin.android.ui.conversation.chathistory.holder.TextQuoteHolder
@@ -60,6 +62,7 @@ import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -201,6 +204,13 @@ class TranscriptAdapter(
                     false
                 )
             )
+            13-> RecallHolder(
+                ItemChatRecallBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
             else -> UnknownHolder(
                 ItemChatUnknownBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -325,6 +335,12 @@ class TranscriptAdapter(
                 isFirst = isFirst(position),
                 onItemListener
             )
+            13 -> (holder as RecallHolder).bind(
+                transcripts[position],
+                isFirst = isFirst(position),
+                isLast = isLast(position),
+                onItemListener
+            )
             else -> (holder as UnknownHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
@@ -354,6 +370,7 @@ class TranscriptAdapter(
             item.type == MessageCategory.APP_CARD.name -> 10
             item.isPost() -> 11
             item.isTranscript() -> 12
+            item.isRecall() -> 13
             else -> -99
         }
     }
