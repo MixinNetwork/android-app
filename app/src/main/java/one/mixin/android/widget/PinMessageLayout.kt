@@ -23,19 +23,9 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.PinMessageItem
 import one.mixin.android.vo.PinMessageMinimal
-import one.mixin.android.vo.isAppCard
-import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isContact
-import one.mixin.android.vo.isData
-import one.mixin.android.vo.isImage
-import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isLocation
-import one.mixin.android.vo.isPost
-import one.mixin.android.vo.isSticker
-import one.mixin.android.vo.isTranscript
-import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.explain
 
 class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     ConstraintLayout(context, attrs) {
@@ -104,7 +94,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
         }
     }
 
-    fun bind(message: MessageItem, clickAction: (String) -> Unit) {
+    fun bind(message: PinMessageItem, clickAction: (String) -> Unit) {
         val pinMessage =
             GsonHelper.customGson.fromJson(message.content, PinMessageMinimal::class.java)
         pinClose.setOnClickListener {
@@ -124,7 +114,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                     if (Session.getAccountId() == message.userId) {
                         getText(R.string.chat_you_start)
                     } else {
-                        message.participantFullName
+                        message.userFullName
                     },
                     " \"${pinMessage.content}\""
                 ),
@@ -139,22 +129,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                     if (Session.getAccountId() == message.userId) {
                         getText(R.string.chat_you_start)
                     } else {
-                        message.participantFullName
+                        message.userFullName
                     },
-                    when {
-                        pinMessage.isImage() -> getText(R.string.chat_pin_image_message)
-                        pinMessage.isVideo() -> getText(R.string.chat_pin_video_message)
-                        pinMessage.isLive() -> getText(R.string.chat_pin_live_message)
-                        pinMessage.isData() -> getText(R.string.chat_pin_data_message)
-                        pinMessage.isAudio() -> getText(R.string.chat_pin_audio_message)
-                        pinMessage.isSticker() -> getText(R.string.chat_pin_sticker_message)
-                        pinMessage.isContact() -> getText(R.string.chat_pin_contact_message)
-                        pinMessage.isPost() -> getText(R.string.chat_pin_post_message)
-                        pinMessage.isLocation() -> getText(R.string.chat_pin_location_message)
-                        pinMessage.isTranscript() -> getText(R.string.chat_pin_transcript_message)
-                        pinMessage.isAppCard() -> getText(R.string.chat_pin_card_message)
-                        else -> " \"${pinMessage.content}\""
-                    }
+                    pinMessage.explain(binding.root.context)
                 )
         }
     }

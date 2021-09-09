@@ -98,7 +98,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PinMessageMinimal
-import one.mixin.android.vo.isAppCard
+import one.mixin.android.vo.explain
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -850,20 +850,7 @@ class ConversationListFragment : LinkFragment() {
                             } else {
                                 conversationItem.senderFullName
                             },
-                            when {
-                                pinMessage.isImage() -> getText(R.string.chat_pin_image_message)
-                                pinMessage.isVideo() -> getText(R.string.chat_pin_video_message)
-                                pinMessage.isLive() -> getText(R.string.chat_pin_live_message)
-                                pinMessage.isData() -> getText(R.string.chat_pin_data_message)
-                                pinMessage.isAudio() -> getText(R.string.chat_pin_audio_message)
-                                pinMessage.isSticker() -> getText(R.string.chat_pin_sticker_message)
-                                pinMessage.isContact() -> getText(R.string.chat_pin_contact_message)
-                                pinMessage.isPost() -> getText(R.string.chat_pin_post_message)
-                                pinMessage.isLocation() -> getText(R.string.chat_pin_location_message)
-                                pinMessage.isTranscript() -> getText(R.string.chat_pin_transcript_message)
-                                pinMessage.isAppCard() -> getText(R.string.chat_pin_card_message)
-                                else -> pinMessage.content
-                            }
+                            pinMessage.explain(itemView.context)
                         )
                     }
                     null

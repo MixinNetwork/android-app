@@ -204,7 +204,7 @@ class TranscriptAdapter(
                     false
                 )
             )
-            13-> RecallHolder(
+            13 -> RecallHolder(
                 ItemChatRecallBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
