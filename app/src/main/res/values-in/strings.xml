@@ -149,7 +149,6 @@
     <string name="error_unable_to_open_media">Tidak dapat menemukan aplikasi yang dapat membuka media ini.</string>
     <string name="error_open_location">Tidak dapat menemukan aplikasi peta</string>
     <string name="error_file_exists">File tidak ada</string>
-    <string name="error_address_exists">Alamat tidak ada</string>
     <string name="error_asset_exists">Aset tidak ada</string>
     <string name="error_pin_check_too_many_request">Anda telah mencoba lebih dari 5 kali, harap tunggu setidaknya 24 jam untuk mencoba lagi.</string>
     <string name="error_used_phone">KESALAHAN %1$d: Ponsel digunakan oleh orang lain.</string>

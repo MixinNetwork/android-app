@@ -191,8 +191,9 @@ constructor(
 
     suspend fun findAddressById(addressId: String, assetId: String) = addressDao.findAddressById(addressId, assetId)
 
-    suspend fun refreshAndGetAddress(addressId: String, assetId: String): Address? {
+    suspend fun refreshAndGetAddress(addressId: String, assetId: String): Pair<Address?, Boolean> {
         var result: Address? = null
+        var notExists = false
         handleMixinResponse(
             invokeNetwork = {
                 addressService.address(addressId)
@@ -202,9 +203,15 @@ constructor(
                     addressDao.insert(it)
                     result = addressDao.findAddressById(addressId, assetId)
                 }
+            },
+            failureBlock = {
+                if (it.errorCode == NOT_FOUND) {
+                    notExists = true
+                }
+                return@handleMixinResponse false
             }
         )
-        return result
+        return Pair(result, notExists)
     }
 
     suspend fun findAssetItemById(assetId: String) = assetDao.findAssetItemById(assetId)
