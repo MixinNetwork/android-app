@@ -834,7 +834,7 @@ class ConversationListFragment : LinkFragment() {
                                 if (Session.getAccountId() == conversationItem.participantUserId) {
                                     getText(R.string.chat_you_start)
                                 } else {
-                                    conversationItem.participantFullName
+                                    conversationItem.senderFullName
                                 },
                                 " \"${pinMessage?.content}\""
                             ),

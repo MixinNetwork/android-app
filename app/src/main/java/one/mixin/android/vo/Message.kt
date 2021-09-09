@@ -588,7 +588,6 @@ fun createPinMessage(
     status: String
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.MESSAGE_PIN.name, status, createdAt)
     .setContent(GsonHelper.customGson.toJson(pinMessages))
-    .setParticipantId(userId)
     .setQuoteMessageId(quoteMessageId)
     .build()
 

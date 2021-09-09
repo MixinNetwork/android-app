@@ -67,7 +67,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
                     if (id == messageItem.userId) {
                         getText(R.string.chat_you_start)
                     } else {
-                        messageItem.participantFullName
+                        messageItem.userFullName
                     },
                     " \"${pinMessage.content}\""
                 ),
@@ -82,7 +82,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
                     if (id == messageItem.userId) {
                         getText(R.string.chat_you_start)
                     } else {
-                        messageItem.participantFullName
+                        messageItem.userFullName
                     },
                     when {
                         pinMessage.isImage() -> getText(R.string.chat_pin_image_message)
