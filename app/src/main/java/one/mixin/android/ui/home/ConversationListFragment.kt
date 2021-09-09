@@ -98,6 +98,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PinMessageMinimal
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -860,6 +861,7 @@ class ConversationListFragment : LinkFragment() {
                                 pinMessage.isPost() -> getText(R.string.chat_pin_post_message)
                                 pinMessage.isLocation() -> getText(R.string.chat_pin_location_message)
                                 pinMessage.isTranscript() -> getText(R.string.chat_pin_transcript_message)
+                                pinMessage.isAppCard() -> getText(R.string.chat_pin_card_message)
                                 else -> pinMessage.content
                             }
                         )

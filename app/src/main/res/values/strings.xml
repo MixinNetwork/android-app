@@ -1035,4 +1035,5 @@
     <string name="chat_pin_post_message">a post</string>
     <string name="chat_pin_location_message">a location</string>
     <string name="chat_pin_transcript_message">a transcript</string>
+    <string name="chat_pin_card_message">a card</string>
 </resources>
