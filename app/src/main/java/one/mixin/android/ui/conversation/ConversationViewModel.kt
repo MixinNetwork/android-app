@@ -391,7 +391,7 @@ internal constructor(
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
+                                it.conversationId, it.userId, it.mediaUrl, it.mediaWidth!!, it.mediaHeight!!,
                                 it.mediaSize ?: 0L, category, it.id, it.thumbImage ?: "", it.createdAt
                             )
                         )
@@ -634,7 +634,7 @@ internal constructor(
                         )
                     m.category.endsWith("_IMAGE") ->
                         m.mediaUrl.notNullWithElse<String, ForwardMessage?>(
-                            { url ->
+                            {
                                 ForwardMessage(
                                     ShareCategory.Image,
                                     GsonHelper.customGson.toJson(ShareImageData(requireNotNull(m.absolutePath()), m.content))
@@ -683,8 +683,8 @@ internal constructor(
                         ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
                     }
                     m.category.endsWith("_AUDIO") -> {
-                        val url = m.absolutePath()?.getFilePath() ?: continue
-                        if (!File(url).exists()) continue
+                        val url = m.absolutePath() ?: continue
+                        if (!File(url.getFilePath()).exists()) continue
 
                         val duration = m.mediaDuration?.toLongOrNull() ?: continue
                         val waveForm = m.mediaWaveform ?: continue

@@ -97,7 +97,7 @@ class DepositAccountFragment : DepositFragment() {
                 showQR(accountMemoQr, accountMemoQrAvatar, asset.tag!!)
             }
         }
-        alertDialogBuilder(R.style.MixinAlertDialogWarningTheme)
+        alertDialogBuilder()
             .setTitle(R.string.notice)
             .setCancelable(false)
             .setMessage(getString(R.string.deposit_memo_notice, asset.symbol))
