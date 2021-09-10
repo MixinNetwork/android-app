@@ -35,9 +35,8 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
     var rvCallback: DraggableRecyclerView.Callback? = null
 
     private val albumCollection = AlbumCollection()
-
     private val albumAdapter: GalleryAlbumAdapter by lazy {
-        GalleryAlbumAdapter(requireActivity())
+        GalleryAlbumAdapter(requireActivity(), childFragmentManager)
     }
 
     private val binding by viewBinding(FragmentGalleryAlbumBinding::bind)
