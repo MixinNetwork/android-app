@@ -159,6 +159,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         data.createdAt,
                         MessageStatus.UNKNOWN.name
                     )
+                    syncConversation(data)
                     messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 }
                 updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
