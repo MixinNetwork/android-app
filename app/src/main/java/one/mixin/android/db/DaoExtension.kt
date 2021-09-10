@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -144,6 +145,35 @@ fun MixinDatabase.clearParticipant(
     }
 }
 
+fun MixinDatabase.deleteMessageById(messageId: String) {
+    runInTransaction {
+        pinMessageDao().deleteByMessageId(messageId)
+        messageDao().deleteMessageById(messageId)
+    }
+}
+
+fun MixinDatabase.deleteMediaMessageByConversationAndCategory(
+    conversationId: String,
+    signalCategory: String,
+    plainCategory: String,
+    limit: Int = DB_DELETE_LIMIT
+) {
+    runInTransaction {
+        pinMessageDao().deleteConversationId(conversationId)
+        messageDao().deleteMediaMessageByConversationAndCategory(
+            conversationId,
+            signalCategory,
+            plainCategory,
+            limit
+        )
+    }
+}
+
+suspend fun MixinDatabase.deleteMessageByConversationId(conversationId: String, limit: Int) {
+    pinMessageDao().deleteConversationId(conversationId)
+    messageDao().deleteMessageByConversationId(conversationId, limit)
+}
+
 suspend fun MessageDao.batchMarkReadAndTake(
     conversationId: String,
     userId: String,
@@ -163,7 +193,8 @@ fun JobDao.insertNoReplace(job: Job) {
 
 fun MixinDatabase.deleteMessage(id: String) {
     runInTransaction {
-        messageDao().deleteMessage(id)
+        messageDao().deleteMessageById(id)
+        pinMessageDao().deleteByMessageId(id)
         mentionMessageDao().deleteMessage(id)
         messageFts4Dao().deleteByMessageId(id)
     }

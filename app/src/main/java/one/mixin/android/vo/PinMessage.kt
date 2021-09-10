@@ -2,7 +2,6 @@ package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -10,16 +9,6 @@ import androidx.room.PrimaryKey
     tableName = "pin_messages",
     indices = [
         Index(value = arrayOf("conversation_id")),
-    ],
-    foreignKeys = [
-        (
-            ForeignKey(
-                entity = Message::class,
-                onDelete = ForeignKey.CASCADE,
-                parentColumns = arrayOf("id"),
-                childColumns = arrayOf("message_id")
-            )
-            )
     ]
 )
 data class PinMessage(

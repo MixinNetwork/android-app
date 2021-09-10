@@ -14,6 +14,12 @@ interface PinMessageDao : BaseDao<PinMessage> {
     @Query("DELETE FROM pin_messages WHERE message_id IN (:messageIds)")
     fun deleteByIds(messageIds: List<String>)
 
+    @Query("DELETE FROM pin_messages WHERE message_id = :messageId")
+    fun deleteByMessageId(messageId: String)
+
+    @Query("DELETE FROM pin_messages WHERE conversation_id = :conversationId")
+    fun deleteConversationId(conversationId: String)
+
     @Query("SELECT * FROM pin_messages WHERE message_id = :messageId")
     suspend fun findPinMessageById(messageId: String): PinMessage?
 
@@ -70,6 +76,6 @@ interface PinMessageDao : BaseDao<PinMessage> {
     )
     fun getLastPinMessages(conversationId: String): LiveData<PinMessageItem?>
 
-    @Query("SELECT count(*) FROM pin_messages WHERE conversation_id = :conversationId")
+    @Query("SELECT count(*) FROM pin_messages pm INNER JOIN messages m ON m.id = pm.message_id WHERE pm.conversation_id = :conversationId")
     fun countPinMessages(conversationId: String): LiveData<Int>
 }
