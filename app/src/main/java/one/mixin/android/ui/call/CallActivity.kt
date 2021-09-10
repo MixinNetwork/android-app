@@ -6,10 +6,10 @@ import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
+import timber.log.Timber
 
 @AndroidEntryPoint
 class CallActivity : BaseActivity() {
-
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Call
     }
@@ -20,8 +20,12 @@ class CallActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        CallBottomSheetDialogFragment.newInstance(intent.getBooleanExtra(EXTRA_JOIN, false))
-            .show(supportFragmentManager, CallBottomSheetDialogFragment.TAG)
+        Timber.e("Call onCreate")
+        if (supportFragmentManager.findFragmentByTag(CallBottomSheetDialogFragment.TAG) == null) {
+            Timber.e("Call show bottom")
+            CallBottomSheetDialogFragment.newInstance(intent.getBooleanExtra(EXTRA_JOIN, false))
+                .show(supportFragmentManager, CallBottomSheetDialogFragment.TAG)
+        }
     }
 
     override fun onPause() {
@@ -34,7 +38,6 @@ class CallActivity : BaseActivity() {
         const val EXTRA_JOIN = "extra_join"
         const val CHANNEL_PIP_PERMISSION = "channel_pip_permission"
         const val ID_PIP_PERMISSION = 313389
-
         fun show(context: Context, join: Boolean = false) {
             Intent(context, CallActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
