@@ -171,7 +171,8 @@
     <string name="error_unable_to_open_media">Can\'t find an app able to open this media.</string>
     <string name="error_open_location">Can\'t find an map app</string>
     <string name="error_file_exists">File does not exist</string>
-    <string name="error_address_exists">Address does not exist</string>
+    <string name="error_address_exists">The address does not exist, please make sure that the address is added successfully</string>
+    <string name="error_address_not_sync">Address refresh failed, please try again</string>
     <string name="error_asset_exists">Asset does not exist</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
     <string name="error_used_phone">ERROR %1$d: Phone is used by someone else.</string>

@@ -160,7 +160,8 @@
     <string name="error_unable_to_open_media">无法找到能打开该媒体的应用</string>
     <string name="error_open_location">无法找到地图应用</string>
     <string name="error_file_exists">文件不存在</string>
-    <string name="error_address_exists">地址不存在</string>
+    <string name="error_address_exists">地址不存在，请确保地址是否添加成功</string>
+    <string name="error_address_not_sync">地址刷新失败，请重试</string>
     <string name="error_asset_exists">没有相关资产</string>
     <string name="error_pin_check_too_many_request">你已经尝试了超过5次，请等待24小时后再次尝试。</string>
     <string name="error_used_phone">错误 %1$d：电话号码已经被占用。</string>
