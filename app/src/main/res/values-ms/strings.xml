@@ -161,7 +161,6 @@
     <string name="error_unable_to_open_media">Tidak dapat mencari aplikasi yang dapat buka media ini.</string>
     <string name="error_open_location">Tidak dapat mencari aplikasi peta</string>
     <string name="error_file_exists">Fail tidak wujud</string>
-    <string name="error_address_exists">Alamat tidak wujud</string>
     <string name="error_asset_exists">Aset tidak wujud</string>
     <string name="error_pin_check_too_many_request">Anda telah mencuba lebih dari 5 kali, sila tunggu sekurang-kurangnya 24 jam untuk mencuba lagi.</string>
     <string name="error_used_phone">RALAT %1$d: Telefon digunakan oleh orang lain.</string>

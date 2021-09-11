@@ -298,8 +298,10 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.logout(sessionId)
     }
 
-    suspend fun findAddressById(addressId: String, assetId: String) = withContext(Dispatchers.IO) {
-        assetRepository.findAddressById(addressId, assetId) ?: assetRepository.refreshAndGetAddress(addressId, assetId)
+    suspend fun findAddressById(addressId: String, assetId: String): Pair<Address?, Boolean> = withContext(Dispatchers.IO) {
+        val address = assetRepository.findAddressById(addressId, assetId)
+            ?: return@withContext assetRepository.refreshAndGetAddress(addressId, assetId)
+        return@withContext Pair(address, false)
     }
 
     suspend fun findAssetItemById(assetId: String): AssetItem? =

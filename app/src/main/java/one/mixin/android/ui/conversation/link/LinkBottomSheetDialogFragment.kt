@@ -403,9 +403,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val addressId = uri.getQueryParameter("address")
                 if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
                     lifecycleScope.launch {
-                        val address = linkViewModel.findAddressById(addressId, assetId)
-                        if (address == null) {
+                        val pair = linkViewModel.findAddressById(addressId, assetId)
+                        val address = pair.first
+                        if (pair.second) {
                             showError(R.string.error_address_exists)
+                        } else if (address == null) {
+                            showError(R.string.error_address_not_sync)
                         } else {
                             val asset = checkAsset(assetId)
                             if (asset != null) {
@@ -519,11 +522,17 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showError()
             } else {
                 lifecycleScope.launch {
-                    val address = linkViewModel.findAddressById(addressId, assetId)
+                    val pair = linkViewModel.findAddressById(addressId, assetId)
+                    val address = pair.first
                     val asset = checkAsset(assetId)
                     if (asset != null) {
-                        when (address) {
-                            null -> showError(R.string.error_address_exists)
+                        when {
+                            pair.second -> {
+                                showError(R.string.error_address_exists)
+                            }
+                            address == null -> {
+                                showError(R.string.error_address_not_sync)
+                            }
                             else -> {
                                 val dust = address.dust?.toDoubleOrNull()
                                 val amountDouble = amount.toDoubleOrNull()
