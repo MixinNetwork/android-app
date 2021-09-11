@@ -33,7 +33,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.arch.core.executor.ArchTaskExecutor
-import androidx.core.net.toUri
+import androidx.core.net.toFile
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -349,12 +349,18 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     { granted ->
                         if (granted) {
                             lifecycleScope.launch(Dispatchers.IO) {
-                                val path = item.mediaUrl?.toUri()?.getFilePath()
+                                val path = item.absolutePath()
                                 if (path == null) {
                                     toast(R.string.save_failure)
                                     return@launch
                                 }
-                                val file = File(path)
+                                val file = Uri.parse(item.absolutePath()).toFile()
+                                if (!file.exists()) {
+                                    withContext(Dispatchers.Main) {
+                                        toast(R.string.error_file_exists)
+                                    }
+                                    return@launch
+                                }
                                 val outFile = when {
                                     item.mediaMimeType.equals(
                                         MimeType.GIF.toString(),
