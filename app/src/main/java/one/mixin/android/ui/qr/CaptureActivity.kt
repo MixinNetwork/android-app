@@ -95,10 +95,25 @@ class CaptureActivity : BlazeBaseActivity() {
         }
     }
 
+    class CaptureMemoContract : ActivityResultContract<Pair<String, Boolean>, Intent?>() {
+        override fun createIntent(context: Context, input: Pair<String, Boolean>): Intent {
+            return Intent(context, CaptureActivity::class.java).apply {
+                putExtra(input.first, input.second)
+                putExtra(ARGS_FOR_SCAN_TAG, true)
+            }
+        }
+
+        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+            if (intent == null || resultCode != Activity.RESULT_OK) return null
+            return intent
+        }
+    }
+
     companion object {
         const val SHOW_QR_CODE = "show_qr_code"
 
         const val ARGS_SHOW_SCAN = "args_show_scan"
+        const val ARGS_FOR_SCAN_TAG = "args_for_scan_tag"
         const val ARGS_FOR_SCAN_RESULT = "args_for_scan_result"
 
         const val MAX_DURATION = 15
