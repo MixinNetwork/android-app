@@ -38,7 +38,6 @@ import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.toLocationData
 import java.io.File
 import java.io.FileInputStream
-import kotlin.IllegalArgumentException
 
 @SuppressLint("ParcelCreator")
 @Entity

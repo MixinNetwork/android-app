@@ -51,7 +51,6 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
     }
 
     lateinit var asset: AssetItem
-
     private var memoEnabled = true
 
     // for testing
@@ -65,15 +64,24 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         resultRegistry = testRegistry
     }
 
-    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
-
+    private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private lateinit var getScanMemoResult: ActivityResultLauncher<Pair<String, Boolean>>
     private val binding by viewBinding(FragmentAddressAddBinding::bind)
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+        if (!::resultRegistry.isInitialized) resultRegistry =
+            requireActivity().activityResultRegistry
 
-        getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
+        getScanResult = registerForActivityResult(
+            CaptureActivity.CaptureContract(),
+            resultRegistry,
+            ::callbackScan
+        )
+        getScanMemoResult = registerForActivityResult(
+            CaptureActivity.CaptureContract(),
+            resultRegistry,
+            ::callbackScanMemo
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -217,18 +225,22 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    this.isAddr = isAddr
-                    getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    if (isAddr) {
+                        getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    } else {
+                        getScanMemoResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    }
                 } else {
                     context?.openPermissionSetting()
                 }
             }
     }
 
-    var isAddr = false
-        private set
+    private fun callbackScanMemo(data: Intent?) {
+        callbackScan(data, false)
+    }
 
-    private fun callbackScan(data: Intent?) {
+    private fun callbackScan(data: Intent?, isAddr: Boolean = true) {
         val text = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         if (text != null) {
             if (isAddr) {

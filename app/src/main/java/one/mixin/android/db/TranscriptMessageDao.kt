@@ -53,7 +53,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         """
         SELECT t.transcript_id AS transcriptId, t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
         t.category AS type, t.content, t.created_at AS createdAt, t.media_status AS mediaStatus, t.media_name AS mediaName, 
-        t.thumb_image AS thumbImage, t.media_url AS mediaUrl, t.media_width AS mediaWidth, t.media_height AS mediaHeight, st.asset_width AS assetWidth, 
+        t.thumb_image AS thumbImage, t.thumb_url AS thumbUrl, t.media_url AS mediaUrl, t.media_width AS mediaWidth, t.media_height AS mediaHeight, st.asset_width AS assetWidth, 
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,

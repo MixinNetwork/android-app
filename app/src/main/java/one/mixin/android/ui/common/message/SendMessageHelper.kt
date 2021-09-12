@@ -63,6 +63,7 @@ import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isSticker
@@ -122,6 +123,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 t.isPost() -> if (isPlain)MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
                 t.isSticker() -> if (isPlain)MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
                 t.isVideo() -> if (isPlain)MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+                t.isLive() -> if (isPlain)MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
                 t.isAppCard() -> MessageCategory.APP_CARD.name
                 else -> throw IllegalArgumentException("Unknown type")
             }
