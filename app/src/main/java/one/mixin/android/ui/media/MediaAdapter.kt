@@ -59,7 +59,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
             val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
             if (isGif) {
                 imageView.loadGif(
-                    item.mediaUrl.toString(),
+                    item.absolutePath(),
                     centerCrop = true,
                     holder = R.drawable.ic_giphy_place_holder,
                     base64Holder = item.thumbImage

@@ -169,6 +169,7 @@ fun TranscriptMessageItem.absolutePath(context: Context = MixinApplication.appCo
     val url = mediaUrl
     return when {
         url == null -> null
+        isLive() -> url
         url.startsWith(mediaPath) -> url
         else -> File(context.getTranscriptDirPath(), url).toUri().toString()
     }

@@ -124,6 +124,7 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
         isAudio() -> File(context.getAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
         isData() -> File(context.getDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
         isTranscript() -> File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
+        isLive() -> mediaUrl
         else -> null
     }
 }
