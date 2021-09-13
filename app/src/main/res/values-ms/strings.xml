@@ -803,8 +803,8 @@
     <string name="bottom_withdrawal_address_continue">Teruskan</string>
     <string name="bottom_withdrawal_least_tip">Jumlah pengeluaran minimum ialah %1$s %2$s</string>
     <string name="bottom_deposit_title">Deposit %1$s</string>
-    <string name="bottom_deposit_tip_eos">Alamat ini menyokong semua asas pada token EOS, seperti EOS, IQ, BLACK, OCT, KARMA, dll.</string>
-    <string name="bottom_deposit_tip_eth">Alamat ini menyokong semua token ERC-20, seperti ETH, XIN, TUSD, HT, LOOM, LEO, dll.</string>
+    <string name="bottom_deposit_tip_eos">Alamat ini menyokong semua asas pada token EOS, seperti EOS, IQ, dll.</string>
+    <string name="bottom_deposit_tip_eth">Alamat ini menyokong semua token ERC-20, seperti ETH, XIN, dll.</string>
     <string name="bottom_deposit_tip_btc">Alamat ini hanya menyokong BTC dan Omni USDT.</string>
     <string name="bottom_deposit_tip_trx">Alamat ini menyokong semua token TRC-10 dan TRC-20, seperti TRX, BTT, USDT-TRON, dll.</string>
     <string name="bottom_deposit_tip_common">Alamat ini hanya menyokong %1$s.</string>
