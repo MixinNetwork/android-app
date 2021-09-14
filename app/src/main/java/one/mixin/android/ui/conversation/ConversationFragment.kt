@@ -1207,6 +1207,8 @@ class ConversationFragment() :
 
     override fun onDestroyView() {
         chatViewModel.keyLivePagedListBuilder = null
+        audioFile?.deleteOnExit()
+        audioFile = null
         if (isAdded) {
             conversationAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
@@ -1936,12 +1938,13 @@ class ConversationFragment() :
     override fun onCancel() {
         binding.chatControl.cancelExternal()
     }
-
+    private var audioFile: File? = null
     override fun previewAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray) {
         if (duration < 500) {
             file.deleteOnExit()
         } else {
             Timber.e("preview ${file.absolutePath}")
+            audioFile = file
             binding.chatControl.previewAudio(file, waveForm, duration) {
                 sendAudio(messageId, file, duration, waveForm)
             }
@@ -1952,6 +1955,7 @@ class ConversationFragment() :
         if (duration < 500) {
             file.deleteOnExit()
         } else {
+            audioFile = null
             createConversation {
                 chatViewModel.sendAudioMessage(
                     conversationId,

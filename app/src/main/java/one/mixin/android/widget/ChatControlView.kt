@@ -54,6 +54,7 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.media.EndStatus
+import one.mixin.android.util.AudioPlayer
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
@@ -76,6 +77,8 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         const val RECORD_TIP_MILLIS = 2000L
 
         const val LONG_CLICK_DELAY = 400L
+
+        const val PREVIEW = "PREVIEW"
     }
 
     private enum class STATUS {
@@ -431,11 +434,17 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private var audioFile: File? = null
     fun previewAudio(audioFile: File, waveForm: ByteArray, duration: Long, sendCallback: () -> Unit) {
         binding.chatAudioWaveform.setWaveform(waveForm, true)
+        binding.chatAudioWaveform.setBind(PREVIEW)
+        binding.chatAudioPlay.setBind(PREVIEW)
         binding.chatAudioSend.setOnClickListener { }
         this.audioFile?.deleteOnExit()
         this.audioFile = audioFile
         binding.chatAudioPlay.setOnClickListener {
-            // Todo
+            if (AudioPlayer.isPlay(PREVIEW)) {
+                AudioPlayer.pause()
+            } else {
+                AudioPlayer.play(audioFile.absolutePath)
+            }
         }
         binding.chatAudioSend.setOnClickListener {
             sendCallback.invoke()
@@ -448,12 +457,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         }
         binding.chatAudioDuration.text = duration.formatMillis() ?: "00:00"
         binding.chatAudioLayout.isVisible = true
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        this.audioFile?.deleteOnExit()
-        Timber.e("delete ${audioFile?.absolutePath}")
     }
 
     private fun updateRecordCircleAndSendIcon() {

@@ -31,6 +31,7 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.mediaDownloaded
+import one.mixin.android.widget.ChatControlView.Companion.PREVIEW
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
@@ -105,6 +106,9 @@ class AudioPlayer private constructor() {
             whenPlayNewAudioMessage: ((Message) -> Unit)? = null
         ) {
             get().play(messageItem, autoPlayNext, continuePlayOnlyToday, whenPlayNewAudioMessage)
+        }
+        fun play(filePath: String) {
+            get().play(filePath)
         }
     }
 
@@ -186,15 +190,28 @@ class AudioPlayer private constructor() {
         fun onStatusChange(status: Int)
     }
 
+    private fun play(filePath: String) {
+        this.autoPlayNext = false
+        this.continuePlayOnlyToday = false
+        id = PREVIEW
+        player.loadAudio(filePath)
+        status = STATUS_PLAY
+        player.start()
+        id?.let {
+            RxBus.publish(playEvent(it))
+        }
+        startTimer()
+    }
+
     private fun play(
-        messageItem: MessageItem,
+        messageItem: MessageItem? = null,
         autoPlayNext: Boolean = true,
         continuePlayOnlyToday: Boolean = false,
         whenPlayNewAudioMessage: ((Message) -> Unit)? = null
     ) {
         this.autoPlayNext = autoPlayNext
         this.continuePlayOnlyToday = continuePlayOnlyToday
-        if (messageItem.mediaUrl == null) {
+        if (messageItem?.mediaUrl == null) {
             MixinApplication.appContext.toast(R.string.error_bad_data)
             return
         } else if (!messageItem.absolutePath()!!.fileExists()) {
@@ -245,7 +262,7 @@ class AudioPlayer private constructor() {
         id?.let { id -> RxBus.publish(playEvent(id, p)) }
     }
 
-    var timerDisposable: Disposable? = null
+    private var timerDisposable: Disposable? = null
     var progress = 0f
     private fun startTimer() {
         if (timerDisposable == null) {

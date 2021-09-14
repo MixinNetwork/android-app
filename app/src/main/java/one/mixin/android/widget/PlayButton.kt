@@ -6,7 +6,12 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.FrameLayout
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.ProgressEvent
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 
 class PlayButton @JvmOverloads constructor(
     context: Context,
@@ -51,6 +56,29 @@ class PlayButton @JvmOverloads constructor(
 
     override fun verifyDrawable(who: Drawable): Boolean {
         return who == playDrawable || super.verifyDrawable(who)
+    }
+
+    private var disposable: Disposable? = null
+    private var mBindId: String? = null
+    fun setBind(id: String?) {
+        if (id != mBindId) {
+            mBindId = id
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        if (disposable == null) {
+            disposable = RxBus.listen(ProgressEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    status = if (it.id == mBindId && it.status == STATUS_PLAY) {
+                        STATUS_PLAYING
+                    } else {
+                        STATUS_IDLE
+                    }
+                }
+        }
+        super.onAttachedToWindow()
     }
 
     override fun onDraw(canvas: Canvas) {
