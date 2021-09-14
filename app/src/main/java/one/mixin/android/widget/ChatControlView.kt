@@ -51,13 +51,17 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewChatControlBinding
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.media.EndStatus
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.KeyboardLayout
 import org.jetbrains.anko.dip
+import timber.log.Timber
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
@@ -408,10 +412,48 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         checkSend(false)
     }
 
-    private fun handleCancelOrEnd(cancel: Boolean) {
-        if (cancel) callback.onRecordCancel() else callback.onRecordEnd()
+    private fun handleCancelOrEnd(status: EndStatus) {
+        when (status) {
+            EndStatus.SEND -> {
+                callback.onRecordSend()
+            }
+            EndStatus.CANCEL -> {
+                callback.onRecordCancel()
+            }
+            EndStatus.PREVIEW -> {
+                callback.onRecordPreview()
+            }
+        }
         cleanUp()
         updateRecordCircleAndSendIcon()
+    }
+
+    private var audioFile: File? = null
+    fun previewAudio(audioFile: File, waveForm: ByteArray, duration: Long, sendCallback: () -> Unit) {
+        binding.chatAudioWaveform.setWaveform(waveForm, true)
+        binding.chatAudioSend.setOnClickListener { }
+        this.audioFile?.deleteOnExit()
+        this.audioFile = audioFile
+        binding.chatAudioPlay.setOnClickListener {
+            // Todo
+        }
+        binding.chatAudioSend.setOnClickListener {
+            sendCallback.invoke()
+            binding.chatAudioLayout.isVisible = false
+        }
+        binding.chatAudioDelete.setOnClickListener {
+            Timber.e("delete ${audioFile.absolutePath}")
+            audioFile.deleteOnExit()
+            binding.chatAudioLayout.isVisible = false
+        }
+        binding.chatAudioDuration.text = duration.formatMillis() ?: "00:00"
+        binding.chatAudioLayout.isVisible = true
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        this.audioFile?.deleteOnExit()
+        Timber.e("delete ${audioFile?.absolutePath}")
     }
 
     private fun updateRecordCircleAndSendIcon() {
@@ -606,6 +648,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         remainFocusable()
     }
 
+    @SuppressLint("CheckResult")
     private val onChatImgClickListener = OnClickListener {
         RxPermissions(activity!! as FragmentActivity)
             .request(
@@ -851,7 +894,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     binding.chatSlide.slideText(startX - moveX)
                     if (originX - moveX > maxScrollX) {
                         removeRecordRunnable()
-                        handleCancelOrEnd(true)
+                        handleCancelOrEnd(EndStatus.CANCEL)
                         binding.chatSlide.parent.requestDisallowInterceptTouchEvent(false)
                         triggeredCancel = true
                         return@OnTouchListener false
@@ -876,10 +919,10 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     }
                 } else if (!isRecording) {
                     removeRecordRunnable()
-                    handleCancelOrEnd(true)
+                    handleCancelOrEnd(EndStatus.CANCEL)
                 } else if (!recordCircle.locked) {
                     removeRecordRunnable()
-                    handleCancelOrEnd(false)
+                    handleCancelOrEnd(EndStatus.SEND)
                 } else {
                     cleanUp(true)
                 }
@@ -951,21 +994,25 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
     private val chatSlideCallback = object : SlidePanelView.Callback {
         override fun onTimeout() {
-            handleCancelOrEnd(false)
+            handleCancelOrEnd(EndStatus.SEND)
         }
 
         override fun onCancel() {
-            handleCancelOrEnd(true)
+            handleCancelOrEnd(EndStatus.CANCEL)
         }
     }
 
     private val recordCircleCallback = object : RecordCircleView.Callback {
         override fun onSend() {
-            handleCancelOrEnd(false)
+            handleCancelOrEnd(EndStatus.SEND)
         }
 
         override fun onCancel() {
-            handleCancelOrEnd(true)
+            handleCancelOrEnd(EndStatus.CANCEL)
+        }
+
+        override fun onPreview() {
+            handleCancelOrEnd(EndStatus.PREVIEW)
         }
     }
 
@@ -975,8 +1022,9 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         fun onSendLongClick(text: String)
         fun onRecordStart(audio: Boolean)
         fun isReady(): Boolean
-        fun onRecordEnd()
+        fun onRecordSend()
         fun onRecordCancel()
+        fun onRecordPreview()
         fun onCalling()
         fun onMenuClick()
         fun onBotClick()
