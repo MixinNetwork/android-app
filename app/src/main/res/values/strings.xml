@@ -1026,6 +1026,7 @@
     <string name="unpin_all">Cancel all pinned message</string>
     <string name="pinned_message">Pinned Messages</string>
     <string name="chat_pin_message">%1$s pinned %2$s</string>
+    <string name="chat_pin_empty_message">a message</string>
     <string name="chat_pin_image_message">a photo</string>
     <string name="chat_pin_video_message">a video</string>
     <string name="chat_pin_live_message">a live</string>

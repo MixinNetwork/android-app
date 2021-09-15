@@ -920,7 +920,8 @@ class ConversationAdapter(
                     oldItem.assetSymbol == newItem.assetSymbol &&
                     oldItem.assetUrl == newItem.assetUrl &&
                     oldItem.assetIcon == newItem.assetIcon &&
-                    oldItem.mentionRead == newItem.mentionRead
+                    oldItem.mentionRead == newItem.mentionRead &&
+                    oldItem.content == newItem.content
             }
         }
     }

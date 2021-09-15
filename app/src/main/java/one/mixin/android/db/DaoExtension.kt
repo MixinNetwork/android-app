@@ -148,6 +148,7 @@ fun MixinDatabase.clearParticipant(
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
+        mentionMessageDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
     }
 }
@@ -160,6 +161,7 @@ fun MixinDatabase.deleteMediaMessageByConversationAndCategory(
 ) {
     runInTransaction {
         pinMessageDao().deleteConversationId(conversationId)
+        mentionMessageDao().deleteMessageByConversationIdSync(conversationId, limit)
         messageDao().deleteMediaMessageByConversationAndCategory(
             conversationId,
             signalCategory,
@@ -172,6 +174,7 @@ fun MixinDatabase.deleteMediaMessageByConversationAndCategory(
 suspend fun MixinDatabase.deleteMessageByConversationId(conversationId: String, limit: Int) {
     pinMessageDao().deleteConversationId(conversationId)
     messageDao().deleteMessageByConversationId(conversationId, limit)
+    mentionMessageDao().deleteMessageByConversationId(conversationId, limit)
 }
 
 suspend fun MessageDao.batchMarkReadAndTake(

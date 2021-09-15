@@ -364,6 +364,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 RxBus.publish(RecallEvent(msg.id))
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
+                messageDao.recallPinMessage(msg.id)
+                pinMessageDao.deleteByMessageId(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
                 messagesFts4Dao.deleteByMessageId(msg.id)
                 messageDao.takeUnseen(accountId, msg.conversationId)

@@ -203,6 +203,7 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.TranscriptMessage
@@ -454,15 +455,28 @@ class ConversationFragment() :
         } else {
             conversationAdapter.selectSet.valueAt(0)?.messageId?.let { messageId ->
                 lifecycleScope.launch {
+                    if (isGroup) {
+                        val role = withContext(Dispatchers.IO) {
+                            chatViewModel.findParticipantById(
+                                conversationId,
+                                Session.getAccountId()!!
+                            )?.role
+                        }
+                        if (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name) {
+                            binding.toolView.pinIv.visibility = GONE
+                            return@launch
+                        }
+                    }
                     val pinMessage = chatViewModel.findPinMessageById(messageId)
                     if (pinMessage == null) {
                         binding.toolView.pinIv.tag = PinAction.PIN
                         binding.toolView.pinIv.setImageResource(R.drawable.ic_message_pin)
+                        binding.toolView.pinIv.visibility = VISIBLE
                     } else {
                         binding.toolView.pinIv.tag = PinAction.UNPIN
                         binding.toolView.pinIv.setImageResource(R.drawable.ic_message_unpin)
+                        binding.toolView.pinIv.visibility = VISIBLE
                     }
-                    binding.toolView.pinIv.visibility = VISIBLE
                 }
             }
         }
@@ -1900,7 +1914,7 @@ class ConversationFragment() :
                         scrollToMessage(messageId)
                     }
                     binding.pinMessageLayout.pin.setOnClickListener {
-                        ChatHistoryActivity.show(requireContext(), conversationId)
+                        ChatHistoryActivity.show(requireContext(), conversationId, isGroup)
                     }
                 }
             })

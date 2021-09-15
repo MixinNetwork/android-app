@@ -12,8 +12,9 @@ class PinMessageMinimal(
     val content: String?
 ) : ICategory
 
-fun PinMessageMinimal.explain(context: Context): CharSequence {
+fun PinMessageMinimal?.explain(context: Context): CharSequence {
     return when {
+        this == null -> context.getText(R.string.chat_pin_empty_message)
         isImage() -> context.getText(R.string.chat_pin_image_message)
         isVideo() -> context.getText(R.string.chat_pin_video_message)
         isLive() -> context.getText(R.string.chat_pin_live_message)
