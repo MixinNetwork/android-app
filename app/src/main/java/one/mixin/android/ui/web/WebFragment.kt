@@ -521,6 +521,7 @@ class WebFragment : BaseFragment() {
                 request?.let {
                     for (code in request.resources) {
                         if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                            Timber.e("request deny ${code}")
                             request.deny()
                             lastGrantedUri = null
                             return@let
@@ -538,6 +539,7 @@ class WebFragment : BaseFragment() {
                         .setCancelAction {
                             lastGrantedUri = null
                             request.deny()
+                            Timber.e("request deny cancel")
                         }.setGrantedAction {
                             RxPermissions(requireActivity())
                                 .request(Manifest.permission.CAMERA)
