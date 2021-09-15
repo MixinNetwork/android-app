@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.db.deleteMessageById
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
@@ -19,7 +20,7 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
 
     override fun onRun() {
         messageIds.forEach { messageId ->
-            messageDao.deleteMessage(messageId)
+            mixinDatabase.deleteMessageById(messageId)
             transcriptMessageDao.getTranscript(messageId).forEach { transcriptMessage ->
                 if (transcriptMessage.isAttachment()) {
                     transcriptMessageDao.delete(transcriptMessage)

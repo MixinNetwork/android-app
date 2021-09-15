@@ -13,15 +13,15 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.CircleProgress
 import java.io.File
 
 class LargeImageHolder(itemView: View) : MediaPagerHolder(itemView) {
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         needPostTransition: Boolean,
         mediaPagerAdapterListener: MediaPagerAdapterListener
     ) {

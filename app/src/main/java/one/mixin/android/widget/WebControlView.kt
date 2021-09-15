@@ -4,8 +4,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewWebControlBinding
+import one.mixin.android.extension.dp
 
 class WebControlView(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
 
@@ -40,6 +42,13 @@ class WebControlView(context: Context, attrs: AttributeSet) : LinearLayout(conte
             binding.closeIv.setImageResource(R.drawable.ic_close_dark_24dp)
             binding.divide.setBackgroundColor(context.getColor(R.color.bgWhite))
         }
+    }
+
+    fun hideMore() {
+        binding.divide.isVisible = false
+        binding.moreFl.isVisible = false
+        layoutParams = layoutParams.apply { width = 36.dp }
+        weightSum = 1f
     }
 
     interface Callback {

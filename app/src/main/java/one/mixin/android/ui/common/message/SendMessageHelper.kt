@@ -8,6 +8,8 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
+import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
@@ -29,6 +31,7 @@ import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.SendTranscriptJob
+import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
@@ -37,6 +40,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMinimal
@@ -49,8 +53,8 @@ import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createLocationMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createPinMessage
 import one.mixin.android.vo.createPostMessage
-import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.giphy.Image
@@ -69,6 +73,8 @@ import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
+import one.mixin.android.websocket.PinAction
+import one.mixin.android.websocket.PinMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.gallery.MimeType
@@ -77,7 +83,7 @@ import java.io.FileInputStream
 import java.util.UUID
 import javax.inject.Inject
 
-class SendMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository) {
+class SendMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository, private val conversationRepository: ConversationRepository) {
 
     fun sendTextMessage(scope: CoroutineScope, conversationId: String, sender: User, content: String, isPlain: Boolean, isSilentMessage: Boolean? = null) {
         val category =
@@ -281,14 +287,14 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         list.forEach { messageItem ->
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
             val encoded = GsonHelper.customGson.toJson(transferRecallData).base64Encode()
-            val message = createRecallMessage(
+            val message = createMessage(
                 UUID.randomUUID().toString(),
                 conversationId,
                 sender.userId,
                 MessageCategory.MESSAGE_RECALL.name,
                 encoded,
-                MessageStatus.SENDING.name,
-                nowInUtc()
+                nowInUtc(),
+                MessageStatus.SENDING.name
             )
             jobManager.addJobInBackground(
                 SendMessageJob(
@@ -297,6 +303,58 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 )
             )
         }
+    }
+
+    fun sendPinMessage(
+        conversationId: String,
+        sender: User,
+        action: PinAction,
+        list: Collection<PinMessageMinimal>
+    ) {
+        val transferPinData = PinMessagePayload(action.name, list.map { it.messageId })
+        val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
+        val message = createMessage(
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            MessageCategory.MESSAGE_PIN.name,
+            encoded,
+            nowInUtc(),
+            MessageStatus.SENDING.name
+        )
+        if (action == PinAction.PIN) {
+            list.forEachIndexed { index, msg ->
+                val category = msg.type
+                val content = if (msg.isText()) {
+                    msg.content
+                } else {
+                    null
+                }
+                val mId = UUID.randomUUID().toString()
+                conversationRepository.insertMessage(
+                    createPinMessage(
+                        mId,
+                        conversationId,
+                        sender.userId,
+                        msg.messageId,
+                        PinMessageMinimal(msg.messageId, category, content),
+                        nowInUtc(),
+                        MessageStatus.READ.name
+                    )
+                )
+                if (msg.isText()) {
+                    conversationRepository.syncMention(msg.messageId, mId)
+                }
+                if (index == list.size - 1) {
+                    RxBus.publish(PinMessageEvent(conversationId, msg.messageId))
+                }
+            }
+        }
+        jobManager.addJobInBackground(
+            SendMessageJob(
+                message
+            )
+        )
     }
 
     fun sendLiveMessage(

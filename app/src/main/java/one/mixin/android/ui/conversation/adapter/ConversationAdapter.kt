@@ -70,6 +70,7 @@ import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
 import one.mixin.android.ui.conversation.holder.LocationHolder
+import one.mixin.android.ui.conversation.holder.PinMessageHolder
 import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
@@ -100,6 +101,7 @@ import one.mixin.android.vo.isGroupCall
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
@@ -494,6 +496,14 @@ class ConversationAdapter(
                         onItemListener
                     )
                 }
+                PIN_TYPE -> {
+                    (holder as PinMessageHolder).bind(
+                        it,
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
                 else -> {
                 }
             }
@@ -764,6 +774,9 @@ class ConversationAdapter(
             TRANSCRIPT_TYPE -> {
                 TranscriptHolder(ItemChatTranscriptBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
+            PIN_TYPE -> {
+                PinMessageHolder(ItemChatSystemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            }
             else -> {
                 TransparentHolder(ItemChatTransparentBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
@@ -845,6 +858,7 @@ class ConversationAdapter(
                     item.isLocation() -> LOCATION_TYPE
                     item.isGroupCall() -> GROUP_CALL_TYPE
                     item.isTranscript() -> TRANSCRIPT_TYPE
+                    item.isPin() -> PIN_TYPE
                     else -> UNKNOWN_TYPE
                 }
             },
@@ -884,6 +898,7 @@ class ConversationAdapter(
         const val LOCATION_TYPE = 20
         const val GROUP_CALL_TYPE = 21
         const val TRANSCRIPT_TYPE = 22
+        const val PIN_TYPE = 23
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {

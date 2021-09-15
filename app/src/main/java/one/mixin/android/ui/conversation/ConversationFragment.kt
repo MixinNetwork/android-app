@@ -162,11 +162,11 @@ import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.chat.ChatItemCallback
 import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
-import one.mixin.android.ui.conversation.transcript.TranscriptActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -231,6 +231,7 @@ import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.websocket.LocationPayload
+import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
@@ -447,6 +448,26 @@ class ConversationFragment() :
         }
     }
 
+    private fun checkPinMessage() {
+        if (conversationAdapter.selectSet.valueAt(0)?.canNotPin() == true) {
+            binding.toolView.pinIv.visibility = GONE
+        } else {
+            conversationAdapter.selectSet.valueAt(0)?.messageId?.let { messageId ->
+                lifecycleScope.launch {
+                    val pinMessage = chatViewModel.findPinMessageById(messageId)
+                    if (pinMessage == null) {
+                        binding.toolView.pinIv.tag = PinAction.PIN
+                        binding.toolView.pinIv.setImageResource(R.drawable.ic_message_pin)
+                    } else {
+                        binding.toolView.pinIv.tag = PinAction.UNPIN
+                        binding.toolView.pinIv.setImageResource(R.drawable.ic_message_unpin)
+                    }
+                    binding.toolView.pinIv.visibility = VISIBLE
+                }
+            }
+        }
+    }
+
     private val onItemListener: ConversationAdapter.OnItemListener by lazy {
         object : ConversationAdapter.OnItemListener() {
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
@@ -488,6 +509,7 @@ class ConversationFragment() :
                         } else {
                             binding.toolView.replyIv.visibility = VISIBLE
                         }
+                        checkPinMessage()
                     }
                     else -> {
                         binding.toolView.forwardIv.visibility = VISIBLE
@@ -495,6 +517,7 @@ class ConversationFragment() :
                         binding.toolView.copyIv.visibility = GONE
                         binding.toolView.addStickerIv.visibility = GONE
                         binding.toolView.shareIv.visibility = GONE
+                        binding.toolView.pinIv.visibility = GONE
                     }
                 }
                 if (conversationAdapter.selectSet.size > 99 || conversationAdapter.selectSet.any { it.canNotForward() }) {
@@ -505,6 +528,7 @@ class ConversationFragment() :
                 conversationAdapter.notifyDataSetChanged()
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
                 checkAppCardForward(messageItem)
                 val b = conversationAdapter.addSelect(messageItem)
@@ -541,6 +565,7 @@ class ConversationFragment() :
                     } else {
                         binding.toolView.replyIv.visibility = VISIBLE
                     }
+                    checkPinMessage()
                     conversationAdapter.notifyDataSetChanged()
                     binding.toolView.fadeIn()
                 }
@@ -838,7 +863,7 @@ class ConversationFragment() :
 
             override fun onTranscriptClick(messageItem: MessageItem) {
                 binding.chatControl.chatEt.hideKeyboard()
-                TranscriptActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, messageItem.isPlain())
+                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, messageItem.isPlain())
             }
 
             override fun onSayHi() {
@@ -1486,6 +1511,21 @@ class ConversationFragment() :
             displayReplyView()
             closeTool()
         }
+
+        binding.toolView.pinIv.setOnClickListener {
+            if (conversationAdapter.selectSet.isEmpty()) {
+                return@setOnClickListener
+            }
+            lifecycleScope.launch {
+                chatViewModel.sendPinMessage(
+                    conversationId,
+                    sender,
+                    (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
+                    conversationAdapter.selectSet
+                )
+                closeTool()
+            }
+        }
         binding.toolView.shareIv.setOnClickListener {
             val messageItem = conversationAdapter.selectSet.valueAt(0)
             Intent().apply {
@@ -1606,6 +1646,7 @@ class ConversationFragment() :
             }
         )
         bindData()
+        bindPinMessage()
     }
 
     lateinit var itemTouchHelper: ItemTouchHelper
@@ -1848,6 +1889,26 @@ class ConversationFragment() :
             binding.chatControl.hideBot()
         }
         liveDataAppList()
+    }
+
+    private fun bindPinMessage() {
+        binding.pinMessageLayout.conversationId = conversationId
+        chatViewModel.getLastPinMessages(conversationId)
+            .observe(viewLifecycleOwner, { messageItem ->
+                if (messageItem != null) {
+                    binding.pinMessageLayout.bind(messageItem) { messageId ->
+                        scrollToMessage(messageId)
+                    }
+                    binding.pinMessageLayout.pin.setOnClickListener {
+                        ChatHistoryActivity.show(requireContext(), conversationId)
+                    }
+                }
+            })
+        chatViewModel.countPinMessages(conversationId)
+            .observe(viewLifecycleOwner, { count ->
+                binding.pinMessageLayout.isVisible = count > 0
+                binding.pinMessageLayout.pinCount.text = "$count"
+            })
     }
 
     private fun liveDataAppList() {

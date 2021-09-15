@@ -34,9 +34,12 @@ import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.batchMarkReadAndTake
+import one.mixin.android.db.deleteMediaMessageByConversationAndCategory
 import one.mixin.android.db.deleteMessage
+import one.mixin.android.db.deleteMessageByConversationId
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
@@ -64,12 +67,15 @@ import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.Job
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.websocket.BlazeAckMessage
@@ -91,6 +97,7 @@ internal constructor(
     private val appDao: AppDao,
     private val jobDao: JobDao,
     private val transcriptMessageDao: TranscriptMessageDao,
+    private val pinMessageDao: PinMessageDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager
@@ -402,7 +409,7 @@ internal constructor(
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String) {
         val count = messageDao.countDeleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory)
         repeat((count / DB_DELETE_LIMIT) + 1) {
-            messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, DB_DELETE_LIMIT)
+            appDatabase.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, DB_DELETE_LIMIT)
         }
     }
 
@@ -435,7 +442,7 @@ internal constructor(
             )
             repeat(deleteTimes) {
                 if (!deleteConversation) {
-                    messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+                    appDatabase.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
                 }
             }
             if (deleteConversation) {
@@ -468,7 +475,11 @@ internal constructor(
 
     fun findTranscriptMessageItemById(transcriptId: String) = transcriptMessageDao.getTranscriptMessages(transcriptId)
 
+    fun getPinMessages(conversationId: String) = pinMessageDao.getPinMessages(conversationId)
+
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String) = transcriptMessageDao.findTranscriptMessageIndex(transcriptId, messageId)
+
+    suspend fun findPinMessageIndex(transcriptId: String, messageId: String) = pinMessageDao.findPinMessageIndex(transcriptId, messageId)
 
     suspend fun getTranscriptMediaMessage(transcriptId: String) = withContext(Dispatchers.IO) {
         transcriptMessageDao.getTranscriptMediaMessage(transcriptId)
@@ -562,6 +573,43 @@ internal constructor(
         }
         if (add.isNotEmpty()) {
             participantSessionDao.insertList(add)
+        }
+    }
+
+    fun getLastPinMessages(conversationId: String) =
+        pinMessageDao.getLastPinMessages(conversationId)
+
+    fun countPinMessages(conversationId: String) =
+        pinMessageDao.countPinMessages(conversationId)
+
+    fun insertPinMessages(pinMessages: List<PinMessage>) {
+        pinMessages.forEach { message ->
+            pinMessageDao.insert(message)
+        }
+    }
+
+    fun deletePinMessageByIds(messageIds: List<String>) {
+        pinMessageDao.deleteByIds(messageIds)
+    }
+
+    fun insertMessage(message: Message) {
+        messageDao.insert(message)
+    }
+
+    suspend fun findPinMessageById(messageId: String) = pinMessageDao.findPinMessageById(messageId)
+
+    suspend fun getPinMessageMinimals(conversationId: String) = pinMessageDao.getPinMessageMinimals(conversationId)
+
+    fun syncMention(messageId: String, pinMessageId: String) {
+        messageMentionDao.findMessageMentionById(messageId)?.let { mention ->
+            messageMentionDao.insert(
+                MessageMention(
+                    pinMessageId,
+                    mention.conversationId,
+                    mention.mentions,
+                    true
+                )
+            )
         }
     }
 }
