@@ -432,10 +432,10 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
     private var audioFile: File? = null
     fun previewAudio(audioFile: File, waveForm: ByteArray, duration: Long, sendCallback: () -> Unit) {
+        AudioPlayer.clear()
         binding.chatAudioWaveform.setWaveform(waveForm, true)
         binding.chatAudioWaveform.setBind(PREVIEW)
         binding.chatAudioPlay.setBind(PREVIEW)
-        binding.chatAudioSend.setOnClickListener { }
         this.audioFile?.deleteOnExit()
         this.audioFile = audioFile
         binding.chatAudioPlay.setOnClickListener {
@@ -446,10 +446,14 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             }
         }
         binding.chatAudioSend.setOnClickListener {
+            AudioPlayer.seekTo(0)
+            AudioPlayer.pause()
             sendCallback.invoke()
             binding.chatAudioLayout.isVisible = false
         }
         binding.chatAudioDelete.setOnClickListener {
+            AudioPlayer.seekTo(0)
+            AudioPlayer.pause()
             audioFile.deleteOnExit()
             binding.chatAudioLayout.isVisible = false
         }

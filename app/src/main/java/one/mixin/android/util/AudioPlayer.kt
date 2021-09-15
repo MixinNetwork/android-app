@@ -110,6 +110,9 @@ class AudioPlayer private constructor() {
         fun play(filePath: String) {
             get().play(filePath)
         }
+        fun clear() {
+            get().clear()
+        }
     }
 
     private var recallDisposable: Disposable? = null
@@ -188,6 +191,13 @@ class AudioPlayer private constructor() {
 
     interface StatusListener {
         fun onStatusChange(status: Int)
+    }
+
+    private fun clear() {
+        id = null
+        status = STATUS_PLAY
+        player.pause()
+        stopTimber()
     }
 
     private fun play(filePath: String) {
