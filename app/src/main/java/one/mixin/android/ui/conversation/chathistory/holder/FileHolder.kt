@@ -1,10 +1,9 @@
 package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.annotation.SuppressLint
-import android.view.Gravity
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.SeekBar
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.R
@@ -172,6 +171,9 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 }
             }
         }
+        if (messageItem.transcriptId == null) {
+            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
+        }
     }
 
     private fun handleClick(
@@ -207,9 +209,9 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (binding.chatLayout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
         } else {
-            (binding.chatLayout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,

@@ -1,7 +1,7 @@
 package one.mixin.android.ui.conversation.chathistory.holder
 
-import android.view.Gravity
 import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatAudioQuoteBinding
@@ -36,7 +36,7 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            binding.chatMsgLayout.gravity = Gravity.END
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
@@ -51,7 +51,7 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
                 )
             }
         } else {
-            binding.chatMsgLayout.gravity = Gravity.START
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
@@ -189,6 +189,9 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }
         chatLayout(isMe, isLast)
+        if (messageItem.transcriptId == null) {
+            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
+        }
     }
 
     private fun handleClick(

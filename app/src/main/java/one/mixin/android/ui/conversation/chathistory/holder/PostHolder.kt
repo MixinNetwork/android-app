@@ -137,5 +137,8 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
         chatLayout(isMe, isLast)
+        if (messageItem.transcriptId == null) {
+            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_layout, onItemListener)
+        }
     }
 }

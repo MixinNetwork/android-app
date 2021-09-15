@@ -164,6 +164,8 @@ import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.chat.ChatItemCallback
 import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity.Companion.JUMP_ID
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryContract
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
@@ -327,6 +329,7 @@ class ConversationFragment() :
     private val transcriptData: TranscriptData? by lazy {
         requireArguments().getParcelable(TRANSCRIPT_DATA)
     }
+    private lateinit var chatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
 
     private var unreadTipCount: Int = 0
     private val conversationAdapter: ConversationAdapter by lazy {
@@ -1091,6 +1094,12 @@ class ConversationFragment() :
 
         checkPeerIfNeeded()
         checkTranscript()
+        chatHistoryResult = registerForActivityResult(ChatHistoryContract()) { data ->
+            Timber.e("jumpMessage")
+            data?.getStringExtra(JUMP_ID)?.let { messageId ->
+                scrollToMessage(messageId)
+            }
+        }
     }
 
     private var paused = false
@@ -1917,7 +1926,7 @@ class ConversationFragment() :
                         scrollToMessage(messageId)
                     }
                     binding.pinMessageLayout.pin.setOnClickListener {
-                        ChatHistoryActivity.show(requireContext(), conversationId, isGroup)
+                        chatHistoryResult.launch(Pair(conversationId, isGroup))
                     }
                 }
             })

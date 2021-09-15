@@ -1,32 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:id="@+id/chat_reply"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_gravity="center_vertical|end"
         android:background="@drawable/bg_circle_reply"
-        android:layout_marginEnd="-40dp"
+        android:layout_marginStart="16dp"
         android:padding="4dp"
         android:alpha="0"
         android:scaleX="0"
         android:scaleY="0"
         android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/chat_jump"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_chat_jump"
+        android:foreground="@drawable/jump_ripple"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/chat_msg_layout"
+        app:layout_constraintTop_toTopOf="@id/chat_msg_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
         tools:ignore="ContentDescription" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/chat_msg_layout"
-
         android:gravity="center"
         android:orientation="vertical"
         android:paddingTop="1.5dp"
-        tools:ignore="UselessParent">
+        tools:ignore="UselessParent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0"
+        app:layout_goneMarginBottom="0dp">
 
         <TextView
             android:id="@+id/chat_name"
@@ -152,4 +175,4 @@
                 tools:text="7:48AM" />
         </FrameLayout>
     </LinearLayout>
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

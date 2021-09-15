@@ -154,6 +154,9 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
             binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
         }
         chatLayout(isMe, isLast)
+        if (messageItem.transcriptId == null) {
+            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_layout, onItemListener)
+        }
     }
 
     private var textGestureListener: TextGestureListener? = null

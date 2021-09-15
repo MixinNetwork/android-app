@@ -1,11 +1,9 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
@@ -289,13 +287,13 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (binding.durationTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
             (binding.liveTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
             (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
         } else {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.durationTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
             (binding.liveTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10

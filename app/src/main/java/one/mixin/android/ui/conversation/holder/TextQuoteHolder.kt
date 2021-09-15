@@ -2,10 +2,9 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.GestureDetector
-import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -40,9 +39,9 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (binding.chatLayout.layoutParams as FrameLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
-            lp.gravity = Gravity.END
+            lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
@@ -57,7 +56,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
                 )
             }
         } else {
-            lp.gravity = Gravity.START
+            lp.horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,

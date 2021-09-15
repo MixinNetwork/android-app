@@ -2,10 +2,10 @@ package one.mixin.android.ui.conversation.chathistory
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,10 +29,9 @@ import one.mixin.android.databinding.ActivityChatHistoryBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.extension.alert
-import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
@@ -56,11 +56,8 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.preview.TextPreviewActivity
-import one.mixin.android.ui.web.getScreenshot
-import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -77,7 +74,6 @@ import one.mixin.android.websocket.PinAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.MixinHeadersDecoration
-import one.mixin.android.widget.WebControlView
 import one.mixin.android.widget.buildBottomSheetView
 import timber.log.Timber
 import java.util.UUID
@@ -86,8 +82,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ChatHistoryActivity : BaseActivity() {
     private lateinit var binding: ActivityChatHistoryBinding
-    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
-    override fun getDefaultThemeId(): Int = R.style.AppTheme_Blur
+    override fun getNightThemeId(): Int = R.style.AppTheme_Night_NoActionBar
+    override fun getDefaultThemeId(): Int = R.style.AppTheme_NoActionBar
     private val decoration by lazy {
         MixinHeadersDecoration(adapter)
     }
@@ -123,11 +119,24 @@ class ChatHistoryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityChatHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        SystemUIManager.transparentDraws(window)
-        getScreenshot()?.let {
-            binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+        if (booleanFromAttribute(R.attr.flag_night)) {
+            binding.container.backgroundImage =
+                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat_night)
+        } else {
+            binding.container.backgroundImage =
+                ContextCompat.getDrawable(this@ChatHistoryActivity, R.drawable.bg_chat)
         }
-        binding.control.mode = this.isNightMode()
+        binding.titleView.leftIb.setOnClickListener { finish() }
+        binding.titleView.setSubTitle(
+            getString(
+                if (isTranscript) {
+                    R.string.common_transcript
+                } else {
+                    R.string.pinned_message
+                }
+            ),
+            ""
+        )
         binding.recyclerView.addItemDecoration(decoration)
         binding.recyclerView.itemAnimator = null
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -137,17 +146,13 @@ class ChatHistoryActivity : BaseActivity() {
             binding.unpinTv.isVisible = false
             conversationRepository.findTranscriptMessageItemById(transcriptId)
                 .observe(this) { transcripts ->
-                    binding.control.callback = object : WebControlView.Callback {
-                        override fun onMoreClick() {
-                            showBottomSheet()
-                        }
-
-                        override fun onCloseClick() {
-                            finish()
-                        }
+                    binding.titleView.rightIb.setOnClickListener {
+                        showBottomSheet()
                     }
                     adapter.transcripts = transcripts
                 }
+            binding.titleView.rightAnimator.isVisible = true
+            binding.titleView.rightIb.setImageResource(R.drawable.ic_more)
         } else {
             lifecycleScope.launch {
                 if (isGroup) {
@@ -178,17 +183,9 @@ class ChatHistoryActivity : BaseActivity() {
                     finish()
                 }
             }
-            binding.control.hideMore()
+            binding.titleView.rightAnimator.isVisible = false
             conversationRepository.getPinMessages(conversationId)
                 .observe(this) { list ->
-                    binding.control.callback = object : WebControlView.Callback {
-                        override fun onMoreClick() {
-                        }
-
-                        override fun onCloseClick() {
-                            finish()
-                        }
-                    }
                     adapter.transcripts = list
                 }
         }
@@ -469,6 +466,16 @@ class ChatHistoryActivity : BaseActivity() {
                     }
                 }
             }
+
+            override fun onMessageJump(messageId: String) {
+                setResult(
+                    Activity.RESULT_OK,
+                    Intent().apply {
+                        putExtra(JUMP_ID, messageId)
+                    }
+                )
+                finish()
+            }
         }
     }
 
@@ -675,6 +682,7 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     companion object {
+        const val JUMP_ID = "jump_id"
         private const val MESSAGE_ID = "transcript_id"
         private const val CONVERSATION_ID = "conversation_id"
         private const val IS_PLAIN = "is_plain"
@@ -683,7 +691,6 @@ class ChatHistoryActivity : BaseActivity() {
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
         fun show(context: Context, messageId: String, conversationId: String, isPlain: Boolean) {
-            refreshScreenshot(context)
             context.startActivity(
                 Intent(context, ChatHistoryActivity::class.java).apply {
                     putExtra(MESSAGE_ID, messageId)
@@ -694,15 +701,12 @@ class ChatHistoryActivity : BaseActivity() {
             )
         }
 
-        fun show(context: Context, conversationId: String, isGroup: Boolean) {
-            refreshScreenshot(context)
-            context.startActivity(
-                Intent(context, ChatHistoryActivity::class.java).apply {
-                    putExtra(CONVERSATION_ID, conversationId)
-                    putExtra(CATEGORY, CHAT_HISTORY)
-                    putExtra(IS_GROUP, isGroup)
-                }
-            )
+        fun getPinIntent(context: Context, conversationId: String, isGroup: Boolean): Intent {
+            return Intent(context, ChatHistoryActivity::class.java).apply {
+                putExtra(CONVERSATION_ID, conversationId)
+                putExtra(CATEGORY, CHAT_HISTORY)
+                putExtra(IS_GROUP, isGroup)
+            }
         }
     }
 }

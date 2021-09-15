@@ -499,5 +499,7 @@ class TranscriptAdapter(
         open fun onTextDoubleClick(messageItem: ChatHistoryMessageItem) {}
 
         open fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {}
+
+        open fun onMessageJump(messageId: String) {}
     }
 }
