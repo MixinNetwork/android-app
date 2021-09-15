@@ -42,7 +42,7 @@
             android:maxLines="1"
             android:text="@string/contact_mixin_id"
             android:textColor="?attr/text_minor"
-            android:textSize="11sp" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/contact_header_mobile_tv"
@@ -55,7 +55,7 @@
             android:maxLines="1"
             android:text="@string/contact_mobile"
             android:textColor="?attr/text_minor"
-            android:textSize="11sp" />
+            android:textSize="12sp" />
 
         <ImageView
             android:id="@+id/arrow_iv"
