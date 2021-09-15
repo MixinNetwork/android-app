@@ -71,6 +71,9 @@
         <attr name="bg" format="color"/>
         <attr name="color" format="color"/>
     </declare-styleable>
+    <declare-styleable name="PlayButton">
+        <attr name="play_color" format="color"/>
+    </declare-styleable>
     <declare-styleable name="MessageLayout">
         <attr name="max_width" format="dimension" />
         <attr name="content_padding" format="dimension" />

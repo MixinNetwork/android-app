@@ -28,11 +28,13 @@ class WaveformView : View {
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    fun setWaveform(waveform: ByteArray) {
+    fun setWaveform(waveform: ByteArray, center: Boolean = false) {
         waveformBytes = waveform
+        this.center = center
     }
 
     private var waveformBytes: ByteArray? = null
+    private var center: Boolean = false
 
     private var innerColor = Color.parseColor("#DDDDDD")
     private var outerColor = Color.parseColor("#9B9B9B")
@@ -115,7 +117,7 @@ class WaveformView : View {
         paintInner.color = if (isFresh && thumbX == 0) freshColor else innerColor
         paintOuter.color = outerColor
 
-        val y = height
+        val y = height.toFloat()
         var barNum = 0
         var lastBarNum: Int
         var drawBarCount: Int
@@ -142,27 +144,37 @@ class WaveformView : View {
                 value = (value.toInt() shl nextByteRest).toByte()
                 value = value or (waveformBytes!![byteNum + 1] and ((2 shl nextByteRest - 1) - 1).toByte())
             }
-
+            val offset = context.dip(max(1f, 14.0f * value / 31.0f)).toFloat()
+            val yTop = if (center) {
+                (y - offset) / 2
+            } else {
+                y - offset
+            }
+            val yBottom = if (center) {
+                (y + offset) / 2
+            } else {
+                y
+            }
             for (b in 0 until drawBarCount) {
                 val x = barNum * context.dip(3f)
                 if (x < thumbX && x + context.dip(2f) < thumbX) {
                     canvas.drawRect(
                         x.toFloat(),
-                        (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(),
+                        yTop,
                         (x + context.dip(2f)).toFloat(),
-                        (y).toFloat(),
+                        yBottom,
                         paintOuter
                     )
                 } else {
                     canvas.drawRect(
                         x.toFloat(),
-                        (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(),
+                        yTop,
                         (x + context.dip(2f)).toFloat(),
-                        (y).toFloat(),
+                        yBottom,
                         paintInner
                     )
                     if (x < thumbX) {
-                        canvas.drawRect(x.toFloat(), (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(), thumbX.toFloat(), (y).toFloat(), paintOuter)
+                        canvas.drawRect(x.toFloat(), yTop, thumbX.toFloat(), yBottom, paintOuter)
                     }
                 }
                 barNum++

@@ -143,6 +143,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
@@ -1231,6 +1232,8 @@ class ConversationFragment() :
 
     override fun onDestroyView() {
         chatViewModel.keyLivePagedListBuilder = null
+        audioFile?.deleteOnExit()
+        audioFile = null
         if (isAdded) {
             conversationAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
         }
@@ -1283,7 +1286,7 @@ class ConversationFragment() :
                 true
             }
             binding.chatControl.isRecording -> {
-                OpusAudioRecorder.get(conversationId).stopRecording(false)
+                OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.CANCEL)
                 binding.chatControl.cancelExternal()
                 true
             }
@@ -1996,11 +1999,23 @@ class ConversationFragment() :
     override fun onCancel() {
         binding.chatControl.cancelExternal()
     }
+    private var audioFile: File? = null
+    override fun previewAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray) {
+        if (duration < 500) {
+            file.deleteOnExit()
+        } else {
+            audioFile = file
+            binding.chatControl.previewAudio(file, waveForm, duration) {
+                sendAudio(messageId, file, duration, waveForm)
+            }
+        }
+    }
 
     override fun sendAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray) {
         if (duration < 500) {
             file.deleteOnExit()
         } else {
+            audioFile = null
             createConversation {
                 chatViewModel.sendAudioMessage(
                     conversationId,
@@ -2900,15 +2915,22 @@ class ConversationFragment() :
             return OpusAudioRecorder.state == STATE_RECORDING
         }
 
-        override fun onRecordEnd() {
-            OpusAudioRecorder.get(conversationId).stopRecording(true)
+        override fun onRecordSend() {
+            OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.SEND)
+            if (!isNearToSensor && aodWakeLock.isHeld) {
+                aodWakeLock.release()
+            }
+        }
+
+        override fun onRecordPreview() {
+            OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.PREVIEW)
             if (!isNearToSensor && aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
         }
 
         override fun onRecordCancel() {
-            OpusAudioRecorder.get(conversationId).stopRecording(false)
+            OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.CANCEL)
             if (!isNearToSensor && aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
@@ -3008,7 +3030,7 @@ class ConversationFragment() :
     private fun displayReplyView() {
         if (!binding.chatControl.replyView.isVisible) binding.chatControl.replyView.animateHeight(0, 53.dp)
         if (binding.chatControl.isRecording) {
-            OpusAudioRecorder.get(conversationId).stopRecording(false)
+            OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.CANCEL)
             binding.chatControl.cancelExternal()
         }
         binding.chatControl.chatEt.showKeyboard()

@@ -128,6 +128,83 @@
             android:layout_height="@dimen/chat_control_height"
             android:layout_gravity="bottom"
             android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/chat_audio_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/bg_white"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/chat_audio_delete"
+                android:foreground="@drawable/mixin_ripple"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="12dp"
+                android:src="@drawable/ic_msg_delete"
+                tools:ignore="ContentDescription" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:padding="4dp"
+                android:background="@drawable/bg_audio_preview"
+                android:gravity="center_vertical">
+
+                <one.mixin.android.widget.PlayButton
+                    android:id="@+id/chat_audio_play"
+                    android:layout_marginStart="8dp"
+                    android:foreground="@drawable/play_ripple"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp" />
+
+                <one.mixin.android.widget.WaveformView
+                    android:id="@+id/chat_audio_waveform"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="20dp"
+                    android:textColor="?attr/text_primary"
+                    tools:ignore="NestedWeights" />
+
+                <TextView
+                    android:id="@+id/chat_audio_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"/>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/chat_audio_send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/mixin_ripple"
+                android:background="@null"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="12dp"
+                android:src="@drawable/ic_chat_send_checked"
+                tools:ignore="ContentDescription" />
+
+        </LinearLayout>
+
     </RelativeLayout>
 
 </merge>
