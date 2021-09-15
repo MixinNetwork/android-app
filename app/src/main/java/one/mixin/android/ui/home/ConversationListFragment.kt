@@ -836,13 +836,15 @@ class ConversationListFragment : LinkFragment() {
                                 } else {
                                     conversationItem.senderFullName
                                 },
-                                " \"${pinMessage?.content}\""
+                                pinMessage?.let { msg ->
+                                    " \"${msg.content}\""
+                                } ?: getText(R.string.chat_pin_empty_message)
                             ),
                             MentionRenderCache.singleton.getMentionRenderContext(
                                 conversationItem.mentions
                             )
                         )
-                    } else if (pinMessage != null) {
+                    } else {
                         binding.msgTv.text = String.format(
                             getText(R.string.chat_pin_message),
                             if (id == conversationItem.senderId) {

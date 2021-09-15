@@ -64,6 +64,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.copy
 import one.mixin.android.vo.isImage
@@ -111,6 +112,9 @@ class ChatHistoryActivity : BaseActivity() {
     private val isPlain by lazy {
         intent.getBooleanExtra(IS_PLAIN, true)
     }
+    private val isGroup by lazy {
+        intent.getBooleanExtra(IS_GROUP, false)
+    }
     private val isTranscript by lazy {
         intent.getIntExtra(CATEGORY, TRANSCRIPT) == TRANSCRIPT
     }
@@ -145,7 +149,19 @@ class ChatHistoryActivity : BaseActivity() {
                     adapter.transcripts = transcripts
                 }
         } else {
-            binding.unpinTv.isVisible = true
+            lifecycleScope.launch {
+                if (isGroup) {
+                    val role = withContext(Dispatchers.IO) {
+                        conversationRepository.findParticipantById(
+                            conversationId,
+                            Session.getAccountId()!!
+                        )?.role
+                    }
+                    binding.unpinTv.isVisible = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                } else {
+                    binding.unpinTv.isVisible = true
+                }
+            }
             binding.unpinTv.setOnClickListener {
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
@@ -662,6 +678,7 @@ class ChatHistoryActivity : BaseActivity() {
         private const val MESSAGE_ID = "transcript_id"
         private const val CONVERSATION_ID = "conversation_id"
         private const val IS_PLAIN = "is_plain"
+        private const val IS_GROUP = "is_group"
         private const val CATEGORY = "category"
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
@@ -677,12 +694,13 @@ class ChatHistoryActivity : BaseActivity() {
             )
         }
 
-        fun show(context: Context, conversationId: String) {
+        fun show(context: Context, conversationId: String, isGroup: Boolean) {
             refreshScreenshot(context)
             context.startActivity(
                 Intent(context, ChatHistoryActivity::class.java).apply {
                     putExtra(CONVERSATION_ID, conversationId)
                     putExtra(CATEGORY, CHAT_HISTORY)
+                    putExtra(IS_GROUP, isGroup)
                 }
             )
         }

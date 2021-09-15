@@ -95,8 +95,11 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     }
 
     fun bind(message: PinMessageItem, clickAction: (String) -> Unit) {
-        val pinMessage =
+        val pinMessage = try {
             GsonHelper.customGson.fromJson(message.content, PinMessageMinimal::class.java)
+        } catch (e: Exception) {
+            null
+        }
         pinClose.setOnClickListener {
             if (pinContent.isVisible) {
                 collapse()
@@ -105,7 +108,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 .putBoolean("Pin_$conversationId", false)
         }
         pinContent.setOnClickListener {
-            clickAction.invoke(pinMessage.messageId)
+            pinMessage?.let { msg ->
+                clickAction.invoke(msg.messageId)
+            }
         }
         if (message.mentions != null) {
             pinContentTv.renderMessage(
@@ -116,7 +121,9 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                     } else {
                         message.userFullName
                     },
-                    " \"${pinMessage.content}\""
+                    pinMessage?.let { msg ->
+                        " \"${msg.content}\""
+                    } ?: getText(R.string.chat_pin_empty_message)
                 ),
                 MentionRenderCache.singleton.getMentionRenderContext(
                     message.mentions

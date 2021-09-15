@@ -1007,6 +1007,7 @@
     <string name="unpin_all">取消置顶所有消息</string>
     <string name="pinned_message">置顶消息</string>
     <string name="chat_pin_message">%1$s置顶了%2$s</string>
+    <string name="chat_pin_empty_message">一条消息</string>
     <string name="chat_pin_image_message">一张照片</string>
     <string name="chat_pin_video_message">一个视频</string>
     <string name="chat_pin_live_message">一个直播</string>

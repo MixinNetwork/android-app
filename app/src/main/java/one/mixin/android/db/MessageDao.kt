@@ -255,6 +255,9 @@ interface MessageDao : BaseDao<Message> {
     )
     fun recallMessage(id: String)
 
+    @Query("UPDATE messages SET content = NULL WHERE category = 'MESSAGE_PIN' AND quote_message_id = :id")
+    fun recallPinMessage(id: String)
+
     @Query("UPDATE messages SET media_status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaStatus(status: String, id: String)
 

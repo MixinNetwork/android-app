@@ -34,7 +34,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
             GsonHelper.customGson.fromJson(messageItem.content, PinMessageMinimal::class.java)
         } catch (e: Exception) {
             null
-        } ?: return
+        }
         itemView.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
@@ -47,7 +47,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onQuoteMessageClick(messageItem.messageId, pinMessage.messageId)
+                onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             }
         }
 
@@ -60,7 +60,9 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
                     } else {
                         messageItem.userFullName
                     },
-                    " \"${pinMessage.content}\""
+                    pinMessage?.let { msg ->
+                        " \"${msg.content}\""
+                    } ?: getText(R.string.chat_pin_empty_message)
                 ),
                 MentionRenderCache.singleton.getMentionRenderContext(
                     messageItem.mentions
