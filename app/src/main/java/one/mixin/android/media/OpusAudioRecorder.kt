@@ -142,7 +142,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                             recordTimeCount += len / 16
 
                             if (recordTimeCount >= MAX_RECORD_DURATION) {
-                                stopRecording(EndStatus.CANCEL, false)
+                                stopRecording(EndStatus.SEND, false)
                             }
                         }
                     )

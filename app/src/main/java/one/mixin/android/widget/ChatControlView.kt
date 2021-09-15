@@ -61,7 +61,6 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.KeyboardLayout
 import org.jetbrains.anko.dip
-import timber.log.Timber
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -451,7 +450,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             binding.chatAudioLayout.isVisible = false
         }
         binding.chatAudioDelete.setOnClickListener {
-            Timber.e("delete ${audioFile.absolutePath}")
             audioFile.deleteOnExit()
             binding.chatAudioLayout.isVisible = false
         }

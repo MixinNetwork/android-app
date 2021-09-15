@@ -204,14 +204,14 @@ class AudioPlayer private constructor() {
     }
 
     private fun play(
-        messageItem: MessageItem? = null,
+        messageItem: MessageItem,
         autoPlayNext: Boolean = true,
         continuePlayOnlyToday: Boolean = false,
         whenPlayNewAudioMessage: ((Message) -> Unit)? = null
     ) {
         this.autoPlayNext = autoPlayNext
         this.continuePlayOnlyToday = continuePlayOnlyToday
-        if (messageItem?.mediaUrl == null) {
+        if (messageItem.mediaUrl == null) {
             MixinApplication.appContext.toast(R.string.error_bad_data)
             return
         } else if (!messageItem.absolutePath()!!.fileExists()) {

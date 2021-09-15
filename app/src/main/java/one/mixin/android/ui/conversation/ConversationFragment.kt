@@ -1943,7 +1943,6 @@ class ConversationFragment() :
         if (duration < 500) {
             file.deleteOnExit()
         } else {
-            Timber.e("preview ${file.absolutePath}")
             audioFile = file
             binding.chatControl.previewAudio(file, waveForm, duration) {
                 sendAudio(messageId, file, duration, waveForm)
