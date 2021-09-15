@@ -241,7 +241,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages) AND status != 'FAILED'")
+    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages) AND status != 'FAILED' AND status != 'UNKNOWN'")
     fun markMessageRead(messages: List<String>)
 
     @Query("UPDATE messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
