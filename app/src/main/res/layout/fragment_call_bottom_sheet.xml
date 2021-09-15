@@ -111,6 +111,7 @@
         android:visibility="gone"
         android:layout_above="@id/bottom_layout"
         android:background="?attr/bg_white"
+        android:textColor="?text_minor"
         android:layout_height="wrap_content" />
 
     <androidx.constraintlayout.widget.ConstraintLayout

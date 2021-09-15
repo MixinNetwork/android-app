@@ -275,14 +275,7 @@ class GroupCallService : CallService() {
     private fun handleCheckPeer(intent: Intent) {
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         requireNotNull(cid)
-
-        val peerList = sendPeer(cid) ?: return
-        Timber.d("$TAG_CALL handleCheckPeer : ${peerList.peers}")
-        if (peerList.peers.isNullOrEmpty()) return
-
-        val userIdList = arrayListOf<String>()
-        peerList.peers.mapTo(userIdList) { it.userId }
-        callState.setUsersByConversationId(cid, userIdList)
+        getPeers(cid, true)
     }
 
     private fun startCheckPeers(cid: String) {
@@ -300,7 +293,7 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun getPeers(conversationId: String) {
+    private fun getPeers(conversationId: String, setWhenCurrentListEmpty: Boolean = false) {
         val peerList = sendPeer(conversationId) ?: return
         Timber.d("$TAG_CALL getPeers : ${peerList.peers}")
         if (peerList.peers.isNullOrEmpty()) {
@@ -319,6 +312,11 @@ class GroupCallService : CallService() {
                     userIdList
                 )
             }
+        } else if (currentList == null && setWhenCurrentListEmpty) {
+            callState.setUsersByConversationId(
+                conversationId,
+                userIdList
+            )
         }
     }
 
