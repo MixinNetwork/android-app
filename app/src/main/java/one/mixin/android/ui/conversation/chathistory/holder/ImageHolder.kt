@@ -133,7 +133,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
-            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 

@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.view.View
+import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.appcompat.content.res.AppCompatResources
@@ -211,14 +212,21 @@ abstract class BaseViewHolder constructor(containerView: View) :
             handleAction(null, secretIcon, representativeIcon)
         }
     }
-
     fun chatJumpLayout(
-        chatJump: View,
+        chatJump: ImageView,
+        isMe: Boolean,
         messageId: String,
         @IdRes id: Int,
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
         chatJump.isVisible = true
+        chatJump.setImageResource(
+            if (isMe) {
+                R.drawable.ic_chat_jump_me
+            } else {
+                R.drawable.ic_chat_jump
+            }
+        )
         chatJump.setOnClickListener {
             onItemListener.onMessageJump(messageId)
         }

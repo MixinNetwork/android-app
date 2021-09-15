@@ -67,7 +67,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
             onItemListener.onAppCardClick(actionCard, messageItem.userId)
         }
         if (messageItem.transcriptId == null) {
-            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 

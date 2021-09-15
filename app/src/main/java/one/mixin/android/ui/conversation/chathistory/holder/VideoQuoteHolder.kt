@@ -235,7 +235,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
         }
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
-            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
         }
     }
 }

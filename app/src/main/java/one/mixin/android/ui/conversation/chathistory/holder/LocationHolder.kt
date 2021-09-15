@@ -235,7 +235,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
             onItemListener.onLocationClick(messageItem)
         }
         if (messageItem.transcriptId == null) {
-            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 }

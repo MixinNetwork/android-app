@@ -155,7 +155,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         }
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
-            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 

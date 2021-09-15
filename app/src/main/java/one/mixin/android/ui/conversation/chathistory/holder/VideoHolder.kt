@@ -206,7 +206,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
-            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 

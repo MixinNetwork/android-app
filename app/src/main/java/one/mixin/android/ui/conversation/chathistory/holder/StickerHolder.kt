@@ -104,7 +104,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         }
         chatLayout(isMe, false)
         if (messageItem.transcriptId == null) {
-            chatJumpLayout(binding.chatJump, messageItem.messageId, R.id.chat_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 
