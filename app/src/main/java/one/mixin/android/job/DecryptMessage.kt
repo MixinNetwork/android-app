@@ -22,6 +22,7 @@ import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
+import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.extension.autoDownload
@@ -58,6 +59,8 @@ import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
@@ -73,6 +76,7 @@ import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createLocationMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createPinMessage
 import one.mixin.android.vo.createPostMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
@@ -99,6 +103,8 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.PinAction
+import one.mixin.android.websocket.PinMessagePayload
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
@@ -180,6 +186,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 processAppButton(data)
             } else if (data.category == MessageCategory.APP_CARD.name) {
                 processAppCard(data)
+            } else if (data.category == MessageCategory.MESSAGE_PIN.name) {
+                processPinMessage(data)
             } else if (data.category == MessageCategory.MESSAGE_RECALL.name) {
                 processRecallMessage(data)
             }
@@ -291,6 +299,60 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private val notificationManager: NotificationManager by lazy {
         MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    private fun processPinMessage(data: BlazeMessageData) {
+        if (data.category == MessageCategory.MESSAGE_PIN.name) {
+            val decoded = Base64.decode(data.data)
+            val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
+            if (transferPinData.action == PinAction.PIN.name) {
+                transferPinData.messageIds.forEachIndexed { index, messageId ->
+                    val message = messageDao.findMessageById(messageId)
+                    if (message != null) {
+                        pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
+                        val mid = UUID.randomUUID().toString()
+                        messageDao.insert(
+                            createPinMessage(
+                                mid,
+                                data.conversationId,
+                                data.userId,
+                                messageId,
+                                PinMessageMinimal(
+                                    message.id,
+                                    message.category,
+                                    if (message.category.endsWith("_TEXT")) {
+                                        message.content
+                                    } else {
+                                        null
+                                    }
+                                ),
+                                nowInUtc(),
+                                MessageStatus.READ.name
+                            )
+                        )
+                        if (message.category.endsWith("_TEXT")) {
+                            messageMentionDao.findMessageMentionById(message.id)?.let { mention ->
+                                messageMentionDao.insert(
+                                    MessageMention(
+                                        mid,
+                                        message.conversationId,
+                                        mention.mentions,
+                                        true
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    if (index == transferPinData.messageIds.size - 1) {
+                        RxBus.publish(PinMessageEvent(data.conversationId, messageId))
+                    }
+                }
+            } else if (transferPinData.action == PinAction.UNPIN.name) {
+                pinMessageDao.deleteByIds(transferPinData.messageIds)
+            }
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            messageHistoryDao.insert(MessageHistory(data.messageId))
+        }
     }
 
     private fun processRecallMessage(data: BlazeMessageData) {

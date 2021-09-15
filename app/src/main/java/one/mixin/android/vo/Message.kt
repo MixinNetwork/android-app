@@ -9,16 +9,16 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.MixinApplication
+import one.mixin.android.util.GsonHelper
 import java.io.Serializable
 
 @Entity(
     tableName = "messages",
     indices = [
         Index(value = arrayOf("conversation_id", "created_at")),
-        Index(value = arrayOf("conversation_id", "user_id", "status", "created_at")),
-        Index(value = arrayOf("conversation_id", "status", "user_id")),
         Index(value = arrayOf("conversation_id", "category")),
         Index(value = arrayOf("conversation_id", "quote_message_id")),
+        Index(value = arrayOf("conversation_id", "status", "user_id", "created_at"))
     ],
     foreignKeys = [
         (
@@ -209,6 +209,7 @@ enum class MessageCategory {
     PLAIN_LOCATION,
     PLAIN_TRANSCRIPT,
     MESSAGE_RECALL,
+    MESSAGE_PIN,
     STRANGER,
     SECRET,
     SYSTEM_CONVERSATION,
@@ -532,18 +533,6 @@ fun createContactMessage(
     .setQuoteContent(quoteContent)
     .build()
 
-fun createRecallMessage(
-    messageId: String,
-    conversationId: String,
-    userId: String,
-    category: String,
-    content: String,
-    status: String,
-    createdAt: String
-) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
-    .setContent(content)
-    .build()
-
 fun createAudioMessage(
     messageId: String,
     conversationId: String,
@@ -587,6 +576,19 @@ fun createTranscriptMessage(
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaSize(mediaSize)
+    .build()
+
+fun createPinMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    quoteMessageId: String,
+    pinMessages: PinMessageMinimal,
+    createdAt: String,
+    status: String
+) = MessageBuilder(messageId, conversationId, userId, MessageCategory.MESSAGE_PIN.name, status, createdAt)
+    .setContent(GsonHelper.customGson.toJson(pinMessages))
+    .setQuoteMessageId(quoteMessageId)
     .build()
 
 fun Message.absolutePath(context: Context = MixinApplication.appContext): String? {

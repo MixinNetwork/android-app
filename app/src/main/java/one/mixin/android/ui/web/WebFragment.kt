@@ -129,22 +129,17 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
-
     companion object {
         const val TAG = "WebBottomSheetDialogFragment"
-
         private const val FILE_CHOOSER = 0x01
-
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
         private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
-
         const val URL = "url"
         const val CONVERSATION_ID = "conversation_id"
         const val ARGS_APP = "args_app"
         const val ARGS_APP_CARD = "args_app_card"
         const val ARGS_INDEX = "args_index"
         const val ARGS_SHAREABLE = "args_shareable"
-
         const val themeColorScript =
             """
             (function() {
@@ -167,13 +162,10 @@ class WebFragment : BaseFragment() {
 
     @Inject
     lateinit var musicServiceConnection: MusicServiceConnection
-
     private val musicViewModel by viewModels<MusicViewModel> {
         provideMusicViewModel(musicServiceConnection, MUSIC_PLAYLIST)
     }
-
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
-
     private val url: String by lazy {
         requireArguments().getString(URL)!!
     }
@@ -190,9 +182,7 @@ class WebFragment : BaseFragment() {
     private var index: Int = -1
     private var currentUrl: String? = null
     private var isFinished: Boolean = false
-
     private val processor = QRCodeProcessor()
-
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -268,7 +258,6 @@ class WebFragment : BaseFragment() {
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         index = requireArguments().getInt(ARGS_INDEX, -1)
@@ -276,7 +265,6 @@ class WebFragment : BaseFragment() {
 
     private var _binding: FragmentWebBinding? = null
     private val binding get() = requireNotNull(_binding)
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -456,7 +444,6 @@ class WebFragment : BaseFragment() {
             )
 
         webView.webChromeClient = object : WebChromeClient() {
-
             override fun onShowCustomView(
                 view: View,
                 requestedOrientation: Int,
@@ -529,15 +516,47 @@ class WebFragment : BaseFragment() {
                 }
             }
 
+            private var lastGrantedUri: String? = null
             override fun onPermissionRequest(request: PermissionRequest?) {
                 request?.let {
                     for (code in request.resources) {
                         if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
                             request.deny()
+                            lastGrantedUri = null
                             return@let
                         }
                     }
-                    request.grant(request.resources)
+                    if (lastGrantedUri == request.origin.toString()) {
+                        request.grant(request.resources)
+                        return@let
+                    }
+                    PermissionBottomSheetDialogFragment.requestCamera(
+                        binding.titleTv.text.toString(),
+                        app?.name,
+                        app?.iconUrl
+                    )
+                        .setCancelAction {
+                            lastGrantedUri = null
+                            request.deny()
+                        }.setGrantedAction {
+                            RxPermissions(requireActivity())
+                                .request(Manifest.permission.CAMERA)
+                                .autoDispose(stopScope)
+                                .subscribe(
+                                    { granted ->
+                                        if (granted) {
+                                            lastGrantedUri = request.origin.toString()
+                                            request.grant(request.resources)
+                                        } else {
+                                            lastGrantedUri = null
+                                            context?.openPermissionSetting()
+                                        }
+                                    },
+                                    {
+                                        lastGrantedUri = null
+                                    }
+                                )
+                        }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                 }
             }
 
@@ -672,7 +691,6 @@ class WebFragment : BaseFragment() {
                 ),
                 "MixinContext"
             )
-
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -702,7 +720,10 @@ class WebFragment : BaseFragment() {
                 if (checkFloatingPermission()) {
                     one.mixin.android.ui.player.collapse(requireActivity(), MUSIC_PLAYLIST)
                 } else {
-                    requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                    requireActivity().showPipPermissionNotification(
+                        MusicActivity::class.java,
+                        getString(R.string.web_floating_permission)
+                    )
                 }
             }
         }
@@ -729,7 +750,6 @@ class WebFragment : BaseFragment() {
     private fun isBot() = app != null
     private var hold = false
     private var icon: Bitmap? = null
-
     private fun generateWebClip(): WebClip {
         val currentUrl = webView.url ?: url
         val v = webView
@@ -782,9 +802,7 @@ class WebFragment : BaseFragment() {
 
     private fun showBottomSheet() {
         if (viewDestroyed()) return
-
         val builder = BottomSheet.Builder(requireActivity())
-
         val view = View.inflate(
             ContextThemeWrapper(requireActivity(), R.style.Custom),
             R.layout.view_web_bottom_menu,
@@ -806,7 +824,6 @@ class WebFragment : BaseFragment() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         viewBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
-
         val shareMenu = menu {
             title = getString(if (isBot()) R.string.about else R.string.share)
             icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
@@ -933,7 +950,6 @@ class WebFragment : BaseFragment() {
                 }
             }
         }
-
         val list = if (isBot()) {
             menuList {
                 menuGroup {
@@ -969,7 +985,6 @@ class WebFragment : BaseFragment() {
     }
 
     private var permissionAlert: AlertDialog? = null
-
     private fun checkFloatingPermission() =
         requireContext().checkInlinePermissions {
             if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
@@ -1126,7 +1141,6 @@ class WebFragment : BaseFragment() {
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
     ) : WebViewClient() {
-
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             onPageFinishedListener.onPageFinished()

@@ -34,6 +34,8 @@ fun ICategory.isKraken() = type?.startsWith("KRAKEN_") == true
 
 fun ICategory.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
 
+fun ICategory.isPin() = type == MessageCategory.MESSAGE_PIN.name
+
 fun ICategory.isFtsMessage() =
     type?.endsWith("_TEXT") == true || type?.endsWith("_DATA") == true || type?.endsWith("_POST") == true || type?.endsWith("_TRANSCRIPT") == true
 

@@ -18,6 +18,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isText
@@ -67,7 +68,7 @@ open class SendMessageJob(
         if (conversation != null) {
             if (message.isRecall()) {
                 recallMessage()
-            } else {
+            } else if (!message.isPin()) {
                 if (message.isText()) {
                     message.content?.let { content ->
                         content.findLastUrl()?.let {
@@ -125,7 +126,7 @@ open class SendMessageJob(
             return
         }
         jobManager.saveJob(this)
-        if (message.isPlain() || message.isCall() || message.isRecall() || message.category == MessageCategory.APP_CARD.name) {
+        if (message.isPlain() || message.isCall() || message.isRecall() || message.isPin() || message.category == MessageCategory.APP_CARD.name) {
             sendPlainMessage()
         } else {
             sendSignalMessage()

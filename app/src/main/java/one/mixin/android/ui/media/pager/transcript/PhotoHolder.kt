@@ -15,8 +15,8 @@ import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -24,7 +24,7 @@ import one.mixin.android.widget.gallery.MimeType
 
 class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         needPostTransition: Boolean,
         mediaPagerAdapterListener: MediaPagerAdapterListener
     ) {

@@ -15,8 +15,8 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.ui.media.pager.MediaItemType
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -122,7 +122,7 @@ class TranscriptMediaPagerAdapter(
         return imageView
     }
 
-    var list: List<TranscriptMessageItem> = emptyList()
+    var list: List<ChatHistoryMessageItem> = emptyList()
         set(value) {
             field = value
             notifyDataSetChanged()

@@ -44,6 +44,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
@@ -71,6 +72,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var jobManager: MixinJobManager
+    @Inject
+    @Transient
+    lateinit var mixinDatabase: MixinDatabase
     @Inject
     @Transient
     lateinit var conversationApi: ConversationService
@@ -179,6 +183,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var transcriptMessageDao: TranscriptMessageDao
+    @Inject
+    @Transient
+    lateinit var pinMessageDao: PinMessageDao
     @Inject
     @Transient
     lateinit var signalProtocol: SignalProtocol

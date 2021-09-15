@@ -61,8 +61,8 @@ import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.TranscriptMessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
@@ -385,7 +385,7 @@ fun Context.openMedia(messageItem: MessageItem) {
     }
 }
 
-fun Context.openMedia(messageItem: TranscriptMessageItem) {
+fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
     val intent = Intent()
     intent.action = Intent.ACTION_VIEW
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

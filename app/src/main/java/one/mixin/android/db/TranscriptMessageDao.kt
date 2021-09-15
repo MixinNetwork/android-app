@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.TranscriptMessageItem
 
 @Dao
 interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
@@ -66,7 +66,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         ORDER BY t.created_at ASC, t.rowid ASC
     """
     )
-    fun getTranscriptMessages(transcriptId: String): LiveData<List<TranscriptMessageItem>>
+    fun getTranscriptMessages(transcriptId: String): LiveData<List<ChatHistoryMessageItem>>
 
     @Query("SELECT count(*) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId)")
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String): Int
@@ -89,7 +89,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         ORDER BY t.created_at ASC, t.rowid ASC
         """
     )
-    suspend fun getTranscriptMediaMessage(transcriptId: String): List<TranscriptMessageItem>
+    suspend fun getTranscriptMediaMessage(transcriptId: String): List<ChatHistoryMessageItem>
 
     @Query(
         """

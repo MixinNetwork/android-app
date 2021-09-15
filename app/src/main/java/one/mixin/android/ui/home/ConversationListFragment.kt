@@ -97,6 +97,8 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.PinMessageMinimal
+import one.mixin.android.vo.explain
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -107,6 +109,7 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
@@ -815,6 +818,43 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.setText(R.string.conversation_status_group_call)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
+                conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
+                    val pinMessage = try {
+                        GsonHelper.customGson.fromJson(
+                            conversationItem.content,
+                            PinMessageMinimal::class.java
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (conversationItem.mentions != null) {
+                        binding.msgTv.renderMessage(
+                            String.format(
+                                getText(R.string.chat_pin_message),
+                                if (Session.getAccountId() == conversationItem.participantUserId) {
+                                    getText(R.string.chat_you_start)
+                                } else {
+                                    conversationItem.senderFullName
+                                },
+                                " \"${pinMessage?.content}\""
+                            ),
+                            MentionRenderCache.singleton.getMentionRenderContext(
+                                conversationItem.mentions
+                            )
+                        )
+                    } else if (pinMessage != null) {
+                        binding.msgTv.text = String.format(
+                            getText(R.string.chat_pin_message),
+                            if (id == conversationItem.senderId) {
+                                getText(R.string.chat_you_start)
+                            } else {
+                                conversationItem.senderFullName
+                            },
+                            pinMessage.explain(itemView.context)
+                        )
+                    }
+                    null
+                }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
                     when (conversationItem.actionName) {
                         SystemConversationAction.CREATE.name -> {
@@ -918,7 +958,8 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
                 !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
-                !conversationItem.isGroupCall()
+                !conversationItem.isGroupCall() &&
+                !conversationItem.isPin()
             ) {
                 when (conversationItem.messageStatus) {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(

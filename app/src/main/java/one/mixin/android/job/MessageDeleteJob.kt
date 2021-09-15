@@ -3,6 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.DB_DELETE_LIMIT
+import one.mixin.android.db.deleteMessageByConversationId
 
 class MessageDeleteJob(
     private val conversationId: String,
@@ -35,7 +36,7 @@ class MessageDeleteJob(
                         DB_DELETE_LIMIT
                     )
                 )
-                messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+                appDatabase.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
             }
         }
         if (deleteConversation) {

@@ -508,7 +508,7 @@ interface MessageDao : BaseDao<Message> {
 
     // DELETE
     @Query("DELETE FROM messages WHERE id = :id")
-    fun deleteMessage(id: String)
+    fun deleteMessageById(id: String)
 
     @Query(
         "DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE  conversation_id = :conversationId AND  media_status = 'DONE' AND category IN (:signalCategory, :plainCategory) LIMIT :limit)"

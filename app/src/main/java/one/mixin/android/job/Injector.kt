@@ -27,6 +27,7 @@ import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.ResendSessionMessageDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
@@ -102,6 +103,8 @@ open class Injector {
     lateinit var transcriptMessageDao: TranscriptMessageDao
     @Inject
     lateinit var messagesFts4Dao: MessagesFts4Dao
+    @Inject
+    lateinit var pinMessageDao: PinMessageDao
     @Inject
     lateinit var database: MixinDatabase
 

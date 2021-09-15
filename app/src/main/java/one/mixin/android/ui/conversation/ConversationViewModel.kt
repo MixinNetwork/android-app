@@ -69,6 +69,8 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
@@ -95,6 +97,7 @@ import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
+import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.websocket.toLocationData
@@ -260,6 +263,35 @@ internal constructor(
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
         messenger.sendRecallMessage(conversationId, sender, list)
+    }
+
+    suspend fun sendPinMessage(
+        conversationId: String,
+        sender: User,
+        action: PinAction,
+        list: Collection<MessageItem>
+    ) {
+        if (list.isEmpty()) return
+        withContext(Dispatchers.IO) {
+            if (action == PinAction.PIN) {
+                conversationRepository.insertPinMessages(
+                    list.map {
+                        PinMessage(
+                            it.messageId, it.conversationId,
+                            nowInUtc()
+                        )
+                    }
+                )
+            } else if (action == PinAction.UNPIN) {
+                conversationRepository.deletePinMessageByIds(list.map { it.messageId })
+            }
+            messenger.sendPinMessage(
+                conversationId, sender, action,
+                list.map {
+                    PinMessageMinimal(it.messageId, requireNotNull(it.type), it.content)
+                }
+            )
+        }
     }
 
     fun sendLiveMessage(
@@ -855,4 +887,14 @@ internal constructor(
             }
             return@withContext transcripts
         }
+
+    fun getLastPinMessages(conversationId: String) =
+        conversationRepository.getLastPinMessages(conversationId)
+
+    fun countPinMessages(conversationId: String) =
+        conversationRepository.countPinMessages(conversationId)
+
+    suspend fun findPinMessageById(messageId: String) = withContext(Dispatchers.IO) {
+        conversationRepository.findPinMessageById(messageId)
+    }
 }
