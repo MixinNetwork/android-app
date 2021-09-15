@@ -53,7 +53,7 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.media.EndStatus
+import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
@@ -414,15 +414,15 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         checkSend(false)
     }
 
-    private fun handleCancelOrEnd(status: EndStatus) {
+    private fun handleCancelOrEnd(status: AudioEndStatus) {
         when (status) {
-            EndStatus.SEND -> {
+            AudioEndStatus.SEND -> {
                 callback.onRecordSend()
             }
-            EndStatus.CANCEL -> {
+            AudioEndStatus.CANCEL -> {
                 callback.onRecordCancel()
             }
-            EndStatus.PREVIEW -> {
+            AudioEndStatus.PREVIEW -> {
                 callback.onRecordPreview()
             }
         }
@@ -899,7 +899,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     binding.chatSlide.slideText(startX - moveX)
                     if (originX - moveX > maxScrollX) {
                         removeRecordRunnable()
-                        handleCancelOrEnd(EndStatus.CANCEL)
+                        handleCancelOrEnd(AudioEndStatus.CANCEL)
                         binding.chatSlide.parent.requestDisallowInterceptTouchEvent(false)
                         triggeredCancel = true
                         return@OnTouchListener false
@@ -924,10 +924,10 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     }
                 } else if (!isRecording) {
                     removeRecordRunnable()
-                    handleCancelOrEnd(EndStatus.CANCEL)
+                    handleCancelOrEnd(AudioEndStatus.CANCEL)
                 } else if (!recordCircle.locked) {
                     removeRecordRunnable()
-                    handleCancelOrEnd(EndStatus.SEND)
+                    handleCancelOrEnd(AudioEndStatus.SEND)
                 } else {
                     cleanUp(true)
                 }
@@ -999,25 +999,25 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
     private val chatSlideCallback = object : SlidePanelView.Callback {
         override fun onTimeout() {
-            handleCancelOrEnd(EndStatus.SEND)
+            handleCancelOrEnd(AudioEndStatus.SEND)
         }
 
         override fun onCancel() {
-            handleCancelOrEnd(EndStatus.CANCEL)
+            handleCancelOrEnd(AudioEndStatus.CANCEL)
         }
     }
 
     private val recordCircleCallback = object : RecordCircleView.Callback {
         override fun onSend() {
-            handleCancelOrEnd(EndStatus.SEND)
+            handleCancelOrEnd(AudioEndStatus.SEND)
         }
 
         override fun onCancel() {
-            handleCancelOrEnd(EndStatus.CANCEL)
+            handleCancelOrEnd(AudioEndStatus.CANCEL)
         }
 
         override fun onPreview() {
-            handleCancelOrEnd(EndStatus.PREVIEW)
+            handleCancelOrEnd(AudioEndStatus.PREVIEW)
         }
     }
 

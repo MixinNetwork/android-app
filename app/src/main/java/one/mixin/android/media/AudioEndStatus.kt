@@ -1,5 +1,5 @@
 package one.mixin.android.media
 
-enum class EndStatus {
+enum class AudioEndStatus {
     SEND, CANCEL, PREVIEW
 }
