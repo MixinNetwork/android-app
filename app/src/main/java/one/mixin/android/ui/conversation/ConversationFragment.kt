@@ -329,7 +329,6 @@ class ConversationFragment() :
     private val transcriptData: TranscriptData? by lazy {
         requireArguments().getParcelable(TRANSCRIPT_DATA)
     }
-    private lateinit var chatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
 
     private var unreadTipCount: Int = 0
     private val conversationAdapter: ConversationAdapter by lazy {
@@ -1026,15 +1025,17 @@ class ConversationFragment() :
     // for testing
     var selectItem: SelectItem? = null
 
-    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
-    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<TranscriptMessage>>
+    private lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
+    private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
+    private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
 
         getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract(), resultRegistry, ::callbackForward)
-        getCombineForwardContract = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
+        getCombineForwardResult = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
+        getChatHistoryResult = registerForActivityResult(ChatHistoryContract(), resultRegistry, ::callbackChatHistory)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1094,12 +1095,6 @@ class ConversationFragment() :
 
         checkPeerIfNeeded()
         checkTranscript()
-        chatHistoryResult = registerForActivityResult(ChatHistoryContract()) { data ->
-            Timber.e("jumpMessage")
-            data?.getStringExtra(JUMP_ID)?.let { messageId ->
-                scrollToMessage(messageId)
-            }
-        }
     }
 
     private var paused = false
@@ -1926,7 +1921,7 @@ class ConversationFragment() :
                         scrollToMessage(messageId)
                     }
                     binding.pinMessageLayout.pin.setOnClickListener {
-                        chatHistoryResult.launch(Pair(conversationId, isGroup))
+                        getChatHistoryResult.launch(Pair(conversationId, isGroup))
                     }
                 }
             })
@@ -3049,6 +3044,15 @@ class ConversationFragment() :
             }
         snackbar?.show()
     }
+    private fun callbackChatHistory(data: Intent?) {
+        data?.getStringExtra(JUMP_ID)?.let { messageId ->
+            binding.chatRv.postDelayed({
+                scrollToMessage(messageId) {
+                    positionBeforeClickQuote = null
+                }
+            }, 100)
+        }
+    }
 
     private fun displayReplyView() {
         if (!binding.chatControl.replyView.isVisible) binding.chatControl.replyView.animateHeight(0, 53.dp)
@@ -3187,7 +3191,7 @@ class ConversationFragment() :
             if (nonExistent) {
                 toast(R.string.error_file_exists)
             } else if (messages.isNotEmpty()) {
-                getCombineForwardContract.launch(ArrayList(messages))
+                getCombineForwardResult.launch(ArrayList(messages))
             }
             closeTool()
         }

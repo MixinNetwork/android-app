@@ -483,8 +483,8 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onMenu(view: View, messageItem: ChatHistoryMessageItem) {
-                lifecycleScope.launch{
-                    val role = withContext(Dispatchers.IO) {conversationRepository.findParticipantById(conversationId, Session.getAccountId()!!)}?.role
+                lifecycleScope.launch {
+                    val role = withContext(Dispatchers.IO) { conversationRepository.findParticipantById(conversationId, Session.getAccountId()!!) }?.role
                     val isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
                     val popMenu = PopupMenu(this@ChatHistoryActivity, view)
                     popMenu.menuInflater.inflate(
