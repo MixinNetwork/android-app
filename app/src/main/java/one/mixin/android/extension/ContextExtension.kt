@@ -899,6 +899,14 @@ fun Context.getDeviceId(): String {
     return getDeviceId(contentResolver)
 }
 
+fun Context.handleIgnoreBatteryOptimization(newTask: Boolean = false) {
+    if (Build.MANUFACTURER.equalsIgnoreCase("google")) {
+        requestIgnoreBatteryOptimization(newTask)
+    } else {
+        openIgnoreBatteryOptimizationSetting(newTask)
+    }
+}
+
 fun Context.requestIgnoreBatteryOptimization(newTask: Boolean = false) {
     Intent().apply {
         action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
@@ -910,6 +918,20 @@ fun Context.requestIgnoreBatteryOptimization(newTask: Boolean = false) {
             startActivity(this)
         } catch (e: ActivityNotFoundException) {
             Timber.w("Battery optimization activity not found")
+        }
+    }
+}
+
+fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
+    Intent().apply {
+        action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+        if (newTask) {
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            startActivity(this)
+        } catch (e: ActivityNotFoundException) {
+            Timber.w("Power setting activity not found")
         }
     }
 }

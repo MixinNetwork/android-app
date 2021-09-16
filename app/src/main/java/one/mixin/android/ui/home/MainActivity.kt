@@ -80,7 +80,6 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.requestIgnoreBatteryOptimization
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -97,6 +96,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.NavigationController
@@ -334,7 +334,7 @@ class MainActivity : BlazeBaseActivity() {
         if (cur - batteryOptimize > Constants.INTERVAL_48_HOURS * 30) {
             getSystemService<PowerManager>()?.let { pm ->
                 if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                    requestIgnoreBatteryOptimization()
+                    BatteryOptimizationDialogActivity.show(this)
                 }
             }
             defaultSharedPreferences.putLong(PREF_BATTERY_OPTIMIZE, cur)

@@ -30,11 +30,11 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.requestIgnoreBatteryOptimization
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
@@ -122,7 +122,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (intent.action == ACTION_TO_BACKGROUND) {
             stopForeground(true)
             if (!isIgnoringBatteryOptimizations) {
-                requestIgnoreBatteryOptimization(true)
+                BatteryOptimizationDialogActivity.show(this, true)
             }
             return START_STICKY
         }
