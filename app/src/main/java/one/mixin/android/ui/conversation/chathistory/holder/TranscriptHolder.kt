@@ -32,7 +32,6 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
-import java.lang.StringBuilder
 
 class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
     BaseViewHolder(binding.root) {
@@ -218,5 +217,11 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
             )
         }
         chatLayout(isMe, isLast)
+        if (messageItem.transcriptId == null) {
+            binding.root.setOnClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+            }
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
+        }
     }
 }

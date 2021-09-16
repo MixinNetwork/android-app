@@ -1,10 +1,9 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionCardBinding
@@ -99,10 +98,10 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
         } else {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(

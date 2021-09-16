@@ -1,9 +1,8 @@
 package one.mixin.android.ui.conversation.chathistory.holder
 
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardBinding
@@ -60,6 +59,12 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
         binding.chatContentLayout.setOnClickListener {
             onItemListener.onContactCardClick(messageItem.sharedUserId!!)
         }
+        if (messageItem.transcriptId == null) {
+            binding.root.setOnClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+            }
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
+        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -78,10 +83,10 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
         } else {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(

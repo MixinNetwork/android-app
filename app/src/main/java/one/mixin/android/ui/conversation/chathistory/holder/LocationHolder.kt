@@ -1,9 +1,8 @@
 package one.mixin.android.ui.conversation.chathistory.holder
 
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import com.google.android.gms.maps.GoogleMap
@@ -126,9 +125,9 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (binding.chatLayout.layoutParams as FrameLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
-            lp.gravity = Gravity.END
+            lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
@@ -144,7 +143,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
             }
             (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
         } else {
-            lp.gravity = Gravity.START
+            lp.horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
@@ -234,6 +233,12 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         chatLayout(isMe, isLast)
         itemView.setOnClickListener {
             onItemListener.onLocationClick(messageItem)
+        }
+        if (messageItem.transcriptId == null) {
+            binding.root.setOnClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+            }
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 }

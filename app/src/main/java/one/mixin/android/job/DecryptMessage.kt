@@ -316,7 +316,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 mid,
                                 data.conversationId,
                                 data.userId,
-                                messageId,
+                                messageId, // quote pinned message id
                                 PinMessageMinimal(
                                     message.id,
                                     message.category,
@@ -342,6 +342,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 )
                             }
                         }
+                    } else {
+                        messageDao.insert(
+                            createPinMessage(
+                                UUID.randomUUID().toString(),
+                                data.conversationId,
+                                data.userId,
+                                messageId, // quote pinned message id
+                                null,
+                                nowInUtc(),
+                                MessageStatus.READ.name
+                            )
+                        )
                     }
                     if (index == transferPinData.messageIds.size - 1) {
                         RxBus.publish(PinMessageEvent(data.conversationId, messageId))
@@ -364,7 +376,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 RxBus.publish(RecallEvent(msg.id))
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
-                messageDao.recallPinMessage(msg.id)
+                messageDao.recallPinMessage(msg.id, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
                 messagesFts4Dao.deleteByMessageId(msg.id)

@@ -164,6 +164,8 @@ import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.chat.ChatItemCallback
 import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SLOT
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity.Companion.JUMP_ID
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryContract
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
@@ -1023,15 +1025,17 @@ class ConversationFragment() :
     // for testing
     var selectItem: SelectItem? = null
 
-    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
-    lateinit var getCombineForwardContract: ActivityResultLauncher<ArrayList<TranscriptMessage>>
+    private lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
+    private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
+    private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
 
         getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract(), resultRegistry, ::callbackForward)
-        getCombineForwardContract = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
+        getCombineForwardResult = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
+        getChatHistoryResult = registerForActivityResult(ChatHistoryContract(), resultRegistry, ::callbackChatHistory)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1917,7 +1921,7 @@ class ConversationFragment() :
                         scrollToMessage(messageId)
                     }
                     binding.pinMessageLayout.pin.setOnClickListener {
-                        ChatHistoryActivity.show(requireContext(), conversationId, isGroup)
+                        getChatHistoryResult.launch(Pair(conversationId, isGroup))
                     }
                 }
             })
@@ -3040,6 +3044,15 @@ class ConversationFragment() :
             }
         snackbar?.show()
     }
+    private fun callbackChatHistory(data: Intent?) {
+        data?.getStringExtra(JUMP_ID)?.let { messageId ->
+            binding.chatRv.postDelayed({
+                scrollToMessage(messageId) {
+                    positionBeforeClickQuote = null
+                }
+            }, 100)
+        }
+    }
 
     private fun displayReplyView() {
         if (!binding.chatControl.replyView.isVisible) binding.chatControl.replyView.animateHeight(0, 53.dp)
@@ -3178,7 +3191,7 @@ class ConversationFragment() :
             if (nonExistent) {
                 toast(R.string.error_file_exists)
             } else if (messages.isNotEmpty()) {
-                getCombineForwardContract.launch(ArrayList(messages))
+                getCombineForwardResult.launch(ArrayList(messages))
             }
             closeTool()
         }

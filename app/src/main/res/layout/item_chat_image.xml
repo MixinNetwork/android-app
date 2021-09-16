@@ -1,23 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:id="@+id/chat_reply"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_gravity="center_vertical|end"
         android:background="@drawable/bg_circle_reply"
-        android:layout_marginEnd="-40dp"
+        android:layout_marginStart="16dp"
         android:padding="4dp"
         android:alpha="0"
         android:scaleX="0"
         android:scaleY="0"
         android:src="@drawable/ic_reply_white"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
+
+     <ImageView
+        android:id="@+id/chat_jump"
+        android:padding="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_chat_jump"
+        android:foreground="@drawable/jump_ripple"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/chat_layout"
+        app:layout_constraintTop_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_layout"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/chat_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:ellipsize="end"
+        android:gravity="start|top"
+        android:lines="1"
+        android:maxWidth="280dp"
+        android:minWidth="30dp"
+        android:paddingBottom="4dp"
+        android:textColor="#19BEF1"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/chat_layout"
+        app:layout_constraintStart_toStartOf="@id/chat_layout"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Jake Wharton" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/chat_layout"
@@ -26,25 +63,12 @@
         android:layout_marginBottom="1dp"
         android:layout_marginEnd="5dp"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="1.5dp">
-
-        <TextView
-            android:id="@+id/chat_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:ellipsize="end"
-            android:gravity="start|top"
-            android:lines="1"
-            android:maxWidth="280dp"
-            android:minWidth="30dp"
-            android:paddingBottom="4dp"
-            android:textColor="#19BEF1"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toTopOf="@+id/chat_image_layout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Jake Wharton" />
+        android:layout_marginTop="1.5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_name"
+        app:layout_constraintVertical_bias="0"
+        app:layout_goneMarginBottom="0dp">
 
         <one.mixin.android.widget.ShadowLayout
             android:id="@+id/chat_image_layout"
@@ -53,7 +77,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/chat_name"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_goneMarginTop="0dp">
 
             <one.mixin.android.widget.PorterShapeImageView
@@ -128,4 +152,4 @@
             android:src="@drawable/ic_post"
             tools:ignore="HardcodedText" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

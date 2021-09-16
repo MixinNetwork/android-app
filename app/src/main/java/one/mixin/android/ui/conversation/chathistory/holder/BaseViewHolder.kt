@@ -5,8 +5,12 @@ import android.animation.ValueAnimator
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.view.View
+import android.widget.ImageView
 import androidx.annotation.DrawableRes
+import androidx.annotation.IdRes
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -19,17 +23,18 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.session.Session
+import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 
 abstract class BaseViewHolder constructor(containerView: View) :
     RecyclerView.ViewHolder(containerView) {
     companion object {
-        private val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
+        private val colors: IntArray =
+            MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
         val HIGHLIGHTED = Color.parseColor("#CCEF8C")
         val LINK_COLOR = Color.parseColor("#5FA7E4")
         val SELECT_COLOR = Color.parseColor("#660D94FC")
-
         fun getColorById(id: String?) = colors[(id ?: "0").getColorCode(CodeType.Name(colors.size))]
     }
 
@@ -45,11 +50,8 @@ abstract class BaseViewHolder constructor(containerView: View) :
     protected val dp12 by lazy {
         MixinApplication.appContext.dpToPx(12f)
     }
-
     protected var isMe = false
-
     protected open fun bind(messageItem: ChatHistoryMessageItem) {}
-
     protected open fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean = false) {
         this.isMe = isMe
     }
@@ -63,12 +65,15 @@ abstract class BaseViewHolder constructor(containerView: View) :
             it.setBounds(0, 0, dp12, dp12)
         }
     }
-
     protected val isNightMode by lazy {
         itemView.context.booleanFromAttribute(R.attr.flag_night)
     }
 
-    protected fun setItemBackgroundResource(view: View, @DrawableRes defaultBg: Int, @DrawableRes nightBg: Int) {
+    protected fun setItemBackgroundResource(
+        view: View,
+        @DrawableRes defaultBg: Int,
+        @DrawableRes nightBg: Int
+    ) {
         view.setBackgroundResource(
             if (!isNightMode) {
                 defaultBg
@@ -81,10 +86,8 @@ abstract class BaseViewHolder constructor(containerView: View) :
     val meId by lazy {
         Session.getAccountId()
     }
-
     private var disposable: Disposable? = null
     protected var messageId: String? = null
-
     fun listen(bindId: String) {
         if (disposable == null) {
             disposable = RxBus.listen(BlinkEvent::class.java)
@@ -160,7 +163,10 @@ abstract class BaseViewHolder constructor(containerView: View) :
         }
         val representativeIcon = if (isRepresentative) {
             if (isWhite) {
-                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_representative_white)
+                AppCompatResources.getDrawable(
+                    itemView.context,
+                    R.drawable.ic_chat_representative_white
+                )
             } else {
                 AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_representative)
             }
@@ -204,6 +210,34 @@ abstract class BaseViewHolder constructor(containerView: View) :
             handleAction(statusIcon, secretIcon, representativeIcon)
         } else {
             handleAction(null, secretIcon, representativeIcon)
+        }
+    }
+    fun chatJumpLayout(
+        chatJump: ImageView,
+        isMe: Boolean,
+        messageId: String,
+        @IdRes id: Int,
+        onItemListener: TranscriptAdapter.OnItemListener
+    ) {
+        chatJump.isVisible = true
+        chatJump.setImageResource(
+            if (isMe) {
+                R.drawable.ic_chat_jump_me
+            } else {
+                R.drawable.ic_chat_jump
+            }
+        )
+        chatJump.setOnClickListener {
+            onItemListener.onMessageJump(messageId)
+        }
+        (chatJump.layoutParams as ConstraintLayout.LayoutParams).apply {
+            if (isMe) {
+                endToStart = id
+                startToEnd = View.NO_ID
+            } else {
+                endToStart = View.NO_ID
+                startToEnd = id
+            }
         }
     }
 }

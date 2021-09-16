@@ -61,7 +61,7 @@
         android:layout_toStartOf="@id/copy_iv"
         android:background="@drawable/mixin_ripple"
         android:padding="8dp"
-        android:src="@drawable/ic_forward_black_24dp"
+        android:src="@drawable/ic_msg_forward"
         android:layout_marginEnd="8dp"
         tools:ignore="ContentDescription" />
 

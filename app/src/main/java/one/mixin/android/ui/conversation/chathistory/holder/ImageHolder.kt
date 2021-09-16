@@ -1,9 +1,7 @@
 package one.mixin.android.ui.conversation.chathistory.holder
 
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
@@ -134,6 +132,12 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         dataSize = messageItem.mediaSize
         isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
         chatLayout(isMe, isLast)
+        if (messageItem.transcriptId == null) {
+            binding.root.setOnClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+            }
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
+        }
     }
 
     private var isGif = false
@@ -146,12 +150,12 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias =
                 1f
             (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
         } else {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias =
                 0f
             (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp3

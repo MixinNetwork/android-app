@@ -28,10 +28,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.deserialize
-import one.mixin.android.extension.fileExists
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
@@ -60,7 +57,6 @@ import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -72,8 +68,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
@@ -82,6 +76,7 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.generateForwardMessage
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isGroupConversation
@@ -93,14 +88,11 @@ import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
-import one.mixin.android.websocket.ContactMessagePayload
-import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
-import one.mixin.android.websocket.toLocationData
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.util.UUID
@@ -624,133 +616,7 @@ internal constructor(
             val list = ArrayList<ForwardMessage>()
             val sortMessages = conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
             for (m in sortMessages) {
-                val forwardMessage: ForwardMessage? = when {
-                    m.category.endsWith("_TEXT") ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ShareCategory.Text, c, m.id)
-                            },
-                            { null }
-                        )
-                    m.category.endsWith("_IMAGE") ->
-                        m.mediaUrl.notNullWithElse<String, ForwardMessage?>(
-                            {
-                                ForwardMessage(
-                                    ShareCategory.Image,
-                                    GsonHelper.customGson.toJson(ShareImageData(requireNotNull(m.absolutePath()), m.content))
-                                )
-                            },
-                            { null }
-                        )
-                    m.category.endsWith("_DATA") -> {
-                        if (m.mediaUrl == null || !m.mediaUrl.fileExists()) {
-                            continue
-                        }
-                        m.name ?: continue
-                        m.mediaMimeType ?: continue
-                        m.mediaSize ?: continue
-                        val dataMessagePayload = DataMessagePayload(
-                            requireNotNull(m.absolutePath()),
-                            m.name,
-                            m.mediaMimeType,
-                            m.mediaSize,
-                            m.content,
-                        )
-                        ForwardMessage(ForwardCategory.Data, GsonHelper.customGson.toJson(dataMessagePayload), m.id)
-                    }
-                    m.category.endsWith("_VIDEO") -> {
-                        if (m.mediaUrl == null || !m.mediaUrl.fileExists()) {
-                            continue
-                        }
-                        val videoData = VideoMessagePayload(
-                            requireNotNull(m.absolutePath()),
-                            UUID.randomUUID().toString(),
-                            nowInUtc(),
-                            m.content,
-                        )
-                        ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.id)
-                    }
-                    m.category.endsWith("_CONTACT") -> {
-                        val shareUserId = m.sharedUserId ?: continue
-                        val contactData = ContactMessagePayload(shareUserId)
-                        ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData), m.id)
-                    }
-                    m.category.endsWith("_STICKER") -> {
-                        val stickerData = StickerMessagePayload(
-                            name = m.name,
-                            stickerId = m.stickerId
-                        )
-                        ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
-                    }
-                    m.category.endsWith("_AUDIO") -> {
-                        val url = m.absolutePath() ?: continue
-                        if (!File(url.getFilePath()).exists()) continue
-
-                        val duration = m.mediaDuration?.toLongOrNull() ?: continue
-                        val waveForm = m.mediaWaveform ?: continue
-
-                        val audioData = AudioMessagePayload(
-                            UUID.randomUUID().toString(),
-                            url,
-                            duration,
-                            waveForm,
-                            m.content,
-                        )
-                        ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.id)
-                    }
-                    m.category.endsWith("_LIVE") -> {
-                        if (m.mediaWidth == null ||
-                            m.mediaWidth == 0 ||
-                            m.mediaHeight == null ||
-                            m.mediaHeight == 0 ||
-                            m.mediaUrl.isNullOrBlank()
-                        ) {
-                            continue
-                        }
-                        val shareable = try {
-                            GsonHelper.customGson.fromJson(m.content, LiveMessagePayload::class.java).shareable
-                        } catch (e: Exception) {
-                            null
-                        }
-                        val liveData = LiveMessagePayload(
-                            m.mediaWidth,
-                            m.mediaHeight,
-                            m.thumbUrl ?: "",
-                            m.mediaUrl,
-                            shareable
-                        )
-                        ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.id)
-                    }
-                    m.category.endsWith("_POST") ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ShareCategory.Post, c, m.id)
-                            },
-                            { null }
-                        )
-                    m.category.endsWith("_LOCATION") ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ForwardCategory.Location, GsonHelper.customGson.toJson(toLocationData(c)), m.id)
-                            },
-                            { null }
-                        )
-                    m.category == MessageCategory.APP_CARD.name ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ShareCategory.AppCard, c, m.id)
-                            },
-                            { null }
-                        )
-                    m.category.endsWith("_TRANSCRIPT") ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ForwardCategory.Transcript, c, m.id)
-                            },
-                            { null }
-                        )
-                    else -> null
-                }
+                val forwardMessage = generateForwardMessage(m)
                 forwardMessage?.let { fm -> list.add(fm) }
             }
             return@withContext list

@@ -583,7 +583,7 @@ fun createPinMessage(
     conversationId: String,
     userId: String,
     quoteMessageId: String,
-    pinMessages: PinMessageMinimal,
+    pinMessages: PinMessageMinimal?,
     createdAt: String,
     status: String
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.MESSAGE_PIN.name, status, createdAt)

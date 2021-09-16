@@ -78,6 +78,22 @@
 
         <item name="swirl_ridgeColor">@color/gray_light</item>
         <item name="swirl_errorColor">@color/colorRed</item>
+
+        <item name="popupMenuStyle">@style/AppTheme.PopupMenuStyle</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceSmall</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">?attr/bg_white</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle.MenuTextAppearanceSmall" parent="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu.Small">
+                <item name="android:textColor">?attr/text_primary</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle.MenuTextAppearanceLarge" parent="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu.Large">
+        <item name="android:textColor">?attr/text_primary</item>
     </style>
 
     <style name="NoneHFTextViewStyle" parent="Widget.AppCompat.TextView">
