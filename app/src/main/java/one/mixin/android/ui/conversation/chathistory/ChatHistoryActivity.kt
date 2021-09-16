@@ -483,54 +483,57 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onMenu(view: View, messageItem: ChatHistoryMessageItem) {
-                val popMenu = PopupMenu(this@ChatHistoryActivity, view)
-                popMenu.menuInflater.inflate(
-                    if (messageItem.isText()) {
-                        R.menu.chathistory
-                    } else {
-                        R.menu.chathistory_no_copy
-                    },
-                    popMenu.menu
-                )
-                popMenu.showIcon()
-                popMenu.setOnMenuItemClickListener {
-                    when (it.itemId) {
-                        R.id.copy -> {
-                            try {
-                                this@ChatHistoryActivity.getClipboardManager().setPrimaryClip(
-                                    ClipData.newPlainText(null, messageItem.content)
-                                )
-                                this@ChatHistoryActivity.toast(R.string.copy_success)
-                            } catch (e: ArrayIndexOutOfBoundsException) {
+                lifecycleScope.launch{
+                    val role = withContext(Dispatchers.IO) {conversationRepository.findParticipantById(conversationId, Session.getAccountId()!!)}?.role
+                    val isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                    val popMenu = PopupMenu(this@ChatHistoryActivity, view)
+                    popMenu.menuInflater.inflate(
+                        R.menu.chathistory,
+                        popMenu.menu
+                    )
+                    popMenu.menu.findItem(R.id.delete).isVisible = isAdmin
+                    popMenu.menu.findItem(R.id.copy).isVisible = messageItem.isText()
+
+                    popMenu.showIcon()
+                    popMenu.setOnMenuItemClickListener {
+                        when (it.itemId) {
+                            R.id.copy -> {
+                                try {
+                                    this@ChatHistoryActivity.getClipboardManager().setPrimaryClip(
+                                        ClipData.newPlainText(null, messageItem.content)
+                                    )
+                                    this@ChatHistoryActivity.toast(R.string.copy_success)
+                                } catch (e: ArrayIndexOutOfBoundsException) {
+                                }
                             }
-                        }
-                        R.id.forward -> {
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                conversationRepository.findMessageById(messageItem.messageId)
-                                    ?.let { message ->
-                                        val forwardMessage =
-                                            generateForwardMessage(message) ?: return@launch
-                                        withContext(Dispatchers.Main) {
-                                            ForwardActivity.show(
-                                                this@ChatHistoryActivity,
-                                                arrayListOf(forwardMessage),
-                                                ForwardAction.App.Resultless()
-                                            )
+                            R.id.forward -> {
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    conversationRepository.findMessageById(messageItem.messageId)
+                                        ?.let { message ->
+                                            val forwardMessage =
+                                                generateForwardMessage(message) ?: return@launch
+                                            withContext(Dispatchers.Main) {
+                                                ForwardActivity.show(
+                                                    this@ChatHistoryActivity,
+                                                    arrayListOf(forwardMessage),
+                                                    ForwardAction.App.Resultless()
+                                                )
+                                            }
                                         }
-                                    }
+                                }
+                            }
+                            R.id.delete -> {
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    conversationRepository.deletePinMessageByIds(listOf(messageItem.messageId))
+                                }
+                            }
+                            else -> {
                             }
                         }
-                        R.id.delete -> {
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                conversationRepository.deletePinMessageByIds(listOf(messageItem.messageId))
-                            }
-                        }
-                        else -> {
-                        }
+                        true
                     }
-                    true
+                    popMenu.show()
                 }
-                popMenu.show()
             }
         }
     }
