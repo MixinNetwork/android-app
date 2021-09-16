@@ -23,8 +23,9 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
-    <ImageView
+     <ImageView
         android:id="@+id/chat_jump"
+        android:padding="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -37,6 +38,18 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
+    <TextView
+        android:id="@+id/chat_name"
+        android:minWidth="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:ellipsize="end"
+        android:lines="1"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/chat_layout"
+        app:layout_constraintStart_toStartOf="@id/chat_layout" />
+
     <LinearLayout
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
@@ -47,20 +60,10 @@
         android:layout_marginStart="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_name"
         app:layout_constraintVertical_bias="0"
         app:layout_goneMarginBottom="0dp"
         tools:ignore="UselessParent">
-
-        <TextView
-            android:id="@+id/chat_name"
-            android:minWidth="30dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:ellipsize="end"
-            android:lines="1"
-            android:textSize="14sp" />
 
         <RelativeLayout
             android:id="@+id/chat_content_layout"

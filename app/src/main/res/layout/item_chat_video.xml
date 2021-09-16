@@ -23,8 +23,9 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription,NotSibling" />
 
-    <ImageView
+     <ImageView
         android:id="@+id/chat_jump"
+        android:padding="4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
