@@ -148,6 +148,7 @@ data class MessageItem(
     fun canNotReply() =
         this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
             this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
+            this.type == MessageCategory.MESSAGE_PIN.name ||
             unfinishedAttachment() ||
             isCallMessage() || isRecall() || isGroupCall()
 
