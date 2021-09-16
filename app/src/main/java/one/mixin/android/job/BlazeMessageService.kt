@@ -117,9 +117,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onStartCommand(intent, flags, startId)
         updateIgnoringBatteryOptimizations()
 
-        if (intent == null || isIgnoringBatteryOptimizations) {
-            return START_STICKY
-        }
+        if (intent == null) return START_STICKY
 
         if (intent.action == ACTION_TO_BACKGROUND) {
             stopForeground(true)
@@ -129,7 +127,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             return START_STICKY
         }
 
-        setForegroundIfNecessary()
+        if (!isIgnoringBatteryOptimizations) {
+            setForegroundIfNecessary()
+        }
         return START_STICKY
     }
 
