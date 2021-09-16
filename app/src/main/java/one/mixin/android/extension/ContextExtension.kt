@@ -15,6 +15,7 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.Cursor
@@ -896,4 +897,19 @@ fun getDeviceId(resolver: ContentResolver): String {
 
 fun Context.getDeviceId(): String {
     return getDeviceId(contentResolver)
+}
+
+fun Context.requestIgnoreBatteryOptimization(newTask: Boolean = false) {
+    Intent().apply {
+        action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+        data = Uri.parse("package:$packageName")
+        if (newTask) {
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            startActivity(this)
+        } catch (e: ActivityNotFoundException) {
+            Timber.w("Battery optimization activity not found")
+        }
+    }
 }

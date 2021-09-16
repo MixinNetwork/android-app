@@ -1,8 +1,17 @@
 package one.mixin.android.job
 
+import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.os.PowerManager
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.room.InvalidationTracker
@@ -13,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
@@ -20,8 +30,12 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.requestIgnoreBatteryOptimization
+import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
+import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -32,6 +46,7 @@ import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
+import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -40,6 +55,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     companion object {
         val TAG = BlazeMessageService::class.java.simpleName
+        const val CHANNEL_NODE = "channel_node"
+        const val FOREGROUND_ID = 666666
         const val ACTION_TO_BACKGROUND = "action_to_background"
         const val ACTION_ACTIVITY_RESUME = "action_activity_resume"
         const val ACTION_ACTIVITY_PAUSE = "action_activity_pause"
@@ -79,6 +96,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
 
+    private val powerManager by lazy { getSystemService<PowerManager>() }
+    private var isIgnoringBatteryOptimizations = false
+
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
@@ -95,6 +115,21 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        updateIgnoringBatteryOptimizations()
+
+        if (intent == null || isIgnoringBatteryOptimizations) {
+            return START_STICKY
+        }
+
+        if (intent.action == ACTION_TO_BACKGROUND) {
+            stopForeground(true)
+            if (!isIgnoringBatteryOptimizations) {
+                requestIgnoreBatteryOptimization(true)
+            }
+            return START_STICKY
+        }
+
+        setForegroundIfNecessary()
         return START_STICKY
     }
 
@@ -117,6 +152,47 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     override fun onSocketOpen() {
         runFloodJob()
         runAckJob()
+    }
+
+    private fun updateIgnoringBatteryOptimizations() {
+        isIgnoringBatteryOptimizations = powerManager?.isIgnoringBatteryOptimizations(packageName) ?: false
+    }
+
+    @SuppressLint("NewApi")
+    private fun setForegroundIfNecessary() {
+        val exitIntent = Intent(this, ExitBroadcastReceiver::class.java).apply {
+            action = ACTION_TO_BACKGROUND
+        }
+        val exitPendingIntent = PendingIntent.getBroadcast(this, 0, exitIntent, 0)
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.background_connection_enabled))
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setWhen(0)
+            .setDefaults(0)
+            .setSound(null)
+            .setDefaults(0)
+            .setOnlyAlertOnce(true)
+            .setColor(ContextCompat.getColor(this, R.color.colorLightBlue))
+            .setSmallIcon(R.drawable.ic_msg_default)
+            .addAction(R.drawable.ic_close_black, getString(R.string.exit), exitPendingIntent)
+
+        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getWakeUpIntent(this), 0)
+        builder.setContentIntent(pendingIntent)
+
+        supportsOreo {
+            val channel = NotificationChannel(
+                CHANNEL_NODE,
+                MixinApplication.get().getString(R.string.notification_node),
+                NotificationManager.IMPORTANCE_LOW
+            )
+            channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
+            channel.setSound(null, null)
+            channel.setShowBadge(false)
+            notificationManager.createNotificationChannel(channel)
+        }
+        startForeground(FOREGROUND_ID, builder.build())
     }
 
     private fun startAckJob() {

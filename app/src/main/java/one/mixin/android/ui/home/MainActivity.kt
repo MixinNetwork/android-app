@@ -4,14 +4,11 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.app.NotificationManager
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
-import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
-import android.provider.Settings
 import android.view.KeyEvent
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
@@ -83,6 +80,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.requestIgnoreBatteryOptimization
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -135,7 +133,6 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -337,15 +334,7 @@ class MainActivity : BlazeBaseActivity() {
         if (cur - batteryOptimize > Constants.INTERVAL_48_HOURS * 30) {
             getSystemService<PowerManager>()?.let { pm ->
                 if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                    Intent().apply {
-                        action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                        data = Uri.parse("package:$packageName")
-                        try {
-                            startActivity(this)
-                        } catch (e: ActivityNotFoundException) {
-                            Timber.w("Battery optimization activity not found")
-                        }
-                    }
+                    requestIgnoreBatteryOptimization()
                 }
             }
             defaultSharedPreferences.putLong(PREF_BATTERY_OPTIMIZE, cur)
