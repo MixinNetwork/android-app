@@ -527,6 +527,9 @@ class ChatHistoryActivity : BaseActivity() {
                                     val list = listOf(messageItem.messageId)
                                     messenger.sendUnPinMessage(conversationId, Session.getAccount()!!.toUser(), list)
                                     conversationRepository.deletePinMessageByIds(list)
+                                    withContext(Dispatchers.Main) {
+                                        toast(R.string.unpin_success)
+                                    }
                                 }
                             }
                             else -> {

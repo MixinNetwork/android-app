@@ -179,8 +179,13 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
 
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
-            binding.root.setOnClickListener {
+            binding.root.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)
+                true
+            }
+            binding.chatImage.setOnLongClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+                true
             }
             chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
         }

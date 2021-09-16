@@ -1040,4 +1040,6 @@
     <string name="chat_pin_location_message">a location</string>
     <string name="chat_pin_transcript_message">a transcript</string>
     <string name="chat_pin_card_message">a card</string>
+    <string name="unpin_success">Message unpinned</string>
+    <string name="pin_success">Message pinned</string>
 </resources>
