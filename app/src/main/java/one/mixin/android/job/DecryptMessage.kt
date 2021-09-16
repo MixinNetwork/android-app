@@ -316,7 +316,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 mid,
                                 data.conversationId,
                                 data.userId,
-                                messageId,
+                                messageId, // quote pinned message id
                                 PinMessageMinimal(
                                     message.id,
                                     message.category,
@@ -348,7 +348,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 UUID.randomUUID().toString(),
                                 data.conversationId,
                                 data.userId,
-                                messageId,
+                                messageId, // quote pinned message id
                                 null,
                                 nowInUtc(),
                                 MessageStatus.READ.name

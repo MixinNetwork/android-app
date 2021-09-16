@@ -336,7 +336,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                         mId,
                         conversationId,
                         sender.userId,
-                        msg.messageId,
+                        msg.messageId, // quote pinned message id
                         PinMessageMinimal(msg.messageId, category, content),
                         nowInUtc(),
                         MessageStatus.READ.name
