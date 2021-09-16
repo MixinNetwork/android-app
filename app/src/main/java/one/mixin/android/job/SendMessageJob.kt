@@ -111,10 +111,10 @@ open class SendMessageJob(
                 )
             }
             jobManager.cancelJobByMixinJobId(msg.id)
+            messageDao.recallPinMessage(recallMessageId, msg.conversationId)
         }
         pinMessageDao.deleteByMessageId(recallMessageId)
         messageDao.recallMessage(recallMessageId)
-        messageDao.recallPinMessage(recallMessageId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

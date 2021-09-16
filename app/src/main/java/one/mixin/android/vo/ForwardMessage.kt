@@ -217,7 +217,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 { null }
             )
         m.category.endsWith("_DATA") -> {
-            if (m.absolutePath()?.fileExists()!=true) {
+            if (m.absolutePath()?.fileExists() != true) {
                 return null
             }
             m.name ?: return null
@@ -237,7 +237,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             )
         }
         m.category.endsWith("_VIDEO") -> {
-            if (m.absolutePath()?.fileExists()!=true) {
+            if (m.absolutePath()?.fileExists() != true) {
                 return null
             }
             val videoData = VideoMessagePayload(
