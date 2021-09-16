@@ -342,6 +342,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 )
                             }
                         }
+                    } else {
+                        messageDao.insert(
+                            createPinMessage(
+                                UUID.randomUUID().toString(),
+                                data.conversationId,
+                                data.userId,
+                                messageId,
+                                null,
+                                nowInUtc(),
+                                MessageStatus.READ.name
+                            )
+                        )
                     }
                     if (index == transferPinData.messageIds.size - 1) {
                         RxBus.publish(PinMessageEvent(data.conversationId, messageId))
