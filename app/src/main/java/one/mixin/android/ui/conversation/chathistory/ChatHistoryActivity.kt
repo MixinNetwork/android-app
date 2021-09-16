@@ -491,7 +491,7 @@ class ChatHistoryActivity : BaseActivity() {
                         R.menu.chathistory,
                         popMenu.menu
                     )
-                    popMenu.menu.findItem(R.id.delete).isVisible = isAdmin
+                    popMenu.menu.findItem(R.id.unpin).isVisible = isAdmin
                     popMenu.menu.findItem(R.id.copy).isVisible = messageItem.isText()
 
                     popMenu.showIcon()
@@ -522,9 +522,11 @@ class ChatHistoryActivity : BaseActivity() {
                                         }
                                 }
                             }
-                            R.id.delete -> {
+                            R.id.unpin -> {
                                 lifecycleScope.launch(Dispatchers.IO) {
-                                    conversationRepository.deletePinMessageByIds(listOf(messageItem.messageId))
+                                    val list = listOf(messageItem.messageId)
+                                    messenger.sendUnPinMessage(conversationId, Session.getAccount()!!.toUser(), list)
+                                    conversationRepository.deletePinMessageByIds(list)
                                 }
                             }
                             else -> {

@@ -30,6 +30,7 @@
     <string name="combine_forward">合并转发</string>
     <string name="message_sent">消息已发送</string>
     <string name="delete">删除</string>
+    <string name="unpin">取消置顶</string>
     <string name="save">保存</string>
     <string name="saving">保存中…</string>
     <string name="pb_dialog_message">请稍等…</string>

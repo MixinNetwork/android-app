@@ -305,6 +305,25 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         }
     }
 
+    fun sendUnPinMessage(conversationId: String, sender: User, messageIds: List<String>) {
+        val transferPinData = PinMessagePayload(PinAction.UNPIN.name, messageIds)
+        val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
+        val message = createMessage(
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            MessageCategory.MESSAGE_PIN.name,
+            encoded,
+            nowInUtc(),
+            MessageStatus.SENDING.name
+        )
+        jobManager.addJobInBackground(
+            SendMessageJob(
+                message
+            )
+        )
+    }
+
     fun sendPinMessage(
         conversationId: String,
         sender: User,

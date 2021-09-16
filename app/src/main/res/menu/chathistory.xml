@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/forward"
-        android:icon="@drawable/ic_msg_forward"
+        android:icon="@drawable/ic_menu_forward"
         android:title="@string/forward" />
     <item
         android:id="@+id/copy"
-        android:icon="@drawable/ic_content_copy"
+        android:icon="@drawable/ic_menu_copy"
         android:title="@string/copy" />
     <item
-        android:id="@+id/delete"
-        android:icon="@drawable/ic_msg_delete"
-        android:title="@string/delete" />
+        android:id="@+id/unpin"
+        android:icon="@drawable/ic_menu_unpin"
+        android:title="@string/unpin" />
 </menu>

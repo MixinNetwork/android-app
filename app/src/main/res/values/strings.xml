@@ -31,6 +31,7 @@
     <string name="combine_forward">Combine forward</string>
     <string name="message_sent">Message sent</string>
     <string name="delete">Delete</string>
+    <string name="unpin">Unpin</string>
     <string name="save">Save</string>
     <string name="saving">Saving…</string>
     <string name="pb_dialog_message">Please wait a bit…</string>
