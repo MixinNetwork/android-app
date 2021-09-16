@@ -59,6 +59,11 @@
         <item name="map_default">@drawable/ic_map_default_night</item>
 
         <item name="android:colorControlHighlight">@color/highlight_night</item>
+        <item name="popupMenuStyle">@style/AppTheme.PopupMenuStyleNight</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyleNight" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@color/bgWhiteNight</item>
     </style>
 
     <style name="AppTheme.Night.NoActionBar" parent="AppTheme.Night">

@@ -78,6 +78,12 @@
 
         <item name="swirl_ridgeColor">@color/gray_light</item>
         <item name="swirl_errorColor">@color/colorRed</item>
+        <item name="popupMenuStyle">@style/AppTheme.PopupMenuStyle</item>
+
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@color/bgWhite</item>
     </style>
 
     <style name="NoneHFTextViewStyle" parent="Widget.AppCompat.TextView">

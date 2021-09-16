@@ -116,6 +116,9 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
         if (messageItem.transcriptId == null) {
+            binding.root.setOnClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+            }
             chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
         }
     }

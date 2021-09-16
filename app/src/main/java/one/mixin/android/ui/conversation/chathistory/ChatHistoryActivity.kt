@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -36,6 +37,7 @@ import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.showIcon
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
@@ -59,12 +61,15 @@ import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.copy
+import one.mixin.android.vo.generateForwardMessage
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.toMessageItem
@@ -475,6 +480,57 @@ class ChatHistoryActivity : BaseActivity() {
                     }
                 )
                 finish()
+            }
+
+            override fun onMenu(view: View, messageItem: ChatHistoryMessageItem) {
+                val popMenu = PopupMenu(this@ChatHistoryActivity, view)
+                popMenu.menuInflater.inflate(
+                    if (messageItem.isText()) {
+                        R.menu.chathistory
+                    } else {
+                        R.menu.chathistory_no_copy
+                    },
+                    popMenu.menu
+                )
+                popMenu.showIcon()
+                popMenu.setOnMenuItemClickListener {
+                    when (it.itemId) {
+                        R.id.copy -> {
+                            try {
+                                this@ChatHistoryActivity.getClipboardManager().setPrimaryClip(
+                                    ClipData.newPlainText(null, messageItem.content)
+                                )
+                                this@ChatHistoryActivity.toast(R.string.copy_success)
+                            } catch (e: ArrayIndexOutOfBoundsException) {
+                            }
+                        }
+                        R.id.forward -> {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                conversationRepository.findMessageById(messageItem.messageId)
+                                    ?.let { message ->
+                                        val forwardMessage =
+                                            generateForwardMessage(message) ?: return@launch
+                                        withContext(Dispatchers.Main) {
+                                            ForwardActivity.show(
+                                                this@ChatHistoryActivity,
+                                                arrayListOf(forwardMessage),
+                                                ForwardAction.App.Resultless()
+                                            )
+                                        }
+                                    }
+                            }
+                        }
+                        R.id.delete -> {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                conversationRepository.deletePinMessageByIds(listOf(messageItem.messageId))
+                            }
+                        }
+                        else -> {
+                        }
+                    }
+                    true
+                }
+                popMenu.show()
             }
         }
     }

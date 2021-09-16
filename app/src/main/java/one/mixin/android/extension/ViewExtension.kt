@@ -23,6 +23,7 @@ import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.graphics.ColorUtils
@@ -40,7 +41,7 @@ import org.jetbrains.anko.dip
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.IOException
-import kotlin.jvm.Throws
+import java.lang.reflect.Field
 
 const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L
@@ -331,4 +332,18 @@ fun Int.withAlpha(alpha: Float): Int {
     val result = 255.coerceAtMost(0.coerceAtLeast((alpha * 255).toInt())) shl 24
     val rgb = 0x00ffffff and this
     return result + rgb
+}
+
+fun PopupMenu.showIcon() {
+    val menuHelper: Any
+    val argTypes: Array<Class<*>?>
+    try {
+        val fMenuHelper: Field = PopupMenu::class.java.getDeclaredField("mPopup")
+        fMenuHelper.isAccessible = true
+        menuHelper = fMenuHelper.get(this)
+        argTypes = arrayOf(Boolean::class.javaPrimitiveType)
+        menuHelper.javaClass.getDeclaredMethod("setForceShowIcon", *argTypes)
+            .invoke(menuHelper, true)
+    } catch (e: Exception) {
+    }
 }

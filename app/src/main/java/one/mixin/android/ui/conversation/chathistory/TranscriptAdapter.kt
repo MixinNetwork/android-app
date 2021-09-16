@@ -501,5 +501,7 @@ class TranscriptAdapter(
         open fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {}
 
         open fun onMessageJump(messageId: String) {}
+
+        open fun onMenu(view: View, messageItem: ChatHistoryMessageItem) {}
     }
 }
