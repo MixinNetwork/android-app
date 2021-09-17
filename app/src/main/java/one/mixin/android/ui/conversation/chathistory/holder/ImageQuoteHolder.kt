@@ -2,13 +2,11 @@ package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
@@ -78,7 +76,6 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         this.onItemListener = onItemListener
         binding.chatQuoteLayout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
 
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -162,12 +159,16 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false, true) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
+            isRepresentative = false,
+            isSecret = false,
+            isWhite = true
+        )
         try {
             binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
         } catch (e: Exception) {

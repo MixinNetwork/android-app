@@ -4,15 +4,13 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolder(binding.root) {
@@ -59,13 +57,15 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             binding.chatName.visibility = View.GONE
         }
 
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
+
         chatLayout(isMe, isLast)
 
         binding.chatContentLayout.setOnClickListener {
@@ -115,10 +115,10 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
                 )
             }
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
-            (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
         } else {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
-            (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,

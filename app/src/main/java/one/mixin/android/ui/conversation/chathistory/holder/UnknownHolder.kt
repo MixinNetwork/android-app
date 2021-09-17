@@ -7,7 +7,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.extension.highlightLinkText
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import org.jetbrains.anko.dip
@@ -55,7 +54,6 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
         isFirst: Boolean,
         onItemListener: TranscriptAdapter.OnItemListener
     ) {
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
 
         val learn: String = MixinApplication.get().getString(R.string.chat_learn)
         val info = MixinApplication.get().getString(R.string.chat_not_support, learn)

@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.chathistory.holder
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import io.noties.markwon.Markwon
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatPostBinding
@@ -12,7 +11,6 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.postLengthOptimize
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
@@ -124,18 +122,17 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(
-            isMe, MessageStatus.DELIVERED.name,
-            isSecret = false,
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
             isRepresentative = false,
+            isSecret = false,
             isWhite = true
-        ) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+        )
+
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
             binding.root.setOnLongClickListener {

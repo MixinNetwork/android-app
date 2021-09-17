@@ -6,11 +6,10 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.widget.linktext.AutoLinkMode
 
-open class ShareTextRenderer(val context: Context) : ShareMessageRenderer {
+open class ShareTextRenderer(val context: Context) {
 
     val binding = ItemChatTextBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
@@ -21,12 +20,14 @@ open class ShareTextRenderer(val context: Context) : ShareMessageRenderer {
 
     fun render(content: String, isNightMode: Boolean) {
         binding.chatName.isVisible = false
-        binding.dataWrapper.chatTime.timeAgoClock(nowInUtc())
-        setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = false) { statusIcon, secretIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-        }
+        binding.chatTime.load(
+            true,
+            nowInUtc(),
+            MessageStatus.DELIVERED.name,
+            isPin = false,
+            isRepresentative = false,
+            isSecret = true
+        )
         binding.chatTv.text = content
         binding.chatLayout.setBackgroundResource(
             if (!isNightMode) {

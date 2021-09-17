@@ -23,7 +23,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
-     <ImageView
+    <ImageView
         android:id="@+id/chat_jump"
         android:padding="4dp"
         android:layout_width="wrap_content"
@@ -52,7 +52,7 @@
         android:textSize="14sp"
         android:layout_marginBottom="1.5dp"
         app:layout_constraintBottom_toTopOf="@id/chat_layout"
-        app:layout_constraintStart_toStartOf="@id/chat_layout"/>
+        app:layout_constraintStart_toStartOf="@id/chat_layout" />
 
     <LinearLayout
         android:id="@+id/chat_layout"
@@ -114,8 +114,11 @@
                 android:layout_height="wrap_content" />
 
         </RelativeLayout>
-        <include
-            android:id="@+id/data_wrapper"
-            layout="@layout/date_wrapper" />
+
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

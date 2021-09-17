@@ -28,6 +28,10 @@ fun ICategory.isSignal(): Boolean {
     return type?.startsWith("SIGNAL_") == true
 }
 
+fun ICategory.isSecret(): Boolean {
+    return isSignal() || isEncrypted()
+}
+
 fun ICategory.isCall() = type?.startsWith("WEBRTC_") == true || type?.startsWith("KRAKEN_") == true
 
 fun ICategory.isKraken() = type?.startsWith("KRAKEN_") == true

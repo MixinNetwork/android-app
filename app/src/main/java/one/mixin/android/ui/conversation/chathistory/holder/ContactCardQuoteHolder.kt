@@ -2,12 +2,10 @@ package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
@@ -74,7 +72,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
         )
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
+
         messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
 
         val isMe = messageItem.userId == Session.getAccountId()
@@ -109,12 +107,15 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }
 
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
+            isRepresentative = false,
+            isSecret = false
+        )
+
         if (messageItem.transcriptId == null) {
             binding.root.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)

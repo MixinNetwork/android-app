@@ -4,7 +4,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import androidx.core.widget.TextViewCompat
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -20,7 +19,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.ui.conversation.location.MixinLatLng
@@ -31,7 +29,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.textColorResource
 
 class LocationHolder constructor(val binding: ItemChatLocationBinding) :
     BaseViewHolder(binding.root),
@@ -182,31 +179,25 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         if (location?.name == null && location?.address == null) {
             (binding.locationBottom.layoutParams as ViewGroup.MarginLayoutParams).topMargin = -dp36
             binding.chatTime.setBackgroundResource(R.drawable.bg_bubble_shadow)
-            binding.chatTime.textColorResource = R.color.white
             binding.chatTime.translationY = dp4
         } else {
             (binding.locationBottom.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 0
             binding.chatTime.setBackgroundResource(0)
-            binding.chatTime.textColorResource = (R.color.color_chat_date)
             binding.chatTime.translationY = 0f
         }
         setMapLocation()
 
         val isMe = messageItem.userId == Session.getAccountId()
 
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             MessageStatus.DELIVERED.name,
-            isSecret = false,
+            false,
             isRepresentative = false,
+            isSecret = false,
             isWhite = location?.name == null && location?.address == null
-        ) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+        )
 
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE

@@ -3,12 +3,10 @@ package one.mixin.android.ui.conversation.chathistory.holder
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
@@ -81,13 +79,15 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         } else {
             binding.chatName.visibility = View.GONE
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
+            isRepresentative = false,
+            isSecret = false
+        )
 
         binding.fileNameTv.text = messageItem.mediaName
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {

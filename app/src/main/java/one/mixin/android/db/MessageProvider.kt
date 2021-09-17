@@ -32,7 +32,7 @@ class MessageProvider {
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
                         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
-                        c.name AS groupName
+                        pm.message_id IS NOT NULL as isPin, c.name AS groupName
                         FROM messages m
                         INNER JOIN users u ON m.user_id = u.user_id
                         LEFT JOIN users u1 ON m.participant_id = u1.user_id
@@ -43,6 +43,7 @@ class MessageProvider {
                         LEFT JOIN users su ON m.shared_user_id = su.user_id
                         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
                         LEFT JOIN message_mentions mm ON m.id = mm.message_id
+                        LEFT JOIN pin_messages pm ON m.id = pm.message_id
                         WHERE m.conversation_id = ? 
                         ORDER BY m.created_at DESC 
                     """
@@ -314,7 +315,7 @@ class MessageProvider {
                         """
                     val countSql =
                         """
-                            SELECT count(*) FROM messages m 
+                            SELECT count(1) FROM messages m 
                             INNER JOIN users u ON m.user_id = u.user_id 
                             WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
                             AND m.conversation_id = ?
@@ -463,6 +464,7 @@ private fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfGroupName = cursor.getColumnIndexOrThrow("groupName")
     val cursorIndexOfMentions = cursor.getColumnIndexOrThrow("mentions")
     val cursorIndexOfMentionRead = cursor.getColumnIndexOrThrow("mentionRead")
+    val cursorIndexOfPinTop = cursor.getColumnIndexOrThrow("isPin")
     val res = ArrayList<MessageItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: MessageItem
@@ -548,6 +550,12 @@ private fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             cursor.getInt(cursorIndexOfMentionRead)
         }
         val tmpMentionRead = if (tmp_1 == null) null else tmp_1 != 0
+        val tmp_2: Int? = if (cursor.isNull(cursorIndexOfPinTop)) {
+            null
+        } else {
+            cursor.getInt(cursorIndexOfPinTop)
+        }
+        val tmpPinTop = if (tmp_2 == null) null else tmp_2 != 0
         item = MessageItem(
             tmpMessageId, tmpConversationId, tmpUserId, tmpUserFullName, tmpUserIdentityNumber, tmpType, tmpContent,
             tmpCreatedAt, tmpStatus, tmpMediaStatus, null, tmpMediaName, tmpMediaMimeType, tmpMediaSize, tmpThumbUrl, tmpMediaWidth,
@@ -555,7 +563,7 @@ private fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             tmpSnapshotType, tmpSnapshotAmount, tmpAssetId, tmpAssetType, tmpAssetSymbol, tmpAssetIcon, tmpAssetUrl, tmpAssetHeight, tmpAssetWidth,
             null, tmpStickerId, tmpAssetName, tmpAppId, tmpSiteName, tmpSiteTitle, tmpSiteDescription, tmpSiteImage, tmpSharedUserId,
             tmpSharedUserFullName, tmpSharedUserIdentityNumber, tmpSharedUserAvatarUrl, tmpSharedUserIsVerified, tmpSharedUserAppId,
-            tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead
+            tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead, tmpPinTop
         )
         res.add(item)
     }

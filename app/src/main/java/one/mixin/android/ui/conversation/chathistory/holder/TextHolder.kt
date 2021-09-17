@@ -4,18 +4,17 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(binding.root) {
@@ -141,18 +140,14 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
 
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             MessageStatus.DELIVERED.name,
-            isSecret = false,
-            isRepresentative = false
-        ) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
+            isPin = false,
+            isRepresentative = false,
+            isSecret = messageItem.isSecret()
+        )
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
             binding.root.setOnLongClickListener {

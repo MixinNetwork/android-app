@@ -3,13 +3,11 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatAudioQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
@@ -17,7 +15,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 
@@ -87,19 +85,20 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
 
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             binding.audioDuration.setText(R.string.chat_expired)
         } else {
             binding.audioDuration.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
 
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE

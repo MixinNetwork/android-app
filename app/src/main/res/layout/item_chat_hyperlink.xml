@@ -105,9 +105,10 @@
                 tools:text="When we do automatic pings it’d be nice to fail the connection if the peer isn’t ponging back. As-is a server that blackholes pings is not sufficient to consider the connection healthy. See also #3197" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-         <include
-            android:id="@+id/data_wrapper"
-            layout="@layout/date_wrapper" />
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation.chathistory.holder
 
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.extension.dpToPx
@@ -12,7 +11,6 @@ import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
@@ -26,7 +24,6 @@ import one.mixin.android.vo.absolutePath
 import org.jetbrains.anko.dip
 
 class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : BaseViewHolder(binding.root) {
-    private val dp16 = itemView.context.dpToPx(16f)
     private val minWidth by lazy {
         (itemView.context.realSize().x * 0.5).toInt()
     }
@@ -85,7 +82,6 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
         val isMe = messageItem.userId == Session.getAccountId()
         binding.chatQuoteLayout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
 
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
         when (messageItem.mediaStatus) {
             MediaStatus.DONE.name -> {
 
@@ -213,17 +209,16 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(
-            isMe, MessageStatus.DELIVERED.name,
-            isSecret = false,
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
             isRepresentative = false,
+            isSecret = false,
             isWhite = true
-        ) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+        )
 
         try {
             binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
