@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardBinding
@@ -18,7 +19,7 @@ open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
     private val binding = ItemChatContactCardBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
     init {
-        (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
+        (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
         binding.chatName.isVisible = false
     }
 
