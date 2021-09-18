@@ -143,7 +143,6 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                             onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                         }
                         binding.chatImage.setOnClickListener { }
-                        binding.chatImage.setOnLongClickListener { false }
                     }
                     MediaStatus.DONE.name -> {
                         binding.chatWarning.visibility = GONE
@@ -175,7 +174,6 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                             }
                         }
                         binding.chatImage.setOnClickListener {}
-                        binding.chatImage.setOnLongClickListener { false }
                     }
                 }
             }
@@ -206,8 +204,17 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
-            binding.root.setOnClickListener {
+            binding.root.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)
+                true
+            }
+            binding.chatImage.setOnLongClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+                true
+            }
+            binding.chatLayout.setOnLongClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+                true
             }
             chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }

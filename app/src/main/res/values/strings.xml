@@ -1027,6 +1027,7 @@
     <!--  Pin message  -->
     <string name="unpin_all">Cancel all pinned message</string>
     <string name="pinned_message">Pinned Messages</string>
+    <string name="pinned_message_title">%1$d Pinned Messages</string>
     <string name="chat_pin_message">%1$s pinned %2$s</string>
     <string name="chat_pin_empty_message">a message</string>
     <string name="chat_pin_image_message">a photo</string>
@@ -1040,4 +1041,6 @@
     <string name="chat_pin_location_message">a location</string>
     <string name="chat_pin_transcript_message">a transcript</string>
     <string name="chat_pin_card_message">a card</string>
+    <string name="unpin_success">Message unpinned</string>
+    <string name="pin_success">Message pinned</string>
 </resources>

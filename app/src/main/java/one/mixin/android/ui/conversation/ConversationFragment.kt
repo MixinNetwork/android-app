@@ -1538,11 +1538,19 @@ class ConversationFragment() :
                 return@setOnClickListener
             }
             lifecycleScope.launch {
+                val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
                 chatViewModel.sendPinMessage(
                     conversationId,
                     sender,
                     (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
                     conversationAdapter.selectSet
+                )
+                requireContext().toast(
+                    if (action == PinAction.PIN) {
+                        R.string.pin_success
+                    } else {
+                        R.string.unpin_success
+                    }
                 )
                 closeTool()
             }

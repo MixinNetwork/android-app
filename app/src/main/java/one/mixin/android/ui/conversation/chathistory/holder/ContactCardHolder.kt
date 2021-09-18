@@ -60,8 +60,13 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
             onItemListener.onContactCardClick(messageItem.sharedUserId!!)
         }
         if (messageItem.transcriptId == null) {
-            binding.root.setOnClickListener {
+            binding.root.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)
+                true
+            }
+            binding.chatContentLayout.setOnLongClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+                true
             }
             chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }

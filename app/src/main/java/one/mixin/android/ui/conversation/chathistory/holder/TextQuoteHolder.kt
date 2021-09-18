@@ -164,7 +164,15 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         }
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
-            binding.root.setOnClickListener {
+            binding.root.setOnLongClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+                true
+            }
+            binding.chatLayout.setOnLongClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+                true
+            }
+            binding.chatTv.setOnClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)
             }
             chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)

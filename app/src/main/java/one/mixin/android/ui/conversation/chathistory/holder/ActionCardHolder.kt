@@ -63,13 +63,19 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         binding.chatIcon.loadRoundImage(actionCard.iconUrl, radius, R.drawable.holder_bot)
         binding.chatTitle.text = actionCard.title
         binding.chatDescription.text = actionCard.description
-        itemView.setOnClickListener {
+        binding.chatContentLayout.setOnClickListener {
             onItemListener.onAppCardClick(actionCard, messageItem.userId)
         }
         if (messageItem.transcriptId == null) {
-            binding.root.setOnClickListener {
+            binding.root.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)
+                true
             }
+            binding.chatContentLayout.setOnLongClickListener {
+                onItemListener.onMenu(binding.chatJump, messageItem)
+                true
+            }
+
             chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }

@@ -15,7 +15,7 @@
         android:background="@drawable/mixin_ripple"
         android:padding="8dp"
         android:layout_marginStart="8dp"
-        android:src="@drawable/ic_close_black"
+        android:src="@drawable/ic_msg_close"
         tools:ignore="ContentDescription" />
 
     <TextView

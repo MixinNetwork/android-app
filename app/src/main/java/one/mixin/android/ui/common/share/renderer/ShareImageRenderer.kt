@@ -1,12 +1,11 @@
 package one.mixin.android.ui.common.share.renderer
 
 import android.content.Context
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageBinding
@@ -32,7 +31,7 @@ class ShareImageRenderer(val context: Context) : ShareMessageRenderer {
         binding.chatName.visibility = View.GONE
         binding.chatWarning.visibility = View.GONE
         binding.progress.visibility = View.GONE
-        (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
+        (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
         (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
         (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 10.dp
         binding.chatImage.layoutParams.width = mediaWidth
