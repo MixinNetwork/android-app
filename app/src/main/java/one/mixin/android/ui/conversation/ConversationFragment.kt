@@ -1936,7 +1936,6 @@ class ConversationFragment() :
         chatViewModel.countPinMessages(conversationId)
             .observe(viewLifecycleOwner, { count ->
                 binding.pinMessageLayout.isVisible = count > 0
-                binding.pinMessageLayout.pinCount.text = "$count"
             })
     }
 

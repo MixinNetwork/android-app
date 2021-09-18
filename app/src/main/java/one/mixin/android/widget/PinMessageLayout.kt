@@ -34,7 +34,6 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     private val pinContentTv = binding.pinContentTv
     private val pinContent = binding.pinContent
     private val pinClose = binding.pinClose
-    val pinCount = binding.pinCount
     val pin = binding.pin
 
     var conversationId: String? = null
@@ -58,7 +57,6 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 override fun onAnimationEnd(animation: Animator) {
                     super.onAnimationEnd(animation)
                     pinContent.visibility = View.INVISIBLE
-                    pinCount.isVisible = false
                 }
             })
             anim.start()
@@ -91,7 +89,6 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
             val finalRadius = pinContent.width.toFloat()
             val anim = ViewAnimationUtils.createCircularReveal(pinContent, cx, cy, 0f, finalRadius)
             pinContent.visibility = View.VISIBLE
-            pinCount.isVisible = true
             anim.start()
         }
     }
