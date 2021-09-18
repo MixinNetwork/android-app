@@ -19,6 +19,7 @@
         <item name="icon_white">@color/colorIconWhiteNight</item>
         <item name="icon_gray">@color/colorIconGrayNight</item>
         <item name="icon_black">@color/colorIconBlackNight</item>
+        <item name="icon_action">@color/colorIconActionNight</item>
 
         <item name="badger">@color/badger</item>
         <item name="badger_mute">@color/badgeMuteNight</item>

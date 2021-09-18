@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewAnimationUtils
 import androidx.annotation.StringRes
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -34,15 +35,13 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     private val pinContentTv = binding.pinContentTv
     private val pinContent = binding.pinContent
     private val pinClose = binding.pinClose
-    val pinCount = binding.pinCount
     val pin = binding.pin
-
     var conversationId: String? = null
         set(value) {
             field = value
             if (value != null) {
-                pinContent.isVisible =
-                    context.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                pinContent.isInvisible =
+                    !context.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
                         .getBoolean("Pin_$conversationId", true)
             }
         }
@@ -58,7 +57,6 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 override fun onAnimationEnd(animation: Animator) {
                     super.onAnimationEnd(animation)
                     pinContent.visibility = View.INVISIBLE
-                    pinCount.isVisible = false
                 }
             })
             anim.start()
@@ -91,7 +89,6 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
             val finalRadius = pinContent.width.toFloat()
             val anim = ViewAnimationUtils.createCircularReveal(pinContent, cx, cy, 0f, finalRadius)
             pinContent.visibility = View.VISIBLE
-            pinCount.isVisible = true
             anim.start()
         }
     }

@@ -13,12 +13,12 @@
 
         <ImageView
             android:id="@+id/mention_flag"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
             android:layout_marginTop="12dp"
             android:foreground="@drawable/mixin_ripple_small"
             android:background="@drawable/bg_quick_flag"
-            android:padding="10dp"
+            android:padding="9dp"
             android:src="@drawable/ic_mention"
             android:translationZ="1dp"
             tools:ignore="ContentDescription" />
@@ -45,8 +45,8 @@
 
         <ImageView
             android:id="@+id/down_flag"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
             android:layout_marginTop="12dp"
             android:foreground="@drawable/mixin_ripple_small"
             android:background="@drawable/bg_quick_flag"

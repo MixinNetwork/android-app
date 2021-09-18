@@ -32,6 +32,7 @@
         <item name="icon_white">@color/colorIconWhite</item>
         <item name="icon_black">@color/colorIcon</item>
         <item name="icon_gray">@color/colorIconGray</item>
+        <item name="icon_action">@color/colorIconAction</item>
 
         <item name="badger">@color/badger</item>
         <item name="badger_mute">@color/badgerMute</item>
