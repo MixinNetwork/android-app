@@ -191,10 +191,18 @@ class ChatHistoryActivity : BaseActivity() {
             binding.titleView.rightAnimator.isVisible = false
             conversationRepository.getPinMessages(conversationId)
                 .observe(this) { list ->
+                    binding.titleView.setSubTitle(
+                        getString(
+                            R.string.pinned_message_title, list.size
+                        ),
+                        ""
+                    )
                     adapter.transcripts = list
                 }
         }
     }
+
+    private var firstLoad = false
 
     override fun onStop() {
         super.onStop()

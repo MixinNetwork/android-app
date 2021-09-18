@@ -1008,6 +1008,7 @@
     <!--  Pin message  -->
     <string name="unpin_all">取消置顶所有消息</string>
     <string name="pinned_message">置顶消息</string>
+    <string name="pinned_message_title">%1$d条置顶消息</string>
     <string name="chat_pin_message">%1$s置顶了%2$s</string>
     <string name="chat_pin_empty_message">一条消息</string>
     <string name="chat_pin_image_message">一张照片</string>
