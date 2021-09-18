@@ -22,6 +22,7 @@
     <color name="colorIcon">#FF000000</color>
     <color name="colorIconWhite">#FFFFFF</color>
     <color name="colorIconGray">#D2D4DA</color>
+    <color name="colorIconAction">@color/colorGray</color>
 
     <color name="badger">#3D75E3</color>
     <color name="badgerMute">#B8BDC7</color>
