@@ -31,7 +31,12 @@
             android:textSize="14sp"
             app:drawableStartCompat="@drawable/ic_voice" />
 
-        <include android:id="@+id/data_wrapper" layout="@layout/date_wrapper"/>
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:background="@drawable/bg_bubble_shadow" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

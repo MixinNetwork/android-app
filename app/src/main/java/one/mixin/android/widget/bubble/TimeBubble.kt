@@ -20,16 +20,27 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
         gravity = Gravity.CENTER
     }
 
+    fun load(createdAt: String, isWhite: Boolean = false) {
+        load(
+            false,
+            createdAt,
+            null,
+            isPin = false,
+            isRepresentative = false,
+            isSecret = false,
+            isWhite = isWhite
+        )
+    }
+
     fun load(
         isMe: Boolean,
         createdAt: String,
-        status: String,
+        status: String?,
         isPin: Boolean,
         isRepresentative: Boolean,
         isSecret: Boolean,
         isWhite: Boolean = false
     ) {
-
         binding.chatTime.timeAgoClock(createdAt)
         binding.chatTime.setTextColor(
             context.getColor(
@@ -64,8 +75,8 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
                 AppCompatResources.getDrawable(context, R.drawable.ic_chat_representative)
             }
         )
-        binding.chatStatus.isVisible = isMe
-        if (isMe) {
+        binding.chatStatus.isVisible = isMe && status != null
+        if (isMe && status != null) {
             binding.chatStatus.setImageDrawable(
                 when (status) {
                     MessageStatus.SENDING.name ->

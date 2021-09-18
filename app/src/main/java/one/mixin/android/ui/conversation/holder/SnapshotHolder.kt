@@ -2,23 +2,18 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.Gravity
-import android.view.View
 import android.widget.FrameLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatBillBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.realSize
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
 
-class BillHolder constructor(val binding: ItemChatBillBinding) : BaseViewHolder(binding.root) {
+class SnapshotHolder constructor(val binding: ItemChatBillBinding) : BaseViewHolder(binding.root) {
 
     init {
-        binding.billTime.chatFlag.visibility = View.GONE
         binding.chatLayout.layoutParams.width = (itemView.context.realSize().x * 0.6).toInt()
     }
 
@@ -35,7 +30,6 @@ class BillHolder constructor(val binding: ItemChatBillBinding) : BaseViewHolder(
         this.onItemListener = onItemListener
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
-        binding.billTime.chatTime.timeAgoClock(messageItem.createdAt)
         binding.billIv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
         val amount = messageItem.snapshotAmount
         if (!amount.isNullOrBlank()) {
@@ -46,7 +40,6 @@ class BillHolder constructor(val binding: ItemChatBillBinding) : BaseViewHolder(
             }
         }
         binding.billSymbolTv.text = messageItem.assetSymbol
-        binding.billTime.chatSecret.isVisible = messageItem.isSignal()
         itemView.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
@@ -55,6 +48,9 @@ class BillHolder constructor(val binding: ItemChatBillBinding) : BaseViewHolder(
                 true
             }
         }
+
+        binding.chatTime.load(messageItem.createdAt)
+
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {

@@ -2,22 +2,14 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.View
-import android.view.View.GONE
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatRecallBinding
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
 class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHolder(binding.root) {
-
-    init {
-        binding.time.chatFlag.visibility = GONE
-    }
 
     fun bind(
         messageItem: MessageItem,
@@ -43,7 +35,6 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         } else {
             binding.chatName.visibility = View.GONE
         }
-        binding.time.chatSecret.isVisible = messageItem.isSignal()
         if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
             binding.chatName.compoundDrawablePadding = itemView.dip(3)
@@ -51,7 +42,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         chatLayout(isMe, isLast)
-        binding.time.chatTime.timeAgoClock(messageItem.createdAt)
+        binding.chatTime.load(messageItem.createdAt)
         binding.recallTv.text = if (isMe) {
             ctx.getString(R.string.chat_recall_me) + " "
         } else {
