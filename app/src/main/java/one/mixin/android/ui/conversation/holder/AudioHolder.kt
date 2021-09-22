@@ -9,6 +9,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem

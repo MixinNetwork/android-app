@@ -4,14 +4,15 @@ import android.graphics.Color
 import android.view.Gravity
 import android.widget.FrameLayout
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemChatBillBinding
+import one.mixin.android.databinding.ItemChatSnapshotBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 
-class SnapshotHolder constructor(val binding: ItemChatBillBinding) : BaseViewHolder(binding.root) {
+class SnapshotHolder constructor(val binding: ItemChatSnapshotBinding) : BaseViewHolder(binding.root) {
 
     init {
         binding.chatLayout.layoutParams.width = (itemView.context.realSize().x * 0.6).toInt()

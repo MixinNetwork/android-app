@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.holder
+package one.mixin.android.ui.conversation.holder.base
 
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator

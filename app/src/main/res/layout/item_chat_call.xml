@@ -35,8 +35,7 @@
             android:id="@+id/chat_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:background="@drawable/bg_bubble_shadow" />
+            android:layout_gravity="bottom|end" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

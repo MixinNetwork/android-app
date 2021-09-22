@@ -12,6 +12,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory

@@ -15,6 +15,7 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret

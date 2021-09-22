@@ -11,7 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.translationX
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import kotlin.math.max
 
 class ChatItemCallback(private val context: Context, private val listener: ItemCallbackListener) :

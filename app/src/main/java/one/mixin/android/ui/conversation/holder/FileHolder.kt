@@ -15,6 +15,7 @@ import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem

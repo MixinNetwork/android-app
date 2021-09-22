@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatRecallBinding
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
 

@@ -21,6 +21,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.location.MixinLatLng
 import one.mixin.android.ui.conversation.location.MixinMapView
 import one.mixin.android.ui.conversation.location.useMapbox

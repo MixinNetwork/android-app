@@ -10,6 +10,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
