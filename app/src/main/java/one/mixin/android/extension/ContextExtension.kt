@@ -180,7 +180,7 @@ fun Context.vibrate(pattern: LongArray) {
 }
 
 fun Context.tapVibrate() {
-    vibrate(longArrayOf(0, 30L))
+    vibrate(longArrayOf(0, 20L))
 }
 
 fun Context.dpToPx(dp: Float): Int {
