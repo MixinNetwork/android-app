@@ -900,7 +900,7 @@ fun Context.getDeviceId(): String {
 }
 
 fun Context.handleIgnoreBatteryOptimization(newTask: Boolean = false) {
-    if (Build.MANUFACTURER.equalsIgnoreCase("google")) {
+    if (Build.MANUFACTURER.equalsIgnoreCase("google") || Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
         requestIgnoreBatteryOptimization(newTask)
     } else {
         openIgnoreBatteryOptimizationSetting(newTask)
