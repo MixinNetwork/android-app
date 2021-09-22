@@ -51,7 +51,7 @@
         android:minWidth="30dp"
         android:textColor="#19BEF1"
         android:textSize="14sp"
-        app:layout_constraintBaseline_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toTopOf="@id/chat_layout"
         app:layout_constraintStart_toStartOf="@id/chat_layout" />
 
     <LinearLayout
