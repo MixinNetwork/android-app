@@ -54,7 +54,7 @@
                 android:layout_toStartOf="@id/chat_sticker_ib"
                 android:background="@null"
                 android:gravity="center_vertical"
-                android:inputType="textMultiLine|textNoSuggestions"
+                android:inputType="textMultiLine"
                 android:maxLines="5"
                 android:minHeight="36dp"
                 android:paddingStart="12dp"
