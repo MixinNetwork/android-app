@@ -33,6 +33,7 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
+import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.databinding.FragmentBottomSheetBinding
@@ -53,6 +54,7 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.common.NftBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -358,6 +360,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 } else {
                                     showError()
                                 }
+                            }
+                        }
+                        QrCodeType.non_fungible_request.name->{
+                            if (checkHasPin()) return@subscribe
+                            val nfoResponse = result.second as NonFungibleOutputResponse
+                            lifecycleScope.launch {
+                                NftBottomSheetDialogFragment.newInstance(nfoResponse)
+                                    .showNow(parentFragmentManager, NftBottomSheetDialogFragment.TAG)
+                                dismiss()
                             }
                         }
                         QrCodeType.payment.name -> {

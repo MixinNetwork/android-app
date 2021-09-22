@@ -12,40 +12,40 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OpponentMultisig
 import one.mixin.android.api.request.RawTransactionsRequest
+import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
-import one.mixin.android.databinding.FragmentMultisigsBottomSheetBinding
+import one.mixin.android.databinding.FragmentNftBottomSheetBinding
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
-import one.mixin.android.ui.common.biometric.MultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
-import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class MultisigsBottomSheetDialogFragment :
-    ValuableBiometricBottomSheetDialogFragment<MultisigsBiometricItem>() {
+class NftBottomSheetDialogFragment :
+    BiometricBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "MultisigsBottomSheetDialogFragment"
+        const val TAG = "NftBottomSheetDialogFragment"
+        const val ARGS_NON_FUNGIBLE_OUTPUT = "non_fungible_output"
 
-        inline fun <reified T : BiometricItem> newInstance(t: T) =
+        fun newInstance(t: NonFungibleOutputResponse) =
             MultisigsBottomSheetDialogFragment().withArgs {
-                putParcelable(ARGS_BIOMETRIC_ITEM, t)
+                putParcelable(ARGS_NON_FUNGIBLE_OUTPUT, t)
             }
-    }
-
-    private val t: MultisigsBiometricItem by lazy {
-        requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
     }
 
     private var success: Boolean = false
 
-    private val binding by viewBinding(FragmentMultisigsBottomSheetBinding::inflate)
+    private val binding by viewBinding(FragmentNftBottomSheetBinding::inflate)
+    private val nonFungibleOutput: NonFungibleOutputResponse by lazy {
+        requireArguments().getParcelable(ARGS_NON_FUNGIBLE_OUTPUT)!!
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -53,9 +53,8 @@ class MultisigsBottomSheetDialogFragment :
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
-        setBiometricItem()
 
-        val t = this.t
+        val t = nonFungibleOutput
         binding.apply {
             if (t is Multi2MultiBiometricItem) {
                 if (t.action == SignatureAction.cancel.name) {
@@ -143,17 +142,19 @@ class MultisigsBottomSheetDialogFragment :
         )
     }
 
-    override fun getBiometricItem() = t
-
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
+        nonFungibleOutput.state
         return when (val t = this.t) {
             is Multi2MultiBiometricItem -> {
                 when (t.action) {
                     SignatureAction.sign.name -> {
-                        bottomViewModel.signMultisigs(t.requestId, pin)
+                        bottomViewModel.signCollectibleTransfer(t.requestId, pin)
+                    }
+                    SignatureAction.unlock.name -> {
+                        bottomViewModel.unlockCollectibleTransfer(t.requestId, pin)
                     }
                     else -> {
-                        bottomViewModel.unlockMultisigs(t.requestId, pin)
+                        bottomViewModel.cancelCollectibleTransfer(t.requestId, pin)
                     }
                 }
             }
@@ -185,14 +186,14 @@ class MultisigsBottomSheetDialogFragment :
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        val t = this.t
+        val t = this.nonFungibleOutput
         if (!success &&
-            t is Multi2MultiBiometricItem &&
             t.state != SignatureState.signed.name &&
             t.state != SignatureState.unlocked.name
         ) {
             MixinApplication.appScope.launch {
-                bottomViewModel.cancelMultisigs(t.requestId)
+                // Todo
+                // bottomViewModel.cancelMultisigs(t.requestId)
             }
         }
     }
