@@ -669,6 +669,8 @@
         <item>Dark</item>
         <item>Follow system</item>
     </string-array>
+    <string name="setting_battery_optimize_title">To ensure that Mixin receives messages properly, please set Mixin\'s battery optimization policy to \"Don\'t Optimize\"</string>
+    <string name="go_set">Go settings</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>

@@ -650,6 +650,8 @@
         <item>暗黑</item>
         <item>跟随系统</item>
     </string-array>
+    <string name="setting_battery_optimize_title">为了保证 Mixin 能够正常收到消息，请将 Mixin 的电池优化策略设置为“不优化”</string>
+    <string name="go_set">去设置</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>
