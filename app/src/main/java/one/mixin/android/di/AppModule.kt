@@ -34,6 +34,7 @@ import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.CircleService
+import one.mixin.android.api.service.CollectibleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
@@ -264,6 +265,10 @@ object AppModule {
     @Singleton
     @Provides
     fun provideCircleService(retrofit: Retrofit) = retrofit.create(CircleService::class.java) as CircleService
+
+    @Singleton
+    @Provides
+    fun provideCollectibleService(retrofit: Retrofit) = retrofit.create(CollectibleService::class.java) as CollectibleService
 
     @Singleton
     @Provides

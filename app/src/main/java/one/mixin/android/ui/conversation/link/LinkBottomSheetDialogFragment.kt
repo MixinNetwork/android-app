@@ -33,6 +33,7 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
+import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.databinding.FragmentBottomSheetBinding
@@ -358,6 +359,13 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 } else {
                                     showError()
                                 }
+                            }
+                        }
+                        QrCodeType.non_fungible_request.name->{
+                            if (checkHasPin()) return@subscribe
+                            val nfoResponse = result.second as NonFungibleOutputResponse
+                            lifecycleScope.launch {
+                                // todo
                             }
                         }
                         QrCodeType.payment.name -> {
