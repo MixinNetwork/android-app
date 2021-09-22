@@ -144,15 +144,15 @@
     <string name="save_md">Save markdown</string>
     <string name="save_pdf">Save pdf</string>
     <string name="notice">Notice</string>
-    <string name="common_close">close</string>
-    <string name="common_copy">copy</string>
-    <string name="common_delete">delete</string>
-    <string name="common_add_sticker">add sticker</string>
-    <string name="common_forward">forward</string>
-    <string name="common_reply">reply</string>
-    <string name="common_share">share</string>
-    <string name="common_pin">pin</string>
-    <string name="common_unpin">unpin</string>
+    <string name="common_close">Close</string>
+    <string name="common_copy">Copy</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_add_sticker">Add sticker</string>
+    <string name="common_forward">Forward</string>
+    <string name="common_reply">Reply</string>
+    <string name="common_share">Share</string>
+    <string name="common_pin">Pin</string>
+    <string name="common_unpin">Unpin</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
