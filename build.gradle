@@ -107,7 +107,6 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
         mavenCentral()
         maven { url "https://jitpack.io" }
     }
@@ -124,7 +123,6 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
         maven { url "https://jitpack.io" }
         maven {
@@ -135,6 +133,16 @@ allprojects {
             credentials {
                 username = 'mapbox'
                 password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
+            }
+        }
+
+        //noinspection JcenterRepositoryObsolete
+        jcenter() {
+            content {
+                includeGroup("org.jetbrains.anko")
+                includeModule("com.zlc.glide", "webpdecoder")
+                includeModule("jp.wasabeef", "glide-transformations")
+                includeModule("com.dmitrymalkovich.android", "progress-fab")
             }
         }
     }
