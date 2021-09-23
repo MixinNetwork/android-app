@@ -19,6 +19,7 @@
         <item>@drawable/ic_flag_sgd</item>
         <item>@drawable/ic_flag_myr</item>
         <item>@drawable/ic_flag_php</item>
+        <item>@drawable/ic_flag_aed</item>
     </integer-array>
     <string-array name="currency_names">
         <item>CNY</item>
@@ -32,6 +33,7 @@
         <item>SGD</item>
         <item>MYR</item>
         <item>PHP</item>
+        <item>AED</item>
     </string-array>
     <string-array name="currency_symbols">
         <item>¥</item>
@@ -45,6 +47,7 @@
         <item>S$</item>
         <item>RM</item>
         <item>₱</item>
+        <item>AED&#160;</item>
     </string-array>
 
     <string-array name="language_names">
