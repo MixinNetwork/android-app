@@ -1,6 +1,5 @@
 package one.mixin.android.widget
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable

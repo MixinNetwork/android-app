@@ -2,11 +2,7 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.View
-<<<<<<< HEAD
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
-=======
->>>>>>> ab26fb393... Chat time layout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.extension.dpToPx

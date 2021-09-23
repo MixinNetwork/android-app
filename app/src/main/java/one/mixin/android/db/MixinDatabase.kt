@@ -38,11 +38,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_34_35
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_35_36
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_36_37
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_37_38
-<<<<<<< HEAD
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_38_39
-import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_39_40
-=======
->>>>>>> 9acfadf49... Support app encrypted
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
