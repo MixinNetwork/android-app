@@ -59,6 +59,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.ellipsize
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -837,7 +838,7 @@ class ConversationListFragment : LinkFragment() {
                                     conversationItem.senderFullName
                                 },
                                 pinMessage?.let { msg ->
-                                    " \"${msg.content}\""
+                                    " \"${msg.content?.ellipsize()}\""
                                 } ?: getText(R.string.chat_pin_empty_message)
                             ),
                             MentionRenderCache.singleton.getMentionRenderContext(

@@ -3,6 +3,7 @@ package one.mixin.android.vo
 import android.content.Context
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.R
+import one.mixin.android.extension.ellipsize
 
 class PinMessageMinimal(
     @SerializedName("message_id")
@@ -26,6 +27,6 @@ fun PinMessageMinimal?.explain(context: Context): CharSequence {
         isLocation() -> context.getText(R.string.chat_pin_location_message)
         isTranscript() -> context.getText(R.string.chat_pin_transcript_message)
         isAppCard() -> context.getText(R.string.chat_pin_card_message)
-        else -> " \"${content}\""
+        else -> " \"${content?.ellipsize()}\""
     }
 }

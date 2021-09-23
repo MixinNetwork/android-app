@@ -5,7 +5,6 @@ import java.util.regex.Pattern
 
 private val endAtPatter: Pattern by lazy { Pattern.compile("@(\\S*)(?<!\\s)\$") }
 private val urlPatter: Pattern by lazy { Pattern.compile("[a-zA-z]+://[^\\s]*") }
-
 fun String.endAt(): String? {
     val matcher = endAtPatter.matcher(this)
     return when {
@@ -67,4 +66,11 @@ fun String.findLastUrl(): String? {
         return m.group(0)
     }
     return null
+}
+
+fun String.ellipsize(): String {
+    if (length > 20) {
+        return "${this.subSequence(0, 20)}..."
+    }
+    return this
 }

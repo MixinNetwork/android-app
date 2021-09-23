@@ -17,6 +17,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ViewPinMessageLayoutBinding
 import one.mixin.android.event.PinMessageEvent
+import one.mixin.android.extension.ellipsize
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.sharedPreferences
@@ -121,7 +122,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                         message.userFullName
                     },
                     pinMessage?.let { msg ->
-                        " \"${msg.content}\""
+                        " \"${msg.content?.ellipsize()}\""
                     } ?: getText(R.string.chat_pin_empty_message)
                 ),
                 MentionRenderCache.singleton.getMentionRenderContext(

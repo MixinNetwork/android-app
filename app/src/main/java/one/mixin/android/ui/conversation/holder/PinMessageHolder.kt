@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSystemBinding
+import one.mixin.android.extension.ellipsize
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
@@ -61,7 +62,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
                         messageItem.userFullName
                     },
                     pinMessage?.let { msg ->
-                        " \"${msg.content}\""
+                        " \"${msg.content?.ellipsize()}\""
                     } ?: getText(R.string.chat_pin_empty_message)
                 ),
                 MentionRenderCache.singleton.getMentionRenderContext(
