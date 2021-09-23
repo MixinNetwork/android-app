@@ -140,7 +140,6 @@ allprojects {
         jcenter() {
             content {
                 includeGroup("org.jetbrains.anko")
-                includeModule("com.zlc.glide", "webpdecoder")
                 includeModule("jp.wasabeef", "glide-transformations")
                 includeModule("com.dmitrymalkovich.android", "progress-fab")
             }

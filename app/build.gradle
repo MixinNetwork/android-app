@@ -262,7 +262,7 @@ dependencies {
     implementation "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
-    implementation "com.zlc.glide:webpdecoder:$webpdecoderVesion"
+    implementation "com.github.zjupure:webpdecoder:2.0.$glideVersion"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
