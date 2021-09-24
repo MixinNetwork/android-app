@@ -8,8 +8,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import androidx.room.InvalidationTracker
@@ -32,6 +34,7 @@ import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
@@ -93,6 +96,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
 
+    private val powerManager by lazy { getSystemService<PowerManager>() }
+    private var isIgnoringBatteryOptimizations = false
+
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
@@ -109,14 +115,21 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        updateIgnoringBatteryOptimizations()
+
         if (intent == null) return START_STICKY
-        when (ACTION_TO_BACKGROUND) {
-            intent.action -> {
-                stopForeground(true)
-                return START_STICKY
+
+        if (intent.action == ACTION_TO_BACKGROUND) {
+            stopForeground(true)
+            if (!isIgnoringBatteryOptimizations) {
+                BatteryOptimizationDialogActivity.show(this, true)
             }
+            return START_STICKY
         }
-        setForegroundIfNecessary()
+
+        if (!isIgnoringBatteryOptimizations) {
+            setForegroundIfNecessary()
+        }
         return START_STICKY
     }
 
@@ -139,6 +152,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     override fun onSocketOpen() {
         runFloodJob()
         runAckJob()
+    }
+
+    private fun updateIgnoringBatteryOptimizations() {
+        isIgnoringBatteryOptimizations = powerManager?.isIgnoringBatteryOptimizations(packageName) ?: false
     }
 
     @SuppressLint("NewApi")

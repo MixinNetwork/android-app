@@ -136,6 +136,13 @@
     <string name="save_md">保存为 Markdown</string>
     <string name="save_pdf">保存为 Pdf</string>
     <string name="notice">注意</string>
+    <string name="common_close">关闭</string>
+    <string name="common_copy">复制</string>
+    <string name="common_delete">删除</string>
+    <string name="common_forward">转发</string>
+    <string name="common_reply">回复</string>
+    <string name="common_pin">置顶</string>
+    <string name="common_unpin">取消置顶</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -643,6 +650,8 @@
         <item>暗黑</item>
         <item>跟随系统</item>
     </string-array>
+    <string name="setting_battery_optimize_title">为了保证 Mixin 能够正常收到消息，请将 Mixin 的电池优化策略设置为“不优化”</string>
+    <string name="go_set">去设置</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>

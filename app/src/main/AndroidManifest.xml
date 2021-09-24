@@ -298,6 +298,10 @@
             android:theme="@style/AppTheme.Blur"
             android:launchMode="singleTop" />
 
+        <activity android:name=".ui.common.BatteryOptimizationDialogActivity"
+            android:theme="@style/AppTheme.Music"
+            android:launchMode="singleTop" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
