@@ -137,8 +137,8 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsNougat
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
@@ -2922,7 +2922,7 @@ class ConversationFragment() :
                     popupWindow.dismiss()
                 }
             }
-            requireContext().vibrate(longArrayOf(0, 50L))
+            requireContext().tapVibrate()
             PopupWindowCompat.showAsDropDown(popupWindow, binding.chatControl.anchorView, -200.dp, -110.dp, Gravity.END)
         }
 
