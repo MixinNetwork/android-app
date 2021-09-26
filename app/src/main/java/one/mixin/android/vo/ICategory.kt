@@ -7,7 +7,6 @@ import one.mixin.android.extension.generateConversationPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
 import java.io.File
@@ -113,19 +112,19 @@ fun ICategory.canRecall(): Boolean {
 }
 
 private val mediaPath by lazy {
-    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
+    MixinApplication.appContext.externalMediaDirs.first()
 }
 
 fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {
     val dirPath = mediaPath ?: return null
     return when {
         mediaUrl == null -> null
-        mediaUrl.startsWith(dirPath) -> mediaUrl
-        isImage() -> File(context.getImagePath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isVideo() -> File(context.getVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isAudio() -> File(context.getAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isData() -> File(context.getDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isTranscript() -> File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
+        mediaUrl.startsWith(dirPath.absolutePath) -> mediaUrl
+        isImage() -> File(context.getImagePath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isVideo() -> File(context.getVideoPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isAudio() -> File(context.getAudioPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isData() -> File(context.getDocumentPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isTranscript() -> File(context.getTranscriptDirPath(mediaPath), mediaUrl).toUri().toString()
         isLive() -> mediaUrl
         else -> null
     }

@@ -223,29 +223,24 @@ fun File.generateConversationPath(conversationId: String): File {
     return File("$this${File.separator}$conversationId")
 }
 
-fun Context.getImagePath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Images")
+fun Context.getImagePath(root: File? = null): File {
+    return File("${root ?: getMediaPath()}${File.separator}Images")
 }
 
-fun Context.getOtherPath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Others")
+fun Context.getOtherPath(root: File? = null): File {
+    return File("${root ?: getMediaPath()}${File.separator}Others")
 }
 
-fun Context.getDocumentPath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Files")
+fun Context.getDocumentPath(root: File? = null): File {
+    return File("${root ?: getMediaPath()}${File.separator}Files")
 }
 
-fun Context.getVideoPath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Videos")
+fun Context.getVideoPath(root: File? = null): File {
+    return File("${root ?: getMediaPath()}${File.separator}Videos")
 }
 
-fun Context.getAudioPath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Audios")
+fun Context.getAudioPath(root: File? = null): File {
+    return File("${root ?: getMediaPath()}${File.separator}Audios")
 }
 
 fun Context.getTranscriptFile(name: String, type: String): File {
@@ -255,9 +250,8 @@ fun Context.getTranscriptFile(name: String, type: String): File {
     )
 }
 
-fun Context.getTranscriptDirPath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Transcripts${File.separator}")
+fun Context.getTranscriptDirPath(root: File? = null): File {
+    return File("${root ?: getMediaPath()}${File.separator}Transcripts${File.separator}")
 }
 
 fun Context.getConversationImagePath(conversationId: String): File? {

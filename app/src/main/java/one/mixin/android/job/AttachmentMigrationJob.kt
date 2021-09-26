@@ -1,6 +1,6 @@
 package one.mixin.android.job
 
-import androidx.core.net.toUri
+import android.os.Build
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_LAST
@@ -17,7 +17,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getOldMediaPath
 import one.mixin.android.extension.getVideoPath
@@ -26,16 +25,18 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.getFile
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
-import java.io.File
+import java.nio.file.Files
 
 class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
         private const val GROUP_ID = "attachment_migration"
         private const val EACH = 10
+        private val root = MixinApplication.appContext.externalMediaDirs.first()
     }
-
+    
     override fun onRun() {
         val startTime = System.currentTimeMillis()
         val preferences = MixinApplication.appContext.defaultSharedPreferences
@@ -48,49 +49,75 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         if (!hasWritePermission()) return
         val list = messageDao.findAttachmentMigration(migrationLast, EACH, offset)
         list.forEach { attachment ->
-            val path = attachment.mediaUrl?.toUri()?.getFilePath() ?: return@forEach
-            val fromFile = File(path)
-            if (!fromFile.exists()) return@forEach
+            val fromFile = attachment.getFile(MixinApplication.appContext) ?: return@forEach
+            if (!fromFile.exists()) {
+                Timber.d("Attachment migration no exists ${messageDao.countAttachmentMigration()} ${fromFile.absolutePath} ")
+                return@forEach
+            }
             val toFile = when (attachment.category) {
                 MessageCategory.PLAIN_IMAGE.name, MessageCategory.SIGNAL_IMAGE.name -> {
                     when {
                         attachment.mediaMimeType?.isImageSupport() == false -> {
-                            MixinApplication.get().getImagePath().createEmptyTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getImagePath(root)
+                                .createEmptyTemp(attachment.conversationId, attachment.messageId)
                         }
                         attachment.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createImageTemp(attachment.conversationId, attachment.messageId, ".png")
+                            MixinApplication.get().getImagePath(root).createImageTemp(
+                                attachment.conversationId,
+                                attachment.messageId,
+                                ".png"
+                            )
                         }
                         attachment.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createGifTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getImagePath(root)
+                                .createGifTemp(attachment.conversationId, attachment.messageId)
                         }
                         attachment.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createWebpTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getImagePath(root)
+                                .createWebpTemp(attachment.conversationId, attachment.messageId)
                         }
                         else -> {
-                            MixinApplication.get().getImagePath().createImageTemp(attachment.conversationId, attachment.messageId, ".jpg")
+                            MixinApplication.get().getImagePath(root).createImageTemp(
+                                attachment.conversationId,
+                                attachment.messageId,
+                                ".jpg"
+                            )
                         }
                     }
                 }
                 MessageCategory.PLAIN_DATA.name, MessageCategory.SIGNAL_DATA.name -> {
                     val extensionName = attachment.name?.getExtensionName()
-                    MixinApplication.get().getDocumentPath()
-                        .createDocumentTemp(attachment.conversationId, attachment.messageId, extensionName)
+                    MixinApplication.get().getDocumentPath(root)
+                        .createDocumentTemp(
+                            attachment.conversationId,
+                            attachment.messageId,
+                            extensionName
+                        )
                 }
                 MessageCategory.PLAIN_VIDEO.name, MessageCategory.SIGNAL_VIDEO.name -> {
                     val extensionName = attachment.name?.getExtensionName().let {
                         it ?: "mp4"
                     }
-                    MixinApplication.get().getVideoPath()
-                        .createVideoTemp(attachment.conversationId, attachment.messageId, extensionName)
+                    MixinApplication.get().getVideoPath(root)
+                        .createVideoTemp(
+                            attachment.conversationId,
+                            attachment.messageId,
+                            extensionName
+                        )
                 }
                 MessageCategory.PLAIN_AUDIO.name, MessageCategory.SIGNAL_AUDIO.name -> {
-                    MixinApplication.get().getAudioPath()
+                    MixinApplication.get().getAudioPath(root)
                         .createAudioTemp(attachment.conversationId, attachment.messageId, "ogg")
                 }
                 else -> null
             }
             toFile ?: return@forEach
-            fromFile.renameTo(toFile)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Files.move(fromFile.toPath(), toFile.toPath())
+            }else{
+                fromFile.renameTo(toFile)
+            }
+            Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
             messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
         }
         preferences.putLong(PREF_ATTACHMENT_OFFSET, offset + list.size)
