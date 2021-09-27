@@ -1,15 +1,14 @@
 package one.mixin.android.widget.imageeditor.renderers;
 
-import static java.util.Collections.emptyList;
-
 import android.animation.ValueAnimator;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.view.animation.Interpolator;
 
 import androidx.annotation.ColorInt;
@@ -19,31 +18,46 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
+
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.ColorableRenderer;
+import one.mixin.android.widget.imageeditor.DimensionUnit;
 import one.mixin.android.widget.imageeditor.RendererContext;
+import one.mixin.android.widget.imageeditor.SelectableRenderer;
+
 
 /**
  * Renders multiple lines of {@link #text} in ths specified {@link #color}.
  * <p>
  * Scales down the text size of long lines to fit inside the {@link Bounds} width.
  */
-public final class MultiLineTextRenderer extends InvalidateableRenderer implements ColorableRenderer {
+public final class MultiLineTextRenderer extends InvalidateableRenderer implements ColorableRenderer, SelectableRenderer {
+
+  private static final float HIT_PADDING                  = DimensionUnit.DP.toPixels(30);
+  private static final float HIGHLIGHT_HORIZONTAL_PADDING = DimensionUnit.DP.toPixels(8);
+  private static final float HIGHLIGHT_TOP_PADDING        = DimensionUnit.DP.toPixels(10);
+  private static final float HIGHLIGHT_BOTTOM_PADDING     = DimensionUnit.DP.toPixels(6);
+  private static final float HIGHLIGHT_CORNER_RADIUS      = DimensionUnit.DP.toPixels(4);
 
   @NonNull
   private String text = "";
+
+  private static final int PADDING = 10;
 
   @ColorInt
   private int color;
 
   private final Paint paint          = new Paint();
   private final Paint selectionPaint = new Paint();
+  private final Paint modePaint      = new Paint();
 
   private final float textScale;
 
   private int     selStart;
   private int     selEnd;
   private boolean hasFocus;
+  private Mode    mode;
 
   private List<Line> lines = emptyList();
 
@@ -52,14 +66,29 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
 
   private final Matrix recommendedEditorMatrix = new Matrix();
 
-  public MultiLineTextRenderer(@Nullable String text, @ColorInt int color) {
-    setColor(color);
+  private final RectF textBounds = new RectF();
+
+  public MultiLineTextRenderer(@Nullable String text, @ColorInt int color, @NonNull Mode mode) {
+    this.mode = mode;
+
+    Typeface typeface = getTypeface();
+
+    modePaint.setAntiAlias(true);
+    modePaint.setTextSize(100);
+    modePaint.setTypeface(typeface);
+
+    setColorInternal(color);
+
     float regularTextSize = paint.getTextSize();
+
     paint.setAntiAlias(true);
     paint.setTextSize(100);
-    paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+    paint.setTypeface(typeface);
+
     textScale = paint.getTextSize() / regularTextSize;
+
     selectionPaint.setAntiAlias(true);
+
     setText(text != null ? text : "");
     createLinesForText();
   }
@@ -68,9 +97,15 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
   public void render(@NonNull RendererContext rendererContext) {
     super.render(rendererContext);
 
+    float height = 0;
+    float width  = 0;
     for (Line line : lines) {
       line.render(rendererContext);
+      height += line.heightInBounds - line.ascentInBounds + line.descentInBounds;
+      width = Math.max(line.textBounds.width(), width);
     }
+
+    textBounds.set(-width - PADDING, -PADDING, width + PADDING, height / 2f + PADDING);
   }
 
   @NonNull
@@ -83,6 +118,14 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
       this.text = text;
       createLinesForText();
     }
+  }
+
+  public void nextMode() {
+    setMode(Mode.fromCode(mode.code + 1));
+  }
+
+  public @NonNull Mode getMode() {
+    return mode;
   }
 
   /**
@@ -140,6 +183,8 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
     private final Matrix inverseProjectionMatrix = new Matrix();
     private final RectF  selectionBounds         = new RectF();
     private final RectF  textBounds              = new RectF();
+    private final RectF  hitBounds               = new RectF();
+    private final RectF  modeBounds              = new RectF();
 
     private String text;
     private int    selStart;
@@ -160,6 +205,12 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
 
       getTextBoundsWithoutTrim(text, 0, text.length(), temp);
       textBounds.set(temp);
+      hitBounds.set(textBounds);
+
+      hitBounds.left   -= HIT_PADDING;
+      hitBounds.right  += HIT_PADDING;
+      hitBounds.top    -= HIT_PADDING;
+      hitBounds.bottom += HIT_PADDING;
 
       maxTextBounds.set(textBounds);
       float widthLimit = 150 * textScale;
@@ -222,12 +273,12 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
 
     private boolean showSelectionOrCursor() {
       return (selStart >= 0             || selEnd >= 0) &&
-             (selStart <= text.length() || selEnd <= text.length());
+              (selStart <= text.length() || selEnd <= text.length());
     }
 
     private boolean containsSelectionEnd() {
       return (selEnd >= 0) &&
-             (selEnd <= text.length());
+              (selEnd <= text.length());
     }
 
     private void getTextBoundsWithoutTrim(String text, int start, int end, Rect result) {
@@ -251,7 +302,7 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
 
       inverseProjectionMatrix.mapPoints(dst, new float[]{ x, y });
 
-      return textBounds.contains(dst[0], dst[1]);
+      return hitBounds.contains(dst[0], dst[1]);
     }
 
     void setText(String text) {
@@ -269,6 +320,31 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
 
       rendererContext.canvasMatrix.concat(projectionMatrix);
 
+      if (mode == Mode.HIGHLIGHT) {
+        modeBounds.set(textBounds.left - HIGHLIGHT_HORIZONTAL_PADDING,
+                selectionBounds.top - HIGHLIGHT_TOP_PADDING,
+                textBounds.right + HIGHLIGHT_HORIZONTAL_PADDING,
+                selectionBounds.bottom + HIGHLIGHT_BOTTOM_PADDING);
+
+        int alpha = modePaint.getAlpha();
+        modePaint.setAlpha(rendererContext.getAlpha(alpha));
+        rendererContext.canvas.drawRoundRect(modeBounds, HIGHLIGHT_CORNER_RADIUS, HIGHLIGHT_CORNER_RADIUS, modePaint);
+        modePaint.setAlpha(alpha);
+      } else if (mode == Mode.UNDERLINE) {
+        modeBounds.set(textBounds.left, selectionBounds.top, textBounds.right, selectionBounds.bottom);
+        modeBounds.inset(-DimensionUnit.DP.toPixels(2), -DimensionUnit.DP.toPixels(2));
+
+        modeBounds.set(modeBounds.left,
+                Math.max(modeBounds.top, modeBounds.bottom - DimensionUnit.DP.toPixels(6)),
+                modeBounds.right,
+                modeBounds.bottom - DimensionUnit.DP.toPixels(2));
+
+        int alpha = modePaint.getAlpha();
+        modePaint.setAlpha(rendererContext.getAlpha(alpha));
+        rendererContext.canvas.drawRect(modeBounds, modePaint);
+        modePaint.setAlpha(alpha);
+      }
+
       if (hasFocus && showSelectionOrCursor()) {
         if (selStart == selEnd) {
           selectionPaint.setAlpha((int) (cursorAnimatedValue * 128));
@@ -284,6 +360,13 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
       rendererContext.canvas.drawText(text, 0, 0, paint);
 
       paint.setAlpha(alpha);
+
+      if (mode == Mode.OUTLINE) {
+        int modeAlpha = modePaint.getAlpha();
+        modePaint.setAlpha(rendererContext.getAlpha(alpha));
+        rendererContext.canvas.drawText(text, 0, 0, modePaint);
+        modePaint.setAlpha(modeAlpha);
+      }
 
       rendererContext.restore();
 
@@ -308,21 +391,22 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
   @Override
   public void setColor(@ColorInt int color) {
     if (this.color != color) {
-      this.color = color;
-      paint.setColor(color);
-      selectionPaint.setColor(color);
-      invalidate();
+      setColorInternal(color);
     }
   }
 
   @Override
+  public void onSelected(boolean selected) {
+  }
+
+  @Override
+  public void getSelectionBounds(@NonNull RectF bounds) {
+    bounds.set(textBounds);
+  }
+
+  @Override
   public boolean hitTest(float x, float y) {
-    for (Line line : lines) {
-      y += line.ascentInBounds;
-      if (line.contains(x, y)) return true;
-      y -= line.descentInBounds;
-    }
-    return false;
+    return textBounds.contains(x, y);
   }
 
   public void setSelection(int selStart, int selEnd) {
@@ -361,10 +445,39 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
     }
   }
 
-  public static final Parcelable.Creator<MultiLineTextRenderer> CREATOR = new Parcelable.Creator<MultiLineTextRenderer>() {
+  private void setMode(@NonNull Mode mode) {
+    if (this.mode != mode) {
+      this.mode = mode;
+      setColorInternal(color);
+    }
+  }
+
+  private void setColorInternal(@ColorInt int color) {
+    this.color = color;
+
+    if (mode == Mode.REGULAR) {
+      paint.setColor(color);
+      selectionPaint.setColor(color);
+    } else {
+      paint.setColor(Color.WHITE);
+      selectionPaint.setColor(Color.WHITE);
+    }
+
+    if (mode == Mode.OUTLINE) {
+      modePaint.setStrokeWidth(DimensionUnit.DP.toPixels(15) / 10f);
+      modePaint.setStyle(Paint.Style.STROKE);
+    } else {
+      modePaint.setStyle(Paint.Style.FILL);
+    }
+
+    modePaint.setColor(color);
+    invalidate();
+  }
+
+  public static final Creator<MultiLineTextRenderer> CREATOR = new Creator<MultiLineTextRenderer>() {
     @Override
     public MultiLineTextRenderer createFromParcel(Parcel in) {
-      return new MultiLineTextRenderer(in.readString(), in.readInt());
+      return new MultiLineTextRenderer(in.readString(), in.readInt(), Mode.fromCode(in.readInt()));
     }
 
     @Override
@@ -382,6 +495,7 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeString(text);
     dest.writeInt(color);
+    dest.writeInt(mode.code);
   }
 
   private static Interpolator pulseInterpolator() {
@@ -392,5 +506,39 @@ public final class MultiLineTextRenderer extends InvalidateableRenderer implemen
       }
       return Math.max(0, Math.min(1, input));
     };
+  }
+
+  private static @NonNull Typeface getTypeface() {
+    if (Build.VERSION.SDK_INT < 26) {
+      return Typeface.create(Typeface.DEFAULT, Typeface.BOLD);
+    } else {
+      return new Typeface.Builder("")
+              .setFallback("sans-serif")
+              .setWeight(900)
+              .build();
+    }
+  }
+
+  public enum Mode {
+    REGULAR(0),
+    HIGHLIGHT(1),
+    UNDERLINE(2),
+    OUTLINE(3);
+
+    private final int code;
+
+    Mode(int code) {
+      this.code = code;
+    }
+
+    private static Mode fromCode(int code) {
+      for (final Mode value : Mode.values()) {
+        if (value.code == code) {
+          return value;
+        }
+      }
+
+      return REGULAR;
+    }
   }
 }

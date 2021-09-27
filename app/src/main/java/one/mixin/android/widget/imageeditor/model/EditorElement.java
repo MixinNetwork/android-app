@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import one.mixin.android.widget.imageeditor.MatrixUtils;
 import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
+
 
 /**
  * An image consists of a tree of {@link EditorElement}s.
@@ -212,6 +214,34 @@ public final class EditorElement implements Parcelable {
     }
   }
 
+  public @Nullable EditorElement findParent(@NonNull EditorElement editorElement) {
+    for (EditorElement child : children) {
+      if (child == editorElement) {
+        return this;
+      } else {
+        EditorElement element = child.findParent(editorElement);
+        if (element != null) {
+          return element;
+        }
+      }
+    }
+    return null;
+  }
+
+  public @Nullable EditorElement findElementWithId(@NonNull UUID id) {
+    for (EditorElement child : children) {
+      if (id.equals(child.id)) {
+        return child;
+      } else {
+        EditorElement element = child.findElementWithId(id);
+        if (element != null) {
+          return element;
+        }
+      }
+    }
+    return null;
+  }
+
   void deleteChild(@NonNull EditorElement editorElement, @Nullable Runnable invalidate) {
     Iterator<EditorElement> iterator = children.iterator();
     while (iterator.hasNext()) {
@@ -227,12 +257,20 @@ public final class EditorElement implements Parcelable {
     fromElement.animateFadeOut(invalidate);
   }
 
-  private void animateFadeOut(@Nullable Runnable invalidate) {
+  void animateFadeOut(@Nullable Runnable invalidate) {
     alphaAnimation = AlphaAnimation.animate(1, 0, invalidate);
   }
 
   void animateFadeIn(@Nullable Runnable invalidate) {
     alphaAnimation = AlphaAnimation.animate(0, 1, invalidate);
+  }
+
+  public void animatePartialFadeOut(@Nullable Runnable invalidate) {
+    alphaAnimation = AlphaAnimation.animate(alphaAnimation.getValue(), 0.5f, invalidate);
+  }
+
+  public void animatePartialFadeIn(@Nullable Runnable invalidate) {
+    alphaAnimation = AlphaAnimation.animate(alphaAnimation.getValue(), 1f, invalidate);
   }
 
   @Nullable EditorElement parentOf(@NonNull EditorElement element) {
@@ -257,6 +295,18 @@ public final class EditorElement implements Parcelable {
 
   public int getZOrder() {
     return zOrder;
+  }
+
+  public void deleteAllChildren() {
+    children.clear();
+  }
+
+  public float getLocalRotationAngle() {
+    return MatrixUtils.getRotationAngle(localMatrix);
+  }
+
+  public float getLocalScaleX() {
+    return MatrixUtils.getScaleX(localMatrix);
   }
 
   public interface PerElementFunction {

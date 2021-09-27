@@ -3,7 +3,6 @@ package one.mixin.android.ui.imageeditor
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
@@ -23,7 +22,7 @@ import com.warkiz.widget.SeekParams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_INCOGNITO_KEYBOARD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentImageEditorBinding
 import one.mixin.android.extension.alertDialogBuilder
@@ -33,20 +32,25 @@ import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.save
+import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.imageeditor.ColorPaletteAdapter.Companion.paletteColors
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITOR_RESULT
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_IMAGE_URI
 import one.mixin.android.widget.PrevNextView
 import one.mixin.android.widget.imageeditor.ColorableRenderer
 import one.mixin.android.widget.imageeditor.ImageEditorView
+import one.mixin.android.widget.imageeditor.SelectableRenderer
+import one.mixin.android.widget.imageeditor.ThrottledDebouncer
 import one.mixin.android.widget.imageeditor.model.EditorElement
 import one.mixin.android.widget.imageeditor.model.EditorModel
+import one.mixin.android.widget.imageeditor.renderers.BezierDrawingRenderer
 import one.mixin.android.widget.imageeditor.renderers.MultiLineTextRenderer
 
-class ImageEditorFragment : BaseFragment() {
+class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     companion object {
         const val TAG = "ImageEditorFragment"
 
@@ -57,27 +61,6 @@ class ImageEditorFragment : BaseFragment() {
         }
     }
 
-    private val paletteColors = listOf(
-        Color.parseColor("#DBDCE0"),
-        Color.parseColor("#81868C"),
-        Color.parseColor("#202125"),
-        Color.parseColor("#F5AEA8"),
-        Color.parseColor("#F28B82"),
-        Color.parseColor("#D83025"),
-        Color.parseColor("#D2E4FC"),
-        Color.parseColor("#669DF7"),
-        Color.parseColor("#1A73E9"),
-        Color.parseColor("#FDE293"),
-        Color.parseColor("#FCC834"),
-        Color.parseColor("#EB8600"),
-        Color.parseColor("#A8DAB5"),
-        Color.parseColor("#34A853"),
-        Color.parseColor("#198039"),
-        Color.parseColor("#D7AEFC"),
-        Color.parseColor("#A142F4"),
-        Color.parseColor("#B430CE"),
-    )
-
     private var currentSelection: EditorElement? = null
     private var currentMode = Mode.None
     private var activeColor = paletteColors[5]
@@ -87,17 +70,13 @@ class ImageEditorFragment : BaseFragment() {
 
     private val imageUri: Uri by lazy { requireArguments().getParcelable(ARGS_IMAGE_URI)!! }
 
+    private val deleteFadeDebouncer = ThrottledDebouncer(500)
+    private var wasInTrashHitZone = false
+
     private val colorPaletteAdapter = ColorPaletteAdapter(
         paletteColors[5],
         onColorChanged = { c ->
-            activeColor = c
-            binding.imageEditorView.setDrawingBrushColor(c)
-            if (currentSelection != null) {
-                val render = currentSelection?.renderer
-                if (render is ColorableRenderer) {
-                    render.color = c
-                }
-            }
+            onColorChanged(c)
         }
     ).apply {
         submitList(paletteColors)
@@ -137,6 +116,7 @@ class ImageEditorFragment : BaseFragment() {
         binding.imageEditorView.apply {
             setDrawingBrushColor(paletteColors[5])
             setTapListener(tapListener)
+            setDragListener(dragListener)
             setDrawingChangedListener { }
             setUndoRedoStackListener(this@ImageEditorFragment::onUndoRedoAvailabilityChanged)
         }
@@ -170,17 +150,21 @@ class ImageEditorFragment : BaseFragment() {
 
     private fun onModeSet(mode: Mode) {
         binding.apply {
-            imageEditorView.setMode(ImageEditorView.Mode.MoveAndResize)
+            imageEditorView.mode = ImageEditorView.Mode.MoveAndResize
             imageEditorView.doneTextEditing()
 
+            if (mode != Mode.Crop) {
+                imageEditorView.model.doneCrop()
+            }
+
+            binding.imageEditorView.model.trash.flags.setVisible(mode == Mode.Delete).persist()
+
             when (mode) {
-                Mode.None -> {
-                    imageEditorView.model.doneCrop()
-                    currentSelection = null
-                }
+                Mode.None -> currentSelection = null
                 Mode.Crop -> imageEditorView.model.startCrop()
                 Mode.Text -> addText()
                 Mode.Draw -> imageEditorView.startDrawing(binding.sizeSeekbar.progressFloat / 100, Paint.Cap.ROUND, false)
+                else -> {}
             }
         }
     }
@@ -191,8 +175,9 @@ class ImageEditorFragment : BaseFragment() {
         when (mode) {
             Mode.None -> presentModeNone()
             Mode.Crop -> presentModeCrop()
-            Mode.Text -> presentModeText()
+            Mode.Text -> presentModeText(!notify)
             Mode.Draw -> presentModeDraw()
+            Mode.Delete -> {}
         }
 
         if (notify) {
@@ -211,6 +196,17 @@ class ImageEditorFragment : BaseFragment() {
                     context?.openPermissionSetting()
                 }
             }
+    }
+
+    private fun onColorChanged(c: Int) {
+        activeColor = c
+        binding.imageEditorView.setDrawingBrushColor(c)
+        if (currentSelection != null) {
+            val render = currentSelection?.renderer
+            if (render is ColorableRenderer) {
+                render.color = c
+            }
+        }
     }
 
     private fun cancel() {
@@ -243,15 +239,15 @@ class ImageEditorFragment : BaseFragment() {
         }
     }
 
-    private fun presentModeText() {
+    private fun presentModeText(showTools: Boolean) {
         binding.apply {
-            editorLl.isVisible = true
+            editorLl.isVisible = showTools
             tabLl.isVisible = false
             title.isVisible = false
             typeTv.isVisible = true
             undoRedoView.isVisible = false
             typeTv.text = getString(R.string.text)
-            colorRv.isVisible = true
+            colorRv.isVisible = showTools
             seekbarLl.isVisible = false
         }
     }
@@ -278,19 +274,21 @@ class ImageEditorFragment : BaseFragment() {
     }
 
     private fun startTextEntityEditing(textElement: EditorElement, selectAll: Boolean) {
-        binding.imageEditorView.startTextEditing(
+        binding.imageEditorView.startTextEditing(textElement)
+
+        TextEntryDialogFragment.show(
+            childFragmentManager,
             textElement,
-            defaultSharedPreferences.getBoolean(
-                Constants.Account.PREF_INCOGNITO_KEYBOARD, false
-            ),
-            selectAll
+            defaultSharedPreferences.getBoolean(PREF_INCOGNITO_KEYBOARD, false),
+            selectAll,
+            activeColor
         )
     }
 
     private fun addText() {
         val initialText = ""
         val color = activeColor
-        val render = MultiLineTextRenderer(initialText, color)
+        val render = MultiLineTextRenderer(initialText, color, MultiLineTextRenderer.Mode.REGULAR)
         val element = EditorElement(render, EditorModel.Z_TEXT)
         binding.imageEditorView.apply {
             model.addElementCentered(element, 1f)
@@ -342,6 +340,23 @@ class ImageEditorFragment : BaseFragment() {
         }
     }
 
+    override fun onTextEntryDialogDismissed(hasText: Boolean) {
+        binding.imageEditorView.doneTextEditing()
+        if (hasText) {
+            setMode(Mode.Text, false)
+        } else {
+            setMode(Mode.None)
+        }
+    }
+
+    override fun zoomToFitText(editorElement: EditorElement, textRenderer: MultiLineTextRenderer) {
+        binding.imageEditorView.zoomToFitText(editorElement, textRenderer)
+    }
+
+    override fun onTextColorChange(color: Int) {
+        onColorChanged(color)
+    }
+
     private val onSeekChangeListener = object : OnSeekChangeListener {
         override fun onSeeking(seekParams: SeekParams) {
         }
@@ -355,41 +370,104 @@ class ImageEditorFragment : BaseFragment() {
         }
     }
 
-    private val tapListener = object : ImageEditorView.TapListener {
-        override fun onEntityDown(editorElement: EditorElement?) {
-            currentSelection = null
-            setMode(Mode.None)
+    private val dragListener = object : ImageEditorView.DragListener {
+        override fun onDragStarted(editorElement: EditorElement?) {
+            if (currentMode == Mode.Crop) {
+                return
+            }
+            currentSelection = if (editorElement == null || editorElement.renderer is BezierDrawingRenderer) {
+                null
+            } else {
+                editorElement
+            }
+            if (binding.imageEditorView.mode == ImageEditorView.Mode.MoveAndResize) {
+                setMode(Mode.Delete)
+            }
         }
 
-        override fun onEntitySingleTap(editorElement: EditorElement?) {
-            currentSelection = editorElement
-            if (currentSelection != null) {
-                if (editorElement?.renderer is MultiLineTextRenderer) {
-                    setTextElement(editorElement, editorElement.renderer as ColorableRenderer, binding.imageEditorView.isTextEditing)
+        override fun onDragMoved(editorElement: EditorElement?, isInTrashHitZone: Boolean) {
+            if (currentMode == Mode.Crop || editorElement == null) {
+                return
+            }
+            if (isInTrashHitZone) {
+                deleteFadeDebouncer.publish {
+                    if (!wasInTrashHitZone) {
+                        wasInTrashHitZone = true
+                        requireContext().tapVibrate()
+                    }
+                    editorElement.animatePartialFadeOut(binding.imageEditorView::invalidate)
+                }
+            } else {
+                deleteFadeDebouncer.publish {
+                    wasInTrashHitZone = false
+                    editorElement.animatePartialFadeIn(binding.imageEditorView::invalidate)
                 }
             }
         }
 
-        override fun onEntityDoubleTap(editorElement: EditorElement) {
-            currentSelection = editorElement
+        override fun onDragEnded(editorElement: EditorElement?, isInTrashHitZone: Boolean) {
+            wasInTrashHitZone = false
+            if (currentMode == Mode.Crop || currentMode == Mode.Draw) {
+                return
+            }
+            if (isInTrashHitZone) {
+                deleteFadeDebouncer.clear()
+                binding.imageEditorView.deleteElement(currentSelection)
+                currentSelection = null
+            } else if (editorElement != null && editorElement.renderer is MultiLineTextRenderer) {
+                editorElement.animatePartialFadeIn(binding.imageEditorView::invalidate)
+            }
+            setMode(Mode.None)
+        }
+    }
+
+    private val tapListener = object : ImageEditorView.TapListener {
+        override fun onEntityDown(editorElement: EditorElement?) {
+        }
+
+        override fun onEntitySingleTap(editorElement: EditorElement?) {
+            setCurrentSelection(editorElement)
             if (currentSelection != null) {
-                if (editorElement.renderer is MultiLineTextRenderer) {
-                    setTextElement(editorElement, editorElement.renderer as ColorableRenderer, true)
+                if (editorElement?.renderer is MultiLineTextRenderer) {
+                    setTextElement(editorElement, editorElement.renderer as ColorableRenderer, binding.imageEditorView.isTextEditing)
                 }
+            } else {
+                setMode(Mode.None)
+            }
+        }
+
+        override fun onEntityDoubleTap(editorElement: EditorElement) {
+            setCurrentSelection(editorElement)
+            if (editorElement.renderer is MultiLineTextRenderer) {
+                setTextElement(editorElement, editorElement.renderer as ColorableRenderer, true)
             }
         }
 
         private fun setTextElement(editorElement: EditorElement, colorableRenderer: ColorableRenderer, startEditing: Boolean) {
             val color = colorableRenderer.color
-            setMode(Mode.Text)
+            setMode(Mode.Text, startEditing)
             activeColor = color
             if (startEditing) {
                 startTextEntityEditing(editorElement, false)
             }
         }
+
+        private fun setCurrentSelection(selection: EditorElement?) {
+            setSelectionState(currentSelection, false)
+            currentSelection = selection
+            setSelectionState(currentSelection, true)
+            binding.imageEditorView.invalidate()
+        }
+
+        private fun setSelectionState(editorElement: EditorElement?, selected: Boolean) {
+            if (editorElement != null && editorElement.renderer is SelectableRenderer) {
+                (editorElement.renderer as SelectableRenderer).onSelected(selected)
+            }
+            binding.imageEditorView.model.setSelected(if (selected) editorElement else null)
+        }
     }
 
     enum class Mode {
-        None, Crop, Text, Draw
+        None, Crop, Text, Draw, Delete,
     }
 }

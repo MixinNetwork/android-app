@@ -1,6 +1,7 @@
 package one.mixin.android.ui.imageeditor
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -66,5 +67,28 @@ class ColorPaletteAdapter(
                 }
             }
         }
+    }
+
+    companion object {
+        val paletteColors = listOf(
+            Color.parseColor("#DBDCE0"),
+            Color.parseColor("#81868C"),
+            Color.parseColor("#202125"),
+            Color.parseColor("#F5AEA8"),
+            Color.parseColor("#F28B82"),
+            Color.parseColor("#D83025"),
+            Color.parseColor("#D2E4FC"),
+            Color.parseColor("#669DF7"),
+            Color.parseColor("#1A73E9"),
+            Color.parseColor("#FDE293"),
+            Color.parseColor("#FCC834"),
+            Color.parseColor("#EB8600"),
+            Color.parseColor("#A8DAB5"),
+            Color.parseColor("#34A853"),
+            Color.parseColor("#198039"),
+            Color.parseColor("#D7AEFC"),
+            Color.parseColor("#A142F4"),
+            Color.parseColor("#B430CE"),
+        )
     }
 }

@@ -963,3 +963,15 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
         }
     }
 }
+
+inline fun <reified T> Fragment.findListener(): T? {
+    var parent: Fragment? = parentFragment
+    while (parent != null) {
+        if (parent is T) {
+            return parent
+        }
+        parent = parent.parentFragment
+    }
+
+    return requireActivity() as? T
+}
