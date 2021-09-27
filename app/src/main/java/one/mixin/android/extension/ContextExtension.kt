@@ -29,6 +29,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
+import android.os.VibrationEffect.EFFECT_CLICK
 import android.os.Vibrator
 import android.provider.Browser
 import android.provider.MediaStore
@@ -170,17 +171,21 @@ fun Context.isActivityNotDestroyed(): Boolean {
     return true
 }
 
-@Suppress("DEPRECATION")
-fun Context.vibrate(pattern: LongArray) {
-    if (Build.VERSION.SDK_INT >= 26) {
+fun Context.vibrate(effect: VibrationEffect?, pattern: LongArray = longArrayOf(0, 20L)) {
+    if (effect != null && Build.VERSION.SDK_INT >= 26) {
+        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(effect)
+    } else if (Build.VERSION.SDK_INT >= 26) {
         (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(VibrationEffect.createWaveform(pattern, -1))
     } else {
         (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(pattern, -1)
     }
 }
-
 fun Context.tapVibrate() {
-    vibrate(longArrayOf(0, 30L))
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        vibrate(VibrationEffect.createPredefined(EFFECT_CLICK))
+    } else {
+        vibrate(null)
+    }
 }
 
 fun Context.dpToPx(dp: Float): Int {
