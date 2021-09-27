@@ -115,7 +115,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             if (botNumber != null && botNumber.isNotBlank()) {
                 recipientId = userRepository.findUserIdByAppNumber(message.conversationId, botNumber)
                 recipientId?.let {
-                    message.category = MessageCategory.ENCRYPTED_TEXT.name
+                    message.category = MessageCategory.PLAIN_TEXT.name
                 }
             }
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId, isSilent = isSilentMessage))

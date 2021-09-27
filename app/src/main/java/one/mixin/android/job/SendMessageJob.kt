@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
 import one.mixin.android.RxBus
-import one.mixin.android.api.ChecksumException
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawUrlDecode
@@ -191,12 +190,13 @@ open class SendMessageJob(
     private fun sendEncryptedMessage() {
         val conversation = conversationDao.findConversationById(message.conversationId) ?: return
         checkConversationExist(conversation)
-        val participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
+        var participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
         if (participantSessionKey == null || participantSessionKey.publicKey.isNullOrBlank()) {
             syncConversation(message.conversationId)
-            throw ChecksumException()
+            participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
         }
-        if (participantSessionKey.publicKey.isNullOrBlank()) {
+        // No session key, can't encrypt message, send PLAIN directly
+        if (participantSessionKey?.publicKey == null) {
             message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
             messageDao.updateCategoryById(message.id, message.category)
             sendPlainMessage()
@@ -214,7 +214,7 @@ open class SendMessageJob(
             } else {
                 message.content!!.toByteArray()
             },
-            participantSessionKey.publicKey.base64RawUrlDecode(),
+            participantSessionKey.publicKey!!.base64RawUrlDecode(),
             participantSessionKey.sessionId,
             extensionSessionKey?.publicKey?.base64RawUrlDecode(), extensionSessionKey?.sessionId
         )
