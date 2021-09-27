@@ -764,7 +764,7 @@
     <string name="bottom_deposit_title">%1$s Deposit</string>
     <string name="bottom_deposit_tip_eos">Alamat ini mendukung semua token berbasis EOS, seperti EOS, IQ, dll.</string>
     <string name="bottom_deposit_tip_eth">Alamat ini mendukung semua token ERC-20, seperti ETH, XIN, dll.</string>
-    <string name="bottom_deposit_tip_btc">Alamat ini hanya mendukung BTC dan Omni USDT.</string>
+    <string name="bottom_deposit_tip_btc">Alamat ini hanya mendukung BTC.</string>
     <string name="bottom_deposit_tip_trx">Alamat ini mendukung semua token TRC-10 dan TRC-20, seperti TRX, BTT, USDT-TRON, dll.</string>
     <string name="bottom_deposit_tip_common">Alamat ini hanya mendukung %1$s.</string>
     <!--sticker-->

@@ -805,7 +805,7 @@
     <string name="bottom_deposit_title">Deposit %1$s</string>
     <string name="bottom_deposit_tip_eos">Alamat ini menyokong semua asas pada token EOS, seperti EOS, IQ, dll.</string>
     <string name="bottom_deposit_tip_eth">Alamat ini menyokong semua token ERC-20, seperti ETH, XIN, dll.</string>
-    <string name="bottom_deposit_tip_btc">Alamat ini hanya menyokong BTC dan Omni USDT.</string>
+    <string name="bottom_deposit_tip_btc">Alamat ini hanya menyokong BTC.</string>
     <string name="bottom_deposit_tip_trx">Alamat ini menyokong semua token TRC-10 dan TRC-20, seperti TRX, BTT, USDT-TRON, dll.</string>
     <string name="bottom_deposit_tip_common">Alamat ini hanya menyokong %1$s.</string>
     <string name="bottom_transfer_stranger_tip">ID Mixin %1$s tidak ada dalam senarai kenalan anda. Pastikan penerima yang anda pilih betul. Sekiranya anda pindah ke orang yang salah, aset anda akan hilang!</string>
