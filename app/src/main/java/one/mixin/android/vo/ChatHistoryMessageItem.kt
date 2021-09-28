@@ -17,9 +17,9 @@ import one.mixin.android.extension.getLegacyAudioPath
 import one.mixin.android.extension.getLegacyDocumentPath
 import one.mixin.android.extension.getLegacyImagePath
 import one.mixin.android.extension.getLegacyMediaPath
+import one.mixin.android.extension.getLegacyTranscriptDirPath
 import one.mixin.android.extension.getLegacyVideoPath
 import one.mixin.android.extension.getPublicPicturePath
-import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.toast
@@ -184,7 +184,7 @@ fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appC
             isVideo() -> File(context.getLegacyVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
             isAudio() -> File(context.getLegacyAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
             isData() -> File(context.getLegacyDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-            isTranscript() -> File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
+            isTranscript() -> File(context.getLegacyTranscriptDirPath(), mediaUrl).toUri().toString()
             else -> null
         }
     }
@@ -194,6 +194,6 @@ fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appC
         url == null -> null
         isLive() -> url
         url.startsWith(mediaPath) -> url
-        else -> File(context.getTranscriptDirPath(), url).toUri().toString()
+        else -> File(context.getLegacyTranscriptDirPath(), url).toUri().toString()
     }
 }

@@ -279,6 +279,7 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id` ON `pin_messages` (`conversation_id`)")
                 database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_user_id_status_created_at`")
                 database.execSQL("DROP INDEX IF EXISTS `index_messages_conversation_id_status_user_id`")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id_created_at` ON `messages` (`conversation_id`, `status`,`user_id`, `created_at`)")
             }
         }
 

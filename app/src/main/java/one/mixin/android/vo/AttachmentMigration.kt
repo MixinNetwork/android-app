@@ -5,12 +5,12 @@ import androidx.core.net.toUri
 import androidx.room.ColumnInfo
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.generateConversationPath
-import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.getDocumentPath
-import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getMediaPath
-import one.mixin.android.extension.getTranscriptDirPath
-import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.getLegacyAudioPath
+import one.mixin.android.extension.getLegacyDocumentPath
+import one.mixin.android.extension.getLegacyImagePath
+import one.mixin.android.extension.getLegacyMediaPath
+import one.mixin.android.extension.getLegacyTranscriptDirPath
+import one.mixin.android.extension.getLegacyVideoPath
 import java.io.File
 
 class AttachmentMigration(
@@ -29,25 +29,25 @@ class AttachmentMigration(
 )
 
 private val mediaPath by lazy {
-    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
+    MixinApplication.appContext.getLegacyMediaPath()?.toUri()?.toString()
 }
 
 fun AttachmentMigration.getFile(context: Context): File? {
     return when {
         mediaUrl == null -> null
         category.endsWith("_IMAGE") -> File(
-            context.getImagePath().generateConversationPath(conversationId), mediaUrl
+            context.getLegacyImagePath().generateConversationPath(conversationId), mediaUrl
         )
         category.endsWith("_VIDEO") -> File(
-            context.getVideoPath().generateConversationPath(conversationId), mediaUrl
+            context.getLegacyVideoPath().generateConversationPath(conversationId), mediaUrl
         )
         category.endsWith("_AUDIO") -> File(
-            context.getAudioPath().generateConversationPath(conversationId), mediaUrl
+            context.getLegacyAudioPath().generateConversationPath(conversationId), mediaUrl
         )
         category.endsWith("_DATA") -> File(
-            context.getDocumentPath().generateConversationPath(conversationId), mediaUrl
+            context.getLegacyDocumentPath().generateConversationPath(conversationId), mediaUrl
         )
-        category.endsWith("_TRANSCRIPT") -> File(context.getTranscriptDirPath(), mediaUrl)
+        category.endsWith("_TRANSCRIPT") -> File(context.getLegacyTranscriptDirPath(), mediaUrl)
         else -> null
     }
 }

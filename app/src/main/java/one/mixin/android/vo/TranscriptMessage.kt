@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getLegacyMediaPath
-import one.mixin.android.extension.getTranscriptDirPath
+import one.mixin.android.extension.getLegacyTranscriptDirPath
 import one.mixin.android.util.JsonSkip
 import java.io.File
 import java.io.Serializable
@@ -141,6 +141,6 @@ fun TranscriptMessage.absolutePath(context: Context = MixinApplication.appContex
     return when {
         url == null -> null
         url.startsWith(mediaPath) -> url
-        else -> File(context.getTranscriptDirPath(), url).toUri().toString()
+        else -> File(context.getLegacyTranscriptDirPath(), url).toUri().toString()
     }
 }

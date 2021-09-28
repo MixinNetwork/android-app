@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.media.ThumbnailUtils
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -68,33 +69,30 @@ fun Context.checkStorageNotLow(lowAction: () -> Unit, defaultAction: () -> Unit)
     }
 }
 
-private fun Context.getLegacyAppPath(): File? {
-    return if (!hasWritePermission()) {
-        null
-    } else if (isAvailable()) {
-        File(
-            "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
-        )
-    } else {
-        val externalFile = ContextCompat.getExternalFilesDirs(this, null)
-        val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}")
-        root.mkdirs()
-        return if (root.exists()) {
-            root
-        } else {
-            getBestAvailableCacheRoot()
+private fun Context.getAppPath(legacy: Boolean = false): File? {
+    return when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !legacy -> {
+            externalMediaDirs.first()
+        }
+        hasWritePermission() && isAvailable() -> {
+            File(
+                "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
+            )
+        }
+        else -> {
+            null
         }
     }
 }
 
-fun Context.getLegacyMediaPath(): File? {
-    val path = getLegacyAppPath() ?: return null
+fun Context.getLegacyMediaPath(legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
-fun Context.getOldMediaPath(): File? {
-    val path = getLegacyAppPath() ?: return null
+fun Context.getOldMediaPath(legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val f = File("${path.absolutePath}${File.separator}Media")
     if (f.exists()) {
         return f
@@ -102,8 +100,8 @@ fun Context.getOldMediaPath(): File? {
     return null
 }
 
-fun Context.getLegacyBackupPath(create: Boolean = false): File? {
-    val path = getLegacyAppPath() ?: return null
+fun Context.getLegacyBackupPath(create: Boolean = false, legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Backup")
     if (create && (!f.exists() || !f.isDirectory)) {
@@ -113,8 +111,8 @@ fun Context.getLegacyBackupPath(create: Boolean = false): File? {
     return f
 }
 
-fun Context.getOldBackupPath(create: Boolean = false): File? {
-    val path = getLegacyAppPath() ?: return null
+fun Context.getOldBackupPath(create: Boolean = false, legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$identityNumber")
     if (create && (!f.exists() || !f.isDirectory)) {
@@ -244,13 +242,13 @@ fun Context.getLegacyAudioPath(root: File? = null): File {
 }
 
 fun Context.getTranscriptFile(name: String, type: String): File {
-    return getTranscriptDirPath().newTempFile(
+    return getLegacyTranscriptDirPath().newTempFile(
         name, type,
         true
     )
 }
 
-fun Context.getTranscriptDirPath(root: File? = null): File {
+fun Context.getLegacyTranscriptDirPath(root: File? = null): File {
     return File("${root ?: getLegacyMediaPath()}${File.separator}Transcripts${File.separator}")
 }
 
