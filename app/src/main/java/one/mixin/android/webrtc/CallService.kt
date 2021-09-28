@@ -16,7 +16,8 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.extension.supportsOreo
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
@@ -201,7 +202,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             callState.connectedTime = connectedTime
             callState.state = CallState.STATE_CONNECTED
             updateForegroundNotification()
-            tapVibrate()
+            heavyClickVibrate()
             audioManager.stop()
             pipCallView.startTimer(connectedTime)
         }

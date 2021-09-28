@@ -13,9 +13,10 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.landing.InitializeActivity
@@ -121,7 +122,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
 
     private val mKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.tickVibrate()
             if (position == 11) {
                 pinVerificationView.delete()
             } else {
@@ -130,7 +131,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.clickVibrate()
             if (position == 11) {
                 pinVerificationView.clear()
             } else {

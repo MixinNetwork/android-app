@@ -30,6 +30,9 @@ import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
 import android.os.VibrationEffect.EFFECT_CLICK
+import android.os.VibrationEffect.EFFECT_DOUBLE_CLICK
+import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
+import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
 import android.provider.Browser
 import android.provider.MediaStore
@@ -180,11 +183,35 @@ fun Context.vibrate(effect: VibrationEffect?, pattern: LongArray = longArrayOf(0
         (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(pattern, -1)
     }
 }
-fun Context.tapVibrate() {
+fun Context.tickVibrate() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        vibrate(VibrationEffect.createPredefined(EFFECT_TICK))
+    } else {
+        vibrate(effect = null, pattern = longArrayOf(0, 10L))
+    }
+}
+
+fun Context.clickVibrate() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         vibrate(VibrationEffect.createPredefined(EFFECT_CLICK))
     } else {
-        vibrate(null)
+        vibrate(effect = null, pattern = longArrayOf(0, 20L))
+    }
+}
+
+fun Context.heavyClickVibrate() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        vibrate(VibrationEffect.createPredefined(EFFECT_HEAVY_CLICK))
+    } else {
+        vibrate(effect = null, pattern = longArrayOf(0, 30L))
+    }
+}
+
+fun Context.doubleClickVibrate() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        vibrate(VibrationEffect.createPredefined(EFFECT_DOUBLE_CLICK))
+    } else {
+        vibrate(effect = null, pattern = longArrayOf(0, 30L))
     }
 }
 

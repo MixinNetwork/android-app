@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.event.MentionReadEvent
+import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
@@ -220,6 +221,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         var longPressed = false
 
         override fun onDoubleTap(e: MotionEvent?): Boolean {
+            view.context.doubleClickVibrate()
             onItemListener.onTextDoubleClick(messageItem)
             return true
         }
