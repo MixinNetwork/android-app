@@ -287,10 +287,10 @@ class WebFragment : BaseFragment() {
                     binding.iconIv.setImageBitmap(icon)
                 }
                 isFinished = clip.isFinished
-                clip.webView ?: MixinWebView(requireContext())
+                clip.webView ?: MixinWebView(MixinApplication.appContext)
             }
         } else {
-            MixinWebView(requireContext())
+            MixinWebView(MixinApplication.appContext)
         }
         if (webView.parent != null) {
             (webView.parent as? ViewGroup)?.removeView(webView)
@@ -321,7 +321,7 @@ class WebFragment : BaseFragment() {
             }
         )
         if (requireContext().checkInlinePermissions()) {
-            showClip(requireActivity())
+            showClip()
         }
     }
 
@@ -718,7 +718,7 @@ class WebFragment : BaseFragment() {
             musicViewModel.showPlaylist(playlist) {
                 if (viewDestroyed()) return@showPlaylist
                 if (checkFloatingPermission()) {
-                    one.mixin.android.ui.player.collapse(requireActivity(), MUSIC_PLAYLIST)
+                    one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
                 } else {
                     requireActivity().showPipPermissionNotification(
                         MusicActivity::class.java,
@@ -778,7 +778,7 @@ class WebFragment : BaseFragment() {
         webView.stopLoading()
         when {
             hold -> {
-                holdClip(requireActivity(), generateWebClip())
+                holdClip(generateWebClip())
             }
             index < 0 -> {
                 webView.destroy()

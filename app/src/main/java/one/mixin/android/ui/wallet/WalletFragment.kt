@@ -154,6 +154,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
 
     override fun onDestroyView() {
         super.onDestroyView()
+        assetsAdapter.headerView = null
         _headBinding = null
         _bottomBinding = null
     }

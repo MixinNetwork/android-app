@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
@@ -87,23 +86,23 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
-    fun init(activity: Activity) {
+    fun init() {
         if (!::windowView.isInitialized) {
-            initWindowView(activity)
+            initWindowView()
         }
         if (!::windowLayoutParams.isInitialized) {
             initWindowLayoutParams()
         }
     }
 
-    fun show(activity: Activity, force: Boolean = true) {
-        if (!activity.checkInlinePermissions()) return
+    fun show(force: Boolean = true) {
+        if (!appContext.checkInlinePermissions()) return
 
-        if (isNightMode != activity.isNightMode()) {
-            recreate(activity.isNightMode()).show(activity, true)
+        if (isNightMode != appContext.isNightMode()) {
+            recreate(appContext.isNightMode()).show(true)
         } else {
             if (!isShown) {
-                init(activity)
+                init()
                 isShown = true
                 windowManager.addView(windowView, windowLayoutParams)
             }
@@ -134,11 +133,11 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
 
-    private fun initWindowView(activity: Activity) {
+    private fun initWindowView() {
         val realSize = appContext.realSize()
         val realX = realSize.x
         val realY = realSize.y
-        windowView = object : FrameLayout(activity) {
+        windowView = object : FrameLayout(appContext) {
             private var startX: Float = 0f
             private var startY: Float = 0f
             private var downX = -1f
@@ -204,12 +203,12 @@ class FloatingWebClip(private var isNightMode: Boolean) {
             }
         }
 
-        avatarsView = FloatingAvatarsView(activity).apply {
+        avatarsView = FloatingAvatarsView(appContext).apply {
             initParams(2, 40, if (isNightMode) appContext.getColor(R.color.bgWindowNight) else Color.WHITE)
         }
 
         windowView.addView(
-            FrameLayout(activity).apply {
+            FrameLayout(appContext).apply {
                 if (isNightMode) {
                     setBackgroundResource(R.drawable.bg_floating_shadow_night)
                 } else {

@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
@@ -93,27 +92,27 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
-    fun init(activity: Activity) {
+    fun init() {
         if (!::windowView.isInitialized) {
-            initWindowView(activity)
+            initWindowView()
         }
         if (!::windowLayoutParams.isInitialized) {
             initWindowLayoutParams()
         }
     }
 
-    fun show(activity: Activity, force: Boolean = true, conversationId: String? = null) {
-        if (!activity.checkInlinePermissions()) return
+    fun show(force: Boolean = true, conversationId: String? = null) {
+        if (!appContext.checkInlinePermissions()) return
 
         if (conversationId != null && this.conversationId != conversationId) {
             this.conversationId = conversationId
         }
 
-        if (isNightMode != activity.isNightMode()) {
-            recreate(activity.isNightMode()).show(activity, true, this.conversationId)
+        if (isNightMode != appContext.isNightMode()) {
+            recreate(appContext.isNightMode()).show(true, this.conversationId)
         } else {
             if (!isShown) {
-                init(activity)
+                init()
                 isShown = true
                 windowManager.addView(windowView, windowLayoutParams)
             }
@@ -127,11 +126,11 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         animateToBoundsMaybe()
     }
 
-    private fun initWindowView(activity: Activity) {
+    private fun initWindowView() {
         val realSize = appContext.realSize()
         val realX = realSize.x
         val realY = realSize.y
-        windowView = object : FrameLayout(activity) {
+        windowView = object : FrameLayout(appContext) {
             private var startX: Float = 0f
             private var startY: Float = 0f
             private var downX = -1f
@@ -197,13 +196,13 @@ class FloatingPlayer(private var isNightMode: Boolean) {
             }
         }
 
-        musicView = RLottieImageView(activity)
-        musicBgView = View(activity).apply {
+        musicView = RLottieImageView(appContext)
+        musicBgView = View(appContext).apply {
             setBackgroundResource(R.drawable.bg_music)
         }
 
         windowView.addView(
-            FrameLayout(activity).apply {
+            FrameLayout(appContext).apply {
                 if (isNightMode) {
                     setBackgroundResource(R.drawable.bg_floating_shadow_night)
                 } else {
@@ -314,6 +313,6 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     }
 }
 
-fun collapse(activity: Activity, conversationId: String? = null) {
-    FloatingPlayer.getInstance().show(activity, conversationId = conversationId)
+fun collapse(conversationId: String? = null) {
+    FloatingPlayer.getInstance().show(conversationId = conversationId)
 }

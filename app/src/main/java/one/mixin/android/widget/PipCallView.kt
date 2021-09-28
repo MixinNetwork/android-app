@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
@@ -112,7 +111,6 @@ class PipCallView {
     }
 
     fun show(
-        activity: Activity,
         connectedTime: Long? = null,
         callState: CallStateLiveData
     ) {
@@ -122,7 +120,7 @@ class PipCallView {
         val realSize = appContext.realSize()
         val realX = if (isLandscape) realSize.y else realSize.x
         val realY = if (isLandscape) realSize.x else realSize.y
-        windowView = object : FrameLayout(activity) {
+        windowView = object : FrameLayout(appContext) {
             private var startX: Float = 0f
             private var startY: Float = 0f
 

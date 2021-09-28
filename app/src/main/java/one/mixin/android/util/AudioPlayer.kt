@@ -95,7 +95,7 @@ class AudioPlayer private constructor() {
 
         private var statusListener: StatusListener? = null
 
-        fun setStatusListener(statusListener: StatusListener) {
+        fun setStatusListener(statusListener: StatusListener?) {
             this.statusListener = statusListener
         }
 

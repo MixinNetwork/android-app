@@ -265,14 +265,14 @@ open class MixinApplication :
             if (activity !is WebActivity) {
                 currentActivity = activity
                 appScope.launch(Dispatchers.Main) {
-                    refresh(activity)
+                    refresh()
                 }
             }
             if (activity !is MusicActivity) {
                 currentActivity = activity
                 appScope.launch(Dispatchers.Main) {
                     if (isMusicServiceRunning(activity)) {
-                        FloatingPlayer.getInstance(activity.isNightMode()).show(activity, false)
+                        FloatingPlayer.getInstance(activity.isNightMode()).show(false)
                     }
                 }
             }

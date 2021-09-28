@@ -234,7 +234,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (!checkPipPermission()) {
                         return@setOnClickListener
                     }
-                    pipCallView.show(requireActivity(), callState.connectedTime, callState)
+                    pipCallView.show(callState.connectedTime, callState)
                 }
                 dismiss()
             }
@@ -585,7 +585,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 return
             }
             if (callState.isInUse() && checkPipPermission()) {
-                pipCallView.show(requireActivity(), callState.connectedTime, callState)
+                pipCallView.show(callState.connectedTime, callState)
             }
         }
     }
