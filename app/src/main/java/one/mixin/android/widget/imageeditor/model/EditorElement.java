@@ -81,7 +81,7 @@ public final class EditorElement implements Parcelable {
     in.readTypedList(children, EditorElement.CREATOR);
   }
 
-  UUID getId() {
+  public UUID getId() {
     return id;
   }
 

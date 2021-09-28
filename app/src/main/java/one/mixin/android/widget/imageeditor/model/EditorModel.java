@@ -26,7 +26,6 @@ import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
 import one.mixin.android.widget.imageeditor.UndoRedoStackListener;
 import one.mixin.android.widget.imageeditor.renderers.BezierDrawingRenderer;
-import one.mixin.android.widget.imageeditor.renderers.CropAreaRenderer;
 import one.mixin.android.widget.imageeditor.renderers.FaceBlurRenderer;
 import one.mixin.android.widget.imageeditor.renderers.MultiLineTextRenderer;
 
@@ -888,29 +887,17 @@ public final class EditorModel implements Parcelable, RendererContext.Ready {
     updateUndoRedoAvailableState(undoRedoStacks);
   }
 
-  public void clearBezierDrawingRenderers() {
+  public void clearRendererByIds(Set<String> idSet, boolean isBezier) {
     EditorElement mainImage = editorElementHierarchy.getMainImage();
     if (mainImage != null) {
       boolean hasPushedUndo = false;
       for (int i = mainImage.getChildCount() - 1; i >= 0; i--) {
-        if (mainImage.getChild(i).getRenderer() instanceof BezierDrawingRenderer) {
-          if (!hasPushedUndo) {
-            pushUndoPoint();
-            hasPushedUndo = true;
-          }
-
-          mainImage.deleteChild(mainImage.getChild(i), invalidate);
+        EditorElement e = mainImage.getChild(i);
+        if (!idSet.contains(e.getId().toString())) {
+          continue;
         }
-      }
-    }
-  }
-
-  public void clearMultiLineTextRenderers() {
-    EditorElement mainImage = editorElementHierarchy.getMainImage();
-    if (mainImage != null) {
-      boolean hasPushedUndo = false;
-      for (int i = mainImage.getChildCount() - 1; i >= 0; i--) {
-        if (mainImage.getChild(i).getRenderer() instanceof MultiLineTextRenderer) {
+        Renderer render = e.getRenderer();
+        if ((!isBezier && render instanceof MultiLineTextRenderer) || (isBezier && render instanceof BezierDrawingRenderer) ) {
           if (!hasPushedUndo) {
             pushUndoPoint();
             hasPushedUndo = true;

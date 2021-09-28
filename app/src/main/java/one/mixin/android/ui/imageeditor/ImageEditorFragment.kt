@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.arraySetOf
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -73,6 +74,8 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     private val deleteFadeDebouncer = ThrottledDebouncer(500)
     private var wasInTrashHitZone = false
 
+    private val currentElementIds = arraySetOf<String>()
+
     private val colorPaletteAdapter = ColorPaletteAdapter(
         paletteColors[5],
         onColorChanged = { c ->
@@ -117,6 +120,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             setDrawingBrushColor(paletteColors[5])
             setTapListener(tapListener)
             setDragListener(dragListener)
+            setDrawListener(drawListener)
             setDrawingChangedListener { }
             setUndoRedoStackListener(this@ImageEditorFragment::onUndoRedoAvailabilityChanged)
         }
@@ -158,6 +162,8 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             }
 
             binding.imageEditorView.model.trash.flags.setVisible(mode == Mode.Delete).persist()
+
+            currentElementIds.clear()
 
             when (mode) {
                 Mode.None -> currentSelection = null
@@ -211,8 +217,8 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
 
     private fun cancel() {
         when (currentMode) {
-            Mode.Text -> binding.imageEditorView.model.clearMultiLineTextRenderers()
-            Mode.Draw -> binding.imageEditorView.model.clearBezierDrawingRenderers()
+            Mode.Text -> binding.imageEditorView.model.clearRendererByIds(currentElementIds, false)
+            Mode.Draw -> binding.imageEditorView.model.clearRendererByIds(currentElementIds, true)
             Mode.Crop -> undo()
             else -> {}
         }
@@ -295,6 +301,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             invalidate()
         }
         currentSelection = element
+        currentElementIds.add(element.id.toString())
         startTextEntityEditing(element, true)
     }
 
@@ -420,6 +427,8 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             setMode(Mode.None)
         }
     }
+
+    private val drawListener = ImageEditorView.DrawListener { id -> currentElementIds.add(id) }
 
     private val tapListener = object : ImageEditorView.TapListener {
         override fun onEntityDown(editorElement: EditorElement?) {

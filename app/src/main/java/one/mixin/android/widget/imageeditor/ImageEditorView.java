@@ -80,6 +80,8 @@ public final class ImageEditorView extends FrameLayout {
     private TapListener     tapListener;
     private RendererContext rendererContext;
 
+    private DrawListener drawListener;
+
     @Nullable
     private EditSession editSession;
     private boolean     moreThanOnePointerUsedInSession;
@@ -385,6 +387,9 @@ public final class ImageEditorView extends FrameLayout {
 
         Matrix elementInverseMatrix = model.findElementInverseMatrix(element, viewMatrix);
 
+        if (drawListener != null) {
+            drawListener.onStartDraw(element.getId().toString());
+        }
         return DrawingSession.start(element, renderer, elementInverseMatrix, point);
     }
 
@@ -487,6 +492,10 @@ public final class ImageEditorView extends FrameLayout {
         this.tapListener = tapListener;
     }
 
+    public void setDrawListener(DrawListener drawListener) {
+        this.drawListener = drawListener;
+    }
+
     public void deleteElement(@Nullable EditorElement editorElement) {
         if (editorElement != null) {
             model.delete(editorElement);
@@ -567,5 +576,9 @@ public final class ImageEditorView extends FrameLayout {
         void onEntitySingleTap(@Nullable EditorElement editorElement);
 
         void onEntityDoubleTap(@NonNull EditorElement editorElement);
+    }
+
+    public interface DrawListener {
+        void onStartDraw(String id);
     }
 }
