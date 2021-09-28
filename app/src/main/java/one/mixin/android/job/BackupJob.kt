@@ -18,7 +18,7 @@ import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.getCacheMediaPath
-import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.getLegacyMediaPath
 import one.mixin.android.extension.moveChileFileToDir
 import one.mixin.android.extension.toast
 import one.mixin.android.util.PropertyHelper
@@ -70,7 +70,7 @@ class BackupJob(private val force: Boolean = false) : BaseJob(
     }
 
     private fun cleanMedia() {
-        val mediaPath = MixinApplication.appContext.getMediaPath()?.absolutePath ?: return
+        val mediaPath = MixinApplication.appContext.getLegacyMediaPath()?.absolutePath ?: return
         val mediaCachePath = MixinApplication.appContext.getCacheMediaPath()
         if (!mediaCachePath.exists()) {
             return

@@ -7,7 +7,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
-import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.view.KeyEvent
@@ -43,10 +42,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT_LAST
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT_OFFSET
-import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
@@ -83,7 +78,6 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -138,7 +132,6 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -297,6 +290,7 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(BackupJob())
+
         jobManager.addJobInBackground(RefreshAccountJob())
 
         if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
@@ -316,6 +310,29 @@ class MainActivity : BlazeBaseActivity() {
         PropertyHelper.checkAttachmentMigrated(this@MainActivity) {
             jobManager.addJobInBackground(AttachmentMigrationJob())
         }
+
+        /* todo media migration
+         if (!defaultSharedPreferences.getBoolean(PREF_MEDIA_STORE, false)) {
+            if (hasRWMediaStorePermission()) {
+                jobManager.addJobInBackground(MediaStoreMigrationJob())
+            } else {
+                RxPermissions(this)
+                    .request(
+                        android.Manifest.permission.CAMERA,
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                jobManager.addJobInBackground(MediaStoreMigrationJob())
+                            }
+                        }, {}
+                    )
+            }
+        }
+         */
 
         PropertyHelper.checkBackupMigrated(this@MainActivity) {
             jobManager.addJobInBackground(BackupMigrationJob())

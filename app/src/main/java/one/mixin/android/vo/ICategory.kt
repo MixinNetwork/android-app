@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.core.net.toUri
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.generateConversationPath
-import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.getDocumentPath
-import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getLegacyAudioPath
+import one.mixin.android.extension.getLegacyDocumentPath
+import one.mixin.android.extension.getLegacyImagePath
+import one.mixin.android.extension.getLegacyVideoPath
 import one.mixin.android.extension.getTranscriptDirPath
-import one.mixin.android.extension.getVideoPath
 import java.io.File
 
 interface ICategory {
@@ -120,10 +120,10 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
     return when {
         mediaUrl == null -> null
         mediaUrl.startsWith(dirPath.absolutePath) -> mediaUrl
-        isImage() -> File(context.getImagePath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isVideo() -> File(context.getVideoPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isAudio() -> File(context.getAudioPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isData() -> File(context.getDocumentPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isImage() -> File(context.getLegacyImagePath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isVideo() -> File(context.getLegacyVideoPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isAudio() -> File(context.getLegacyAudioPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isData() -> File(context.getLegacyDocumentPath(mediaPath).generateConversationPath(conversationId), mediaUrl).toUri().toString()
         isTranscript() -> File(context.getTranscriptDirPath(mediaPath), mediaUrl).toUri().toString()
         isLive() -> mediaUrl
         else -> null

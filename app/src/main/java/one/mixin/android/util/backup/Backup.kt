@@ -12,7 +12,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.runInTransaction
-import one.mixin.android.extension.getBackupPath
+import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getOldBackupPath
 import one.mixin.android.util.PropertyHelper
 import java.io.File
@@ -33,7 +33,7 @@ suspend fun backup(
         return@coroutineScope
     }
 
-    val backupDir = context.getBackupPath(true) ?: return@coroutineScope
+    val backupDir = context.getLegacyBackupPath(true) ?: return@coroutineScope
     val availableSize = StatFs(backupDir.path).availableBytes
     if (availableSize < dbFile.length()) {
         withContext(Dispatchers.Main) {
@@ -143,7 +143,7 @@ suspend fun restore(
 suspend fun delete(
     context: Context
 ): Boolean = withContext(Dispatchers.IO) {
-    val backupDir = context.getBackupPath()
+    val backupDir = context.getLegacyBackupPath()
     return@withContext backupDir?.deleteRecursively() ?: return@withContext false
 }
 
@@ -158,7 +158,7 @@ suspend fun findNewBackup(
     context: Context,
     coroutineContext: CoroutineContext
 ): File? = withContext(coroutineContext) {
-    val backupDir = context.getBackupPath() ?: return@withContext null
+    val backupDir = context.getLegacyBackupPath() ?: return@withContext null
     if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
     if (checkDb("$backupDir${File.separator}$DB_NAME")) {
         return@withContext File("$backupDir${File.separator}$DB_NAME")

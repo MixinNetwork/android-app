@@ -22,7 +22,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentNewGroupBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getLegacyOtherPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openImage
@@ -57,7 +57,7 @@ class NewGroupFragment : BaseFragment() {
     private val groupViewModel by viewModels<GroupViewModel>()
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
     private val imageUri: Uri by lazy {
-        Uri.fromFile(context?.getOtherPath()?.createImageTemp())
+        Uri.fromFile(context?.getLegacyOtherPath()?.createImageTemp())
     }
     private var resultUri: Uri? = null
     private val adapter = NewGroupAdapter()

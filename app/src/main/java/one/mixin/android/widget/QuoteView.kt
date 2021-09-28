@@ -16,9 +16,9 @@ import one.mixin.android.databinding.ViewQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.generateConversationPath
-import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getMediaPath
-import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.getLegacyImagePath
+import one.mixin.android.extension.getLegacyMediaPath
+import one.mixin.android.extension.getLegacyVideoPath
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.renderMessage
@@ -485,17 +485,17 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
         conversationId: String,
         context: Context = MixinApplication.appContext
     ): String? {
-        val mediaPath = context.getMediaPath()?.toUri()?.toString() ?: return null
+        val mediaPath = context.getLegacyMediaPath()?.toUri()?.toString() ?: return null
         return when {
             mediaUrl == null -> null
             mediaUrl.startsWith(mediaPath) -> mediaUrl
             type == MessageCategory.SIGNAL_IMAGE.name || type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.ENCRYPTED_IMAGE.name -> File(
-                context.getImagePath().generateConversationPath(conversationId),
+                context.getLegacyImagePath().generateConversationPath(conversationId),
                 mediaUrl
             ).toUri().toString()
             type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.PLAIN_VIDEO.name || type == MessageCategory.ENCRYPTED_VIDEO.name ->
                 File(
-                    context.getVideoPath().generateConversationPath(conversationId),
+                    context.getLegacyVideoPath().generateConversationPath(conversationId),
                     mediaUrl
                 ).toUri().toString()
             else -> null

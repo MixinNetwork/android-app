@@ -500,7 +500,7 @@ interface MessageDao : BaseDao<Message> {
     fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
 
     @Query("SELECT count(1) FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE'")
-    fun countAttachmentMigration():Int
+    fun countAttachmentMigration(): Int
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowid(): Long

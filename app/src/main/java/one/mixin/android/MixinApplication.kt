@@ -130,6 +130,9 @@ open class MixinApplication :
             Crashes::class.java
         )
 
+        // defaultSharedPreferences.putBoolean(Constants.Account.MediaStore.PREF_MEDIA_STORE, false)
+        // defaultSharedPreferences.putLong(Constants.Account.MediaStore.PREF_MEDIA_STORE_LAST, -1)
+        // defaultSharedPreferences.putLong(Constants.Account.MediaStore.PREF_MEDIA_STORE_OFFSET, 0)
         registerComponentCallbacks(MemoryCallback())
     }
 

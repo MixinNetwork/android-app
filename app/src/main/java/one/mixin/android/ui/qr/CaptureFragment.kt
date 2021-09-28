@@ -33,7 +33,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getImageCachePath
-import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.getLegacyVideoPath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
@@ -211,6 +211,13 @@ class CaptureFragment : BaseCameraxFragment() {
         }
 
         override fun readyForProgress() {
+            binding.close.fadeOut()
+            binding.flash.fadeOut()
+            binding.switchCamera.fadeOut()
+            binding.chronometerLayout.fadeIn()
+            binding.chronometer.base = SystemClock.elapsedRealtime()
+            binding.chronometer.start()
+            videoFile = requireContext().getLegacyVideoPath().createVideoTemp("mp4")
             try {
                 oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
                 audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
@@ -268,7 +275,7 @@ class CaptureFragment : BaseCameraxFragment() {
         stopImageAnalysis()
         val videoCapture = getVideoCapture()
         bindUseCases(videoCapture)
-        val videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
+        val videoFile = requireContext().getLegacyVideoPath().createVideoTemp("mp4")
         val outputOptions = VideoCapture.OutputFileOptions.Builder(videoFile).build()
 
         videoCapture.startRecording(
