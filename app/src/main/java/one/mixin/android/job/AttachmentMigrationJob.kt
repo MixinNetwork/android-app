@@ -48,7 +48,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         list.forEach { attachment ->
             val fromFile = attachment.getFile(MixinApplication.appContext) ?: return@forEach
             if (!fromFile.exists()) {
-                Timber.d("Attachment migration no exists ${messageDao.countAttachmentMigration()} ${fromFile.absolutePath} ")
+                Timber.d("Attachment migration no exists ${messageDao.countDoneAttachment()} ${fromFile.absolutePath} ")
                 return@forEach
             }
             val toFile = when (attachment.category) {

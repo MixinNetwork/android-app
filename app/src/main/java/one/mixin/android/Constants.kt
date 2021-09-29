@@ -52,10 +52,10 @@ object Constants {
         const val PREF_INCOGNITO_KEYBOARD = "pref_incognito_keyboard"
         const val PREF_APP_AUTH = "pref_app_auth"
         const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
-        object MediaStore {
-            const val PREF_MEDIA_STORE = "pref_media_store"
-            const val PREF_MEDIA_STORE_LAST = "pref_media_store_last"
-            const val PREF_MEDIA_STORE_OFFSET = "pref_media_store_offset"
+
+        object Migration {
+            const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
+            const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
         }
     }
 

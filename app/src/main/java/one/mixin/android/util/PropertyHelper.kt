@@ -1,6 +1,9 @@
 package one.mixin.android.util
 
 import android.content.Context
+import android.os.Build
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_LAST
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_OFFSET
@@ -17,6 +20,7 @@ import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_WIFI
 import one.mixin.android.Constants.Download.MOBILE_DEFAULT
 import one.mixin.android.Constants.Download.ROAMING_DEFAULT
 import one.mixin.android.Constants.Download.WIFI_DEFAULT
+import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.extension.defaultSharedPreferences
@@ -41,8 +45,9 @@ object PropertyHelper {
 
     suspend fun checkMigrated(context: Context): PropertyDao {
         val propertyDao = MixinDatabase.getDatabase(context).propertyDao()
+        val messageDao = MixinDatabase.getDatabase(context).messageDao()
         if (!hasMigrated(propertyDao)) {
-            migrateProperties(context, propertyDao)
+            migrateProperties(context, propertyDao, messageDao)
         }
         return propertyDao
     }
@@ -66,7 +71,7 @@ object PropertyHelper {
         }
     }
 
-    private suspend fun migrateProperties(context: Context, propertyDao: PropertyDao) {
+    private suspend fun migrateProperties(context: Context, propertyDao: PropertyDao, messageDao: MessageDao) {
         val pref = context.defaultSharedPreferences
         val updatedAt = nowInUtc()
         val fts4Upgrade = pref.getBoolean(PREF_FTS4_UPGRADE, false)
@@ -83,6 +88,10 @@ object PropertyHelper {
 
         val backup = pref.getBoolean(PREF_BACKUP, false)
         propertyDao.insertSuspend(Property(PREF_BACKUP, backup.toString(), updatedAt))
+        // Backup files need to be migrated
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            propertyDao.insertSuspend(Property(PREF_MIGRATION_BACKUP, backup.toString(), updatedAt))
+        }
         val period = pref.getInt(BACKUP_PERIOD, 0)
         propertyDao.insertSuspend(Property(BACKUP_PERIOD, period.toString(), updatedAt))
         val lastTime = pref.getLong(BACKUP_LAST_TIME, System.currentTimeMillis())
@@ -101,6 +110,10 @@ object PropertyHelper {
         propertyDao.insertSuspend(Property(AUTO_DOWNLOAD_ROAMING, autoRoaming.toString(), updatedAt))
 
         propertyDao.insertSuspend(Property(PREF_PROPERTY_MIGRATED, true.toString(), updatedAt))
+        // Attachment files need to be migrated
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.countDoneAttachment()>0).toString(), updatedAt))
+        }
     }
 
     private suspend fun hasMigrated(propertyDao: PropertyDao) =

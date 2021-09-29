@@ -313,29 +313,6 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(AttachmentMigrationJob())
         }
 
-        /* todo media migration
-         if (!defaultSharedPreferences.getBoolean(PREF_MEDIA_STORE, false)) {
-            if (hasRWMediaStorePermission()) {
-                jobManager.addJobInBackground(MediaStoreMigrationJob())
-            } else {
-                RxPermissions(this)
-                    .request(
-                        android.Manifest.permission.CAMERA,
-                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    )
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                jobManager.addJobInBackground(MediaStoreMigrationJob())
-                            }
-                        }, {}
-                    )
-            }
-        }
-         */
-
         PropertyHelper.checkBackupMigrated(this@MainActivity) {
             jobManager.addJobInBackground(BackupMigrationJob())
         }
