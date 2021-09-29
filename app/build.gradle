@@ -343,6 +343,7 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

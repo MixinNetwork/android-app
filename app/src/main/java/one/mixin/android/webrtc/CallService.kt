@@ -10,6 +10,7 @@ import com.twilio.audioswitch.AudioSwitch
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.SignalProtocol
@@ -90,13 +91,19 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        if (intent == null || intent.action == null) {
+        val action = intent?.action
+        if (intent == null || action == null) {
             return START_NOT_STICKY
         }
         if (isDestroyed.get()) {
             stopSelf()
             return Service.START_NOT_STICKY
         }
+
+        if (needInitWebRtc(action)) {
+            initWebRtc()
+        }
+
         callExecutor.execute {
             if (!handleIntent(intent)) {
                 when (intent.action) {
@@ -146,7 +153,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             return
         }
 
-        peerConnectionClient = PeerConnectionClient(this, this)
+        peerConnectionClient = PeerConnectionClient(MixinApplication.appContext, this)
         callExecutor.execute {
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         }
@@ -160,6 +167,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         )
     }
 
+    abstract fun needInitWebRtc(action: String): Boolean
     abstract fun handleIntent(intent: Intent): Boolean
     abstract fun onCallDisconnected()
     abstract fun onDestroyed()

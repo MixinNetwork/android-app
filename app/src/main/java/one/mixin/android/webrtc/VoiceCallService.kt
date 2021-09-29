@@ -212,6 +212,8 @@ class VoiceCallService : CallService() {
         disconnect()
     }
 
+    override fun needInitWebRtc(action: String) = true
+
     override fun handleLocalEnd() {
         if (callState.isIdle()) return
 
