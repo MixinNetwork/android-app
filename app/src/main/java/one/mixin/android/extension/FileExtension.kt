@@ -85,14 +85,14 @@ private fun Context.getAppPath(legacy: Boolean = false): File? {
     }
 }
 
-fun Context.getLegacyMediaPath(legacy: Boolean = false): File? {
+fun Context.getMediaPath(legacy: Boolean = false): File? {
     val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
-fun Context.getOldMediaPath(legacy: Boolean = false): File? {
-    val path = getAppPath(legacy) ?: return null
+fun Context.getOldMediaPath(): File? {
+    val path = getAppPath() ?: return null
     val f = File("${path.absolutePath}${File.separator}Media")
     if (f.exists()) {
         return f
@@ -220,65 +220,70 @@ private fun Context.getBestAvailableCacheRoot(): File {
 fun File.generateConversationPath(conversationId: String): File {
     return File("$this${File.separator}$conversationId")
 }
-
-fun Context.getLegacyImagePath(root: File? = null): File {
-    return File("${root ?: getLegacyMediaPath()}${File.separator}Images")
+fun Context.getImagePath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("$root${File.separator}Images")
 }
 
-fun Context.getLegacyOtherPath(root: File? = null): File {
-    return File("${root ?: getLegacyMediaPath()}${File.separator}Others")
+fun Context.getOtherPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("$root${File.separator}Others")
 }
 
-fun Context.getLegacyDocumentPath(root: File? = null): File {
-    return File("${root ?: getLegacyMediaPath()}${File.separator}Files")
+fun Context.getDocumentPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("$root${File.separator}Files")
 }
 
-fun Context.getLegacyVideoPath(root: File? = null): File {
-    return File("${root ?: getLegacyMediaPath()}${File.separator}Videos")
+fun Context.getVideoPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("$root${File.separator}Videos")
 }
 
-fun Context.getLegacyAudioPath(root: File? = null): File {
-    return File("${root ?: getLegacyMediaPath()}${File.separator}Audios")
+fun Context.getAudioPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("${root}${File.separator}Audios")
 }
 
-fun Context.getTranscriptFile(name: String, type: String): File {
-    return getLegacyTranscriptDirPath().newTempFile(
+fun Context.getTranscriptFile(name: String, type: String, legacy: Boolean = false): File {
+    return getTranscriptDirPath(legacy).newTempFile(
         name, type,
         true
     )
 }
 
-fun Context.getLegacyTranscriptDirPath(root: File? = null): File {
-    return File("${root ?: getLegacyMediaPath()}${File.separator}Transcripts${File.separator}")
+fun Context.getTranscriptDirPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("$root${File.separator}Transcripts${File.separator}")
 }
 
 fun Context.getConversationImagePath(conversationId: String): File? {
     if (conversationId.isBlank()) return null
-    val root = getLegacyMediaPath() ?: return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Images${File.separator}$conversationId")
 }
 
 fun Context.getConversationDocumentPath(conversationId: String): File? {
     if (conversationId.isBlank()) return null
-    val root = getLegacyMediaPath() ?: return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Files${File.separator}$conversationId")
 }
 
 fun Context.getConversationVideoPath(conversationId: String): File? {
     if (conversationId.isBlank()) return null
-    val root = getLegacyMediaPath() ?: return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Videos${File.separator}$conversationId")
 }
 
 fun Context.getConversationAudioPath(conversationId: String): File? {
     if (conversationId.isBlank()) return null
-    val root = getLegacyMediaPath() ?: return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Audios${File.separator}$conversationId")
 }
 
 fun Context.getConversationTranscriptPath(conversationId: String): File? {
     if (conversationId.isBlank()) return null
-    val root = getLegacyMediaPath() ?: return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Transcripts${File.separator}$conversationId")
 }
 
@@ -589,7 +594,7 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
         return try {
             val extensionName = getFileName(context).getExtensionName()
             input = context.contentResolver.openInputStream(this) ?: return null
-            val pair = context.getLegacyDocumentPath().createDocumentFile(name = name, extensionName = extensionName)
+            val pair = context.getDocumentPath()?.createDocumentFile(name = name, extensionName = extensionName) ?: return null
             val outFile = pair.first
             if (!pair.second) {
                 outFile.copyFromInputStream(input)
@@ -606,7 +611,7 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
 }
 
 fun Uri.getOrCreate(context: Context = MixinApplication.appContext, name: String): String? {
-    val file = File(context.getLegacyDocumentPath(), name)
+    val file = File(context.getDocumentPath(), name)
     if (!file.exists()) {
         context.contentResolver.openInputStream(this)?.let {
             file.copyFromInputStream(it)

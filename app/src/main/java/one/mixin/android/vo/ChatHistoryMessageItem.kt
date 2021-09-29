@@ -12,14 +12,14 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.generateConversationPath
+import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getLegacyAudioPath
-import one.mixin.android.extension.getLegacyDocumentPath
-import one.mixin.android.extension.getLegacyImagePath
-import one.mixin.android.extension.getLegacyMediaPath
-import one.mixin.android.extension.getLegacyTranscriptDirPath
-import one.mixin.android.extension.getLegacyVideoPath
+import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.getTranscriptDirPath
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.toast
@@ -171,7 +171,7 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String?): MessageItem {
 }
 
 private val mediaPath by lazy {
-    MixinApplication.appContext.getLegacyMediaPath()?.toUri()?.toString()
+    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
 }
 
 fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appContext): String? {
@@ -180,20 +180,20 @@ fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appC
         return when {
             mediaUrl == null -> null
             mediaUrl.startsWith(dirPath) -> mediaUrl
-            isImage() -> File(context.getLegacyImagePath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-            isVideo() -> File(context.getLegacyVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-            isAudio() -> File(context.getLegacyAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-            isData() -> File(context.getLegacyDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-            isTranscript() -> File(context.getLegacyTranscriptDirPath(), mediaUrl).toUri().toString()
+            isImage() -> File(context.getImagePath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+            isVideo() -> File(context.getVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+            isAudio() -> File(context.getAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+            isData() -> File(context.getDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+            isTranscript() -> File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
             else -> null
         }
     }
-    val mediaPath = MixinApplication.appContext.getLegacyMediaPath()?.toUri()?.toString() ?: return null
+    val mediaPath = MixinApplication.appContext.getMediaPath()?.toUri()?.toString() ?: return null
     val url = mediaUrl
     return when {
         url == null -> null
         isLive() -> url
         url.startsWith(mediaPath) -> url
-        else -> File(context.getLegacyTranscriptDirPath(), url).toUri().toString()
+        else -> File(context.getTranscriptDirPath(), url).toUri().toString()
     }
 }

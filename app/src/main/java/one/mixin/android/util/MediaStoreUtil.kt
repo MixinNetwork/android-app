@@ -16,13 +16,13 @@ import android.webkit.MimeTypeMap
 import androidx.core.content.ContextCompat
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
-import one.mixin.android.extension.getLegacyAudioPath
+import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getLegacyBackupPath
-import one.mixin.android.extension.getLegacyDocumentPath
-import one.mixin.android.extension.getLegacyImagePath
-import one.mixin.android.extension.getLegacyOtherPath
-import one.mixin.android.extension.getLegacyVideoPath
+import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.session.Session
 import one.mixin.android.widget.gallery.MimeType
@@ -44,7 +44,7 @@ fun getImagesUri(): Uri {
     return if (isSupportQ()) {
         MediaStore.Images.Media.EXTERNAL_CONTENT_URI
     } else {
-        MixinApplication.appContext.getLegacyImagePath().uri()
+        MixinApplication.appContext.getImagePath().uri()
     }
 }
 
@@ -52,7 +52,7 @@ fun getAudioUri(): Uri {
     return if (isSupportQ()) {
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
     } else {
-        MixinApplication.appContext.getLegacyAudioPath().uri()
+        MixinApplication.appContext.getAudioPath().uri()
     }
 }
 
@@ -60,7 +60,7 @@ fun getVideoUri(): Uri {
     return if (isSupportQ()) {
         MediaStore.Video.Media.EXTERNAL_CONTENT_URI
     } else {
-        MixinApplication.appContext.getLegacyVideoPath().uri()
+        MixinApplication.appContext.getVideoPath().uri()
     }
 }
 
@@ -68,7 +68,7 @@ fun getFilesUri(): Uri {
     return if (isSupportQ()) {
         MediaStore.Files.getContentUri("external")
     } else {
-        MixinApplication.appContext.getLegacyDocumentPath().uri()
+        MixinApplication.appContext.getDocumentPath().uri()
     }
 }
 
@@ -76,7 +76,7 @@ fun getDownloadUri(): Uri {
     return if (isSupportQ()) {
         MediaStore.Downloads.EXTERNAL_CONTENT_URI
     } else {
-        MixinApplication.appContext.getLegacyOtherPath().uri()
+        MixinApplication.appContext.getOtherPath().uri()
     }
 }
 

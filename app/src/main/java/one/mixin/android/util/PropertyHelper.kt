@@ -112,7 +112,7 @@ object PropertyHelper {
         propertyDao.insertSuspend(Property(PREF_PROPERTY_MIGRATED, true.toString(), updatedAt))
         // Attachment files need to be migrated
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.countDoneAttachment()>0).toString(), updatedAt))
+            propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.countDoneAttachment()> 0).toString(), updatedAt))
         }
     }
 

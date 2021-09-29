@@ -4,12 +4,12 @@ import android.content.Context
 import androidx.core.net.toUri
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.generateConversationPath
-import one.mixin.android.extension.getLegacyAudioPath
-import one.mixin.android.extension.getLegacyDocumentPath
-import one.mixin.android.extension.getLegacyImagePath
-import one.mixin.android.extension.getLegacyMediaPath
-import one.mixin.android.extension.getLegacyTranscriptDirPath
-import one.mixin.android.extension.getLegacyVideoPath
+import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.getDocumentPath
+import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.getTranscriptDirPath
+import one.mixin.android.extension.getVideoPath
 import java.io.File
 
 interface ICategory {
@@ -113,10 +113,10 @@ fun ICategory.canRecall(): Boolean {
 }
 
 private val mediaPath by lazy {
-    MixinApplication.appContext.externalMediaDirs.first()
+    MixinApplication.appContext.getMediaPath(false)
 }
 private val oldMediaPath by lazy {
-    MixinApplication.appContext.getLegacyMediaPath(true)
+    MixinApplication.appContext.getMediaPath(true)
 }
 
 fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {
@@ -126,14 +126,14 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
     val dirPath = mediaPath ?: return null
     return when (mediaUrl) {
         null -> null
-        else -> generatePath(context, dirPath, this, conversationId, mediaUrl)
+        else -> generatePath(context, false, this, conversationId, mediaUrl)
     }.let { file ->
         return if (mediaUrl == null) {
             null
         } else if (oldMediaPath == null) {
             null
         } else if (file == null || !file.exists()) {
-            generatePath(context, oldMediaPath!!, this, conversationId, mediaUrl)?.toUri()
+            generatePath(context, true, this, conversationId, mediaUrl)?.toUri()
                 .toString()
         } else {
             file.toUri().toString()
@@ -143,26 +143,26 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
 
 private fun generatePath(
     context: Context,
-    dir: File,
+    legacy: Boolean,
     iCategory: ICategory,
     conversationId: String,
     mediaUrl: String
 ): File? {
     return when {
         iCategory.isImage() -> File(
-            context.getLegacyImagePath(dir).generateConversationPath(conversationId), mediaUrl
+            context.getImagePath(legacy).generateConversationPath(conversationId), mediaUrl
         )
         iCategory.isVideo() -> File(
-            context.getLegacyVideoPath(dir).generateConversationPath(conversationId), mediaUrl
+            context.getVideoPath(legacy).generateConversationPath(conversationId), mediaUrl
         )
         iCategory.isAudio() -> File(
-            context.getLegacyAudioPath(dir).generateConversationPath(conversationId), mediaUrl
+            context.getAudioPath(legacy).generateConversationPath(conversationId), mediaUrl
         )
         iCategory.isData() -> File(
-            context.getLegacyDocumentPath(dir).generateConversationPath(conversationId),
+            context.getDocumentPath(legacy).generateConversationPath(conversationId),
             mediaUrl
         )
-        iCategory.isTranscript() -> File(context.getLegacyTranscriptDirPath(dir), mediaUrl)
+        iCategory.isTranscript() -> File(context.getTranscriptDirPath(legacy), mediaUrl)
         else -> null
     }
 }

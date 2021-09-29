@@ -50,7 +50,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.getLegacyOtherPath
+import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -975,7 +975,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun exportChat() {
         lifecycleScope.launch {
-            val backupFile = File("${requireContext().getLegacyOtherPath().absolutePath}${File.separator}${user.fullName}-chats.txt")
+            val backupFile = File("${requireContext().getOtherPath().absolutePath}${File.separator}${user.fullName}-chats.txt")
             bottomViewModel.exportChat(generateConversationId(user.userId, Session.getAccountId()!!), backupFile)
         }
     }
