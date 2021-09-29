@@ -29,6 +29,8 @@ class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context
         color = context.colorFromAttribute(R.attr.bg_white)
     }
 
+    private var anim: ValueAnimator? = null
+
     fun updateAudioLevel(audioLevel: Float) {
         if (audioLevel == 0f) {
             isVisible = false
@@ -37,7 +39,8 @@ class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context
             isVisible = true
         }
         val toValue = max(initW * audioLevel, miniW)
-        ValueAnimator.ofFloat(ringPaint.strokeWidth, toValue).apply {
+        anim?.cancel()
+        anim = ValueAnimator.ofFloat(ringPaint.strokeWidth, toValue).apply {
             duration = 500
             addUpdateListener { va ->
                 val w = va.animatedValue as Float
@@ -45,7 +48,14 @@ class BlinkRingView(context: Context, attributeSet: AttributeSet) : View(context
                 invalidate()
             }
             repeatCount = INFINITE
-        }.start()
+            start()
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        anim?.cancel()
+        anim = null
     }
 
     fun setColor(@ColorRes id: Int) {
