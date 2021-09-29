@@ -90,6 +90,10 @@ class GroupCallService : CallService() {
     private var reconnectTimeoutCount = 0
 
     override fun handleIntent(intent: Intent): Boolean {
+        if (intent.action != ACTION_CHECK_PEER) {
+            initWebRtc()
+        }
+
         var handled = true
         when (intent.action) {
             ACTION_KRAKEN_PUBLISH -> handlePublish(intent)

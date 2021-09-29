@@ -32,6 +32,7 @@ class VoiceCallService : CallService() {
     private var declineTriggeredByUser: Boolean = true
 
     override fun handleIntent(intent: Intent): Boolean {
+        initWebRtc()
         var handled = true
         when (intent.action) {
             ACTION_CALL_INCOMING -> handleCallIncoming(intent)

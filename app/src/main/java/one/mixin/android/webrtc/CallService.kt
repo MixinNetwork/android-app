@@ -47,9 +47,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     private val observeStatsDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     protected var timeoutFuture: ScheduledFuture<*>? = null
 
-    protected val peerConnectionClient: PeerConnectionClient by lazy {
-        PeerConnectionClient(this, this)
-    }
+    protected lateinit var peerConnectionClient: PeerConnectionClient
 
     protected lateinit var audioManager: CallAudioManager
 
@@ -81,17 +79,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     override fun onCreate() {
         super.onCreate()
-        callExecutor.execute {
-            peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
-        }
-        audioManager = CallAudioManager(
-            this, audioSwitch,
-            object : CallAudioManager.Callback {
-                override fun customAudioDeviceAvailable(available: Boolean) {
-                    callState.customAudioDeviceAvailable = available
-                }
-            }
-        )
         Session.getAccount()?.toUser().let { user ->
             if (user == null) {
                 stopSelf()
@@ -128,8 +115,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
             Timber.d("$TAG_CALL real onDestroy")
-            audioManager.release()
-            peerConnectionClient.release()
+            if (::audioManager.isInitialized) {
+                audioManager.release()
+            }
+            if (::peerConnectionClient.isInitialized) {
+                peerConnectionClient.release()
+            }
 
             onDestroyed()
         }
@@ -148,6 +139,25 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
             onCallDisconnected()
         }
+    }
+
+    protected fun initWebRtc() {
+        if (::peerConnectionClient.isInitialized && ::audioManager.isInitialized) {
+            return
+        }
+
+        peerConnectionClient = PeerConnectionClient(this, this)
+        callExecutor.execute {
+            peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
+        }
+        audioManager = CallAudioManager(
+            this, audioSwitch,
+            object : CallAudioManager.Callback {
+                override fun customAudioDeviceAvailable(available: Boolean) {
+                    callState.customAudioDeviceAvailable = available
+                }
+            }
+        )
     }
 
     abstract fun handleIntent(intent: Intent): Boolean
