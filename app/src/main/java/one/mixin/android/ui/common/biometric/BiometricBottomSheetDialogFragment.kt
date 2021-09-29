@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.core.view.postDelayed
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -118,11 +118,14 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         biometricLayout.showPin(true)
     }
 
-    private fun onPinComplete(pin: String) = bottomViewModel.viewModelScope.launch {
+    private fun onPinComplete(pin: String) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
         biometricLayout.showPb()
         val response = try {
+            // initialize this in main thread
+            bottomViewModel
+
             withContext(Dispatchers.IO) {
                 invokeNetwork(pin)
             }
