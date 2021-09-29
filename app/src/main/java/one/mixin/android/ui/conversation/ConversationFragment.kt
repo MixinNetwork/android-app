@@ -706,7 +706,7 @@ class ConversationFragment() :
                             FloatingPlayer.getInstance().hide()
                         } else {
                             if (checkFloatingPermission()) {
-                                collapse(requireActivity(), conversationId)
+                                collapse(conversationId)
                             }
                         }
                         FloatingPlayer.getInstance().conversationId = conversationId
@@ -724,7 +724,7 @@ class ConversationFragment() :
                             if (viewDestroyed()) return@playMedia
                             if (checkFloatingPermission()) {
                                 if (MixinApplication.get().activityInForeground) {
-                                    collapse(requireActivity(), conversationId)
+                                    collapse(conversationId)
                                 }
                             } else {
                                 requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
@@ -1272,6 +1272,7 @@ class ConversationFragment() :
                 }
             }
         }
+        AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
         context?.let {
             if (!anyCallServiceRunning(it)) {

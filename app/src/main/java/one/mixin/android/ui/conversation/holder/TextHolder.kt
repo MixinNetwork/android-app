@@ -121,7 +121,6 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             }
         }
 
-
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
@@ -136,7 +135,6 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
                 true
             }
         }
-
 
         if (textGestureListener == null) {
             textGestureListener = TextGestureListener(binding.chatLayout, messageItem, hasSelect, isSelect, onItemListener, absoluteAdapterPosition)

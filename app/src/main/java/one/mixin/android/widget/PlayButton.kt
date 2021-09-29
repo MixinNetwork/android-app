@@ -81,6 +81,17 @@ class PlayButton @JvmOverloads constructor(
         super.onAttachedToWindow()
     }
 
+    override fun onDetachedFromWindow() {
+        disposable?.let {
+            if (!it.isDisposed) {
+                it.dispose()
+                disposable = null
+            }
+        }
+        disposable = null
+        super.onDetachedFromWindow()
+    }
+
     override fun onDraw(canvas: Canvas) {
         when (status) {
             STATUS_IDLE -> {
