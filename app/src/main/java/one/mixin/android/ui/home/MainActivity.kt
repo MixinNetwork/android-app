@@ -219,12 +219,6 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_FTS4_UPGRADE, false)) {
-            InitializeActivity.showFts(this)
-            finish()
-            return
-        }
-
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
             finish()
