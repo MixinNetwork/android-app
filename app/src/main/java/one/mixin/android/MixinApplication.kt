@@ -272,7 +272,7 @@ open class MixinApplication :
                 currentActivity = activity
                 appScope.launch(Dispatchers.Main) {
                     if (isMusicServiceRunning(activity)) {
-                        FloatingPlayer.getInstance(activity.isNightMode()).show(false)
+                        FloatingPlayer.getInstance(activity.isNightMode()).show()
                     }
                 }
             }

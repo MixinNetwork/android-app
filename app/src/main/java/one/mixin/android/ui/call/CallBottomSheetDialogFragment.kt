@@ -337,10 +337,12 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private var timer: Timer? = null
+    private var timerTask: TimerTask? = null
 
     private fun startTimer() {
         timer = Timer(true)
-        val timerTask = object : TimerTask() {
+        timerTask?.cancel()
+        timerTask = object : TimerTask() {
             override fun run() {
                 lifecycleScope.launch {
                     if (callState.connectedTime != null) {
@@ -354,6 +356,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun stopTimer() {
+        timerTask?.cancel()
+        timerTask = null
         timer?.cancel()
         timer?.purge()
         timer = null
@@ -570,6 +574,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onPause() {
         stopTimer()
         super.onPause()
+
+        // this will make RecyclerView adapter call onViewDetachedFromWindow()
+        // to prevent leak Fragment and Activity
+        binding.usersRv.adapter = null
     }
 
     override fun onStop() {

@@ -79,15 +79,15 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
 
-    private lateinit var windowView: ViewGroup
-    private lateinit var avatarsView: FloatingAvatarsView
+    private var windowView: ViewGroup? = null
+    private var avatarsView: FloatingAvatarsView? = null
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
     private val preferences by lazy {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
     fun init() {
-        if (!::windowView.isInitialized) {
+        if (windowView == null) {
             initWindowView()
         }
         if (!::windowLayoutParams.isInitialized) {
@@ -95,25 +95,23 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         }
     }
 
-    fun show(force: Boolean = true) {
+    fun show() {
         if (!appContext.checkInlinePermissions()) return
 
         if (isNightMode != appContext.isNightMode()) {
-            recreate(appContext.isNightMode()).show(true)
+            recreate(appContext.isNightMode()).show()
         } else {
             if (!isShown) {
                 init()
                 isShown = true
                 windowManager.addView(windowView, windowLayoutParams)
             }
-            if (force) {
-                reload()
-            }
+            reload()
         }
     }
 
     fun reload() {
-        avatarsView.addList(
+        avatarsView?.addList(
             clips.map {
                 it.app?.iconUrl ?: ""
             }
@@ -207,7 +205,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
             initParams(2, 40, if (isNightMode) appContext.getColor(R.color.bgWindowNight) else Color.WHITE)
         }
 
-        windowView.addView(
+        windowView?.addView(
             FrameLayout(appContext).apply {
                 if (isNightMode) {
                     setBackgroundResource(R.drawable.bg_floating_shadow_night)
@@ -231,6 +229,8 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         if (!isShown) return
         isShown = false
         windowManager.removeView(windowView)
+        windowView = null
+        avatarsView = null
     }
 
     private fun initWindowLayoutParams() {
@@ -240,9 +240,9 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         windowLayoutParams.format = PixelFormat.TRANSLUCENT
         windowLayoutParams.gravity = Gravity.TOP or Gravity.START
         if (windowLayoutParams.x >= appContext.realSize().x / 2) {
-            avatarsView.setRTL(false)
+            avatarsView?.setRTL(false)
         } else {
-            avatarsView.setRTL(true)
+            avatarsView?.setRTL(true)
         }
         if (Build.VERSION.SDK_INT >= 26) {
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -259,10 +259,10 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         val realX = realSize.x
         val startX = windowLayoutParams.x
         val endX = if (startX >= realX / 2) {
-            avatarsView.setRTL(false)
+            avatarsView?.setRTL(false)
             realSize.x - windowLayoutParams.width
         } else {
-            avatarsView.setRTL(true)
+            avatarsView?.setRTL(true)
             0
         }
         preferences.putInt(FX, endX)

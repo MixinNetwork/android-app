@@ -84,16 +84,16 @@ class FloatingPlayer(private var isNightMode: Boolean) {
 
     var conversationId: String? = null
 
-    private lateinit var windowView: ViewGroup
-    private lateinit var musicView: RLottieImageView
-    private lateinit var musicBgView: View
+    private var windowView: ViewGroup? = null
+    private var musicView: RLottieImageView? = null
+    private var musicBgView: View? = null
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
     private val preferences by lazy {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
     fun init() {
-        if (!::windowView.isInitialized) {
+        if (windowView == null) {
             initWindowView()
         }
         if (!::windowLayoutParams.isInitialized) {
@@ -101,7 +101,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         }
     }
 
-    fun show(force: Boolean = true, conversationId: String? = null) {
+    fun show(conversationId: String? = null) {
         if (!appContext.checkInlinePermissions()) return
 
         if (conversationId != null && this.conversationId != conversationId) {
@@ -109,16 +109,14 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         }
 
         if (isNightMode != appContext.isNightMode()) {
-            recreate(appContext.isNightMode()).show(true, this.conversationId)
+            recreate(appContext.isNightMode()).show(this.conversationId)
         } else {
             if (!isShown) {
                 init()
                 isShown = true
                 windowManager.addView(windowView, windowLayoutParams)
             }
-            if (force) {
-                reload()
-            }
+            reload()
         }
     }
 
@@ -201,7 +199,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
             setBackgroundResource(R.drawable.bg_music)
         }
 
-        windowView.addView(
+        windowView?.addView(
             FrameLayout(appContext).apply {
                 if (isNightMode) {
                     setBackgroundResource(R.drawable.bg_floating_shadow_night)
@@ -214,15 +212,15 @@ class FloatingPlayer(private var isNightMode: Boolean) {
             ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
         )
 
-        musicView.setAutoRepeat(true)
+        musicView?.setAutoRepeat(true)
         rLottieDrawable = if (isNightMode) {
             RLottieDrawable(R.raw.anim_music_night, "music_night", 30.dp, 30.dp)
         } else {
             RLottieDrawable(R.raw.anim_music, "music", 30.dp, 30.dp)
         }
-        musicView.setAnimation(rLottieDrawable)
+        musicView?.setAnimation(rLottieDrawable)
         if (MusicPlayer.get().exoPlayer.isPlaying) {
-            musicView.playAnimation()
+            musicView?.playAnimation()
         }
     }
 
@@ -230,18 +228,17 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         if (!isShown) return
         isShown = false
         windowManager.removeView(windowView)
+        windowView = null
+        musicView = null
+        musicBgView = null
     }
 
     fun stopAnim() {
-        if (::musicView.isInitialized) {
-            musicView.stopAnimation()
-        }
+        musicView?.stopAnimation()
     }
 
     fun startAnim() {
-        if (::musicView.isInitialized) {
-            musicView.playAnimation()
-        }
+        musicView?.playAnimation()
     }
 
     private fun initWindowLayoutParams() {

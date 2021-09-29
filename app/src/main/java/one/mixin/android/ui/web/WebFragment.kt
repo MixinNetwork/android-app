@@ -183,6 +183,7 @@ class WebFragment : BaseFragment() {
     private var currentUrl: String? = null
     private var isFinished: Boolean = false
     private val processor = QRCodeProcessor()
+    private var webAppInterface: WebAppInterface? = null
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -419,7 +420,7 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 conversationId,
-                requireContext(),
+                MixinApplication.appContext,
                 this.parentFragmentManager,
                 requireActivity().activityResultRegistry,
                 lifecycleScope,
@@ -681,16 +682,14 @@ class WebFragment : BaseFragment() {
             }
             binding.titleLl.isGone = immersive
 
-            webView.addJavascriptInterface(
-                WebAppInterface(
-                    requireContext(),
-                    conversationId,
-                    immersive,
-                    reloadThemeAction = { reloadTheme() },
-                    playlistAction = { showPlaylist(it) },
-                ),
-                "MixinContext"
+            webAppInterface = WebAppInterface(
+                MixinApplication.appContext,
+                conversationId,
+                immersive,
+                reloadThemeAction = { reloadTheme() },
+                playlistAction = { showPlaylist(it) },
             )
+            webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -757,6 +756,14 @@ class WebFragment : BaseFragment() {
         val c = Canvas(screenshot)
         c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
         v.draw(c)
+
+        webAppInterface?.reloadThemeAction = null
+        webAppInterface?.playlistAction = null
+        webAppInterface = null
+        webView.removeJavascriptInterface("MixinContext")
+        webView.webChromeClient = null
+        webView.webViewClient = object : WebViewClient() {}
+
         return WebClip(
             currentUrl,
             app,
@@ -1218,8 +1225,8 @@ class WebFragment : BaseFragment() {
         val context: Context,
         val conversationId: String?,
         val immersive: Boolean,
-        val reloadThemeAction: () -> Unit,
-        val playlistAction: (Array<String>) -> Unit,
+        var reloadThemeAction: (() -> Unit)? = null,
+        var playlistAction: ((Array<String>) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1241,12 +1248,12 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun reloadTheme() {
-            reloadThemeAction.invoke()
+            reloadThemeAction?.invoke()
         }
 
         @JavascriptInterface
         fun playlist(list: Array<String>) {
-            playlistAction.invoke(list)
+            playlistAction?.invoke(list)
         }
     }
 

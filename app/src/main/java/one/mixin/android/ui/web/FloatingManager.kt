@@ -140,7 +140,7 @@ fun refresh() {
     if (clips.isEmpty()) {
         initClips()
     } else {
-        FloatingWebClip.getInstance().show(false)
+        FloatingWebClip.getInstance().show()
     }
 }
 
