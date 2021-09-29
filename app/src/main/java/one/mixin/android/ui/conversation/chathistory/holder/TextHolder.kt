@@ -3,7 +3,7 @@ package one.mixin.android.ui.conversation.chathistory.holder
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import androidx.constraintlayout.widget.ConstraintLayout
+import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
@@ -30,9 +30,10 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as RelativeLayout.LayoutParams)
         if (isMe) {
-            lp.horizontalBias = 1f
+            lp.addRule(RelativeLayout.ALIGN_PARENT_END)
+            lp.removeRule(RelativeLayout.ALIGN_PARENT_START)
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
@@ -47,7 +48,8 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
                 )
             }
         } else {
-            lp.horizontalBias = 0f
+            lp.addRule(RelativeLayout.ALIGN_PARENT_START)
+            lp.removeRule(RelativeLayout.ALIGN_PARENT_END)
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
@@ -167,7 +169,26 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
                 onItemListener.onMenu(binding.chatJump, messageItem)
                 true
             }
-            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
+            binding.chatJump.isVisible = true
+            binding.chatJump.setImageResource(
+                if (isMe) {
+                    R.drawable.ic_chat_jump_me
+                } else {
+                    R.drawable.ic_chat_jump
+                }
+            )
+            binding.chatJump.setOnClickListener {
+                onItemListener.onMessageJump(messageItem.messageId)
+            }
+            (binding.chatJump.layoutParams as RelativeLayout.LayoutParams).apply {
+                if (isMe) {
+                    removeRule(RelativeLayout.END_OF)
+                    addRule(RelativeLayout.START_OF, R.id.chat_layout)
+                } else {
+                    removeRule(RelativeLayout.START_OF)
+                    addRule(RelativeLayout.END_OF, R.id.chat_layout)
+                }
+            }
         }
     }
 

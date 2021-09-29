@@ -4,7 +4,7 @@ import android.graphics.Color
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import androidx.constraintlayout.widget.ConstraintLayout
+import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -33,9 +33,10 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as RelativeLayout.LayoutParams)
         if (isMe) {
-            lp.horizontalBias = 1f
+            lp.addRule(RelativeLayout.ALIGN_PARENT_END)
+            lp.removeRule(RelativeLayout.ALIGN_PARENT_START)
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
@@ -50,7 +51,8 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
                 )
             }
         } else {
-            lp.horizontalBias = 0f
+            lp.addRule(RelativeLayout.ALIGN_PARENT_START)
+            lp.removeRule(RelativeLayout.ALIGN_PARENT_END)
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,
