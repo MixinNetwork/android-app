@@ -36,7 +36,11 @@ object PropertyHelper {
     }
 
     suspend fun checkAttachmentMigrated(context: Context, action: () -> Unit) {
-        checkWithKey(context, PREF_ATTACHMENT, true.toString(), action)
+        val propertyDao = checkMigrated(context)
+        val value = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT)?.toBoolean() ?: false
+        if (value) {
+            action.invoke()
+        }
     }
 
     suspend fun checkBackupMigrated(context: Context, action: () -> Unit) {

@@ -55,6 +55,8 @@ object Constants {
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
+            const val PREF_MIGRATION_ATTACHMENT_OFFSET = "pref_migration_attachment_offset"
+            const val PREF_MIGRATION_ATTACHMENT_LAST = "pref_migration_attachment_last"
             const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
         }
     }
