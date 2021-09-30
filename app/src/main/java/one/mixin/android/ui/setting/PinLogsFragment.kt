@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -44,7 +44,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                     }
                 }
             }
-            viewModel.viewModelScope.launch {
+            lifecycleScope.launch {
                 isLoading = true
                 handleMixinResponse(
                     invokeNetwork = {
@@ -79,7 +79,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
             return
         }
         isLoading = true
-        viewModel.viewModelScope.launch {
+        lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = {
                     viewModel.getPinLogs(adapter.data.last().createdAt)
