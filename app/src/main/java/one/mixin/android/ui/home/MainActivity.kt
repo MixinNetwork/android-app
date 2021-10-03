@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.view.KeyEvent
@@ -42,8 +43,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
+import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -307,6 +311,15 @@ class MainActivity : BlazeBaseActivity() {
         PropertyHelper.checkFts4Upgrade(this@MainActivity) {
             InitializeActivity.showFts(this@MainActivity)
             finish()
+        }
+
+        val sdk = PropertyHelper.findValueByKey(this@MainActivity, PREF_DEVICE_SDK).toIntOrNull()
+        if (sdk == null) {
+            PropertyHelper.updateKeyValue(this@MainActivity, PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
+        } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            PropertyHelper.updateKeyValue(this@MainActivity, PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
+            PropertyHelper.updateKeyValue(this@MainActivity, PREF_MIGRATION_ATTACHMENT, true.toString())
+            PropertyHelper.updateKeyValue(this@MainActivity, PREF_MIGRATION_BACKUP, true.toString())
         }
 
         PropertyHelper.checkAttachmentMigrated(this@MainActivity) {

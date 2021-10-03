@@ -40,9 +40,6 @@ object Constants {
         const val PREF_EMERGENCY_CONTACT = "pref_emergency_contact"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
         const val PREF_SYNC_CIRCLE = "pref_sync_circle"
-        const val PREF_ATTACHMENT = "pref_attachment"
-        const val PREF_ATTACHMENT_LAST = "pref_attachment_last"
-        const val PREF_ATTACHMENT_OFFSET = "pref_attachment_row_offset"
         const val PREF_BACKUP = "pref_attachment_backup"
         const val PREF_CHECK_STORAGE = "pref_check_storage"
         const val PREF_TRIED_UPDATE_KEY = "pref_tried_update_key"
@@ -52,7 +49,7 @@ object Constants {
         const val PREF_INCOGNITO_KEYBOARD = "pref_incognito_keyboard"
         const val PREF_APP_AUTH = "pref_app_auth"
         const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
-
+        const val PREF_DEVICE_SDK = "pref_device_sdk"
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
             const val PREF_MIGRATION_ATTACHMENT_OFFSET = "pref_migration_attachment_offset"
