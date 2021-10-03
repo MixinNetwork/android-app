@@ -91,7 +91,7 @@ fun Context.getMediaPath(legacy: Boolean = false): File? {
     return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
-fun Context.getOldMediaPath(): File? {
+fun Context.getAncientMediaPath(): File? {
     val path = getAppPath() ?: return null
     val f = File("${path.absolutePath}${File.separator}Media")
     if (f.exists()) {
@@ -1051,4 +1051,16 @@ fun File.toByteArray(): ByteArray? {
     }
 
     return byteArray
+}
+
+val MediaPath by lazy {
+    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
+}
+
+val oldMediaPath by lazy {
+    MixinApplication.appContext.getMediaPath(true)?.toUri()?.toString()
+}
+
+val ancientMediaPath by lazy {
+    MixinApplication.appContext.getAncientMediaPath()?.toUri()?.toString()
 }

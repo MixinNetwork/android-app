@@ -45,6 +45,9 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         messageId: String
     )
 
+    @Query("UPDATE transcript_messages SET media_url = :mediaUrl WHERE message_id = :messageId")
+    fun updateMediaUrl(mediaUrl: String, messageId: String)
+
     @Query("UPDATE transcript_messages SET media_status = :mediaStatus WHERE transcript_id = :transcriptId AND message_id = :messageId")
     fun updateMediaStatus(transcriptId: String, messageId: String, mediaStatus: String)
 

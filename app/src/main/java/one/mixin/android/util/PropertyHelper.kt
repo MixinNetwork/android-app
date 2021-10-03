@@ -4,9 +4,6 @@ import android.content.Context
 import android.os.Build
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT_LAST
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT_OFFSET
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.Constants.Account.PREF_FTS4_UPGRADE
@@ -82,13 +79,6 @@ object PropertyHelper {
         propertyDao.insertSuspend(Property(PREF_FTS4_UPGRADE, fts4Upgrade.toString(), updatedAt))
         val syncFtsOffset = pref.getInt(PREF_SYNC_FTS4_OFFSET, 0)
         propertyDao.insertSuspend(Property(PREF_SYNC_FTS4_OFFSET, syncFtsOffset.toString(), updatedAt))
-
-        val attachment = pref.getBoolean(PREF_ATTACHMENT, false)
-        propertyDao.insertSuspend(Property(PREF_ATTACHMENT, attachment.toString(), updatedAt))
-        val attachmentLast = pref.getLong(PREF_ATTACHMENT_LAST, -1)
-        propertyDao.insertSuspend(Property(PREF_ATTACHMENT_LAST, attachmentLast.toString(), updatedAt))
-        val attachmentOffset = pref.getLong(PREF_ATTACHMENT_OFFSET, 0)
-        propertyDao.insertSuspend(Property(PREF_ATTACHMENT_OFFSET, attachmentOffset.toString(), updatedAt))
 
         val backup = pref.getBoolean(PREF_BACKUP, false)
         propertyDao.insertSuspend(Property(PREF_BACKUP, backup.toString(), updatedAt))

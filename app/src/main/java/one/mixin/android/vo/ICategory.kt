@@ -2,14 +2,14 @@ package one.mixin.android.vo
 
 import android.content.Context
 import androidx.core.net.toUri
-import one.mixin.android.MixinApplication
+import one.mixin.android.extension.ancientMediaPath
 import one.mixin.android.extension.generateConversationPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.oldMediaPath
 import java.io.File
 
 interface ICategory {
@@ -112,28 +112,18 @@ fun ICategory.canRecall(): Boolean {
         type == MessageCategory.APP_CARD.name
 }
 
-private val mediaPath by lazy {
-    MixinApplication.appContext.getMediaPath(false)
-}
-private val oldMediaPath by lazy {
-    MixinApplication.appContext.getMediaPath(true)
-}
-
 fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {
     if (isLive()) {
         return mediaUrl
     }
-    val dirPath = mediaPath ?: return null
-    return when (mediaUrl) {
-        null -> null
+    return when  {
+        mediaUrl == null -> null
+        oldMediaPath != null && mediaUrl.startsWith(oldMediaPath!!) -> File(mediaUrl)
+        ancientMediaPath != null && mediaUrl.startsWith(ancientMediaPath!!) -> File(mediaUrl)
         else -> generatePath(context, false, this, conversationId, mediaUrl)
     }.let { file ->
-        return if (mediaUrl == null) {
-            null
-        } else if (oldMediaPath == null) {
-            null
-        } else if (file == null || !file.exists()) {
-            generatePath(context, true, this, conversationId, mediaUrl)?.toUri()
+        return if (file == null || !file.exists()) {
+            generatePath(context, true, this, conversationId, mediaUrl!!)?.toUri()
                 .toString()
         } else {
             file.toUri().toString()

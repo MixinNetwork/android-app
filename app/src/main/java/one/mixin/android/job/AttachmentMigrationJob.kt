@@ -14,12 +14,12 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.createWebpTemp
+import one.mixin.android.extension.getAncientMediaPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMediaPath
-import one.mixin.android.extension.getOldMediaPath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
@@ -42,18 +42,19 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
     override fun onRun() = runBlocking {
         val startTime = System.currentTimeMillis()
         var migrationLast = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_LAST)?.toLongOrNull() ?: -1
-        val offset = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET)?.toLongOrNull() ?: 0
+
         if (migrationLast == -1L) {
             migrationLast = messageDao.getLastMessageRowid()
             propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_LAST, migrationLast.toString(), nowInUtc()))
         }
 
         if (!hasWritePermission()) return@runBlocking
+        val offset = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET)?.toLongOrNull() ?: 0
         val list = messageDao.findAttachmentMigration(migrationLast, EACH, offset)
         list.forEach { attachment ->
             val fromFile = attachment.getFile(MixinApplication.appContext) ?: return@forEach
             if (!fromFile.exists()) {
-                Timber.d("Attachment migration no exists ${messageDao.countDoneAttachment()} ${fromFile.absolutePath}")
+                Timber.d("Attachment migration no exists ${messageDao.countDoneAttachment()} ${fromFile.absoluteFile}")
                 return@forEach
             }
             val toFile = when (attachment.category) {
@@ -118,18 +119,24 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 else -> null
             }
             toFile ?: return@forEach
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Files.move(fromFile.toPath(), toFile.toPath())
-            } else {
-                fromFile.renameTo(toFile)
+            if (fromFile.absolutePath != toFile.absolutePath) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    Files.move(fromFile.toPath(), toFile.toPath())
+                } else {
+                    fromFile.renameTo(toFile)
+                }
             }
             Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
-            messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
+            if (attachment.category == MessageCategory.SIGNAL_TRANSCRIPT.name || attachment.category == MessageCategory.PLAIN_TRANSCRIPT.name) {
+                transcriptMessageDao.updateMediaUrl(toFile.name, attachment.messageId)
+            } else if (attachment.mediaUrl != toFile.name) {
+                messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
+            }
         }
         propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString())
         Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
         if (list.size < EACH) {
-            MixinApplication.appContext.getOldMediaPath()?.deleteRecursively()
+            MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()
             MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
             propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
         } else {
