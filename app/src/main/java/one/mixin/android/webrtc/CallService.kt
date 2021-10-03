@@ -10,6 +10,7 @@ import com.twilio.audioswitch.AudioSwitch
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.SignalProtocol
@@ -47,9 +48,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     private val observeStatsDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     protected var timeoutFuture: ScheduledFuture<*>? = null
 
-    protected val peerConnectionClient: PeerConnectionClient by lazy {
-        PeerConnectionClient(this, this)
-    }
+    protected lateinit var peerConnectionClient: PeerConnectionClient
 
     protected lateinit var audioManager: CallAudioManager
 
@@ -81,17 +80,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     override fun onCreate() {
         super.onCreate()
-        callExecutor.execute {
-            peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
-        }
-        audioManager = CallAudioManager(
-            this, audioSwitch,
-            object : CallAudioManager.Callback {
-                override fun customAudioDeviceAvailable(available: Boolean) {
-                    callState.customAudioDeviceAvailable = available
-                }
-            }
-        )
         Session.getAccount()?.toUser().let { user ->
             if (user == null) {
                 stopSelf()
@@ -103,13 +91,19 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        if (intent == null || intent.action == null) {
+        val action = intent?.action
+        if (intent == null || action == null) {
             return START_NOT_STICKY
         }
         if (isDestroyed.get()) {
             stopSelf()
             return Service.START_NOT_STICKY
         }
+
+        if (needInitWebRtc(action)) {
+            initWebRtc()
+        }
+
         callExecutor.execute {
             if (!handleIntent(intent)) {
                 when (intent.action) {
@@ -128,8 +122,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
             Timber.d("$TAG_CALL real onDestroy")
-            audioManager.release()
-            peerConnectionClient.release()
+            if (::audioManager.isInitialized) {
+                audioManager.release()
+            }
+            if (::peerConnectionClient.isInitialized) {
+                peerConnectionClient.release()
+            }
 
             onDestroyed()
         }
@@ -150,6 +148,26 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         }
     }
 
+    protected fun initWebRtc() {
+        if (::peerConnectionClient.isInitialized && ::audioManager.isInitialized) {
+            return
+        }
+
+        peerConnectionClient = PeerConnectionClient(MixinApplication.appContext, this)
+        callExecutor.execute {
+            peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
+        }
+        audioManager = CallAudioManager(
+            this, audioSwitch,
+            object : CallAudioManager.Callback {
+                override fun customAudioDeviceAvailable(available: Boolean) {
+                    callState.customAudioDeviceAvailable = available
+                }
+            }
+        )
+    }
+
+    abstract fun needInitWebRtc(action: String): Boolean
     abstract fun handleIntent(intent: Intent): Boolean
     abstract fun onCallDisconnected()
     abstract fun onDestroyed()

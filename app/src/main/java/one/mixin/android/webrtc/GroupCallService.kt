@@ -560,6 +560,8 @@ class GroupCallService : CallService() {
         cid?.let { checkConversationUserCount(cid) }
     }
 
+    override fun needInitWebRtc(action: String) = action != ACTION_CHECK_PEER
+
     override fun onConnected() {
         super.onConnected()
         callExecutor.execute {

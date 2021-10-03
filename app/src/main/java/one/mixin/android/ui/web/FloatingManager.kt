@@ -1,6 +1,5 @@
 package one.mixin.android.ui.web
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -72,9 +71,9 @@ fun expand(context: Context) {
     FloatingWebClip.getInstance().hide()
 }
 
-fun collapse(activity: Activity) {
+fun collapse() {
     if (clips.size > 0) {
-        FloatingWebClip.getInstance().show(activity)
+        FloatingWebClip.getInstance().show()
     }
 }
 
@@ -106,43 +105,42 @@ fun updateClip(index: Int, webClip: WebClip) {
     }
 }
 
-fun showClip(activity: Activity) {
-    collapse(activity)
+fun showClip() {
+    collapse()
 }
 
-fun holdClip(activity: Activity, webClip: WebClip) {
+fun holdClip(webClip: WebClip) {
     if (!clips.contains(webClip)) {
         if (clips.size >= 6) {
-            activity.toast(R.string.web_full)
+            MixinApplication.appContext.toast(R.string.web_full)
         } else {
             clips.add(webClip)
-            FloatingWebClip.getInstance().show(activity)
+            FloatingWebClip.getInstance().show()
         }
     }
 }
 
-private fun initClips(activity: Activity) {
+private fun initClips() {
     MixinApplication.appScope.launch(SINGLE_THREAD) {
-        val content =
-            activity.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
+        val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
         val type = object : TypeToken<List<WebClip>>() {}.type
         val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
         clips.clear()
         if (list.isEmpty()) return@launch
         clips.addAll(list)
-        MixinApplication.get().currentActivity?.let { activity ->
+        MixinApplication.get().currentActivity?.let { _ ->
             withContext(Dispatchers.Main) {
-                FloatingWebClip.getInstance().show(activity)
+                FloatingWebClip.getInstance().show()
             }
         }
     }
 }
 
-fun refresh(activity: Activity) {
+fun refresh() {
     if (clips.isEmpty()) {
-        initClips(activity)
+        initClips()
     } else {
-        FloatingWebClip.getInstance().show(activity, false)
+        FloatingWebClip.getInstance().show()
     }
 }
 

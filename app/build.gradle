@@ -11,8 +11,8 @@ apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-parcelize'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 31
+    buildToolsVersion "31.0.0"
     ndkVersion "23.0.7599858"
     defaultConfig {
         applicationId "one.mixin.messenger"
@@ -343,6 +343,7 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

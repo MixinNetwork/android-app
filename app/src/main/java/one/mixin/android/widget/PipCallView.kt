@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
@@ -112,7 +111,6 @@ class PipCallView {
     }
 
     fun show(
-        activity: Activity,
         connectedTime: Long? = null,
         callState: CallStateLiveData
     ) {
@@ -122,7 +120,7 @@ class PipCallView {
         val realSize = appContext.realSize()
         val realX = if (isLandscape) realSize.y else realSize.x
         val realY = if (isLandscape) realSize.x else realSize.y
-        windowView = object : FrameLayout(activity) {
+        windowView = object : FrameLayout(appContext) {
             private var startX: Float = 0f
             private var startY: Float = 0f
 
@@ -232,11 +230,13 @@ class PipCallView {
                 Timber.w("$TAG_CALL remove windowView throw $e")
             }
         }
+        timeView = null
         windowView = null
         stopTimer()
     }
 
     private var timer: Timer? = null
+    private var timerTask: TimerTask? = null
 
     fun startTimer(connectedTime: Long) {
         Timber.d("$TAG_CALL startTimer timer: $timer")
@@ -246,7 +246,8 @@ class PipCallView {
         }
 
         timer = Timer(true)
-        val timerTask = object : TimerTask() {
+        timerTask?.cancel()
+        timerTask = object : TimerTask() {
             override fun run() {
                 appContext.runOnUiThread {
                     setDuration(connectedTime)
@@ -258,6 +259,7 @@ class PipCallView {
 
     fun stopTimer() {
         Timber.d("$TAG_CALL stopTimer")
+        timerTask?.cancel()
         timer?.cancel()
         timer?.purge()
         timer = null

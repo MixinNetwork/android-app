@@ -53,7 +53,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -377,7 +376,7 @@ class ConversationFragment() :
                 when {
                     isFirstLoad -> {
                         isFirstLoad = false
-                        chatViewModel.viewModelScope.launch {
+                        lifecycleScope.launch {
                             delay(100)
                             messageId?.let { id ->
                                 RxBus.publish(BlinkEvent(id))
@@ -706,7 +705,7 @@ class ConversationFragment() :
                             FloatingPlayer.getInstance().hide()
                         } else {
                             if (checkFloatingPermission()) {
-                                collapse(requireActivity(), conversationId)
+                                collapse(conversationId)
                             }
                         }
                         FloatingPlayer.getInstance().conversationId = conversationId
@@ -724,7 +723,7 @@ class ConversationFragment() :
                             if (viewDestroyed()) return@playMedia
                             if (checkFloatingPermission()) {
                                 if (MixinApplication.get().activityInForeground) {
-                                    collapse(requireActivity(), conversationId)
+                                    collapse(conversationId)
                                 }
                             } else {
                                 requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
@@ -782,7 +781,7 @@ class ConversationFragment() :
             }
 
             override fun onMentionClick(identityNumber: String) {
-                chatViewModel.viewModelScope.launch {
+                lifecycleScope.launch {
                     chatViewModel.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))?.let { user ->
                         if (user.userId == Session.getAccountId()!!) {
                             ProfileBottomSheetDialogFragment.newInstance()
@@ -1076,7 +1075,7 @@ class ConversationFragment() :
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe { event ->
-                chatViewModel.viewModelScope.launch {
+                lifecycleScope.launch {
                     chatViewModel.markMentionRead(event.messageId, event.conversationId)
                 }
             }
@@ -1120,7 +1119,7 @@ class ConversationFragment() :
                 .autoDispose(stopScope)
                 .subscribe {
                     if (it.conversationId == conversationId) {
-                        chatViewModel.viewModelScope.launch {
+                        lifecycleScope.launch {
                             binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
                             binding.groupDesc.collapse()
                             binding.groupDesc.requestFocus()
@@ -1272,6 +1271,7 @@ class ConversationFragment() :
                 }
             }
         }
+        AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
         context?.let {
             if (!anyCallServiceRunning(it)) {
@@ -1848,7 +1848,7 @@ class ConversationFragment() :
                 unreadTipCount = 0
                 oldCount = list.size
             }
-            chatViewModel.viewModelScope.launch {
+            lifecycleScope.launch {
                 conversationAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name &&
                     (
                         (isBot && list.isEmpty()) ||
@@ -1858,7 +1858,7 @@ class ConversationFragment() :
             if (isFirstLoad && messageId == null && unreadCount > 0) {
                 conversationAdapter.unreadMsgId = unreadMessageId
             } else if (lastReadMessage != null) {
-                chatViewModel.viewModelScope.launch {
+                lifecycleScope.launch {
                     lastReadMessage?.let { id ->
                         val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
                             conversationId,
@@ -3013,7 +3013,7 @@ class ConversationFragment() :
     }
 
     private fun searchMentionUser(keyword: String) {
-        chatViewModel.viewModelScope.launch {
+        lifecycleScope.launch {
             val mention = mentionEnd(keyword)
             val users = chatViewModel.fuzzySearchUser(conversationId, mention)
             mentionAdapter.keyword = mention
