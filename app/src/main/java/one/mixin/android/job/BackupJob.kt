@@ -25,9 +25,10 @@ import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
+import one.mixin.android.util.backup.findOldBackupSync
 import java.io.File
 
-class BackupJob(private val force: Boolean = false) : BaseJob(
+class BackupJob(private val force: Boolean = false, private val delete: Boolean = false) : BaseJob(
     Params(
         if (force) {
             PRIORITY_UI_HIGH
@@ -66,6 +67,9 @@ class BackupJob(private val force: Boolean = false) : BaseJob(
                     backup(context)
                 }
             }
+        }
+        if (delete) {
+            findOldBackupSync(MixinApplication.appContext)?.deleteRecursively()
         }
     }
 

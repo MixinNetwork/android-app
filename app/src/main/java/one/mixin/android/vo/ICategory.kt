@@ -116,7 +116,7 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
     if (isLive()) {
         return mediaUrl
     }
-    return when  {
+    return when {
         mediaUrl == null -> null
         oldMediaPath != null && mediaUrl.startsWith(oldMediaPath!!) -> File(mediaUrl)
         ancientMediaPath != null && mediaUrl.startsWith(ancientMediaPath!!) -> File(mediaUrl)

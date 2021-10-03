@@ -41,7 +41,7 @@ object PropertyHelper {
     }
 
     suspend fun checkBackupMigrated(context: Context, action: () -> Unit) {
-        checkWithKey(context, PREF_BACKUP, true.toString(), action)
+        checkWithKey(context, PREF_MIGRATION_BACKUP, true.toString(), action)
     }
 
     suspend fun checkMigrated(context: Context): PropertyDao {
@@ -81,7 +81,7 @@ object PropertyHelper {
         propertyDao.insertSuspend(Property(PREF_SYNC_FTS4_OFFSET, syncFtsOffset.toString(), updatedAt))
 
         val backup = pref.getBoolean(PREF_BACKUP, false)
-        propertyDao.insertSuspend(Property(PREF_BACKUP, backup.toString(), updatedAt))
+        propertyDao.insertSuspend(Property(PREF_MIGRATION_BACKUP, backup.toString(), updatedAt))
         // Backup files need to be migrated
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             propertyDao.insertSuspend(Property(PREF_MIGRATION_BACKUP, backup.toString(), updatedAt))
@@ -107,6 +107,7 @@ object PropertyHelper {
         // Attachment files need to be migrated
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.countDoneAttachment()> 0).toString(), updatedAt))
+            propertyDao.insertSuspend(Property(PREF_MIGRATION_BACKUP, true.toString(), updatedAt))
         }
     }
 

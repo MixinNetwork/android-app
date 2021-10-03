@@ -313,7 +313,7 @@ class MainActivity : BlazeBaseActivity() {
             finish()
         }
 
-        val sdk = PropertyHelper.findValueByKey(this@MainActivity, PREF_DEVICE_SDK).toIntOrNull()
+        val sdk = PropertyHelper.findValueByKey(this@MainActivity, PREF_DEVICE_SDK)?.toIntOrNull()
         if (sdk == null) {
             PropertyHelper.updateKeyValue(this@MainActivity, PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
         } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -327,7 +327,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         PropertyHelper.checkBackupMigrated(this@MainActivity) {
-            jobManager.addJobInBackground(BackupMigrationJob())
+            jobManager.addJobInBackground(BackupJob(delete= true))
         }
 
         WorkManager.getInstance(this@MainActivity)
