@@ -1195,6 +1195,9 @@ class WebFragment : BaseFragment() {
                 try {
                     val context = view.context
                     val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                    if (context !is Activity) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
 
                     if (intent != null) {
                         val packageManager = context.packageManager
