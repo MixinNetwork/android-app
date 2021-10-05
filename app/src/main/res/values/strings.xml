@@ -773,6 +773,8 @@
     <string name="auth_circles_read_description">access your circle list</string>
     <string name="auth_circles_write">Write Circles</string>
     <string name="auth_circles_write_description">manage all your circles</string>
+    <string name="auth_collectibles_read">Read Collectibles</string>
+    <string name="auth_collectibles_read_description">access your collectibles</string>
 
     <string name="permission_video">Allow to record video?</string>
     <string name="permission_camera">Allow to take pictures?</string>
