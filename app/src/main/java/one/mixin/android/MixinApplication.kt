@@ -10,6 +10,13 @@ import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.kwai.koom.base.CommonConfig
+import com.kwai.koom.base.MonitorLog
+import com.kwai.koom.base.MonitorManager
+import com.kwai.koom.javaoom.monitor.OOMHprofUploader
+import com.kwai.koom.javaoom.monitor.OOMMonitor
+import com.kwai.koom.javaoom.monitor.OOMMonitorConfig
+import com.kwai.koom.javaoom.monitor.OOMReportUploader
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -58,6 +65,7 @@ import one.mixin.android.webrtc.disconnect
 import org.jetbrains.anko.notificationManager
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
+import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -136,6 +144,30 @@ open class MixinApplication :
     private fun init() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
+            val commonConfig = CommonConfig.Builder()
+                .setApplication(this)
+                .setVersionNameInvoker { "1.0.0" }
+                .build()
+
+            MonitorManager.initCommonConfig(commonConfig)
+                .apply { onApplicationCreate() }
+            val config = OOMMonitorConfig.Builder()
+                .setEnableHprofDumpAnalysis(true)
+                .setHprofUploader(object: OOMHprofUploader {
+                    override fun upload(file: File, type: OOMHprofUploader.HprofType) {
+                        MonitorLog.e("OOMMonitor", "todo, upload hprof ${file.name} if necessary")
+                    }
+                })
+                .setReportUploader(object: OOMReportUploader {
+                    override fun upload(file: File, content: String) {
+                        MonitorLog.i("OOMMonitor", content)
+                        MonitorLog.e("OOMMonitor", "todo, upload report ${file.name} if necessary")
+                    }
+                })
+                .build()
+
+            MonitorManager.addMonitorConfig(config)
+            OOMMonitor.startLoop(clearQueue = true, postAtFront = true, delayMillis = 5000L)
         } else {
             Timber.plant(FileLogTree())
         }

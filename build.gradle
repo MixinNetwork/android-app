@@ -103,6 +103,7 @@ buildscript {
         ext.bcVersion = '1.46'
         ext.jsonVersion = '20210307'
 
+        ext.koomVersion = '2.0.0'
     }
 
     repositories {
