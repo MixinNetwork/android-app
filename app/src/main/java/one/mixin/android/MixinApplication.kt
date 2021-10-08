@@ -17,6 +17,10 @@ import com.kwai.koom.javaoom.monitor.OOMHprofUploader
 import com.kwai.koom.javaoom.monitor.OOMMonitor
 import com.kwai.koom.javaoom.monitor.OOMMonitorConfig
 import com.kwai.koom.javaoom.monitor.OOMReportUploader
+import com.kwai.performance.overhead.thread.monitor.ThreadLeakListener
+import com.kwai.performance.overhead.thread.monitor.ThreadLeakRecord
+import com.kwai.performance.overhead.thread.monitor.ThreadMonitor
+import com.kwai.performance.overhead.thread.monitor.ThreadMonitorConfig
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -166,8 +170,21 @@ open class MixinApplication :
                 })
                 .build()
 
+            val threadConfig = ThreadMonitorConfig.Builder()
+                .setListener(object: ThreadLeakListener {
+                    override fun onReport(leaks: MutableList<ThreadLeakRecord>) {
+                        leaks.forEach {
+                            MonitorLog.i("ThreadMonitor", it.toString())
+                        }
+                    }
+                    override fun onError(msg: String) {
+                        MonitorLog.e("ThreadMonitor", msg)
+                    }})
+                .build()
             MonitorManager.addMonitorConfig(config)
+            MonitorManager.addMonitorConfig(threadConfig)
             OOMMonitor.startLoop(clearQueue = true, postAtFront = true, delayMillis = 5000L)
+            ThreadMonitor.startTrackAsync()
         } else {
             Timber.plant(FileLogTree())
         }

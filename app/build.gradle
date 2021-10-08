@@ -320,6 +320,8 @@ dependencies {
 
     implementation "com.kuaishou.koom:koom-monitor-base:$koomVersion"
     implementation "com.kuaishou.koom:koom-java-leak:$koomVersion"
+    implementation "com.kuaishou.koom:koom-thread-leak:$koomVersion"
+    implementation "com.kuaishou.koom:xhook:$koomVersion"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
