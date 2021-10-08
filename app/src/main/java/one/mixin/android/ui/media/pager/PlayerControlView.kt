@@ -133,6 +133,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     public override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         attachedToWindow = true
+        player?.addListener(componentListener)
         if (hideAtMs != C.TIME_UNSET) {
             val delayMs = hideAtMs - SystemClock.uptimeMillis()
             if (delayMs <= 0) {
@@ -148,6 +149,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     public override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         attachedToWindow = false
+        player?.removeListener(componentListener)
         removeCallbacks(updateProgressAction)
         removeCallbacks(hideAction)
     }
