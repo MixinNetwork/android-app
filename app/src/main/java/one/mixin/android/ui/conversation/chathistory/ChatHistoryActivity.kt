@@ -254,7 +254,7 @@ class ChatHistoryActivity : BaseActivity() {
                 viewBinding.copyTv.setOnClickListener {
                     this@ChatHistoryActivity.getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
-                    this@ChatHistoryActivity.toast(R.string.copy_success)
+                    toast(R.string.copy_success)
                     bottomSheet.dismiss()
                 }
                 bottomSheet.show()
@@ -510,7 +510,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     this@ChatHistoryActivity.getClipboardManager().setPrimaryClip(
                                         ClipData.newPlainText(null, messageItem.content)
                                     )
-                                    this@ChatHistoryActivity.toast(R.string.copy_success)
+                                    toast(R.string.copy_success)
                                 } catch (e: ArrayIndexOutOfBoundsException) {
                                 }
                             }

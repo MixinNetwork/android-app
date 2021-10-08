@@ -199,7 +199,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
     private fun validatePin(): Boolean {
         val pin = binding.pin.code()
         if (pin == "123456") {
-            context?.toast(R.string.wallet_password_unsafe)
+            toast(R.string.wallet_password_unsafe)
             return false
         }
 
@@ -210,7 +210,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             }
         }
         if (numKind.size <= 2) {
-            context?.toast(R.string.wallet_password_unsafe)
+            toast(R.string.wallet_password_unsafe)
             return false
         }
 
@@ -255,17 +255,17 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                                         if (activity is ConversationActivity ||
                                             activity is ContactsActivity
                                         ) {
-                                            context?.toast(R.string.wallet_set_password_success)
+                                            toast(R.string.wallet_set_password_success)
                                             parentFragmentManager.popBackStackImmediate()
                                         } else if (activity is MainActivity) {
-                                            context?.toast(R.string.wallet_set_password_success)
+                                            toast(R.string.wallet_set_password_success)
                                             parentFragmentManager.popBackStackImmediate()
                                             WalletActivity.show(activity)
                                         } else {
                                             if (change) {
-                                                context?.toast(R.string.wallet_change_password_success)
+                                                toast(R.string.wallet_change_password_success)
                                             } else {
-                                                context?.toast(R.string.wallet_set_password_success)
+                                                toast(R.string.wallet_set_password_success)
                                             }
                                             parentFragmentManager.popBackStackImmediate()
                                         }
@@ -287,7 +287,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     private fun checkEqual(): Boolean {
         if (lastPassword != binding.pin.code()) {
-            context?.toast(R.string.wallet_password_not_equal)
+            toast(R.string.wallet_password_not_equal)
             toStep1()
             return true
         }

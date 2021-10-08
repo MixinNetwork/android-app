@@ -267,7 +267,7 @@ class PipVideoView {
             )
             setOnClickListener {
                 if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-                    appContext.toast(R.string.need_background_permission)
+                    toast(R.string.need_background_permission)
                 }
                 MediaPagerActivity.show(
                     MixinApplication.appContext,
