@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.os.Build
@@ -136,7 +135,7 @@ class PipVideoView {
         }
     }
 
-    private lateinit var windowView: FrameLayout
+    private var windowView: FrameLayout? = null
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
@@ -162,7 +161,6 @@ class PipVideoView {
     }
 
     fun show(
-        activity: Activity,
         aspectRatio: Float,
         rotation: Int,
         conversationId: String,
@@ -176,7 +174,7 @@ class PipVideoView {
         val realSize = appContext.realSize()
         val realX = if (isLandscape) realSize.y else realSize.x
         val realY = if (isLandscape) realSize.x else realSize.y
-        windowView = object : FrameLayout(activity) {
+        windowView = object : FrameLayout(appContext) {
             private var startX: Float = 0f
             private var startY: Float = 0f
 
@@ -222,8 +220,8 @@ class PipVideoView {
                         alpha =
                             1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
                     }
-                    if (windowView.alpha != alpha) {
-                        windowView.alpha = alpha
+                    if (windowView?.alpha != alpha) {
+                        windowView?.alpha = alpha
                     }
                     maxDiff = 0
                     if (windowLayoutParams.y < -maxDiff) {
@@ -252,18 +250,18 @@ class PipVideoView {
                 videoHeight = (videoWidth / aspectRatio).toInt()
             }
         }
-        val aspectRatioFrameLayout = AspectRatioFrameLayout(activity)
+        val aspectRatioFrameLayout = AspectRatioFrameLayout(appContext)
         aspectRatioFrameLayout.setAspectRatio(aspectRatio, rotation)
         aspectRatioFrameLayout.round(8.dp)
-        windowView.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.CENTER))
-        val textureView = TextureView(activity)
+        windowView?.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.CENTER))
+        val textureView = TextureView(appContext)
         aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
-        inlineButton = ImageView(activity).apply {
+        inlineButton = ImageView(appContext).apply {
             scaleType = ImageView.ScaleType.CENTER
             visibility = GONE
             setImageResource(R.drawable.ic_pip_maximum)
-            windowView.addView(
+            windowView?.addView(
                 this,
                 FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END)
             )
@@ -281,11 +279,11 @@ class PipVideoView {
             }
         }
 
-        closeButton = ImageView(activity).apply {
+        closeButton = ImageView(appContext).apply {
             scaleType = ImageView.ScaleType.CENTER
             visibility = GONE
             setImageResource(R.drawable.ic_close_white_24dp)
-            windowView.addView(
+            windowView?.addView(
                 this,
                 FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START)
             )
@@ -296,9 +294,9 @@ class PipVideoView {
         }
 
         val dp42 = appContext.dpToPx(42f)
-        playView = PlayView(activity).apply {
+        playView = PlayView(appContext).apply {
             setBackgroundResource(R.drawable.bg_play_control)
-            windowView.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
+            windowView?.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
             val playbackState = VideoPlayer.player().player.playbackState
             status = when (playbackState) {
                 STATE_IDLE, STATE_ENDED -> {
@@ -431,7 +429,7 @@ class PipVideoView {
         } catch (e: Exception) {
             Timber.e(e)
         }
-        windowView.keepScreenOn = true
+        windowView?.keepScreenOn = true
         if (!aodWakeLock.isHeld) {
             aodWakeLock.acquire()
         }
@@ -452,6 +450,10 @@ class PipVideoView {
             windowManager.removeView(windowView)
         } catch (e: Exception) {
         }
+        windowView = null
+        playView = null
+        inlineButton = null
+        closeButton = null
     }
 
     private fun fadeIn() {
@@ -493,8 +495,8 @@ class PipVideoView {
                 animators = ArrayList()
             }
             editor.putInt(SIDEX, 0)
-            if (windowView.alpha != 1.0f) {
-                animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 1.0f))
+            if (windowView?.alpha != 1.0f) {
+                animators.add(ObjectAnimator.ofFloat(windowView!!, "alpha", 1.0f))
             }
             animators.add(ObjectAnimator.ofInt(this, "x", startX))
         } else if (abs(endX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x > realX - videoWidth &&
@@ -504,11 +506,11 @@ class PipVideoView {
                 animators = ArrayList()
             }
             editor.putInt(SIDEX, 1)
-            if (windowView.alpha != 1.0f) {
-                animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 1.0f))
+            if (windowView?.alpha != 1.0f) {
+                animators.add(ObjectAnimator.ofFloat(windowView!!, "alpha", 1.0f))
             }
             animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX))
-        } else if (windowView.alpha != 1.0f) {
+        } else if (windowView?.alpha != 1.0f) {
             if (animators == null) {
                 animators = ArrayList()
             }
@@ -553,7 +555,7 @@ class PipVideoView {
             animatorSet.interpolator = decelerateInterpolator
             animatorSet.duration = 150
             if (slideOut) {
-                animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 0.0f))
+                animators.add(ObjectAnimator.ofFloat(windowView!!, "alpha", 0.0f))
                 animatorSet.addListener(
                     object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
