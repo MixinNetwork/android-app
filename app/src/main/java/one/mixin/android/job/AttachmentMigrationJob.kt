@@ -112,10 +112,6 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                     MixinApplication.get().getAudioPath()
                         .createAudioTemp(attachment.conversationId, attachment.messageId, "ogg")
                 }
-                MessageCategory.PLAIN_TRANSCRIPT.name, MessageCategory.SIGNAL_TRANSCRIPT.name -> {
-                    MixinApplication.get().getTranscriptDirPath()
-                        .newTempFile(fromFile.name, "", true)
-                }
                 else -> null
             }
             toFile ?: return@forEach

@@ -33,18 +33,18 @@ fun AttachmentMigration.getFile(context: Context): File? {
         oldMediaPath != null && mediaUrl.startsWith(oldMediaPath!!) -> File(mediaUrl)
         ancientMediaPath != null && mediaUrl.startsWith(ancientMediaPath!!) -> File(mediaUrl)
         category.endsWith("_IMAGE") -> File(
-            context.getImagePath().generateConversationPath(conversationId), mediaUrl
+            context.getImagePath(true).generateConversationPath(conversationId), mediaUrl
         )
         category.endsWith("_VIDEO") -> File(
-            context.getVideoPath().generateConversationPath(conversationId), mediaUrl
+            context.getVideoPath(true).generateConversationPath(conversationId), mediaUrl
         )
         category.endsWith("_AUDIO") -> File(
-            context.getAudioPath().generateConversationPath(conversationId), mediaUrl
+            context.getAudioPath(true).generateConversationPath(conversationId), mediaUrl
         )
         category.endsWith("_DATA") -> File(
-            context.getDocumentPath().generateConversationPath(conversationId), mediaUrl
+            context.getDocumentPath(true).generateConversationPath(conversationId), mediaUrl
         )
-        category.endsWith("_TRANSCRIPT") -> File(context.getTranscriptDirPath(), mediaUrl)
+        category.endsWith("_TRANSCRIPT") -> File(context.getTranscriptDirPath(true), mediaUrl)
         else -> null
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.Constants.Account.PREF_FTS4_UPGRADE
@@ -35,6 +36,14 @@ object PropertyHelper {
     suspend fun checkAttachmentMigrated(context: Context, action: () -> Unit) {
         val propertyDao = checkMigrated(context)
         val value = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT)?.toBoolean() ?: false
+        if (value) {
+            action.invoke()
+        }
+    }
+
+    suspend fun checkTranscriptAttachmentMigrated(context: Context, action: () -> Unit) {
+        val propertyDao = checkMigrated(context)
+        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() ?: false
         if (value) {
             action.invoke()
         }
@@ -107,6 +116,7 @@ object PropertyHelper {
         // Attachment files need to be migrated
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.countDoneAttachment()> 0).toString(), updatedAt))
+            propertyDao.insertSuspend(Property(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, (messageDao.hasTranscriptDoneAttachment()).toString(), updatedAt))
             propertyDao.insertSuspend(Property(PREF_MIGRATION_BACKUP, true.toString(), updatedAt))
         }
     }
