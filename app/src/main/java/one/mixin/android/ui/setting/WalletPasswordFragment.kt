@@ -12,10 +12,11 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -296,7 +297,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.tickVibrate()
             if (position == 11) {
                 binding.pin.delete()
             } else {
@@ -305,7 +306,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.clickVibrate()
             if (position == 11) {
                 binding.pin.clear()
             } else {

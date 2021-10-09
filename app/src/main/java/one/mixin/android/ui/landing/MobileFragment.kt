@@ -28,9 +28,10 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.databinding.FragmentMobileBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
@@ -41,7 +42,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
-import java.lang.IndexOutOfBoundsException
 
 @AndroidEntryPoint
 class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
@@ -245,7 +245,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.tickVibrate()
             if (viewDestroyed()) {
                 return
             }
@@ -281,7 +281,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.clickVibrate()
             if (viewDestroyed()) {
                 return
             }

@@ -12,7 +12,8 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddPeopleBinding
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
@@ -24,7 +25,6 @@ import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
-import java.lang.IndexOutOfBoundsException
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -109,7 +109,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.tickVibrate()
             if (viewDestroyed()) {
                 return
             }
@@ -146,7 +146,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.clickVibrate()
             if (viewDestroyed()) {
                 return
             }

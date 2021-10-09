@@ -16,7 +16,7 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemDockBinding
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.vo.BotInterface
 import java.lang.Exception
 import kotlin.math.max
@@ -101,7 +101,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             @Suppress("DEPRECATION")
             v.startDrag(data, shadowBuilder, v, 0)
         }
-        v.context.tapVibrate()
+        v.context.clickVibrate()
         v.alpha = 0f
         return false
     }

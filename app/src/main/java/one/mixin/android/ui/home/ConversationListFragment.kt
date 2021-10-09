@@ -55,6 +55,7 @@ import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -67,7 +68,6 @@ import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -238,7 +238,7 @@ class ConversationListFragment : LinkFragment() {
 
                     if (height >= vibrateDis) {
                         if (!vibrated) {
-                            requireContext().tapVibrate()
+                            requireContext().clickVibrate()
                             vibrated = true
                         }
                         animDownIcon(true)
@@ -253,7 +253,7 @@ class ConversationListFragment : LinkFragment() {
             override fun onRelease(fling: Int) {
                 val shouldVibrate = false
                 if (shouldVibrate && !vibrated) {
-                    requireContext().tapVibrate()
+                    requireContext().clickVibrate()
                     vibrated = true
                 }
                 val topFl = _binding?.topFl

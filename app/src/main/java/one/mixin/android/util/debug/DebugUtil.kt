@@ -10,22 +10,21 @@ import androidx.core.database.getLongOrNull
 import androidx.core.database.getShortOrNull
 import androidx.core.database.getStringOrNull
 import one.mixin.android.BuildConfig
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.heavyClickVibrate
 import timber.log.Timber
-import java.lang.Exception
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 fun debugLongClick(view: View, debugAction: () -> Unit, releaseAction: (() -> Unit)? = null) {
     if (BuildConfig.DEBUG) {
         view.setOnLongClickListener {
-            view.context.tapVibrate()
+            view.context.heavyClickVibrate()
             debugAction.invoke()
             true
         }
     } else {
         view.setOnLongClickListener {
-            view.context.tapVibrate()
+            view.context.heavyClickVibrate()
             releaseAction?.invoke()
             true
         }
