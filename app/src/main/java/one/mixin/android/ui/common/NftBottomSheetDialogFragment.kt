@@ -6,15 +6,18 @@ import android.content.DialogInterface
 import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentNftBottomSheetBinding
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -76,6 +79,20 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                     }
                 }
             }
+
+            handleMixinResponse(
+                invokeNetwork = { bottomViewModel.getToken(t.tokenId) },
+                switchContext = Dispatchers.IO,
+                successBlock = {
+                    it.data?.metadata?.let { metadata ->
+                        binding.apply {
+                            nftIv.loadImage(metadata.iconUrl)
+                            nftTitle.text = metadata.tokenName
+                            nftMemo.text = metadata.description
+                        }
+                    }
+                }
+            )
         }
     }
 

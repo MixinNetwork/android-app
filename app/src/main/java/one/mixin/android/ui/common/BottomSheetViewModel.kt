@@ -459,6 +459,8 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.cancelMultisigs(requestId)
     }
 
+    suspend fun getToken(tokenId: String) = accountRepository.getToken(tokenId)
+
     suspend fun signCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) = accountRepository.signCollectibleTransfer(requestId, pinRequest)
 
     suspend fun unlockCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) = accountRepository.unlockCollectibleTransfer(requestId, pinRequest)

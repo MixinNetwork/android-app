@@ -105,16 +105,16 @@ interface AccountService {
     @POST("multisigs/{id}/unlock")
     suspend fun unlockMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Void>
 
-    @GET("collectible/tokens/{id}")
-    suspend fun tokens(@Path("id") id: String): MixinResponse<NonFungibleToken>
+    @GET("collectibles/tokens/{id}")
+    suspend fun getToken(@Path("id") id: String): MixinResponse<NonFungibleToken>
 
-    @POST("collectible/requests/{id}/cancel")
+    @POST("collectibles/requests/{id}/cancel")
     suspend fun cancelCollectibleTransfer(@Path("id") id: String): MixinResponse<NonFungibleToken>
 
-    @POST("collectible/requests/{id}/sign")
+    @POST("collectibles/requests/{id}/sign")
     suspend fun signCollectibleTransfer(@Path("id") id: String, @Body request: CollectibleRequest): MixinResponse<NonFungibleToken>
 
-    @POST("collectible/requests/{id}/unlock")
+    @POST("collectibles/requests/{id}/unlock")
     suspend fun unlockCollectibleTransfer(@Path("id") id: String, @Body request: CollectibleRequest): MixinResponse<NonFungibleToken>
 
     @POST("transactions")

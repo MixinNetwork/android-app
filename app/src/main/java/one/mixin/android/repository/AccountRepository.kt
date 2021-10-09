@@ -221,6 +221,8 @@ constructor(
     suspend fun cancelMultisigs(requestId: String) =
         accountService.cancelMultisigs(requestId)
 
+    suspend fun getToken(tokenId: String) = accountService.getToken(tokenId)
+
     suspend fun signCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) =
         accountService.signCollectibleTransfer(requestId, pinRequest)
 
