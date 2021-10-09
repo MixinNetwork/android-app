@@ -85,7 +85,6 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
-import one.mixin.android.job.BackupMigrationJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
@@ -332,7 +331,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         PropertyHelper.checkBackupMigrated(this@MainActivity) {
-            jobManager.addJobInBackground(BackupJob(delete= true))
+            jobManager.addJobInBackground(BackupJob(delete = true))
         }
 
         WorkManager.getInstance(this@MainActivity)

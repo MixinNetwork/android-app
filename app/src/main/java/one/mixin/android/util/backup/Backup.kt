@@ -151,14 +151,15 @@ suspend fun delete(
 suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext
-): File? = findNewBackup(context, coroutineContext) ?: findOldBackup(context, coroutineContext)
+): File? = findNewBackup(context, coroutineContext) ?: findNewBackup(context, coroutineContext, legacy = true) ?: findOldBackup(context, coroutineContext)
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findNewBackup(
     context: Context,
-    coroutineContext: CoroutineContext
+    coroutineContext: CoroutineContext,
+    legacy: Boolean = false
 ): File? = withContext(coroutineContext) {
-    val backupDir = context.getLegacyBackupPath() ?: return@withContext null
+    val backupDir = context.getLegacyBackupPath(legacy = legacy) ?: return@withContext null
     if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
     if (checkDb("$backupDir${File.separator}$DB_NAME")) {
         return@withContext File("$backupDir${File.separator}$DB_NAME")
@@ -188,8 +189,8 @@ suspend fun findOldBackup(
     null
 }
 
-fun findOldBackupSync(context: Context): File? {
-    val backupDir = context.getOldBackupPath() ?: return null
+fun findOldBackupSync(context: Context, legacy: Boolean = false): File? {
+    val backupDir = context.getOldBackupPath(legacy = legacy) ?: return null
     if (!backupDir.exists() || !backupDir.isDirectory) return null
     val files = backupDir.listFiles()
     if (files.isNullOrEmpty()) return null

@@ -70,6 +70,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         }
         if (delete) {
             findOldBackupSync(MixinApplication.appContext)?.deleteRecursively()
+            findOldBackupSync(MixinApplication.appContext, true)?.deleteRecursively()
         }
     }
 

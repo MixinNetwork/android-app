@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_LAST
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_OFFSET
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
@@ -20,11 +21,9 @@ import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMediaPath
-import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.newTempFile
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.Property
@@ -133,7 +132,9 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
         if (list.size < EACH) {
             MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()
-            MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
+            if (propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() != true) {
+                MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
+            }
             propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
         } else {
             jobManager.addJobInBackground(AttachmentMigrationJob())
