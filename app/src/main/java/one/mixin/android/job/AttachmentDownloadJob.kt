@@ -1,7 +1,5 @@
 package one.mixin.android.job
 
-import android.net.Uri
-import android.provider.MediaStore
 import com.birbit.android.jobqueue.Params
 import okhttp3.Call
 import okhttp3.Interceptor
@@ -15,18 +13,29 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
+import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.createAudioTemp
+import one.mixin.android.extension.createDocumentTemp
+import one.mixin.android.extension.createEmptyTemp
+import one.mixin.android.extension.createGifTemp
+import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.createWebpTemp
+import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.getDocumentPath
+import one.mixin.android.extension.getExtensionName
+import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.isImageSupport
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.copyInputStreamToUri
-import one.mixin.android.util.getAttachmentAudioUri
-import one.mixin.android.util.getAttachmentFilesUri
-import one.mixin.android.util.getAttachmentImagesUri
-import one.mixin.android.util.getAttachmentVideoUri
 import one.mixin.android.util.okhttp.ProgressListener
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageCategory
+import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import java.io.File
 import java.io.FileInputStream
@@ -158,86 +167,78 @@ class AttachmentDownloadJob(
             val sink = destination.sink().buffer()
             sink.writeAll(response.body!!.source())
             sink.close()
-
-            val attachmentCipherInputStream = if (message.category.startsWith("SIGNAL_")) {
-                AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
-            } else {
-                FileInputStream(destination)
-            }
-            val mediaUri: Uri? = when {
-                message.category.endsWith("_IMAGE") -> {
-                    getAttachmentImagesUri(message.mediaMimeType, message.conversationId, message.id, message.name)
+            if (message.category.endsWith("_IMAGE")) {
+                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {
+                    AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
+                } else {
+                    FileInputStream(destination)
                 }
-                message.category.endsWith("_DATA") -> {
-                    getAttachmentFilesUri(message.conversationId, message.id, message.name)
+                val imageFile = when {
+                    message.mediaMimeType?.isImageSupport() == false -> {
+                        MixinApplication.get().getImagePath().createEmptyTemp(message.conversationId, message.id)
+                    }
+                    message.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
+                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.id, ".png")
+                    }
+                    message.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
+                        MixinApplication.get().getImagePath().createGifTemp(message.conversationId, message.id)
+                    }
+                    message.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
+                        MixinApplication.get().getImagePath().createWebpTemp(message.conversationId, message.id)
+                    }
+                    else -> {
+                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.id, ".jpg")
+                    }
                 }
-                message.category.endsWith("_VIDEO") -> {
-                    getAttachmentVideoUri(message.conversationId, message.id, message.name)
-                }
-
-                message.category.endsWith("_AUDIO") -> {
-                    getAttachmentAudioUri(message.conversationId, message.id, message.name)
-                }
-                else -> null
-            }
-            if (mediaUri == null) {
-                messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+                imageFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(imageFile.name, message.id)
+                messageDao.updateMediaSize(imageFile.length(), message.id)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
-                return false
+            } else if (message.category.endsWith("_DATA")) {
+                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_DATA.name) {
+                    AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
+                } else {
+                    FileInputStream(destination)
+                }
+                val extensionName = message.name?.getExtensionName()
+                val dataFile = MixinApplication.get().getDocumentPath()
+                    .createDocumentTemp(message.conversationId, message.id, extensionName)
+                dataFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(dataFile.name, message.id)
+                messageDao.updateMediaSize(dataFile.length(), message.id)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+                attachmentProcess.remove(message.id)
+            } else if (message.category.endsWith("_VIDEO")) {
+                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_VIDEO.name) {
+                    AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
+                } else {
+                    FileInputStream(destination)
+                }
+                val extensionName = message.name?.getExtensionName().let {
+                    it ?: "mp4"
+                }
+                val videoFile = MixinApplication.get().getVideoPath()
+                    .createVideoTemp(message.conversationId, message.id, extensionName)
+                videoFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(videoFile.name, message.id)
+                messageDao.updateMediaSize(videoFile.length(), message.id)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+                attachmentProcess.remove(message.id)
+            } else if (message.category.endsWith("_AUDIO")) {
+                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_AUDIO.name) {
+                    AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
+                } else {
+                    FileInputStream(destination)
+                }
+                val audioFile = MixinApplication.get().getAudioPath()
+                    .createAudioTemp(message.conversationId, message.id, "ogg")
+                audioFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(audioFile.name, message.id)
+                messageDao.updateMediaSize(audioFile.length(), message.id)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+                attachmentProcess.remove(message.id)
             }
-
-            copyInputStreamToUri(mediaUri, attachmentCipherInputStream)
-
-            val projection = arrayOf(MediaStore.MediaColumns.SIZE)
-            val cursor = MixinApplication.appContext.contentResolver.query(mediaUri, projection, null, null, null)
-            if (cursor != null) {
-                val mediaSizeIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)
-                cursor.moveToNext()
-                val imageSize = cursor.getLong(mediaSizeIndex)
-                messageDao.updateMediaSize(imageSize, message.id)
-                cursor.close()
-            }
-
-            messageDao.updateMediaMessageUrl(mediaUri.toString(), message.id)
-            messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-            attachmentProcess.remove(message.id)
-
-            // if (message.category.endsWith("_IMAGE")) {
-            //     val imageUri = getAttachmentImagesUri(message.mediaMimeType, message.conversationId, message.id, message.name)
-            //     imageFile.copyFromInputStream(attachmentCipherInputStream)
-            //     messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
-            //     messageDao.updateMediaSize(imageFile.length(), message.id)
-            //     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-            //     attachmentProcess.remove(message.id)
-            // } else if (message.category.endsWith("_DATA")) {
-            //     val extensionName = message.name?.getExtensionName()
-            //     val dataFile = MixinApplication.get().getLegacyDocumentPath()
-            //         .createDocumentTemp(message.conversationId, message.id, extensionName)
-            //     dataFile.copyFromInputStream(attachmentCipherInputStream)
-            //     messageDao.updateMediaMessageUrl(MixinApplication.appContext.getUriForFile(dataFile).toString(), message.id)
-            //     messageDao.updateMediaSize(dataFile.length(), message.id)
-            //     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-            //     attachmentProcess.remove(message.id)
-            // } else if (message.category.endsWith("_VIDEO")) {
-            //     val extensionName = message.name?.getExtensionName().let {
-            //         it ?: "mp4"
-            //     }
-            //     val videoFile = MixinApplication.get().getLegacyVideoPath()
-            //         .createVideoTemp(message.conversationId, message.id, extensionName)
-            //     videoFile.copyFromInputStream(attachmentCipherInputStream)
-            //     messageDao.updateMediaMessageUrl(Uri.fromFile(videoFile).toString(), message.id)
-            //     messageDao.updateMediaSize(videoFile.length(), message.id)
-            //     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-            //     attachmentProcess.remove(message.id)
-            // } else if (message.category.endsWith("_AUDIO")) {
-            //     val audioFile = MixinApplication.get().getLegacyAudioPath()
-            //         .createAudioTemp(message.conversationId, message.id, "ogg")
-            //     audioFile.copyFromInputStream(attachmentCipherInputStream)
-            //     messageDao.updateMediaMessageUrl(Uri.fromFile(audioFile).toString(), message.id)
-            //     messageDao.updateMediaSize(audioFile.length(), message.id)
-            //     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-            //     attachmentProcess.remove(message.id)
-            // }
             return true
         } else {
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)

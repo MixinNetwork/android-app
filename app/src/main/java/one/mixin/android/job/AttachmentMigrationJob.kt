@@ -122,9 +122,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 }
             }
             Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
-            if (attachment.category == MessageCategory.SIGNAL_TRANSCRIPT.name || attachment.category == MessageCategory.PLAIN_TRANSCRIPT.name) {
-                transcriptMessageDao.updateMediaUrl(toFile.name, attachment.messageId)
-            } else if (attachment.mediaUrl != toFile.name) {
+            if (attachment.mediaUrl != toFile.name) {
                 messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
             }
         }

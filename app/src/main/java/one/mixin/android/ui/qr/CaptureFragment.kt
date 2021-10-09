@@ -211,13 +211,6 @@ class CaptureFragment : BaseCameraxFragment() {
         }
 
         override fun readyForProgress() {
-            binding.close.fadeOut()
-            binding.flash.fadeOut()
-            binding.switchCamera.fadeOut()
-            binding.chronometerLayout.fadeIn()
-            binding.chronometer.base = SystemClock.elapsedRealtime()
-            binding.chronometer.start()
-            videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
             try {
                 oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
                 audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)

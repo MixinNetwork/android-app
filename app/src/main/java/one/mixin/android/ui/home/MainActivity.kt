@@ -136,7 +136,6 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -262,13 +261,6 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
 
         checkAsync()
-        Timber.d(filesDir.absolutePath)
-        Timber.d(cacheDir.absolutePath)
-        Timber.d(externalCacheDir?.absolutePath)
-        Timber.d(getExternalFilesDir(null)?.absolutePath)
-        externalMediaDirs.forEach {
-            Timber.d("@@@ externalMediaDirs ${it.absolutePath}")
-        }
     }
 
     override fun onStart() {

@@ -1,5 +1,6 @@
 package one.mixin.android.job
 
+import androidx.collection.ArrayMap
 import com.birbit.android.jobqueue.Job
 import com.birbit.android.jobqueue.JobManager
 import com.birbit.android.jobqueue.TagConstraint
@@ -9,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 class MixinJobManager(configuration: Configuration) : JobManager(configuration) {
 
     companion object {
-        var attachmentProcess = HashMap<String, Int>()
+        var attachmentProcess = ArrayMap<String, Int>()
 
         fun getAttachmentProcess(messageId: String): Int {
             return attachmentProcess[messageId] ?: 0
