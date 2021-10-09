@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -23,7 +24,9 @@ class RefreshTopAssetsJob : BaseJob(
         val response = assetService.topAssets().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val assetList = response.data as List<TopAsset>
-            topAssetDao.deleteNotInIds(assetList.map { it.assetId })
+            assetList.map { it.assetId }.chunked(200) {
+                launch { topAssetDao.deleteNotInIds(it) }
+            }
             topAssetDao.insertListSuspend(assetList)
 
             val recentArray = MixinApplication.appContext.defaultSharedPreferences
