@@ -230,7 +230,7 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }
 
-    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
+    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         conversationRepo.deleteMessageByConversationId(conversationId)
     }
 
