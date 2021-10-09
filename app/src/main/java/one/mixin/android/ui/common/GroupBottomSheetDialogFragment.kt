@@ -402,7 +402,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     },
                     successBlock = { response ->
                         bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
-                        context?.toast(getString(R.string.un_mute) + " ${conversation.name}")
+                        toast(getString(R.string.un_mute) + " ${conversation.name}")
                     }
                 )
             }
@@ -436,7 +436,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                             },
                             successBlock = { response ->
                                 bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
-                                context?.toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
+                                toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
                             }
                         )
                     }

@@ -150,7 +150,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 segments[0]
             }
             if (!userId.isUUID()) {
-                context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
             } else {
                 lifecycleScope.launch {
@@ -161,7 +161,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 linkViewModel.getUser(userId).execute()
                             }
                         } catch (t: Throwable) {
-                            context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                            toast(getUserOrAppNotFoundTip(isAppScheme))
                             dismiss()
                             return@launch
                         }
@@ -169,7 +169,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             user = response.body()?.data
                         }
                         if (user == null) {
-                            context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                            toast(getUserOrAppNotFoundTip(isAppScheme))
                             dismiss()
                             return@launch
                         }
@@ -208,10 +208,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 segments[0]
             }
             if (!userId.isUUID()) {
-                context?.toast(R.string.error_user_not_found)
+                toast(R.string.error_user_not_found)
                 dismiss()
             } else if (userId == Session.getAccountId()) {
-                context?.toast(R.string.cant_transfer_self)
+                toast(R.string.cant_transfer_self)
                 dismiss()
             } else {
                 lifecycleScope.launch {
@@ -222,7 +222,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 linkViewModel.getUser(userId).execute()
                             }
                         } catch (t: Throwable) {
-                            context?.toast(R.string.error_user_not_found)
+                            toast(R.string.error_user_not_found)
                             dismiss()
                             return@launch
                         }
@@ -230,7 +230,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             user = response.body()?.data
                         }
                         if (user == null) {
-                            context?.toast(R.string.error_user_not_found)
+                            toast(R.string.error_user_not_found)
                             dismiss()
                             return@launch
                         }
@@ -267,7 +267,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             val found = response.participants.find { it.userId == Session.getAccountId() }
                             if (found != null) {
                                 linkViewModel.refreshConversation(response.conversationId)
-                                context?.toast(R.string.group_already_in)
+                                toast(R.string.group_already_in)
                                 context?.let { ConversationActivity.show(it, response.conversationId) }
                                 dismiss()
                             } else {
@@ -312,7 +312,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             val user = result.second as User
                             val account = Session.getAccount()
                             if (account != null && account.userId == (result.second as User).userId) {
-                                context?.toast("It's your QR Code, please try another.")
+                                toast("It's your QR Code, please try another.")
                             } else {
                                 UserBottomSheetDialogFragment.newInstance(user)
                                     .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)

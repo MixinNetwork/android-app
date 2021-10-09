@@ -75,7 +75,7 @@ class InviteFragment : BaseFragment() {
                         }
                         binding.inviteCopy.setOnClickListener {
                             context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))
-                            context?.toast(R.string.copy_success)
+                            toast(R.string.copy_success)
                         }
                         binding.inviteQr.setOnClickListener {
                             InviteQrBottomFragment.newInstance(c.name, c.iconUrl, url)
@@ -90,7 +90,7 @@ class InviteFragment : BaseFragment() {
                         }
                     },
                     {
-                        context?.toast(R.string.invite_invalid)
+                        toast(R.string.invite_invalid)
                     }
                 )
             }

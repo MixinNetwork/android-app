@@ -112,7 +112,7 @@ fun showClip() {
 fun holdClip(webClip: WebClip) {
     if (!clips.contains(webClip)) {
         if (clips.size >= 6) {
-            MixinApplication.appContext.toast(R.string.web_full)
+            toast(R.string.web_full)
         } else {
             clips.add(webClip)
             FloatingWebClip.getInstance().show()

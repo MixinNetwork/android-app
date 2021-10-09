@@ -716,7 +716,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         binding.idTv.setOnLongClickListener {
             context?.getClipboardManager()
                 ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
-            context?.toast(R.string.copy_success)
+            toast(R.string.copy_success)
             true
         }
         if (user.biography.isNotEmpty()) {
@@ -859,7 +859,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             },
                             successBlock = { response ->
                                 bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
-                                context?.toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
+                                toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
                             }
                         )
                     }
@@ -892,7 +892,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     },
                     successBlock = { response ->
                         bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
-                        context?.toast(getString(R.string.un_mute) + " ${user.fullName}")
+                        toast(getString(R.string.un_mute) + " ${user.fullName}")
                     }
                 )
             }

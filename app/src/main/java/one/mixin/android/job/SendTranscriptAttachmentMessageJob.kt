@@ -136,7 +136,7 @@ class SendTranscriptAttachmentMessageJob(
             MixinApplication.appContext.contentResolver.openInputStream(Uri.fromFile(file))
         } catch (e: FileNotFoundException) {
             GlobalScope.launch(Dispatchers.Main) {
-                MixinApplication.get().toast(R.string.error_file_exists)
+                toast(R.string.error_file_exists)
             }
             return false
         }
@@ -169,7 +169,7 @@ class SendTranscriptAttachmentMessageJob(
             Timber.e(e)
             if (e is SocketTimeoutException) {
                 GlobalScope.launch(Dispatchers.Main) {
-                    MixinApplication.get().toast(R.string.upload_timeout)
+                    toast(R.string.upload_timeout)
                 }
             }
             removeJob()

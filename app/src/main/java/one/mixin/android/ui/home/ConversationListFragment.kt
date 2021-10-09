@@ -297,7 +297,7 @@ class ConversationListFragment : LinkFragment() {
                         )
                     ) {
                         if (!requireContext().networkConnected()) {
-                            context?.toast(R.string.error_network)
+                            toast(R.string.error_network)
                             return
                         }
                         lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
@@ -1100,7 +1100,7 @@ class ConversationListFragment : LinkFragment() {
                                     conversationItem.conversationId,
                                     response.data!!.muteUntil
                                 )
-                                context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
+                                toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
                             }
                         )
                     }
@@ -1121,7 +1121,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.ownerId,
                                         response.data!!.muteUntil
                                     )
-                                    context?.toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
                                 }
                             )
                         }
@@ -1154,7 +1154,7 @@ class ConversationListFragment : LinkFragment() {
                             conversationItem.conversationId,
                             response.data!!.muteUntil
                         )
-                        context?.toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
+                        toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
                     }
                 )
             }
@@ -1174,7 +1174,7 @@ class ConversationListFragment : LinkFragment() {
                                 conversationItem.ownerId,
                                 response.data!!.muteUntil
                             )
-                            context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
+                            toast(getString(R.string.un_mute) + " ${conversationItem.name}")
                         }
                     )
                 }

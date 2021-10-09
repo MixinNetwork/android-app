@@ -83,13 +83,13 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                                     if (!isAdded) return@launch
                                     contentLl.capture(requireContext())
                                 }
-                                requireContext().toast(R.string.save_success)
+                                toast(R.string.save_success)
                             } else {
                                 requireContext().openPermissionSetting()
                             }
                         },
                         {
-                            requireContext().toast(R.string.save_failure)
+                            toast(R.string.save_failure)
                         }
                     )
             }

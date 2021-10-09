@@ -132,7 +132,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
-                        this@MarkdownActivity.toast(R.string.save_failure)
+                        toast(R.string.save_failure)
                     }
                 )
         }
@@ -153,7 +153,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
-                        this@MarkdownActivity.toast(R.string.save_failure)
+                        toast(R.string.save_failure)
                     }
                 )
         }
@@ -200,7 +200,7 @@ class MarkdownActivity : BaseActivity() {
                 object :
                     PDFGenerateListener {
                     override fun pdfGenerationSuccess() {
-                        this@MarkdownActivity.toast(
+                        toast(
                             getString(
                                 R.string.save_to,
                                 pdfFile.absoluteFile

@@ -350,7 +350,7 @@ fun Fragment.openCamera(output: Uri) {
     if (intent.resolveActivity(requireContext().packageManager) != null) {
         startActivityForResult(intent, REQUEST_CAMERA)
     } else {
-        context?.toast(R.string.error_no_camera)
+        toast(R.string.error_no_camera)
     }
 }
 
@@ -781,11 +781,7 @@ fun Context.isLandscape() = resources.configuration.orientation == Configuration
 
 fun Context.isAutoRotate() = Settings.System.getInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1
 
-fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
-
-fun Fragment.toastShort(textResource: Int) = requireActivity().toast(textResource, ToastDuration.Short)
-
-fun Fragment.toast(text: CharSequence) = requireActivity().toast(text)
+fun toastShort(textResource: Int) = toast(textResource, ToastDuration.Short)
 
 fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
     Constants.Theme.THEME_CURRENT_ID,

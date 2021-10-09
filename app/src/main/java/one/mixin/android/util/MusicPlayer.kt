@@ -178,13 +178,13 @@ class MusicPlayer private constructor() {
             if (error.cause is UnrecognizedInputFormatException) {
                 status = STATUS_ERROR
                 id?.let { id -> RxBus.publish(errorEvent(id)) }
-                MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
+                toast(R.string.error_not_supported_audio_format)
                 messageItem?.let {
                     MixinApplication.appContext.openMedia(it)
                 }
             } else {
                 if (error is ExoPlaybackException && error.type == TYPE_SOURCE) {
-                    MixinApplication.appContext.toast(R.string.player_playback_failed)
+                    toast(R.string.player_playback_failed)
                 }
 
                 status = STATUS_PAUSE
@@ -238,10 +238,10 @@ class MusicPlayer private constructor() {
 
     private fun playMusic(messageItem: MessageItem) {
         if (messageItem.mediaUrl == null) {
-            MixinApplication.appContext.toast(R.string.error_bad_data)
+            toast(R.string.error_bad_data)
             return
         } else if (!messageItem.absolutePath()!!.fileExists()) {
-            MixinApplication.appContext.toast(R.string.error_file_exists)
+            toast(R.string.error_file_exists)
             return
         }
 

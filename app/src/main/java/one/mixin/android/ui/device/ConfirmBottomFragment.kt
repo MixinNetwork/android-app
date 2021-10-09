@@ -62,7 +62,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             val ephemeralId = uri.getQueryParameter("id")
             if (ephemeralId == null) {
-                context.toast(R.string.desktop_upgrade)
+                toast(R.string.desktop_upgrade)
             } else if (Session.getAccount()?.hasPin == false) {
                 context.alert(context.getString(R.string.desktop_login_no_pin))
                     .setPositiveButton(android.R.string.yes) { dialog, _ ->
@@ -88,7 +88,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
                 provisioningService.provisionCodeAsync().await()
             }
         } catch (t: Throwable) {
-            context?.toast(R.string.setting_desktop_sigin_failed)
+            toast(R.string.setting_desktop_sigin_failed)
             ErrorHandler.handleError(t)
             return@launch
         }
@@ -98,15 +98,15 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
                     encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code)
                 }
             } catch (t: Throwable) {
-                context?.toast(R.string.setting_desktop_sigin_failed)
+                toast(R.string.setting_desktop_sigin_failed)
                 ErrorHandler.handleError(t)
                 return@launch
             }
             confirmCallback?.invoke()
             if (success) {
-                context?.toast(R.string.setting_desktop_sigin_success)
+                toast(R.string.setting_desktop_sigin_success)
             } else {
-                context?.toast(R.string.setting_desktop_sigin_failed)
+                toast(R.string.setting_desktop_sigin_failed)
             }
             dismiss()
         } else {
@@ -143,7 +143,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             val ephemeralId = uri.getQueryParameter("id")
             if (ephemeralId == null) {
-                context?.toast(R.string.setting_desktop_sigin_failed)
+                toast(R.string.setting_desktop_sigin_failed)
                 dismiss()
                 return@let
             }

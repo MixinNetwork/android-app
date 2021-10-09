@@ -264,7 +264,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         } else if (resultCode == UCrop.RESULT_ERROR) {
             if (data != null) {
                 val cropError = UCrop.getError(data)
-                context?.toast(cropError.toString())
+                toast(cropError.toString())
             }
         }
     }
