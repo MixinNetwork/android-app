@@ -509,7 +509,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 }
             val changedTextureView = pipVideoView.show(
-                this,
                 videoAspectRatioLayout.aspectRatio,
                 videoAspectRatioLayout.videoRotation,
                 conversationId,

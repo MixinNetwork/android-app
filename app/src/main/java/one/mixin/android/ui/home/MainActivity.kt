@@ -859,7 +859,14 @@ class MainActivity : BlazeBaseActivity() {
                     binding.searchBar.actionVa.showPrevious()
                 }
             }
-            else -> super.onBackPressed()
+            else -> {
+                // https://issuetracker.google.com/issues/139738913
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && isTaskRoot) {
+                    finishAfterTransition()
+                } else {
+                    super.onBackPressed()
+                }
+            }
         }
     }
 

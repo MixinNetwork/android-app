@@ -61,7 +61,7 @@ class DepositPublicKeyFragment : DepositFragment() {
             qrAvatar.setBorder()
             copyTv.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
-                context?.toast(R.string.copy_success)
+                toast(R.string.copy_success)
             }
             keyCode.text = asset.destination
 

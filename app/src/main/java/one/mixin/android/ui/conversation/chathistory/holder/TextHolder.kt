@@ -7,6 +7,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
+import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
@@ -105,6 +106,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
 
         if (textGestureListener == null) {
             textGestureListener = TextGestureListener(
+                binding.chatLayout,
                 messageItem,
                 onItemListener = onItemListener,
                 absoluteAdapterPosition = absoluteAdapterPosition
@@ -174,6 +176,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
     private var textGestureListener: TextGestureListener? = null
 
     private class TextGestureListener(
+        var view: View,
         var messageItem: ChatHistoryMessageItem,
         var onItemListener: TranscriptAdapter.OnItemListener,
         var absoluteAdapterPosition: Int = 0
@@ -181,6 +184,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         var longPressed = false
 
         override fun onDoubleTap(e: MotionEvent?): Boolean {
+            view.context.doubleClickVibrate()
             onItemListener.onTextDoubleClick(messageItem)
             return true
         }

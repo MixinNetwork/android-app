@@ -177,7 +177,7 @@ class CaptureFragment : BaseCameraxFragment() {
         }
 
         override fun onError(exception: ImageCaptureException) {
-            context?.toast("Photo capture failed: ${exception.message}")
+            toast("Photo capture failed: ${exception.message}")
             reportException("$CRASHLYTICS_CAMERAX-Photo capture failed,", exception)
         }
     }
@@ -288,7 +288,7 @@ class CaptureFragment : BaseCameraxFragment() {
                 }
 
                 override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-                    context?.toast("Video capture failed: $message")
+                    toast("Video capture failed: $message")
                     reportException(
                         IllegalStateException(
                             "$CRASHLYTICS_CAMERAX-Video capture failed, " +

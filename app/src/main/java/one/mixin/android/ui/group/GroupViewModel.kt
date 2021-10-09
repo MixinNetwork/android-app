@@ -107,7 +107,7 @@ internal constructor(
     fun getConversationById(conversationId: String) =
         conversationRepository.getConversationById(conversationId)
 
-    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
+    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         conversationRepository.deleteMessageByConversationId(conversationId)
     }
 

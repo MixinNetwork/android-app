@@ -106,7 +106,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                     this.launch {
                         PropertyHelper.updateKeyValue(context, BACKUP_LAST_TIME, System.currentTimeMillis().toString())
                     }
-                    context.toast(R.string.backup_success_tip)
+                    toast(R.string.backup_success_tip)
                 }
             }
         } catch (e: Exception) {

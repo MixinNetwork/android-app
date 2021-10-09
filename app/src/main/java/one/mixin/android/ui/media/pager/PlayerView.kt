@@ -82,6 +82,16 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         hideController()
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        player?.addListener(componentListener)
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        player?.removeListener(componentListener)
+    }
+
     override fun setLayoutDirection(layoutDirection: Int) {
         super.setLayoutDirection(layoutDirection)
         binding.playerControlView.layoutDirection = layoutDirection

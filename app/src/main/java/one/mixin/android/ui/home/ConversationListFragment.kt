@@ -55,6 +55,7 @@ import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -67,7 +68,6 @@ import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -238,7 +238,7 @@ class ConversationListFragment : LinkFragment() {
 
                     if (height >= vibrateDis) {
                         if (!vibrated) {
-                            requireContext().tapVibrate()
+                            requireContext().clickVibrate()
                             vibrated = true
                         }
                         animDownIcon(true)
@@ -253,7 +253,7 @@ class ConversationListFragment : LinkFragment() {
             override fun onRelease(fling: Int) {
                 val shouldVibrate = false
                 if (shouldVibrate && !vibrated) {
-                    requireContext().tapVibrate()
+                    requireContext().clickVibrate()
                     vibrated = true
                 }
                 val topFl = _binding?.topFl
@@ -297,7 +297,7 @@ class ConversationListFragment : LinkFragment() {
                         )
                     ) {
                         if (!requireContext().networkConnected()) {
-                            context?.toast(R.string.error_network)
+                            toast(R.string.error_network)
                             return
                         }
                         lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
@@ -1100,7 +1100,7 @@ class ConversationListFragment : LinkFragment() {
                                     conversationItem.conversationId,
                                     response.data!!.muteUntil
                                 )
-                                context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
+                                toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
                             }
                         )
                     }
@@ -1121,7 +1121,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.ownerId,
                                         response.data!!.muteUntil
                                     )
-                                    context?.toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
                                 }
                             )
                         }
@@ -1154,7 +1154,7 @@ class ConversationListFragment : LinkFragment() {
                             conversationItem.conversationId,
                             response.data!!.muteUntil
                         )
-                        context?.toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
+                        toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
                     }
                 )
             }
@@ -1174,7 +1174,7 @@ class ConversationListFragment : LinkFragment() {
                                 conversationItem.ownerId,
                                 response.data!!.muteUntil
                             )
-                            context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
+                            toast(getString(R.string.un_mute) + " ${conversationItem.name}")
                         }
                     )
                 }

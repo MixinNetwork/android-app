@@ -85,11 +85,11 @@ class DepositAccountFragment : DepositFragment() {
             accountNameCopyTv.setOnClickListener {
                 context?.getClipboardManager()
                     ?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
-                context?.toast(R.string.copy_success)
+                toast(R.string.copy_success)
             }
             accountMemoCopyTv.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.tag))
-                context?.toast(R.string.copy_success)
+                toast(R.string.copy_success)
             }
 
             showQR(accountNameQr, accountNameQrAvatar, asset.destination)

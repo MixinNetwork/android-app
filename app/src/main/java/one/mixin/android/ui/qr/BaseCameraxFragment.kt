@@ -252,7 +252,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             data?.data?.let {
                 val path = it.getFilePath(MixinApplication.get())
                 if (path == null) {
-                    context?.toast(R.string.error_image)
+                    toast(R.string.error_image)
                 } else {
                     if (data.hasExtra(GalleryActivity.IS_VIDEO)) {
                         openEdit(path, true, fromGallery = true)

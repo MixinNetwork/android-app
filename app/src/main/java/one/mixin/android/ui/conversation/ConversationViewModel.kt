@@ -147,7 +147,7 @@ internal constructor(
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
-    fun saveDraft(conversationId: String, text: String) = viewModelScope.launch {
+    fun saveDraft(conversationId: String, text: String) = MixinApplication.appScope.launch {
         conversationRepository.saveDraft(conversationId, text)
     }
 
@@ -408,8 +408,8 @@ internal constructor(
     }
 
     fun markMessageRead(conversationId: String, accountId: String) {
+        notificationManager.cancel(conversationId.hashCode())
         MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
-            notificationManager.cancel(conversationId.hashCode())
             while (true) {
                 val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)
                 if (list.isEmpty()) return@launch

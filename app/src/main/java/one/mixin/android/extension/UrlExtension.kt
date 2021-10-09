@@ -134,7 +134,7 @@ fun String.checkUserOrApp(
         segments[0]
     }
     if (!userId.isUUID()) {
-        ctx.toast(getUserOrAppNotFoundTip(isAppScheme))
+        toast(getUserOrAppNotFoundTip(isAppScheme))
         return
     }
 

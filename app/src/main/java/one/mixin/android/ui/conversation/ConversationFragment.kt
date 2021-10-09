@@ -136,7 +136,7 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsNougat
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
@@ -774,7 +774,7 @@ class ConversationFragment() :
                 viewBinding.copyTv.setOnClickListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
-                    requireContext().toast(R.string.copy_success)
+                    toast(R.string.copy_success)
                     bottomSheet.dismiss()
                 }
                 bottomSheet.show()
@@ -1491,7 +1491,7 @@ class ConversationFragment() :
                 context?.getClipboardManager()?.setPrimaryClip(
                     ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content)
                 )
-                context?.toast(R.string.copy_success)
+                toast(R.string.copy_success)
             } catch (e: ArrayIndexOutOfBoundsException) {
             }
             closeTool()
@@ -1516,7 +1516,7 @@ class ConversationFragment() :
                         if (mimeType?.isImageSupport() == true) {
                             StickerActivity.show(requireContext(), url = it, showAdd = true)
                         } else {
-                            requireContext().toast(R.string.sticker_add_invalid_format)
+                            toast(R.string.sticker_add_invalid_format)
                         }
                     }
                 }
@@ -1546,7 +1546,7 @@ class ConversationFragment() :
                     (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
                     conversationAdapter.selectSet
                 )
-                requireContext().toast(
+                toast(
                     if (action == PinAction.PIN) {
                         R.string.pin_success
                     } else {
@@ -1729,7 +1729,7 @@ class ConversationFragment() :
             }
             withContext(Dispatchers.Main) {
                 closeTool()
-                requireContext().toast(R.string.add_success)
+                toast(R.string.add_success)
             }
         } else {
             ErrorHandler.handleMixinError(
@@ -1997,8 +1997,8 @@ class ConversationFragment() :
                         scrollToDown()
                         markRead()
                     }
-                    -1 -> context?.toast(R.string.error_image)
-                    -2 -> context?.toast(R.string.error_format)
+                    -1 -> toast(R.string.error_image)
+                    -2 -> toast(R.string.error_format)
                 }
             }
         }
@@ -2922,7 +2922,7 @@ class ConversationFragment() :
                     popupWindow.dismiss()
                 }
             }
-            requireContext().tapVibrate()
+            requireContext().clickVibrate()
             PopupWindowCompat.showAsDropDown(popupWindow, binding.chatControl.anchorView, -200.dp, -110.dp, Gravity.END)
         }
 

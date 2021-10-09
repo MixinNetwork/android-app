@@ -449,7 +449,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                     SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 }
             val changedTextureView = pipVideoView.show(
-                this,
                 videoAspectRatioLayout.aspectRatio,
                 videoAspectRatioLayout.videoRotation,
                 "", //

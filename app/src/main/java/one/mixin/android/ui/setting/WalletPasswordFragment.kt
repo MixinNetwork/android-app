@@ -12,10 +12,11 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletPasswordBinding
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -199,7 +200,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
     private fun validatePin(): Boolean {
         val pin = binding.pin.code()
         if (pin == "123456") {
-            context?.toast(R.string.wallet_password_unsafe)
+            toast(R.string.wallet_password_unsafe)
             return false
         }
 
@@ -210,7 +211,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             }
         }
         if (numKind.size <= 2) {
-            context?.toast(R.string.wallet_password_unsafe)
+            toast(R.string.wallet_password_unsafe)
             return false
         }
 
@@ -255,17 +256,17 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                                         if (activity is ConversationActivity ||
                                             activity is ContactsActivity
                                         ) {
-                                            context?.toast(R.string.wallet_set_password_success)
+                                            toast(R.string.wallet_set_password_success)
                                             parentFragmentManager.popBackStackImmediate()
                                         } else if (activity is MainActivity) {
-                                            context?.toast(R.string.wallet_set_password_success)
+                                            toast(R.string.wallet_set_password_success)
                                             parentFragmentManager.popBackStackImmediate()
                                             WalletActivity.show(activity)
                                         } else {
                                             if (change) {
-                                                context?.toast(R.string.wallet_change_password_success)
+                                                toast(R.string.wallet_change_password_success)
                                             } else {
-                                                context?.toast(R.string.wallet_set_password_success)
+                                                toast(R.string.wallet_set_password_success)
                                             }
                                             parentFragmentManager.popBackStackImmediate()
                                         }
@@ -287,7 +288,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     private fun checkEqual(): Boolean {
         if (lastPassword != binding.pin.code()) {
-            context?.toast(R.string.wallet_password_not_equal)
+            toast(R.string.wallet_password_not_equal)
             toStep1()
             return true
         }
@@ -296,7 +297,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.tickVibrate()
             if (position == 11) {
                 binding.pin.delete()
             } else {
@@ -305,7 +306,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.clickVibrate()
             if (position == 11) {
                 binding.pin.clear()
             } else {

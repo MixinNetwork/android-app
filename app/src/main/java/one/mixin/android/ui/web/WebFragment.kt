@@ -923,7 +923,7 @@ class WebFragment : BaseFragment() {
             action = {
                 requireContext().getClipboardManager()
                     .setPrimaryClip(ClipData.newPlainText(null, url))
-                requireContext().toast(R.string.copy_success)
+                toast(R.string.copy_success)
                 bottomSheet.dismiss()
             }
         }
@@ -946,7 +946,7 @@ class WebFragment : BaseFragment() {
                     bottomSheet.dismiss()
                 } else {
                     if (clips.size >= 6) {
-                        requireActivity().toast(R.string.web_full)
+                        toast(R.string.web_full)
                         bottomSheet.dismiss()
                     } else if (checkFloatingPermission()) {
                         hold = true

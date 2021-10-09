@@ -92,7 +92,7 @@ object BiometricUtil {
                 is UserNotAuthenticatedException -> showAuthenticationScreen(fragment.requireActivity())
                 is InvalidKeyException -> {
                     deleteKey(ctx)
-                    ctx.toast(R.string.wallet_biometric_invalid)
+                    toast(R.string.wallet_biometric_invalid)
                     reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
                 }
                 else -> reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
