@@ -16,33 +16,32 @@ class RefreshTopAssetsJob : BaseJob(
 
     companion object {
         private const val serialVersionUID = 1L
-        const val GROUP = "RefreshAddressJob"
+        const val GROUP = "RefreshTopAssetsJob"
     }
 
-    override fun onRun() {
+    override fun onRun() = runBlocking {
         val response = assetService.topAssets().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val assetList = response.data as List<TopAsset>
-            topAssetDao.insertList(assetList)
+            topAssetDao.deleteNotInIds(assetList.map { it.assetId })
+            topAssetDao.insertListSuspend(assetList)
 
             val recentArray = MixinApplication.appContext.defaultSharedPreferences
                 .getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
-            if (recentArray.isNullOrEmpty()) return
-            runBlocking {
-                val recentList = assetDao.suspendFindAssetsByIds(recentArray.take(2))
-                if (recentList.isNullOrEmpty()) return@runBlocking
-                val needUpdatePrice = arrayListOf<PriceAndChange>()
-                assetList.forEach { t ->
-                    val needUpdate = recentList.find { r ->
-                        r.assetId == t.assetId && r.priceUsd != t.priceUsd
-                    }
-                    if (needUpdate != null) {
-                        needUpdatePrice.add(t.toPriceAndChange())
-                    }
+            if (recentArray.isNullOrEmpty()) return@runBlocking
+            val recentList = assetDao.suspendFindAssetsByIds(recentArray.take(2))
+            if (recentList.isNullOrEmpty()) return@runBlocking
+            val needUpdatePrice = arrayListOf<PriceAndChange>()
+            assetList.forEach { t ->
+                val needUpdate = recentList.find { r ->
+                    r.assetId == t.assetId && r.priceUsd != t.priceUsd
                 }
-                if (needUpdatePrice.isNotEmpty()) {
-                    assetDao.suspendUpdatePrices(needUpdatePrice)
+                if (needUpdate != null) {
+                    needUpdatePrice.add(t.toPriceAndChange())
                 }
+            }
+            if (needUpdatePrice.isNotEmpty()) {
+                assetDao.suspendUpdatePrices(needUpdatePrice)
             }
         }
     }
