@@ -80,7 +80,7 @@ interface AssetService {
     suspend fun queryAssets(@Path("query") query: String): MixinResponse<List<Asset>>
 
     @GET("network/assets/top")
-    fun topAssets(): Call<MixinResponse<List<TopAsset>>>
+    fun topAssets(@Query("kind") kind: String = "NORMAL"): Call<MixinResponse<List<TopAsset>>>
 
     @GET("/snapshots/trace/{id}")
     suspend fun getTrace(@Path("id") traceId: String): MixinResponse<Snapshot>
