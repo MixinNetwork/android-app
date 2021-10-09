@@ -7,23 +7,28 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 class NonFungibleOutputResponse(
     val type: String,
+    @SerializedName("request_id")
+    val requestId: String,
+    val action: String,
     @SerializedName("user_id")
     val userId: String,
-    @SerializedName("output_id")
-    val outputId: String,
     @SerializedName("token_id")
     val tokenId: String,
+    val amount: String,
     @SerializedName("transaction_hash")
     val transactionHash: String,
+    @SerializedName("raw_transaction")
+    val rawTransaction: String,
+    @SerializedName("output_id")
+    val outputId: String,
     @SerializedName("output_index")
     val outputIndex: Int,
-    val amount: String,
     @SerializedName("senders_threshold")
-    val sendersThreshold: String,
-    val senders: List<String>,
+    val sendersThreshold: Int,
+    val senders: Array<String>,
     @SerializedName("receivers_threshold")
-    val receiversThreshold: String,
-    val receivers: List<String>,
+    val receiversThreshold: Int,
+    val receivers: Array<String>,
     val memo: String,
     val state: String,
     @SerializedName("created_at")

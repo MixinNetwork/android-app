@@ -403,7 +403,7 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun findMultiUsers(
         senders: Array<String>,
         receivers: Array<String>
-    ):Pair<ArrayList<User>,ArrayList<User>>? = withContext(Dispatchers.IO) {
+    ): Pair<ArrayList<User>, ArrayList<User>>? = withContext(Dispatchers.IO) {
         val userIds = mutableSetOf<String>().apply {
             addAll(senders)
             addAll(receivers)

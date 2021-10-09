@@ -16,8 +16,8 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentPinCheckBinding
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.util.ErrorHandler

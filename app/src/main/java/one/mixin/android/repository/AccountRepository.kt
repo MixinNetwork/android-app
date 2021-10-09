@@ -118,7 +118,7 @@ constructor(
                         val resp = Gson().fromJson(response.data, MultisigsResponse::class.java)
                         Pair(type, resp)
                     }
-                    QrCodeType.non_fungible_request.name->{
+                    QrCodeType.non_fungible_request.name -> {
                         val resp = Gson().fromJson(response.data, NonFungibleOutputResponse::class.java)
                         Pair(type, resp)
                     }

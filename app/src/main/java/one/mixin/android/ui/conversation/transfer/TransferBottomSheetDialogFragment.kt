@@ -20,6 +20,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
@@ -40,7 +41,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
+class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<AssetBiometricItem>() {
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
 
@@ -50,7 +51,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             }
     }
 
-    private val t: BiometricItem by lazy {
+    private val t: AssetBiometricItem by lazy {
         requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
     }
 

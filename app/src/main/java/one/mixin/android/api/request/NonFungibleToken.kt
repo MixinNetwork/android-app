@@ -1,6 +1,7 @@
 package one.mixin.android.api.request
 
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.api.response.Metadata
 
 data class NonFungibleToken(
     val type: String,

@@ -76,7 +76,7 @@ class MultisigsBottomSheetDialogFragment :
 
         lifecycleScope.launch {
             val result = bottomViewModel.findMultiUsers(t.senders, t.receivers)
-            if (result!=null) {
+            if (result != null) {
                 val senders = result.first
                 val receivers = result.second
                 binding.apply {
