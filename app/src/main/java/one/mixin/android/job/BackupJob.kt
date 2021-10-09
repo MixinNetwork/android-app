@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
@@ -71,6 +72,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         if (delete) {
             findOldBackupSync(MixinApplication.appContext)?.deleteRecursively()
             findOldBackupSync(MixinApplication.appContext, true)?.deleteRecursively()
+            propertyDao.updateValueByKey(Constants.Account.Migration.PREF_MIGRATION_BACKUP, false.toString())
         }
     }
 

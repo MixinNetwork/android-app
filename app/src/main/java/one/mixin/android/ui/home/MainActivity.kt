@@ -45,6 +45,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
@@ -311,6 +312,7 @@ class MainActivity : BlazeBaseActivity() {
         } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             PropertyHelper.updateKeyValue(this@MainActivity, PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
             PropertyHelper.updateKeyValue(this@MainActivity, PREF_MIGRATION_ATTACHMENT, true.toString())
+            PropertyHelper.updateKeyValue(this@MainActivity, PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, true.toString())
             PropertyHelper.updateKeyValue(this@MainActivity, PREF_MIGRATION_BACKUP, true.toString())
         }
 
