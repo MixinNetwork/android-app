@@ -2,14 +2,13 @@ package one.mixin.android.vo
 
 import android.content.Context
 import androidx.core.net.toUri
-import one.mixin.android.extension.ancientMediaPath
 import one.mixin.android.extension.generateConversationPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
-import one.mixin.android.extension.oldMediaPath
+import one.mixin.android.extension.isFileUri
 import java.io.File
 
 interface ICategory {
@@ -117,18 +116,13 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
     if (isLive()) {
         return mediaUrl
     }
-    return when {
-        oldMediaPath != null && mediaUrl.startsWith(oldMediaPath!!) -> File(mediaUrl)
-        ancientMediaPath != null && mediaUrl.startsWith(ancientMediaPath!!) -> File(mediaUrl)
-        else -> generatePath(context, false, this, conversationId, mediaUrl)
-    }.let { file ->
-        return if (file == null || !file.exists()) {
-            generatePath(context, true, this, conversationId, mediaUrl)?.toUri()
-                .toString()
-        } else {
-            file.toUri().toString()
-        }
+    if (mediaUrl.isFileUri()) {
+        return File(mediaUrl).toUri().toString()
     }
+    return generatePath(context, false, this, conversationId, mediaUrl)?.run {
+        if (this.exists()) return@run this
+        else return@run generatePath(context, true, this@absolutePath, conversationId, mediaUrl)
+    }?.toUri().toString()
 }
 
 private fun generatePath(

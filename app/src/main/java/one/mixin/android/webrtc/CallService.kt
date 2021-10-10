@@ -15,10 +15,9 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.extension.supportsOreo
-import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session

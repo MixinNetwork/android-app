@@ -381,6 +381,15 @@ fun Fragment.openCamera(output: Uri) {
     }
 }
 
+fun String.isFileUri(): Boolean {
+    try {
+        val uri = Uri.parse(this)
+        return uri.scheme == ContentResolver.SCHEME_FILE
+    } catch (e: Exception) {
+        return false
+    }
+}
+
 fun Context.openMedia(messageItem: MessageItem) {
     val intent = Intent()
     intent.action = Intent.ACTION_VIEW
