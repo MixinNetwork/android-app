@@ -33,17 +33,6 @@
                 android:textColor="?attr/text_primary"
                 android:textSize="@dimen/wallet_balance_text" />
 
-            <TextView
-                android:id="@+id/sub_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
-                android:gravity="center"
-                android:textColor="?attr/text_minor"
-                android:textSize="12sp" />
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -86,7 +75,7 @@
                 tools:ignore="ContentDescription"/>
 
             <TextView
-                android:id="@+id/nft_title"
+                android:id="@+id/nft_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
@@ -96,13 +85,24 @@
                 android:textSize="@dimen/wallet_balance_text"/>
 
             <TextView
-                android:id="@+id/nft_memo"
+                android:id="@+id/nft_token_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="2dp"
+                android:textColor="?attr/text_minor"
+                android:textSize="@dimen/wallet_balance_as_text"/>
+
+            <TextView
+                android:id="@+id/nft_token_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="2dp"
                 android:textColor="?attr/text_minor"
                 android:textSize="@dimen/wallet_balance_as_text"/>
 

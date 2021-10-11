@@ -48,7 +48,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
     }
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = binding.root
@@ -59,7 +59,6 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.apply {
             title.text = getString(R.string.transfer)
             arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
-            subTitle.text = t.memo
             biometricLayout.payTv.setText(R.string.wallet_pay_with_pwd)
             biometricLayout.biometricTv.setText(R.string.wallet_pay_with_biometric)
         }
@@ -85,12 +84,14 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             handleMixinResponse(
                 invokeNetwork = { bottomViewModel.getToken(t.tokenId) },
                 switchContext = Dispatchers.IO,
-                successBlock = {
-                    it.data?.metadata?.let { metadata ->
+                successBlock = {response->
+                    response.data?.let {data->
+                        data.metadata
                         binding.apply {
-                            nftIv.loadImage(metadata.iconUrl)
-                            nftTitle.text = metadata.tokenName
-                            nftMemo.text = metadata.description
+                            nftIv.loadImage(data.metadata.iconUrl, R.drawable.nft_default)
+                            nftGroup.text = data.metadata.groupName
+                            nftTokenId.text = "#${data.tokenKey}"
+                            nftTokenName.text = data.metadata.tokenName
                         }
                     }
                 }
