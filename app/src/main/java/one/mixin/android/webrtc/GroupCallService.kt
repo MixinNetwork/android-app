@@ -18,7 +18,6 @@ import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.findFullNameById
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.SenderKeyChange
@@ -411,10 +410,6 @@ class GroupCallService : CallService() {
 
         callState.removeUser(cid, userId)
         saveMessage(cid, userId, MessageCategory.KRAKEN_CANCEL.name)
-        val fullName = database.findFullNameById(userId)
-        mainThread {
-            toast(getString(R.string.chat_group_call_cancel, fullName))
-        }
         if (callState.isBeforeAnswering()) {
             disconnect()
             checkConversationUserCount(cid)
@@ -429,10 +424,6 @@ class GroupCallService : CallService() {
 
         callState.removeUser(cid, userId)
         saveMessage(cid, userId, MessageCategory.KRAKEN_DECLINE.name)
-        val fullName = database.findFullNameById(userId)
-        mainThread {
-            toast(getString(R.string.chat_group_call_decline, fullName))
-        }
     }
 
     private fun handleAcceptInvite() {
