@@ -429,7 +429,7 @@ class BottomSheetViewModel @Inject internal constructor(
             userRepository.findMultiUsersByIds(userIds)
         }
 
-        if (users.isNotEmpty()) return@withContext null
+        if (users.isEmpty()) return@withContext null
         val s = arrayListOf<User>()
         val r = arrayListOf<User>()
         users.forEach { u ->

@@ -131,6 +131,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         val t = this.t
         return BiometricInfo(
             requireContext().getString(
+                // Todo replace string
                 if (t.action == SignatureAction.cancel.name) {
                     R.string.multisig_revoke_transaction
                 } else {
