@@ -181,24 +181,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 binding.avatarLl.isVisible = false
                 binding.usersRv.isVisible = true
                 binding.participants.isVisible = true
-                if (userAdapter == null) {
-                    userAdapter = CallUserAdapter(self) { userId ->
-                        if (userId != null) {
-                            lifecycleScope.launch {
-                                val user = viewModel.suspendFindUserById(userId) ?: return@launch
-                                UserBottomSheetDialogFragment.newInstance(user)
-                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                            }
-                        } else if (callState.isGroupCall() && callState.conversationId != null) {
-                            GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
-                                .showNow(
-                                    parentFragmentManager,
-                                    GroupUsersBottomSheetDialogFragment.TAG
-                                )
-                        }
-                    }
-                }
-                binding.usersRv.adapter = userAdapter
+                setAdapter()
                 refreshUsers()
             } else {
                 binding.title.text = getString(R.string.chat_call_title)
@@ -334,6 +317,27 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         dialog.setOnKeyListener { _, keyCode, _ ->
             keyCode == KeyEvent.KEYCODE_BACK && callState.isBeforeAnswering()
         }
+    }
+
+    private fun setAdapter() {
+        if (userAdapter == null) {
+            userAdapter = CallUserAdapter(self) { userId ->
+                if (userId != null) {
+                    lifecycleScope.launch {
+                        val user = viewModel.suspendFindUserById(userId) ?: return@launch
+                        UserBottomSheetDialogFragment.newInstance(user)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    }
+                } else if (callState.isGroupCall() && callState.conversationId != null) {
+                    GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
+                        .showNow(
+                            parentFragmentManager,
+                            GroupUsersBottomSheetDialogFragment.TAG
+                        )
+                }
+            }
+        }
+        binding.usersRv.adapter = userAdapter
     }
 
     private var timer: Timer? = null
@@ -569,6 +573,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             startTimer()
         }
         super.onResume()
+        if (binding.usersRv.adapter == null && ::self.isInitialized) {
+            setAdapter()
+        }
     }
 
     override fun onPause() {
