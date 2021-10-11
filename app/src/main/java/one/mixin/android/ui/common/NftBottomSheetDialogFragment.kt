@@ -59,8 +59,8 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.apply {
             title.text = getString(R.string.transfer)
             arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
-            biometricLayout.payTv.setText(R.string.wallet_pay_with_pwd)
-            biometricLayout.biometricTv.setText(R.string.wallet_pay_with_biometric)
+            biometricLayout.payTv.setText(R.string.multisig_pay_pin)
+            biometricLayout.biometricTv.setText(R.string.multisig_pay_biometric)
         }
 
         lifecycleScope.launch {
