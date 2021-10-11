@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.databinding.FragmentForwardBinding
@@ -603,7 +604,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val shortcutInfo = if (s is ConversationMinimal) {
                 val bitmap = loadBitmap(s.iconUrl()) ?: continue
                 val intent = ConversationActivity.getShortcutIntent(
-                    requireContext(),
+                    MixinApplication.appContext,
                     s.conversationId,
                     null
                 )
@@ -616,23 +617,23 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     s.userId
                 )
                 val intent = ConversationActivity.getShortcutIntent(
-                    requireContext(),
+                    MixinApplication.appContext,
                     cid,
                     s.userId
                 )
                 ShortcutInfo(cid, s.fullName ?: "", bitmap, intent)
             }
-            shortcuts.add(generateDynamicShortcut(requireContext(), shortcutInfo))
+            shortcuts.add(generateDynamicShortcut(MixinApplication.appContext, shortcutInfo))
         }
-        val exists = ShortcutManagerCompat.getDynamicShortcuts(requireContext())
+        val exists = ShortcutManagerCompat.getDynamicShortcuts(MixinApplication.appContext)
         val keepSize = maxDynamicShortcutCount - shortcuts.size
         if (keepSize >= 0 && exists.size > keepSize) {
             val removeIds = mutableListOf<String>()
             exists.take(exists.size - keepSize)
                 .mapTo(removeIds) { it.id }
-            ShortcutManagerCompat.removeDynamicShortcuts(requireContext(), removeIds)
+            ShortcutManagerCompat.removeDynamicShortcuts(MixinApplication.appContext, removeIds)
         }
-        ShortcutManagerCompat.addDynamicShortcuts(requireContext(), shortcuts)
+        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
     }
 
     private suspend fun loadBitmap(url: String?): Bitmap? {

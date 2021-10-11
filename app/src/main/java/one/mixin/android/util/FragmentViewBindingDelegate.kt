@@ -15,7 +15,8 @@ import kotlin.reflect.KProperty
 
 class FragmentViewBindingDelegate<T : ViewBinding>(
     val fragment: Fragment,
-    val viewBindingFactory: (View) -> T
+    val viewBindingFactory: (View) -> T,
+    val destroyTask: ((T) -> Unit)? = null,
 ) : ReadOnlyProperty<Fragment, T> {
     private var binding: T? = null
 
@@ -27,6 +28,7 @@ class FragmentViewBindingDelegate<T : ViewBinding>(
 
                     viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
                         override fun onDestroy(owner: LifecycleOwner) {
+                            destroyTask?.invoke(requireNotNull(binding))
                             binding = null
                         }
                     })
@@ -57,8 +59,10 @@ class FragmentViewBindingDelegate<T : ViewBinding>(
     }
 }
 
-fun <T : ViewBinding> Fragment.viewBinding(viewBindingFactory: (View) -> T) =
-    FragmentViewBindingDelegate(this, viewBindingFactory)
+fun <T : ViewBinding> Fragment.viewBinding(
+    viewBindingFactory: (View) -> T,
+    destroyTask: ((T) -> Unit)? = null,
+) = FragmentViewBindingDelegate(this, viewBindingFactory, destroyTask)
 
 inline fun <T : ViewBinding> AppCompatActivity.viewBinding(
     crossinline bindingInflater: (LayoutInflater) -> T

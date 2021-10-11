@@ -69,7 +69,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
     private val walletViewModel by viewModels<WalletViewModel>()
-    private val binding by viewBinding(FragmentWalletBinding::bind)
+    private val binding by viewBinding(FragmentWalletBinding::bind, destroyTask = { b ->
+        b.coinsRv.adapter = null
+    })
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
 
@@ -154,6 +156,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
 
     override fun onDestroyView() {
         assetsAdapter.headerView = null
+        assetsAdapter.onItemListener = null
         _headBinding = null
         _bottomBinding = null
         super.onDestroyView()
