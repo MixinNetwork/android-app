@@ -126,7 +126,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
             }
         }
-        propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString())
+        propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))
         Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
         if (list.size < EACH) {
             MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()

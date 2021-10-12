@@ -1,15 +1,16 @@
 package one.mixin.android.vo
 
 import android.content.Context
+import androidx.core.net.toFile
 import androidx.room.ColumnInfo
-import one.mixin.android.extension.ancientMediaPath
 import one.mixin.android.extension.generateConversationPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
-import one.mixin.android.extension.oldMediaPath
+import one.mixin.android.extension.isFileUri
+import one.mixin.android.extension.toUri
 import java.io.File
 
 class AttachmentMigration(
@@ -30,8 +31,7 @@ class AttachmentMigration(
 fun AttachmentMigration.getFile(context: Context): File? {
     return when {
         mediaUrl == null -> null
-        oldMediaPath != null && mediaUrl.startsWith(oldMediaPath!!) -> File(mediaUrl)
-        ancientMediaPath != null && mediaUrl.startsWith(ancientMediaPath!!) -> File(mediaUrl)
+        mediaUrl.isFileUri() -> mediaUrl.toUri().toFile()
         category.endsWith("_IMAGE") -> File(
             context.getImagePath(true).generateConversationPath(conversationId), mediaUrl
         )
