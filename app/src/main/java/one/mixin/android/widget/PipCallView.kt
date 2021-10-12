@@ -153,7 +153,7 @@ class PipCallView {
                     val dy = y - startY
                     windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
                     windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
-                    windowManager.updateViewLayout(windowView, windowLayoutParams)
+                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
                     startX = x
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_UP) {
@@ -201,7 +201,7 @@ class PipCallView {
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             }
-            windowManager.addView(windowView, windowLayoutParams)
+            windowView?.let { windowManager.addView(it, windowLayoutParams) }
             shown = true
         } catch (e: Exception) {
             Timber.e(e)

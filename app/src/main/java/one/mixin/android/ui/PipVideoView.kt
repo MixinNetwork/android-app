@@ -230,7 +230,7 @@ class PipVideoView {
                         windowLayoutParams.y =
                             realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
                     }
-                    windowManager.updateViewLayout(windowView, windowLayoutParams)
+                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
                     startX = x
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_UP) {
@@ -424,7 +424,7 @@ class PipVideoView {
             }
             windowLayoutParams.flags =
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            windowManager.addView(windowView, windowLayoutParams)
+            windowView?.let { windowManager.addView(it, windowLayoutParams) }
             shown = true
         } catch (e: Exception) {
             Timber.e(e)
@@ -598,12 +598,12 @@ class PipVideoView {
     @Keep
     fun setX(value: Int) {
         windowLayoutParams.x = value
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 }
