@@ -8,7 +8,6 @@ import android.text.format.DateUtils.WEEK_IN_MILLIS
 import androidx.annotation.RequiresPermission
 import androidx.annotation.WorkerThread
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -18,16 +17,12 @@ import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.getCacheMediaPath
-import one.mixin.android.extension.getMediaPath
-import one.mixin.android.extension.moveChileFileToDir
 import one.mixin.android.extension.toast
 import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.findOldBackupSync
-import java.io.File
 
 class BackupJob(private val force: Boolean = false, private val delete: Boolean = false) : BaseJob(
     Params(
@@ -76,29 +71,12 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         }
     }
 
-    private fun cleanMedia() {
-        val mediaPath = MixinApplication.appContext.getMediaPath()?.absolutePath ?: return
-        val mediaCachePath = MixinApplication.appContext.getCacheMediaPath()
-        if (!mediaCachePath.exists()) {
-            return
-        }
-        mediaCachePath.listFiles()?.forEach { mediaCacheChild ->
-            if (mediaCacheChild.isDirectory) {
-                val local = File("$mediaPath${File.separator}${mediaCacheChild.name}${File.separator}")
-                mediaCacheChild.moveChileFileToDir(local) { newFile, oldFile ->
-                    messageDao.updateMediaUrl(newFile.toUri().toString(), oldFile.toUri().toString())
-                }
-            }
-        }
-    }
-
     @WorkerThread
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun backup(context: Context) = runBlocking {
         try {
             backupLiveData.start()
             BackupNotification.show()
-            cleanMedia()
             one.mixin.android.util.backup.backup(context) { result ->
                 backupLiveData.setResult(false, result)
                 BackupNotification.cancel()

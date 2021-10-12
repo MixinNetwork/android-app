@@ -134,6 +134,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
             }
             propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
+            Timber.d("Attachment migration completed!!!")
         } else {
             jobManager.addJobInBackground(AttachmentMigrationJob())
         }
