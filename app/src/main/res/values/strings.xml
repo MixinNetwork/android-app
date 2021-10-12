@@ -1056,4 +1056,5 @@
     <string name="chat_pin_card_message">a card</string>
     <string name="unpin_success">Message unpinned</string>
     <string name="pin_success">Message pinned</string>
+    <string name="backup_choose_folder">Choose folder</string>
 </resources>

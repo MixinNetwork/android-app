@@ -1,12 +1,18 @@
 package one.mixin.android.ui.setting
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -20,9 +26,12 @@ import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBackupBinding
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.BackupJob
@@ -33,6 +42,7 @@ import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -47,10 +57,27 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
 
     private val binding by viewBinding(FragmentBackupBinding::bind)
 
+    private lateinit var resultRegistry: ActivityResultRegistry
+    private lateinit var chooseFolderResult: ActivityResultLauncher<String?>
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (!::resultRegistry.isInitialized) resultRegistry =
+            requireActivity().activityResultRegistry
+        chooseFolderResult = registerForActivityResult(
+            ChooseFolderContract(),
+            resultRegistry,
+            ::callbackChooseFolder
+        )
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             backupInfo.text = getString(R.string.backup_external_storage, "")
+            backupChoose.setOnClickListener {
+                chooseFolder()
+            }
             backupAuto.setOnClickListener {
                 showBackupDialog()
             }
@@ -142,6 +169,31 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         }
         val dialog = builder.create()
         dialog.show()
+    }
+
+    private fun chooseFolder() {
+        val builder = alertDialogBuilder()
+        builder.setTitle(R.string.backup_dialog_title)
+        builder.setPositiveButton(R.string.backup_choose_folder) { dialog, _ ->
+            chooseFolderResult.launch(
+                defaultSharedPreferences.getString(
+                    "LastBackupDirectory",
+                    null
+                )
+            )
+        }
+        builder.setNegativeButton(android.R.string.cancel) { _, _ ->
+        }
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun callbackChooseFolder(uri: Uri?) {
+        if (uri != null) {
+            Timber.d(requireContext().getDisplayPath(uri))
+            defaultSharedPreferences.putString("LastBackupDirectory", uri.toString())
+        }
     }
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)

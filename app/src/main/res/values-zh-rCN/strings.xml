@@ -1035,4 +1035,5 @@
     <string name="chat_pin_card_message">一个卡片</string>
     <string name="unpin_success">置顶消息已取消</string>
     <string name="pin_success">消息已置顶</string>
+    <string name="backup_choose_folder">选择文件夹</string>
 </resources>

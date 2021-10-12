@@ -34,6 +34,8 @@ import android.os.VibrationEffect.EFFECT_DOUBLE_CLICK
 import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
+import android.os.storage.StorageManager
+import android.os.storage.StorageVolume
 import android.provider.Browser
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -42,6 +44,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.Window
 import android.view.WindowManager
+import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -970,5 +973,30 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
         } catch (e: ActivityNotFoundException) {
             Timber.w("Power setting activity not found")
         }
+    }
+}
+
+
+@RequiresApi(Build.VERSION_CODES.N)
+fun Context.getDisplayPath(uri: Uri): String {
+    val lastPathSegment = requireNotNull(uri.lastPathSegment)
+    val backupVolume = lastPathSegment.replaceFirst(":.*".toRegex(), "")
+    val backupName = lastPathSegment.replaceFirst(".*:".toRegex(), "")
+    val storageManager: StorageManager = requireNotNull(ContextCompat.getSystemService(
+        this,
+        StorageManager::class.java
+    ))
+    val storageVolumes = storageManager.storageVolumes
+    var storageVolume: StorageVolume? = null
+    for (volume in storageVolumes) {
+        if (volume.uuid == backupVolume) {
+            storageVolume = volume
+            break
+        }
+    }
+    return if (storageVolume == null) {
+        backupName
+    } else {
+        String.format("%s/%s", storageVolume.getDescription(this), backupName)
     }
 }
