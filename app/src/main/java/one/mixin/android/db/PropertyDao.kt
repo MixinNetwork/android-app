@@ -16,4 +16,7 @@ interface PropertyDao : BaseDao<Property> {
 
     @Query("UPDATE properties SET value = :value, updated_at = :updatedAt WHERE `key` = :key")
     suspend fun updateValueByKey(key: String, value: String, updatedAt: String = nowInUtc())
+
+    @Query("DELETE FROM properties WHERE `key` = :key")
+    suspend fun deletePropertyByKey(key: String)
 }

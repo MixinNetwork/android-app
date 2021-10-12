@@ -95,6 +95,7 @@ import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
+import one.mixin.android.job.TranscriptAttachmentUpdateJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
@@ -322,6 +323,10 @@ class MainActivity : BlazeBaseActivity() {
 
         PropertyHelper.checkTranscriptAttachmentMigrated(this@MainActivity) {
             jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
+        }
+
+        PropertyHelper.checkTranscriptAttachmentUpdated(this@MainActivity) {
+            jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
         }
 
         PropertyHelper.checkBackupMigrated(this@MainActivity) {
