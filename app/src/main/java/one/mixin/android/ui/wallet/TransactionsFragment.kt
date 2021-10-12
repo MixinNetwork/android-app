@@ -173,11 +173,14 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        adapter.headerView = null
+        adapter.listener = null
+        _binding?.transactionsRv?.adapter = null
         _binding = null
         _headBinding = null
         _bottomBinding = null
         _bottomSendBinding = null
+        super.onDestroyView()
     }
 
     @SuppressLint("SetTextI18n")

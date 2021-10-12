@@ -21,6 +21,7 @@
         android:singleLine="true"
         android:ellipsize="end"
         android:layout_toEndOf="@+id/badge_circle_iv"
+        android:layout_toStartOf="@id/change_tv"
         android:textColor="?attr/text_primary"/>
 
     <TextView
@@ -31,6 +32,7 @@
         android:layout_marginTop="6dp"
         android:layout_marginEnd="@dimen/margin20"
         android:layout_toEndOf="@id/badge_circle_iv"
+        android:layout_toStartOf="@id/price_tv"
         android:singleLine="true"
         android:ellipsize="end"
         android:textColor="?attr/text_minor"
@@ -41,7 +43,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/margin20"
-        android:layout_toEndOf="@id/symbol_tv"
         android:layout_alignBaseline="@id/symbol_tv"
         android:layout_alignParentEnd="true"
         android:gravity="end"
@@ -54,7 +55,6 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/margin20"
         android:layout_marginTop="2dp"
-        android:layout_toEndOf="@id/name_tv"
         android:layout_alignBaseline="@+id/name_tv"
         android:layout_alignParentEnd="true"
         android:gravity="end"
