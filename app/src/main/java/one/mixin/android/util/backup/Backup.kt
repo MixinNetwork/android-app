@@ -129,7 +129,7 @@ suspend fun restore(
         target.copyTo(file)
 
         // Reset BACKUP_LAST_TIME so that the user who restores the backup does not need to backup after login
-        PropertyHelper.updateKeyValue(context, Constants.BackUp.BACKUP_LAST_TIME, System.currentTimeMillis().toString())
+        PropertyHelper.updateKeyValue(Constants.BackUp.BACKUP_LAST_TIME, System.currentTimeMillis().toString())
 
         withContext(Dispatchers.Main) {
             callback(Result.SUCCESS)

@@ -38,7 +38,7 @@ object MessageFts4Helper {
         val messageFts4Dao = MixinDatabase.getDatabase(ctx).messageFts4Dao()
 
         var done = false
-        var offset = PropertyHelper.findValueByKey(ctx, PREF_SYNC_FTS4_OFFSET)?.toIntOrNull() ?: 0
+        var offset = PropertyHelper.findValueByKey(PREF_SYNC_FTS4_OFFSET)?.toIntOrNull() ?: 0
         var handleCount = 0
         var start: Long
         val totalStart = System.currentTimeMillis()
@@ -56,7 +56,7 @@ object MessageFts4Helper {
             messageFts4Dao.insertListSuspend(messageFts4List)
             offset += queryMessageList.size
             handleCount += queryMessageList.size
-            PropertyHelper.updateKeyValue(ctx, PREF_SYNC_FTS4_OFFSET, offset.toString())
+            PropertyHelper.updateKeyValue(PREF_SYNC_FTS4_OFFSET, offset.toString())
             onProgressChanged?.invoke((offset.toFloat() / PRE_PROCESS_COUNT * 100).toInt())
             Timber.d("syncMessageFts4 handle 100 messages cost ${System.currentTimeMillis() - start}, offset: $offset")
 

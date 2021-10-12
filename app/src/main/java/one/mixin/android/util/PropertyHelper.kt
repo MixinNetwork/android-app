@@ -1,6 +1,5 @@
 package one.mixin.android.util
 
-import android.content.Context
 import android.os.Build
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
@@ -19,6 +18,7 @@ import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_WIFI
 import one.mixin.android.Constants.Download.MOBILE_DEFAULT
 import one.mixin.android.Constants.Download.ROAMING_DEFAULT
 import one.mixin.android.Constants.Download.WIFI_DEFAULT
+import one.mixin.android.MixinApplication
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.PropertyDao
@@ -31,60 +31,61 @@ object PropertyHelper {
 
     private const val PREF_PROPERTY_MIGRATED = "pref_property_migrated"
 
-    suspend fun checkFts4Upgrade(context: Context, action: () -> Unit) {
-        checkWithKey(context, PREF_FTS4_UPGRADE, true.toString(), action)
+    suspend fun checkFts4Upgrade(): Boolean {
+        val propertyDao = checkMigrated()
+        return propertyDao.findValueByKey(PREF_FTS4_UPGRADE) != true.toString()
     }
 
-    suspend fun checkAttachmentMigrated(context: Context, action: () -> Unit) {
-        val propertyDao = checkMigrated(context)
+    suspend fun checkAttachmentMigrated(action: () -> Unit) {
+        val propertyDao = checkMigrated()
         val value = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT)?.toBoolean() ?: false
         if (value) {
             action.invoke()
         }
     }
 
-    suspend fun checkTranscriptAttachmentMigrated(context: Context, action: () -> Unit) {
-        val propertyDao = checkMigrated(context)
+    suspend fun checkTranscriptAttachmentMigrated(action: () -> Unit) {
+        val propertyDao = checkMigrated()
         val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() ?: false
         if (value) {
             action.invoke()
         }
     }
 
-    suspend fun checkTranscriptAttachmentUpdated(context: Context, action: () -> Unit) {
-        val propertyDao = checkMigrated(context)
+    suspend fun checkTranscriptAttachmentUpdated(action: () -> Unit) {
+        val propertyDao = checkMigrated()
         val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)?.toLong() ?: 0
         if (value > 0) {
             action.invoke()
         }
     }
 
-    suspend fun checkBackupMigrated(context: Context, action: () -> Unit) {
-        checkWithKey(context, PREF_MIGRATION_BACKUP, true.toString(), action)
+    suspend fun checkBackupMigrated(action: () -> Unit) {
+        checkWithKey(PREF_MIGRATION_BACKUP, true.toString(), action)
     }
 
-    suspend fun checkMigrated(context: Context): PropertyDao {
-        val propertyDao = MixinDatabase.getDatabase(context).propertyDao()
-        val messageDao = MixinDatabase.getDatabase(context).messageDao()
-        val transcriptDao = MixinDatabase.getDatabase(context).transcriptDao()
+    suspend fun checkMigrated(): PropertyDao {
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
+        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
+        val transcriptDao = MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
         if (!hasMigrated(propertyDao)) {
-            migrateProperties(context, propertyDao, messageDao, transcriptDao)
+            migrateProperties(propertyDao, messageDao, transcriptDao)
         }
         return propertyDao
     }
 
-    suspend fun updateKeyValue(context: Context, key: String, value: String) {
-        val propertyDao = MixinDatabase.getDatabase(context).propertyDao()
+    suspend fun updateKeyValue(key: String, value: String) {
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         propertyDao.insertSuspend(Property(key, value, nowInUtc()))
     }
 
-    suspend fun findValueByKey(context: Context, key: String): String? {
-        val propertyDao = MixinDatabase.getDatabase(context).propertyDao()
+    suspend fun findValueByKey(key: String): String? {
+        val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         return propertyDao.findValueByKey(key)
     }
 
-    private suspend fun checkWithKey(context: Context, key: String, expectValue: String, action: () -> Unit) {
-        val propertyDao = checkMigrated(context)
+    private suspend fun checkWithKey(key: String, expectValue: String, action: () -> Unit) {
+        val propertyDao = checkMigrated()
 
         val value = propertyDao.findValueByKey(key)
         if (value != expectValue) {
@@ -92,8 +93,8 @@ object PropertyHelper {
         }
     }
 
-    private suspend fun migrateProperties(context: Context, propertyDao: PropertyDao, messageDao: MessageDao, transcriptDao: TranscriptMessageDao) {
-        val pref = context.defaultSharedPreferences
+    private suspend fun migrateProperties(propertyDao: PropertyDao, messageDao: MessageDao, transcriptDao: TranscriptMessageDao) {
+        val pref = MixinApplication.appContext.defaultSharedPreferences
         val updatedAt = nowInUtc()
         val fts4Upgrade = pref.getBoolean(PREF_FTS4_UPGRADE, false)
         propertyDao.insertSuspend(Property(PREF_FTS4_UPGRADE, fts4Upgrade.toString(), updatedAt))
@@ -125,7 +126,15 @@ object PropertyHelper {
 
         propertyDao.insertSuspend(Property(PREF_PROPERTY_MIGRATED, true.toString(), updatedAt))
         // Attachment files need to be migrated
+        migration()
+    }
+
+    suspend fun migration() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
+            val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
+            val transcriptDao = MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
+            val updatedAt = nowInUtc()
             propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.hasDoneAttachment()).toString(), updatedAt))
             val lastDoneAttachmentId = transcriptDao.lastDoneAttachmentId()
             if (lastDoneAttachmentId > 0) {

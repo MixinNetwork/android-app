@@ -86,6 +86,6 @@ suspend fun Context.autoDownload(support: suspend (value: Int) -> Boolean, actio
     }
 }
 
-suspend fun Context.getAutoDownloadWifiValue() = PropertyHelper.findValueByKey(this, Constants.Download.AUTO_DOWNLOAD_WIFI)?.toIntOrNull() ?: WIFI_DEFAULT
-suspend fun Context.getAutoDownloadMobileValue() = PropertyHelper.findValueByKey(this, Constants.Download.AUTO_DOWNLOAD_MOBILE)?.toIntOrNull() ?: MOBILE_DEFAULT
-suspend fun Context.getAutoDownloadRoamingValue() = PropertyHelper.findValueByKey(this, Constants.Download.AUTO_DOWNLOAD_ROAMING)?.toIntOrNull() ?: ROAMING_DEFAULT
+suspend fun Context.getAutoDownloadWifiValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_WIFI)?.toIntOrNull() ?: WIFI_DEFAULT
+suspend fun Context.getAutoDownloadMobileValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_MOBILE)?.toIntOrNull() ?: MOBILE_DEFAULT
+suspend fun Context.getAutoDownloadRoamingValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_ROAMING)?.toIntOrNull() ?: ROAMING_DEFAULT

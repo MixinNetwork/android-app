@@ -48,10 +48,10 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         if (force) {
             backup(context)
         } else if (propertyDao.findValueByKey(PREF_BACKUP)?.toBoolean() == true) {
-            val option = PropertyHelper.findValueByKey(context, BACKUP_PERIOD)?.toIntOrNull() ?: 0
+            val option = PropertyHelper.findValueByKey(BACKUP_PERIOD)?.toIntOrNull() ?: 0
             if (option in 1..3) {
                 val currentTime = System.currentTimeMillis()
-                val lastTime = PropertyHelper.findValueByKey(context, BACKUP_LAST_TIME)?.toLongOrNull() ?: currentTime
+                val lastTime = PropertyHelper.findValueByKey(BACKUP_LAST_TIME)?.toLongOrNull() ?: currentTime
                 val timeDiff = currentTime - lastTime
                 if (timeDiff >= when (option) {
                     1 -> DAY_IN_MILLIS
@@ -82,7 +82,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                 BackupNotification.cancel()
                 if (result == Result.SUCCESS) {
                     this.launch {
-                        PropertyHelper.updateKeyValue(context, BACKUP_LAST_TIME, System.currentTimeMillis().toString())
+                        PropertyHelper.updateKeyValue(BACKUP_LAST_TIME, System.currentTimeMillis().toString())
                     }
                     toast(R.string.backup_success_tip)
                 }

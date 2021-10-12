@@ -54,7 +54,7 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
                 if (!done) {
                     viewModel.startSyncFts4Job()
                 }
-                PropertyHelper.updateKeyValue(requireContext(), PREF_FTS4_UPGRADE, true.toString())
+                PropertyHelper.updateKeyValue(PREF_FTS4_UPGRADE, true.toString())
                 MainActivity.show(requireContext())
                 activity?.finish()
             }
@@ -62,7 +62,7 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
             lifecycleScope.launch {
                 binding.pb.isIndeterminate = true
                 withContext(Dispatchers.IO) {
-                    PropertyHelper.checkMigrated(requireContext())
+                    PropertyHelper.checkMigrated()
                     runInTransaction { }
                 }
                 MainActivity.show(requireContext())

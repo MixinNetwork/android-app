@@ -187,7 +187,7 @@ fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appC
     return when {
         url == null || mediaUrl == null -> null
         isLive() -> url
-        mediaUrl?.isFileUri() == true -> url
+        mediaUrl.isFileUri() -> url
         else -> File(context.getTranscriptDirPath(), url).toUri().toString()
     }
 }

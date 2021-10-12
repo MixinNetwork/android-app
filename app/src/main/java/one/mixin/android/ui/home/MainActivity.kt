@@ -43,9 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
-import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_BACKUP
-import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
@@ -302,34 +299,32 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(RefreshFiatsJob())
         }
 
-        PropertyHelper.checkFts4Upgrade(this@MainActivity) {
+        if (PropertyHelper.checkFts4Upgrade()) {
             InitializeActivity.showFts(this@MainActivity)
             finish()
+            return@launch
         }
 
-        val sdk = PropertyHelper.findValueByKey(this@MainActivity, PREF_DEVICE_SDK)?.toIntOrNull()
+        val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK)?.toIntOrNull()
         if (sdk == null) {
-            PropertyHelper.updateKeyValue(this@MainActivity, PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
+            PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
         } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            PropertyHelper.updateKeyValue(this@MainActivity, PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
-            PropertyHelper.updateKeyValue(this@MainActivity, PREF_MIGRATION_ATTACHMENT, true.toString())
-            PropertyHelper.updateKeyValue(this@MainActivity, PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, true.toString())
-            PropertyHelper.updateKeyValue(this@MainActivity, PREF_MIGRATION_BACKUP, true.toString())
+            PropertyHelper.migration()
         }
 
-        PropertyHelper.checkAttachmentMigrated(this@MainActivity) {
+        PropertyHelper.checkAttachmentMigrated() {
             jobManager.addJobInBackground(AttachmentMigrationJob())
         }
 
-        PropertyHelper.checkTranscriptAttachmentMigrated(this@MainActivity) {
+        PropertyHelper.checkTranscriptAttachmentMigrated() {
             jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
         }
 
-        PropertyHelper.checkTranscriptAttachmentUpdated(this@MainActivity) {
+        PropertyHelper.checkTranscriptAttachmentUpdated() {
             jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
         }
 
-        PropertyHelper.checkBackupMigrated(this@MainActivity) {
+        PropertyHelper.checkBackupMigrated() {
             jobManager.addJobInBackground(BackupJob(force = true, delete = true))
         }
 

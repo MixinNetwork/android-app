@@ -60,8 +60,8 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
             refreshLargeAmount(Session.getAccount()!!.transferConfirmationThreshold)
 
             lifecycleScope.launch {
-                duplicateTransferSc.isChecked = PropertyHelper.findValueByKey(requireContext(), PREF_DUPLICATE_TRANSFER)?.toBoolean() ?: true
-                strangerTransferSc.isChecked = PropertyHelper.findValueByKey(requireContext(), PREF_STRANGER_TRANSFER)?.toBoolean() ?: true
+                duplicateTransferSc.isChecked = PropertyHelper.findValueByKey(PREF_DUPLICATE_TRANSFER)?.toBoolean() ?: true
+                strangerTransferSc.isChecked = PropertyHelper.findValueByKey(PREF_STRANGER_TRANSFER)?.toBoolean() ?: true
             }
             duplicateTransferSc.setOnCheckedChangeListener { _, isChecked ->
                 updateKeyValue(PREF_DUPLICATE_TRANSFER, isChecked.toString())
@@ -82,7 +82,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
     }
 
     private fun updateKeyValue(key: String, value: String) = lifecycleScope.launch {
-        PropertyHelper.updateKeyValue(requireContext(), key, value)
+        PropertyHelper.updateKeyValue(key, value)
     }
 
     @SuppressLint("RestrictedApi")

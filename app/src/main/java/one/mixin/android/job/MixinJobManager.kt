@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 class MixinJobManager(configuration: Configuration) : JobManager(configuration) {
 
     companion object {
-        var attachmentProcess = ArrayMap<String, Int>()
+        val attachmentProcess = ArrayMap<String, Int>()
 
         fun getAttachmentProcess(messageId: String): Int {
             return attachmentProcess[messageId] ?: 0

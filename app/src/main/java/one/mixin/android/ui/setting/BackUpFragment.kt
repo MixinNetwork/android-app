@@ -124,7 +124,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     }
 
     private suspend fun loadBackupPeriod(): Int =
-        PropertyHelper.findValueByKey(requireContext(), BACKUP_PERIOD)?.toIntOrNull() ?: 0
+        PropertyHelper.findValueByKey(BACKUP_PERIOD)?.toIntOrNull() ?: 0
 
     private fun showBackupDialog() = lifecycleScope.launch {
         val builder = alertDialogBuilder()
@@ -134,7 +134,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         builder.setSingleChoiceItems(options, checkedItem) { dialog, which ->
             binding.backupAutoTv.text = options[which]
             lifecycleScope.launch {
-                PropertyHelper.updateKeyValue(requireContext(), BACKUP_PERIOD, which.toString())
+                PropertyHelper.updateKeyValue(BACKUP_PERIOD, which.toString())
             }
             dialog.dismiss()
         }
