@@ -325,7 +325,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         PropertyHelper.checkBackupMigrated(this@MainActivity) {
-            jobManager.addJobInBackground(BackupJob(delete = true))
+            jobManager.addJobInBackground(BackupJob(force = true, delete = true))
         }
 
         WorkManager.getInstance(this@MainActivity)
