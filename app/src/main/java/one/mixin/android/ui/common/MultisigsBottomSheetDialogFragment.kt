@@ -95,20 +95,18 @@ class MultisigsBottomSheetDialogFragment :
     }
 
     override fun checkState(t: BiometricItem) {
-        binding.biometricLayout.apply {
-            when (t.state) {
-                SignatureState.signed.name -> {
-                    errorBtn.visibility = GONE
-                    showErrorInfo(getString(R.string.multisig_state_signed))
-                }
-                SignatureState.unlocked.name -> {
-                    errorBtn.visibility = GONE
-                    showErrorInfo(getString(R.string.multisig_state_unlocked))
-                }
-                PaymentStatus.paid.name -> {
-                    errorBtn.visibility = GONE
-                    showErrorInfo(getString(R.string.pay_paid))
-                }
+        when (t.state) {
+            SignatureState.signed.name -> {
+                binding.biometricLayout.errorBtn.visibility = GONE
+                showErrorInfo(getString(R.string.multisig_state_signed))
+            }
+            SignatureState.unlocked.name -> {
+                binding.biometricLayout.errorBtn.visibility = GONE
+                showErrorInfo(getString(R.string.multisig_state_unlocked))
+            }
+            PaymentStatus.paid.name -> {
+                binding.biometricLayout.errorBtn.visibility = GONE
+                showErrorInfo(getString(R.string.pay_paid))
             }
         }
     }

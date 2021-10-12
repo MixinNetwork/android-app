@@ -84,8 +84,8 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             handleMixinResponse(
                 invokeNetwork = { bottomViewModel.getToken(t.tokenId) },
                 switchContext = Dispatchers.IO,
-                successBlock = {response->
-                    response.data?.let {data->
+                successBlock = { response ->
+                    response.data?.let { data ->
                         data.metadata
                         binding.apply {
                             nftIv.loadImage(data.metadata.iconUrl, R.drawable.nft_default)
@@ -100,20 +100,18 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     }
 
     private fun checkState(t: BiometricItem) {
-        binding.biometricLayout.apply {
-            when (t.state) {
-                SignatureState.signed.name -> {
-                    errorBtn.visibility = GONE
-                    showErrorInfo(getString(R.string.multisig_state_signed))
-                }
-                SignatureState.unlocked.name -> {
-                    errorBtn.visibility = GONE
-                    showErrorInfo(getString(R.string.multisig_state_unlocked))
-                }
-                PaymentStatus.paid.name -> {
-                    errorBtn.visibility = GONE
-                    showErrorInfo(getString(R.string.pay_paid))
-                }
+        when (t.state) {
+            SignatureState.signed.name -> {
+                binding.biometricLayout.errorBtn.visibility = GONE
+                showErrorInfo(getString(R.string.multisig_state_signed))
+            }
+            SignatureState.unlocked.name -> {
+                binding.biometricLayout.errorBtn.visibility = GONE
+                showErrorInfo(getString(R.string.multisig_state_unlocked))
+            }
+            PaymentStatus.paid.name -> {
+                binding.biometricLayout.errorBtn.visibility = GONE
+                showErrorInfo(getString(R.string.pay_paid))
             }
         }
     }
