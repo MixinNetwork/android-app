@@ -976,16 +976,17 @@ fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
     }
 }
 
-
 @RequiresApi(Build.VERSION_CODES.N)
 fun Context.getDisplayPath(uri: Uri): String {
     val lastPathSegment = requireNotNull(uri.lastPathSegment)
     val backupVolume = lastPathSegment.replaceFirst(":.*".toRegex(), "")
     val backupName = lastPathSegment.replaceFirst(".*:".toRegex(), "")
-    val storageManager: StorageManager = requireNotNull(ContextCompat.getSystemService(
-        this,
-        StorageManager::class.java
-    ))
+    val storageManager: StorageManager = requireNotNull(
+        ContextCompat.getSystemService(
+            this,
+            StorageManager::class.java
+        )
+    )
     val storageVolumes = storageManager.storageVolumes
     var storageVolume: StorageVolume? = null
     for (volume in storageVolumes) {

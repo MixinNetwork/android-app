@@ -77,7 +77,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         try {
             backupLiveData.start()
             BackupNotification.show()
-            one.mixin.android.util.backup.backup(context) { result ->
+            one.mixin.android.util.backup.backupApi29(context) { result ->
                 backupLiveData.setResult(false, result)
                 BackupNotification.cancel()
                 if (result == Result.SUCCESS) {

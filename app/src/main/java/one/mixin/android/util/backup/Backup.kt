@@ -3,6 +3,7 @@ package one.mixin.android.util.backup
 import android.Manifest
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.net.Uri
 import android.os.StatFs
 import androidx.annotation.RequiresPermission
 import androidx.core.net.toUri
@@ -14,11 +15,14 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.runInTransaction
+import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getOldBackupPath
 import one.mixin.android.util.PropertyHelper
+import timber.log.Timber
 import java.io.File
+import java.io.FileInputStream
 import kotlin.coroutines.CoroutineContext
 
 private const val BACKUP_POSTFIX = ".backup"
@@ -132,7 +136,10 @@ suspend fun restore(
         target.copyTo(file)
 
         // Reset BACKUP_LAST_TIME so that the user who restores the backup does not need to backup after login
-        PropertyHelper.updateKeyValue(Constants.BackUp.BACKUP_LAST_TIME, System.currentTimeMillis().toString())
+        PropertyHelper.updateKeyValue(
+            Constants.BackUp.BACKUP_LAST_TIME,
+            System.currentTimeMillis().toString()
+        )
 
         withContext(Dispatchers.Main) {
             callback(Result.SUCCESS)
@@ -154,7 +161,11 @@ suspend fun delete(
 suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext
-): File? = findNewBackup(context, coroutineContext) ?: findNewBackup(context, coroutineContext, legacy = true) ?: findOldBackup(context, coroutineContext)
+): File? = findNewBackup(context, coroutineContext) ?: findNewBackup(
+    context,
+    coroutineContext,
+    legacy = true
+) ?: findOldBackup(context, coroutineContext)
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findNewBackup(
@@ -227,6 +238,50 @@ fun canUserAccessBackupDirectory(context: Context): Boolean {
         context.defaultSharedPreferences.getString(Constants.Account.PREF_BACKUP_DIRECTORY, null)
             ?.toUri()
             ?: return false
-    val backupDirectory = DocumentFile.fromTreeUri(context, backupDirectoryUri)
+    return internalCheckAccessBackupDirectory(context, backupDirectoryUri)
+}
+
+private fun internalCheckAccessBackupDirectory(context: Context, uri: Uri): Boolean {
+    val backupDirectory = DocumentFile.fromTreeUri(context, uri)
     return backupDirectory != null && backupDirectory.canRead() && backupDirectory.canWrite()
 }
+
+suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
+    withContext(Dispatchers.IO) {
+        val backupDirectoryUri =
+            context.defaultSharedPreferences.getString(
+                Constants.Account.PREF_BACKUP_DIRECTORY,
+                null
+            )
+                ?.toUri()
+                ?: return@withContext
+        val backupDirectory =
+            DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext
+        if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
+            return@withContext
+        }
+        val file = backupDirectory.createFile("application/octet-stream", "mixin.db") ?: return@withContext
+        val outputStream = context.contentResolver.openOutputStream(file.uri) ?: return@withContext
+        val dbFile = context.getDatabasePath(DB_NAME)
+        if (dbFile == null) {
+            withContext(Dispatchers.Main) {
+                callback(Result.NOT_FOUND)
+            }
+            return@withContext
+        }
+        val inputStream = FileInputStream(dbFile)
+        try {
+            file.uri.copyFromInputStream(inputStream)
+            withContext(Dispatchers.Main) {
+                callback.invoke(Result.SUCCESS)
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+            withContext(Dispatchers.Main) {
+                callback.invoke(Result.FAILURE)
+            }
+        } finally {
+            inputStream.close()
+            outputStream.close()
+        }
+    }
