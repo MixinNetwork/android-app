@@ -5,6 +5,8 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.os.StatFs
 import androidx.annotation.RequiresPermission
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -12,6 +14,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.runInTransaction
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getOldBackupPath
 import one.mixin.android.util.PropertyHelper
@@ -217,4 +220,13 @@ fun checkDb(path: String): Boolean {
     } finally {
         db?.close()
     }
+}
+
+fun canUserAccessBackupDirectory(context: Context): Boolean {
+    val backupDirectoryUri =
+        context.defaultSharedPreferences.getString(Constants.Account.PREF_BACKUP_DIRECTORY, null)
+            ?.toUri()
+            ?: return false
+    val backupDirectory = DocumentFile.fromTreeUri(context, backupDirectoryUri)
+    return backupDirectory != null && backupDirectory.canRead() && backupDirectory.canWrite()
 }

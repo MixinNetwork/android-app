@@ -22,6 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_BACKUP_DIRECTORY
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBackupBinding
@@ -44,6 +45,8 @@ import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
+import android.content.Intent
+import one.mixin.android.util.backup.canUserAccessBackupDirectory
 
 @AndroidEntryPoint
 class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
@@ -173,11 +176,11 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
 
     private fun chooseFolder() {
         val builder = alertDialogBuilder()
-        builder.setTitle(R.string.backup_dialog_title)
-        builder.setPositiveButton(R.string.backup_choose_folder) { dialog, _ ->
+        builder.setMessage(R.string.backup_dialog_title)
+        builder.setPositiveButton(R.string.backup_choose_a_folder) { _, _ ->
             chooseFolderResult.launch(
                 defaultSharedPreferences.getString(
-                    "LastBackupDirectory",
+                    PREF_BACKUP_DIRECTORY,
                     null
                 )
             )
@@ -192,7 +195,12 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     private fun callbackChooseFolder(uri: Uri?) {
         if (uri != null) {
             Timber.d(requireContext().getDisplayPath(uri))
-            defaultSharedPreferences.putString("LastBackupDirectory", uri.toString())
+            defaultSharedPreferences.putString(PREF_BACKUP_DIRECTORY, uri.toString())
+            val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            requireContext().contentResolver
+                .takePersistableUriPermission(uri, takeFlags)
+            Timber.d("${canUserAccessBackupDirectory(requireContext())}")
         }
     }
 

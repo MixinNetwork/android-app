@@ -907,6 +907,8 @@
     <string name="backup_external_storage">外部存储: %1$s</string>
     <string name="backup_never">从未备份</string>
     <string name="backup">备份</string>
+    <string name="backup_choose_folder">选择文件夹</string>
+    <string name="backup_choose_a_folder">请选择用于保存备份的文件夹</string>
     <string name="backup_delete">删除备份</string>
     <string name="backup_dialog_title">自动备份到外部存储</string>
     <string name="backup_ing">正在备份到外部存储&#8230;</string>
@@ -1035,5 +1037,4 @@
     <string name="chat_pin_card_message">一个卡片</string>
     <string name="unpin_success">置顶消息已取消</string>
     <string name="pin_success">消息已置顶</string>
-    <string name="backup_choose_folder">选择文件夹</string>
 </resources>

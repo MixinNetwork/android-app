@@ -76,7 +76,7 @@
 
         <Button
             android:id="@+id/backup_choose"
-            android:text="@string/backup"
+            android:text="@string/backup_choose_folder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorDarkBlue"
