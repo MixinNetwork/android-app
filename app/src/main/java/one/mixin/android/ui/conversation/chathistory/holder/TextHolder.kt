@@ -106,7 +106,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
 
         if (textGestureListener == null) {
             textGestureListener = TextGestureListener(
-                binding.chatLayout,
+                binding.root,
                 messageItem,
                 onItemListener = onItemListener,
                 absoluteAdapterPosition = absoluteAdapterPosition
