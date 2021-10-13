@@ -861,10 +861,10 @@
     <string name="bottom_withdrawal_address_continue">Continue</string>
     <string name="bottom_withdrawal_least_tip">Minimum withdraw amount is %1$s %2$s</string>
     <string name="bottom_deposit_title">%1$s Deposit</string>
-    <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, etc.</string>
+    <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens.</string>
     <string name="bottom_deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, etc.</string>
     <string name="bottom_deposit_tip_btc">This address only supports BTC.</string>
-    <string name="bottom_deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens, such as TRX, BTT, USDT-TRON, etc.</string>
+    <string name="bottom_deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens.</string>
     <string name="bottom_deposit_tip_common">This address only supports %1$s.</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chosen is correct. If you transfer to the wrong person, your assets will be lost!</string>
     <!--sticker-->

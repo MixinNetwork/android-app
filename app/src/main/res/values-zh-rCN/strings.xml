@@ -842,10 +842,10 @@
     <string name="bottom_withdrawal_address_continue">继续提现</string>
     <string name="bottom_withdrawal_least_tip">提现金额最小 %1$s %2$s</string>
     <string name="bottom_deposit_title">%1$s 充值</string>
-    <string name="bottom_deposit_tip_eos">该充值地址支持所有基于 EOS 发行的代币，例如 EOS、IQ 等。</string>
-    <string name="bottom_deposit_tip_eth">该充值地址支持所有符合 ERC-20 标准的代币，例如 ETH、XIN 等。</string>
+    <string name="bottom_deposit_tip_eos">支持所有基于 EOS 发行的代币。</string>
+    <string name="bottom_deposit_tip_eth">支持所有符合 ERC-20 标准的代币，例如 ETH、XIN 等。</string>
     <string name="bottom_deposit_tip_btc">该充值地址仅支持 BTC。</string>
-    <string name="bottom_deposit_tip_trx">该充值地址支持 TRX 和所有符合 TRC-10 TRC-20 标准的代币，例如 TRX、BTT、USDT-TRON 等。</string>
+    <string name="bottom_deposit_tip_trx">支持 TRX 和所有符合 TRC-10 TRC-20 标准的代币。</string>
     <string name="bottom_deposit_tip_common">该充值地址仅支持 %1$s。</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s 不是您的联系人，请确认收款人是否正确。如果您转错了人资产将无法追回！</string>
     <!--sticker-->
