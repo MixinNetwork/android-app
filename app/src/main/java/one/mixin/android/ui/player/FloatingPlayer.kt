@@ -114,7 +114,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
             if (!isShown) {
                 init()
                 isShown = true
-                windowManager.addView(windowView, windowLayoutParams)
+                windowView?.let { windowManager.addView(it, windowLayoutParams) }
             }
             reload()
         }
@@ -180,7 +180,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
                         windowLayoutParams.y =
                             realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
                     }
-                    windowManager.updateViewLayout(windowView, windowLayoutParams)
+                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
                     startX = x
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_UP) {
@@ -299,14 +299,14 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     fun setX(value: Int) {
         windowLayoutParams.x = value
         if (!isShown) return
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value
         if (!isShown) return
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 }
 

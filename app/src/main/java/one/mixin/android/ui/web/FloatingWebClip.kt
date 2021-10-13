@@ -104,7 +104,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
             if (!isShown) {
                 init()
                 isShown = true
-                windowManager.addView(windowView, windowLayoutParams)
+                windowView?.let { windowManager.addView(it, windowLayoutParams) }
             }
             reload()
         }
@@ -128,7 +128,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
             (64 + 13.3 * min((count - 1), 2)).toInt().dp
         }
         windowLayoutParams.height = 64.dp
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
     private fun initWindowView() {
@@ -187,7 +187,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
                         windowLayoutParams.y =
                             realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
                     }
-                    windowManager.updateViewLayout(windowView, windowLayoutParams)
+                    windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
                     startX = x
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_UP) {
@@ -296,13 +296,13 @@ class FloatingWebClip(private var isNightMode: Boolean) {
     fun setX(value: Int) {
         windowLayoutParams.x = value
         if (!isShown) return
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value
         if (!isShown) return
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 }
