@@ -138,7 +138,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         }
 
         if (textGestureListener == null) {
-            textGestureListener = TextGestureListener(binding.chatLayout, messageItem, hasSelect, isSelect, onItemListener, absoluteAdapterPosition)
+            textGestureListener = TextGestureListener(itemView, messageItem, hasSelect, isSelect, onItemListener, absoluteAdapterPosition)
         } else {
             textGestureListener?.apply {
                 this.messageItem = messageItem
