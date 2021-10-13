@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -120,6 +121,7 @@ class ChatHistoryActivity : BaseActivity() {
         intent.getIntExtra(CATEGORY, TRANSCRIPT) == TRANSCRIPT
     }
 
+    private var firstLoad = true
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatHistoryBinding.inflate(layoutInflater)
@@ -144,7 +146,21 @@ class ChatHistoryActivity : BaseActivity() {
         )
         binding.recyclerView.addItemDecoration(decoration)
         binding.recyclerView.itemAnimator = null
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.layoutManager = object : LinearLayoutManager(this) {
+            override fun onLayoutChildren(
+                recycler: RecyclerView.Recycler,
+                state: RecyclerView.State
+            ) {
+                if (!isTranscript && firstLoad && state.itemCount > 0) {
+                    firstLoad = false
+                    scrollToPositionWithOffset(
+                        state.itemCount - 1,
+                        0
+                    )
+                }
+                super.onLayoutChildren(recycler, state)
+            }
+        }
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = adapter
         if (isTranscript) {
@@ -201,8 +217,6 @@ class ChatHistoryActivity : BaseActivity() {
                 }
         }
     }
-
-    private var firstLoad = false
 
     override fun onStop() {
         super.onStop()
