@@ -18,6 +18,7 @@ import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getLegacyBackupPath
+import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getOldBackupPath
 import one.mixin.android.util.PropertyHelper
 import timber.log.Timber
@@ -260,6 +261,7 @@ suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
         if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
             return@withContext
         }
+        backupDirectory.findFile("mixin.db")?.delete()
         val file = backupDirectory.createFile("application/octet-stream", "mixin.db") ?: return@withContext
         val outputStream = context.contentResolver.openOutputStream(file.uri) ?: return@withContext
         val dbFile = context.getDatabasePath(DB_NAME)
@@ -272,6 +274,9 @@ suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
         val inputStream = FileInputStream(dbFile)
         try {
             file.uri.copyFromInputStream(inputStream)
+            context.getMediaPath()?.let {
+                copyFileToDirectory(it,backupDirectory)
+            }
             withContext(Dispatchers.Main) {
                 callback.invoke(Result.SUCCESS)
             }
@@ -285,3 +290,16 @@ suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
             outputStream.close()
         }
     }
+
+private fun copyFileToDirectory(file: File, dir: DocumentFile) {
+    if (file.isDirectory) {
+        val childDir = dir.createDirectory(file.name) ?: return
+        file.listFiles()?.forEach { f ->
+            copyFileToDirectory(f, childDir)
+        }
+    } else {
+        val documentFile = dir.createFile("application/octet-stream", file.name) ?: return
+        val inputStream = FileInputStream(file)
+        documentFile.uri.copyFromInputStream(inputStream)
+    }
+}
