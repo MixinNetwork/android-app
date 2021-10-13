@@ -4,6 +4,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
@@ -156,20 +157,32 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
             binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
         }
         chatLayout(isMe, isLast)
+
+        binding.root.setOnLongClickListener {
+            onItemListener.onMenu(binding.chatJump, messageItem)
+            true
+        }
+        binding.chatLayout.setOnLongClickListener {
+            onItemListener.onMenu(binding.chatJump, messageItem)
+            true
+        }
+        binding.chatTv.setOnLongClickListener {
+            onItemListener.onMenu(binding.chatJump, messageItem)
+            true
+        }
         if (messageItem.transcriptId == null) {
-            binding.root.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
-                true
-            }
-            binding.chatLayout.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
-                true
-            }
-            binding.chatTv.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
-                true
-            }
             chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
+        } else {
+            binding.chatJump.isInvisible = true
+            (binding.chatJump.layoutParams as ConstraintLayout.LayoutParams).apply {
+                if (isMe) {
+                    endToStart = R.id.chat_layout
+                    startToEnd = View.NO_ID
+                } else {
+                    endToStart = View.NO_ID
+                    startToEnd = R.id.chat_layout
+                }
+            }
         }
     }
 
