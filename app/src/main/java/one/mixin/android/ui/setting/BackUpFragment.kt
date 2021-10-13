@@ -2,6 +2,7 @@ package one.mixin.android.ui.setting
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -14,7 +15,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -40,13 +43,12 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.Result
+import one.mixin.android.util.backup.canUserAccessBackupDirectory
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
-import android.content.Intent
-import one.mixin.android.util.backup.canUserAccessBackupDirectory
 
 @AndroidEntryPoint
 class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
@@ -86,6 +88,19 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             }
             lifecycleScope.launch {
                 binding.backupAutoTv.text = options[loadBackupPeriod()]
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                backupChoose.isVisible = true
+                backupDes.isVisible = false
+                (backupAuto.layoutParams as ConstraintLayout.LayoutParams).apply {
+                    topToBottom = R.id.backup_choose
+                }
+            } else {
+                backupChoose.isVisible = false
+                backupDes.isVisible = true
+                (backupAuto.layoutParams as ConstraintLayout.LayoutParams).apply {
+                    topToBottom = R.id.backup_des
+                }
             }
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             backupBn.setOnClickListener {
@@ -176,8 +191,8 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
 
     private fun chooseFolder() {
         val builder = alertDialogBuilder()
-        builder.setMessage(R.string.backup_dialog_title)
-        builder.setPositiveButton(R.string.backup_choose_a_folder) { _, _ ->
+        builder.setMessage(R.string.backup_choose_a_folder)
+        builder.setPositiveButton(R.string.backup_choose_folder) { _, _ ->
             chooseFolderResult.launch(
                 defaultSharedPreferences.getString(
                     PREF_BACKUP_DIRECTORY,
