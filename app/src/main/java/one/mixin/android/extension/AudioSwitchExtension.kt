@@ -22,10 +22,13 @@ fun AudioSwitch.selectSpeakerphone() =
         .find { it is AudioDevice.Speakerphone }
         ?.let { this.selectDevice(it) }
 
-fun AudioSwitch.selectEarpiece() =
+fun AudioSwitch.selectEarpieceAndActivate() =
     this.availableAudioDevices
         .find { it is AudioDevice.Earpiece }
-        ?.let { this.selectDevice(it) }
+        ?.let {
+            this.selectDevice(it)
+            safeActivate()
+        }
 
 fun AudioSwitch.safeActivate() = try {
     activate()

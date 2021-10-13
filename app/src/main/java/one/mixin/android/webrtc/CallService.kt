@@ -221,6 +221,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             updateForegroundNotification()
             heavyClickVibrate()
             audioManager.stop()
+            audioManager.active()
             pipCallView.startTimer(connectedTime)
         }
         timeoutFuture?.cancel(true)

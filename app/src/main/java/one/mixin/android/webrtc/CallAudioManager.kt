@@ -15,7 +15,7 @@ import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
-import one.mixin.android.extension.selectEarpiece
+import one.mixin.android.extension.selectEarpieceAndActivate
 import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.MusicPlayer
@@ -31,8 +31,7 @@ class CallAudioManager(
     private val vibrator: Vibrator? = context.getSystemService()
 
     private var mediaPlayer: MediaPlayer? = null
-    private var mediaPlayerStopped = false
-    private var hasStarted = false
+    private var activated = false
 
     private var isInitiator = false
     private var playRingtone = false
@@ -46,38 +45,46 @@ class CallAudioManager(
             setSpeaker(value)
         }
 
-    init {
-        audioSwitch.start { audioDevices, selectedAudioDevice ->
-            Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
-            if (selectedAudioDevice !is AudioDevice.BluetoothHeadset) {
-                val bluetoothHeadset = audioDevices.find { it is AudioDevice.BluetoothHeadset }
-                if (bluetoothHeadset != null) {
-                    audioSwitch.selectDevice(bluetoothHeadset)
-                } else {
-                    if (selectedAudioDevice !is AudioDevice.WiredHeadset) {
-                        val wiredHeadset = audioDevices.find { it is AudioDevice.WiredHeadset }
-                        if (wiredHeadset != null) {
-                            audioSwitch.selectDevice(wiredHeadset)
-                        } else {
-                            if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
-                                audioSwitch.selectEarpiece()
-                            }
-                        }
-                    }
-                }
-            }
-
-            callback.customAudioDeviceAvailable(selectedAudioDevice.isBluetoothHeadsetOrWiredHeadset())
-        }
-    }
-
     fun start(isInitiator: Boolean, playRingtone: Boolean = true) {
         context.mainThread {
             AudioPlayer.pause()
             MusicPlayer.pause()
         }
 
-        hasStarted = true
+        audioSwitch.start { audioDevices, selectedAudioDevice ->
+            var targetDevice = audioDevices[0]
+            Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice, targetDevice: $targetDevice")
+            if (targetDevice != selectedAudioDevice || (isSpeakerOn && targetDevice is AudioDevice.Earpiece) || (!isSpeakerOn && targetDevice is AudioDevice.Speakerphone)) {
+                if (targetDevice is AudioDevice.BluetoothHeadset || targetDevice is AudioDevice.WiredHeadset) {
+                    audioSwitch.deactivate()
+                    audioSwitch.selectDevice(targetDevice)
+                    if (activated) {
+                        audioSwitch.safeActivate()
+                    }
+                } else {
+                    if (isSpeakerOn) {
+                        audioDevices.find { it is AudioDevice.Speakerphone }
+                            ?.let {
+                                audioSwitch.deactivate()
+                                audioSwitch.selectDevice(it)
+                                if (activated) {
+                                    audioSwitch.safeActivate()
+                                }
+                                targetDevice = it
+                            }
+                    } else {
+                        audioDevices.find { it is AudioDevice.Earpiece }
+                            ?.let {
+                                audioSwitch.selectDevice(it)
+                                audioSwitch.safeActivate()
+                                targetDevice = it
+                            }
+                    }
+                }
+            }
+            callback.customAudioDeviceAvailable(targetDevice.isBluetoothHeadsetOrWiredHeadset())
+        }
+
         this.playRingtone = playRingtone
         this.isInitiator = isInitiator
 
@@ -99,29 +106,23 @@ class CallAudioManager(
     }
 
     fun stop() {
-        if (mediaPlayerStopped) return
-
-        if (!isInitiator) {
-            audioSwitch.selectEarpiece()
-        }
-        mediaPlayerStopped = true
         if (mediaPlayer != null) {
             mediaPlayer?.stop()
             mediaPlayer?.release()
             mediaPlayer = null
         }
         vibrator?.cancel()
+    }
+
+    fun active() {
         audioSwitch.safeActivate()
+        activated = true
     }
 
     fun reset() {
-        if (!mediaPlayerStopped) {
-            stop()
-        }
-
+        stop()
         audioSwitch.deactivate()
-        hasStarted = false
-        mediaPlayerStopped = false
+        activated = false
         isInitiator = false
         isSpeakerOn = false
         playRingtone = false
@@ -136,8 +137,6 @@ class CallAudioManager(
             $TAG_AUDIO CallAudioManager message
             isInitiator: $isInitiator
             playRingtone: $playRingtone
-            hasStarted: $hasStarted
-            mediaPlayerStopped: $mediaPlayerStopped
             isSpeakerOn: $isSpeakerOn
             audioSwitch selectedAudioDevice: ${audioSwitch.selectedAudioDevice}, availableAudioDevices: ${audioSwitch.availableAudioDevices}
         """.trimIndent()
@@ -149,15 +148,18 @@ class CallAudioManager(
         if (isBluetoothHeadsetOrWiredHeadset) return
 
         if (enable) {
+            audioSwitch.deactivate()
             audioSwitch.selectSpeakerphone()
+            if (activated) {
+                audioSwitch.safeActivate()
+            }
         } else {
-            audioSwitch.selectEarpiece()
+            audioSwitch.selectEarpieceAndActivate()
         }
     }
 
     private fun updateMediaPlayer() {
-        Timber.d("$TAG_AUDIO updateMediaPlayer hasStarted: $hasStarted, mediaPlayerStopped: $mediaPlayerStopped")
-        if (!hasStarted || mediaPlayerStopped) return
+        Timber.d("$TAG_AUDIO updateMediaPlayer")
 
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer()

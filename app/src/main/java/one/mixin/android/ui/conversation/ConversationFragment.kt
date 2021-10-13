@@ -127,11 +127,10 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
 import one.mixin.android.extension.scamPreferences
 import one.mixin.android.extension.selectDocument
-import one.mixin.android.extension.selectEarpiece
+import one.mixin.android.extension.selectEarpieceAndActivate
 import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
@@ -1273,10 +1272,8 @@ class ConversationFragment() :
         }
         AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
-        context?.let {
-            if (!anyCallServiceRunning(it)) {
-                audioSwitch.safeStop()
-            }
+        if (callState.isIdle()) {
+            audioSwitch.safeStop()
         }
     }
 
@@ -2869,8 +2866,7 @@ class ConversationFragment() :
             wakeLock.acquire(10 * 60 * 1000L)
         }
         Timber.d("$TAG_AUDIO${audioSwitch.selectedAudioDevice}")
-        audioSwitch.selectEarpiece()
-        audioSwitch.safeActivate()
+        audioSwitch.selectEarpieceAndActivate()
     }
 
     private fun leaveDevice() {
