@@ -248,7 +248,6 @@ suspend fun restoreApi29(
     }
     val backupDb = backupDirectory.findFile(DB_NAME)
     if (backupDb == null || !backupDb.exists()) {
-
         withContext(Dispatchers.Main) {
             callback(Result.NOT_FOUND)
         }
@@ -355,10 +354,10 @@ suspend fun findBackupApi29(
     if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
         return@withContext null
     }
-    val backupFile = backupDirectory.findFile(DB_NAME) ?: return@withContext null
+    if (!backupDirectory.exists() || backupDirectory.length() <= 0) return@withContext null
     return@withContext BackupInfo(
-        backupFile.lastModified(),
-        backupFile.length(),
+        backupDirectory.lastModified(),
+        backupDirectory.length(),
         context.getDisplayPath(backupDirectory.uri)
     )
 }
@@ -464,10 +463,12 @@ private fun copyFileToDirectory(context: Context, file: DocumentFile, dir: File)
         }
     } else {
         Timber.e("copy ${file.name} ${dir.absolutePath}")
-        val outputStream = context.contentResolver.openOutputStream(file.uri) ?: return
-        val inputStream = FileInputStream(f)
-        outputStream.use { output ->
-            inputStream.copyTo(output)
+        if (f.exists()) {
+            val outputStream = context.contentResolver.openOutputStream(file.uri) ?: return
+            val inputStream = FileInputStream(f)
+            outputStream.use { output ->
+                inputStream.copyTo(output)
+            }
         }
     }
 }
