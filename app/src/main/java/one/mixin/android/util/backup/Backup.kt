@@ -4,7 +4,9 @@ import android.Manifest
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
+import android.os.Build
 import android.os.StatFs
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -17,6 +19,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getOldBackupPath
@@ -24,7 +27,6 @@ import one.mixin.android.util.PropertyHelper
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import kotlin.coroutines.CoroutineContext
 
 private const val BACKUP_POSTFIX = ".backup"
@@ -121,12 +123,82 @@ suspend fun backup(
     }
 }
 
+suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
+    withContext(Dispatchers.IO) {
+        val backupDirectoryUri =
+            context.defaultSharedPreferences.getString(
+                Constants.Account.PREF_BACKUP_DIRECTORY,
+                null
+            )
+                ?.toUri()
+                ?: return@withContext
+        val backupDirectory =
+            DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext
+        if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
+            return@withContext
+        }
+        backupDirectory.findFile("mixin.db")?.delete()
+        val backupDbFile = backupDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext
+
+        val dbFile = context.getDatabasePath(DB_NAME)
+        if (dbFile == null) {
+            withContext(Dispatchers.Main) {
+                callback(Result.NOT_FOUND)
+            }
+            return@withContext
+        }
+        val tmpFile = File(context.getMediaPath(), DB_NAME)
+        try {
+            val inputStream = dbFile.inputStream()
+            runInTransaction {
+                MixinDatabase.checkPoint()
+                tmpFile.outputStream().use { output -> inputStream.copyTo(output) }
+            }
+            var db: SQLiteDatabase? = null
+            try {
+                db = SQLiteDatabase.openDatabase(
+                    tmpFile.path,
+                    null,
+                    SQLiteDatabase.OPEN_READWRITE
+                )
+            } catch (e: Exception) {
+                db?.close()
+                tmpFile.deleteOnExit()
+                withContext(Dispatchers.Main) {
+                    callback(Result.FAILURE)
+                }
+                return@withContext
+            }
+            try {
+                db.execSQL("UPDATE participant_session SET sent_to_server = NULL")
+                db.execSQL("DELETE FROM jobs")
+                db.execSQL("DELETE FROM flood_messages")
+                db.execSQL("DELETE FROM offsets")
+            } catch (ignored: Exception) {
+            } finally {
+                db.close()
+            }
+            backupDbFile.uri.copyFromInputStream(tmpFile.inputStream())
+            context.getMediaPath()?.let {
+                copyFileToDirectory(it, backupDirectory)
+            }
+            withContext(Dispatchers.Main) {
+                callback.invoke(Result.SUCCESS)
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+            withContext(Dispatchers.Main) {
+                callback.invoke(Result.FAILURE)
+            }
+        }
+    }
+
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun restore(
     context: Context,
     callback: (Result) -> Unit
 ) = withContext(Dispatchers.IO) {
-    val target = findBackup(context, coroutineContext)
+    val target = internalFindBackup(context, coroutineContext)
         ?: return@withContext callback(Result.NOT_FOUND)
     val file = context.getDatabasePath(DB_NAME)
     try {
@@ -196,7 +268,7 @@ suspend fun restoreApi29(
         }
         File("${file.absolutePath}-wal").delete()
         File("${file.absolutePath}-shm").delete()
-        FileOutputStream(file).use { output ->
+        file.outputStream().use { output ->
             inputStream.copyTo(output)
         }
         val backupMediaDirectory = backupDirectory.findFile("Media")
@@ -236,11 +308,44 @@ suspend fun delete(
 suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext
-): File? = findNewBackup(context, coroutineContext) ?: findNewBackup(
-    context,
-    coroutineContext,
-    legacy = true
-) ?: findOldBackup(context, coroutineContext)
+): BackupInfo? = internalFindBackup(context, coroutineContext)?.run {
+    BackupInfo(lastModified(), length(), absolutePath)
+}
+
+@RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+private suspend fun internalFindBackup(
+    context: Context,
+    coroutineContext: CoroutineContext
+): File? = (
+    findNewBackup(context, coroutineContext) ?: findNewBackup(
+        context,
+        coroutineContext,
+        legacy = true
+    ) ?: findOldBackup(context, coroutineContext)
+    )
+
+@RequiresApi(Build.VERSION_CODES.N)
+suspend fun findBackupApi29(
+    context: Context,
+    coroutineContext: CoroutineContext
+): BackupInfo? = withContext(coroutineContext) {
+    val backupDirectoryUri =
+        context.defaultSharedPreferences.getString(
+            Constants.Account.PREF_BACKUP_DIRECTORY,
+            null
+        )?.toUri() ?: return@withContext null
+    val backupDirectory =
+        DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext null
+    if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
+        return@withContext null
+    }
+    val backupFile = backupDirectory.findFile(DB_NAME) ?: return@withContext null
+    return@withContext BackupInfo(
+        backupFile.lastModified(),
+        backupFile.length(),
+        context.getDisplayPath(backupDirectory.uri)
+    )
+}
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findNewBackup(
@@ -296,7 +401,15 @@ fun findOldBackupSync(context: Context, legacy: Boolean = false): File? {
     return null
 }
 
-fun checkDb(path: String): Boolean {
+fun canUserAccessBackupDirectory(context: Context): Boolean {
+    val backupDirectoryUri =
+        context.defaultSharedPreferences.getString(Constants.Account.PREF_BACKUP_DIRECTORY, null)
+            ?.toUri()
+            ?: return false
+    return internalCheckAccessBackupDirectory(context, backupDirectoryUri)
+}
+
+private fun checkDb(path: String): Boolean {
     var db: SQLiteDatabase? = null
     return try {
         db = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY)
@@ -308,62 +421,10 @@ fun checkDb(path: String): Boolean {
     }
 }
 
-fun canUserAccessBackupDirectory(context: Context): Boolean {
-    val backupDirectoryUri =
-        context.defaultSharedPreferences.getString(Constants.Account.PREF_BACKUP_DIRECTORY, null)
-            ?.toUri()
-            ?: return false
-    return internalCheckAccessBackupDirectory(context, backupDirectoryUri)
-}
-
 private fun internalCheckAccessBackupDirectory(context: Context, uri: Uri): Boolean {
     val backupDirectory = DocumentFile.fromTreeUri(context, uri)
     return backupDirectory != null && backupDirectory.canRead() && backupDirectory.canWrite()
 }
-
-suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
-    withContext(Dispatchers.IO) {
-        val backupDirectoryUri =
-            context.defaultSharedPreferences.getString(
-                Constants.Account.PREF_BACKUP_DIRECTORY,
-                null
-            )
-                ?.toUri()
-                ?: return@withContext
-        val backupDirectory =
-            DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext
-        if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
-            return@withContext
-        }
-        backupDirectory.findFile("mixin.db")?.delete()
-        val file = backupDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext
-        val outputStream = context.contentResolver.openOutputStream(file.uri) ?: return@withContext
-        val dbFile = context.getDatabasePath(DB_NAME)
-        if (dbFile == null) {
-            withContext(Dispatchers.Main) {
-                callback(Result.NOT_FOUND)
-            }
-            return@withContext
-        }
-        val inputStream = FileInputStream(dbFile)
-        try {
-            file.uri.copyFromInputStream(inputStream)
-            context.getMediaPath()?.let {
-                copyFileToDirectory(it, backupDirectory)
-            }
-            withContext(Dispatchers.Main) {
-                callback.invoke(Result.SUCCESS)
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-            withContext(Dispatchers.Main) {
-                callback.invoke(Result.FAILURE)
-            }
-        } finally {
-            inputStream.close()
-            outputStream.close()
-        }
-    }
 
 private fun copyFileToDirectory(file: File, dir: DocumentFile) {
     if (file.isDirectory) {

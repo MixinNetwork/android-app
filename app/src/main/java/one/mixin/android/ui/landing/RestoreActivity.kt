@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.RequiresPermission
@@ -26,11 +27,12 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.backup.BackupInfo
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
-import one.mixin.android.util.backup.restore
+import one.mixin.android.util.backup.findBackup
+import one.mixin.android.util.backup.findBackupApi29
 import one.mixin.android.util.backup.restoreApi29
-import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -60,7 +62,7 @@ class RestoreActivity : BaseActivity() {
                             if (!granted) {
                                 openPermissionSetting()
                             } else {
-                                findBackup()
+                                findBackupInfo()
                             }
                         },
                         {
@@ -76,13 +78,17 @@ class RestoreActivity : BaseActivity() {
     }
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun findBackup() = lifecycleScope.launch(Dispatchers.IO) {
-        val file = one.mixin.android.util.backup.findBackup(this@RestoreActivity, coroutineContext)
+    private fun findBackupInfo() = lifecycleScope.launch(Dispatchers.IO) {
+        val backupInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            findBackupApi29(this@RestoreActivity, coroutineContext)
+        } else {
+            findBackup(this@RestoreActivity, coroutineContext)
+        }
         withContext(Dispatchers.Main) {
-            if (file == null) {
+            if (backupInfo == null) {
                 showErrorAlert(Result.NOT_FOUND)
             } else {
-                initUI(file)
+                initUI(backupInfo)
             }
         }
     }
@@ -108,7 +114,7 @@ class RestoreActivity : BaseActivity() {
                 }
             }
             .setNegativeButton(R.string.restore_retry) { dialog, _ ->
-                findBackup()
+                findBackupInfo()
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.restore_skip) { dialog, _ ->
@@ -124,10 +130,10 @@ class RestoreActivity : BaseActivity() {
 
     private lateinit var binding: ActivityRestoreBinding
     @SuppressLint("MissingPermission")
-    private fun initUI(data: File) {
+    private fun initUI(backupInfo: BackupInfo) {
         binding = ActivityRestoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.restoreTime.text = data.lastModified().run {
+        binding.restoreTime.text = backupInfo.lastModified.run {
             this.getRelativeTimeSpan()
         }
         binding.restoreRestore.setOnClickListener {
@@ -150,7 +156,7 @@ class RestoreActivity : BaseActivity() {
                     }
                 )
         }
-        binding.restoreSize.text = getString(R.string.restore_size, data.length().fileSize())
+        binding.restoreSize.text = getString(R.string.restore_size, backupInfo.length.fileSize())
         binding.restoreSkip.setOnClickListener {
             InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)

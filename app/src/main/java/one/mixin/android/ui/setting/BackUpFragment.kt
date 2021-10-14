@@ -46,6 +46,7 @@ import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.canUserAccessBackupDirectory
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
+import one.mixin.android.util.backup.findBackupApi29
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -221,22 +222,26 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun findBackUp() = lifecycleScope.launch(Dispatchers.IO) {
-        val file = findBackup(requireContext(), coroutineContext)
+        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            findBackupApi29(requireContext(), coroutineContext)
+        } else {
+            findBackup(requireContext(), coroutineContext)
+        }
         withContext(Dispatchers.Main) {
             if (viewDestroyed()) return@withContext
             binding.apply {
-                if (file == null) {
+                if (info == null) {
                     backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
                     backupSize.visibility = GONE
                     backupPath.visibility = GONE
                     deleteBn.visibility = GONE
                 } else {
-                    val time = file.lastModified().run {
+                    val time = info.lastModified.run {
                         this.getRelativeTimeSpan()
                     }
                     backupInfo.text = getString(R.string.backup_external_storage, time)
-                    backupPath.text = getString(R.string.restore_path, file.parentFile?.parentFile?.absolutePath)
-                    backupSize.text = getString(R.string.restore_size, file.length().fileSize())
+                    backupPath.text = getString(R.string.restore_path, info.path)
+                    backupSize.text = getString(R.string.restore_size, info.length.fileSize())
                     backupSize.visibility = VISIBLE
                     backupPath.visibility = VISIBLE
                     deleteBn.visibility = VISIBLE
