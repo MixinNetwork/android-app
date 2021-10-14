@@ -217,6 +217,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSticker
@@ -1505,11 +1506,10 @@ class ConversationFragment() :
             }
             val messageItem = conversationAdapter.selectSet.valueAt(0)
             messageItem?.let { m ->
-                val isSticker = messageItem.isSticker()
-                if (isSticker && m.stickerId != null) {
+                if (messageItem.isSticker() && m.stickerId != null) {
                     addSticker(m)
-                } else {
-                    val url = m.mediaUrl
+                } else if (messageItem.isImage()) {
+                    val url = m.absolutePath(requireContext())
                     url?.let {
                         val uri = url.toUri()
                         val mimeType = getMimeType(uri, true)
