@@ -513,8 +513,9 @@ class ChatHistoryActivity : BaseActivity() {
                         R.menu.chathistory,
                         popMenu.menu
                     )
-                    popMenu.menu.findItem(R.id.unpin).isVisible = isAdmin
+                    popMenu.menu.findItem(R.id.unpin).isVisible = !isTranscript && isAdmin
                     popMenu.menu.findItem(R.id.copy).isVisible = messageItem.isText()
+                    popMenu.menu.findItem(R.id.forward).isVisible = !isTranscript
 
                     popMenu.showIcon()
                     popMenu.setOnMenuItemClickListener {
