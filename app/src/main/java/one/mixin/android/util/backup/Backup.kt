@@ -24,6 +24,7 @@ import one.mixin.android.util.PropertyHelper
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import kotlin.coroutines.CoroutineContext
 
 private const val BACKUP_POSTFIX = ".backup"
@@ -150,6 +151,79 @@ suspend fun restore(
     }
 }
 
+suspend fun restoreApi29(
+    context: Context,
+    callback: (Result) -> Unit
+) = withContext(Dispatchers.IO) {
+    val backupDirectoryUri =
+        context.defaultSharedPreferences.getString(
+            Constants.Account.PREF_BACKUP_DIRECTORY,
+            null
+        )?.toUri()
+    if (backupDirectoryUri == null) {
+        withContext(Dispatchers.Main) {
+            callback(Result.NOT_FOUND)
+        }
+        return@withContext
+    }
+    val backupDirectory =
+        DocumentFile.fromTreeUri(context, backupDirectoryUri)
+    if (backupDirectory == null || !backupDirectory.exists()) {
+        withContext(Dispatchers.Main) {
+            callback(Result.NOT_FOUND)
+        }
+        return@withContext
+    }
+    val backupDb = backupDirectory.findFile(DB_NAME)
+    if (backupDb == null || !backupDb.exists()) {
+
+        withContext(Dispatchers.Main) {
+            callback(Result.NOT_FOUND)
+        }
+        return@withContext
+    }
+    val file = context.getDatabasePath(DB_NAME)
+    try {
+        val inputStream = context.contentResolver.openInputStream(backupDb.uri)
+        if (inputStream == null) {
+            withContext(Dispatchers.Main) {
+                callback(Result.NOT_FOUND)
+            }
+            return@withContext
+        }
+        if (file.exists()) {
+            file.delete()
+        }
+        File("${file.absolutePath}-wal").delete()
+        File("${file.absolutePath}-shm").delete()
+        FileOutputStream(file).use { output ->
+            inputStream.copyTo(output)
+        }
+        val backupMediaDirectory = backupDirectory.findFile("Media")
+        val mediaPath = context.getMediaPath()
+        if (mediaPath != null && backupMediaDirectory != null && backupMediaDirectory.exists() && backupMediaDirectory.isDirectory) {
+            backupMediaDirectory.listFiles().forEach {
+                copyFileToDirectory(context, it, mediaPath)
+            }
+        }
+
+        // Reset BACKUP_LAST_TIME so that the user who restores the backup does not need to backup after login
+        PropertyHelper.updateKeyValue(
+            Constants.BackUp.BACKUP_LAST_TIME,
+            System.currentTimeMillis().toString()
+        )
+
+        withContext(Dispatchers.Main) {
+            callback(Result.SUCCESS)
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
+        withContext(Dispatchers.Main) {
+            callback(Result.FAILURE)
+        }
+    }
+}
+
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun delete(
     context: Context
@@ -262,7 +336,7 @@ suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
             return@withContext
         }
         backupDirectory.findFile("mixin.db")?.delete()
-        val file = backupDirectory.createFile("application/octet-stream", "mixin.db") ?: return@withContext
+        val file = backupDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext
         val outputStream = context.contentResolver.openOutputStream(file.uri) ?: return@withContext
         val dbFile = context.getDatabasePath(DB_NAME)
         if (dbFile == null) {
@@ -275,7 +349,7 @@ suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
         try {
             file.uri.copyFromInputStream(inputStream)
             context.getMediaPath()?.let {
-                copyFileToDirectory(it,backupDirectory)
+                copyFileToDirectory(it, backupDirectory)
             }
             withContext(Dispatchers.Main) {
                 callback.invoke(Result.SUCCESS)
@@ -301,5 +375,22 @@ private fun copyFileToDirectory(file: File, dir: DocumentFile) {
         val documentFile = dir.createFile("application/octet-stream", file.name) ?: return
         val inputStream = FileInputStream(file)
         documentFile.uri.copyFromInputStream(inputStream)
+    }
+}
+
+private fun copyFileToDirectory(context: Context, file: DocumentFile, dir: File) {
+    val name = file.name ?: return
+    val f = File(dir, name)
+    if (file.isDirectory) {
+        file.listFiles().forEach {
+            copyFileToDirectory(context, it, f)
+        }
+    } else {
+        Timber.e("copy ${file.name} ${dir.absolutePath}")
+        val outputStream = context.contentResolver.openOutputStream(file.uri) ?: return
+        val inputStream = FileInputStream(f)
+        outputStream.use { output ->
+            inputStream.copyTo(output)
+        }
     }
 }

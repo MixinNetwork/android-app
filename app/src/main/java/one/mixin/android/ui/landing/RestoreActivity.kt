@@ -29,6 +29,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.restore
+import one.mixin.android.util.backup.restoreApi29
 import java.io.File
 import javax.inject.Inject
 
@@ -159,7 +160,7 @@ class RestoreActivity : BaseActivity() {
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun restore() = lifecycleScope.launch {
-        restore(this@RestoreActivity) { result ->
+        restoreApi29(this@RestoreActivity) { result ->
             BackupNotification.cancel()
             if (result == Result.SUCCESS) {
                 InitializeActivity.showLoading(this@RestoreActivity)
