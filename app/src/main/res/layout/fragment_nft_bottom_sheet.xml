@@ -70,7 +70,8 @@
                 android:id="@+id/nft_iv"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:layout_margin="@dimen/activity_vertical_margin"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="6dp"
                 android:src="@drawable/nft_default"
                 tools:ignore="ContentDescription"/>
 
@@ -82,7 +83,7 @@
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:textColor="?attr/text_primary"
-                android:textSize="@dimen/wallet_balance_text"/>
+                android:textSize="18sp"/>
 
             <TextView
                 android:id="@+id/nft_token_id"
@@ -91,9 +92,9 @@
                 android:gravity="center_horizontal"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="4dp"
                 android:textColor="?attr/text_minor"
-                android:textSize="@dimen/wallet_balance_as_text"/>
+                android:textSize="12sp"/>
 
             <TextView
                 android:id="@+id/nft_token_name"
@@ -102,9 +103,9 @@
                 android:gravity="center_horizontal"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="4dp"
                 android:textColor="?attr/text_minor"
-                android:textSize="@dimen/wallet_balance_as_text"/>
+                android:textSize="12sp"/>
 
             <one.mixin.android.ui.common.biometric.BiometricLayout
                 android:id="@+id/biometric_layout"

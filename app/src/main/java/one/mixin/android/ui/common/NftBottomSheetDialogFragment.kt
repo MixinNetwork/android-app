@@ -17,7 +17,9 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentNftBottomSheetBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.round
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
@@ -61,6 +63,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
             biometricLayout.payTv.setText(R.string.multisig_pay_pin)
             biometricLayout.biometricTv.setText(R.string.multisig_pay_biometric)
+            nftIv.round(4.dp)
         }
 
         lifecycleScope.launch {
