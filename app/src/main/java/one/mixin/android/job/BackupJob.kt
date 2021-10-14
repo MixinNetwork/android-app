@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import android.text.format.DateUtils.WEEK_IN_MILLIS
 import androidx.annotation.RequiresPermission
@@ -22,6 +23,8 @@ import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
+import one.mixin.android.util.backup.backup
+import one.mixin.android.util.backup.backupApi29
 import one.mixin.android.util.backup.findOldBackupSync
 
 class BackupJob(private val force: Boolean = false, private val delete: Boolean = false) : BaseJob(
@@ -46,7 +49,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
             return@runBlocking
         }
         if (force) {
-            backup(context)
+            internalBackup(context)
         } else if (propertyDao.findValueByKey(PREF_BACKUP)?.toBoolean() == true) {
             val option = PropertyHelper.findValueByKey(BACKUP_PERIOD)?.toIntOrNull() ?: 0
             if (option in 1..3) {
@@ -60,7 +63,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                     else -> Long.MAX_VALUE
                 }
                 ) {
-                    backup(context)
+                    internalBackup(context)
                 }
             }
         }
@@ -73,20 +76,41 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
 
     @WorkerThread
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun backup(context: Context) = runBlocking {
+    private fun internalBackup(context: Context) = runBlocking {
         try {
             backupLiveData.start()
             BackupNotification.show()
-            one.mixin.android.util.backup.backupApi29(context) { result ->
-                backupLiveData.setResult(false, result)
-                BackupNotification.cancel()
-                if (result == Result.SUCCESS) {
-                    this.launch {
-                        PropertyHelper.updateKeyValue(BACKUP_LAST_TIME, System.currentTimeMillis().toString())
+            (
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    backupApi29(context) { result ->
+                        backupLiveData.setResult(false, result)
+                        BackupNotification.cancel()
+                        if (result == Result.SUCCESS) {
+                            this.launch {
+                                PropertyHelper.updateKeyValue(
+                                    BACKUP_LAST_TIME,
+                                    System.currentTimeMillis().toString()
+                                )
+                            }
+                            toast(R.string.backup_success_tip)
+                        }
                     }
-                    toast(R.string.backup_success_tip)
+                } else {
+                    backup(context) { result ->
+                        backupLiveData.setResult(false, result)
+                        BackupNotification.cancel()
+                        if (result == Result.SUCCESS) {
+                            this.launch {
+                                PropertyHelper.updateKeyValue(
+                                    BACKUP_LAST_TIME,
+                                    System.currentTimeMillis().toString()
+                                )
+                            }
+                            toast(R.string.backup_success_tip)
+                        }
+                    }
                 }
-            }
+                )
         } catch (e: Exception) {
             backupLiveData.setResult(false, null)
             BackupNotification.cancel()

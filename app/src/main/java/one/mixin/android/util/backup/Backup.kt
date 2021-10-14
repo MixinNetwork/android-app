@@ -304,6 +304,22 @@ suspend fun delete(
     return@withContext backupDir?.deleteRecursively() ?: return@withContext false
 }
 
+suspend fun deleteApi29(
+    context: Context
+): Boolean = withContext(Dispatchers.IO) {
+    val backupDirectoryUri =
+        context.defaultSharedPreferences.getString(
+            Constants.Account.PREF_BACKUP_DIRECTORY,
+            null
+        )?.toUri() ?: return@withContext false
+    val backupDirectory =
+        DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext false
+    if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
+        return@withContext false
+    }
+    return@withContext backupDirectory.delete()
+}
+
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findBackup(
     context: Context,

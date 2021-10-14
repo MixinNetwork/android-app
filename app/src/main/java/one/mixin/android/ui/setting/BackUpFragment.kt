@@ -45,6 +45,7 @@ import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.canUserAccessBackupDirectory
 import one.mixin.android.util.backup.delete
+import one.mixin.android.util.backup.deleteApi29
 import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.backup.findBackupApi29
 import one.mixin.android.util.viewBinding
@@ -96,6 +97,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 (backupAuto.layoutParams as ConstraintLayout.LayoutParams).apply {
                     topToBottom = R.id.backup_choose
                 }
+                backupBn.isVisible = canUserAccessBackupDirectory(requireContext())
             } else {
                 backupChoose.isVisible = false
                 backupDes.isVisible = true
@@ -131,7 +133,12 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             deleteBn.setOnClickListener {
                 deleteBn.visibility = GONE
                 lifecycleScope.launch {
-                    if (delete(requireContext())) {
+                    if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        deleteApi29(requireContext())
+                    } else {
+                            delete(requireContext())
+                        }
+                    ) {
                         findBackUp()
                     } else {
                         withContext(Dispatchers.Main) {

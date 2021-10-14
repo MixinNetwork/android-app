@@ -32,6 +32,7 @@ import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.backup.findBackupApi29
+import one.mixin.android.util.backup.restore
 import one.mixin.android.util.backup.restoreApi29
 import javax.inject.Inject
 
@@ -129,6 +130,7 @@ class RestoreActivity : BaseActivity() {
     }
 
     private lateinit var binding: ActivityRestoreBinding
+
     @SuppressLint("MissingPermission")
     private fun initUI(backupInfo: BackupInfo) {
         binding = ActivityRestoreBinding.inflate(layoutInflater)
@@ -147,7 +149,7 @@ class RestoreActivity : BaseActivity() {
                         } else {
                             showProgress()
                             BackupNotification.show(false)
-                            restore()
+                            internalRestore()
                         }
                     },
                     {
@@ -165,19 +167,25 @@ class RestoreActivity : BaseActivity() {
     }
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun restore() = lifecycleScope.launch {
-        restoreApi29(this@RestoreActivity) { result ->
-            BackupNotification.cancel()
-            if (result == Result.SUCCESS) {
-                InitializeActivity.showLoading(this@RestoreActivity)
-                defaultSharedPreferences.putBoolean(
-                    Constants.Account.PREF_RESTORE,
-                    false
-                )
-                finish()
-            } else {
-                hideProgress()
-            }
+    private fun internalRestore() = lifecycleScope.launch {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            restoreApi29(this@RestoreActivity, restoreCallback)
+        } else {
+            restore(this@RestoreActivity, restoreCallback)
+        }
+    }
+
+    private val restoreCallback: (result: Result) -> Unit = { result ->
+        BackupNotification.cancel()
+        if (result == Result.SUCCESS) {
+            InitializeActivity.showLoading(this@RestoreActivity)
+            defaultSharedPreferences.putBoolean(
+                Constants.Account.PREF_RESTORE,
+                false
+            )
+            finish()
+        } else {
+            hideProgress()
         }
     }
 
