@@ -44,7 +44,7 @@ object MessageFts4Helper {
         var handleCount = 0
         var start: Long
         val totalStart = System.currentTimeMillis()
-        val sixMonthsAgo = Instant.now().minus(6 * 30, ChronoUnit.DAYS).toEpochMilli()
+        val sixMonthsAgo = Instant.now().minus((6 * 30).toLong(), ChronoUnit.DAYS).toEpochMilli()
         Timber.d("syncMessageFts4 preProcess: $preProcess， start offset: $offset")
         while (true) {
             start = System.currentTimeMillis()

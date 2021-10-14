@@ -60,7 +60,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             return POS_FRIEND.toLong()
         }
         val u = users[getPosition(position)]
-        return if (u.fullName != null && u.fullName.isNotEmpty()) u.fullName[0].toLong() else -1L
+        return if (u.fullName != null && u.fullName.isNotEmpty()) u.fullName[0].code.toLong() else -1L
     }
 
     override fun getItemViewType(position: Int): Int {

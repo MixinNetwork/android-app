@@ -156,14 +156,14 @@ object Constants {
     const val DEVICE_ID = "device_id"
 
     const val SLEEP_MILLIS: Long = 1000
-    const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
-    const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
-    const val INTERVAL_10_MINS: Long = 1000 * 60 * 10
-    const val INTERVAL_30_MINS: Long = 1000 * 60 * 30
-    const val INTERVAL_1_MIN: Long = 1000 * 60
+    const val INTERVAL_24_HOURS: Long = (1000 * 60 * 60 * 24).toLong()
+    const val INTERVAL_48_HOURS: Long = (1000 * 60 * 60 * 48).toLong()
+    const val INTERVAL_10_MINS: Long = (1000 * 60 * 10).toLong()
+    const val INTERVAL_30_MINS: Long = (1000 * 60 * 30).toLong()
+    const val INTERVAL_1_MIN: Long = (1000 * 60).toLong()
     const val INTERVAL_7_DAYS: Long = INTERVAL_24_HOURS * 7
     const val DELAY_SECOND = 60
-    const val ALLOW_INTERVAL: Long = 5 * 60 * 1000
+    const val ALLOW_INTERVAL: Long = (5 * 60 * 1000).toLong()
 
     const val SAFETY_NET_INTERVAL_KEY = "safety_net_interval_key"
 
@@ -187,7 +187,7 @@ object Constants {
     const val BIOMETRICS_PIN = "biometrics_pin"
     const val BIOMETRICS_IV = "biometrics_iv"
     const val BIOMETRIC_INTERVAL = "biometric_interval"
-    const val BIOMETRIC_INTERVAL_DEFAULT: Long = 1000 * 60 * 60 * 2
+    const val BIOMETRIC_INTERVAL_DEFAULT: Long = (1000 * 60 * 60 * 2).toLong()
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
 
     const val RECENT_USED_BOTS_MAX_COUNT = 12

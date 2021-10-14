@@ -38,9 +38,9 @@ fun String.date(): String {
     return date as String
 }
 
-fun String.within24Hours() = withinTime(60 * 60 * 1000 * 24)
+fun String.within24Hours() = withinTime((60 * 60 * 1000 * 24).toLong())
 
-fun String.within6Hours() = withinTime(60 * 60 * 1000 * 6)
+fun String.within6Hours() = withinTime((60 * 60 * 1000 * 6).toLong())
 
 fun String.withinTime(hours: Long): Boolean {
     val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
