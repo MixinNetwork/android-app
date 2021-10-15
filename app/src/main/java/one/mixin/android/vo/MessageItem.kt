@@ -142,7 +142,6 @@ data class MessageItem(
         this.type == MessageCategory.MESSAGE_PIN.name ||
         isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
         (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
-        (this.type == MessageCategory.APP_CARD.name && isShareable() == false) ||
         (isLive() && isShareable() == false)
 
     fun canNotReply() =
@@ -153,7 +152,7 @@ data class MessageItem(
             isCallMessage() || isRecall() || isGroupCall()
 
     fun canNotPin() =
-        canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.SENT.name && status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
+        canNotReply() || this.type == MessageCategory.APP_BUTTON_GROUP.name || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.SENT.name && status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
 
     private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 }
