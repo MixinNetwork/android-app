@@ -353,8 +353,8 @@
     <string name="chat_import_fail_content">导入聊天记录失败！是否按文件发送？</string>
     <string name="chat_import">导入聊天记录</string>
     <string name="chat_send_file">按文件发送</string>
-    <string name="app_card_shareable_false">该卡片已被设置为不允许转发</string>
-    <string name="live_shareable_false">该直播已被设置为不允许转发</string>
+    <string name="app_card_shareable_false">包含不允许转发的卡片</string>
+    <string name="live_shareable_false">包含不允许转发的直播</string>
     <string name="link_shareable_false">该链接已被设置为不允许分享</string>
     <!--contact-->
     <string name="contact_other_send">发消息</string>

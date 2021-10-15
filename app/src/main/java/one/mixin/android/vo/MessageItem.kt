@@ -142,7 +142,6 @@ data class MessageItem(
         this.type == MessageCategory.MESSAGE_PIN.name ||
         isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
         (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
-        (this.type == MessageCategory.APP_CARD.name && isShareable() == false) ||
         (isLive() && isShareable() == false)
 
     fun canNotReply() =

@@ -490,7 +490,6 @@ class ConversationFragment() :
             @SuppressLint("NotifyDataSetChanged")
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
                 if (isSelect) {
-                    checkAppCardForward(messageItem)
                     conversationAdapter.addSelect(messageItem)
                 } else {
                     conversationAdapter.removeSelect(messageItem)
@@ -548,7 +547,6 @@ class ConversationFragment() :
 
             @SuppressLint("NotifyDataSetChanged")
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
-                checkAppCardForward(messageItem)
                 val b = conversationAdapter.addSelect(messageItem)
                 binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
                 if (b) {
@@ -3154,6 +3152,17 @@ class ConversationFragment() :
 
     private fun showForwardDialog() {
         forwardDialog?.dismiss()
+        val unShareable = conversationAdapter.selectSet.find { it.isShareable() == false }
+        if (unShareable != null) {
+            toast(
+                if (unShareable.isLive()) {
+                    R.string.live_shareable_false
+                } else {
+                    R.string.app_card_shareable_false
+                }
+            )
+            return
+        }
         if (conversationAdapter.selectSet.size == 1) {
             forward()
         } else {
@@ -3202,18 +3211,6 @@ class ConversationFragment() :
                 getCombineForwardResult.launch(ArrayList(messages))
             }
             closeTool()
-        }
-    }
-
-    private fun checkAppCardForward(messageItem: MessageItem) {
-        if (messageItem.isShareable() == false) {
-            toast(
-                if (messageItem.isLive()) {
-                    R.string.live_shareable_false
-                } else {
-                    R.string.app_card_shareable_false
-                }
-            )
         }
     }
 }
