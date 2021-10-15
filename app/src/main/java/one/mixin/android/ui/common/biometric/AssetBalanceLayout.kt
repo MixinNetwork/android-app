@@ -26,7 +26,7 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
     }
 
     @SuppressLint("SetTextI18n")
-    fun setInfo(t: BiometricItem) {
+    fun setInfo(t: AssetBiometricItem) {
         val asset = t.asset
         val amount = t.amount
         binding.apply {

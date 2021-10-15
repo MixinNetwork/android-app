@@ -22,7 +22,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
@@ -42,14 +42,14 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val FROM_LINK = 0
         const val FROM_TRANSFER = 1
 
-        inline fun <reified T : BiometricItem> newInstance(t: T, from: Int) =
+        inline fun <reified T : AssetBiometricItem> newInstance(t: T, from: Int) =
             PreconditionBottomSheetDialogFragment().withArgs {
                 putParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM, t)
                 putInt(ARGS_FROM, from)
             }
     }
 
-    private val t: BiometricItem by lazy {
+    private val t: AssetBiometricItem by lazy {
         requireArguments().getParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM)!!
     }
     private val from: Int by lazy { requireArguments().getInt(ARGS_FROM, FROM_LINK) }

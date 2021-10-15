@@ -6,7 +6,9 @@ import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.LogoutRequest
+import one.mixin.android.api.request.NonFungibleToken
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.request.SessionRequest
@@ -102,6 +104,18 @@ interface AccountService {
 
     @POST("multisigs/{id}/unlock")
     suspend fun unlockMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Void>
+
+    @GET("collectibles/tokens/{id}")
+    suspend fun getToken(@Path("id") id: String): MixinResponse<NonFungibleToken>
+
+    @POST("collectibles/requests/{id}/cancel")
+    suspend fun cancelCollectibleTransfer(@Path("id") id: String): MixinResponse<NonFungibleToken>
+
+    @POST("collectibles/requests/{id}/sign")
+    suspend fun signCollectibleTransfer(@Path("id") id: String, @Body request: CollectibleRequest): MixinResponse<NonFungibleToken>
+
+    @POST("collectibles/requests/{id}/unlock")
+    suspend fun unlockCollectibleTransfer(@Path("id") id: String, @Body request: CollectibleRequest): MixinResponse<NonFungibleToken>
 
     @POST("transactions")
     suspend fun transactions(@Body request: RawTransactionsRequest): MixinResponse<Void>
