@@ -428,7 +428,7 @@ class WebFragment : BaseFragment() {
                     currentUrl = url
                     isFinished = true
                 },
-                { errorCode, description, failingUrl ->
+                { errorCode, _, failingUrl ->
                     currentUrl = failingUrl
                     if (errorCode == ERROR_HOST_LOOKUP ||
                         errorCode == ERROR_CONNECT ||

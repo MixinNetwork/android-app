@@ -83,7 +83,7 @@ class TranscriptMediaPagerAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        val messageItem = getItem(position) ?: return MediaItemType.Invalid.ordinal
+        val messageItem = getItem(position)
         return if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
             messageItem.type == MessageCategory.PLAIN_IMAGE.name
         ) {
