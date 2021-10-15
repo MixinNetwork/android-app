@@ -69,6 +69,7 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.copy
 import one.mixin.android.vo.generateForwardMessage
+import one.mixin.android.vo.isAppButtonGroup
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
@@ -515,7 +516,7 @@ class ChatHistoryActivity : BaseActivity() {
                     )
                     popMenu.menu.findItem(R.id.unpin).isVisible = !isTranscript && isAdmin
                     popMenu.menu.findItem(R.id.copy).isVisible = messageItem.isText()
-                    popMenu.menu.findItem(R.id.forward).isVisible = !isTranscript
+                    popMenu.menu.findItem(R.id.forward).isVisible = !isTranscript && !messageItem.isAppButtonGroup()
 
                     popMenu.showIcon()
                     popMenu.setOnMenuItemClickListener {
