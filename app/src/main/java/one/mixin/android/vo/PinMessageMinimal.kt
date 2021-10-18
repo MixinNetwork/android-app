@@ -26,6 +26,7 @@ fun PinMessageMinimal?.explain(context: Context): CharSequence {
         isLocation() -> context.getText(R.string.chat_pin_location_message)
         isTranscript() -> context.getText(R.string.chat_pin_transcript_message)
         isAppCard() -> context.getText(R.string.chat_pin_card_message)
+        isAppButtonGroup() -> context.getText(R.string.chat_pin_empty_message)
         else -> " \"${content}\""
     }
 }

@@ -33,6 +33,7 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
+import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.databinding.FragmentBottomSheetBinding
@@ -53,10 +54,12 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.common.NftBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
+import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
@@ -358,6 +361,29 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 } else {
                                     showError()
                                 }
+                            }
+                        }
+                        QrCodeType.non_fungible_request.name -> {
+                            if (checkHasPin()) return@subscribe
+                            val nfoResponse = result.second as NonFungibleOutputResponse
+                            lifecycleScope.launch {
+                                val nftBiometricItem = NftBiometricItem(
+                                    requestId = nfoResponse.requestId,
+                                    action = nfoResponse.action,
+                                    tokenId = nfoResponse.tokenId,
+                                    senders = nfoResponse.senders,
+                                    receivers = nfoResponse.receivers,
+                                    sendersThreshold = nfoResponse.sendersThreshold,
+                                    receiversThreshold = nfoResponse.receiversThreshold,
+                                    rawTransaction = nfoResponse.rawTransaction,
+                                    amount = nfoResponse.amount,
+                                    pin = null,
+                                    memo = nfoResponse.memo,
+                                    state = nfoResponse.state
+                                )
+                                NftBottomSheetDialogFragment.newInstance(nftBiometricItem)
+                                    .showNow(parentFragmentManager, NftBottomSheetDialogFragment.TAG)
+                                dismiss()
                             }
                         }
                         QrCodeType.payment.name -> {
@@ -727,7 +753,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         showPreconditionBottom(biometricItem)
     }
 
-    private fun showPreconditionBottom(biometricItem: BiometricItem) {
+    private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_LINK)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
             override fun onSuccess() {

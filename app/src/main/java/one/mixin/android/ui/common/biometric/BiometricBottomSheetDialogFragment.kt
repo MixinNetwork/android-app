@@ -90,6 +90,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     ) {
         if (!isAdded) return
         biometricLayout.showErrorInfo(content, animate, tickMillis, errorAction)
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     protected fun showDone() {

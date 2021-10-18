@@ -15,7 +15,7 @@ import java.io.File
 
 class CacheDataSourceFactory(
     context: Context,
-    private val maxFileSize: Long = 50 * 1024 * 1024,
+    private val maxFileSize: Long = (50 * 1024 * 1024).toLong(),
 ) : DataSource.Factory {
     private val defaultDataSourceFactory = DefaultDataSourceFactory(
         context,
@@ -37,6 +37,6 @@ class CacheDataSourceFactory(
 
 val simpleCache = SimpleCache(
     File(MixinApplication.appContext.cacheDir, "exo-music"),
-    LeastRecentlyUsedCacheEvictor(100 * 1024 * 1024),
+    LeastRecentlyUsedCacheEvictor((100 * 1024 * 1024).toLong()),
     ExoDatabaseProvider(MixinApplication.appContext)
 )
