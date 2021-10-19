@@ -357,9 +357,21 @@ suspend fun findBackupApi29(
     if (!backupDirectory.exists() || backupDirectory.length() <= 0) return@withContext null
     return@withContext BackupInfo(
         backupDirectory.lastModified(),
-        backupDirectory.length(),
+        getFolderSize(backupDirectory),
         context.getDisplayPath(backupDirectory.uri)
     )
+}
+
+private fun getFolderSize(file: DocumentFile): Long {
+    return if (file.isDirectory) {
+        var total = 0L
+        file.listFiles().forEach { f ->
+            total += getFolderSize(f)
+        }
+        total
+    } else {
+        file.length()
+    }
 }
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
