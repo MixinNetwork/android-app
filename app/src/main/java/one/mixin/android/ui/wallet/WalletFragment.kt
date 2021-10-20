@@ -143,7 +143,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             } else {
                 assets = it
                 assetsAdapter.setAssetList(it)
-                renderPie(assets)
+
+                lifecycleScope.launch {
+                    var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
+                    if (bitcoin == null) {
+                        bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                    }
+
+                    renderPie(assets, bitcoin)
+                }
             }
         }
         checkPin()
@@ -162,12 +170,18 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         super.onDestroyView()
     }
 
-    private fun renderPie(assets: List<AssetItem>) {
+    private fun renderPie(assets: List<AssetItem>, bitcoin: AssetItem?) {
         var totalBTC = BigDecimal.ZERO
         var totalFiat = BigDecimal.ZERO
         assets.map {
-            totalBTC = totalBTC.add(it.btc())
             totalFiat = totalFiat.add(it.fiat())
+            if (bitcoin == null) {
+                totalBTC = totalBTC.add(it.btc())
+            }
+        }
+        if (bitcoin != null) {
+            totalBTC = totalFiat.divide(BigDecimal(Fiats.getRate()), 16, BigDecimal.ROUND_HALF_UP)
+                .divide(BigDecimal(bitcoin.priceUsd), 16, BigDecimal.ROUND_HALF_UP)
         }
         _headBinding?.apply {
             totalAsTv.text = try {
