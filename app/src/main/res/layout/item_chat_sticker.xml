@@ -83,17 +83,13 @@
                 android:layout_height="128dp"
                 tools:ignore="ContentDescription"/>
 
-            <TextView
+            <one.mixin.android.widget.TimeView
                 android:id="@+id/chat_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:drawablePadding="3dp"
                 android:paddingEnd="6dp"
-                android:fontFamily="@font/roboto_light"
-                android:textColor="@color/white"
-                android:singleLine="true"
-                android:textSize="@dimen/chat_date_size"
-                tools:text="7:48AM"/>
+                android:gravity="center_vertical" />
 
         </LinearLayout>
     </LinearLayout>

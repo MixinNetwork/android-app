@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
@@ -30,6 +31,7 @@ import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
@@ -38,6 +40,7 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toByteArray
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
 import one.mixin.android.util.ColorUtil
@@ -45,8 +48,8 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationStatus
@@ -130,6 +133,7 @@ import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import java.util.UUID
 
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
@@ -182,6 +186,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 processPlainMessage(data)
             } else if (data.category.startsWith("SIGNAL_")) {
                 processSignalMessage(data)
+            } else if (data.category.startsWith("ENCRYPTED_")) {
+                processEncryptedMessage(data)
             } else if (data.category == MessageCategory.APP_BUTTON_GROUP.name) {
                 processAppButton(data)
             } else if (data.category == MessageCategory.APP_CARD.name) {
@@ -515,7 +521,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         syncUser(data.userId)
         when {
             data.category.endsWith("_TEXT") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
+                val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_TEXT.name, plainText)
                 var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
@@ -552,7 +558,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
             data.category.endsWith("_POST") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
+                val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_POST.name, plainText)
                 val message = createPostMessage(
                     data.messageId,
                     data.conversationId,
@@ -568,7 +574,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_LOCATION") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_LOCATION.name) String(Base64.decode(plainText)) else plainText
+                val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_LOCATION.name, plainText)
                 if (checkLocationData(plain)) {
                     val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
                     messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
@@ -576,8 +582,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
             data.category.endsWith("_IMAGE") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val mediaData = gson.fromJson(
+                    encryptedAttachmentContentDecode(data, plainText),
+                    AttachmentMessagePayload::class.java
+                )
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
@@ -599,8 +607,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_VIDEO") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val mediaData = gson.fromJson(
+                    encryptedAttachmentContentDecode(data, plainText),
+                    AttachmentMessagePayload::class.java
+                )
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
@@ -623,8 +633,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_DATA") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val mediaData = gson.fromJson(
+                    encryptedAttachmentContentDecode(data, plainText),
+                    AttachmentMessagePayload::class.java
+                )
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAttachmentMessage(
                         data.messageId, data.conversationId, data.userId,
@@ -643,8 +655,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_AUDIO") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+                val mediaData = gson.fromJson(
+                    encryptedAttachmentContentDecode(data, plainText),
+                    AttachmentMessagePayload::class.java
+                )
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAudioMessage(
                         data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
@@ -658,8 +672,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_STICKER") -> {
-                val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
+                val decoded = if (data.category.startsWith("ENCRYPTED_")) {
+                    plainText
+                } else {
+                    String(Base64.decode(plainText))
+                }
+                val mediaData = gson.fromJson(decoded, StickerMessagePayload::class.java)
                 val message = if (mediaData.stickerId == null) {
                     val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
                     if (sticker != null) {
@@ -684,8 +702,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_CONTACT") -> {
-                val decoded = Base64.decode(plainText)
-                val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
+                val decoded = if (data.category.startsWith("ENCRYPTED_")) {
+                    plainText
+                } else {
+                    String(Base64.decode(plainText))
+                }
+                val contactData = gson.fromJson(decoded, ContactMessagePayload::class.java)
                 val user = syncUser(contactData.userId)
                 val message = generateMessage(data) { quoteMessageItem ->
                     createContactMessage(
@@ -702,7 +724,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_LIVE") -> {
-                val plain = String(Base64.decode(plainText))
+                val plain = if (data.category.startsWith("ENCRYPTED")) {
+                    plainText
+                } else {
+                    String(Base64.decode(plainText))
+                }
                 val liveData = gson.fromJson(plain, LiveMessagePayload::class.java)
                 if (liveData.width <= 0 || liveData.height <= 0) {
                     insertInvalidMessage(data)
@@ -851,8 +877,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             Session.storeExtensionSessionId(systemSession.sessionId)
             signalProtocol.deleteSession(systemSession.userId)
             val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
-            val ps = conversations.map {
-                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
+            val ps = conversations.filter {
+                it.appId == null || it.capabilities?.contains(AppCap.ENCRYPTED.name) == true
+            }.map {
+                ParticipantSession(it.conversationId, systemSession.userId, systemSession.sessionId, publicKey = systemSession.publicKey)
             }
             if (ps.isNotEmpty()) {
                 participantSessionDao.insertList(ps)
@@ -975,6 +1003,27 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
     }
 
+    private fun processEncryptedMessage(data: BlazeMessageData) {
+        val privateKey = Session.getEd25519PrivateKey() ?: return
+        val sessionId = Session.getSessionId() ?: return
+        if (!data.representativeId.isNullOrBlank()) {
+            data.userId = data.representativeId
+        }
+        try {
+            val decryptedContent = encryptedProtocol.decryptMessage(privateKey, UUID.fromString(sessionId).toByteArray(), data.data.decodeBase64())
+            val plaintext = String(decryptedContent)
+            try {
+                processDecryptSuccess(data, plaintext)
+            } catch (e: JsonSyntaxException) {
+                insertInvalidMessage(data)
+            }
+        } catch (e: Exception) {
+            reportDecryptFailed(data, e, null)
+            insertInvalidMessage(data)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+        }
+    }
+
     private fun processSignalMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -1019,22 +1068,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "decrypt failed " + data.messageId, e)
-            FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
-            reportException(e)
-            if (e !is NoSessionException) {
-                Bugsnag.beforeNotify {
-                    it.addToTab("Decrypt", "conversation", data.conversationId)
-                    it.addToTab("Decrypt", "message_id", data.messageId)
-                    it.addToTab("Decrypt", "user", data.userId)
-                    it.addToTab("Decrypt", "session", data.sessionId)
-                    it.addToTab("Decrypt", "data", data.data)
-                    it.addToTab("Decrypt", "category", data.category)
-                    it.addToTab("Decrypt", "created_at", data.createdAt)
-                    it.addToTab("Decrypt", "resend_message", resendMessageId ?: "")
-                    true
-                }
-                Bugsnag.notify(e)
-            }
+            reportDecryptFailed(data, e, resendMessageId)
 
             if (resendMessageId != null) {
                 return
@@ -1050,6 +1084,25 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     requestResendKey(data.conversationId, data.userId, data.messageId, data.sessionId)
                 }
             }
+        }
+    }
+
+    private fun reportDecryptFailed(data: BlazeMessageData, e: Exception, resendMessageId: String?) {
+        FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
+        FirebaseCrashlytics.getInstance().recordException(e)
+        if (e !is NoSessionException) {
+            Bugsnag.beforeNotify {
+                it.addToTab("Decrypt", "conversation", data.conversationId)
+                it.addToTab("Decrypt", "message_id", data.messageId)
+                it.addToTab("Decrypt", "user", data.userId)
+                it.addToTab("Decrypt", "session", data.sessionId)
+                it.addToTab("Decrypt", "data", data.data)
+                it.addToTab("Decrypt", "category", data.category)
+                it.addToTab("Decrypt", "created_at", data.createdAt)
+                it.addToTab("Decrypt", "resend_message", resendMessageId ?: "")
+                true
+            }
+            Bugsnag.notify(e)
         }
     }
 
@@ -1203,6 +1256,26 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             Log.w(TAG, "Registering new pre keys...")
         }
     }
+
+    private fun encryptedAttachmentContentDecode(
+        data: BlazeMessageData,
+        plainText: String
+    ): String {
+        return if (data.category.startsWith("ENCRYPTED")) {
+            plainText
+        } else {
+            String(Base64.decode(plainText))
+        }
+    }
+
+    private fun tryDecodePlain(isPlain: Boolean, plainText: String) =
+        if (isPlain) {
+            try {
+                String(Base64.decode(plainText))
+            } catch (e: IOException) {
+                plainText
+            }
+        } else plainText
 
     private fun generateNotification(message: Message, data: BlazeMessageData, userMap: Map<String, String>? = null, force: Boolean = false) {
         if (data.source == LIST_PENDING_MESSAGES) {

@@ -7,7 +7,6 @@ import android.text.style.BackgroundColorSpan
 import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
@@ -21,7 +20,7 @@ import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
@@ -94,11 +93,11 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             binding.chatName.visibility = View.GONE
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
+            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
         }
         keyword.notNullWithElse(
             { k ->

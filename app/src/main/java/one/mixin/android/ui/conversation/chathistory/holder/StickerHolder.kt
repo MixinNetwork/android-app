@@ -4,7 +4,6 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatStickerBinding
 import one.mixin.android.extension.dpToPx
@@ -22,7 +21,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
-        binding.chatTime.textColorResource = R.color.color_chat_date
+        binding.chatTime.chatTime.textColorResource = R.color.color_chat_date
         binding.chatSticker.round(radius)
     }
 
@@ -100,7 +99,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
+            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
         }
         chatLayout(isMe, false)
         if (messageItem.transcriptId == null) {

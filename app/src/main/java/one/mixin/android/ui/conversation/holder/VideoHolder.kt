@@ -6,7 +6,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.extension.dpToPx
@@ -24,7 +23,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
 
 class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
@@ -259,11 +258,11 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
 
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
+            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
         }
 
         dataWidth = messageItem.mediaWidth

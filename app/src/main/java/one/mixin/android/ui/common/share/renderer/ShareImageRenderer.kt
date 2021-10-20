@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageBinding
 import one.mixin.android.extension.dp
@@ -40,7 +39,7 @@ class ShareImageRenderer(val context: Context) : ShareMessageRenderer {
         setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = true) { statusIcon, secretIcon ->
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon, null, statusIcon, null)
+            binding.chatTime.setIcon(secretIcon, null, statusIcon)
         }
     }
 

@@ -11,7 +11,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 
 class CallHolder constructor(val binding: ItemChatCallBinding) : BaseViewHolder(binding.root) {
 
@@ -29,7 +29,7 @@ class CallHolder constructor(val binding: ItemChatCallBinding) : BaseViewHolder(
         val ctx = itemView.context
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
-        binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
+        binding.dataWrapper.chatSecret.isVisible = messageItem.isSecret()
         binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
         binding.callTv.text = when (messageItem.type) {
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {

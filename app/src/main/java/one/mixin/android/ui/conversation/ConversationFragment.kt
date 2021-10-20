@@ -197,9 +197,11 @@ import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
+import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
@@ -332,7 +334,7 @@ class ConversationFragment() :
 
     private var unreadTipCount: Int = 0
     private val conversationAdapter: ConversationAdapter by lazy {
-        ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, !isPlainMessage(), isBot).apply {
+        ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, encryptCategory() != EncryptCategory.PLAIN, isBot).apply {
             registerAdapterDataObserver(chatAdapterDataObserver)
         }
     }
@@ -1969,11 +1971,13 @@ class ConversationFragment() :
         }
     }
 
-    private fun isPlainMessage(): Boolean {
-        return if (isGroup) {
-            false
+    private fun encryptCategory(): EncryptCategory {
+        return if (isBot && app?.capabilities?.contains(AppCap.ENCRYPTED.name) == true) {
+            EncryptCategory.ENCRYPTED
+        } else if (isBot) {
+            EncryptCategory.PLAIN
         } else {
-            this.isBot
+            EncryptCategory.SIGNAL
         }
     }
 
@@ -1985,7 +1989,7 @@ class ConversationFragment() :
                         conversationId,
                         sender,
                         uri,
-                        isPlainMessage(),
+                        encryptCategory(),
                         mimeType,
                         getRelyMessage()
                     )
@@ -2008,7 +2012,7 @@ class ConversationFragment() :
                 conversationId,
                 sender.userId,
                 image,
-                isPlainMessage(),
+                encryptCategory(),
                 previewUrl
             )
             binding.chatRv.postDelayed(
@@ -2048,7 +2052,7 @@ class ConversationFragment() :
                     file,
                     duration,
                     waveForm,
-                    isPlainMessage(),
+                    encryptCategory(),
                     getRelyMessage()
                 )
                 scrollToDown()
@@ -2062,7 +2066,7 @@ class ConversationFragment() :
                 conversationId,
                 sender.userId,
                 uri,
-                isPlainMessage(),
+                encryptCategory(),
                 replyMessage = getRelyMessage()
             )
             binding.chatRv.postDelayed(
@@ -2080,7 +2084,7 @@ class ConversationFragment() :
                 conversationId,
                 sender,
                 attachment,
-                isPlainMessage(),
+                encryptCategory(),
                 getRelyMessage()
             )
 
@@ -2095,7 +2099,7 @@ class ConversationFragment() :
                 conversationId,
                 sender,
                 StickerMessagePayload(stickerId),
-                isPlainMessage()
+                encryptCategory()
             )
             scrollToDown()
             markRead()
@@ -2104,7 +2108,7 @@ class ConversationFragment() :
 
     private fun sendContactMessage(userId: String) {
         createConversation {
-            chatViewModel.sendContactMessage(conversationId, sender, userId, isPlainMessage(), getRelyMessage())
+            chatViewModel.sendContactMessage(conversationId, sender, userId, encryptCategory(), getRelyMessage())
             scrollToDown()
             markRead()
         }
@@ -2128,7 +2132,7 @@ class ConversationFragment() :
         if (message.isNotBlank()) {
             binding.chatControl.chatEt.setText("")
             createConversation {
-                chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage(), isSilentMessage)
+                chatViewModel.sendTextMessage(conversationId, sender, message, encryptCategory(), isSilentMessage)
                 scrollToDown()
                 markRead()
             }
@@ -2137,7 +2141,7 @@ class ConversationFragment() :
 
     private fun sendLocation(location: LocationPayload) {
         createConversation {
-            chatViewModel.sendLocationMessage(conversationId, sender.userId, location, isPlainMessage())
+            chatViewModel.sendLocationMessage(conversationId, sender.userId, location, encryptCategory())
             scrollToDown()
             markRead()
         }
@@ -2152,7 +2156,7 @@ class ConversationFragment() :
                     sender,
                     message,
                     binding.chatControl.replyView.messageItem!!,
-                    isPlainMessage(),
+                    encryptCategory(),
                     isSilentMessage
                 )
                 binding.chatControl.replyView.animateHeight(53.dp, 0)

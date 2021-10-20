@@ -143,7 +143,7 @@
                         android:textSize="12sp"
                         android:visibility="invisible" />
 
-                    <TextView
+                    <one.mixin.android.widget.TimeView
                         android:id="@+id/chat_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -151,10 +151,8 @@
                         android:layout_alignParentBottom="true"
                         android:layout_gravity="bottom|end"
                         android:drawablePadding="3dp"
-                        android:fontFamily="@font/roboto_light"
-                        android:textColor="@color/color_chat_date"
-                        android:textSize="@dimen/chat_date_size"
-                        tools:text="7:48AM" />
+                        android:gravity="center_vertical"
+                        app:text_color="@color/color_chat_date"/>
                 </RelativeLayout>
 
             </one.mixin.android.widget.InterceptLinearLayout>
