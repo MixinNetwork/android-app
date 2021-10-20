@@ -135,16 +135,16 @@ android {
     testBuildType "staging"
 
     buildTypes {
-        if (project.hasProperty("RELEASE_STORE_FILE")) {
-            release {
-                ndk {
-                    abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
-                }
-                debuggable false
-                jniDebuggable false
-                shrinkResources true
-                minifyEnabled true
-                proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        release {
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
+            }
+            debuggable false
+            jniDebuggable false
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
                 signingConfig signingConfigs.release
             }
         }
