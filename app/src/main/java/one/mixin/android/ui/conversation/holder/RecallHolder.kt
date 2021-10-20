@@ -10,7 +10,7 @@ import one.mixin.android.databinding.ItemChatRecallBinding
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
 
 class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHolder(binding.root) {
@@ -43,7 +43,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         } else {
             binding.chatName.visibility = View.GONE
         }
-        binding.time.chatSecret.isVisible = messageItem.isSignal()
+        binding.time.chatSecret.isVisible = messageItem.isSecret()
         if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
             binding.chatName.compoundDrawablePadding = itemView.dip(3)

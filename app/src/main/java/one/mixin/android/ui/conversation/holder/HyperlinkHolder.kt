@@ -14,7 +14,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
@@ -172,7 +172,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
             binding.dataWrapper.chatSecret.isVisible = secretIcon != null

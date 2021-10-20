@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import io.noties.markwon.Markwon
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatPostBinding
@@ -16,7 +15,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
 
 class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root) {
@@ -168,11 +167,11 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
         binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
+            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
         }
         chatLayout(isMe, isLast)
     }

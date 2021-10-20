@@ -1,9 +1,14 @@
 package one.mixin.android.db
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.RoomWarnings
 import androidx.room.Transaction
+import androidx.room.Update
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.ParticipantSessionKey
+import one.mixin.android.vo.ParticipantSessionSent
 
 @Dao
 interface ParticipantSessionDao : BaseDao<ParticipantSession> {
@@ -13,6 +18,20 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
 
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId")
     fun getParticipantSessionsByConversationId(conversationId: String): List<ParticipantSession>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id != :userId")
+    fun getParticipantSessionKeyWithoutSelf(conversationId: String, userId: String): ParticipantSessionKey?
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND session_id == :sessionId")
+    fun getParticipantSessionKeyBySessionId(conversationId: String, sessionId: String): ParticipantSessionKey?
+
+    @Insert(entity = ParticipantSession::class)
+    fun insertParticipantSessionSent(obj: ParticipantSessionSent)
+
+    @Update(entity = ParticipantSession::class)
+    fun updateParticipantSessionSent(obj: List<ParticipantSessionSent>)
 
     @Query("UPDATE participant_session SET sent_to_server = NULL WHERE conversation_id = :conversationId")
     fun emptyStatusByConversationId(conversationId: String)

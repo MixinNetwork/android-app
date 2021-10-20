@@ -14,7 +14,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 
 class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
     BaseViewHolder(binding.root) {
@@ -48,7 +48,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
             }
         }
         binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
             binding.dataWrapper.chatSecret.isVisible = secretIcon != null

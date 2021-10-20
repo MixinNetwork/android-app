@@ -19,7 +19,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
@@ -197,13 +197,13 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             binding.dataWrapper.chatFlag.isVisible = statusIcon != null
             binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
             binding.dataWrapper.chatSecret.isVisible = secretIcon != null
             binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
         }
-        binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
+        binding.dataWrapper.chatSecret.isVisible = messageItem.isSecret()
         binding.chatContentLayout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

@@ -83,7 +83,7 @@
             android:autoLink="none"
             tools:text="message" />
 
-        <TextView
+        <one.mixin.android.widget.TimeView
             android:id="@+id/chat_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -91,11 +91,7 @@
             android:layout_marginBottom="6dp"
             android:background="@drawable/bg_bubble_shadow"
             android:drawablePadding="3dp"
-            android:fontFamily="@font/roboto_light"
-            android:gravity="end|bottom"
-            android:textColor="@color/white"
-            android:textSize="@dimen/chat_date_size"
-            tools:text="7:48AM" />
+            android:gravity="end|center_vertical" />
 
         <ImageView
             android:id="@+id/chat_post"

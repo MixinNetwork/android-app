@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.chathistory.holder
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import com.google.gson.Gson
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTranscriptBinding
@@ -208,13 +207,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(
-                binding.chatTime,
-                secretIcon ?: representativeIcon,
-                null,
-                statusIcon,
-                null
-            )
+            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
         }
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {

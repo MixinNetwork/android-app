@@ -5,8 +5,10 @@ import com.bugsnag.android.Bugsnag
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
@@ -15,12 +17,16 @@ import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.BlazeMessage
@@ -130,6 +136,8 @@ open class SendMessageJob(
         jobManager.saveJob(this)
         if (message.isPlain() || message.isCall() || message.isRecall() || message.isPin() || message.category == MessageCategory.APP_CARD.name) {
             sendPlainMessage()
+        } else if (message.isEncrypted()) {
+            sendEncryptedMessage()
         } else {
             sendSignalMessage()
         }
@@ -175,6 +183,53 @@ open class SendMessageJob(
         } else {
             createParamBlazeMessage(blazeParam)
         }
+        deliver(blazeMessage)
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun sendEncryptedMessage() {
+        val conversation = conversationDao.findConversationById(message.conversationId) ?: return
+        checkConversationExist(conversation)
+        var participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
+        if (participantSessionKey == null || participantSessionKey.publicKey.isNullOrBlank()) {
+            syncConversation(message.conversationId)
+            participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
+        }
+        // No session key, can't encrypt message, send PLAIN directly
+        if (participantSessionKey?.publicKey == null) {
+            message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
+            messageDao.updateCategoryById(message.id, message.category)
+            sendPlainMessage()
+            return
+        }
+
+        val extensionSessionKey =
+            Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, it) }, null)
+
+        val privateKey = Session.getEd25519PrivateKey() ?: return
+        val encryptContent = encryptedProtocol.encryptMessage(
+            privateKey,
+            if (message.isAttachment() || message.isSticker() || message.isContact()) {
+                message.content!!.base64RawUrlDecode()
+            } else {
+                message.content!!.toByteArray()
+            },
+            participantSessionKey.publicKey!!.base64RawUrlDecode(),
+            participantSessionKey.sessionId,
+            extensionSessionKey?.publicKey?.base64RawUrlDecode(), extensionSessionKey?.sessionId
+        )
+
+        val blazeParam = BlazeMessageParam(
+            message.conversationId,
+            recipientId,
+            message.id,
+            message.category,
+            encryptContent.base64Encode(),
+            quote_message_id = message.quoteMessageId,
+            mentions = getMentionData(message.id),
+            recipient_ids = recipientIds
+        )
+        val blazeMessage = createParamBlazeMessage(blazeParam)
         deliver(blazeMessage)
     }
 

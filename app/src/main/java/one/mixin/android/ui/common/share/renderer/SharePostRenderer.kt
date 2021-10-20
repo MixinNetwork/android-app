@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatPostBinding
 import one.mixin.android.extension.dp
@@ -47,7 +46,7 @@ open class SharePostRenderer(val context: Activity) : ShareMessageRenderer {
         setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = true) { statusIcon, secretIcon ->
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon, null, statusIcon, null)
+            binding.chatTime.setIcon(secretIcon, null, statusIcon)
         }
         binding.chatTv.setOnClickListener {
             MarkdownActivity.show(context, content)
