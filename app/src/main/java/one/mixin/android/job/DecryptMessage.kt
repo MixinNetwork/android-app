@@ -401,7 +401,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
 
                 jobManager.cancelJobByMixinJobId(msg.id)
-                notificationManager.cancel(msg.userId.hashCode())
+                if (messageDao.findLastMessageId(msg.conversationId) == msg.id) {
+                    notificationManager.cancel(msg.conversationId.hashCode())
+                }
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
