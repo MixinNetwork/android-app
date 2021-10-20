@@ -25,6 +25,7 @@ import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isValidAttachment
@@ -208,7 +209,12 @@ class SendTranscriptAttachmentMessageJob(
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().apply {
-            forEach { t -> t.mediaUrl = null }
+            forEach { t ->
+                if (t.isAttachment()) {
+                    t.mediaUrl = null
+                    t.mediaStatus = null
+                }
+            }
         }.filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
             getTranscripts(transcriptMessage.messageId, list)
         }

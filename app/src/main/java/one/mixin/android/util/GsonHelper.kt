@@ -16,7 +16,6 @@ import java.lang.reflect.Type
 
 object GsonHelper {
     val customGson: Gson = GsonBuilder()
-        .setExclusionStrategies(JsonSkipAnnotationExclusionStrategy())
         .registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter())
         .registerTypeHierarchyAdapter(Bitmap::class.java, BitmapToBase64TypeAdapter())
         .create()
