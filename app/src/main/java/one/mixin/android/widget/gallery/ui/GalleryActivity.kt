@@ -207,7 +207,7 @@ class GalleryActivity :
         if (previewDialogFragment == null) {
             previewDialogFragment = PreviewDialogFragment.newInstance()
         }
-        previewDialogFragment?.show(supportFragmentManager, uri, action)
+        previewDialogFragment?.show(supportFragmentManager, uri, okText = null, action)
     }
 
     private var previewVideoDialogFragment: PreviewDialogFragment? = null
@@ -216,7 +216,7 @@ class GalleryActivity :
         if (previewVideoDialogFragment == null) {
             previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
         }
-        previewVideoDialogFragment?.show(supportFragmentManager, uri, action)
+        previewVideoDialogFragment?.show(supportFragmentManager, uri, okText = null, action)
     }
 
     override fun onMediaClick(album: Album, item: Item, adapterPosition: Int) {

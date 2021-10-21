@@ -340,6 +340,15 @@ class ConversationFragment() :
         }
     }
 
+    private var previewVideoDialogFragment: PreviewDialogFragment? = null
+
+    private fun showVideoPreview(uri: Uri, okText: String? = null, action: (Uri) -> Unit) {
+        if (previewVideoDialogFragment == null) {
+            previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
+        }
+        previewVideoDialogFragment?.show(parentFragmentManager, uri, okText, action)
+    }
+
     fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
         this.keyword = keyword
         conversationAdapter.keyword = keyword
@@ -1275,6 +1284,7 @@ class ConversationFragment() :
                 }
             }
         }
+        previewVideoDialogFragment?.release()
         AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
         context?.let {
@@ -2364,7 +2374,11 @@ class ConversationFragment() :
         galleryAlbumFragment.callback = object : GalleryCallback {
             override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean, send: Boolean) {
                 if (isVideo) {
-                    sendVideoMessage(uri)
+                    if (send) {
+                        sendVideoMessage(uri)
+                    } else {
+                        showVideoPreview(uri, getString(R.string.send)) { sendVideoMessage(uri) }
+                    }
                 } else {
                     if (send) {
                         sendImageMessage(uri)
@@ -2698,7 +2712,7 @@ class ConversationFragment() :
             }
         } else if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
-                showPreview(imageUri) { getEditorResult.launch(Pair(it, getString(R.string.send))) }
+                getEditorResult.launch(Pair(imageUri, getString(R.string.send)))
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
@@ -2755,15 +2769,6 @@ class ConversationFragment() :
                 {
                 }
             )
-    }
-
-    private var previewDialogFragment: PreviewDialogFragment? = null
-
-    private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
-        if (previewDialogFragment == null) {
-            previewDialogFragment = PreviewDialogFragment.newInstance()
-        }
-        previewDialogFragment?.show(parentFragmentManager, uri, action)
     }
 
     private val voiceAlert by lazy {
