@@ -8,7 +8,9 @@ data class SystemSessionMessagePayload(
     @SerializedName("user_id")
     val userId: String,
     @SerializedName("session_id")
-    val sessionId: String
+    val sessionId: String,
+    @SerializedName("public_key")
+    val publicKey: String?
 )
 
 enum class SystemSessionMessageAction { PROVISION, DESTROY }

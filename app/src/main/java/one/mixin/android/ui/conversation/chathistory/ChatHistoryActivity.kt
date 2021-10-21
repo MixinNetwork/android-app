@@ -62,6 +62,7 @@ import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -70,7 +71,9 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.copy
 import one.mixin.android.vo.generateForwardMessage
 import one.mixin.android.vo.isAppButtonGroup
+import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.saveToLocal
@@ -724,7 +727,11 @@ class ChatHistoryActivity : BaseActivity() {
                                 it.conversationId,
                                 it.userId,
                                 Uri.parse(it.mediaUrl),
-                                it.category.startsWith("PLAIN"),
+                                when {
+                                    it.isSignal() -> EncryptCategory.SIGNAL
+                                    it.isEncrypted() -> EncryptCategory.ENCRYPTED
+                                    else -> EncryptCategory.PLAIN
+                                },
                                 it.id,
                                 it.createdAt
                             )

@@ -157,6 +157,7 @@ fun MixinDatabase.deleteMediaMessageByConversationAndCategory(
     conversationId: String,
     signalCategory: String,
     plainCategory: String,
+    encryptCategory: String,
     limit: Int = DB_DELETE_LIMIT
 ) {
     runInTransaction {
@@ -166,6 +167,7 @@ fun MixinDatabase.deleteMediaMessageByConversationAndCategory(
             conversationId,
             signalCategory,
             plainCategory,
+            encryptCategory,
             limit
         )
     }

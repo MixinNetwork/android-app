@@ -39,6 +39,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.ParticipantSessionSent
 import one.mixin.android.vo.Sdp
 import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.createCallMessage
@@ -835,9 +836,9 @@ class GroupCallService : CallService() {
                 val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
                 if (noKeyList.isNotEmpty()) {
                     val sentSenderKeys = noKeyList.map {
-                        ParticipantSession(conversationId, it.user_id, it.session_id!!, SenderKeyStatus.UNKNOWN.ordinal)
+                        ParticipantSessionSent(conversationId, it.user_id, it.session_id!!, SenderKeyStatus.UNKNOWN.ordinal)
                     }
-                    participantSessionDao.updateList(sentSenderKeys)
+                    participantSessionDao.updateParticipantSessionSent(sentSenderKeys)
                 }
             }
         }
@@ -852,9 +853,9 @@ class GroupCallService : CallService() {
         }
         if (result.success) {
             val sentSenderKeys = signalKeyMessages.map {
-                ParticipantSession(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
+                ParticipantSessionSent(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
             }
-            participantSessionDao.updateList(sentSenderKeys)
+            participantSessionDao.updateParticipantSessionSent(sentSenderKeys)
         }
     }
 

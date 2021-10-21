@@ -28,6 +28,7 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleName
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleManagerItem
+import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import javax.inject.Inject
@@ -68,6 +69,8 @@ constructor(
     suspend fun suspendFindUserById(query: String) = userDao.suspendFindUserById(query)
 
     fun getUserById(id: String): User? = userDao.findUser(id)
+
+    fun findForwardUserById(id: String): ForwardUser? = userDao.findForwardUserById(id)
 
     suspend fun findUserExist(userIds: List<String>): List<String> = userDao.findUserExist(userIds)
 
@@ -115,7 +118,7 @@ constructor(
     fun findUserByConversationId(conversationId: String): LiveData<User> =
         userDao.findUserByConversationId(conversationId)
 
-    fun findContactByConversationId(conversationId: String): User? =
+    fun findContactByConversationId(conversationId: String): ForwardUser? =
         userDao.findContactByConversationId(conversationId)
 
     suspend fun suspendFindContactByConversationId(conversationId: String): User? =
