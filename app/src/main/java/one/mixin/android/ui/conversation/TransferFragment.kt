@@ -452,7 +452,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
     private fun isInnerTransfer() = userId != null
     private val autoCompleteAdapter by lazy {
-        ArrayAdapter<String>(
+        ArrayAdapter(
             requireContext(),
             R.layout.item_dropdown,
             mutableListOf("")
@@ -602,8 +602,10 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         transferBottomOpened = true
     }
 
-    private val inputFilter = InputFilter { source, _, _, _, _, _ ->
-        val s = if (forbiddenInput and !ignoreFilter) "" else source
+    private val inputFilter = InputFilter { source, _, _, _, dstart, _ ->
+        val dotIndex = binding.amountEt.text.indexOf('.')
+        val modifyDecimal = dotIndex != -1 && dstart > dotIndex
+        val s = if (forbiddenInput and !ignoreFilter and modifyDecimal) "" else source
         ignoreFilter = false
         return@InputFilter s
     }

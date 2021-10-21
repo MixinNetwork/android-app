@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
@@ -108,7 +107,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         }
         isLoading = true
 
-        walletViewModel.viewModelScope.launch(errorHandler) {
+        lifecycleScope.launch(errorHandler) {
             val result = walletViewModel.getSnapshots(
                 assetId,
                 opponent = userId,

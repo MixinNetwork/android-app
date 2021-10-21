@@ -19,7 +19,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import one.mixin.android.util.mention.MentionRenderContext
@@ -169,7 +169,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                             handleLongClick = false
                             delay(LONG_CLICK_TIME)
                             autoLinkOnLongClickListener?.let {
-                                context.tapVibrate()
+                                context.clickVibrate()
                                 it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
                             }
                             setLongPressed(true)

@@ -8,13 +8,21 @@ import one.mixin.android.vo.User
 
 @Parcelize
 open class BiometricItem(
-    open val asset: AssetItem,
     open val amount: String,
     open var pin: String?,
-    open val traceId: String?,
     open val memo: String?,
     open val state: String
 ) : Parcelable
+
+@Parcelize
+open class AssetBiometricItem(
+    open val asset: AssetItem,
+    open val traceId: String?,
+    override val amount: String,
+    override var pin: String?,
+    override val memo: String?,
+    override val state: String
+) : BiometricItem(amount, pin, memo, state)
 
 @Parcelize
 class TransferBiometricItem(
@@ -26,7 +34,7 @@ class TransferBiometricItem(
     override val memo: String?,
     override val state: String,
     val trace: Trace?
-) : BiometricItem(asset, amount, pin, traceId, memo, state)
+) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 @Parcelize
 class WithdrawBiometricItem(
@@ -42,7 +50,7 @@ class WithdrawBiometricItem(
     override val memo: String?,
     override val state: String,
     val trace: Trace?
-) : BiometricItem(asset, amount, pin, traceId, memo, state)
+) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 fun WithdrawBiometricItem.displayAddress(): String {
     return if (!tag.isNullOrEmpty()) {
@@ -63,7 +71,7 @@ open class MultisigsBiometricItem(
     override val traceId: String?,
     override val memo: String?,
     override val state: String
-) : BiometricItem(asset, amount, pin, traceId, memo, state)
+) : AssetBiometricItem(asset, traceId, amount, pin, memo, state)
 
 @Parcelize
 class Multi2MultiBiometricItem(
@@ -92,3 +100,19 @@ class One2MultiBiometricItem(
     override val memo: String?,
     override val state: String
 ) : MultisigsBiometricItem(senders, receivers, threshold, asset, amount, pin, traceId, memo, state)
+
+@Parcelize
+class NftBiometricItem(
+    val requestId: String,
+    val senders: Array<String>,
+    val receivers: Array<String>,
+    val sendersThreshold: Int,
+    val receiversThreshold: Int,
+    val tokenId: String,
+    val action: String,
+    val rawTransaction: String,
+    override val amount: String,
+    override var pin: String?,
+    override val memo: String?,
+    override val state: String
+) : BiometricItem(amount, pin, memo, state)

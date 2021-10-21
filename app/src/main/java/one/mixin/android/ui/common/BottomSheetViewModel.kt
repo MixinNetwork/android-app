@@ -15,6 +15,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
+import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -230,7 +231,7 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }
 
-    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
+    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         conversationRepo.deleteMessageByConversationId(conversationId)
     }
 
@@ -402,7 +403,7 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun findMultiUsers(
         senders: Array<String>,
         receivers: Array<String>
-    ): List<User> = withContext(Dispatchers.IO) {
+    ): Pair<ArrayList<User>, ArrayList<User>>? = withContext(Dispatchers.IO) {
         val userIds = mutableSetOf<String>().apply {
             addAll(senders)
             addAll(receivers)
@@ -411,8 +412,8 @@ class BottomSheetViewModel @Inject internal constructor(
         val queryUsers = userIds.filter {
             !existUserIds.contains(it)
         }
-        if (queryUsers.isNotEmpty()) {
-            return@withContext handleMixinResponse(
+        val users = if (queryUsers.isNotEmpty()) {
+            handleMixinResponse(
                 invokeNetwork = {
                     userRepository.fetchUser(queryUsers)
                 },
@@ -425,8 +426,21 @@ class BottomSheetViewModel @Inject internal constructor(
                 }
             ) ?: emptyList()
         } else {
-            return@withContext userRepository.findMultiUsersByIds(userIds)
+            userRepository.findMultiUsersByIds(userIds)
         }
+
+        if (users.isEmpty()) return@withContext null
+        val s = arrayListOf<User>()
+        val r = arrayListOf<User>()
+        users.forEach { u ->
+            if (u.userId in senders) {
+                s.add(u)
+            }
+            if (u.userId in receivers) {
+                r.add(u)
+            }
+        }
+        return@withContext Pair(s, r)
     }
 
     suspend fun signMultisigs(requestId: String, pin: String) =
@@ -444,6 +458,14 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun cancelMultisigs(requestId: String) = withContext(Dispatchers.IO) {
         accountRepository.cancelMultisigs(requestId)
     }
+
+    suspend fun getToken(tokenId: String) = accountRepository.getToken(tokenId)
+
+    suspend fun signCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) = accountRepository.signCollectibleTransfer(requestId, pinRequest)
+
+    suspend fun unlockCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) = accountRepository.unlockCollectibleTransfer(requestId, pinRequest)
+
+    suspend fun cancelCollectibleTransfer(requestId: String) = accountRepository.cancelCollectibleTransfer(requestId)
 
     suspend fun transactions(
         rawTransactionsRequest: RawTransactionsRequest,

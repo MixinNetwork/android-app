@@ -96,7 +96,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
             SELECT count(1) FROM transcript_messages 
             WHERE transcript_id = :transcriptId
             AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
-            AND created_at < (SELECT created_at FROM transcript_messages WHERE message_id = :messageId)
+            AND created_at < (SELECT created_at FROM transcript_messages WHERE message_id = :messageId AND transcript_id = :transcriptId)
             ORDER BY created_at ASC, rowid ASC
         """
     )

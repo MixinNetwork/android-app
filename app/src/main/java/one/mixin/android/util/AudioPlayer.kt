@@ -95,7 +95,7 @@ class AudioPlayer private constructor() {
 
         private var statusListener: StatusListener? = null
 
-        fun setStatusListener(statusListener: StatusListener) {
+        fun setStatusListener(statusListener: StatusListener?) {
             this.statusListener = statusListener
         }
 
@@ -159,7 +159,7 @@ class AudioPlayer private constructor() {
                     if (error.cause is UnrecognizedInputFormatException) {
                         status = STATUS_ERROR
                         id?.let { id -> RxBus.publish(errorEvent(id)) }
-                        MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
+                        toast(R.string.error_not_supported_audio_format)
                         messageItem?.let {
                             MixinApplication.appContext.openMedia(it)
                         }
@@ -222,10 +222,10 @@ class AudioPlayer private constructor() {
         this.autoPlayNext = autoPlayNext
         this.continuePlayOnlyToday = continuePlayOnlyToday
         if (messageItem.mediaUrl == null) {
-            MixinApplication.appContext.toast(R.string.error_bad_data)
+            toast(R.string.error_bad_data)
             return
         } else if (!messageItem.absolutePath()!!.fileExists()) {
-            MixinApplication.appContext.toast(R.string.error_file_exists)
+            toast(R.string.error_file_exists)
             return
         }
         if (id != messageItem.messageId) {

@@ -143,7 +143,6 @@ data class MessageItem(
         this.type == MessageCategory.MESSAGE_PIN.name ||
         isCallMessage() || isRecall() || isGroupCall() || unfinishedAttachment() ||
         (isTranscript() && this.mediaStatus != MediaStatus.DONE.name) ||
-        (this.type == MessageCategory.APP_CARD.name && isShareable() == false) ||
         (isLive() && isShareable() == false)
 
     fun canNotReply() =
@@ -220,7 +219,7 @@ fun MessageItem.saveToLocal(context: Context) {
 
     val filePath = absolutePath()?.toUri()?.getFilePath()
     if (filePath == null) {
-        MixinApplication.appContext.toast(R.string.save_failure)
+        toast(R.string.save_failure)
         return
     }
 
@@ -238,7 +237,7 @@ fun MessageItem.saveToLocal(context: Context) {
     }
     outFile.copyFromInputStream(FileInputStream(file))
     context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-    MixinApplication.appContext.toast(
+    toast(
         MixinApplication.appContext.getString(
             R.string.save_to,
             outFile.absolutePath

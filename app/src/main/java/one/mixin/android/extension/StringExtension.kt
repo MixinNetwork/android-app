@@ -557,7 +557,7 @@ fun String?.toUri(): Uri = this?.let { Uri.parse(it) } ?: Uri.EMPTY
 
 fun String?.containsCaseInsensitive(other: String?) =
     if (this != null && other != null) {
-        toLowerCase(Locale.getDefault()).contains(other.toLowerCase(Locale.getDefault()))
+        lowercase(Locale.getDefault()).contains(other.lowercase(Locale.getDefault()))
     } else {
         this == other
     }

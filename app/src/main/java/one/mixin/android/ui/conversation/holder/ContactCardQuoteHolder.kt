@@ -42,7 +42,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 )
             }
         } else {
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,

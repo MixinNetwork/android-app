@@ -258,7 +258,7 @@ class StickerAddFragment : BaseFragment() {
         if (viewDestroyed()) return@launch
 
         dialog?.dismiss()
-        toastRes?.let { requireContext().toast(it) }
+        toastRes?.let { toast(it) }
         if (fromManagement) {
             parentFragmentManager.popBackStackImmediate()
         } else {

@@ -53,7 +53,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -99,6 +98,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.checkInlinePermissions
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.config
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -138,7 +138,6 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
@@ -218,6 +217,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSticker
@@ -377,7 +377,7 @@ class ConversationFragment() :
                 when {
                     isFirstLoad -> {
                         isFirstLoad = false
-                        chatViewModel.viewModelScope.launch {
+                        lifecycleScope.launch {
                             delay(100)
                             messageId?.let { id ->
                                 RxBus.publish(BlinkEvent(id))
@@ -487,9 +487,9 @@ class ConversationFragment() :
 
     private val onItemListener: ConversationAdapter.OnItemListener by lazy {
         object : ConversationAdapter.OnItemListener() {
+            @SuppressLint("NotifyDataSetChanged")
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
                 if (isSelect) {
-                    checkAppCardForward(messageItem)
                     conversationAdapter.addSelect(messageItem)
                 } else {
                     conversationAdapter.removeSelect(messageItem)
@@ -547,7 +547,6 @@ class ConversationFragment() :
 
             @SuppressLint("NotifyDataSetChanged")
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
-                checkAppCardForward(messageItem)
                 val b = conversationAdapter.addSelect(messageItem)
                 binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
                 if (b) {
@@ -705,7 +704,7 @@ class ConversationFragment() :
                             FloatingPlayer.getInstance().hide()
                         } else {
                             if (checkFloatingPermission()) {
-                                collapse(requireActivity(), conversationId)
+                                collapse(conversationId)
                             }
                         }
                         FloatingPlayer.getInstance().conversationId = conversationId
@@ -723,7 +722,7 @@ class ConversationFragment() :
                             if (viewDestroyed()) return@playMedia
                             if (checkFloatingPermission()) {
                                 if (MixinApplication.get().activityInForeground) {
-                                    collapse(requireActivity(), conversationId)
+                                    collapse(conversationId)
                                 }
                             } else {
                                 requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
@@ -774,14 +773,14 @@ class ConversationFragment() :
                 viewBinding.copyTv.setOnClickListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
-                    requireContext().toast(R.string.copy_success)
+                    toast(R.string.copy_success)
                     bottomSheet.dismiss()
                 }
                 bottomSheet.show()
             }
 
             override fun onMentionClick(identityNumber: String) {
-                chatViewModel.viewModelScope.launch {
+                lifecycleScope.launch {
                     chatViewModel.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))?.let { user ->
                         if (user.userId == Session.getAccountId()!!) {
                             ProfileBottomSheetDialogFragment.newInstance()
@@ -1075,7 +1074,7 @@ class ConversationFragment() :
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe { event ->
-                chatViewModel.viewModelScope.launch {
+                lifecycleScope.launch {
                     chatViewModel.markMentionRead(event.messageId, event.conversationId)
                 }
             }
@@ -1119,7 +1118,7 @@ class ConversationFragment() :
                 .autoDispose(stopScope)
                 .subscribe {
                     if (it.conversationId == conversationId) {
-                        chatViewModel.viewModelScope.launch {
+                        lifecycleScope.launch {
                             binding.groupDesc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
                             binding.groupDesc.collapse()
                             binding.groupDesc.requestFocus()
@@ -1271,6 +1270,7 @@ class ConversationFragment() :
                 }
             }
         }
+        AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
         context?.let {
             if (!anyCallServiceRunning(it)) {
@@ -1490,7 +1490,7 @@ class ConversationFragment() :
                 context?.getClipboardManager()?.setPrimaryClip(
                     ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content)
                 )
-                context?.toast(R.string.copy_success)
+                toast(R.string.copy_success)
             } catch (e: ArrayIndexOutOfBoundsException) {
             }
             closeTool()
@@ -1504,18 +1504,17 @@ class ConversationFragment() :
             }
             val messageItem = conversationAdapter.selectSet.valueAt(0)
             messageItem?.let { m ->
-                val isSticker = messageItem.isSticker()
-                if (isSticker && m.stickerId != null) {
+                if (messageItem.isSticker() && m.stickerId != null) {
                     addSticker(m)
-                } else {
-                    val url = m.mediaUrl
+                } else if (messageItem.isImage()) {
+                    val url = m.absolutePath(requireContext())
                     url?.let {
                         val uri = url.toUri()
                         val mimeType = getMimeType(uri, true)
                         if (mimeType?.isImageSupport() == true) {
                             StickerActivity.show(requireContext(), url = it, showAdd = true)
                         } else {
-                            requireContext().toast(R.string.sticker_add_invalid_format)
+                            toast(R.string.sticker_add_invalid_format)
                         }
                     }
                 }
@@ -1545,7 +1544,7 @@ class ConversationFragment() :
                     (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
                     conversationAdapter.selectSet
                 )
-                requireContext().toast(
+                toast(
                     if (action == PinAction.PIN) {
                         R.string.pin_success
                     } else {
@@ -1728,7 +1727,7 @@ class ConversationFragment() :
             }
             withContext(Dispatchers.Main) {
                 closeTool()
-                requireContext().toast(R.string.add_success)
+                toast(R.string.add_success)
             }
         } else {
             ErrorHandler.handleMixinError(
@@ -1847,7 +1846,7 @@ class ConversationFragment() :
                 unreadTipCount = 0
                 oldCount = list.size
             }
-            chatViewModel.viewModelScope.launch {
+            lifecycleScope.launch {
                 conversationAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name &&
                     (
                         (isBot && list.isEmpty()) ||
@@ -1857,7 +1856,7 @@ class ConversationFragment() :
             if (isFirstLoad && messageId == null && unreadCount > 0) {
                 conversationAdapter.unreadMsgId = unreadMessageId
             } else if (lastReadMessage != null) {
-                chatViewModel.viewModelScope.launch {
+                lifecycleScope.launch {
                     lastReadMessage?.let { id ->
                         val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
                             conversationId,
@@ -1996,8 +1995,8 @@ class ConversationFragment() :
                         scrollToDown()
                         markRead()
                     }
-                    -1 -> context?.toast(R.string.error_image)
-                    -2 -> context?.toast(R.string.error_format)
+                    -1 -> toast(R.string.error_image)
+                    -2 -> toast(R.string.error_format)
                 }
             }
         }
@@ -2921,7 +2920,7 @@ class ConversationFragment() :
                     popupWindow.dismiss()
                 }
             }
-            requireContext().vibrate(longArrayOf(0, 50L))
+            requireContext().clickVibrate()
             PopupWindowCompat.showAsDropDown(popupWindow, binding.chatControl.anchorView, -200.dp, -110.dp, Gravity.END)
         }
 
@@ -3012,7 +3011,7 @@ class ConversationFragment() :
     }
 
     private fun searchMentionUser(keyword: String) {
-        chatViewModel.viewModelScope.launch {
+        lifecycleScope.launch {
             val mention = mentionEnd(keyword)
             val users = chatViewModel.fuzzySearchUser(conversationId, mention)
             mentionAdapter.keyword = mention
@@ -3153,6 +3152,17 @@ class ConversationFragment() :
 
     private fun showForwardDialog() {
         forwardDialog?.dismiss()
+        val unShareable = conversationAdapter.selectSet.find { it.isShareable() == false }
+        if (unShareable != null) {
+            toast(
+                if (unShareable.isLive()) {
+                    R.string.live_shareable_false
+                } else {
+                    R.string.app_card_shareable_false
+                }
+            )
+            return
+        }
         if (conversationAdapter.selectSet.size == 1) {
             forward()
         } else {
@@ -3201,18 +3211,6 @@ class ConversationFragment() :
                 getCombineForwardResult.launch(ArrayList(messages))
             }
             closeTool()
-        }
-    }
-
-    private fun checkAppCardForward(messageItem: MessageItem) {
-        if (messageItem.isShareable() == false) {
-            toast(
-                if (messageItem.isLive()) {
-                    R.string.live_shareable_false
-                } else {
-                    R.string.app_card_shareable_false
-                }
-            )
         }
     }
 }

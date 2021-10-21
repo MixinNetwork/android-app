@@ -10,7 +10,6 @@ import kotlinx.android.parcel.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getTranscriptDirPath
-import one.mixin.android.util.JsonSkip
 import java.io.File
 import java.io.Serializable
 
@@ -39,7 +38,6 @@ class TranscriptMessage(
     @ColumnInfo(name = "content")
     val content: String?,
     @ColumnInfo(name = "media_url")
-    @JsonSkip
     var mediaUrl: String? = null,
     @SerializedName("media_name")
     @ColumnInfo(name = "media_name")
@@ -59,7 +57,6 @@ class TranscriptMessage(
     @SerializedName("media_duration")
     @ColumnInfo(name = "media_duration")
     val mediaDuration: Long? = null,
-    @JsonSkip
     @ColumnInfo(name = "media_status")
     var mediaStatus: String? = null,
     @SerializedName("media_waveform")

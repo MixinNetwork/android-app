@@ -353,8 +353,8 @@
     <string name="chat_import_fail_content">导入聊天记录失败！是否按文件发送？</string>
     <string name="chat_import">导入聊天记录</string>
     <string name="chat_send_file">按文件发送</string>
-    <string name="app_card_shareable_false">该卡片已被设置为不允许转发</string>
-    <string name="live_shareable_false">该直播已被设置为不允许转发</string>
+    <string name="app_card_shareable_false">包含不允许转发的卡片</string>
+    <string name="live_shareable_false">包含不允许转发的直播</string>
     <string name="link_shareable_false">该链接已被设置为不允许分享</string>
     <!--contact-->
     <string name="contact_other_send">发消息</string>
@@ -755,6 +755,8 @@
     <string name="auth_circles_read_description">访问你的圈子列表</string>
     <string name="auth_circles_write">管理圈子</string>
     <string name="auth_circles_write_description">管理你所有的圈子</string>
+    <string name="auth_collectibles_read">查看 NFT</string>
+    <string name="auth_collectibles_read_description">访问你的 NFT 列表</string>
 
     <string name="permission_video">要允许拍摄视频吗?</string>
     <string name="permission_camera">要允许拍摄照片吗?</string>
@@ -796,16 +798,16 @@
     <string name="withdrawal_addr_biometric_add">使用生物识别来完成添加</string>
     <string name="withdrawal_addr_biometric_delete">使用生物识别来完成删除</string>
     <string name="withdrawal_addr_biometric_modify">使用生物识别来完成修改</string>
-    <string name="withdrawal_addr_memo">地址标签、数字 ID 或备注。如果没有，点击不使用标签（Memo）。</string>
-    <string name="withdrawal_addr_no_memo">如果你需要填写地址标签、数字 ID 或备注，点击添加标签（Memo）。</string>
-    <string name="withdrawal_addr_memo_link">点击不使用标签（Memo）</string>
-    <string name="withdrawal_addr_no_memo_link">点击添加标签（Memo）</string>
-    <string name="withdrawal_addr_tag">地址标签、数字 ID 或备注。如果没有，点击不使用标签（Tag）。</string>
-    <string name="withdrawal_addr_no_tag">如果你需要填写地址标签、数字 ID 或备注，点击添加标签（Tag）。</string>
-    <string name="withdrawal_addr_tag_link">点击不使用标签（Tag）</string>
-    <string name="withdrawal_addr_no_tag_link">点击添加标签（Tag）</string>
-    <string name="withdrawal_addr_memo_hint">标签（Memo）</string>
-    <string name="withdrawal_addr_tag_hint">标签（Tag）</string>
+    <string name="withdrawal_addr_memo">地址标签、数字 ID 或备注。如果没有，点击不使用 Memo（备注）。</string>
+    <string name="withdrawal_addr_no_memo">如果你需要填写地址标签、数字 ID 或备注，点击添加 Memo（备注）。</string>
+    <string name="withdrawal_addr_memo_link">点击不使用 Memo（备注）</string>
+    <string name="withdrawal_addr_no_memo_link">点击添加 Memo（备注）</string>
+    <string name="withdrawal_addr_tag">地址标签、数字 ID 或备注。如果没有，点击不使用 Tag（标签）。</string>
+    <string name="withdrawal_addr_no_tag">如果你需要填写地址标签、数字 ID 或备注，点击添加 Tag（标签）。</string>
+    <string name="withdrawal_addr_tag_link">点击不使用 Tag（标签）</string>
+    <string name="withdrawal_addr_no_tag_link">点击添加 Tag（标签）</string>
+    <string name="withdrawal_addr_memo_hint">Memo（备注）</string>
+    <string name="withdrawal_addr_tag_hint">Tag（标签）</string>
     <string name="withdrawal_with_pwd">用密码提现</string>
     <string name="withdrawal_with_biometric">用生物识别提现</string>
     <string name="withdrawal_to">提现到 %1$s</string>
@@ -824,14 +826,14 @@
     <string name="slide_to_cancel">滑动取消</string>
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
-    <string name="account_memo">Memo（标签）</string>
+    <string name="account_memo">Memo（备注）</string>
     <string name="withdrawal_label">地址名称，例如 OceanOne</string>
     <string name="withdrawal_address">提现地址</string>
-    <string name="withdrawal_no_tag">没有标签（Memo）</string>
-    <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址 和 Memo（标签）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
-    <string name="deposit_memo_notice">地址 和 Memo（标签）同时使用才能充值 %1$s 到你的账号。</string>
+    <string name="withdrawal_no_tag">没有 Memo（备注）</string>
+    <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址 和 Memo（备注）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
+    <string name="deposit_memo_notice">地址 和 Memo（备注）同时使用才能充值 %1$s 到你的账号。</string>
     <string name="deposit_attention">首次充值建议小额尝试！</string>
-    <string name="deposit_confirmation">充值到账至少需要 %1$d 个区块确认。</string>
+    <string name="deposit_confirmation">充值到账需要 %1$d 个区块确认。</string>
     <string name="deposit_reserve">首次充值至少 %1$s ！</string>
     <string name="bottom_withdrawal_title">%1$s 提现</string>
     <string name="bottom_withdrawal_change_amount">修改金额</string>
@@ -840,10 +842,10 @@
     <string name="bottom_withdrawal_address_continue">继续提现</string>
     <string name="bottom_withdrawal_least_tip">提现金额最小 %1$s %2$s</string>
     <string name="bottom_deposit_title">%1$s 充值</string>
-    <string name="bottom_deposit_tip_eos">该充值地址支持所有基于 EOS 发行的代币，例如 EOS、IQ 等。</string>
-    <string name="bottom_deposit_tip_eth">该充值地址支持所有符合 ERC-20 标准的代币，例如 ETH、XIN 等。</string>
-    <string name="bottom_deposit_tip_btc">该充值地址仅支持 BTC 和 Omni USDT。</string>
-    <string name="bottom_deposit_tip_trx">该充值地址支持 TRX 和所有符合 TRC-10 TRC-20 标准的代币，例如 TRX、BTT、USDT-TRON 等。</string>
+    <string name="bottom_deposit_tip_eos">支持所有基于 EOS 发行的代币。</string>
+    <string name="bottom_deposit_tip_eth">支持所有符合 ERC-20 标准的代币，例如 ETH、XIN 等。</string>
+    <string name="bottom_deposit_tip_btc">该充值地址仅支持 BTC。</string>
+    <string name="bottom_deposit_tip_trx">支持 TRX 和所有符合 TRC-10 TRC-20 标准的代币。</string>
     <string name="bottom_deposit_tip_common">该充值地址仅支持 %1$s。</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s 不是您的联系人，请确认收款人是否正确。如果您转错了人资产将无法追回！</string>
     <!--sticker-->

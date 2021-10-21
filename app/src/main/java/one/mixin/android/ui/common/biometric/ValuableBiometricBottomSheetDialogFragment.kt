@@ -5,7 +5,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-abstract class ValuableBiometricBottomSheetDialogFragment<T : BiometricItem> : BiometricBottomSheetDialogFragment() {
+abstract class ValuableBiometricBottomSheetDialogFragment<T : AssetBiometricItem> : BiometricBottomSheetDialogFragment() {
     companion object {
         const val ARGS_BIOMETRIC_ITEM = "args_biometric_item"
     }

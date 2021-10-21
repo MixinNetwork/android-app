@@ -183,6 +183,7 @@ class WebFragment : BaseFragment() {
     private var currentUrl: String? = null
     private var isFinished: Boolean = false
     private val processor = QRCodeProcessor()
+    private var webAppInterface: WebAppInterface? = null
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -287,10 +288,10 @@ class WebFragment : BaseFragment() {
                     binding.iconIv.setImageBitmap(icon)
                 }
                 isFinished = clip.isFinished
-                clip.webView ?: MixinWebView(requireContext())
+                clip.webView ?: MixinWebView(MixinApplication.appContext)
             }
         } else {
-            MixinWebView(requireContext())
+            MixinWebView(MixinApplication.appContext)
         }
         if (webView.parent != null) {
             (webView.parent as? ViewGroup)?.removeView(webView)
@@ -321,7 +322,7 @@ class WebFragment : BaseFragment() {
             }
         )
         if (requireContext().checkInlinePermissions()) {
-            showClip(requireActivity())
+            showClip()
         }
     }
 
@@ -419,7 +420,7 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 conversationId,
-                requireContext(),
+                MixinApplication.appContext,
                 this.parentFragmentManager,
                 requireActivity().activityResultRegistry,
                 lifecycleScope,
@@ -427,7 +428,7 @@ class WebFragment : BaseFragment() {
                     currentUrl = url
                     isFinished = true
                 },
-                { errorCode, description, failingUrl ->
+                { errorCode, _, failingUrl ->
                     currentUrl = failingUrl
                     if (errorCode == ERROR_HOST_LOOKUP ||
                         errorCode == ERROR_CONNECT ||
@@ -681,16 +682,14 @@ class WebFragment : BaseFragment() {
             }
             binding.titleLl.isGone = immersive
 
-            webView.addJavascriptInterface(
-                WebAppInterface(
-                    requireContext(),
-                    conversationId,
-                    immersive,
-                    reloadThemeAction = { reloadTheme() },
-                    playlistAction = { showPlaylist(it) },
-                ),
-                "MixinContext"
+            webAppInterface = WebAppInterface(
+                MixinApplication.appContext,
+                conversationId,
+                immersive,
+                reloadThemeAction = { reloadTheme() },
+                playlistAction = { showPlaylist(it) },
             )
+            webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -718,7 +717,7 @@ class WebFragment : BaseFragment() {
             musicViewModel.showPlaylist(playlist) {
                 if (viewDestroyed()) return@showPlaylist
                 if (checkFloatingPermission()) {
-                    one.mixin.android.ui.player.collapse(requireActivity(), MUSIC_PLAYLIST)
+                    one.mixin.android.ui.player.collapse(MUSIC_PLAYLIST)
                 } else {
                     requireActivity().showPipPermissionNotification(
                         MusicActivity::class.java,
@@ -757,6 +756,14 @@ class WebFragment : BaseFragment() {
         val c = Canvas(screenshot)
         c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
         v.draw(c)
+
+        webAppInterface?.reloadThemeAction = null
+        webAppInterface?.playlistAction = null
+        webAppInterface = null
+        webView.removeJavascriptInterface("MixinContext")
+        webView.webChromeClient = null
+        webView.webViewClient = object : WebViewClient() {}
+
         return WebClip(
             currentUrl,
             app,
@@ -778,7 +785,7 @@ class WebFragment : BaseFragment() {
         webView.stopLoading()
         when {
             hold -> {
-                holdClip(requireActivity(), generateWebClip())
+                holdClip(generateWebClip())
             }
             index < 0 -> {
                 webView.destroy()
@@ -916,7 +923,7 @@ class WebFragment : BaseFragment() {
             action = {
                 requireContext().getClipboardManager()
                     .setPrimaryClip(ClipData.newPlainText(null, url))
-                requireContext().toast(R.string.copy_success)
+                toast(R.string.copy_success)
                 bottomSheet.dismiss()
             }
         }
@@ -939,7 +946,7 @@ class WebFragment : BaseFragment() {
                     bottomSheet.dismiss()
                 } else {
                     if (clips.size >= 6) {
-                        requireActivity().toast(R.string.web_full)
+                        toast(R.string.web_full)
                         bottomSheet.dismiss()
                     } else if (checkFloatingPermission()) {
                         hold = true
@@ -1188,6 +1195,9 @@ class WebFragment : BaseFragment() {
                 try {
                     val context = view.context
                     val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                    if (context !is Activity) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
 
                     if (intent != null) {
                         val packageManager = context.packageManager
@@ -1218,8 +1228,8 @@ class WebFragment : BaseFragment() {
         val context: Context,
         val conversationId: String?,
         val immersive: Boolean,
-        val reloadThemeAction: () -> Unit,
-        val playlistAction: (Array<String>) -> Unit,
+        var reloadThemeAction: (() -> Unit)? = null,
+        var playlistAction: ((Array<String>) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1241,12 +1251,12 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun reloadTheme() {
-            reloadThemeAction.invoke()
+            reloadThemeAction?.invoke()
         }
 
         @JavascriptInterface
         fun playlist(list: Array<String>) {
-            playlistAction.invoke(list)
+            playlistAction?.invoke(list)
         }
     }
 

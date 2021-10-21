@@ -13,10 +13,10 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.toast
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.BiometricUtil.CRASHLYTICS_BIOMETRIC
 import one.mixin.android.util.reportException
-import org.jetbrains.anko.toast
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 
@@ -49,7 +49,7 @@ class BiometricDialog(
                 is UserNotAuthenticatedException -> callback?.showAuthenticationScreen()
                 is InvalidKeyException, is NullPointerException -> {
                     BiometricUtil.deleteKey(context)
-                    context.toast(R.string.wallet_biometric_invalid)
+                    toast(R.string.wallet_biometric_invalid)
                     reportException("$CRASHLYTICS_BIOMETRIC-getDecryptCipher", e)
                     callback?.onCancel()
                 }
@@ -70,7 +70,7 @@ class BiometricDialog(
             } else if (errorCode == ERROR_LOCKOUT || errorCode == ERROR_LOCKOUT_PERMANENT) {
                 callback?.showPin()
             } else {
-                context.toast(errString)
+                toast(errString)
             }
         }
 

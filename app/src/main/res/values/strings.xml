@@ -374,9 +374,9 @@
     <string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>
     <string name="chat_import">Import</string>
     <string name="chat_send_file">Send as file</string>
-    <string name="app_card_shareable_false">Disallow sharing of this card</string>
-    <string name="live_shareable_false">Disallow sharing of this live</string>
     <string name="link_shareable_false">Disallow sharing of this URL</string>
+    <string name="app_card_shareable_false">Contained disallow sharing of this card</string>
+    <string name="live_shareable_false">Contained disallow sharing of this live</string>
     <!--contact-->
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>
@@ -773,6 +773,8 @@
     <string name="auth_circles_read_description">access your circle list</string>
     <string name="auth_circles_write">Write Circles</string>
     <string name="auth_circles_write_description">manage all your circles</string>
+    <string name="auth_collectibles_read">Read Collectibles</string>
+    <string name="auth_collectibles_read_description">access your collectibles</string>
 
     <string name="permission_video">Allow to record video?</string>
     <string name="permission_camera">Allow to take pictures?</string>
@@ -850,7 +852,7 @@
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both a Memo and an Address are required to successfully deposit your %1$s to Mixin Messenger.</string>
     <string name="deposit_memo_notice">Both Memo and Address are required to deposit your %1$s to you account.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
-    <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
+    <string name="deposit_confirmation">Deposit will arrive %1$d block confirmations</string>
     <string name="deposit_reserve">Deposit at least %1$s for the first time.</string>
     <string name="bottom_withdrawal_title">%1$s Withdrawal</string>
     <string name="bottom_withdrawal_change_amount">Change Amount</string>
@@ -859,10 +861,10 @@
     <string name="bottom_withdrawal_address_continue">Continue</string>
     <string name="bottom_withdrawal_least_tip">Minimum withdraw amount is %1$s %2$s</string>
     <string name="bottom_deposit_title">%1$s Deposit</string>
-    <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, etc.</string>
+    <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens.</string>
     <string name="bottom_deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, etc.</string>
-    <string name="bottom_deposit_tip_btc">This address only supports BTC and Omni USDT.</string>
-    <string name="bottom_deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens, such as TRX, BTT, USDT-TRON, etc.</string>
+    <string name="bottom_deposit_tip_btc">This address only supports BTC.</string>
+    <string name="bottom_deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens.</string>
     <string name="bottom_deposit_tip_common">This address only supports %1$s.</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chosen is correct. If you transfer to the wrong person, your assets will be lost!</string>
     <!--sticker-->

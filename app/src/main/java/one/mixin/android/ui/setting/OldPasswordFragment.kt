@@ -11,9 +11,10 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentOldPasswordBinding
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.ui.common.BaseFragment
@@ -117,7 +118,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.tickVibrate()
             if (position == 11) {
                 binding.pin.delete()
             } else {
@@ -126,7 +127,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.clickVibrate()
             if (position == 11) {
                 binding.pin.clear()
             } else {

@@ -86,7 +86,7 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
                     binding.chatWarning.visibility = View.GONE
                     binding.progress.visibility = View.VISIBLE
                     binding.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                    binding.progress.setBindOnly("${messageItem.transcriptId ?: "" ?: ""}${messageItem.messageId}")
+                    binding.progress.setBindOnly("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
                     binding.progress.setOnClickListener {
                         onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }

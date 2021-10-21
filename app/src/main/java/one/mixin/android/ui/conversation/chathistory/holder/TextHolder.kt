@@ -4,8 +4,10 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isInvisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextBinding
+import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
@@ -104,6 +106,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
 
         if (textGestureListener == null) {
             textGestureListener = TextGestureListener(
+                binding.root,
                 messageItem,
                 onItemListener = onItemListener,
                 absoluteAdapterPosition = absoluteAdapterPosition
@@ -149,26 +152,39 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
             isSecret = messageItem.isSecret()
         )
         chatLayout(isMe, isLast)
+
+        binding.root.setOnLongClickListener {
+            onItemListener.onMenu(binding.chatJump, messageItem)
+            true
+        }
+        binding.chatLayout.setOnLongClickListener {
+            onItemListener.onMenu(binding.chatJump, messageItem)
+            true
+        }
+        binding.chatTv.setOnLongClickListener {
+            onItemListener.onMenu(binding.chatJump, messageItem)
+            true
+        }
         if (messageItem.transcriptId == null) {
-            binding.root.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
-                true
-            }
-            binding.chatLayout.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
-                true
-            }
-            binding.chatTv.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
-                true
-            }
             chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
+        } else {
+            binding.chatJump.isInvisible = true
+            (binding.chatJump.layoutParams as ConstraintLayout.LayoutParams).apply {
+                if (isMe) {
+                    endToStart = R.id.chat_layout
+                    startToEnd = View.NO_ID
+                } else {
+                    endToStart = View.NO_ID
+                    startToEnd = R.id.chat_layout
+                }
+            }
         }
     }
 
     private var textGestureListener: TextGestureListener? = null
 
     private class TextGestureListener(
+        var view: View,
         var messageItem: ChatHistoryMessageItem,
         var onItemListener: TranscriptAdapter.OnItemListener,
         var absoluteAdapterPosition: Int = 0
@@ -176,6 +192,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         var longPressed = false
 
         override fun onDoubleTap(e: MotionEvent?): Boolean {
+            view.context.doubleClickVibrate()
             onItemListener.onTextDoubleClick(messageItem)
             return true
         }

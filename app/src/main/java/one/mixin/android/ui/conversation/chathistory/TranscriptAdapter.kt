@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.databinding.ItemChatAudioBinding
 import one.mixin.android.databinding.ItemChatAudioQuoteBinding
@@ -31,6 +32,7 @@ import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.conversation.chathistory.holder.ActionCardHolder
+import one.mixin.android.ui.conversation.chathistory.holder.ActionHolder
 import one.mixin.android.ui.conversation.chathistory.holder.AudioHolder
 import one.mixin.android.ui.conversation.chathistory.holder.AudioQuoteHolder
 import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
@@ -55,6 +57,8 @@ import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.isAppButtonGroup
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
@@ -211,6 +215,13 @@ class TranscriptAdapter(
                     false
                 )
             )
+            14 -> ActionHolder(
+                ItemChatActionBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
             else -> UnknownHolder(
                 ItemChatUnknownBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -341,6 +352,12 @@ class TranscriptAdapter(
                 isLast = isLast(position),
                 onItemListener
             )
+            14 -> (holder as ActionHolder).bind(
+                transcripts[position],
+                isLast = isLast(position),
+                isFirst = isFirst(position),
+                onItemListener
+            )
             else -> (holder as UnknownHolder).bind(
                 transcripts[position],
                 isLast = isLast(position),
@@ -367,10 +384,11 @@ class TranscriptAdapter(
             item.isContact() -> -6
             item.isSticker() -> 7
             item.isLocation() -> 9
-            item.type == MessageCategory.APP_CARD.name -> 10
+            item.isAppCard() -> 10
             item.isPost() -> 11
             item.isTranscript() -> 12
             item.isRecall() -> 13
+            item.isAppButtonGroup() -> 14
             else -> -99
         }
     }
@@ -482,7 +500,7 @@ class TranscriptAdapter(
 
         open fun onUrlLongClick(url: String) {}
 
-        open fun onActionClick(action: String, userId: String) {}
+        open fun onActionClick(action: String, userId: String?) {}
 
         open fun onAppCardClick(appCard: AppCardData, userId: String?) {}
 

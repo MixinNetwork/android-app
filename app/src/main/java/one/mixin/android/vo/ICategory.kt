@@ -83,6 +83,8 @@ fun ICategory.isTranscript() = type == MessageCategory.PLAIN_TRANSCRIPT.name || 
 
 fun ICategory.isAppCard() = type == MessageCategory.APP_CARD.name
 
+fun ICategory.isAppButtonGroup() = type == MessageCategory.APP_BUTTON_GROUP.name
+
 fun ICategory.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
         type == MessageCategory.WEBRTC_AUDIO_DECLINE.name ||

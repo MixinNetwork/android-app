@@ -97,7 +97,7 @@ class BackupJob(private val force: Boolean = false) : BaseJob(
                 BackupNotification.cancel()
                 if (result == Result.SUCCESS) {
                     context.defaultSharedPreferences.putLong(BACKUP_LAST_TIME, System.currentTimeMillis())
-                    context.toast(R.string.backup_success_tip)
+                    toast(R.string.backup_success_tip)
                 }
             }
         } catch (e: Exception) {
