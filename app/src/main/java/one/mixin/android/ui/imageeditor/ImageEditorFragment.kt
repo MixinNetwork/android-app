@@ -41,6 +41,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.imageeditor.ColorPaletteAdapter.Companion.paletteColors
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITOR_RESULT
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_IMAGE_URI
+import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_NEXT_TITLE
 import one.mixin.android.widget.PrevNextView
 import one.mixin.android.widget.imageeditor.ColorableRenderer
 import one.mixin.android.widget.imageeditor.ImageEditorView
@@ -57,8 +58,9 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
 
         private const val MAX_IMAGE_SIZE = 4096
 
-        fun newInstance(imageUri: Uri) = ImageEditorFragment().withArgs {
+        fun newInstance(imageUri: Uri, nextTitle: String? = null) = ImageEditorFragment().withArgs {
             putParcelable(ARGS_IMAGE_URI, imageUri)
+            nextTitle?.let { putString(ARGS_NEXT_TITLE, it) }
         }
     }
 
@@ -100,6 +102,9 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
+            requireArguments().getString(ARGS_NEXT_TITLE)?.let {
+                nextTv.text = it
+            }
             closeIv.setOnClickListener { activity?.onBackPressed() }
             nextTv.setOnClickListener { goNext() }
             cropLl.setOnClickListener { setMode(Mode.Crop) }

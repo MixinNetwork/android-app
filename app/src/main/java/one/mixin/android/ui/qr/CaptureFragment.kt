@@ -83,7 +83,7 @@ class CaptureFragment() : BaseCameraxFragment() {
         resultRegistry = testRegistry
     }
 
-    lateinit var getEditResult: ActivityResultLauncher<Uri>
+    lateinit var getEditResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -205,7 +205,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             imageCaptureFile?.let { uri ->
-                getEditResult.launch(uri.toUri())
+                getEditResult.launch(Pair(uri.toUri(), getString(R.string.next)))
             }
         }
 

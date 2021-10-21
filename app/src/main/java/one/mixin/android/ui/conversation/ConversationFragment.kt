@@ -1030,7 +1030,7 @@ class ConversationFragment() :
     private lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
-    lateinit var getEditorResult: ActivityResultLauncher<Uri>
+    lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -1379,7 +1379,7 @@ class ConversationFragment() :
                     if (inputContentInfo != null) {
                         val url = inputContentInfo.contentUri.getFilePath(requireContext())
                             ?: return false
-                        getEditorResult.launch(url.toUri())
+                        getEditorResult.launch(Pair(url.toUri(), getString(R.string.send)))
                     }
                     return true
                 }
@@ -2362,11 +2362,15 @@ class ConversationFragment() :
     private fun initGalleryLayout() {
         val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
         galleryAlbumFragment.callback = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
+            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean, send: Boolean) {
                 if (isVideo) {
                     sendVideoMessage(uri)
                 } else {
-                    getEditorResult.launch(uri)
+                    if (send) {
+                        sendImageMessage(uri)
+                    } else {
+                        getEditorResult.launch(Pair(uri, getString(R.string.send)))
+                    }
                 }
                 releaseChatControl(FLING_DOWN)
             }
@@ -2689,12 +2693,12 @@ class ConversationFragment() :
                 if (data.hasExtra(IS_VIDEO)) {
                     sendVideoMessage(it)
                 } else {
-                    getEditorResult.launch(it)
+                    getEditorResult.launch(Pair(it, getString(R.string.send)))
                 }
             }
         } else if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
-                showPreview(imageUri) { getEditorResult.launch(it) }
+                showPreview(imageUri) { getEditorResult.launch(Pair(it, getString(R.string.send))) }
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return

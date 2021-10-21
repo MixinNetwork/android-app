@@ -20,13 +20,15 @@ class ImageEditorActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val imageUri = intent.getParcelableExtra<Uri>(ARGS_IMAGE_URI)
-        replaceFragment(ImageEditorFragment.newInstance(requireNotNull(imageUri)), R.id.container, ImageEditorFragment.TAG)
+        val nextTitle = intent.getStringExtra(ARGS_NEXT_TITLE)
+        replaceFragment(ImageEditorFragment.newInstance(requireNotNull(imageUri), nextTitle), R.id.container, ImageEditorFragment.TAG)
     }
 
-    class ImageEditorContract : ActivityResultContract<Uri, Intent?>() {
-        override fun createIntent(context: Context, input: Uri): Intent {
+    class ImageEditorContract : ActivityResultContract<Pair<Uri, String?>, Intent?>() {
+        override fun createIntent(context: Context, input: Pair<Uri, String?>): Intent {
             return Intent(context, ImageEditorActivity::class.java).apply {
-                putExtra(ARGS_IMAGE_URI, input)
+                putExtra(ARGS_IMAGE_URI, input.first)
+                input.second?.let { putExtra(ARGS_NEXT_TITLE, it) }
             }
         }
 
@@ -39,11 +41,13 @@ class ImageEditorActivity : BaseActivity() {
     companion object {
         const val ARGS_EDITOR_RESULT = "args_editor_result"
         const val ARGS_IMAGE_URI = "args_image_uri"
+        const val ARGS_NEXT_TITLE = "args_next_title"
 
-        fun show(context: Context, imageUri: Uri) {
+        fun show(context: Context, imageUri: Uri, nextTitle: String?) {
             context.startActivity(
                 Intent(context, ImageEditorActivity::class.java).apply {
                     putExtra(ARGS_IMAGE_URI, imageUri)
+                    nextTitle?.let { putExtra(ARGS_NEXT_TITLE, it) }
                 }
             )
         }
