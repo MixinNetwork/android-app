@@ -26,6 +26,7 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -138,7 +139,7 @@ open class SendMessageJob(
             sendPlainMessage()
         } else if (message.isEncrypted()) {
             sendEncryptedMessage()
-        } else {
+        } else if (message.isSignal()) {
             sendSignalMessage()
         }
         removeJob()
@@ -214,12 +215,12 @@ open class SendMessageJob(
             message.content!!.toByteArray()
         }
         val encryptContent = encryptedProtocol.encryptMessage(
-                privateKey,
-                plaintext,
-                participantSessionKey.publicKey!!.base64RawUrlDecode(),
-                participantSessionKey.sessionId,
-                extensionSessionKey?.publicKey?.base64RawUrlDecode(),
-                extensionSessionKey?.sessionId
+            privateKey,
+            plaintext,
+            participantSessionKey.publicKey!!.base64RawUrlDecode(),
+            participantSessionKey.sessionId,
+            extensionSessionKey?.publicKey?.base64RawUrlDecode(),
+            extensionSessionKey?.sessionId
         )
 
         val blazeParam = BlazeMessageParam(
