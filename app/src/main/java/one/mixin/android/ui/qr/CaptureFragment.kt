@@ -347,7 +347,7 @@ class CaptureFragment() : BaseCameraxFragment() {
         if (uri != null) {
             val path = uri.getFilePath(MixinApplication.get())
             if (path == null) {
-                context?.toast(R.string.error_image)
+                toast(R.string.error_image)
             } else {
                 openEdit(path, false)
             }

@@ -30,10 +30,10 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getImageCachePath
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.save
-import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -400,7 +400,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
                 deleteFadeDebouncer.publish {
                     if (!wasInTrashHitZone) {
                         wasInTrashHitZone = true
-                        requireContext().tapVibrate()
+                        requireContext().heavyClickVibrate()
                     }
                     editorElement.animatePartialFadeOut(binding.imageEditorView::invalidate)
                 }
