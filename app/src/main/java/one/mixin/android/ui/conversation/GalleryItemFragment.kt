@@ -77,8 +77,8 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
             adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
             rv.adapter = adapter
             adapter.listener = object : GalleryCallback {
-                override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
-                    callback?.onItemClick(pos, uri, isVideo)
+                override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean, send: Boolean) {
+                    callback?.onItemClick(pos, uri, isVideo, send)
                 }
 
                 override fun onCameraClick() {

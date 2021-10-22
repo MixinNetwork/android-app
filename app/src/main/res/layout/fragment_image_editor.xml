@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="?attr/bg_white"
+        android:elevation="4dp">
+
+        <ImageView
+            android:id="@+id/close_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            android:src="@drawable/ic_close_black"
+            tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.PrevNextView
+            android:id="@+id/title_prev_next_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:id="@+id/next_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:padding="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/next"
+            android:textColor="@color/colorAccent"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+    <one.mixin.android.widget.imageeditor.ImageEditorView
+        android:id="@+id/image_editor_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/title"
+        android:layout_above="@id/bottom"
+        android:layout_gravity="center"
+        android:gravity="center" />
+
+    <FrameLayout
+        android:id="@+id/bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/bg_white"
+        android:elevation="4dp"
+        android:layout_alignParentBottom="true">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/tab_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/crop_ll"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:id="@+id/crop_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/ic_crop"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_gravity="center_horizontal"
+                    android:textColor="?attr/text_primary"
+                    android:text="@string/crop"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/text_ll"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:id="@+id/text_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/ic_text"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_gravity="center_horizontal"
+                    android:textColor="?attr/text_primary"
+                    android:text="@string/text"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/draw_ll"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:id="@+id/draw_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/ic_baseline_brush_24"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_gravity="center_horizontal"
+                    android:textColor="?attr/text_primary"
+                    android:text="@string/draw"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/editor_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/color_rv"
+                android:layout_width="match_parent"
+                android:layout_height="?actionBarSize"/>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/seekbar_ll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="8dp"
+                android:text="@string/size"
+                android:textColor="?attr/text_minor"
+                android:textSize="14sp" />
+
+            <com.warkiz.widget.IndicatorSeekBar
+                android:id="@+id/size_seekbar"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                app:isb_show_tick_marks_type="oval"
+                app:isb_thumb_color="@color/colorAccent"
+                app:isb_show_indicator="none"
+                app:isb_show_tick_texts="false"
+                app:isb_tick_marks_color="?attr/text_primary"
+                app:isb_tick_marks_size="4dp"
+                app:isb_track_progress_color="@color/colorAccent"
+                app:isb_max="6"
+                app:isb_min="1"
+                app:isb_progress="2"
+                app:isb_ticks_count="6"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <RelativeLayout
+                android:id="@+id/editor_rl"
+                android:layout_width="match_parent"
+                android:layout_height="?actionBarSize"
+                android:elevation="4dp">
+
+                <ImageView
+                    android:id="@+id/cancel_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/mixin_ripple"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_close_black"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/type_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:padding="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/crop"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="16sp" />
+
+                <one.mixin.android.widget.PrevNextView
+                    android:id="@+id/undo_redo_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_centerInParent="true"/>
+
+                <ImageView
+                    android:id="@+id/check_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/mixin_ripple"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_check_black_24dp"
+                    tools:ignore="ContentDescription" />
+            </RelativeLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </FrameLayout>
+</RelativeLayout>

@@ -59,8 +59,8 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
             viewPager.currentItem = 0
             va.displayedChild = POS_LOADING
             albumAdapter.callback = object : GalleryCallback {
-                override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
-                    callback?.onItemClick(pos, uri, isVideo)
+                override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean, send: Boolean) {
+                    callback?.onItemClick(pos, uri, isVideo, send)
                 }
 
                 override fun onCameraClick() {

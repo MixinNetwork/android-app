@@ -143,6 +143,11 @@
     <string name="common_reply">回复</string>
     <string name="common_pin">置顶</string>
     <string name="common_unpin">取消置顶</string>
+    <string name="crop">裁剪</string>
+    <string name="text">文字</string>
+    <string name="draw">绘制</string>
+    <string name="size">大小</string>
+    <string name="exit_without_save">不保存就退出？</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
