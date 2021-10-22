@@ -227,7 +227,7 @@ class FloatingPlayer(private var isNightMode: Boolean) {
     fun hide() {
         if (!isShown) return
         isShown = false
-        windowManager.removeView(windowView)
+        windowView?.let { windowManager.removeView(it) }
         windowView = null
         musicView = null
         musicBgView = null
