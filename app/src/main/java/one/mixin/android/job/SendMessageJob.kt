@@ -17,6 +17,7 @@ import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isContact
@@ -192,10 +193,10 @@ open class SendMessageJob(
         val accountId = Session.getAccountId()!!
         val conversation = conversationDao.findConversationById(message.conversationId) ?: return
         checkConversationExist(conversation)
-        var participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, accountId)
+        var participantSessionKey = getBotSessionKey(accountId)
         if (participantSessionKey == null || participantSessionKey.publicKey.isNullOrBlank()) {
             syncConversation(message.conversationId)
-            participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, accountId)
+            participantSessionKey = getBotSessionKey(accountId)
         }
         // Workaround No session key, can't encrypt message, send PLAIN directly
         if (participantSessionKey?.publicKey == null) {
@@ -236,6 +237,19 @@ open class SendMessageJob(
         val blazeMessage = createParamBlazeMessage(blazeParam)
         deliver(blazeMessage)
     }
+
+    private fun getBotSessionKey(accountId: String): ParticipantSessionKey? =
+        if (recipientId != null) {
+            participantSessionDao.getParticipantSessionKeyByUserId(
+                message.conversationId,
+                recipientId!!
+            )
+        } else {
+            participantSessionDao.getParticipantSessionKeyWithoutSelf(
+                message.conversationId,
+                accountId
+            )
+        }
 
     private fun sendSignalMessage() {
         if (resendData != null) {
