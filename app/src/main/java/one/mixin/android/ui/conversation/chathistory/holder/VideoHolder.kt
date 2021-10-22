@@ -48,18 +48,18 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
         if (isFirst && !isMe) {
-            binding.chatName.visibility = VISIBLE
-            binding.chatName.text = messageItem.userFullName
+            binding.chatBubble.chatName.visibility = VISIBLE
+            binding.chatBubble.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatBubble.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatBubble.chatName.compoundDrawablePadding = itemView.dip(3)
             } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
+                binding.chatBubble.chatName.setCompoundDrawables(null, null, null, null)
             }
-            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
-            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatBubble.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatBubble.chatName.setTextColor(getColorById(messageItem.userId))
         } else {
-            binding.chatName.visibility = GONE
+            binding.chatBubble.chatName.visibility = GONE
         }
 
         if (messageItem.isLive()) {
@@ -200,18 +200,18 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
             binding.root.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
+                onItemListener.onMenu(binding.chatBubble.chatJump, messageItem)
                 true
             }
             binding.chatImage.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
+                onItemListener.onMenu(binding.chatBubble.chatJump, messageItem)
                 true
             }
             binding.chatLayout.setOnLongClickListener {
-                onItemListener.onMenu(binding.chatJump, messageItem)
+                onItemListener.onMenu(binding.chatBubble.chatJump, messageItem)
                 true
             }
-            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
+            chatJumpLayout(binding.chatBubble.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 

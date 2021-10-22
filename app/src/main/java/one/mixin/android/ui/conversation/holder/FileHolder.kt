@@ -130,7 +130,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.visibility = View.INVISIBLE
                     binding.bottomLayout.showText()
                     binding.bottomLayout.bindId = null
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -144,7 +144,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.messageId)
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -172,7 +172,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                         }
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         if (MusicPlayer.isPlay(messageItem.messageId)) {
                             onItemListener.onAudioFileClick(messageItem)
                         } else {
@@ -199,7 +199,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                             onItemListener.onRetryDownload(messageItem.messageId)
                         }
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -210,7 +210,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        binding.chatLayout.setOnLongClickListener {
+        binding.chatContent.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -256,29 +256,29 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.bill_bubble_me_last,
                     R.drawable.bill_bubble_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.bill_bubble_me,
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
         } else {
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.chat_bubble_other_last,
                     R.drawable.chat_bubble_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night
                 )

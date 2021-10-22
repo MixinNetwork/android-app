@@ -71,18 +71,18 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            binding.chatName.visibility = VISIBLE
-            binding.chatName.text = messageItem.userFullName
+            binding.chatBubble.chatName.visibility = VISIBLE
+            binding.chatBubble.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
-                binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatBubble.chatName.setCompoundDrawables(null, null, botIcon, null)
+                binding.chatBubble.chatName.compoundDrawablePadding = itemView.dip(3)
             } else {
-                binding.chatName.setCompoundDrawables(null, null, null, null)
+                binding.chatBubble.chatName.setCompoundDrawables(null, null, null, null)
             }
-            binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
-            binding.chatName.setTextColor(getColorById(messageItem.userId))
+            binding.chatBubble.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            binding.chatBubble.chatName.setTextColor(getColorById(messageItem.userId))
         } else {
-            binding.chatName.visibility = GONE
+            binding.chatBubble.chatName.visibility = GONE
         }
 
         if (messageItem.isLive()) {

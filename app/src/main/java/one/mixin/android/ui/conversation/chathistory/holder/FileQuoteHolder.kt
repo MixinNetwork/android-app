@@ -24,31 +24,31 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.chat_bubble_reply_me_last,
                     R.drawable.chat_bubble_reply_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.chat_bubble_reply_me,
                     R.drawable.chat_bubble_reply_me_night
                 )
             }
         } else {
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.chat_bubble_reply_other_last,
                     R.drawable.chat_bubble_reply_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.chat_bubble_reply_other,
                     R.drawable.chat_bubble_reply_other_night
                 )
@@ -118,7 +118,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 MediaStatus.EXPIRED.name -> {
                     binding.fileExpired.visibility = View.VISIBLE
                     binding.fileProgress.visibility = View.INVISIBLE
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                     }
                 }
                 MediaStatus.PENDING.name -> {
@@ -129,7 +129,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(messageItem, onItemListener)
                     }
                 }
@@ -156,7 +156,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                         binding.fileProgress.setOnClickListener {
                         }
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         if (MusicPlayer.isPlay(messageItem.messageId)) {
                             onItemListener.onAudioFileClick(messageItem)
                         } else {
@@ -177,7 +177,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                     binding.fileProgress.setOnClickListener {
                         handleClick(messageItem, onItemListener)
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(messageItem, onItemListener)
                     }
                 }
@@ -197,11 +197,11 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 onItemListener.onMenu(binding.chatJump, messageItem)
                 true
             }
-            binding.chatLayout.setOnLongClickListener {
+            binding.chatContent.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)
                 true
             }
-            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 

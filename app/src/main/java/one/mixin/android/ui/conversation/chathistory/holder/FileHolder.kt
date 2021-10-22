@@ -95,7 +95,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.visibility = View.INVISIBLE
                     binding.bottomLayout.showText()
                     binding.bottomLayout.bindId = null
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                     }
                 }
                 MediaStatus.PENDING.name -> {
@@ -108,7 +108,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.setOnClickListener {
                         onItemListener.onCancel(messageItem.transcriptId, messageItem.messageId)
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(messageItem, onItemListener)
                     }
                 }
@@ -136,7 +136,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                             handleClick(messageItem, onItemListener)
                         }
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         if (MusicPlayer.isPlay(messageItem.messageId)) {
                             onItemListener.onAudioFileClick(messageItem)
                         } else {
@@ -159,7 +159,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     binding.fileProgress.setOnClickListener {
                         handleClick(messageItem, onItemListener)
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(messageItem, onItemListener)
                     }
                 }
@@ -170,11 +170,11 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 onItemListener.onMenu(binding.chatJump, messageItem)
                 true
             }
-            binding.chatLayout.setOnLongClickListener {
+            binding.chatContent.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)
                 true
             }
-            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 
@@ -211,9 +211,9 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
         } else {
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,

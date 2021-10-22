@@ -37,31 +37,31 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                   binding.chatContent,
                     R.drawable.chat_bubble_reply_me_last,
                     R.drawable.chat_bubble_reply_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                   binding.chatContent,
                     R.drawable.chat_bubble_reply_me,
                     R.drawable.chat_bubble_reply_me_night
                 )
             }
         } else {
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                   binding.chatContent,
                     R.drawable.chat_bubble_reply_other_last,
                     R.drawable.chat_bubble_reply_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                   binding.chatContent,
                     R.drawable.chat_bubble_reply_other,
                     R.drawable.chat_bubble_reply_other_night
                 )
@@ -234,7 +234,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
                 onItemListener.onMenu(binding.chatJump, messageItem)
                 true
             }
-            binding.chatMsgLayout.setOnLongClickListener {
+            binding.chatLayout.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)
                 true
             }
@@ -242,7 +242,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
                 onItemListener.onMenu(binding.chatJump, messageItem)
                 true
             }
-            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_msg_layout, onItemListener)
+            chatJumpLayout(binding.chatJump, isMe, messageItem.messageId, R.id.chat_layout, onItemListener)
         }
     }
 }

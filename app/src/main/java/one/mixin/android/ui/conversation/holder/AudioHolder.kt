@@ -77,7 +77,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
             } catch (e: Exception) {
                 0L
             }
-            binding.chatLayout.layoutParams.width =
+            binding.chatContent.layoutParams.width =
                 min((minWidth + (duration / 1000f) * dp15).toInt(), maxWidth)
         }
 
@@ -110,7 +110,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 MediaStatus.EXPIRED.name -> {
                     binding.audioExpired.visibility = View.VISIBLE
                     binding.audioProgress.visibility = View.INVISIBLE
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -122,7 +122,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                     binding.audioProgress.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -139,7 +139,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                     binding.audioProgress.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -160,7 +160,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                             onItemListener.onRetryDownload(messageItem.messageId)
                         }
                     }
-                    binding.chatLayout.setOnClickListener {
+                    binding.chatContent.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -171,7 +171,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        binding.chatLayout.setOnLongClickListener {
+        binding.chatContent.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -218,29 +218,29 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         if (isMe) {
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.bill_bubble_me_last,
                     R.drawable.bill_bubble_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.bill_bubble_me,
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
         } else {
-            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.chat_bubble_other_last,
                     R.drawable.chat_bubble_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                    binding.chatLayout,
+                    binding.chatContent,
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night
                 )

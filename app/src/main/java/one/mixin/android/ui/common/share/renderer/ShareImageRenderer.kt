@@ -26,7 +26,7 @@ class ShareImageRenderer(val context: Context) {
 
     init {
         binding.chatImage.setShape(R.drawable.chat_mark_image_me)
-        binding.chatName.visibility = View.GONE
+        binding.chatBubble.chatName.visibility = View.GONE
         binding.chatWarning.visibility = View.GONE
         binding.progress.visibility = View.GONE
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
