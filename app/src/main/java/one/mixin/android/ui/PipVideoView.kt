@@ -447,7 +447,7 @@ class PipVideoView {
             if (aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
-            windowManager.removeView(windowView)
+            windowView?.let { windowManager.removeView(it) }
         } catch (e: Exception) {
         }
         windowView = null

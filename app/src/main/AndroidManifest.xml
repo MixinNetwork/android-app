@@ -303,6 +303,12 @@
             android:theme="@style/AppTheme.Music"
             android:launchMode="singleTop" />
 
+        <activity
+            android:name=".ui.imageeditor.ImageEditorActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

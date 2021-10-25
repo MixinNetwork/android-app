@@ -108,6 +108,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                             videoBinding.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
                         }
                     }
+                okText?.let { videoBinding.dialogOk.text = it }
                 videoBinding.dialogOk.setOnClickListener {
                     action!!(uri!!)
                     dismiss()
@@ -151,8 +152,9 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
     }
 
     private var uri: Uri? = null
+    private var okText: String? = null
     private var action: ((Uri) -> Unit)? = null
-    fun show(fragmentManager: FragmentManager, uri: Uri, action: (Uri) -> Unit) {
+    fun show(fragmentManager: FragmentManager, uri: Uri, okText: String? = null, action: (Uri) -> Unit) {
         try {
             super.showNow(
                 fragmentManager,
@@ -165,6 +167,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         } catch (ignored: IllegalStateException) {
         }
         this.uri = uri
+        this.okText = okText
         this.action = action
     }
 

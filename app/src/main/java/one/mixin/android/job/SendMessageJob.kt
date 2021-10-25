@@ -26,6 +26,7 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -138,7 +139,7 @@ open class SendMessageJob(
             sendPlainMessage()
         } else if (message.isEncrypted()) {
             sendEncryptedMessage()
-        } else {
+        } else if (message.isSignal()) {
             sendSignalMessage()
         }
         removeJob()
@@ -188,14 +189,15 @@ open class SendMessageJob(
 
     @ExperimentalUnsignedTypes
     private fun sendEncryptedMessage() {
+        val accountId = Session.getAccountId()!!
         val conversation = conversationDao.findConversationById(message.conversationId) ?: return
         checkConversationExist(conversation)
-        var participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
+        var participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, accountId)
         if (participantSessionKey == null || participantSessionKey.publicKey.isNullOrBlank()) {
             syncConversation(message.conversationId)
-            participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, Session.getAccountId()!!)
+            participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, accountId)
         }
-        // No session key, can't encrypt message, send PLAIN directly
+        // Workaround No session key, can't encrypt message, send PLAIN directly
         if (participantSessionKey?.publicKey == null) {
             message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
             messageDao.updateCategoryById(message.id, message.category)
@@ -204,19 +206,21 @@ open class SendMessageJob(
         }
 
         val extensionSessionKey =
-            Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, it) }, null)
+            Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, accountId, it) }, null)
 
         val privateKey = Session.getEd25519PrivateKey() ?: return
+        val plaintext = if (message.isAttachment() || message.isSticker() || message.isContact()) {
+            message.content!!.base64RawUrlDecode()
+        } else {
+            message.content!!.toByteArray()
+        }
         val encryptContent = encryptedProtocol.encryptMessage(
             privateKey,
-            if (message.isAttachment() || message.isSticker() || message.isContact()) {
-                message.content!!.base64RawUrlDecode()
-            } else {
-                message.content!!.toByteArray()
-            },
+            plaintext,
             participantSessionKey.publicKey!!.base64RawUrlDecode(),
             participantSessionKey.sessionId,
-            extensionSessionKey?.publicKey?.base64RawUrlDecode(), extensionSessionKey?.sessionId
+            extensionSessionKey?.publicKey?.base64RawUrlDecode(),
+            extensionSessionKey?.sessionId
         )
 
         val blazeParam = BlazeMessageParam(

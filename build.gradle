@@ -69,6 +69,7 @@ buildscript {
         ext.markwonVersion = '4.6.2'
         ext.prism4jVersion = '2.0.0'
         ext.swirlVersion = '1.3.0'
+        ext.indicatorseekbarVersion = '2.1.2'
 
         ext.mapboxSdkVersion= '9.6.1'
         ext.mapboxMarkerVersion= '0.4.0'
@@ -142,6 +143,7 @@ allprojects {
                 includeGroup("org.jetbrains.anko")
                 includeModule("jp.wasabeef", "glide-transformations")
                 includeModule("com.dmitrymalkovich.android", "progress-fab")
+                includeModule("com.github.warkiz.widget", "indicatorseekbar")
             }
         }
     }
