@@ -14,6 +14,9 @@ interface PropertyDao : BaseDao<Property> {
     @Query("SELECT value FROM properties WHERE `key` = :key")
     suspend fun findValueByKey(key: String): String?
 
+    @Query("SELECT value FROM properties WHERE `key` = :key")
+    fun findValueByKeySync(key: String): String?
+
     @Query("UPDATE properties SET value = :value, updated_at = :updatedAt WHERE `key` = :key")
     suspend fun updateValueByKey(key: String, value: String, updatedAt: String = nowInUtc())
 

@@ -17,6 +17,7 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 import one.mixin.android.Constants.API.Mixin_WS_URL
 import one.mixin.android.Constants.API.WS_URL
+import one.mixin.android.Constants.STATUS_OFFSET
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.service.AccountService
@@ -24,11 +25,12 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
-import one.mixin.android.db.OffsetDao
+import one.mixin.android.db.PropertyDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.di.isNeedSwitch
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.ungzip
 import one.mixin.android.job.DecryptCallMessage.Companion.listPendingOfferHandled
 import one.mixin.android.job.MixinJobManager
@@ -41,8 +43,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.Offset
-import one.mixin.android.vo.STATUS_OFFSET
+import one.mixin.android.vo.Property
 import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
 import java.util.concurrent.ConcurrentHashMap
@@ -55,7 +56,7 @@ class ChatWebSocket(
     val accountService: AccountService,
     val conversationDao: ConversationDao,
     val messageDao: MessageDao,
-    private val offsetDao: OffsetDao,
+    private val propertyDao: PropertyDao,
     private val floodMessageDao: FloodMessageDao,
     val jobManager: MixinJobManager,
     private val linkState: LinkState,
@@ -273,7 +274,7 @@ class ChatWebSocket(
         val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
-            offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
+            propertyDao.insert(Property(STATUS_OFFSET, data.updatedAt, nowInUtc()))
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
             if (data.userId == accountId && data.category.isEmpty()) {
                 makeMessageStatus(data.status, data.messageId)

@@ -42,7 +42,6 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
@@ -122,9 +121,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var participantSessionDao: ParticipantSessionDao
-    @Inject
-    @Transient
-    lateinit var offsetDao: OffsetDao
     @Inject
     @Transient
     lateinit var assetDao: AssetDao

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 40,
-    "identityHash": "6e545c6d5a47c95c77fdd7150d5fc52e",
+    "identityHash": "8d906b4ccdd0ebac30c2839958e8bc53",
     "entities": [
       {
         "tableName": "users",
@@ -101,6 +101,7 @@
               "relationship",
               "full_name"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_users_relationship_full_name` ON `${TABLE_NAME}` (`relationship`, `full_name`)"
           }
         ],
@@ -227,6 +228,7 @@
               "pin_time",
               "last_message_created_at"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_conversations_pin_time_last_message_created_at` ON `${TABLE_NAME}` (`pin_time`, `last_message_created_at`)"
           }
         ],
@@ -443,6 +445,7 @@
               "conversation_id",
               "created_at"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_created_at` ON `${TABLE_NAME}` (`conversation_id`, `created_at`)"
           },
           {
@@ -452,6 +455,7 @@
               "conversation_id",
               "category"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_category` ON `${TABLE_NAME}` (`conversation_id`, `category`)"
           },
           {
@@ -461,6 +465,7 @@
               "conversation_id",
               "quote_message_id"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_quote_message_id` ON `${TABLE_NAME}` (`conversation_id`, `quote_message_id`)"
           },
           {
@@ -472,6 +477,7 @@
               "user_id",
               "created_at"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_status_user_id_created_at` ON `${TABLE_NAME}` (`conversation_id`, `status`, `user_id`, `created_at`)"
           }
         ],
@@ -586,32 +592,6 @@
             "conversation_id",
             "user_id",
             "session_id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "offsets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `timestamp` TEXT NOT NULL, PRIMARY KEY(`key`))",
-        "fields": [
-          {
-            "fieldPath": "key",
-            "columnName": "key",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "timestamp",
-            "columnName": "timestamp",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "key"
           ],
           "autoGenerate": false
         },
@@ -1586,6 +1566,7 @@
             "columnNames": [
               "action"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_jobs_action` ON `${TABLE_NAME}` (`action`)"
           }
         ],
@@ -1633,6 +1614,7 @@
             "columnNames": [
               "conversation_id"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_message_mentions_conversation_id` ON `${TABLE_NAME}` (`conversation_id`)"
           }
         ],
@@ -2034,6 +2016,7 @@
             "columnNames": [
               "conversation_id"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_pin_messages_conversation_id` ON `${TABLE_NAME}` (`conversation_id`)"
           }
         ],
@@ -2075,7 +2058,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6e545c6d5a47c95c77fdd7150d5fc52e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8d906b4ccdd0ebac30c2839958e8bc53')"
     ]
   }
 }

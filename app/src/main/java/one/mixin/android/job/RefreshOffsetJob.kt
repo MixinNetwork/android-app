@@ -1,9 +1,10 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.Constants.STATUS_OFFSET
 import one.mixin.android.extension.getEpochNano
-import one.mixin.android.vo.Offset
-import one.mixin.android.vo.STATUS_OFFSET
+import one.mixin.android.extension.nowInUtc
+import one.mixin.android.vo.Property
 import java.util.UUID
 
 class RefreshOffsetJob : MixinJob(
@@ -24,8 +25,7 @@ class RefreshOffsetJob : MixinJob(
     }
 
     override fun onRun() {
-
-        val statusOffset = offsetDao.getStatusOffset()
+        val statusOffset = propertyDao.findValueByKeySync(STATUS_OFFSET)
         var status = statusOffset?.getEpochNano() ?: firstInstallTime
         while (true) {
             val response = messageService.messageStatusOffset(status).execute().body()
@@ -36,7 +36,7 @@ class RefreshOffsetJob : MixinJob(
                 }
                 for (m in blazeMessages) {
                     makeMessageStatus(m.status, m.messageId)
-                    offsetDao.insert(Offset(STATUS_OFFSET, m.updatedAt))
+                    propertyDao.insert(Property(STATUS_OFFSET, m.updatedAt, nowInUtc()))
                 }
                 if (blazeMessages.count() > 0 && blazeMessages.last().updatedAt.getEpochNano() == status) {
                     break

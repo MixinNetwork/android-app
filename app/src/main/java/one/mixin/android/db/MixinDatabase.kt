@@ -58,7 +58,6 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageMention
-import one.mixin.android.vo.Offset
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
@@ -82,7 +81,6 @@ import one.mixin.android.vo.User
         (Message::class),
         (Participant::class),
         (ParticipantSession::class),
-        (Offset::class),
         (Asset::class),
         (AssetsExtra::class),
         (Snapshot::class),
@@ -117,7 +115,6 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun participantSessionDao(): ParticipantSessionDao
     abstract fun participantDao(): ParticipantDao
-    abstract fun offsetDao(): OffsetDao
     abstract fun assetDao(): AssetDao
     abstract fun assetsExtraDao(): AssetsExtraDao
     abstract fun snapshotDao(): SnapshotDao

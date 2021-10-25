@@ -286,6 +286,7 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_39_40: Migration = object : Migration(39, 40) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))")
+                database.execSQL(" DROP TABLE IF EXISTS `offsets`")
             }
         }
     }

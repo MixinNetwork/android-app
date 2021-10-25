@@ -47,10 +47,6 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideOffsetDao(db: MixinDatabase) = db.offsetDao()
-
-    @Singleton
-    @Provides
     fun provideAssetExtraDao(db: MixinDatabase) = db.assetsExtraDao()
 
     @Singleton

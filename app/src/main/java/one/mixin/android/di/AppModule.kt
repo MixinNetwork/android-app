@@ -49,7 +49,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
-import one.mixin.android.db.OffsetDao
+import one.mixin.android.db.PropertyDao
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
@@ -319,13 +319,13 @@ object AppModule {
         accountService: AccountService,
         conversationDao: ConversationDao,
         messageDao: MessageDao,
-        offsetDao: OffsetDao,
+        propertyDao: PropertyDao,
         floodMessageDao: FloodMessageDao,
         jobManager: MixinJobManager,
         linkState: LinkState,
         jobDao: JobDao
     ): ChatWebSocket =
-        ChatWebSocket(okHttp, app, accountService, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState, jobDao)
+        ChatWebSocket(okHttp, app, accountService, conversationDao, messageDao, propertyDao, floodMessageDao, jobManager, linkState, jobDao)
 
     @Provides
     @Singleton
