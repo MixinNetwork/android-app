@@ -170,7 +170,7 @@ constructor(
 
     fun insertUser(user: User) = userDao.insertUpdate(user, appDao)
 
-    suspend fun findUserIdByAppNumber(conversationId: String, appNumber: String) = userDao.findUserIdByAppNumber(conversationId, appNumber)
+    suspend fun findAppByAppNumber(conversationId: String, appNumber: String) = appDao.findAppByAppNumber(conversationId, appNumber)
 
     suspend fun createCircle(name: String) = circleService.createCircle(CircleName(name))
 
