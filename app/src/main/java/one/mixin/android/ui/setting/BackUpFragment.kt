@@ -14,8 +14,8 @@ import android.view.View.VISIBLE
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.RequiresApi
-import androidx.annotation.RequiresPermission
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -223,15 +223,24 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             requireContext().contentResolver
                 .takePersistableUriPermission(uri, takeFlags)
+            lifecycleScope.launch {
+                findBackUp()
+            }
             Timber.d("${canUserAccessBackupDirectory(requireContext())}")
         }
     }
 
-    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun findBackUp() = lifecycleScope.launch(Dispatchers.IO) {
         val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             findBackupApi29(requireContext(), coroutineContext)
         } else {
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return@launch
+            }
             findBackup(requireContext(), coroutineContext)
         }
         withContext(Dispatchers.Main) {
@@ -246,9 +255,13 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     val time = info.lastModified.run {
                         this.getRelativeTimeSpan()
                     }
-                    backupInfo.text = getString(R.string.backup_external_storage, time)
                     backupPath.text = getString(R.string.restore_path, info.path)
                     backupSize.text = getString(R.string.restore_size, info.length.fileSize())
+                    if (info.length <= 0L) {
+                        backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
+                    } else {
+                        backupInfo.text = getString(R.string.backup_external_storage, time)
+                    }
                     backupSize.visibility = VISIBLE
                     backupPath.visibility = VISIBLE
                     deleteBn.visibility = VISIBLE
