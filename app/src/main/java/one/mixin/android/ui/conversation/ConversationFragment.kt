@@ -341,13 +341,9 @@ class ConversationFragment() :
         }
     }
 
-    private var previewDialogFragment: PreviewDialogFragment? = null
-
     private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri) -> Unit) {
-        if (previewDialogFragment == null) {
-            previewDialogFragment = PreviewDialogFragment.newInstance(isVideo)
-        }
-        previewDialogFragment?.show(parentFragmentManager, uri, okText, action)
+        val previewDialogFragment = PreviewDialogFragment.newInstance(isVideo)
+        previewDialogFragment.show(parentFragmentManager, uri, okText, action)
     }
 
     fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
@@ -1285,7 +1281,6 @@ class ConversationFragment() :
                 }
             }
         }
-        previewDialogFragment?.release()
         AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
         context?.let {

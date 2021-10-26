@@ -119,6 +119,12 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
         albumMediaCollection.onDestroy()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        callback = null
+        rvCallback = null
+    }
+
     override fun onAlbumMediaLoad(cursor: Cursor?) {
         if (cursor == null || cursor.isClosed) return
 

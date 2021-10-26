@@ -111,6 +111,8 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         requireContext().contentResolver.unregisterContentObserver(internalObserver)
         requireContext().contentResolver.unregisterContentObserver(externalObserver)
         albumCollection.onDestroy()
+        callback = null
+        rvCallback = null
     }
 
     override fun onAlbumLoad(cursor: Cursor?) {

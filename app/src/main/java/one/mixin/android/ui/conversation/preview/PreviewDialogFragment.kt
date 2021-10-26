@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation.preview
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -27,6 +28,7 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
@@ -48,11 +50,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     private var currentState = false
 
-    private val mixinPlayer: MixinPlayer by lazy {
-        MixinPlayer().apply {
-            setOnVideoPlayerListener(videoListener)
-        }
-    }
+    private var mixinPlayer: MixinPlayer? = null
 
     override fun onResume() {
         super.onResume()
@@ -61,20 +59,41 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
             setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         }
         if (currentState) {
-            mixinPlayer.start()
+            mixinPlayer?.start()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        currentState = mixinPlayer.isPlaying()
-        mixinPlayer.pause()
+        currentState = mixinPlayer?.isPlaying() == true
+        mixinPlayer?.pause()
     }
 
-    fun release() {
-        if (isVideo) {
-            mixinPlayer.release()
-        }
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        Timber.d("@@@ onDismiss")
+    }
+
+    override fun onDestroyView() {
+        Timber.d("@@@ onDestroyView")
+        super.onDestroyView()
+        action = null
+        mediaDialogView = null
+        _binding = null
+        _videoBinding = null
+        mixinPlayer?.setOnVideoPlayerListener(null)
+        mixinPlayer?.release()
+        mixinPlayer = null
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        Timber.d("@@@ onDetach")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.d("@@@ onDestroy")
     }
 
     private var mediaDialogView: View? = null
@@ -98,23 +117,29 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                     toast(R.string.error_format)
                     dismiss()
                 }
-                mixinPlayer.loadVideo(uri.toString())
-                mixinPlayer.setVideoTextureView(videoBinding.dialogVideoTexture)
-                videoBinding.time.setVideoPath(uri!!.getFilePath(requireContext()))
-                Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(this).subscribe {
-                        if (mixinPlayer.duration() != 0 && mixinPlayer.isPlaying()) {
-                            videoBinding.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
+                mixinPlayer = MixinPlayer().apply {
+                    setOnVideoPlayerListener(videoListener)
+                    loadVideo(uri.toString())
+                    setVideoTextureView(videoBinding.dialogVideoTexture)
+                    videoBinding.time.setVideoPath(uri!!.getFilePath(requireContext()))
+                    Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDispose(this@PreviewDialogFragment).subscribe {
+                            if (duration() != 0 && isPlaying()) {
+                                videoBinding.time.progress = getCurrentPos().toFloat() / duration()
+                            }
                         }
+                    okText?.let { videoBinding.dialogOk.text = it }
+                    videoBinding.dialogOk.setOnClickListener {
+                        action!!(uri!!)
+                        dismiss()
                     }
-                okText?.let { videoBinding.dialogOk.text = it }
-                videoBinding.dialogOk.setOnClickListener {
+                }
+            } else {
+                binding.dialogSendIb.setOnClickListener {
                     action!!(uri!!)
                     dismiss()
                 }
-            } else {
-                binding.dialogSendIb.setOnClickListener { action!!(uri!!); dismiss() }
                 binding.dialogIv.loadImage(uri)
             }
         }
@@ -134,9 +159,9 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         if (isVideo) {
             videoBinding.dialogPlay.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    mixinPlayer.pause()
+                    mixinPlayer?.pause()
                 } else {
-                    mixinPlayer.start()
+                    mixinPlayer?.start()
                 }
             }
             videoBinding.time.setDelegate(this)
@@ -190,16 +215,18 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     override fun didStopDragging() {
         if (currentState) {
-            mixinPlayer.start()
+            mixinPlayer?.start()
         }
     }
 
     override fun didStartDragging() {
-        currentState = mixinPlayer.isPlaying()
-        mixinPlayer.pause()
+        currentState = mixinPlayer?.isPlaying() == true
+        mixinPlayer?.pause()
     }
 
     override fun onPlayProgressChanged(progress: Float) {
-        mixinPlayer.seekTo((progress * mixinPlayer.duration()).toInt())
+        mixinPlayer?.let {
+            it.seekTo((progress * it.duration()).toInt())
+        }
     }
 }
