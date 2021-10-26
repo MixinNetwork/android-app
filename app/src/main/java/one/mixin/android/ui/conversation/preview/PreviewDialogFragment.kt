@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation.preview
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -28,7 +27,6 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
@@ -69,13 +67,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         mixinPlayer?.pause()
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        Timber.d("@@@ onDismiss")
-    }
-
     override fun onDestroyView() {
-        Timber.d("@@@ onDestroyView")
         super.onDestroyView()
         action = null
         mediaDialogView = null
@@ -84,16 +76,6 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         mixinPlayer?.setOnVideoPlayerListener(null)
         mixinPlayer?.release()
         mixinPlayer = null
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Timber.d("@@@ onDetach")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Timber.d("@@@ onDestroy")
     }
 
     private var mediaDialogView: View? = null
