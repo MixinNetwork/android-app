@@ -249,6 +249,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
+import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
@@ -340,13 +341,13 @@ class ConversationFragment() :
         }
     }
 
-    private var previewVideoDialogFragment: PreviewDialogFragment? = null
+    private var previewDialogFragment: PreviewDialogFragment? = null
 
-    private fun showVideoPreview(uri: Uri, okText: String? = null, action: (Uri) -> Unit) {
-        if (previewVideoDialogFragment == null) {
-            previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
+    private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri) -> Unit) {
+        if (previewDialogFragment == null) {
+            previewDialogFragment = PreviewDialogFragment.newInstance(isVideo)
         }
-        previewVideoDialogFragment?.show(parentFragmentManager, uri, okText, action)
+        previewDialogFragment?.show(parentFragmentManager, uri, okText, action)
     }
 
     fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
@@ -1284,7 +1285,7 @@ class ConversationFragment() :
                 }
             }
         }
-        previewVideoDialogFragment?.release()
+        previewDialogFragment?.release()
         AudioPlayer.setStatusListener(null)
         AudioPlayer.release()
         context?.let {
@@ -2372,12 +2373,19 @@ class ConversationFragment() :
     private fun initGalleryLayout() {
         val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
         galleryAlbumFragment.callback = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean, send: Boolean) {
-                if (isVideo) {
+            override fun onItemClick(pos: Int, item: Item, send: Boolean) {
+                val uri = item.uri
+                if (item.isVideo) {
                     if (send) {
                         sendVideoMessage(uri)
                     } else {
-                        showVideoPreview(uri, getString(R.string.send)) { sendVideoMessage(uri) }
+                        showPreview(uri, getString(R.string.send), true) { sendVideoMessage(uri) }
+                    }
+                } else if (item.isGif || item.isWebp) {
+                    if (send) {
+                        sendImageMessage(uri)
+                    } else {
+                        showPreview(uri, getString(R.string.send), false) { sendImageMessage(uri) }
                     }
                 } else {
                     if (send) {

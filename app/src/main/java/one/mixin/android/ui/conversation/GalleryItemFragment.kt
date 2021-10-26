@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation
 
 import android.database.Cursor
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -77,8 +76,8 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
             adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
             rv.adapter = adapter
             adapter.listener = object : GalleryCallback {
-                override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean, send: Boolean) {
-                    callback?.onItemClick(pos, uri, isVideo, send)
+                override fun onItemClick(pos: Int, item: Item, send: Boolean) {
+                    callback?.onItemClick(pos, item, send)
                 }
 
                 override fun onCameraClick() {
