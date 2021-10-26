@@ -126,6 +126,7 @@ class WalletSearchFragment : BaseFragment() {
     override fun onStop() {
         super.onStop()
         currentSearch?.cancel()
+        binding.pb.isVisible = false
     }
 
     override fun onDestroyView() {

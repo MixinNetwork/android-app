@@ -125,7 +125,7 @@ class GalleryActivity :
         super.onDestroy()
         mAlbumCollection.onDestroy()
         mSpec.onSelectedListener = null
-        previewVideoDialogFragment?.release()
+        previewVideoDialogFragment = null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

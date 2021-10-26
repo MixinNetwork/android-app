@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation
 
 import android.database.ContentObserver
 import android.database.Cursor
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.View
@@ -18,6 +17,7 @@ import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
+import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumCollection
 
 class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCollection.AlbumCallbacks {
@@ -59,8 +59,8 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
             viewPager.currentItem = 0
             va.displayedChild = POS_LOADING
             albumAdapter.callback = object : GalleryCallback {
-                override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean, send: Boolean) {
-                    callback?.onItemClick(pos, uri, isVideo, send)
+                override fun onItemClick(pos: Int, item: Item, send: Boolean) {
+                    callback?.onItemClick(pos, item, send)
                 }
 
                 override fun onCameraClick() {
@@ -111,6 +111,8 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
         requireContext().contentResolver.unregisterContentObserver(internalObserver)
         requireContext().contentResolver.unregisterContentObserver(externalObserver)
         albumCollection.onDestroy()
+        callback = null
+        rvCallback = null
     }
 
     override fun onAlbumLoad(cursor: Cursor?) {
