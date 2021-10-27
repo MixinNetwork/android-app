@@ -129,9 +129,13 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))
         Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
         if (list.size < EACH) {
+            Timber.d("Attachment start delete ancient media path")
             MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()
+            Timber.d("Attachment delete ancient media path completed!!!")
             if (propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() != true) {
+                Timber.d("Attachment start delete media path")
                 MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
+                Timber.d("Attachment delete media path completed!!!")
             }
             propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
             Timber.d("Attachment migration completed!!!")
