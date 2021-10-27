@@ -106,14 +106,6 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
     fun findContactUsers(): LiveData<List<User>>
 
-    @Query(
-        """
-        SELECT u.user_id FROM users u INNER JOIN participants p ON p.user_id = u.user_id 
-        WHERE p.conversation_id = :conversationId AND u.identity_number = :appNumber
-        """
-    )
-    suspend fun findUserIdByAppNumber(conversationId: String, appNumber: String): String?
-
     @Query("SELECT * FROM users WHERE user_id IN (:userIds)")
     suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
 

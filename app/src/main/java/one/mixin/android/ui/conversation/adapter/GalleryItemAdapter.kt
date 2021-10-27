@@ -105,7 +105,7 @@ class GalleryItemAdapter(
                 val send = selectedUri == item.uri
                 selectedUri = null
                 selectedPos = null
-                listener?.onItemClick(position, item.uri, item.isVideo, send)
+                listener?.onItemClick(position, item, send)
                 notifyItemChanged(position)
             }
             imageView.setOnLongClickListener {

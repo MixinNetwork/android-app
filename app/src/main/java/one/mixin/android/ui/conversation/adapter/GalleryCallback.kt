@@ -1,9 +1,9 @@
 package one.mixin.android.ui.conversation.adapter
 
-import android.net.Uri
+import one.mixin.android.widget.gallery.internal.entity.Item
 
 interface GalleryCallback {
-    fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean, send: Boolean)
+    fun onItemClick(pos: Int, item: Item, send: Boolean)
 
     fun onCameraClick()
 }

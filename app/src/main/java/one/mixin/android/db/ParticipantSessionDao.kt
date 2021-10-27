@@ -24,6 +24,10 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     fun getParticipantSessionKeyWithoutSelf(conversationId: String, userId: String): ParticipantSessionKey?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId LIMIT 1")
+    fun getParticipantSessionKeyByUserId(conversationId: String, userId: String): ParticipantSessionKey?
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId LIMIT 1")
     fun getParticipantSessionKeyBySessionId(conversationId: String, userId: String, sessionId: String): ParticipantSessionKey?
 
