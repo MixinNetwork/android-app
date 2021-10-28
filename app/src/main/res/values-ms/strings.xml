@@ -335,7 +335,7 @@
     <string name="chat_group_call_invite">%1$s telah menjemput anda ke panggilan kumpulan</string>
     <string name="chat_group_call_decline">%1$s telah menolak panggilan kumpulan</string>
     <string name="chat_group_call_cancel">%1$s telah membatalkan panggilan kumpulan</string>
-    <string name="chat_group_call_end">Panggilan kumpulan berakhir, tempoh: %1$s</string>
+    <string name="chat_group_call_end_with_duration">Panggilan kumpulan berakhir, tempoh: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Sambungan rakan telah ditutup, sila cuba lagi</string>
     <string name="chat_call_bad_network_you">Sambungan tidak stabil</string>
     <string name="chat_call_bad_network">Sambungan pengguna lain tidak stabil</string>

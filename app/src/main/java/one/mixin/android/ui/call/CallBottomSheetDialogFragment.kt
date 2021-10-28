@@ -41,6 +41,7 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.showPipPermissionNotification
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
@@ -270,6 +271,14 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (state == CallService.CallState.STATE_IDLE) {
                         if (callState.isNoneCallType()) {
                             handleDisconnected()
+                        } else {
+                            cid?.let {
+                                val groupCallState = callState.getGroupCallStateOrNull(cid)
+                                if (groupCallState == null || groupCallState.users?.isNullOrEmpty() == true) {
+                                    toast(R.string.chat_group_call_end)
+                                    dismiss()
+                                }
+                            }
                         }
                         return@Observer
                     }

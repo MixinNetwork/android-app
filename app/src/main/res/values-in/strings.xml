@@ -322,7 +322,7 @@
     <string name="chat_group_call_invite">%1$s telah mengundang Anda ke panggilan grup</string>
     <string name="chat_group_call_decline">%1$s telah menolak panggilan grup</string>
     <string name="chat_group_call_cancel">%1$s telah membatalkan panggilan grup</string>
-    <string name="chat_group_call_end">Panggilan grup berakhir, durasi: %1$s</string>
+    <string name="chat_group_call_end_with_duration">Panggilan grup berakhir, durasi: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Sambungan peer telah ditutup, coba lagi</string>
     <string name="chat_call_bad_network_you">Sambungan tidak stabil</string>
     <string name="chat_call_bad_network">Sambungan pengguna lain tidak stabil</string>

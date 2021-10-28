@@ -368,16 +368,11 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         state >= CallService.CallState.STATE_ANSWERING && conversationId == this.conversationId
 
     fun isPendingGroupCall(conversationId: String): Boolean {
-        val exists = groupCallStates.any { it.conversationId == conversationId }
-        return if (this.conversationId == conversationId) {
-            if (isNotIdle()) {
-                false
-            } else {
-                exists
-            }
-        } else {
-            exists
+        if (this.conversationId == conversationId && isNotIdle()) {
+            return false
         }
+        val groupCallState = groupCallStates.find { it.conversationId == conversationId } ?: return false
+        return groupCallState.users?.isNullOrEmpty() != true
     }
 
     fun handleHangup(ctx: Context, join: Boolean = false) {

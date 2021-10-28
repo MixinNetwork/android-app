@@ -345,7 +345,8 @@
     <string name="chat_group_call_invite">%1$s 邀请你加入群组语音</string>
     <string name="chat_group_call_decline">%1$s 已拒绝群组语音</string>
     <string name="chat_group_call_cancel">%1$s 已取消群组语音</string>
-    <string name="chat_group_call_end">群组语音结束，时长 %1$s</string>
+    <string name="chat_group_call_end">群组语音已结束</string>
+    <string name="chat_group_call_end_with_duration">群组语音结束，时长 %1$s</string>
     <string name="chat_group_call_remote_peer_closed">连接已结束，请重试</string>
     <string name="chat_call_title">语音</string>
     <string name="chat_call_add">添加</string>
