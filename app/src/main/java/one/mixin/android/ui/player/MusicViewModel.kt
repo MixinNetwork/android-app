@@ -219,7 +219,7 @@ internal constructor(
     ) : ViewModelProvider.NewInstanceFactory() {
 
         @Suppress("unchecked_cast")
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return MusicViewModel(mediaId, musicServiceConnection) as T
         }
     }
