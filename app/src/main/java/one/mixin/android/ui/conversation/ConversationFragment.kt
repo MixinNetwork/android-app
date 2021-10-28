@@ -1385,7 +1385,7 @@ class ConversationFragment() :
                     if (inputContentInfo != null) {
                         val url = inputContentInfo.contentUri.getFilePath(requireContext())
                             ?: return false
-                        getEditorResult.launch(Pair(url.toUri(), getString(R.string.send)))
+                        sendImageMessage(url.toUri())
                     }
                     return true
                 }
