@@ -688,6 +688,7 @@ class WebFragment : BaseFragment() {
                 immersive,
                 reloadThemeAction = { reloadTheme() },
                 playlistAction = { showPlaylist(it) },
+                closeAction = { closeSelf() },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -705,6 +706,11 @@ class WebFragment : BaseFragment() {
             }
             webView.loadUrl(url, extraHeaders)
         }
+    }
+
+    private fun closeSelf() {
+        if (viewDestroyed()) return
+        requireActivity().finish()
     }
 
     private fun showPlaylist(playlist: Array<String>) {
@@ -1230,6 +1236,7 @@ class WebFragment : BaseFragment() {
         val immersive: Boolean,
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
+        var closeAction: (() -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1257,6 +1264,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun playlist(list: Array<String>) {
             playlistAction?.invoke(list)
+        }
+
+        @JavascriptInterface
+        fun close() {
+            closeAction?.invoke()
         }
     }
 
