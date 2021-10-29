@@ -492,6 +492,11 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
     }
 
+    override fun recreate() {
+        super.recreate()
+        intent.replaceExtras(Bundle())
+    }
+
     fun showCapture(scan: Boolean) {
         getScanResult.launch(Pair(ARGS_SHOW_SCAN, scan))
     }
