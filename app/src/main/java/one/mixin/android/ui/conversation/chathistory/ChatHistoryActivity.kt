@@ -343,6 +343,15 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onAudioFileClick(messageItem: ChatHistoryMessageItem) {
             }
 
+            override fun onActionClick(action: String, userId: String?) {
+                if (openInputAction(action) || userId == null) return
+
+                lifecycleScope.launch {
+                    val app = userRepository.findAppById(userId)
+                    action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, app)
+                }
+            }
+
             override fun onAppCardClick(appCard: AppCardData, userId: String?) {
                 if (openInputAction(appCard.action)) return
 
