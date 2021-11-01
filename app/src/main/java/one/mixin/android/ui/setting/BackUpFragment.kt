@@ -85,6 +85,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             backupChoose.setOnClickListener {
                 chooseFolder()
             }
+            backupAuto.isVisible = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
             backupAuto.setOnClickListener {
                 showBackupDialog()
             }
