@@ -60,7 +60,7 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) : BaseView
                 } catch (e: Exception) {
                     ""
                 }
-                binding.chatInfo.text = context.getString(R.string.chat_group_call_end, duration)
+                binding.chatInfo.text = context.getString(R.string.chat_group_call_end_with_duration, duration)
             }
         }
     }
