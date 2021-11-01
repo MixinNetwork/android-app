@@ -43,10 +43,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT
-import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
+import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -84,7 +83,6 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
-import one.mixin.android.job.BackupMigrationJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
@@ -93,6 +91,8 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.TranscriptAttachmentMigrationJob
+import one.mixin.android.job.TranscriptAttachmentUpdateJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
@@ -123,6 +123,7 @@ import one.mixin.android.ui.search.SearchSingleFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
+import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.RootUtil
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
@@ -221,12 +222,6 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_FTS4_UPGRADE, false)) {
-            InitializeActivity.showFts(this)
-            finish()
-            return
-        }
-
         if (checkNeedGo2MigrationPage()) {
             InitializeActivity.showDBUpgrade(this)
             finish()
@@ -247,11 +242,6 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
-            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
-            delayShowModifyMobile()
-        }
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -266,43 +256,10 @@ class MainActivity : BlazeBaseActivity() {
             AppCenter.setUserId(it.userId)
         }
 
-        if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
-            jobManager.addJobInBackground(RefreshCircleJob())
-            defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
-        }
-        jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        jobManager.addJobInBackground(BackupJob())
-        if (!defaultSharedPreferences.getBoolean(PREF_ATTACHMENT, false)) {
-            jobManager.addJobInBackground(AttachmentMigrationJob())
-        }
-
-        if (!defaultSharedPreferences.getBoolean(PREF_BACKUP, false)) {
-            jobManager.addJobInBackground(BackupMigrationJob())
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            jobManager.addJobInBackground(RefreshAccountJob())
-
-            if (Fiats.isRateEmpty()) {
-                jobManager.addJobInBackground(RefreshFiatsJob())
-            }
-
-            WorkManager.getInstance(this@MainActivity)
-                .enqueueUniqueOneTimeNetworkWorkRequest<RefreshContactWorker>("RefreshContactWorker")
-            WorkManager.getInstance(this@MainActivity)
-                .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
-            WorkManager.getInstance(this@MainActivity).pruneWork()
-        }
-        checkRoot()
-        checkUpdate()
-        checkStorage()
-
         initView()
         handlerCode(intent)
 
-        sendSafetyNetRequest()
-        checkBatteryOptimization()
-        refreshStickerAlbum()
+        checkAsync()
     }
 
     override fun onStart() {
@@ -313,6 +270,69 @@ class MainActivity : BlazeBaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         appUpdateManager.unregisterListener(updatedListener)
+    }
+
+    private fun checkAsync() = lifecycleScope.launch(Dispatchers.IO) {
+        checkRoot()
+        checkUpdate()
+        checkStorage()
+        sendSafetyNetRequest()
+        checkBatteryOptimization()
+        refreshStickerAlbum()
+
+        if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
+            jobManager.addJobInBackground(RefreshCircleJob())
+            defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
+        }
+
+        jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
+        jobManager.addJobInBackground(BackupJob())
+
+        jobManager.addJobInBackground(RefreshAccountJob())
+
+        if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
+            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
+            delayShowModifyMobile()
+        }
+
+        if (Fiats.isRateEmpty()) {
+            jobManager.addJobInBackground(RefreshFiatsJob())
+        }
+
+        if (PropertyHelper.checkFts4Upgrade()) {
+            InitializeActivity.showFts(this@MainActivity)
+            finish()
+            return@launch
+        }
+
+        val sdk = PropertyHelper.findValueByKey(PREF_DEVICE_SDK)?.toIntOrNull()
+        if (sdk == null) {
+            PropertyHelper.updateKeyValue(PREF_DEVICE_SDK, Build.VERSION.SDK_INT.toString())
+        } else if (sdk < Build.VERSION_CODES.Q && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            PropertyHelper.migration()
+        }
+
+        PropertyHelper.checkAttachmentMigrated() {
+            jobManager.addJobInBackground(AttachmentMigrationJob())
+        }
+
+        PropertyHelper.checkTranscriptAttachmentMigrated() {
+            jobManager.addJobInBackground(TranscriptAttachmentMigrationJob())
+        }
+
+        PropertyHelper.checkTranscriptAttachmentUpdated() {
+            jobManager.addJobInBackground(TranscriptAttachmentUpdateJob())
+        }
+
+        PropertyHelper.checkBackupMigrated() {
+            jobManager.addJobInBackground(BackupJob(force = true, delete = true))
+        }
+
+        WorkManager.getInstance(this@MainActivity)
+            .enqueueUniqueOneTimeNetworkWorkRequest<RefreshContactWorker>("RefreshContactWorker")
+        WorkManager.getInstance(this@MainActivity)
+            .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
+        WorkManager.getInstance(this@MainActivity).pruneWork()
     }
 
     @SuppressLint("RestrictedApi")

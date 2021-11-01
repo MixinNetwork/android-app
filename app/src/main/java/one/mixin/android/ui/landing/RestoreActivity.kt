@@ -4,9 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -20,16 +26,24 @@ import one.mixin.android.databinding.ActivityRestoreBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.getBackupPath
+import one.mixin.android.extension.getDisplayPath
+import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.setting.ChooseFolderContract
+import one.mixin.android.util.backup.BackupInfo
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
+import one.mixin.android.util.backup.canUserAccessBackupDirectory
+import one.mixin.android.util.backup.findBackup
+import one.mixin.android.util.backup.findBackupApi29
 import one.mixin.android.util.backup.restore
-import java.io.File
+import one.mixin.android.util.backup.restoreApi29
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -38,10 +52,17 @@ class RestoreActivity : BaseActivity() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    private lateinit var chooseFolderResult: ActivityResultLauncher<String?>
+
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, true)
+        chooseFolderResult = registerForActivityResult(
+            ChooseFolderContract(),
+            activityResultRegistry,
+            ::callbackChooseFolder
+        )
         alertDialogBuilder()
             .setMessage(R.string.restore_message)
             .setNegativeButton(R.string.restore_skip) { dialog, _ ->
@@ -59,7 +80,7 @@ class RestoreActivity : BaseActivity() {
                             if (!granted) {
                                 openPermissionSetting()
                             } else {
-                                findBackup()
+                                findBackupInfo()
                             }
                         },
                         {
@@ -74,20 +95,25 @@ class RestoreActivity : BaseActivity() {
             }
     }
 
-    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun findBackup() = lifecycleScope.launch(Dispatchers.IO) {
-        val file = one.mixin.android.util.backup.findBackup(this@RestoreActivity, coroutineContext)
+    private fun findBackupInfo() = lifecycleScope.launch(Dispatchers.IO) {
+        val backupInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            findBackupApi29(this@RestoreActivity, coroutineContext)
+        } else if (ActivityCompat.checkSelfPermission(this@RestoreActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            findBackup(this@RestoreActivity, coroutineContext)
+        } else {
+            null
+        }
         withContext(Dispatchers.Main) {
-            if (file == null) {
+            if (backupInfo == null) {
                 showErrorAlert(Result.NOT_FOUND)
             } else {
-                initUI(file)
+                initUI(backupInfo)
             }
         }
     }
 
-    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun showErrorAlert(error: Result) {
+        val userBackup = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         alertDialogBuilder()
             .apply {
                 when (error) {
@@ -97,7 +123,11 @@ class RestoreActivity : BaseActivity() {
                         )
                     }
                     Result.NOT_FOUND -> {
-                        setMessage(context.getString(R.string.restore_not_found, context.getBackupPath()?.parentFile?.absoluteFile.toString()))
+                        if (userBackup) {
+                            setMessage(context.getString(R.string.restore_choose_backup_folder))
+                        } else {
+                            setMessage(context.getString(R.string.restore_not_found, context.getLegacyBackupPath()?.parentFile?.absoluteFile.toString()))
+                        }
                     }
                     else -> {
                         setMessage(
@@ -106,8 +136,23 @@ class RestoreActivity : BaseActivity() {
                     }
                 }
             }
-            .setNegativeButton(R.string.restore_retry) { dialog, _ ->
-                findBackup()
+            .setNegativeButton(
+                if (userBackup) {
+                    R.string.restore_choose
+                } else {
+                    R.string.restore_retry
+                }
+            ) { dialog, _ ->
+                if (userBackup) {
+                    chooseFolderResult.launch(
+                        defaultSharedPreferences.getString(
+                            Constants.Account.PREF_BACKUP_DIRECTORY,
+                            null
+                        )
+                    )
+                } else {
+                    findBackupInfo()
+                }
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.restore_skip) { dialog, _ ->
@@ -121,12 +166,27 @@ class RestoreActivity : BaseActivity() {
             }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun callbackChooseFolder(uri: Uri?) {
+        if (uri != null) {
+            Timber.d(getDisplayPath(uri))
+            defaultSharedPreferences.putString(Constants.Account.PREF_BACKUP_DIRECTORY, uri.toString())
+            val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            contentResolver
+                .takePersistableUriPermission(uri, takeFlags)
+            Timber.d("${canUserAccessBackupDirectory(this)}")
+            findBackupInfo()
+        }
+    }
+
     private lateinit var binding: ActivityRestoreBinding
+
     @SuppressLint("MissingPermission")
-    private fun initUI(data: File) {
+    private fun initUI(backupInfo: BackupInfo) {
         binding = ActivityRestoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.restoreTime.text = data.lastModified().run {
+        binding.restoreTime.text = backupInfo.lastModified.run {
             this.getRelativeTimeSpan()
         }
         binding.restoreRestore.setOnClickListener {
@@ -140,7 +200,7 @@ class RestoreActivity : BaseActivity() {
                         } else {
                             showProgress()
                             BackupNotification.show(false)
-                            restore()
+                            internalRestore()
                         }
                     },
                     {
@@ -149,7 +209,7 @@ class RestoreActivity : BaseActivity() {
                     }
                 )
         }
-        binding.restoreSize.text = getString(R.string.restore_size, data.length().fileSize())
+        binding.restoreSize.text = getString(R.string.restore_size, backupInfo.length.fileSize())
         binding.restoreSkip.setOnClickListener {
             InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
@@ -158,19 +218,25 @@ class RestoreActivity : BaseActivity() {
     }
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun restore() = lifecycleScope.launch {
-        restore(this@RestoreActivity) { result ->
-            BackupNotification.cancel()
-            if (result == Result.SUCCESS) {
-                InitializeActivity.showLoading(this@RestoreActivity)
-                defaultSharedPreferences.putBoolean(
-                    Constants.Account.PREF_RESTORE,
-                    false
-                )
-                finish()
-            } else {
-                hideProgress()
-            }
+    private fun internalRestore() = lifecycleScope.launch {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            restoreApi29(this@RestoreActivity, restoreCallback)
+        } else {
+            restore(this@RestoreActivity, restoreCallback)
+        }
+    }
+
+    private val restoreCallback: (result: Result) -> Unit = { result ->
+        BackupNotification.cancel()
+        if (result == Result.SUCCESS) {
+            InitializeActivity.showLoading(this@RestoreActivity)
+            defaultSharedPreferences.putBoolean(
+                Constants.Account.PREF_RESTORE,
+                false
+            )
+            finish()
+        } else {
+            hideProgress()
         }
     }
 

@@ -2,14 +2,13 @@ package one.mixin.android.vo
 
 import android.content.Context
 import androidx.core.net.toUri
-import one.mixin.android.MixinApplication
 import one.mixin.android.extension.generateConversationPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.isFileUri
 import java.io.File
 
 interface ICategory {
@@ -129,21 +128,42 @@ fun ICategory.canRecall(): Boolean {
         type == MessageCategory.ENCRYPTED_TRANSCRIPT.name
 }
 
-private val mediaPath by lazy {
-    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
+fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {
+    if (mediaUrl == null) return null
+    if (isLive()) {
+        return mediaUrl
+    }
+    if (mediaUrl.isFileUri()) {
+        return File(mediaUrl).toUri().toString()
+    }
+    return generatePath(context, false, this, conversationId, mediaUrl)?.run {
+        if (this.exists()) return@run this
+        else return@run generatePath(context, true, this@absolutePath, conversationId, mediaUrl)
+    }?.toUri().toString()
 }
 
-fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {
-    val dirPath = mediaPath ?: return null
+private fun generatePath(
+    context: Context,
+    legacy: Boolean,
+    iCategory: ICategory,
+    conversationId: String,
+    mediaUrl: String
+): File? {
     return when {
-        mediaUrl == null -> null
-        mediaUrl.startsWith(dirPath) -> mediaUrl
-        isImage() -> File(context.getImagePath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isVideo() -> File(context.getVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isAudio() -> File(context.getAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isData() -> File(context.getDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isTranscript() -> File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
-        isLive() -> mediaUrl
+        iCategory.isImage() -> File(
+            context.getImagePath(legacy).generateConversationPath(conversationId), mediaUrl
+        )
+        iCategory.isVideo() -> File(
+            context.getVideoPath(legacy).generateConversationPath(conversationId), mediaUrl
+        )
+        iCategory.isAudio() -> File(
+            context.getAudioPath(legacy).generateConversationPath(conversationId), mediaUrl
+        )
+        iCategory.isData() -> File(
+            context.getDocumentPath(legacy).generateConversationPath(conversationId),
+            mediaUrl
+        )
+        iCategory.isTranscript() -> File(context.getTranscriptDirPath(legacy), mediaUrl)
         else -> null
     }
 }

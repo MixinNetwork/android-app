@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import okhttp3.Call
 import okhttp3.Interceptor
@@ -197,7 +196,7 @@ class TranscriptAttachmentDownloadJob(
                     }
                     imageFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
-                        Uri.fromFile(imageFile).toString(),
+                        imageFile.name,
                         imageFile.length(),
                         MediaStatus.DONE.name,
                         transcriptMessage.transcriptId,
@@ -224,7 +223,7 @@ class TranscriptAttachmentDownloadJob(
                         )
                     dataFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
-                        Uri.fromFile(dataFile).toString(),
+                        dataFile.name,
                         dataFile.length(),
                         MediaStatus.DONE.name,
                         transcriptMessage.transcriptId,
@@ -253,7 +252,7 @@ class TranscriptAttachmentDownloadJob(
                         )
                     videoFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
-                        Uri.fromFile(videoFile).toString(),
+                        videoFile.name,
                         videoFile.length(),
                         MediaStatus.DONE.name,
                         transcriptMessage.transcriptId,
@@ -276,7 +275,7 @@ class TranscriptAttachmentDownloadJob(
                         .getTranscriptFile(transcriptMessage.messageId, ".ogg")
                     audioFile.copyFromInputStream(attachmentCipherInputStream)
                     transcriptMessageDao.updateMedia(
-                        Uri.fromFile(audioFile).toString(),
+                        audioFile.name,
                         audioFile.length(),
                         MediaStatus.DONE.name,
                         transcriptMessage.transcriptId,

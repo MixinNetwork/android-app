@@ -898,6 +898,7 @@
     <string name="restore_found">找到备份</string>
     <string name="restore_skip">跳过</string>
     <string name="restore_retry">重试</string>
+    <string name="restore_choose">选择</string>
     <string name="restore_restore">还原</string>
     <string name="restore_authorization">授权</string>
     <string name="restore_message">如果您之前曾备份到外部存储并且现在想要还原备份，请给与 Mixin 相应权限以检查您外部存储里的备份。</string>
@@ -905,6 +906,7 @@
     <string name="restore_path">备份路径: %1$s</string>
     <string name="restore_failure">错误</string>
     <string name="restore_not_found">未找到备份文件，请将备份文件放入 %1$s</string>
+    <string name="restore_choose_backup_folder">选择备份文件夹</string>
     <string name="restore_not_support">不支持备份</string>
     <string name="restore_notification_title">还原正在进行中</string>
     <string name="restore_notification_content">正在准备还原&#8230;</string>
@@ -913,6 +915,8 @@
     <string name="backup_external_storage">外部存储: %1$s</string>
     <string name="backup_never">从未备份</string>
     <string name="backup">备份</string>
+    <string name="backup_choose_folder">选择文件夹</string>
+    <string name="backup_choose_a_folder">请选择用于保存备份的文件夹</string>
     <string name="backup_delete">删除备份</string>
     <string name="backup_dialog_title">自动备份到外部存储</string>
     <string name="backup_ing">正在备份到外部存储&#8230;</string>

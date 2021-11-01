@@ -93,7 +93,7 @@ public class AlbumLoader extends CursorLoader {
     // =============================================
 
     // TODO workaround, need refactor loading
-    private static final String BUCKET_ORDER_BY = "datetaken DESC LIMIT 5000";
+    private static final String BUCKET_ORDER_BY = "datetaken DESC";
 
     private AlbumLoader(Context context, String selection, String[] selectionArgs) {
         super(

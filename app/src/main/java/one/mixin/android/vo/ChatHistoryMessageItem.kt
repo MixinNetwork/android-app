@@ -16,11 +16,11 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
+import one.mixin.android.extension.isFileUri
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.toast
 import one.mixin.android.util.VideoPlayer
@@ -170,15 +170,11 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String?): MessageItem {
     )
 }
 
-private val mediaPath by lazy {
-    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
-}
 fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appContext): String? {
     if (transcriptId == null && conversationId != null) {
-        val dirPath = mediaPath ?: return null
         return when {
             mediaUrl == null -> null
-            mediaUrl.startsWith(dirPath) -> mediaUrl
+            mediaUrl.isFileUri() -> mediaUrl
             isImage() -> File(context.getImagePath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
             isVideo() -> File(context.getVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
             isAudio() -> File(context.getAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
@@ -187,12 +183,11 @@ fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appC
             else -> null
         }
     }
-    val mediaPath = MixinApplication.appContext.getMediaPath()?.toUri()?.toString() ?: return null
     val url = mediaUrl
     return when {
-        url == null -> null
+        url == null || mediaUrl == null -> null
         isLive() -> url
-        url.startsWith(mediaPath) -> url
+        mediaUrl.isFileUri() && File(mediaUrl).exists() -> url
         else -> File(context.getTranscriptDirPath(), url).toUri().toString()
     }
 }

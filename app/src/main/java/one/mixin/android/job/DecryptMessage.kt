@@ -8,6 +8,7 @@ import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -606,8 +607,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
 
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                lifecycleScope.launch {
+                    MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+                        jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                    }
                 }
 
                 generateNotification(message, data)
@@ -633,8 +636,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
 
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                MixinApplication.appContext.autoDownload(autoDownloadVideo) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                lifecycleScope.launch {
+                    MixinApplication.appContext.autoDownload(autoDownloadVideo) {
+                        jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                    }
                 }
                 generateNotification(message, data)
             }
@@ -655,8 +660,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
-                MixinApplication.appContext.autoDownload(autoDownloadDocument) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                lifecycleScope.launch {
+                    MixinApplication.appContext.autoDownload(autoDownloadDocument) {
+                        jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                    }
                 }
                 generateNotification(message, data)
             }
@@ -811,9 +818,39 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             transcript.mediaSize?.let {
                 mediaSize += it
             }
-            when {
-                transcript.isImage() -> {
-                    MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+            lifecycleScope.launch {
+                when {
+                    transcript.isImage() -> {
+                        MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+                            jobManager.addJobInBackground(
+                                TranscriptAttachmentDownloadJob(
+                                    data.conversationId,
+                                    transcript
+                                )
+                            )
+                        }
+                    }
+                    transcript.isVideo() -> {
+                        MixinApplication.appContext.autoDownload(autoDownloadVideo) {
+                            jobManager.addJobInBackground(
+                                TranscriptAttachmentDownloadJob(
+                                    data.conversationId,
+                                    transcript
+                                )
+                            )
+                        }
+                    }
+                    transcript.isData() -> {
+                        MixinApplication.appContext.autoDownload(autoDownloadDocument) {
+                            jobManager.addJobInBackground(
+                                TranscriptAttachmentDownloadJob(
+                                    data.conversationId,
+                                    transcript
+                                )
+                            )
+                        }
+                    }
+                    transcript.isAudio() -> {
                         jobManager.addJobInBackground(
                             TranscriptAttachmentDownloadJob(
                                 data.conversationId,
@@ -821,34 +858,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             )
                         )
                     }
-                }
-                transcript.isVideo() -> {
-                    MixinApplication.appContext.autoDownload(autoDownloadVideo) {
-                        jobManager.addJobInBackground(
-                            TranscriptAttachmentDownloadJob(
-                                data.conversationId,
-                                transcript
-                            )
-                        )
-                    }
-                }
-                transcript.isData() -> {
-                    MixinApplication.appContext.autoDownload(autoDownloadDocument) {
-                        jobManager.addJobInBackground(
-                            TranscriptAttachmentDownloadJob(
-                                data.conversationId,
-                                transcript
-                            )
-                        )
-                    }
-                }
-                transcript.isAudio() -> {
-                    jobManager.addJobInBackground(
-                        TranscriptAttachmentDownloadJob(
-                            data.conversationId,
-                            transcript
-                        )
-                    )
                 }
             }
         }

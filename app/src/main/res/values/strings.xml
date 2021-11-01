@@ -919,6 +919,7 @@
     <string name="restore_found">Backup found</string>
     <string name="restore_skip">SKIP</string>
     <string name="restore_retry">RETRY</string>
+    <string name="restore_choose">CHOOSE</string>
     <string name="restore_restore">RESTORE</string>
     <string name="restore_authorization">authorization</string>
     <string name="restore_message">Back up your messages and media to external storage. You can restore them when you reinstall Mixin. Your messages and media will also back up to your phone\'s internal storage. Media and messages your back up are not protected by Mixin end-to-end encryption while in external storage.</string>
@@ -926,6 +927,7 @@
     <string name="restore_path">Path: %1$s</string>
     <string name="restore_failure">Failure</string>
     <string name="restore_not_found">Not found, please copy the backup file into %1$s</string>
+    <string name="restore_choose_backup_folder">Choose backup folder</string>
     <string name="restore_not_support">Not support</string>
     <string name="restore_notification_title">Restore in progress</string>
     <string name="restore_notification_content">Preparing restore&#8230;</string>
@@ -934,6 +936,8 @@
     <string name="backup_external_storage">External storage: %1$s</string>
     <string name="backup_never">Never</string>
     <string name="backup">Backup</string>
+    <string name="backup_choose_folder">Choose folder</string>
+    <string name="backup_choose_a_folder">Choose a folder, backups will be saved to this location</string>
     <string name="backup_delete">Backup delete</string>
     <string name="backup_dialog_title">Auto back up to external storage</string>
     <string name="backup_ing">External storage backup&#8230;</string>

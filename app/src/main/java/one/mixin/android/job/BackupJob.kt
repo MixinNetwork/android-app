@@ -3,31 +3,31 @@ package one.mixin.android.job
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import android.text.format.DateUtils.WEEK_IN_MILLIS
 import androidx.annotation.RequiresPermission
 import androidx.annotation.WorkerThread
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getCacheMediaPath
-import one.mixin.android.extension.getMediaPath
-import one.mixin.android.extension.moveChileFileToDir
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
+import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
-import java.io.File
+import one.mixin.android.util.backup.backup
+import one.mixin.android.util.backup.backupApi29
+import one.mixin.android.util.backup.findOldBackupSync
 
-class BackupJob(private val force: Boolean = false) : BaseJob(
+class BackupJob(private val force: Boolean = false, private val delete: Boolean = false) : BaseJob(
     Params(
         if (force) {
             PRIORITY_UI_HIGH
@@ -43,18 +43,18 @@ class BackupJob(private val force: Boolean = false) : BaseJob(
         val backupLiveData = BackupLiveData()
     }
 
-    override fun onRun() {
+    override fun onRun() = runBlocking {
         val context = MixinApplication.appContext
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            return
+            return@runBlocking
         }
         if (force) {
-            backup(context)
-        } else if (context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BACKUP, false)) {
-            val option = context.defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)
+            internalBackup(context)
+        } else if (propertyDao.findValueByKey(PREF_BACKUP)?.toBoolean() == true) {
+            val option = PropertyHelper.findValueByKey(BACKUP_PERIOD)?.toIntOrNull() ?: 0
             if (option in 1..3) {
                 val currentTime = System.currentTimeMillis()
-                val lastTime = context.defaultSharedPreferences.getLong(BACKUP_LAST_TIME, currentTime)
+                val lastTime = PropertyHelper.findValueByKey(BACKUP_LAST_TIME)?.toLongOrNull() ?: currentTime
                 val timeDiff = currentTime - lastTime
                 if (timeDiff >= when (option) {
                     1 -> DAY_IN_MILLIS
@@ -63,43 +63,54 @@ class BackupJob(private val force: Boolean = false) : BaseJob(
                     else -> Long.MAX_VALUE
                 }
                 ) {
-                    backup(context)
+                    internalBackup(context)
                 }
             }
         }
-    }
-
-    private fun cleanMedia() {
-        val mediaPath = MixinApplication.appContext.getMediaPath()?.absolutePath ?: return
-        val mediaCachePath = MixinApplication.appContext.getCacheMediaPath()
-        if (!mediaCachePath.exists()) {
-            return
-        }
-        mediaCachePath.listFiles()?.forEach { mediaCacheChild ->
-            if (mediaCacheChild.isDirectory) {
-                val local = File("$mediaPath${File.separator}${mediaCacheChild.name}${File.separator}")
-                mediaCacheChild.moveChileFileToDir(local) { newFile, oldFile ->
-                    messageDao.updateMediaUrl(newFile.toUri().toString(), oldFile.toUri().toString())
-                }
-            }
+        if (delete) {
+            findOldBackupSync(MixinApplication.appContext)?.deleteRecursively()
+            findOldBackupSync(MixinApplication.appContext, true)?.deleteRecursively()
+            propertyDao.updateValueByKey(Constants.Account.Migration.PREF_MIGRATION_BACKUP, false.toString())
         }
     }
 
     @WorkerThread
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun backup(context: Context) = runBlocking {
+    private fun internalBackup(context: Context) = runBlocking {
         try {
             backupLiveData.start()
             BackupNotification.show()
-            cleanMedia()
-            one.mixin.android.util.backup.backup(context) { result ->
-                backupLiveData.setResult(false, result)
-                BackupNotification.cancel()
-                if (result == Result.SUCCESS) {
-                    context.defaultSharedPreferences.putLong(BACKUP_LAST_TIME, System.currentTimeMillis())
-                    toast(R.string.backup_success_tip)
+            (
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    backupApi29(context) { result ->
+                        backupLiveData.setResult(false, result)
+                        BackupNotification.cancel()
+                        if (result == Result.SUCCESS) {
+                            this.launch {
+                                PropertyHelper.updateKeyValue(
+                                    BACKUP_LAST_TIME,
+                                    System.currentTimeMillis().toString()
+                                )
+                            }
+                            toast(R.string.backup_success_tip)
+                        }
+                    }
+                } else {
+                    backup(context) { result ->
+                        backupLiveData.setResult(false, result)
+                        BackupNotification.cancel()
+                        if (result == Result.SUCCESS) {
+                            this.launch {
+                                PropertyHelper.updateKeyValue(
+                                    BACKUP_LAST_TIME,
+                                    System.currentTimeMillis().toString()
+                                )
+                            }
+                            toast(R.string.backup_success_tip)
+                        }
+                    }
                 }
-            }
+                )
         } catch (e: Exception) {
             backupLiveData.setResult(false, null)
             BackupNotification.cancel()
