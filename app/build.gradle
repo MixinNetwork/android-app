@@ -31,7 +31,6 @@ android {
             }
         }
 
-        buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
         buildConfigField 'String', 'APPCENTER_API_KEY', "\"${propOrEmpty('MIXIN_APPCENTER_API_KEY')}\""
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
         buildConfigField 'String', 'HCAPTCHA_KEY', "\"${propOrEmpty('MIXIN_HCAPTCHA_KEY')}\""
@@ -227,10 +226,6 @@ dependencies {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
-    implementation("com.bugsnag:bugsnag-android:${bugsnagVersion}") {
-        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-anr"
-        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-ndk"
-    }
 
     // retrofit
     implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"

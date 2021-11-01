@@ -1,10 +1,10 @@
 package one.mixin.android.job;
 
-import android.util.Log;
-
 import com.birbit.android.jobqueue.BuildConfig;
 import com.birbit.android.jobqueue.log.JqLog;
-import com.bugsnag.android.Bugsnag;
+
+import one.mixin.android.util.CrashExceptionReportKt;
+import timber.log.Timber;
 
 
 public class JobLogger extends JqLog.ErrorLogger {
@@ -16,20 +16,19 @@ public class JobLogger extends JqLog.ErrorLogger {
         return BuildConfig.DEBUG;
     }
 
-
     @Override
     public void v(String text, Object... args) {
     }
 
     @Override
     public void e(String text, Object... args) {
-        Log.e(TAG, "Job Error " + String.format(text, args));
+        Timber.tag(TAG).e("Job Error %s %s", text, args);
     }
 
     @Override
     public void e(Throwable t, String text, Object... args) {
-        Log.e(TAG, "Job Error: " + String.format(text, args), t);
-        Bugsnag.notify(t);
+        Timber.tag(TAG).e(t, "Job Error: %s %s", text, args);
+        CrashExceptionReportKt.reportException(t);
     }
 
     @Override
