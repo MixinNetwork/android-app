@@ -17,6 +17,7 @@ import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -230,9 +231,12 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             Timber.d("${canUserAccessBackupDirectory(requireContext())}")
         }
     }
-
     private fun findBackUp() = lifecycleScope.launch(Dispatchers.IO) {
         val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            withContext(Dispatchers.Main) {
+                binding.backupProgress.isVisible = true
+                binding.backupInfo.isInvisible = true
+            }
             findBackupApi29(requireContext(), coroutineContext)
         } else {
             if (ActivityCompat.checkSelfPermission(
@@ -247,11 +251,13 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         withContext(Dispatchers.Main) {
             if (viewDestroyed()) return@withContext
             binding.apply {
+                binding.backupProgress.isVisible = false
+                backupInfo.isInvisible = false
                 if (info == null) {
                     backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
-                    backupSize.visibility = GONE
-                    backupPath.visibility = GONE
-                    deleteBn.visibility = GONE
+                    backupSize.isVisible = false
+                    backupPath.isVisible = false
+                    deleteBn.isVisible = false
                 } else {
                     val time = info.lastModified.run {
                         this.getRelativeTimeSpan()
@@ -263,9 +269,9 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     } else {
                         backupInfo.text = getString(R.string.backup_external_storage, time)
                     }
-                    backupSize.visibility = VISIBLE
-                    backupPath.visibility = VISIBLE
-                    deleteBn.visibility = VISIBLE
+                    backupSize.isVisible = true
+                    backupPath.isVisible = true
+                    deleteBn.isVisible = true
                 }
             }
         }

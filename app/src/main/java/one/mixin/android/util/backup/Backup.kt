@@ -178,6 +178,7 @@ suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
             } finally {
                 db.close()
             }
+            tmpFile.deleteOnExit()
             backupDbFile.uri.copyFromInputStream(tmpFile.inputStream())
             context.getMediaPath()?.let {
                 copyFileToDirectory(it, backupDirectory)
