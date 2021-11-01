@@ -1377,17 +1377,17 @@ class ConversationFragment() :
         binding.chatControl.chatEt.setCommitContentListener(
             object :
                 ContentEditText.OnCommitContentListener {
-                override fun onCommitContent(
+                override fun commitContentAsync(
                     inputContentInfo: InputContentInfoCompat?,
                     flags: Int,
                     opts: Bundle?
-                ): Boolean {
-                    if (inputContentInfo != null) {
-                        val url = inputContentInfo.contentUri.getFilePath(requireContext())
-                            ?: return false
-                        getEditorResult.launch(Pair(url.toUri(), getString(R.string.send)))
+                ) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        if (inputContentInfo != null) {
+                            val url = inputContentInfo.contentUri.getFilePath(requireContext()) ?: return@launch
+                            sendImageMessage(url.toUri())
+                        }
                     }
-                    return true
                 }
             }
         )

@@ -95,6 +95,7 @@ import one.mixin.android.vo.isData
 import one.mixin.android.vo.isIllegalMessageCategory
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
@@ -486,6 +487,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val needResendMessage = messageDao.findMessageById(id, accountId)
             if (needResendMessage == null || needResendMessage.category == MessageCategory.MESSAGE_RECALL.name) {
                 resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
+                continue
+            }
+            if (!needResendMessage.isSignal()) {
                 continue
             }
             val pCreatedAt = ZonedDateTime.parse(p.createdAt)
