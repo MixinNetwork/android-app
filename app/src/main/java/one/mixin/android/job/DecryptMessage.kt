@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
-import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +48,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
@@ -1106,18 +1106,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
         FirebaseCrashlytics.getInstance().recordException(e)
         if (e !is NoSessionException) {
-            Bugsnag.beforeNotify {
-                it.addToTab("Decrypt", "conversation", data.conversationId)
-                it.addToTab("Decrypt", "message_id", data.messageId)
-                it.addToTab("Decrypt", "user", data.userId)
-                it.addToTab("Decrypt", "session", data.sessionId)
-                it.addToTab("Decrypt", "data", data.data)
-                it.addToTab("Decrypt", "category", data.category)
-                it.addToTab("Decrypt", "created_at", data.createdAt)
-                it.addToTab("Decrypt", "resend_message", resendMessageId ?: "")
-                true
-            }
-            Bugsnag.notify(e)
+            reportException(
+                """
+                Decrypt failed
+                BlazeMessageData: $data,
+                resend_message: $resendMessageId
+            """,
+                e
+            )
         }
     }
 

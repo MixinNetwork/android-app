@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import com.bugsnag.android.Bugsnag
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -14,6 +13,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -92,7 +92,7 @@ open class SendMessageJob(
                 }
             }
         } else {
-            Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
+            reportException(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
     }
 
