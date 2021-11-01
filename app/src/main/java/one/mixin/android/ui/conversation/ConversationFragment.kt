@@ -888,7 +888,7 @@ class ConversationFragment() :
 
             override fun onTranscriptClick(messageItem: MessageItem) {
                 binding.chatControl.chatEt.hideKeyboard()
-                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, messageItem.isPlain())
+                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, encryptCategory(), messageItem.isPlain())
             }
 
             override fun onSayHi() {
