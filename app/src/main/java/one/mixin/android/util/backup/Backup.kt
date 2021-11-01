@@ -455,12 +455,24 @@ private fun internalCheckAccessBackupDirectory(context: Context, uri: Uri): Bool
 
 private fun copyFileToDirectory(file: File, dir: DocumentFile) {
     if (file.isDirectory) {
-        val childDir = dir.createDirectory(file.name) ?: return
+        val childDir = dir.findFile(file.name).run {
+            if (this?.exists() == true) {
+                this
+            } else {
+                dir.createDirectory(file.name)
+            }
+        } ?: return
         file.listFiles()?.forEach { f ->
             copyFileToDirectory(f, childDir)
         }
     } else {
-        val documentFile = dir.createFile("application/octet-stream", file.name) ?: return
+        val documentFile = dir.findFile(file.name).run {
+            if (this?.exists() == true) {
+                this
+            } else {
+                dir.createFile("application/octet-stream", file.name)
+            }
+        } ?: return
         val inputStream = FileInputStream(file)
         documentFile.uri.copyFromInputStream(inputStream)
     }
