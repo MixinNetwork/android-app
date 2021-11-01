@@ -101,6 +101,7 @@ object Constants {
     object BackUp {
         const val BACKUP_PERIOD = "backup_period"
         const val BACKUP_LAST_TIME = "backup_last_time"
+        const val BACKUP_MEDIA = "backup_media"
     }
 
     object CIRCLE {

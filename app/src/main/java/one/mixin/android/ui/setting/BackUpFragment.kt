@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_BACKUP_DIRECTORY
+import one.mixin.android.Constants.BackUp.BACKUP_MEDIA
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBackupBinding
@@ -115,7 +116,11 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     .subscribe(
                         { granted ->
                             if (granted) {
-                                jobManager.addJobInBackground(BackupJob(true))
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    showBackupMediaDialog()
+                                } else {
+                                    jobManager.addJobInBackground(BackupJob(true))
+                                }
                             } else {
                                 context?.openPermissionSetting()
                             }
@@ -193,10 +198,35 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
             }
             dialog.dismiss()
         }
-        builder.setNegativeButton(android.R.string.cancel) { _, _ ->
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
         }
         val dialog = builder.create()
         dialog.show()
+    }
+
+    private fun showBackupMediaDialog() = lifecycleScope.launch {
+        val builder = alertDialogBuilder()
+        builder.setTitle(R.string.backup_dialog_title)
+        val animals = arrayOf(getString(R.string.backup_media))
+        var checked = PropertyHelper.findValueByKey(BACKUP_MEDIA)?.toBooleanStrictOrNull() ?: true
+        val checkedItems = booleanArrayOf(checked)
+        builder.setMultiChoiceItems(
+            animals, checkedItems
+        ) { _, _, isChecked ->
+            checked = isChecked
+            lifecycleScope.launch {
+                PropertyHelper.updateKeyValue(BACKUP_MEDIA, checked.toString())
+            }
+        }
+        builder.setPositiveButton(R.string.backup) { dialog, _ ->
+            jobManager.addJobInBackground(BackupJob(force = true, backupMedia = checked))
+            dialog.dismiss()
+        }
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.create().show()
     }
 
     private fun chooseFolder() {

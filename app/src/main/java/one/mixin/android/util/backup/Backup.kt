@@ -123,7 +123,7 @@ suspend fun backup(
     }
 }
 
-suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
+suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Result) -> Unit) =
     withContext(Dispatchers.IO) {
         val backupDirectoryUri =
             context.defaultSharedPreferences.getString(
@@ -180,8 +180,10 @@ suspend fun backupApi29(context: Context, callback: (Result) -> Unit) =
             }
             tmpFile.deleteOnExit()
             backupDbFile.uri.copyFromInputStream(tmpFile.inputStream())
-            context.getMediaPath()?.let {
-                copyFileToDirectory(it, backupDirectory)
+            if (backupMedia) {
+                context.getMediaPath()?.let {
+                    copyFileToDirectory(it, backupDirectory)
+                }
             }
             withContext(Dispatchers.Main) {
                 callback.invoke(Result.SUCCESS)

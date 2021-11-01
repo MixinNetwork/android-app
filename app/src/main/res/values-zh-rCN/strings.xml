@@ -915,6 +915,8 @@
     <string name="backup_external_storage">外部存储: %1$s</string>
     <string name="backup_never">从未备份</string>
     <string name="backup">备份</string>
+    <string name="backup_media">包含媒体文件</string>
+    <string name="backup_media_title">备份到外部存储</string>
     <string name="backup_choose_folder">选择文件夹</string>
     <string name="backup_choose_a_folder">请选择用于保存备份的文件夹</string>
     <string name="backup_delete">删除备份</string>
