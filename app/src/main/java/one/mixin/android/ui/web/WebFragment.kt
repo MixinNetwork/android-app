@@ -88,6 +88,7 @@ import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.showPipPermissionNotification
+import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
@@ -637,6 +638,17 @@ class WebFragment : BaseFragment() {
                     return false
                 }
                 return true
+            }
+        }
+
+        webView.setDownloadListener { url, _, _, _, _ ->
+            try {
+                startActivity(
+                    Intent(Intent.ACTION_VIEW).apply {
+                        data = url.toUri()
+                    }
+                )
+            } catch (ignored: ActivityNotFoundException) {
             }
         }
     }
