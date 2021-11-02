@@ -281,6 +281,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         withContext(Dispatchers.Main) {
             if (viewDestroyed()) return@withContext
             binding.apply {
+                backupBn.isVisible = canUserAccessBackupDirectory(requireContext())
                 binding.backupProgress.isVisible = false
                 backupInfo.isInvisible = false
                 if (info == null) {

@@ -30,7 +30,7 @@ import java.io.FileInputStream
 import kotlin.coroutines.CoroutineContext
 
 private const val BACKUP_POSTFIX = ".backup"
-
+private const val BACKUP_DIR_NAME = "Backup"
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun backup(
     context: Context,
@@ -137,9 +137,21 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
         if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
             return@withContext
         }
-        backupDirectory.findFile("mixin.db")?.delete()
-        val backupDbFile = backupDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext
-
+        val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME).run {
+            if (this?.isDirectory == true && this.exists()) {
+                this
+            } else {
+                this?.delete()
+                backupDirectory.createDirectory(BACKUP_DIR_NAME)
+            }
+        } ?: return@withContext
+        backupChildDirectory.findFile(".nomedia").run {
+            if (this?.exists() != true) {
+                backupChildDirectory.createFile("application/octet-stream", ".nomedia")
+            }
+        }
+        backupChildDirectory.findFile("mixin.db")?.delete()
+        val backupDbFile = backupChildDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext
         val dbFile = context.getDatabasePath(DB_NAME)
         if (dbFile == null) {
             withContext(Dispatchers.Main) {
@@ -182,7 +194,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             backupDbFile.uri.copyFromInputStream(tmpFile.inputStream())
             if (backupMedia) {
                 context.getMediaPath()?.let {
-                    copyFileToDirectory(it, backupDirectory)
+                    copyFileToDirectory(it, backupChildDirectory)
                 }
             }
             withContext(Dispatchers.Main) {
@@ -242,7 +254,7 @@ suspend fun restoreApi29(
         return@withContext
     }
     val backupDirectory =
-        DocumentFile.fromTreeUri(context, backupDirectoryUri)
+        DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME)
     if (backupDirectory == null || !backupDirectory.exists()) {
         withContext(Dispatchers.Main) {
             callback(Result.NOT_FOUND)
@@ -315,7 +327,7 @@ suspend fun deleteApi29(
             null
         )?.toUri() ?: return@withContext false
     val backupDirectory =
-        DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext false
+        DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME) ?: return@withContext false
     if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
         return@withContext false
     }
@@ -353,7 +365,7 @@ suspend fun findBackupApi29(
             null
         )?.toUri() ?: return@withContext null
     val backupDirectory =
-        DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext null
+        DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME) ?: return@withContext null
     if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
         return@withContext null
     }
