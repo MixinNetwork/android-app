@@ -133,7 +133,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         val trace: Trace
-        val request = when (val t = this.t) {
+        val response = when (val t = this.t) {
             is TransferBiometricItem -> {
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
                 bottomViewModel.transfer(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
@@ -146,7 +146,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         }
         bottomViewModel.insertTrace(trace)
         bottomViewModel.deletePreviousTraces()
-        return request
+        return response
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
@@ -157,12 +157,15 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 updateFirstWithdrawalSet(t)
             }
         }
+        val data = response.data
+        if (data is Snapshot) {
+            bottomViewModel.insertSnapshot(data)
+        }
 
         t.traceId?.let { traceId ->
             lifecycleScope.launch {
                 val trace = bottomViewModel.suspendFindTraceById(traceId)
                 if (trace != null) {
-                    val data = response.data
                     if (data is Snapshot) {
                         trace.snapshotId = data.snapshotId
                         bottomViewModel.insertTrace(trace)
