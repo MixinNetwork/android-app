@@ -365,11 +365,18 @@ suspend fun findBackupApi29(
             null
         )?.toUri() ?: return@withContext null
     val backupDirectory =
-        DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME) ?: return@withContext null
+        DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext null
     if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
         return@withContext null
     }
-    if (!backupDirectory.exists() || backupDirectory.length() <= 0) return@withContext null
+    val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME)
+    if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0) {
+        return@withContext BackupInfo(
+            backupChildDirectory?.lastModified() ?: System.currentTimeMillis(),
+            0L,
+            context.getDisplayPath(backupDirectory.uri)
+        )
+    }
     return@withContext BackupInfo(
         backupDirectory.lastModified(),
         getFolderSize(backupDirectory),
