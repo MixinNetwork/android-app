@@ -500,21 +500,28 @@ private fun copyFileToDirectory(file: File, dir: DocumentFile) {
     }
 }
 
-private fun copyFileToDirectory(context: Context, file: DocumentFile, dir: File) {
-    val name = file.name ?: return
-    val f = File(dir, name)
-    if (file.isDirectory) {
-        file.listFiles().forEach {
-            copyFileToDirectory(context, it, f)
+private fun copyFileToDirectory(context: Context, sourceFile: DocumentFile, parentDir: File) {
+    try {
+        val fileName = sourceFile.name ?: return
+        if (!sourceFile.exists()) {
+            return
         }
-    } else {
-        Timber.e("copy ${file.name} ${dir.absolutePath}")
-        if (f.exists()) {
-            val outputStream = context.contentResolver.openOutputStream(file.uri) ?: return
-            val inputStream = FileInputStream(f)
-            outputStream.use { output ->
-                inputStream.copyTo(output)
+        val targetFile = File(parentDir, fileName)
+        if (sourceFile.isDirectory) {
+            if (!targetFile.exists()) {
+                targetFile.mkdirs()
+            }
+            sourceFile.listFiles().forEach {
+                copyFileToDirectory(context, it, targetFile)
+            }
+        } else if (sourceFile.isFile) {
+            if (!targetFile.exists()) {
+                Timber.e("copy ${sourceFile.name} to ${targetFile.absolutePath}")
+                val inputStream = context.contentResolver.openInputStream(sourceFile.uri) ?: return
+                targetFile.toUri().copyFromInputStream(inputStream)
             }
         }
+    } catch (e: Exception) {
+        Timber.e(e)
     }
 }
