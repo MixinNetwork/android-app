@@ -84,7 +84,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
             override fun onAddrLongClick(view: View, addr: Address) {
                 val popMenu = PopupMenu(requireActivity(), ItemAddressBinding.bind(view).addrTv)
-                popMenu.menuInflater.inflate(R.menu.address_mamangement_item, popMenu.menu)
+                popMenu.menuInflater.inflate(R.menu.address_management_item, popMenu.menu)
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {
                         showBottomSheet(addr, asset)
