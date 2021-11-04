@@ -27,7 +27,7 @@ import one.mixin.android.util.backup.backup
 import one.mixin.android.util.backup.backupApi29
 import one.mixin.android.util.backup.findOldBackupSync
 
-class BackupJob(private val force: Boolean = false, private val delete: Boolean = false) : BaseJob(
+class BackupJob(private val force: Boolean = false, private val delete: Boolean = false, private val backupMedia: Boolean = true) : BaseJob(
     Params(
         if (force) {
             PRIORITY_UI_HIGH
@@ -50,7 +50,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         }
         if (force) {
             internalBackup(context)
-        } else if (propertyDao.findValueByKey(PREF_BACKUP)?.toBoolean() == true) {
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && propertyDao.findValueByKey(PREF_BACKUP)?.toBoolean() == true) {
             val option = PropertyHelper.findValueByKey(BACKUP_PERIOD)?.toIntOrNull() ?: 0
             if (option in 1..3) {
                 val currentTime = System.currentTimeMillis()
@@ -82,7 +82,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
             BackupNotification.show()
             (
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    backupApi29(context) { result ->
+                    backupApi29(context, backupMedia) { result ->
                         backupLiveData.setResult(false, result)
                         BackupNotification.cancel()
                         if (result == Result.SUCCESS) {

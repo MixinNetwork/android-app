@@ -394,7 +394,7 @@ interface MessageDao : BaseDao<Message> {
     fun findFailedMessages(conversationId: String, userId: String): List<String>
 
     @Query(
-        """SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m 
+        """SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m 
         WHERE conversation_id = :conversationId AND media_status = 'DONE' 
         AND category IN (:signalCategory, :plainCategory, :encryptedCategory) ORDER BY created_at ASC
         """

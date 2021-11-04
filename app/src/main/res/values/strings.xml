@@ -936,6 +936,8 @@
     <string name="backup_external_storage">External storage: %1$s</string>
     <string name="backup_never">Never</string>
     <string name="backup">Backup</string>
+    <string name="backup_media">Include media files</string>
+    <string name="backup_media_title">Back up to external storage</string>
     <string name="backup_choose_folder">Choose folder</string>
     <string name="backup_choose_a_folder">Choose a folder, backups will be saved to this location</string>
     <string name="backup_delete">Backup delete</string>
