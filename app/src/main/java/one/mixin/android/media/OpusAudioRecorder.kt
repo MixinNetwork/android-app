@@ -21,10 +21,6 @@ import java.util.UUID
 
 class OpusAudioRecorder private constructor(private val ctx: Context) {
     companion object {
-        init {
-            System.loadLibrary("mixin")
-        }
-
         private const val SAMPLE_RATE = 16000
         private const val BUFFER_SIZE_FACTOR = 2
 
