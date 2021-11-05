@@ -394,7 +394,7 @@ interface MessageDao : BaseDao<Message> {
     fun findFailedMessages(conversationId: String, userId: String): List<String>
 
     @Query(
-        """SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m 
+        """SELECT * FROM messages m 
         WHERE conversation_id = :conversationId AND media_status = 'DONE' 
         AND category IN (:signalCategory, :plainCategory, :encryptedCategory) ORDER BY created_at ASC
         """
@@ -404,7 +404,10 @@ interface MessageDao : BaseDao<Message> {
         signalCategory: String,
         plainCategory: String,
         encryptedCategory: String
-    ): List<MediaMessageMinimal>?
+    ): List<MediaMessageMinimal>
+
+    @Query("SELECT * FROM messages m WHERE m.id = :messageId AND media_status = 'DONE'")
+    suspend fun getMediaMessageMinimalById(messageId: String): MediaMessageMinimal?
 
     @Query(
         """UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId 
