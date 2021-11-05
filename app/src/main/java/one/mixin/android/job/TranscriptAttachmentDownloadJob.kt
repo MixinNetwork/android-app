@@ -17,10 +17,10 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
@@ -146,17 +146,11 @@ class TranscriptAttachmentDownloadJob(
             sink.close()
             when {
                 transcriptMessage.type.endsWith("_IMAGE") -> {
-                    val attachmentCipherInputStream =
-                        if (transcriptMessage.type == MessageCategory.SIGNAL_IMAGE.name) {
-                            AttachmentCipherInputStream.createForAttachment(
-                                destination,
-                                0,
-                                transcriptMessage.mediaKey,
-                                transcriptMessage.mediaDigest
-                            )
-                        } else {
-                            FileInputStream(destination)
-                        }
+                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                        AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
+                    } else {
+                        FileInputStream(destination)
+                    }
                     val imageFile = when {
                         transcriptMessage.mediaMimeType?.isImageSupport() == false -> {
                             MixinApplication.get()
@@ -204,17 +198,11 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_DATA") -> {
-                    val attachmentCipherInputStream =
-                        if (transcriptMessage.type == MessageCategory.SIGNAL_DATA.name) {
-                            AttachmentCipherInputStream.createForAttachment(
-                                destination,
-                                0,
-                                transcriptMessage.mediaKey,
-                                transcriptMessage.mediaDigest
-                            )
-                        } else {
-                            FileInputStream(destination)
-                        }
+                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                        AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
+                    } else {
+                        FileInputStream(destination)
+                    }
                     val extensionName = transcriptMessage.mediaName?.getExtensionName()
                     val dataFile = MixinApplication.get()
                         .getTranscriptFile(
@@ -231,17 +219,11 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_VIDEO") -> {
-                    val attachmentCipherInputStream =
-                        if (transcriptMessage.type == MessageCategory.SIGNAL_VIDEO.name) {
-                            AttachmentCipherInputStream.createForAttachment(
-                                destination,
-                                0,
-                                transcriptMessage.mediaKey,
-                                transcriptMessage.mediaDigest
-                            )
-                        } else {
-                            FileInputStream(destination)
-                        }
+                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                        AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
+                    } else {
+                        FileInputStream(destination)
+                    }
                     val extensionName = transcriptMessage.mediaName?.getExtensionName().let {
                         it ?: "mp4"
                     }
@@ -260,17 +242,11 @@ class TranscriptAttachmentDownloadJob(
                     )
                 }
                 transcriptMessage.type.endsWith("_AUDIO") -> {
-                    val attachmentCipherInputStream =
-                        if (transcriptMessage.type == MessageCategory.SIGNAL_AUDIO.name) {
-                            AttachmentCipherInputStream.createForAttachment(
-                                destination,
-                                0,
-                                transcriptMessage.mediaKey,
-                                transcriptMessage.mediaDigest
-                            )
-                        } else {
-                            FileInputStream(destination)
-                        }
+                    val attachmentCipherInputStream = if (!isNullOrEmpty(transcriptMessage.mediaKey) && !isNullOrEmpty(transcriptMessage.mediaDigest)) {
+                        AttachmentCipherInputStream.createForAttachment(destination, 0, transcriptMessage.mediaKey, transcriptMessage.mediaDigest)
+                    } else {
+                        FileInputStream(destination)
+                    }
                     val audioFile = MixinApplication.get()
                         .getTranscriptFile(transcriptMessage.messageId, ".ogg")
                     audioFile.copyFromInputStream(attachmentCipherInputStream)
