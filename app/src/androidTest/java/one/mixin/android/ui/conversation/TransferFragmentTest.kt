@@ -37,8 +37,8 @@ class TransferFragmentTest {
         }
         val testRegistry = TestRegistry(expectedResult)
         launchFragmentInHiltContainer(TransferFragment.newInstance(testRegistry).withArgs { }, R.style.AppTheme_NoActionBar) {
-        this.getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
-    }
+            this.getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+        }
         onView(withId(R.id.transfer_memo)).check(matches(withText("abc")))
     }
 }

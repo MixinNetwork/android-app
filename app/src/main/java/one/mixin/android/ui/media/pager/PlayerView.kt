@@ -13,6 +13,7 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.BehindLiveWindowException
+import com.google.android.exoplayer2.video.VideoSize
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPlayerViewBinding
 import one.mixin.android.util.VideoPlayer
@@ -24,8 +25,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     var player: ExoPlayer? = null
         set(value) {
             field?.apply {
-                videoComponent?.clearVideoTextureView(binding.videoTexture)
-                videoComponent?.removeVideoListener(componentListener)
+                clearVideoTextureView(binding.videoTexture)
                 removeListener(componentListener)
             }
             field = value
@@ -33,8 +33,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                 binding.playerControlView.player = value
             }
             value?.apply {
-                videoComponent?.setVideoTextureView(binding.videoTexture)
-                videoComponent?.addVideoListener(componentListener)
+                setVideoTextureView(binding.videoTexture)
                 addListener(componentListener)
             }
         }
@@ -219,12 +218,9 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             toggleControllerVisibility()
         }
 
-        override fun onVideoSizeChanged(
-            width: Int,
-            height: Int,
-            unappliedRotationDegrees: Int,
-            pixelWidthHeightRatio: Float
-        ) {
+        override fun onVideoSizeChanged(videoSize: VideoSize) {
+            val pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio
+            val unappliedRotationDegrees = videoSize.unappliedRotationDegrees
             if (VideoPlayer.player().mId != currentMessageId) {
                 return
             }
