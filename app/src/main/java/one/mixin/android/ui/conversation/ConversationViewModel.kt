@@ -716,6 +716,10 @@ internal constructor(
                         withContext(Dispatchers.Main) {
                             callback(conversationId, user.encryptedCategory())
                         }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            callback(conversation.conversationId, user.encryptedCategory())
+                        }
                     }
                 }
             }
