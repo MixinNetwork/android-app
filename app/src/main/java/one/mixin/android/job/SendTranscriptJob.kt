@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
-import com.bugsnag.android.Bugsnag
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.getExtensionName
@@ -11,6 +10,7 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.TranscriptMessage
@@ -81,7 +81,7 @@ class SendTranscriptJob(
             }
             transcriptMessageDao.insertList(transcriptMessages)
         } else {
-            Bugsnag.notify(Throwable("Insert failed, no conversation exist"))
+            reportException(Throwable("Insert failed, no conversation exist"))
         }
     }
 

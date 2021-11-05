@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import com.bugsnag.android.Bugsnag
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -14,9 +13,11 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isContact
@@ -91,7 +92,7 @@ open class SendMessageJob(
                 }
             }
         } else {
-            Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
+            reportException(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
     }
 
@@ -192,10 +193,10 @@ open class SendMessageJob(
         val accountId = Session.getAccountId()!!
         val conversation = conversationDao.findConversationById(message.conversationId) ?: return
         checkConversationExist(conversation)
-        var participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, accountId)
+        var participantSessionKey = getBotSessionKey(accountId)
         if (participantSessionKey == null || participantSessionKey.publicKey.isNullOrBlank()) {
             syncConversation(message.conversationId)
-            participantSessionKey = participantSessionDao.getParticipantSessionKeyWithoutSelf(message.conversationId, accountId)
+            participantSessionKey = getBotSessionKey(accountId)
         }
         // Workaround No session key, can't encrypt message, send PLAIN directly
         if (participantSessionKey?.publicKey == null) {
@@ -236,6 +237,19 @@ open class SendMessageJob(
         val blazeMessage = createParamBlazeMessage(blazeParam)
         deliver(blazeMessage)
     }
+
+    private fun getBotSessionKey(accountId: String): ParticipantSessionKey? =
+        if (recipientId != null) {
+            participantSessionDao.getParticipantSessionKeyByUserId(
+                message.conversationId,
+                recipientId!!
+            )
+        } else {
+            participantSessionDao.getParticipantSessionKeyWithoutSelf(
+                message.conversationId,
+                accountId
+            )
+        }
 
     private fun sendSignalMessage() {
         if (resendData != null) {

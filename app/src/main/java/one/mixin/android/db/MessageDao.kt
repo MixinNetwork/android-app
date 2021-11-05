@@ -395,7 +395,7 @@ interface MessageDao : BaseDao<Message> {
     fun findFailedMessages(conversationId: String, userId: String): List<String>
 
     @Query(
-        """SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m 
+        """SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m 
         WHERE conversation_id = :conversationId AND media_status = 'DONE' 
         AND category IN (:signalCategory, :plainCategory, :encryptedCategory) ORDER BY created_at ASC
         """
@@ -509,6 +509,9 @@ interface MessageDao : BaseDao<Message> {
             AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset"""
     )
     fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
+
+    @Query("SELECT rowid IS NOT NULL FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' LIMIT 1")
+    fun hasDoneAttachment(): Boolean
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowid(): Long

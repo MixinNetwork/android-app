@@ -4,10 +4,10 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
-import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -48,6 +48,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
@@ -94,6 +95,7 @@ import one.mixin.android.vo.isData
 import one.mixin.android.vo.isIllegalMessageCategory
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
@@ -487,6 +489,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
                 continue
             }
+            if (!needResendMessage.isSignal()) {
+                continue
+            }
             val pCreatedAt = ZonedDateTime.parse(p.createdAt)
             val mCreatedAt = ZonedDateTime.parse(needResendMessage.createdAt)
             if (pCreatedAt.isAfter(mCreatedAt)) {
@@ -602,8 +607,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
 
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                lifecycleScope.launch {
+                    MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+                        jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                    }
                 }
 
                 generateNotification(message, data)
@@ -629,8 +636,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
 
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                MixinApplication.appContext.autoDownload(autoDownloadVideo) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                lifecycleScope.launch {
+                    MixinApplication.appContext.autoDownload(autoDownloadVideo) {
+                        jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                    }
                 }
                 generateNotification(message, data)
             }
@@ -651,8 +660,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                 messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
-                MixinApplication.appContext.autoDownload(autoDownloadDocument) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                lifecycleScope.launch {
+                    MixinApplication.appContext.autoDownload(autoDownloadDocument) {
+                        jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                    }
                 }
                 generateNotification(message, data)
             }
@@ -807,9 +818,39 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             transcript.mediaSize?.let {
                 mediaSize += it
             }
-            when {
-                transcript.isImage() -> {
-                    MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+            lifecycleScope.launch {
+                when {
+                    transcript.isImage() -> {
+                        MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+                            jobManager.addJobInBackground(
+                                TranscriptAttachmentDownloadJob(
+                                    data.conversationId,
+                                    transcript
+                                )
+                            )
+                        }
+                    }
+                    transcript.isVideo() -> {
+                        MixinApplication.appContext.autoDownload(autoDownloadVideo) {
+                            jobManager.addJobInBackground(
+                                TranscriptAttachmentDownloadJob(
+                                    data.conversationId,
+                                    transcript
+                                )
+                            )
+                        }
+                    }
+                    transcript.isData() -> {
+                        MixinApplication.appContext.autoDownload(autoDownloadDocument) {
+                            jobManager.addJobInBackground(
+                                TranscriptAttachmentDownloadJob(
+                                    data.conversationId,
+                                    transcript
+                                )
+                            )
+                        }
+                    }
+                    transcript.isAudio() -> {
                         jobManager.addJobInBackground(
                             TranscriptAttachmentDownloadJob(
                                 data.conversationId,
@@ -817,34 +858,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             )
                         )
                     }
-                }
-                transcript.isVideo() -> {
-                    MixinApplication.appContext.autoDownload(autoDownloadVideo) {
-                        jobManager.addJobInBackground(
-                            TranscriptAttachmentDownloadJob(
-                                data.conversationId,
-                                transcript
-                            )
-                        )
-                    }
-                }
-                transcript.isData() -> {
-                    MixinApplication.appContext.autoDownload(autoDownloadDocument) {
-                        jobManager.addJobInBackground(
-                            TranscriptAttachmentDownloadJob(
-                                data.conversationId,
-                                transcript
-                            )
-                        )
-                    }
-                }
-                transcript.isAudio() -> {
-                    jobManager.addJobInBackground(
-                        TranscriptAttachmentDownloadJob(
-                            data.conversationId,
-                            transcript
-                        )
-                    )
                 }
             }
         }
@@ -1093,18 +1106,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
         FirebaseCrashlytics.getInstance().recordException(e)
         if (e !is NoSessionException) {
-            Bugsnag.beforeNotify {
-                it.addToTab("Decrypt", "conversation", data.conversationId)
-                it.addToTab("Decrypt", "message_id", data.messageId)
-                it.addToTab("Decrypt", "user", data.userId)
-                it.addToTab("Decrypt", "session", data.sessionId)
-                it.addToTab("Decrypt", "data", data.data)
-                it.addToTab("Decrypt", "category", data.category)
-                it.addToTab("Decrypt", "created_at", data.createdAt)
-                it.addToTab("Decrypt", "resend_message", resendMessageId ?: "")
-                true
-            }
-            Bugsnag.notify(e)
+            reportException(
+                """
+                Decrypt failed
+                BlazeMessageData: $data,
+                resend_message: $resendMessageId
+            """,
+                e
+            )
         }
     }
 

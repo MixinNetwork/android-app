@@ -61,6 +61,7 @@ import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardAction
@@ -114,6 +115,9 @@ class ChatHistoryActivity : BaseActivity() {
     }
     private val transcriptId by lazy {
         requireNotNull(intent.getStringExtra(MESSAGE_ID))
+    }
+    private val encryptCategory by lazy {
+        EncryptCategory.values()[intent.getIntExtra(ENCRYPT_CATEGORY, EncryptCategory.PLAIN.ordinal)]
     }
     private val isPlain by lazy {
         intent.getBooleanExtra(IS_PLAIN, true)
@@ -339,8 +343,23 @@ class ChatHistoryActivity : BaseActivity() {
             override fun onAudioFileClick(messageItem: ChatHistoryMessageItem) {
             }
 
+            override fun onActionClick(action: String, userId: String?) {
+                if (openInputAction(action) || userId == null) return
+
+                lifecycleScope.launch {
+                    val app = userRepository.findAppById(userId)
+                    action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, app)
+                }
+            }
+
+            override fun onAppCardClick(appCard: AppCardData, userId: String?) {
+                if (openInputAction(appCard.action)) return
+
+                appCard.action.openAsUrlOrWeb(this@ChatHistoryActivity, conversationId, supportFragmentManager, lifecycleScope, null, appCard)
+            }
+
             override fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {
-                show(this@ChatHistoryActivity, messageItem.messageId, conversationId, isPlain)
+                show(this@ChatHistoryActivity, messageItem.messageId, conversationId, encryptCategory, isPlain)
             }
 
             override fun onTextDoubleClick(messageItem: ChatHistoryMessageItem) {
@@ -570,6 +589,17 @@ class ChatHistoryActivity : BaseActivity() {
         }
     }
 
+    private fun openInputAction(action: String): Boolean {
+        if (action.startsWith("input:") && action.length > 6) {
+            val msg = action.substring(6).trim()
+            if (msg.isNotEmpty()) {
+                messenger.sendTextMessage(lifecycleScope, conversationId, requireNotNull(Session.getAccount()).toUser(), msg, encryptCategory)
+            }
+            return true
+        }
+        return false
+    }
+
     private fun scrollTo(
         position: Int,
         offset: Int = -1,
@@ -780,16 +810,18 @@ class ChatHistoryActivity : BaseActivity() {
         const val JUMP_ID = "jump_id"
         private const val MESSAGE_ID = "transcript_id"
         private const val CONVERSATION_ID = "conversation_id"
+        private const val ENCRYPT_CATEGORY = "encryptCategory"
         private const val IS_PLAIN = "is_plain"
         private const val IS_GROUP = "is_group"
         private const val CATEGORY = "category"
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
-        fun show(context: Context, messageId: String, conversationId: String, isPlain: Boolean) {
+        fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory, isPlain: Boolean) {
             context.startActivity(
                 Intent(context, ChatHistoryActivity::class.java).apply {
                     putExtra(MESSAGE_ID, messageId)
                     putExtra(CONVERSATION_ID, conversationId)
+                    putExtra(ENCRYPT_CATEGORY, encryptCategory.ordinal)
                     putExtra(IS_PLAIN, isPlain)
                     putExtra(CATEGORY, TRANSCRIPT)
                 }

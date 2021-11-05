@@ -113,11 +113,8 @@ open class ContentEditText : AppCompatEditText {
                     return@OnCommitContentListener false
                 }
                 if (this.listener != null) {
-                    return@OnCommitContentListener this.listener!!.onCommitContent(
-                        inputContentInfo,
-                        flags,
-                        opts
-                    )
+                    this.listener!!.commitContentAsync(inputContentInfo, flags, opts)
+                    return@OnCommitContentListener true
                 }
                 return@OnCommitContentListener false
             }
@@ -129,10 +126,10 @@ open class ContentEditText : AppCompatEditText {
     }
 
     interface OnCommitContentListener {
-        fun onCommitContent(
+        fun commitContentAsync(
             inputContentInfo: InputContentInfoCompat?,
             flags: Int,
             opts: Bundle?
-        ): Boolean
+        )
     }
 }

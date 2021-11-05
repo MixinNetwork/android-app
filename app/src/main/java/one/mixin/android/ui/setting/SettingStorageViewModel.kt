@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,12 +17,17 @@ import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.generateConversationPath
+import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getConversationAudioPath
 import one.mixin.android.extension.getConversationDocumentPath
 import one.mixin.android.extension.getConversationImagePath
 import one.mixin.android.extension.getConversationMediaSize
 import one.mixin.android.extension.getConversationVideoPath
+import one.mixin.android.extension.getDocumentPath
+import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getStorageUsageByConversationAndType
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
@@ -29,6 +35,8 @@ import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
+import one.mixin.android.vo.absolutePath
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -148,8 +156,19 @@ internal constructor(
         conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
             ?.let { list ->
                 list.forEach { item ->
-                    conversationRepository.deleteMessage(item.messageId, item.mediaUrl)
+                    conversationRepository.deleteMessage(item.messageId, item.absolutePath(MixinApplication.appContext, conversationId, item.mediaUrl))
                 }
             }
+        categoryPath(MixinApplication.appContext, signalCategory, conversationId)?.deleteRecursively()
+    }
+
+    private fun categoryPath(context: Context, category: String, conversationId: String): File? {
+        return when {
+            category.endsWith("_IMAGE") -> context.getImagePath().generateConversationPath(conversationId)
+            category.endsWith("_VIDEO") -> context.getVideoPath().generateConversationPath(conversationId)
+            category.endsWith("_AUDIO") -> context.getAudioPath().generateConversationPath(conversationId)
+            category.endsWith("_DATA") -> context.getDocumentPath().generateConversationPath(conversationId)
+            else -> null
+        }
     }
 }

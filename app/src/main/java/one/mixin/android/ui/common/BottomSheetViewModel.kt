@@ -477,7 +477,9 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findSnapshotById(snapshotId: String) = assetRepository.findSnapshotById(snapshotId)
 
-    fun insertSnapshot(snapshot: Snapshot) = assetRepository.insertSnapshot(snapshot)
+    fun insertSnapshot(snapshot: Snapshot) = viewModelScope.launch(Dispatchers.IO) {
+        assetRepository.insertSnapshot(snapshot)
+    }
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

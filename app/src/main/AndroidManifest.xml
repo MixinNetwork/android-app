@@ -36,6 +36,7 @@
         android:theme="@style/AppTheme"
         android:hasFragileUserData="true"
         android:requestLegacyExternalStorage="true"
+        android:preserveLegacyExternalStorage="true"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
         android:extractNativeLibs="true"
         tools:replace="allowBackup">
@@ -302,6 +303,12 @@
             android:theme="@style/AppTheme.Music"
             android:launchMode="singleTop" />
 
+        <activity
+            android:name=".ui.imageeditor.ImageEditorActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -362,9 +369,6 @@
             tools:node="merge">
             <meta-data
                 android:name="one.mixin.android.startup.FirebaseAppInitializer"
-                android:value="androidx.startup" />
-            <meta-data
-                android:name="one.mixin.android.startup.BugsnagInitializer"
                 android:value="androidx.startup" />
             <meta-data
                 android:name="one.mixin.android.startup.AndroidThreeTenInitializer"

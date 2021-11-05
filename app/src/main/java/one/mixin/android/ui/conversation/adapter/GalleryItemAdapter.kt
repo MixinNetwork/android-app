@@ -102,17 +102,24 @@ class GalleryItemAdapter(
                 holder.binding.sendTv.isVisible = false
             }
             imageView.setOnClickListener {
-                if (selectedUri == item.uri) {
-                    selectedUri = null
-                    selectedPos = null
-                    listener?.onItemClick(position, item.uri, item.isVideo)
-                    notifyItemChanged(position)
-                } else {
+                val send = selectedUri == item.uri
+                selectedUri = null
+                selectedPos = null
+                listener?.onItemClick(position, item, send)
+                notifyItemChanged(position)
+            }
+            imageView.setOnLongClickListener {
+                if (selectedUri != item.uri) {
                     selectedPos?.let { notifyItemChanged(it) }
                     selectedUri = item.uri
                     selectedPos = position
                     notifyItemChanged(position)
+                } else {
+                    selectedUri = null
+                    selectedPos = null
+                    notifyItemChanged(position)
                 }
+                return@setOnLongClickListener true
             }
         }
     }

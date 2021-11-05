@@ -60,6 +60,19 @@
             app:layout_constraintStart_toStartOf="@id/backup_info"
             app:layout_constraintTop_toBottomOf="@id/backup_info" />
 
+        <ProgressBar
+            android:id="@+id/backup_progress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.BlueAccent"
+            android:layout_marginTop="4dp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/backup_info"
+            app:layout_constraintBottom_toBottomOf="@id/backup_info"
+            app:layout_constraintTop_toTopOf="@id/backup_info" />
+
         <TextView
             android:id="@+id/backup_path"
             android:layout_width="0dp"
@@ -74,11 +87,24 @@
             app:layout_constraintStart_toStartOf="@id/backup_size"
             app:layout_constraintTop_toBottomOf="@id/backup_size" />
 
+        <Button
+            android:id="@+id/backup_choose"
+            android:text="@string/backup_choose_folder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorDarkBlue"
+            android:textColor="@color/white"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="@id/backup_title"
+            app:layout_constraintTop_toBottomOf="@id/backup_path"/>
+
         <TextView
             android:id="@+id/backup_des"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_marginEnd="32dp"
             android:text="@string/backup_des"
             android:textColor="?attr/text_primary"
@@ -96,8 +122,7 @@
             android:paddingStart="56dp"
             android:paddingEnd="56dp"
             android:foreground="?android:attr/selectableItemBackground"
-            app:layout_constraintTop_toBottomOf="@id/backup_des">
-
+            app:layout_constraintTop_toBottomOf="@id/backup_choose">
 
             <TextView
                 android:layout_marginTop="3dp"

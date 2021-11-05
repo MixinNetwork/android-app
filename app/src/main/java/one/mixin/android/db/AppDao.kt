@@ -66,4 +66,12 @@ interface AppDao : BaseDao<App> {
         "SELECT a.* FROM apps a LEFT JOIN users u ON a.app_id = u.app_id WHERE u.relationship = 'FRIEND' AND  a.app_id NOT IN (:appIds) ORDER BY u.full_name ASC"
     )
     suspend fun getNotTopApps(appIds: List<String>): List<App>
+
+    @Query(
+        """
+        SELECT a.* FROM apps a INNER JOIN participants p ON p.user_id = a.app_id
+        WHERE p.conversation_id = :conversationId AND a.app_number = :appNumber
+        """
+    )
+    suspend fun findAppByAppNumber(conversationId: String, appNumber: String): App?
 }

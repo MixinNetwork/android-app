@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.TranscriptAttachmentMigration
 import one.mixin.android.vo.TranscriptMessage
 
 @Dao
@@ -122,4 +123,15 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
 
     @Query("DELETE FROM transcript_messages WHERE transcript_id = :transcriptId")
     fun deleteTranscript(transcriptId: String)
+
+    @Query("SELECT rowid FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' ORDER BY rowid DESC LIMIT 1")
+    suspend fun lastDoneAttachmentId(): Long
+
+    @Query(
+        "SELECT rowid, message_id, media_url FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND rowid <= :rowId ORDER BY rowid DESC LIMIT :limit"
+    )
+    suspend fun findAttachmentMigration(rowId: Long, limit: Int): List<TranscriptAttachmentMigration>
+
+    @Query("UPDATE transcript_messages SET media_url = :mediaUrl WHERE message_id = :messageId")
+    suspend fun updateMediaUrl(mediaUrl: String, messageId: String)
 }

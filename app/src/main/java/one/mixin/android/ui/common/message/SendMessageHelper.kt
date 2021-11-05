@@ -36,6 +36,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.image.Compressor
+import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -113,9 +114,13 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             val botNumber = message.content?.getBotNumber()
             var recipientId: String? = null
             if (botNumber != null && botNumber.isNotBlank()) {
-                recipientId = userRepository.findUserIdByAppNumber(message.conversationId, botNumber)
-                recipientId?.let {
-                    message.category = MessageCategory.PLAIN_TEXT.name
+                userRepository.findAppByAppNumber(message.conversationId, botNumber)?.apply {
+                    recipientId = appId
+                    message.category = if (capabilities?.contains(AppCap.ENCRYPTED.name) == true) {
+                        MessageCategory.ENCRYPTED_TEXT.name
+                    } else {
+                        MessageCategory.PLAIN_TEXT.name
+                    }
                 }
             }
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId, isSilent = isSilentMessage))

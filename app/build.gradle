@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 23
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
@@ -31,7 +31,6 @@ android {
             }
         }
 
-        buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
         buildConfigField 'String', 'APPCENTER_API_KEY', "\"${propOrEmpty('MIXIN_APPCENTER_API_KEY')}\""
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
         buildConfigField 'String', 'HCAPTCHA_KEY', "\"${propOrEmpty('MIXIN_HCAPTCHA_KEY')}\""
@@ -170,7 +169,7 @@ android {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-    implementation platform("com.google.firebase:firebase-bom:28.4.2")
+    implementation platform("com.google.firebase:firebase-bom:29.0.0")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
@@ -227,10 +226,6 @@ dependencies {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
-    implementation("com.bugsnag:bugsnag-android:${bugsnagVersion}") {
-        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-anr"
-        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-ndk"
-    }
 
     // retrofit
     implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
@@ -310,6 +305,7 @@ dependencies {
     implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}"
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
+    implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 

@@ -153,6 +153,11 @@
     <string name="common_share">Share</string>
     <string name="common_pin">Pin</string>
     <string name="common_unpin">Unpin</string>
+    <string name="crop">Crop</string>
+    <string name="text">Text</string>
+    <string name="draw">Draw</string>
+    <string name="size">Size</string>
+    <string name="exit_without_save">Exit without save?</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -361,7 +366,8 @@
     <string name="chat_group_call_invite">%1$s has invited you to a group call</string>
     <string name="chat_group_call_decline">%1$s has declined group call</string>
     <string name="chat_group_call_cancel">%1$s has canceled group call</string>
-    <string name="chat_group_call_end">Group call ended, duration: %1$s</string>
+    <string name="chat_group_call_end">Group call has ended</string>
+    <string name="chat_group_call_end_with_duration">Group call ended, duration: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Peer connection has been closed, please try again</string>
     <string name="chat_call_title">Call</string>
     <string name="chat_call_add">Add</string>
@@ -913,6 +919,7 @@
     <string name="restore_found">Backup found</string>
     <string name="restore_skip">SKIP</string>
     <string name="restore_retry">RETRY</string>
+    <string name="restore_choose">CHOOSE</string>
     <string name="restore_restore">RESTORE</string>
     <string name="restore_authorization">authorization</string>
     <string name="restore_message">Back up your messages and media to external storage. You can restore them when you reinstall Mixin. Your messages and media will also back up to your phone\'s internal storage. Media and messages your back up are not protected by Mixin end-to-end encryption while in external storage.</string>
@@ -920,6 +927,7 @@
     <string name="restore_path">Path: %1$s</string>
     <string name="restore_failure">Failure</string>
     <string name="restore_not_found">Not found, please copy the backup file into %1$s</string>
+    <string name="restore_choose_backup_folder">Choose backup folder</string>
     <string name="restore_not_support">Not support</string>
     <string name="restore_notification_title">Restore in progress</string>
     <string name="restore_notification_content">Preparing restore&#8230;</string>
@@ -928,6 +936,10 @@
     <string name="backup_external_storage">External storage: %1$s</string>
     <string name="backup_never">Never</string>
     <string name="backup">Backup</string>
+    <string name="backup_media">Include media files</string>
+    <string name="backup_media_title">Back up to external storage</string>
+    <string name="backup_choose_folder">Choose folder</string>
+    <string name="backup_choose_a_folder">Choose a folder, backups will be saved to this location</string>
     <string name="backup_delete">Backup delete</string>
     <string name="backup_dialog_title">Auto back up to external storage</string>
     <string name="backup_ing">External storage backup&#8230;</string>

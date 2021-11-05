@@ -171,6 +171,7 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MediaItemData
@@ -248,6 +249,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
+import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
@@ -337,6 +339,11 @@ class ConversationFragment() :
         ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, encryptCategory() != EncryptCategory.PLAIN, isBot).apply {
             registerAdapterDataObserver(chatAdapterDataObserver)
         }
+    }
+
+    private fun showPreview(uri: Uri, okText: String? = null, isVideo: Boolean, action: (Uri) -> Unit) {
+        val previewDialogFragment = PreviewDialogFragment.newInstance(isVideo)
+        previewDialogFragment.show(parentFragmentManager, uri, okText, action)
     }
 
     fun updateConversationInfo(messageId: String?, keyword: String?, unreadCount: Int) {
@@ -881,7 +888,7 @@ class ConversationFragment() :
 
             override fun onTranscriptClick(messageItem: MessageItem) {
                 binding.chatControl.chatEt.hideKeyboard()
-                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, messageItem.isPlain())
+                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, encryptCategory(), messageItem.isPlain())
             }
 
             override fun onSayHi() {
@@ -1029,6 +1036,7 @@ class ConversationFragment() :
     private lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
+    lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -1037,6 +1045,7 @@ class ConversationFragment() :
         getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract(), resultRegistry, ::callbackForward)
         getCombineForwardResult = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
         getChatHistoryResult = registerForActivityResult(ChatHistoryContract(), resultRegistry, ::callbackChatHistory)
+        getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEditor)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1368,17 +1377,17 @@ class ConversationFragment() :
         binding.chatControl.chatEt.setCommitContentListener(
             object :
                 ContentEditText.OnCommitContentListener {
-                override fun onCommitContent(
+                override fun commitContentAsync(
                     inputContentInfo: InputContentInfoCompat?,
                     flags: Int,
                     opts: Bundle?
-                ): Boolean {
-                    if (inputContentInfo != null) {
-                        val url = inputContentInfo.contentUri.getFilePath(requireContext())
-                            ?: return false
-                        sendImageMessage(url.toUri())
+                ) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        if (inputContentInfo != null) {
+                            val url = inputContentInfo.contentUri.getFilePath(requireContext()) ?: return@launch
+                            sendImageMessage(url.toUri())
+                        }
                     }
-                    return true
                 }
             }
         )
@@ -2359,11 +2368,26 @@ class ConversationFragment() :
     private fun initGalleryLayout() {
         val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
         galleryAlbumFragment.callback = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
-                if (isVideo) {
-                    sendVideoMessage(uri)
+            override fun onItemClick(pos: Int, item: Item, send: Boolean) {
+                val uri = item.uri
+                if (item.isVideo) {
+                    if (send) {
+                        sendVideoMessage(uri)
+                    } else {
+                        showPreview(uri, getString(R.string.send), true) { sendVideoMessage(uri) }
+                    }
+                } else if (item.isGif || item.isWebp) {
+                    if (send) {
+                        sendImageMessage(uri)
+                    } else {
+                        showPreview(uri, getString(R.string.send), false) { sendImageMessage(uri) }
+                    }
                 } else {
-                    sendImageMessage(uri)
+                    if (send) {
+                        sendImageMessage(uri)
+                    } else {
+                        getEditorResult.launch(Pair(uri, getString(R.string.send)))
+                    }
                 }
                 releaseChatControl(FLING_DOWN)
             }
@@ -2686,12 +2710,12 @@ class ConversationFragment() :
                 if (data.hasExtra(IS_VIDEO)) {
                     sendVideoMessage(it)
                 } else {
-                    sendImageMessage(it)
+                    getEditorResult.launch(Pair(it, getString(R.string.send)))
                 }
             }
         } else if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
-                showPreview(imageUri) { sendImageMessage(it) }
+                getEditorResult.launch(Pair(imageUri, getString(R.string.send)))
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
@@ -2748,15 +2772,6 @@ class ConversationFragment() :
                 {
                 }
             )
-    }
-
-    private var previewDialogFragment: PreviewDialogFragment? = null
-
-    private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
-        if (previewDialogFragment == null) {
-            previewDialogFragment = PreviewDialogFragment.newInstance()
-        }
-        previewDialogFragment?.show(parentFragmentManager, uri, action)
     }
 
     private val voiceAlert by lazy {
@@ -3061,6 +3076,13 @@ class ConversationFragment() :
                     positionBeforeClickQuote = null
                 }
             }, 100)
+        }
+    }
+
+    private fun callbackEditor(data: Intent?) {
+        val uri = data?.getParcelableExtra<Uri>(ImageEditorActivity.ARGS_EDITOR_RESULT)
+        if (uri != null) {
+            sendImageMessage(uri)
         }
     }
 
