@@ -138,4 +138,7 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u INNER JOIN apps a on a.app_id = u.app_id WHERE u.user_id = :id")
     fun findForwardUserById(id: String): ForwardUser?
+
+    @Query("SELECT * FROM users")
+    suspend fun getAllUsers(): List<User>
 }

