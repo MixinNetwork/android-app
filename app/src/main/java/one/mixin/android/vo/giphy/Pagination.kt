@@ -1,14 +1,10 @@
 package one.mixin.android.vo.giphy
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.JsonClass
 
-class Pagination(
-    @SerializedName("total_count")
+@JsonClass(generateAdapter = true)
+data class Pagination(
     val total_count: Int,
-
-    @SerializedName("count")
     val count: Int,
-
-    @SerializedName("offset")
     val offset: Int
 )

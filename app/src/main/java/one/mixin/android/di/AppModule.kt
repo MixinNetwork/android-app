@@ -74,6 +74,7 @@ import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -337,7 +338,7 @@ object AppModule {
         }.build()
         val retrofit = Retrofit.Builder()
             .baseUrl(GIPHY_URL)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .client(client)
             .build()
