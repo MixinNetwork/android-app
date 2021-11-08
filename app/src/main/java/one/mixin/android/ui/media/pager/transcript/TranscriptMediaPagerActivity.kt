@@ -65,6 +65,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
@@ -249,6 +250,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         val binding = ViewDragVideoBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        binding.showInChat.isVisible = false
         binding.saveVideo.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -287,6 +289,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         val binding = ViewDragImageBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        binding.showInChat.isVisible = false
         binding.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -454,7 +457,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                 "", //
                 messageItem.messageId,
                 messageItem.isVideo(),
-                false, //
+                MediaPagerActivity.MediaSource.ChatHistory, //
                 messageItem.absolutePath()
             )
 

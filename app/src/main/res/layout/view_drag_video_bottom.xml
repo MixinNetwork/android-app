@@ -17,6 +17,18 @@
         android:text="@string/save"/>
 
     <TextView
+        android:id="@+id/show_in_chat"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/show_in_chat"/>
+
+    <TextView
             android:id="@+id/share"
             android:layout_width="match_parent"
             android:layout_height="56dp"

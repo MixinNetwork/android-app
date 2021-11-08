@@ -43,7 +43,7 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
 
     private val adapter = MediaAdapter(
         fun(imageView: View, messageItem: MessageItem) {
-            MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageItem.messageId, messageItem, true)
+            MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageItem.messageId, messageItem, MediaPagerActivity.MediaSource.SharedMedia)
         }
     )
 

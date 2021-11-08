@@ -654,12 +654,14 @@ class ConversationFragment() :
             override fun onImageClick(messageItem: MessageItem, view: View) {
                 starTransition = true
                 if (messageItem.isLive()) {
-                    MediaPagerActivity.show(
-                        requireActivity(),
-                        view,
-                        messageItem.conversationId,
-                        messageItem.messageId,
-                        messageItem,
+                    getMediaResult.launch(
+                        MediaPagerActivity.MediaParam(
+                            messageItem.conversationId,
+                            messageItem.messageId,
+                            messageItem,
+                            MediaPagerActivity.MediaSource.Chat,
+                        ),
+                        MediaPagerActivity.getOptions(requireActivity(), view)
                     )
                     return
                 }
@@ -670,12 +672,14 @@ class ConversationFragment() :
                 }
                 val file = File(path)
                 if (file.exists()) {
-                    MediaPagerActivity.show(
-                        requireActivity(),
-                        view,
-                        messageItem.conversationId,
-                        messageItem.messageId,
-                        messageItem,
+                    getMediaResult.launch(
+                        MediaPagerActivity.MediaParam(
+                            messageItem.conversationId,
+                            messageItem.messageId,
+                            messageItem,
+                            MediaPagerActivity.MediaSource.Chat,
+                        ),
+                        MediaPagerActivity.getOptions(requireActivity(), view)
                     )
                 } else {
                     toast(R.string.error_file_exists)
@@ -1036,6 +1040,7 @@ class ConversationFragment() :
     private lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
     lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
@@ -1045,6 +1050,7 @@ class ConversationFragment() :
         getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract(), resultRegistry, ::callbackForward)
         getCombineForwardResult = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
         getChatHistoryResult = registerForActivityResult(ChatHistoryContract(), resultRegistry, ::callbackChatHistory)
+        getMediaResult = registerForActivityResult(MediaPagerActivity.MediaContract(), resultRegistry, ::callbackChatHistory)
         getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEditor)
     }
 
