@@ -71,6 +71,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.media.SharedMediaViewModel
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
@@ -341,6 +342,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val binding = ViewDragImageBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        binding.showInChat.setOnClickListener {
+            val messageItem = getMessageItemByPosition(this.binding.viewPager.currentItem) ?: return@setOnClickListener
+            ConversationActivity.show(this, conversationId, messageId = messageItem.messageId)
+            bottomSheet.dismiss()
+            dismiss()
+        }
         binding.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)

@@ -33,6 +33,7 @@
     <string name="unpin">取消置顶</string>
     <string name="save">保存</string>
     <string name="saving">保存中…</string>
+    <string name="show_in_chat">在聊天中展示</string>
     <string name="pb_dialog_message">请稍等…</string>
     <string name="other">其他</string>
     <string name="not_logged_in">还没有登录</string>
