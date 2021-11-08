@@ -125,7 +125,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     fun deleteTranscript(transcriptId: String)
 
     @Query("SELECT rowid FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' ORDER BY rowid DESC LIMIT 1")
-    suspend fun lastDoneAttachmentId(): Long
+    suspend fun lastDoneAttachmentId(): Long?
 
     @Query(
         "SELECT rowid, message_id, media_url FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND rowid <= :rowId ORDER BY rowid DESC LIMIT :limit"

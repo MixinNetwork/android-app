@@ -136,7 +136,7 @@ object PropertyHelper {
             val transcriptDao = MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
             val updatedAt = nowInUtc()
             propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.hasDoneAttachment()).toString(), updatedAt))
-            val lastDoneAttachmentId = transcriptDao.lastDoneAttachmentId()
+            val lastDoneAttachmentId = transcriptDao.lastDoneAttachmentId() ?: 0
             if (lastDoneAttachmentId > 0) {
                 propertyDao.insertSuspend(Property(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, true.toString(), updatedAt))
                 propertyDao.insertSuspend(Property(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST, lastDoneAttachmentId.toString(), updatedAt))
