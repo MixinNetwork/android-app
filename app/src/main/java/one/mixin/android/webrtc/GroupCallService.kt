@@ -200,6 +200,7 @@ class GroupCallService : CallService() {
                 if (event.conversationId != conversationId) {
                     return@subscribe
                 }
+                Timber.d("$TAG_CALL SenderKeyChange: $event")
                 if (event.userId != null && event.sessionId != null) {
                     val users = callState.getUsers(event.conversationId) ?: return@subscribe
                     if (users.contains(event.userId)) {
