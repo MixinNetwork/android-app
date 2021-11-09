@@ -21,6 +21,12 @@ class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(
         val oldDir = MixinApplication.get().applicationContext.getTranscriptDirPath(true)
         if (oldDir.exists()) {
             val newDir = MixinApplication.get().applicationContext.getTranscriptDirPath(false)
+            if (newDir.parentFile?.exists() != true) {
+                newDir.parentFile?.mkdirs()
+            }
+            if (newDir.exists()) {
+                newDir.deleteRecursively()
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Files.move(oldDir.toPath(), newDir.toPath())
             } else {
