@@ -42,6 +42,7 @@ import one.mixin.android.vo.ShareImageData
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
+import java.lang.IllegalArgumentException
 import timber.log.Timber
 
 @AndroidEntryPoint
