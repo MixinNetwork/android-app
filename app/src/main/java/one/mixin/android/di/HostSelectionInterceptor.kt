@@ -13,8 +13,8 @@ import java.net.ProtocolException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
-import kotlin.jvm.Throws
 
 fun Throwable.isNeedSwitch(): Boolean {
     return (
@@ -24,7 +24,8 @@ fun Throwable.isNeedSwitch(): Boolean {
             this is ProtocolException ||
             this is NoRouteToHostException ||
             this is SocketException ||
-            this is SSLPeerUnverifiedException
+            this is SSLPeerUnverifiedException ||
+            this is SSLHandshakeException
         )
 }
 
