@@ -178,7 +178,7 @@ fun saveClips() {
 fun replaceApp(app: App) {
     var hasChange = false
     clips.forEachIndexed { index, webClip ->
-        if (webClip.url == webClip.app?.homeUri && webClip.app?.appId == app.appId) {
+        if (webClip.url == webClip.app?.homeUri && webClip.url != app.homeUri && webClip.app?.appId == app.appId) {
             webClip.url = app.homeUri
             webClip.app = app
             clips[index] = webClip
