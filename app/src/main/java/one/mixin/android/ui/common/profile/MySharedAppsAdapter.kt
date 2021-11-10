@@ -88,8 +88,8 @@ class MySharedAppsAdapter(
         return if (position < favoriteSize) {
             0
         } else if (position < favoriteSize + unFavoriteApps.notNullWithElse({ it.size }, 0)) {
-        1
-    } else {
+            1
+        } else {
             2
         }
     }

@@ -34,6 +34,7 @@
     <string name="unpin">Unpin</string>
     <string name="save">Save</string>
     <string name="saving">Saving…</string>
+    <string name="show_in_chat">Show in chat</string>
     <string name="pb_dialog_message">Please wait a bit…</string>
     <string name="other">OTHER</string>
     <string name="welcome" translatable="false">Welcome to Mixin</string>

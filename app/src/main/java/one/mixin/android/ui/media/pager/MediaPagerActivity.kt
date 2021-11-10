@@ -7,7 +7,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ActivityOptions
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -29,10 +28,12 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.arch.core.executor.ArchTaskExecutor
+import androidx.core.app.ActivityOptionsCompat
 import androidx.core.net.toFile
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
@@ -71,6 +72,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
 import one.mixin.android.ui.media.SharedMediaViewModel
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
@@ -107,8 +110,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     private val messageId by lazy {
         intent.getStringExtra(MESSAGE_ID) as String
     }
-    private val excludeLive by lazy {
-        intent.getBooleanExtra(EXCLUDE_LIVE, false)
+    private val mediaSource by lazy {
+        MediaSource.values()[intent.getIntExtra(MEDIA_SOURCE, 0)]
     }
     private val ratio by lazy {
         intent.getFloatExtra(RATIO, 0f)
@@ -270,6 +273,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     private fun observeAllDataSource() = lifecycleScope.launch {
+        val excludeLive = mediaSource == MediaSource.SharedMedia
         initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
         viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
             .observe(
@@ -303,6 +307,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val binding = ViewDragVideoBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        binding.showInChat.setOnClickListener {
+            showInChat(bottomSheet)
+        }
         binding.saveVideo.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -341,6 +348,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val binding = ViewDragImageBottomBinding.bind(view)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        binding.showInChat.setOnClickListener {
+            showInChat(bottomSheet)
+        }
         binding.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -447,6 +457,22 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
     }
 
+    private fun showInChat(bottomSheet: BottomSheet) {
+        val messageItem = getMessageItemByPosition(this.binding.viewPager.currentItem) ?: return
+        if (mediaSource == MediaSource.Chat) {
+            setResult(
+                Activity.RESULT_OK,
+                Intent().apply {
+                    putExtra(ChatHistoryActivity.JUMP_ID, messageItem.messageId)
+                }
+            )
+        } else {
+            ConversationActivity.show(this, conversationId, messageId = messageItem.messageId)
+        }
+        bottomSheet.dismiss()
+        dismiss()
+    }
+
     private fun shareMedia(isVideo: Boolean, url: String) {
         var uri: Uri
         val sendIntent = Intent().apply {
@@ -514,7 +540,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 conversationId,
                 messageItem.messageId,
                 messageItem.isVideo(),
-                excludeLive,
+                mediaSource,
                 messageItem.absolutePath()
             )
 
@@ -810,11 +836,32 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
     }
 
+    class MediaContract : ActivityResultContract<MediaParam, Intent?>() {
+        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+            return intent
+        }
+
+        override fun createIntent(context: Context, input: MediaParam): Intent {
+            return getMediaIntent(context, input)
+        }
+    }
+
+    class MediaParam(
+        val conversationId: String,
+        val messageId: String,
+        val messageItem: MessageItem?,
+        val mediaSource: MediaSource,
+    )
+
+    enum class MediaSource {
+        Chat, SharedMedia, ChatHistory
+    }
+
     companion object {
         private const val MESSAGE_ID = "id"
         private const val RATIO = "ratio"
         private const val CONVERSATION_ID = "conversation_id"
-        private const val EXCLUDE_LIVE = "exclude_live"
+        private const val MEDIA_SOURCE = "media_source"
         private const val INITIAL_ITEM = "initial_item"
         private const val ALPHA_MAX = 0xFF
         const val PREFIX = "media"
@@ -828,22 +875,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             conversationId: String,
             messageId: String,
             messageItem: MessageItem?,
-            excludeLive: Boolean = false
+            mediaSource: MediaSource,
         ) {
-            val intent = Intent(activity, MediaPagerActivity::class.java).apply {
-                putExtra(CONVERSATION_ID, conversationId)
-                putExtra(MESSAGE_ID, messageId)
-                putExtra(EXCLUDE_LIVE, excludeLive)
-                messageItem?.let { putExtra(INITIAL_ITEM, messageItem) }
-            }
-            activity.startActivity(
-                intent,
-                ActivityOptions.makeSceneTransitionAnimation(
-                    activity,
-                    imageView,
-                    "transition"
-                ).toBundle()
-            )
+            val intent = getMediaIntent(activity, MediaParam(conversationId, messageId, messageItem, mediaSource))
+            activity.startActivity(intent, getOptions(activity, imageView).toBundle())
         }
 
         fun show(
@@ -851,7 +886,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             conversationId: String,
             messageId: String,
             ratio: Float,
-            excludeLive: Boolean = false
+            mediaSource: MediaSource,
         ) {
             val intent = Intent(context, MediaPagerActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -859,9 +894,25 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
                 putExtra(RATIO, ratio)
-                putExtra(EXCLUDE_LIVE, excludeLive)
+                putExtra(MEDIA_SOURCE, mediaSource)
             }
             context.startActivity(intent)
         }
+
+        fun getMediaIntent(
+            context: Context,
+            mediaParam: MediaParam,
+        ) = Intent(context, MediaPagerActivity::class.java).apply {
+            putExtra(CONVERSATION_ID, mediaParam.conversationId)
+            putExtra(MESSAGE_ID, mediaParam.messageId)
+            putExtra(MEDIA_SOURCE, mediaParam.mediaSource.ordinal)
+            mediaParam.messageItem?.let { putExtra(INITIAL_ITEM, it) }
+        }
+
+        fun getOptions(activity: Activity, view: View) = ActivityOptionsCompat.makeSceneTransitionAnimation(
+            activity,
+            view,
+            "transition"
+        )
     }
 }

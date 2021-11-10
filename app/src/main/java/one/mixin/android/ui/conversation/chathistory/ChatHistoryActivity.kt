@@ -326,6 +326,7 @@ class ChatHistoryActivity : BaseActivity() {
                         messageItem.conversationId!!,
                         messageItem.messageId,
                         messageItem.toMessageItem(messageItem.conversationId),
+                        MediaPagerActivity.MediaSource.ChatHistory,
                     )
                 }
             }
