@@ -1,7 +1,9 @@
 package one.mixin.android.vo.foursquare
 
+import com.squareup.moshi.JsonClass
 import java.util.regex.Pattern
 
+@JsonClass(generateAdapter = true)
 class Venue(
     val id: String,
     val name: String,
