@@ -114,7 +114,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
         binding.sendFl.setOnClickListener {
             if (conversationId != MixinApplication.conversationId) {
-                ConversationActivity.show(requireContext(), conversationId)
+                ConversationActivity.showAndClear(requireContext(), conversationId)
             }
             dismiss()
         }
