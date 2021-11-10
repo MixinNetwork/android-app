@@ -80,8 +80,8 @@ fun collapse() {
 var clips = mutableListOf<WebClip>()
 
 data class WebClip(
-    val url: String,
-    val app: App?,
+    var url: String,
+    var app: App?,
     @ColorInt
     val titleColor: Int,
     val name: String?,
@@ -172,6 +172,21 @@ fun saveClips() {
             PREF_FLOATING,
             GsonHelper.customGson.toJson(localClips)
         )
+    }
+}
+
+fun replaceApp(app: App) {
+    var hasChange = false
+    clips.forEachIndexed { index, webClip ->
+        if (webClip.url == webClip.app?.homeUri && webClip.url != app.homeUri && webClip.app?.appId == app.appId) {
+            webClip.url = app.homeUri
+            webClip.app = app
+            clips[index] = webClip
+            hasChange = true
+        }
+    }
+    if (hasChange) {
+        saveClips()
     }
 }
 

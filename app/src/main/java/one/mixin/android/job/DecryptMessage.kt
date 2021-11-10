@@ -43,6 +43,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
+import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
@@ -261,6 +262,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         successBlock = {
                             it.data?.let { u ->
                                 userDao.insertUpdate(u, appDao)
+                                u.app?.let { app -> replaceApp(app) }
                                 return@handleMixinResponse u.app
                             }
                         }
