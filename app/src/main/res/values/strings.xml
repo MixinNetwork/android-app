@@ -494,6 +494,8 @@
     <string name="wallet_withdrawal_changed">The withdrawal fee has been changed from %1$s to %2$s, would you like to proceed  with the request?</string>
     <string name="wallet_refresh_address_failed">The withdrawal fee has been changed and the refresh fails, please try again.</string>
     <string name="wallet_address_add_tip">Mixin does not support withdrawal to the</string>
+    <string name="wallet_pin_tops">learn more</string>
+    <string name="wallet_pin_tops_desc">Please remember the PIN is unrecoverable if lost. The PIN based on decentralized key derivation protocol Throttled Identity Protocol, read our document to learn more.</string>
     <!--pin logs-->
     <string name="logs">Logs</string>
     <string name="log_category_pin_incorrect">PIN incorrect</string>
