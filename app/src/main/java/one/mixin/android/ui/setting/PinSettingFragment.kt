@@ -42,7 +42,6 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         binding.apply {
             title.apply {
                 leftIb.setOnClickListener { activity?.onBackPressed() }
-                rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.TIP) }
             }
             changeTv.setOnClickListener {
                 navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)

@@ -393,9 +393,9 @@
     <string name="wallet_title">钱包</string>
     <string name="wallet_password_set_pin">设置密码</string>
     <string name="wallet_password_set_new_pin">设置新的密码</string>
-    <string name="wallet_password_set_pin_desc">设置 6 位数字密码。</string>
-    <string name="wallet_password_set_new_pin_desc">设置 6 位钱包 PIN 以创建您的第一个数字钱包，阅读我们的文档以了解更多。</string>
-    <string name="wallet_password_set_new_pin_target">了解更多</string>
+    <string name="wallet_password_set_new_pin_desc">设置新的 6 位数字密码</string>
+    <string name="wallet_password_set_pin_desc">设置 6 位钱包 PIN 以创建您的第一个数字钱包，阅读我们的文档以了解更多。</string>
+    <string name="wallet_password_set_pin_target">了解更多</string>
     <string name="wallet_password_confirm_pin">确认密码</string>
     <string name="wallet_password_confirm_1">确认 6 位密码并牢记它。如果忘记，你的钱包将无法找回。</string>
     <string name="wallet_password_confirm_2">请再次确认您的 6 位密码。 很少看到第三次确认吧！所以请牢记，密码丢失是无法找回的。</string>

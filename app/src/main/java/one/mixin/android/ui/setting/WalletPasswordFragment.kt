@@ -83,8 +83,8 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             } else {
                 titleView.setSubTitle(getString(R.string.wallet_password_set_pin), "1/4")
                 val url = Constants.HelpLink.TIP
-                val target = getString(R.string.wallet_password_set_new_pin_target)
-                val desc = getString(R.string.wallet_password_set_new_pin_desc)
+                val target = getString(R.string.wallet_password_set_pin_desc)
+                val desc = getString(R.string.wallet_password_set_pin_target)
                 tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
             }
             titleView.leftIb.setOnClickListener {
@@ -153,11 +153,11 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             getSubTitle()
         )
         if (change) {
-            binding.tipTv.text = getString(R.string.wallet_password_set_pin_desc)
+            binding.tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
         } else {
             val url = Constants.HelpLink.TIP
-            val target = getString(R.string.wallet_password_set_new_pin_target)
-            val desc = getString(R.string.wallet_password_set_new_pin_desc)
+            val target = getString(R.string.wallet_password_set_pin_desc)
+            val desc = getString(R.string.wallet_password_set_pin_target)
             binding.tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }
     }

@@ -13,7 +13,6 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightIcon="@drawable/ic_help_outline"
         app:titleText="@string/pin" />
 
     <LinearLayout
@@ -39,6 +38,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="24dp"
+            android:lineSpacingExtra="2dp"
             android:gravity="center"
             android:text="@string/setting_emergency_content"
             android:textColor="?attr/text_minor"
