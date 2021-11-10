@@ -10,14 +10,12 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.DefaultControlDispatcher
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Util
-import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerBottomControlBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -32,7 +30,6 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
 
     private val componentListener = ComponentListener()
-    private val controlDispatcher = DefaultControlDispatcher()
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
     private val window = Timeline.Window()
@@ -79,22 +76,22 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
             when (value) {
                 PlayMode.RepeatAll -> {
                     player?.let {
-                        controlDispatcher.dispatchSetShuffleModeEnabled(it, false)
-                        controlDispatcher.dispatchSetRepeatMode(it, Player.REPEAT_MODE_ALL)
+                        it.shuffleModeEnabled = false
+                        it.repeatMode = Player.REPEAT_MODE_ALL
                     }
                     modeView.setImageResource(R.drawable.ic_player_repeat_all)
                 }
                 PlayMode.RepeatOne -> {
                     player?.let {
-                        controlDispatcher.dispatchSetShuffleModeEnabled(it, false)
-                        controlDispatcher.dispatchSetRepeatMode(it, Player.REPEAT_MODE_ONE)
+                        it.shuffleModeEnabled = false
+                        it.repeatMode = Player.REPEAT_MODE_ONE
                     }
                     modeView.setImageResource(R.drawable.ic_player_repeat_one)
                 }
                 PlayMode.Shuffle -> {
                     player?.let {
-                        controlDispatcher.dispatchSetShuffleModeEnabled(it, true)
-                        controlDispatcher.dispatchSetRepeatMode(it, Player.REPEAT_MODE_ALL)
+                        it.shuffleModeEnabled = true
+                        it.repeatMode = Player.REPEAT_MODE_ALL
                     }
                     modeView.setImageResource(R.drawable.ic_player_shuffle)
                 }
@@ -109,17 +106,17 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
             field = value
             when (value) {
                 PlaySpeed.Speed1 -> {
-                    player?.setPlaybackParameters(PlaybackParameters(1f))
+                    player?.playbackParameters = PlaybackParameters(1f)
                     speedView.text = "1X"
                     speedView.setTextColor(R.attr.icon_default)
                 }
                 PlaySpeed.Speed15 -> {
-                    player?.setPlaybackParameters(PlaybackParameters(1.5f))
+                    player?.playbackParameters = PlaybackParameters(1.5f)
                     speedView.text = "1.5X"
                     speedView.textColorResource = R.color.colorAccent
                 }
                 PlaySpeed.Speed20 -> {
-                    player?.setPlaybackParameters(PlaybackParameters(2.0f))
+                    player?.playbackParameters = PlaybackParameters(2.0f)
                     speedView.text = "2.0X"
                     speedView.textColorResource = R.color.colorAccentNight
                 }
@@ -149,7 +146,8 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     private fun seekTo(player: Player, windowIndex: Int, positionMs: Long): Boolean {
-        return controlDispatcher.dispatchSeekTo(player, windowIndex, positionMs)
+        player.seekTo(windowIndex, positionMs)
+        return true
     }
 
     private fun seekToTimeBarPosition(player: Player, positionMsParams: Long) {
@@ -172,7 +170,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                 windowIndex++
             }
         } else {
-            windowIndex = player.currentWindowIndex
+            windowIndex = player.currentMediaItemIndex
         }
         val dispatched = seekTo(player, windowIndex, positionMs)
         if (!dispatched) {
@@ -233,8 +231,8 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     private fun updatePrevAndNext() {
         val player = this.player ?: return
 
-        previousView.isEnabled = player.hasPrevious()
-        nextView.isEnabled = player.hasNext()
+        previousView.isEnabled = player.hasPreviousMediaItem()
+        nextView.isEnabled = player.hasNextMediaItem()
     }
 
     private fun updateNavigation() {
@@ -242,7 +240,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
         if (player != null) {
             val timeline = player!!.currentTimeline
             if (!timeline.isEmpty && !player!!.isPlayingAd) {
-                timeline.getWindow(player!!.currentWindowIndex, window)
+                timeline.getWindow(player!!.currentMediaItemIndex, window)
                 val isSeekable = window.isSeekable
                 enableSeeking = isSeekable
             }
@@ -261,13 +259,13 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
             var adGroupCount = 0
             val timeline = player!!.currentTimeline
             if (!timeline.isEmpty) {
-                val currentWindowIndex = player!!.currentWindowIndex
+                val currentWindowIndex = player!!.currentMediaItemIndex
                 val firstWindowIndex = if (multiWindowTimeBar) 0 else currentWindowIndex
                 val lastWindowIndex =
                     if (multiWindowTimeBar) timeline.windowCount - 1 else currentWindowIndex
                 for (i in firstWindowIndex..lastWindowIndex) {
                     if (i == currentWindowIndex) {
-                        currentWindowOffset = C.usToMs(durationUs)
+                        currentWindowOffset = Util.usToMs(durationUs)
                     }
                     timeline.getWindow(i, window)
                     if (window.durationUs == C.TIME_UNSET) {
@@ -296,7 +294,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                                     playedAdGroups = playedAdGroups.copyOf(newLength)
                                 }
                                 adGroupTimesMs[adGroupCount] =
-                                    C.usToMs(durationUs + adGroupTimeInWindowUs)
+                                    Util.usToMs(durationUs + adGroupTimeInWindowUs)
                                 playedAdGroups[adGroupCount] = period.hasPlayedAdGroup(adGroupIndex)
                                 adGroupCount++
                             }
@@ -305,7 +303,7 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                     durationUs += window.durationUs
                 }
             }
-            val durationMs = C.usToMs(durationUs)
+            val durationMs = Util.usToMs(durationUs)
             durationView.text = Util.getStringForTime(formatBuilder, formatter, durationMs)
             timeBar.setDuration(durationMs)
             val extraAdGroupCount = extraAdGroupTimesMs.size
@@ -375,10 +373,9 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     inner class ComponentListener :
-        Player.EventListener,
+        Player.Listener,
         TimeBar.OnScrubListener,
-        OnClickListener,
-        VideoListener {
+        OnClickListener {
         override fun onScrubMove(timeBar: TimeBar, position: Long) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
@@ -439,14 +436,14 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                     when (playView.status) {
                         STATUS_IDLE -> {
                             if (player.playbackState == Player.STATE_IDLE) {
-                                controlDispatcher.dispatchPrepare(player)
+                                player.prepare()
                             } else if (player.playbackState == Player.STATE_ENDED) {
-                                seekTo(player, player.currentWindowIndex, C.TIME_UNSET)
+                                seekTo(player, player.currentMediaItemIndex, C.TIME_UNSET)
                             }
-                            controlDispatcher.dispatchSetPlayWhenReady(player, true)
+                            player.playWhenReady = true
                         }
                         STATUS_PLAYING -> {
-                            controlDispatcher.dispatchSetPlayWhenReady(player, false)
+                            player.playWhenReady = false
                         }
                     }
                 }
@@ -464,10 +461,10 @@ class PlayerBottomControlView(context: Context, attributeSet: AttributeSet) :
                     }
                 }
                 nextView -> {
-                    controlDispatcher.dispatchNext(player)
+                    player.seekToNextMediaItem()
                 }
                 previousView -> {
-                    controlDispatcher.dispatchPrevious(player)
+                    player.seekToPreviousMediaItem()
                 }
                 speedView -> {
                     playSpeed = when (playSpeed) {

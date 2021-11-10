@@ -18,7 +18,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.media.MediaBrowserServiceCompat
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ControlDispatcher
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -431,7 +430,6 @@ class MusicService : MediaBrowserServiceCompat() {
 
         override fun onCommand(
             player: Player,
-            controlDispatcher: ControlDispatcher,
             command: String,
             extras: Bundle?,
             cb: ResultReceiver?
