@@ -319,7 +319,6 @@ dependencies {
     testImplementation "org.robolectric:robolectric:${robolectricVersion}"
 
     // for jwt unit test
-    testImplementation "org.bouncycastle:bcprov-jdk16:${bcVersion}"
     testImplementation "org.json:json:${jsonVersion}"
 
     androidTestImplementation "junit:junit:${junitVersion}"
