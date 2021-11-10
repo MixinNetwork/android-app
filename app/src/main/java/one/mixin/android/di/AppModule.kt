@@ -355,7 +355,7 @@ object AppModule {
         }.build()
         val retrofit = Retrofit.Builder()
             .baseUrl(FOURSQUARE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)
             .build()
