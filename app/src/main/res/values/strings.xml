@@ -414,7 +414,8 @@
     <string name="wallet_password_set_pin">Set PIN</string>
     <string name="wallet_password_set_new_pin">Set a new PIN</string>
     <string name="wallet_password_set_pin_desc">Please set a 6 digit PIN.</string>
-    <string name="wallet_password_set_new_pin_desc">Please set a new 6 digit PIN.</string>
+    <string name="wallet_password_set_new_pin_desc">Set a 6 digit Wallet PIN to create your first digital wallet, read our document to learn more.</string>
+    <string name="wallet_password_set_new_pin_target">learn more</string>
     <string name="wallet_password_confirm_pin">Confirm PIN</string>
     <string name="wallet_password_confirm_1">Please confirm the 6 digit PIN and remember it. If lost, there is no way to recover your wallet.</string>
     <string name="wallet_password_confirm_2">Please confirm your 6 digit PIN again. It\'s rare to see a third confirmation somewhere else, so please remember the PIN is unrecoverable if lost.</string>
