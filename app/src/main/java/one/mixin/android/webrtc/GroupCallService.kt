@@ -33,6 +33,8 @@ import one.mixin.android.job.MessageResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
+import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.vo.CallType
 import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.MessageCategory
@@ -737,7 +739,7 @@ class GroupCallService : CallService() {
         } else if (bm.error != null) {
             Timber.d("$TAG_CALL $bm")
             return when (bm.error.code) {
-                ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                     blazeMessage.params?.conversation_id?.let {
                         syncConversation(it)
                         // send sender key
@@ -746,14 +748,24 @@ class GroupCallService : CallService() {
                     blazeMessage.id = UUID.randomUUID().toString()
                     webSocketChannel(blazeMessage)
                 }
-                ErrorHandler.FORBIDDEN -> {
+                FORBIDDEN -> {
+                    val cid = blazeMessage.params?.conversation_id
+                    Timber.d("$TAG_CALL  ${blazeMessage.action} meet error code FORBIDDEN, conversation id: $cid")
+                    cid?.let {
+                        RxBus.publish(CallEvent(it, FORBIDDEN, blazeMessage.action))
+                    }
+                    if (blazeMessage.action == LIST_KRAKEN_PEERS) {
+                        callExecutor.execute {
+                            handleLocalEnd()
+                        }
+                    }
                     null
                 }
                 ERROR_ROOM_FULL -> {
                     val cid = blazeMessage.params?.conversation_id
                     Timber.d("$TAG_CALL try to publish and join a group call, but the room is full, conversation id: $cid.")
                     cid?.let {
-                        RxBus.publish(CallEvent(it))
+                        RxBus.publish(CallEvent(it, ERROR_ROOM_FULL))
                     }
                     disconnect()
                     null
