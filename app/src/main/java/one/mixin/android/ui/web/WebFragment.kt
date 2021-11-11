@@ -700,7 +700,11 @@ class WebFragment : BaseFragment() {
                 immersive,
                 reloadThemeAction = { reloadTheme() },
                 playlistAction = { showPlaylist(it) },
-                closeAction = { closeSelf() },
+                    closeAction = {
+                        lifecycleScope.launch {
+                            closeSelf()
+                        }
+                    },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
