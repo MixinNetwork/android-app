@@ -204,11 +204,8 @@ class GroupCallService : CallService() {
                 }
                 Timber.d("$TAG_CALL SenderKeyChange: $event")
                 if (event.userId != null && event.sessionId != null) {
-                    val users = callState.getUsers(event.conversationId) ?: return@subscribe
-                    if (users.contains(event.userId)) {
-                        val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
-                        peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
-                    }
+                    val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
+                    peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
                 } else if (event.userId != null) {
                     checkSessionSenderKey(event.conversationId)
                 } else {
