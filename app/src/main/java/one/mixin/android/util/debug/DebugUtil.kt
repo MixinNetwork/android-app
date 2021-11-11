@@ -41,6 +41,15 @@ inline fun <T> measureTimeMillis(tag: String, block: () -> T): T {
     return result
 }
 
+inline fun <T> measureTimeMillis(block: () -> T): Long {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    val start = System.currentTimeMillis()
+    block.invoke()
+    return System.currentTimeMillis() - start
+}
+
 fun Cursor.getContent(columnIndex: Int): String {
     return try {
         (

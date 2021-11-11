@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.database.Cursor
 import android.util.ArrayMap
-import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -42,6 +41,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_38_39
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_39_40
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
@@ -74,6 +74,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import timber.log.Timber
 
 @Database(
     entities = [
@@ -174,12 +175,23 @@ abstract class MixinDatabase : RoomDatabase() {
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                     if (BuildConfig.DEBUG) {
+                        var sql: String? = null
+                        var args: List<Any>? = null
+
                         builder.setQueryCallback(
-                            { sqlQuery, bindArgs ->
-                                // Timber.d(sqlQuery)
-                            },
-                            ArchTaskExecutor.getIOThreadExecutor()
-                        )
+                                { sqlQuery, bindArgs ->
+                                    sql = sqlQuery
+                                    args = bindArgs
+                                }
+                        ) { command ->
+                            measureTimeMillis {
+                                command.run()
+                            }.apply {
+                                if (this >= 5) {
+                                    Timber.e("Time-consuming:$this \n$sql$args")
+                                }
+                            }
+                        }
                     }
                     INSTANCE = builder.build()
                 }
