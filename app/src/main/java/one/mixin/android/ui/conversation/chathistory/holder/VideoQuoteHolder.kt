@@ -11,16 +11,14 @@ import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.absolutePath
 import org.jetbrains.anko.dip
 
@@ -224,11 +222,14 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
             binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
         }
 
-        try {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
-        } catch (e: Exception) {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
+        messageItem.quoteContent?.let { quoteContent ->
+            binding.chatQuote.bind(
+                MoshiHelper.getTypeAdapter<QuoteMessageItem>(
+                    QuoteMessageItem::class.java
+                ).fromJson(quoteContent)
+            )
         }
+
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }

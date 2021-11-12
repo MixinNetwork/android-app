@@ -19,7 +19,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toCategory
-import one.mixin.android.vo.toQuoteMessageItem
+import one.mixin.android.vo.toQuoteMessageItemJson
 import one.mixin.android.widget.ConvertEvent
 import java.io.File
 
@@ -61,7 +61,7 @@ class ConvertVideoJob(
             video.fileName, uri.toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name,
-            replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            replyMessage?.messageId, replyMessage?.toQuoteMessageItemJson()
         )
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video

@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
-import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
@@ -43,7 +42,6 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PinMessageMinimal
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMinimal
 import one.mixin.android.vo.User
@@ -72,7 +70,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toCategory
-import one.mixin.android.vo.toQuoteMessageItem
+import one.mixin.android.vo.toQuoteMessageItemJson
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
@@ -227,7 +225,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             nowInUtc(),
             MessageStatus.SENDING.name,
             replyMessage.messageId,
-            Gson().toJson(QuoteMessageItem(replyMessage))
+            replyMessage.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(SendMessageJob(message, isSilent = isSilentMessage))
     }
@@ -273,7 +271,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(ConvertDataJob(message))
     }
@@ -296,7 +294,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val message = createAudioMessage(
             messageId, conversationId, sender.userId, null, category,
             file.length(), file.name, duration.toString(), nowInUtc(), waveForm, null, null,
-            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
@@ -347,7 +345,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
         val message = createContactMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category, encoded, shareUserId,
-            MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -581,7 +579,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 MediaStatus.PENDING,
                 MessageStatus.SENDING.name,
                 replyMessage?.messageId,
-                replyMessage?.toQuoteMessageItem()
+                replyMessage?.toQuoteMessageItemJson()
             )
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
             return 0
@@ -628,7 +626,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MediaStatus.PENDING,
             MessageStatus.SENDING.name,
             replyMessage?.messageId,
-            replyMessage?.toQuoteMessageItem()
+            replyMessage?.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         return 0

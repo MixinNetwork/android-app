@@ -7,10 +7,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
@@ -131,7 +130,13 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 true
             }
         }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        messageItem.quoteContent?.let { quoteContent ->
+            binding.chatQuote.bind(
+                MoshiHelper.getTypeAdapter<QuoteMessageItem>(
+                    QuoteMessageItem::class.java
+                ).fromJson(quoteContent)
+            )
+        }
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
@@ -139,7 +144,6 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        binding.chatQuote.bind(quoteMessage)
         setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)

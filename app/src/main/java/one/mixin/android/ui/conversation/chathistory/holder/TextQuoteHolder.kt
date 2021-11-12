@@ -14,12 +14,11 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
@@ -150,12 +149,13 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
             binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
         }
         binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
-        try {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
-        } catch (e: Exception) {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
+        messageItem.quoteContent?.let { quoteContent ->
+            binding.chatQuote.bind(
+                MoshiHelper.getTypeAdapter<QuoteMessageItem>(
+                    QuoteMessageItem::class.java
+                ).fromJson(quoteContent)
+            )
         }
-
         binding.chatContentLayout.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }

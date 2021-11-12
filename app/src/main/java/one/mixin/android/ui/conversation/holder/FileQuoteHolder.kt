@@ -12,10 +12,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
@@ -241,8 +240,15 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 true
             }
         }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+
+        messageItem.quoteContent?.let { quoteContent ->
+            binding.chatQuote.bind(
+                MoshiHelper.getTypeAdapter<QuoteMessageItem>(
+                    QuoteMessageItem::class.java
+                ).fromJson(quoteContent)
+            )
+        }
+
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
