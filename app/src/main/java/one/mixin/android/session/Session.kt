@@ -1,7 +1,5 @@
 package one.mixin.android.session
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -30,6 +28,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toLeByteArray
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
@@ -56,7 +55,7 @@ object Session {
     fun storeAccount(account: Account) {
         self = account
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account))
+        preference.putString(PREF_NAME_ACCOUNT, MoshiHelper.getTypeAdapter<Account>(Account::class.java).toJson(account))
     }
 
     fun getAccount(): Account? = if (self != null) {
@@ -65,7 +64,7 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         val json = preference.getString(PREF_NAME_ACCOUNT, "")
         if (!json.isNullOrBlank()) {
-            Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type).also {
+            MoshiHelper.getTypeAdapter<Account>(Account::class.java).fromJson(json).also {
                 self = it
             }
         } else {
