@@ -96,7 +96,7 @@ object PropertyHelper {
     private suspend fun migrateProperties(propertyDao: PropertyDao, messageDao: MessageDao, transcriptDao: TranscriptMessageDao) {
         val pref = MixinApplication.appContext.defaultSharedPreferences
         val updatedAt = nowInUtc()
-        val fts4Upgrade = pref.getBoolean(PREF_FTS4_UPGRADE, false)
+        val fts4Upgrade = pref.getBoolean(PREF_FTS4_UPGRADE, messageDao.hasMessage() == null)
         propertyDao.insertSuspend(Property(PREF_FTS4_UPGRADE, fts4Upgrade.toString(), updatedAt))
         val syncFtsOffset = pref.getInt(PREF_SYNC_FTS4_OFFSET, 0)
         propertyDao.insertSuspend(Property(PREF_SYNC_FTS4_OFFSET, syncFtsOffset.toString(), updatedAt))
