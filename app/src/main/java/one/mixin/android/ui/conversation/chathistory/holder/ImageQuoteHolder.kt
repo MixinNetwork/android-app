@@ -7,16 +7,13 @@ import one.mixin.android.databinding.ItemChatImageQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.absolutePath
 import org.jetbrains.anko.dip
 import kotlin.math.min
@@ -167,10 +164,10 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
             representativeIcon?.setBounds(0, 0, dp8, dp8)
             binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
         }
-        try {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
-        } catch (e: Exception) {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
+        messageItem.quoteContent?.let { quoteContent ->
+            binding.chatQuote.bind(
+                MoshiHelper.getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+            )
         }
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

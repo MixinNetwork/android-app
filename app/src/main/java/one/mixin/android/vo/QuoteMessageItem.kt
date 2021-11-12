@@ -3,15 +3,13 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 
 @SuppressLint("ParcelCreator")
 @Entity
 @Parcelize
 data class QuoteMessageItem(
-    @PrimaryKey
     val messageId: String,
     val conversationId: String,
     val userId: String,
@@ -36,7 +34,6 @@ data class QuoteMessageItem(
     val assetHeight: Int?,
     val assetWidth: Int?,
     val stickerId: String?,
-    val assetName: String?,
     val appId: String?,
     val sharedUserId: String? = null,
     val sharedUserFullName: String? = null,
@@ -69,7 +66,6 @@ data class QuoteMessageItem(
         messageItem.assetHeight,
         messageItem.assetWidth,
         messageItem.stickerId,
-        messageItem.assetName,
         messageItem.appId,
         messageItem.sharedUserId,
         messageItem.sharedUserFullName,
@@ -79,11 +75,11 @@ data class QuoteMessageItem(
     )
 }
 
-fun MessageItem.toQuoteMessageItem(): String? {
-    return GsonHelper.customGson.toJson(QuoteMessageItem(this))
+fun MessageItem.toQuoteMessageItemJson(): String? {
+    return MoshiHelper.getQuoteMessageItemJsonAdapter().toJson(QuoteMessageItem(this))
 }
 
 fun QuoteMessageItem?.toJson(): String? {
     val message = this ?: return null
-    return GsonHelper.customGson.toJson(message)
+    return MoshiHelper.getQuoteMessageItemJsonAdapter().toJson(message)
 }

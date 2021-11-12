@@ -15,10 +15,9 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
@@ -212,8 +211,12 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
             }
         }
 
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+        messageItem.quoteContent?.let { quoteContent ->
+            binding.chatQuote.bind(
+                MoshiHelper.getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+            )
+        }
+
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

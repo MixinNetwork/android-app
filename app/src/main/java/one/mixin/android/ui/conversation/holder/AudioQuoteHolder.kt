@@ -8,14 +8,12 @@ import one.mixin.android.databinding.ItemChatAudioQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
@@ -213,9 +211,11 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
                 true
             }
         }
-        val quoteMessage =
-            GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        binding.chatQuote.bind(quoteMessage)
+        messageItem.quoteContent?.let { quoteContent ->
+            binding.chatQuote.bind(
+                MoshiHelper.getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+            )
+        }
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

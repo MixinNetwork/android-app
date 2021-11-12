@@ -49,8 +49,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.KeyLivePagedListBuilder
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
@@ -69,7 +69,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
@@ -87,6 +86,7 @@ import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.toJson
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AudioMessagePayload
@@ -736,22 +736,8 @@ internal constructor(
         withContext(Dispatchers.IO) {
             transcriptMessages.forEach { transcript ->
                 if (transcript.quoteContent != null) {
-                    val quoteMessage = try {
-                        GsonHelper.customGson.fromJson(transcript.quoteContent, QuoteMessageItem::class.java)
-                    } catch (e: Exception) {
-                        null
-                    }
-                    if (quoteMessage?.messageId != null) {
-                        transcript.quoteContent = GsonHelper.customGson.toJson(SnakeQuoteMessageItem(quoteMessage))
-                    } else {
-                        try {
-                            GsonHelper.customGson.fromJson(transcript.quoteContent, SnakeQuoteMessageItem::class.java)
-                        } catch (e: Exception) {
-                            null
-                        }?.let {
-                            transcript.quoteContent = GsonHelper.customGson.toJson(it)
-                        }
-                    }
+                    val quoteMessage = MoshiHelper.getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(transcript.quoteContent)
+                    transcript.quoteContent = quoteMessage.toJson()
                 }
             }
         }
