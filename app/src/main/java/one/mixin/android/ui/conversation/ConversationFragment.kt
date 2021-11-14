@@ -188,6 +188,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.debug.FileLogTree
@@ -232,12 +233,14 @@ import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toTranscript
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.ERROR_ROOM_FULL
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.webrtc.TAG_AUDIO
 import one.mixin.android.webrtc.anyCallServiceRunning
 import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
+import one.mixin.android.websocket.LIST_KRAKEN_PEERS
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.StickerMessagePayload
@@ -1005,6 +1008,7 @@ class ConversationFragment() :
             binding.flagLayout.bottomFlag = !value
         }
     private var positionBeforeClickQuote: String? = null
+    private var inGroup = true
 
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService()!!
@@ -1101,12 +1105,18 @@ class ConversationFragment() :
             .autoDispose(destroyScope)
             .subscribe { event ->
                 if (event.conversationId == conversationId) {
-                    alertDialogBuilder()
-                        .setMessage(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
-                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .show()
+                    if (event.errorCode == ERROR_ROOM_FULL) {
+                        alertDialogBuilder()
+                            .setMessage(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
+                            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .show()
+                    } else if (event.errorCode == FORBIDDEN && event.action == LIST_KRAKEN_PEERS) {
+                        if (viewDestroyed()) return@subscribe
+
+                        binding.tapJoinView.root.isVisible = false
+                    }
                 }
             }
 
@@ -1643,6 +1653,9 @@ class ConversationFragment() :
         callState.observe(
             viewLifecycleOwner,
             { state ->
+                if (!inGroup) {
+                    return@observe
+                }
                 binding.chatControl.calling = state != CallService.CallState.STATE_IDLE
                 if (isGroup) {
                     binding.tapJoinView.root.isVisible = callState.isPendingGroupCall(conversationId)
@@ -2227,6 +2240,11 @@ class ConversationFragment() :
                             binding.chatControl.visibility = INVISIBLE
                             binding.bottomCantSend.visibility = VISIBLE
                             binding.chatControl.chatEt.hideKeyboard()
+                        }
+
+                        inGroup = p != null
+                        if (!inGroup && callState.conversationId == conversationId && callState.isNotIdle()) {
+                            callState.handleHangup(requireContext())
                         }
                     }
                 }
