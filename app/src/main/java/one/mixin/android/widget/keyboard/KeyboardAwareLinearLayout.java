@@ -27,6 +27,8 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
     private final Set<OnKeyboardHiddenListener> hiddenListeners = new HashSet<>();
     private final Set<OnKeyboardShownListener> shownListeners = new HashSet<>();
 
+    private static final int UPDATE_INTERVAL = 50;
+
     private final int minKeyboardSize;
     private final int minCustomKeyboardSize;
     private final int defaultCustomKeyboardSize;
@@ -38,6 +40,7 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
     private boolean keyboardOpen = false;
     private boolean isFullscreen = false;
     private boolean isBubble = false;
+    private long lastUpdate = 0;
 
     public KeyboardAwareLinearLayout(Context context) {
         this(context, null);
@@ -59,8 +62,12 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        updateKeyboardState();
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        long cur = System.currentTimeMillis();
+        if (cur - lastUpdate > UPDATE_INTERVAL) {
+            lastUpdate = cur;
+            updateKeyboardState();
+        }
     }
 
     public void setIsBubble(boolean isBubble) {
@@ -77,7 +84,7 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
         final int availableHeight = getAvailableHeight();
         final int keyboardHeight = Math.max(availableHeight - rect.bottom, 0);
 
-        Timber.i("updateKeyboardState keyboardOpen: " + keyboardOpen + ", keyboardHeight: " + keyboardHeight + ". minKeyboardSize: " + minKeyboardSize);
+        Timber.d("updateKeyboardState keyboardOpen: " + keyboardOpen + ", keyboardHeight: " + keyboardHeight + ". minKeyboardSize: " + minKeyboardSize);
         if (keyboardHeight > minKeyboardSize) {
             if (getKeyboardHeight() != keyboardHeight) {
                 setKeyboardHeight(keyboardHeight);
@@ -138,7 +145,6 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
     protected void onKeyboardOpen(int keyboardHeight) {
         Timber.i("onKeyboardOpen(" + keyboardHeight + ")");
         keyboardOpen = true;
-
         notifyShownListeners();
     }
 

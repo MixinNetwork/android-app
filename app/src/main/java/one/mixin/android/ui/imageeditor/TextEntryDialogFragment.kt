@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +25,7 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
 
     private lateinit var hiddenTextEntry: HiddenEditText
     private lateinit var controller: Controller
+    private lateinit var colorRv: RecyclerView
 
     private val initColor by lazy { requireArguments().getInt("color") }
     private var activeColor = ColorPaletteAdapter.paletteColors[5]
@@ -34,8 +36,13 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
         hiddenTextEntry = HiddenEditText(requireContext())
         (view as ViewGroup).addView(hiddenTextEntry)
 
+        colorRv = view.findViewById(R.id.color_rv)
         view.setOnClickListener {
-            dismissAllowingStateLoss()
+            colorRv.isVisible = false
+            hiddenTextEntry.hideKeyboard()
+            hiddenTextEntry.post {
+                dismissAllowingStateLoss()
+            }
         }
 
         activeColor = initColor
@@ -52,7 +59,11 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
             controller.zoomToFitText(editorElement, textRenderer)
         }
         hiddenTextEntry.setOnEndEdit {
-            dismissAllowingStateLoss()
+            colorRv.isVisible = false
+            hiddenTextEntry.hideKeyboard()
+            hiddenTextEntry.post {
+                dismissAllowingStateLoss()
+            }
         }
         hiddenTextEntry.showKeyboard()
 
@@ -69,9 +80,13 @@ class TextEntryDialogFragment : KeyboardEntryDialogFragment(R.layout.image_edito
         ).apply {
             submitList(ColorPaletteAdapter.paletteColors)
         }
-        val colorRv: RecyclerView = view.findViewById(R.id.color_rv)
         colorRv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
         colorRv.adapter = colorPaletteAdapter
+    }
+
+    override fun onKeyboardHidden() {
+        colorRv.isVisible = false
+        super.onKeyboardHidden()
     }
 
     override fun onDismiss(dialog: DialogInterface) {
