@@ -114,15 +114,19 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 else -> null
             }
             toFile ?: return@forEach
-            if (fromFile.absolutePath != toFile.absolutePath) {
-                if (toFile.parentFile?.exists() != true) {
-                    toFile.parentFile?.mkdirs()
+            try {
+                if (fromFile.absolutePath != toFile.absolutePath) {
+                    if (toFile.parentFile?.exists() != true) {
+                        toFile.parentFile?.mkdirs()
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        Files.move(fromFile.toPath(), toFile.toPath())
+                    } else {
+                        fromFile.renameTo(toFile)
+                    }
                 }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    Files.move(fromFile.toPath(), toFile.toPath())
-                } else {
-                    fromFile.renameTo(toFile)
-                }
+            } catch (e: FileSystemException) {
+                Timber.e("Attachment migration ${e.message}")
             }
             Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
             if (attachment.mediaUrl != toFile.name) {

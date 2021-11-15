@@ -27,10 +27,14 @@ class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(
             if (newDir.exists()) {
                 newDir.deleteRecursively()
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Files.move(oldDir.toPath(), newDir.toPath())
-            } else {
-                oldDir.renameTo(newDir)
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    Files.move(oldDir.toPath(), newDir.toPath())
+                } else {
+                    oldDir.renameTo(newDir)
+                }
+            } catch (e: FileSystemException) {
+                Timber.e("Attachment migration ${e.message}")
             }
             Timber.d("Transcript attachment migration ${oldDir.absolutePath} ${newDir.absolutePath}")
         } else {
