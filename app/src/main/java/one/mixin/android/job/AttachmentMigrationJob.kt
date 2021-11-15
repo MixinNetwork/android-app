@@ -25,11 +25,13 @@ import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.Property
 import one.mixin.android.vo.getFile
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
+import java.io.IOException
 import java.nio.file.Files
 
 class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
@@ -125,8 +127,9 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                         fromFile.renameTo(toFile)
                     }
                 }
-            } catch (e: FileSystemException) {
+            } catch (e: IOException) {
                 Timber.e("Attachment migration ${e.message}")
+                reportException(e)
             }
             Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
             if (attachment.mediaUrl != toFile.name) {
