@@ -8,7 +8,9 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.hasWritePermission
+import one.mixin.android.util.reportException
 import timber.log.Timber
+import java.io.IOException
 import java.nio.file.Files
 
 class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
@@ -33,8 +35,9 @@ class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(
                 } else {
                     oldDir.renameTo(newDir)
                 }
-            } catch (e: FileSystemException) {
+            } catch (e: IOException) {
                 Timber.e("Attachment migration ${e.message}")
+                reportException(e)
             }
             Timber.d("Transcript attachment migration ${oldDir.absolutePath} ${newDir.absolutePath}")
         } else {
