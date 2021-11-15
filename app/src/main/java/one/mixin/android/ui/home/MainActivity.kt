@@ -286,7 +286,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        if (PropertyHelper.findValueByKey(PREF_BACKUP)?.toBooleanStrictOrNull() == true) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && PropertyHelper.findValueByKey(PREF_BACKUP)?.toBooleanStrictOrNull() == true) {
             jobManager.addJobInBackground(BackupJob())
         }
 
