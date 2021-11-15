@@ -454,7 +454,7 @@ fun canUserAccessBackupDirectory(context: Context): Boolean {
     val backupDirectoryUri =
         context.defaultSharedPreferences.getString(Constants.Account.PREF_BACKUP_DIRECTORY, null)
             ?.toUri()
-            ?: return false
+            ?: return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
     return internalCheckAccessBackupDirectory(context, backupDirectoryUri)
 }
 
