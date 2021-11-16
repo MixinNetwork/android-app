@@ -17,7 +17,6 @@ import one.mixin.android.databinding.FragmentPinSettingBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment

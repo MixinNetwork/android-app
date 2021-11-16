@@ -62,7 +62,7 @@ object PropertyHelper {
 
     suspend fun checkBackupMigrated(action: () -> Unit) {
         val backupMigrated = findValueByKey(PREF_MIGRATION_BACKUP)?.toBooleanStrictOrNull()
-        if (backupMigrated == false){
+        if (backupMigrated == false) {
             action.invoke()
         }
     }
