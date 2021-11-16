@@ -1,6 +1,5 @@
 package one.mixin.android.util
 
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -35,7 +34,7 @@ inline fun <T> wrapEspressoIdlingResource(function: () -> T): T {
 
 fun waitMillis(millis: Long) {
     EspressoIdlingResource.increment()
-    val job = GlobalScope.launch {
+    val job = MixinApplication.appScope.launch {
         delay(millis)
     }
     job.invokeOnCompletion {

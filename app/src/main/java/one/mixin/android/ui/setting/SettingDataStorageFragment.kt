@@ -147,8 +147,8 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                 if (menuBinding.checkDocument.isChecked) {
                     localValue += (AUTO_DOWNLOAD_DOCUMENT)
                 }
-                lifecycleScope.launch{
-                    PropertyHelper.updateKeyValue(key,localValue.toString())
+                lifecycleScope.launch {
+                    PropertyHelper.updateKeyValue(key, localValue.toString())
                     defaultSharedPreferences.putInt(key, localValue)
                     refresh()
                     dialog.dismiss()

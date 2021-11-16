@@ -51,7 +51,7 @@ android {
 
         kotlinOptions {
             jvmTarget = '11'
-            freeCompilerArgs += ['-Xuse-experimental=kotlin.contracts.ExperimentalContracts']
+            freeCompilerArgs += ['-Xopt-in=kotlin.contracts.ExperimentalContracts']
         }
 
         vectorDrawables.useSupportLibrary = true
