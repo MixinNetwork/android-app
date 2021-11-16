@@ -33,12 +33,12 @@ object PropertyHelper {
 
     suspend fun checkFts4Upgrade(): Boolean {
         val propertyDao = checkMigrated()
-        return propertyDao.findValueByKey(PREF_FTS4_UPGRADE) != true.toString()
+        return propertyDao.findValueByKey(PREF_FTS4_UPGRADE)?.toBooleanStrictOrNull() != true
     }
 
     suspend fun checkAttachmentMigrated(action: () -> Unit) {
         val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT)?.toBoolean() ?: false
+        val value = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT)?.toBooleanStrictOrNull() ?: false
         if (value) {
             action.invoke()
         }
@@ -46,7 +46,7 @@ object PropertyHelper {
 
     suspend fun checkTranscriptAttachmentMigrated(action: () -> Unit) {
         val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() ?: false
+        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBooleanStrictOrNull() ?: false
         if (value) {
             action.invoke()
         }
@@ -54,14 +54,17 @@ object PropertyHelper {
 
     suspend fun checkTranscriptAttachmentUpdated(action: () -> Unit) {
         val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)?.toLong() ?: 0
+        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)?.toLongOrNull() ?: 0
         if (value > 0) {
             action.invoke()
         }
     }
 
     suspend fun checkBackupMigrated(action: () -> Unit) {
-        checkWithKey(PREF_MIGRATION_BACKUP, true.toString(), action)
+        val backupMigrated = findValueByKey(PREF_MIGRATION_BACKUP)?.toBooleanStrictOrNull()
+        if (backupMigrated == false){
+            action.invoke()
+        }
     }
 
     suspend fun checkMigrated(): PropertyDao {
@@ -82,15 +85,6 @@ object PropertyHelper {
     suspend fun findValueByKey(key: String): String? {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext).propertyDao()
         return propertyDao.findValueByKey(key)
-    }
-
-    private suspend fun checkWithKey(key: String, expectValue: String, action: () -> Unit) {
-        val propertyDao = checkMigrated()
-
-        val value = propertyDao.findValueByKey(key)
-        if (value != expectValue) {
-            action.invoke()
-        }
     }
 
     private suspend fun migrateProperties(propertyDao: PropertyDao, messageDao: MessageDao, transcriptDao: TranscriptMessageDao) {
@@ -145,5 +139,5 @@ object PropertyHelper {
     }
 
     private suspend fun hasMigrated(propertyDao: PropertyDao) =
-        propertyDao.findValueByKey(PREF_PROPERTY_MIGRATED)?.toBoolean() == true
+        propertyDao.findValueByKey(PREF_PROPERTY_MIGRATED)?.toBooleanStrictOrNull() == true
 }
