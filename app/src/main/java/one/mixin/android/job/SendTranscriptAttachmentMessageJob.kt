@@ -124,7 +124,6 @@ class SendTranscriptAttachmentMessageJob(
         )
     }
 
-    @DelicateCoroutinesApi
     private fun processAttachment(transcriptMessage: TranscriptMessage, file: File, attachResponse: AttachmentResponse): Boolean {
         val key = if (transcriptMessage.isPlain()) {
             null
