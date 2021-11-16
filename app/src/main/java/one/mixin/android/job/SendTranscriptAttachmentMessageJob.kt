@@ -5,7 +5,6 @@ import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -63,7 +62,6 @@ class SendTranscriptAttachmentMessageJob(
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
 
-    @DelicateCoroutinesApi
     override fun onRun() {
         if (transcriptMessage.isPlain() == isPlain) {
             if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
@@ -136,7 +134,7 @@ class SendTranscriptAttachmentMessageJob(
         val inputStream = try {
             MixinApplication.appContext.contentResolver.openInputStream(Uri.fromFile(file))
         } catch (e: FileNotFoundException) {
-            GlobalScope.launch(Dispatchers.Main) {
+            MixinApplication.appScope.launch(Dispatchers.Main) {
                 toast(R.string.error_file_exists)
             }
             return false
@@ -169,7 +167,7 @@ class SendTranscriptAttachmentMessageJob(
         } catch (e: Exception) {
             Timber.e(e)
             if (e is SocketTimeoutException) {
-                GlobalScope.launch(Dispatchers.Main) {
+                MixinApplication.appScope.launch(Dispatchers.Main) {
                     toast(R.string.upload_timeout)
                 }
             }
