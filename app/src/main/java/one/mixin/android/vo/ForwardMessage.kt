@@ -13,7 +13,14 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.MoshiHelper
-import one.mixin.android.websocket.*
+import one.mixin.android.websocket.AudioMessagePayload
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.DataMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.VideoMessagePayload
+import one.mixin.android.websocket.toJson
+import one.mixin.android.websocket.toLocationData
 import java.io.File
 import java.util.UUID
 

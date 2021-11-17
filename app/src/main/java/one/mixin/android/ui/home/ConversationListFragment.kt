@@ -826,7 +826,6 @@ class ConversationListFragment : LinkFragment() {
                             MoshiHelper.getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
                                 .fromJson(it)
                         }, null)
-
                     } catch (e: Exception) {
                         null
                     }

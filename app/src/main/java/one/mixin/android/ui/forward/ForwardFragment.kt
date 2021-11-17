@@ -49,7 +49,11 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_ACTION
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_COMBINE_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.*
+import one.mixin.android.util.MoshiHelper
+import one.mixin.android.util.ShortcutInfo
+import one.mixin.android.util.generateDynamicShortcut
+import one.mixin.android.util.maxDynamicShortcutCount
+import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.EncryptCategory
@@ -70,10 +74,17 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.SelectItem
-import one.mixin.android.websocket.*
+import one.mixin.android.websocket.AttachmentMessagePayload
+import one.mixin.android.websocket.AudioMessagePayload
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.DataMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.LocationPayload
+import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.VideoMessagePayload
+import one.mixin.android.websocket.toJsonBase64
 import java.io.File
 import java.io.FileInputStream
-import java.lang.Exception
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
