@@ -3,7 +3,6 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication

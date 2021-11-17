@@ -229,6 +229,7 @@
     <string name="qr_code_camera">QR Code Camera</string>
     <string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
     <string name="conversation_delete_tip">Once deleted, all this chat messages will be cleared</string>
+    <string name="conversation_delete_title">Delete chat: %1$s</string>
     <string name="qr_not_found">Qr Code not found</string>
     <string name="no_flash_unit">Flash unit not available</string>
     <!--search-->
