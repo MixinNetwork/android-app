@@ -9,7 +9,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.MixinApplication
-import one.mixin.android.util.GsonHelper
 import java.io.Serializable
 
 @Entity(
@@ -591,7 +590,7 @@ fun createPinMessage(
     createdAt: String,
     status: String
 ) = MessageBuilder(messageId, conversationId, userId, MessageCategory.MESSAGE_PIN.name, status, createdAt)
-    .setContent(GsonHelper.customGson.toJson(pinMessages))
+    .setContent(pinMessages?.toJson())
     .setQuoteMessageId(quoteMessageId)
     .build()
 

@@ -2,15 +2,24 @@ package one.mixin.android.vo
 
 import android.content.Context
 import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.R
+import one.mixin.android.util.MoshiHelper
 
+@JsonClass(generateAdapter = true)
 class PinMessageMinimal(
     @SerializedName("message_id")
+    @Json(name = "message_id")
     val messageId: String,
     @SerializedName("category")
+    @Json(name = "category")
     override val type: String,
+    @Json(name = "content")
     val content: String?
 ) : ICategory
+
+fun PinMessageMinimal.toJson(): String? = MoshiHelper.getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java).toJson(this)
 
 fun PinMessageMinimal?.explain(context: Context): CharSequence {
     return when {

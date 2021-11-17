@@ -4,9 +4,10 @@ import android.content.Context
 import android.graphics.Color
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSystemBinding
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.PinMessageMinimal
@@ -31,7 +32,10 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
         val pinMessage = try {
-            GsonHelper.customGson.fromJson(messageItem.content, PinMessageMinimal::class.java)
+            messageItem.content.notNullWithElse({
+                MoshiHelper.getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
+                    .fromJson(it)
+            }, null)
         } catch (e: Exception) {
             null
         }

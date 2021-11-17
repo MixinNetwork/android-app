@@ -17,12 +17,13 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ViewPinMessageLayoutBinding
 import one.mixin.android.event.PinMessageEvent
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.PinMessageItem
 import one.mixin.android.vo.PinMessageMinimal
@@ -95,7 +96,10 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
 
     fun bind(message: PinMessageItem, clickAction: (String) -> Unit) {
         val pinMessage = try {
-            GsonHelper.customGson.fromJson(message.content, PinMessageMinimal::class.java)
+            message.content.notNullWithElse({
+                MoshiHelper.getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
+                    .fromJson(it)
+            }, null)
         } catch (e: Exception) {
             null
         }

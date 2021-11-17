@@ -89,6 +89,7 @@ import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppButtonData
@@ -821,10 +822,11 @@ class ConversationListFragment : LinkFragment() {
                 }
                 conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
                     val pinMessage = try {
-                        GsonHelper.customGson.fromJson(
-                            conversationItem.content,
-                            PinMessageMinimal::class.java
-                        )
+                        conversationItem.content.notNullWithElse({
+                            MoshiHelper.getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
+                                .fromJson(it)
+                        }, null)
+
                     } catch (e: Exception) {
                         null
                     }
