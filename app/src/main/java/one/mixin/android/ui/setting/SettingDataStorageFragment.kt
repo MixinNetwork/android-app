@@ -28,6 +28,7 @@ import one.mixin.android.extension.getAutoDownloadRoamingValue
 import one.mixin.android.extension.getAutoDownloadWifiValue
 import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.layoutInflater
 
@@ -56,14 +57,14 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
             }
             storageMobile.setOnClickListener {
                 lifecycleScope.launch {
-                    showMenu(AUTO_DOWNLOAD_MOBILE, requireContext().getAutoDownloadMobileValue(), R.string.setting_data_mobile)
+                    showMenu(AUTO_DOWNLOAD_MOBILE, getAutoDownloadMobileValue(), R.string.setting_data_mobile)
                 }
             }
             storageWifi.setOnClickListener {
                 lifecycleScope.launch {
                     showMenu(
                         AUTO_DOWNLOAD_WIFI,
-                        requireContext().getAutoDownloadWifiValue(),
+                        getAutoDownloadWifiValue(),
                         R.string
                             .setting_data_wifi
                     )
@@ -73,7 +74,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                 lifecycleScope.launch {
                     showMenu(
                         AUTO_DOWNLOAD_ROAMING,
-                        requireContext().getAutoDownloadRoamingValue(),
+                        getAutoDownloadRoamingValue(),
                         R.string
                             .setting_data_roaming
                     )
@@ -89,9 +90,9 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
 
     private fun refresh() = lifecycleScope.launch {
         binding.apply {
-            storageMobileInfo.text = getInfo(requireContext().getAutoDownloadMobileValue())
-            storageWifiInfo.text = getInfo(requireContext().getAutoDownloadWifiValue())
-            storageRoamingInfo.text = getInfo(requireContext().getAutoDownloadRoamingValue())
+            storageMobileInfo.text = getInfo(getAutoDownloadMobileValue())
+            storageWifiInfo.text = getInfo(getAutoDownloadWifiValue())
+            storageRoamingInfo.text = getInfo(getAutoDownloadRoamingValue())
         }
     }
 
@@ -146,9 +147,12 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                 if (menuBinding.checkDocument.isChecked) {
                     localValue += (AUTO_DOWNLOAD_DOCUMENT)
                 }
-                defaultSharedPreferences.putInt(key, localValue)
-                refresh()
-                dialog.dismiss()
+                lifecycleScope.launch {
+                    PropertyHelper.updateKeyValue(key, localValue.toString())
+                    defaultSharedPreferences.putInt(key, localValue)
+                    refresh()
+                    dialog.dismiss()
+                }
             }.create().apply {
                 this.window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
             }

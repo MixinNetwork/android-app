@@ -78,9 +78,6 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 }
             )
 
-            logsRl.setOnClickListener {
-                navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
-            }
             emergencyRl.setOnClickListener {
                 navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
             }

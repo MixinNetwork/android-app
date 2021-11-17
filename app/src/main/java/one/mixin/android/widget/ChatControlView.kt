@@ -312,11 +312,21 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         initTransitions()
     }
 
-    fun showBot() {
+    fun showBot(isEncrypt: Boolean) {
         botHide = false
         binding.chatBotIv.visibility = View.VISIBLE
-        binding.chatEt.hint = context.getString(R.string.type_a_message)
+        hintEncrypt(isEncrypt)
         initTransitions()
+    }
+
+    fun hintEncrypt(isEncrypt: Boolean) {
+        binding.chatEt.hint = context.getString(
+            if (isEncrypt) {
+                R.string.end_to_end_encryption
+            } else {
+                R.string.type_a_message
+            }
+        )
     }
 
     fun toggleKeyboard(shown: Boolean) {

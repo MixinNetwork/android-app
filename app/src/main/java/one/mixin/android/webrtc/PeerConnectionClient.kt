@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.collection.arrayMapOf
 import kotlinx.coroutines.delay
 import one.mixin.android.RxBus
+import one.mixin.android.event.FrameKeyEvent
 import one.mixin.android.event.VoiceEvent
 import one.mixin.android.session.Session
 import org.webrtc.AudioSource
@@ -43,6 +44,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private var rtpSender: RtpSender? = null
     private val rtpReceivers = arrayMapOf<String, RtpReceiver>()
     private val receiverIdUserIdMap = arrayMapOf<String, String>()
+    private val receiverIdUserIdNoKeyMap = arrayMapOf<String, String>()
 
     private val restartConstraint = MediaConstraints.KeyValuePair("IceRestart", "true")
     private val offerReceiveAudioConstraint = MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true")
@@ -57,10 +59,15 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                         if (k.startsWith("RTCMediaStreamTrack_receive")) {
                             val trackIdentifier = v.members["trackIdentifier"]
                             val audioLevel = v.members["audioLevel"] as? Double?
-                            val userId = receiverIdUserIdMap[trackIdentifier]
+                            var userId = receiverIdUserIdMap[trackIdentifier]
                             // Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
                             if (userId != null) {
                                 RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
+                            } else {
+                                userId = receiverIdUserIdNoKeyMap[trackIdentifier]
+                                if (userId != null) {
+                                    RxBus.publish(FrameKeyEvent(userId, false))
+                                }
                             }
                         } else if (k.startsWith("RTCAudioSource")) {
                             if (audioTrack?.enabled() == true) {
@@ -422,9 +429,14 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     fun setReceiverFrameKey(userId: String, sessionId: String, frameKey: ByteArray? = null) {
         val key = "$userId~$sessionId"
         if (rtpReceivers.containsKey(key) && frameKey != null) {
-            val receiver = rtpReceivers[key]
-            Timber.d("$TAG_CALL setFrameDecryptor")
-            receiver?.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+            val receiver = rtpReceivers[key] ?: return
+            val receiverId = receiver.id()
+            Timber.d("$TAG_CALL setReceiverFrameKey receiver id: $receiverId")
+            receiver.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+            receiver.track()?.setEnabled(true)
+            receiverIdUserIdMap[receiverId] = userId
+            receiverIdUserIdNoKeyMap.remove(receiverId)
+            RxBus.publish(FrameKeyEvent(userId, true))
         }
     }
 
@@ -506,7 +518,9 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
 
         override fun onAddTrack(receiver: RtpReceiver, mediaStreams: Array<out MediaStream>) {
+            var hasAllMediaStreamKey = true
             for (m in mediaStreams) {
+                Timber.d("$TAG_CALL mediaStream: $m")
                 val userSession = m.id.split("~")
                 if (userSession.size != 2) {
                     continue
@@ -515,15 +529,18 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                     continue
                 }
                 val frameKey = events.getSenderPublicKey(userSession[0], userSession[1])
-                Timber.d("$TAG_CALL getSenderPublicKey userId: ${userSession[0]}, sessionId: ${userSession[1]}")
+                Timber.d("$TAG_CALL getSenderPublicKey userId: ${userSession[0]}, sessionId: ${userSession[1]}, frameKey: $frameKey")
+                rtpReceivers[m.id] = receiver
                 if (frameKey != null) {
-                    rtpReceivers[m.id] = receiver
                     receiverIdUserIdMap[receiver.id()] = userSession[0]
                     receiver.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+                } else {
+                    receiverIdUserIdNoKeyMap[receiver.id()] = userSession[0]
+                    hasAllMediaStreamKey = false
                 }
             }
-            Timber.d("$TAG_CALL onAddTrack id: ${receiver.id()}")
-            receiver.track()?.setEnabled(true)
+            Timber.d("$TAG_CALL onAddTrack id: ${receiver.id()}, hasAllMediaStreamKey: $hasAllMediaStreamKey")
+            receiver.track()?.setEnabled(hasAllMediaStreamKey)
         }
     }
 

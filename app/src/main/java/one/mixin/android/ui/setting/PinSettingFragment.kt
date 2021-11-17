@@ -15,8 +15,8 @@ import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPinSettingBinding
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
@@ -41,13 +41,15 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         binding.apply {
             title.apply {
                 leftIb.setOnClickListener { activity?.onBackPressed() }
-                rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.TIP) }
             }
             changeTv.setOnClickListener {
                 navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
             }
             timeRl.setOnClickListener {
                 navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
+            }
+            logs.setOnClickListener {
+                navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
             }
             biometricsSc.isClickable = false
             biometricsRl.setOnClickListener(biometricsClickListener)
@@ -60,6 +62,10 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
                 biometricsSc.isChecked = false
                 timeRl.visibility = GONE
             }
+            val url = Constants.HelpLink.TIP
+            val target = getString(R.string.wallet_pin_tops)
+            val desc = getString(R.string.wallet_pin_tops_desc)
+            tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }
     }
 

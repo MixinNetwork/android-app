@@ -450,6 +450,7 @@ class ConversationListFragment : LinkFragment() {
         }
         viewBinding.deleteTv.setOnClickListener {
             alertDialogBuilder()
+                .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()

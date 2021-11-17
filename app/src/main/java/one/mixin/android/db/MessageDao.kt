@@ -607,4 +607,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("UPDATE messages SET category = :category WHERE id = :messageId")
     fun updateCategoryById(messageId: String, category: String)
+
+    @Query("SELECT id FROM messages LIMIT 1")
+    suspend fun hasMessage(): String?
 }

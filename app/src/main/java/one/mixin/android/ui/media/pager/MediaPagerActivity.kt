@@ -467,7 +467,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 }
             )
         } else {
-            ConversationActivity.show(this, conversationId, messageId = messageItem.messageId)
+            ConversationActivity.showAndClear(this, conversationId, messageId = messageItem.messageId)
         }
         bottomSheet.dismiss()
         dismiss()

@@ -558,6 +558,8 @@ class ConversationAdapter(
                     false
                 nextItem == null ->
                     true
+                nextItem.type == MessageCategory.MESSAGE_PIN.name ->
+                    true
                 nextItem.type == MessageCategory.SYSTEM_CONVERSATION.name ->
                     true
                 nextItem.userId != currentItem.userId ->
