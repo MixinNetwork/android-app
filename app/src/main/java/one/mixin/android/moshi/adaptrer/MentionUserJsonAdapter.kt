@@ -6,8 +6,7 @@ import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.internal.Util
 import one.mixin.android.vo.MentionUser
 
-class MentionUserJsonAdapter(
-) : JsonAdapter<MentionUser>() {
+class MentionUserJsonAdapter : JsonAdapter<MentionUser>() {
     private val options: JsonReader.Options = JsonReader.Options.of("identity_number", "identityNumber", "fullName", "full_name")
 
     override fun toString(): String = buildString(33) {
@@ -37,9 +36,9 @@ class MentionUserJsonAdapter(
         return MentionUser(
             identityNumber = identityNumber ?: throw Util.missingProperty(
                 "identityNumber",
-                "identityNumber", reader
+                "identity_number", reader
             ),
-            fullName = fullName ?: throw Util.missingProperty("fullName", "fullName", reader)
+            fullName = fullName ?: throw Util.missingProperty("fullName", "full_name", reader)
         )
     }
 
@@ -48,9 +47,9 @@ class MentionUserJsonAdapter(
             throw NullPointerException("value_ was null! Wrap in .nullSafe() to write nullable values.")
         }
         writer.beginObject()
-        writer.name("identityNumber")
+        writer.name("identity_number")
         writer.value(value_.identityNumber)
-        writer.name("fullName")
+        writer.name("full_name")
         writer.value(value_.fullName)
         writer.endObject()
     }
