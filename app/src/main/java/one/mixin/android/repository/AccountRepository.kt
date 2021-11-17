@@ -149,6 +149,8 @@ constructor(
 
     fun deAuthorize(deauthorRequest: DeauthorRequest) = authService.deAuthorize(deauthorRequest)
 
+    suspend fun getAuthorizationByAppId(appId: String) = authService.getAuthorizationByAppId(appId)
+
     fun getSystemAlbums() = stickerAlbumDao.getSystemAlbums()
 
     suspend fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()

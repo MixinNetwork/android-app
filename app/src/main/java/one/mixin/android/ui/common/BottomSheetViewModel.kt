@@ -572,4 +572,13 @@ class BottomSheetViewModel @Inject internal constructor(
             }
         }
     }
+
+    suspend fun getAuthorizationByAppId(appId: String): AuthorizationResponse? = withContext(Dispatchers.IO) {
+        return@withContext handleMixinResponse(
+            invokeNetwork = { accountRepository.getAuthorizationByAppId(appId) },
+            successBlock = {
+                return@handleMixinResponse it.data?.firstOrNull()
+            }
+        )
+    }
 }
