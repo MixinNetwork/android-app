@@ -1,6 +1,8 @@
 package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.extension.base64Encode
+import one.mixin.android.util.MoshiHelper
 
 data class AttachmentMessagePayload(
     @SerializedName("key")
@@ -37,3 +39,6 @@ fun AttachmentMessagePayload.invalidData(): Boolean {
     }
     return false
 }
+
+fun AttachmentMessagePayload.toJsonBase64() =
+    MoshiHelper.getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).toJson(this).base64Encode()

@@ -1,6 +1,7 @@
 package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.util.MoshiHelper
 
 data class VideoMessagePayload(
     val url: String,
@@ -11,3 +12,6 @@ data class VideoMessagePayload(
     @SerializedName("attachment_extra")
     val attachmentExtra: String? = null,
 )
+
+fun VideoMessagePayload.toJson(): String =
+    MoshiHelper.getTypeAdapter<VideoMessagePayload>(VideoMessagePayload::class.java).toJson(this)

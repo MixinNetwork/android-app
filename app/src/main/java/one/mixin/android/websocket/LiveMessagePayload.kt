@@ -1,15 +1,21 @@
 package one.mixin.android.websocket
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import one.mixin.android.util.MoshiHelper
 
+@JsonClass(generateAdapter = true)
 data class LiveMessagePayload(
-    @SerializedName("width")
+    @Json(name = "width")
     val width: Int,
-    @SerializedName("height")
+    @Json(name = "height")
     val height: Int,
-    @SerializedName("thumb_url")
+    @Json(name = "thumb_url")
     val thumbUrl: String,
-    @SerializedName("url")
+    @Json(name = "url")
     val url: String,
     val shareable: Boolean?
 )
+
+fun LiveMessagePayload.toJson(): String =
+    MoshiHelper.getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).toJson(this)

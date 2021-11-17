@@ -1,12 +1,18 @@
 package one.mixin.android.websocket
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import one.mixin.android.util.MoshiHelper
 
+@JsonClass(generateAdapter = true)
 data class StickerMessagePayload(
-    @SerializedName("sticker_id")
+    @Json(name = "sticker_id")
     val stickerId: String? = null,
-    @SerializedName("album_id")
+    @Json(name = "album_id")
     val albumId: String? = null,
-    @SerializedName("name")
+    @Json(name = "name")
     val name: String? = null
 )
+
+fun StickerMessagePayload.toJson(): String =
+    MoshiHelper.getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).toJson(this)

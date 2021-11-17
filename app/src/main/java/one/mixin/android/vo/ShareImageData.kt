@@ -1,9 +1,15 @@
 package one.mixin.android.vo
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import one.mixin.android.util.MoshiHelper
 
+@JsonClass(generateAdapter = true)
 data class ShareImageData(
     val url: String,
-    @SerializedName("attachment_extra")
+    @Json(name = "attachment_extra")
     val attachmentExtra: String? = null,
 )
+
+fun ShareImageData.toJson(): String =
+    MoshiHelper.getTypeAdapter<ShareImageData>(ShareImageData::class.java).toJson(this)

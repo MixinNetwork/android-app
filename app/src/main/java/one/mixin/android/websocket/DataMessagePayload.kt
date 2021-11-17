@@ -3,6 +3,7 @@ package one.mixin.android.websocket
 import androidx.core.net.toUri
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.MoshiHelper
 
 data class DataMessagePayload(
     val url: String,
@@ -17,3 +18,6 @@ data class DataMessagePayload(
 ) {
     fun toAttachment() = Attachment(url.toUri(), filename, mimeType, fileSize)
 }
+
+fun DataMessagePayload.toJson(): String =
+    MoshiHelper.getTypeAdapter<DataMessagePayload>(DataMessagePayload::class.java).toJson(this)
