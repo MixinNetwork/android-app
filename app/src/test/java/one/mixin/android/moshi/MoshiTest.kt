@@ -2,6 +2,7 @@ package one.mixin.android.moshi
 
 import one.mixin.android.util.MoshiHelper.getQuoteMessageItemJsonAdapter
 import one.mixin.android.util.MoshiHelper.getTypeListAdapter
+import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.TranscriptMessage
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -56,5 +57,24 @@ class MoshiTest {
         val snakeJsonContent = jsonAdapter.toJson(snakeJson)
         println(snakeJsonContent)
         assertEquals(jsonContent, snakeJsonContent)
+    }
+
+    @Test
+    fun mentionUserTest() {
+        val content = """
+            [{"full_name":"宅学长","identity_number":"26832"},{"full_name":"senior 😜","identity_number":"37189829"},{"full_name":"马岱敲代码","identity_number":"35220"}]
+        """
+        val camelContent = """
+            [{"fullName":"宅学长","identityNumber":"26832"},{"fullName":"senior 😜","identityNumber":"37189829"},{"fullName":"马岱敲代码","identityNumber":"35220"}]
+        """
+        val jsonAdapter = getTypeListAdapter<List<MentionUser>>(MentionUser::class.java)
+        val json = jsonAdapter.fromJson(content)
+        val jsonContent = jsonAdapter.toJson(json)
+        println(jsonContent)
+        println("----")
+        val camelJson = jsonAdapter.fromJson(camelContent)
+        val camelJsonContent = jsonAdapter.toJson(camelJson)
+        println(camelJsonContent)
+        assertEquals(jsonContent, camelJsonContent)
     }
 }

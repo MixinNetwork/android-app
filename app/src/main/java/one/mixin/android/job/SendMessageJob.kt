@@ -11,6 +11,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -284,9 +285,9 @@ open class SendMessageJob(
 
     private fun getMentionData(messageId: String): List<String>? {
         return messageMentionDao.getMentionData(messageId)?.run {
-            GsonHelper.customGson.fromJson(this, Array<MentionUser>::class.java).map {
+            getTypeListAdapter<List<MentionUser>>(MentionUser::class.java).fromJson(this)?.map {
                 it.identityNumber
-            }.toSet()
+            }?.toSet()
         }?.run {
             userDao.findMultiUserIdsByIdentityNumbers(this)
         }
