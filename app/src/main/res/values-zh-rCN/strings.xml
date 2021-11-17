@@ -216,6 +216,7 @@
     <string name="qr_code_camera">自动识别二维码</string>
     <string name="qr_code_camera_code">打开相机会默认开启二维码识别，当二维码被检测到时会显示一个通知，点击通知识别二维码。</string>
     <string name="conversation_delete_tip">删除后，将同时清空该聊天的消息记录</string>
+    <string name="conversation_delete_title">删除会话：%1$s</string>
     <string name="qr_not_found">未发现二维码</string>
     <string name="no_flash_unit">闪光灯/手电筒硬件不可用</string>
     <!--search-->
