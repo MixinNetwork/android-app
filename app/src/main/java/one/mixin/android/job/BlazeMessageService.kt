@@ -37,6 +37,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.websocket.BlazeAckMessage
@@ -241,7 +242,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
         try {
-            messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
+            val list = ackMessages.map {
+                requireNotNull(
+                    getTypeAdapter<BlazeAckMessage>(
+                        BlazeAckMessage::class.java
+                    ).fromJson(requireNotNull(it.blazeMessage))
+                )
+            }
+            messageService.acknowledgements(list)
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
@@ -254,7 +262,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (jobs.isEmpty() || accountId == null) {
             return
         }
-        jobs.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+        jobs.map {
+            requireNotNull(getTypeAdapter<BlazeAckMessage>(BlazeAckMessage::class.java).fromJson(it.blazeMessage!!))
+        }.let {
             val plainText = gson.toJson(
                 PlainJsonMessagePayload(
                     action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,

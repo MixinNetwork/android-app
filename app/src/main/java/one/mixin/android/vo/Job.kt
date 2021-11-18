@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.websocket.BlazeAckMessage
 import java.util.UUID
 
@@ -59,7 +59,7 @@ fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: St
         null,
         PRIORITY_ACK_MESSAGE,
         null,
-        GsonHelper.customGson.toJson(ackMessage),
+        getTypeAdapter<BlazeAckMessage>(BlazeAckMessage::class.java).toJson(ackMessage),
         conversationId,
         null,
         0
