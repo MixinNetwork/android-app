@@ -69,7 +69,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
@@ -741,17 +740,7 @@ internal constructor(
                     } catch (e: Exception) {
                         null
                     }
-                    if (quoteMessage?.messageId != null) {
-                        transcript.quoteContent = GsonHelper.customGson.toJson(SnakeQuoteMessageItem(quoteMessage))
-                    } else {
-                        try {
-                            GsonHelper.customGson.fromJson(transcript.quoteContent, SnakeQuoteMessageItem::class.java)
-                        } catch (e: Exception) {
-                            null
-                        }?.let {
-                            transcript.quoteContent = GsonHelper.customGson.toJson(it)
-                        }
-                    }
+                    transcript.quoteContent = GsonHelper.customGson.toJson(quoteMessage)
                 }
             }
         }

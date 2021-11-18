@@ -212,8 +212,12 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
             }
         }
 
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        val quoteMessage = GsonHelper.customGson.fromJson(
+            messageItem.quoteContent,
+            QuoteMessageItem::class.java
+        )
         binding.chatQuote.bind(quoteMessage)
+
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
