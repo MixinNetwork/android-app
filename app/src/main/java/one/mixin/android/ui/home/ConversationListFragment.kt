@@ -790,8 +790,11 @@ class ConversationListFragment : LinkFragment() {
                 }
                 conversationItem.contentType == MessageCategory.APP_CARD.name -> {
                     binding.groupNameTv.visibility = GONE
-                    val cardData =
-                        Gson().fromJson(conversationItem.content, AppCardData::class.java)
+                    val cardData = requireNotNull(
+                        MoshiHelper.getTypeAdapter<AppCardData>(
+                            AppCardData::class.java
+                        ).fromJson(conversationItem.content!!)
+                    )
                     binding.msgTv.text = "[${cardData.title}]"
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }

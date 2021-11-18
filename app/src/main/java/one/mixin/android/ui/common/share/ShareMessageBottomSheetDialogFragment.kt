@@ -32,6 +32,7 @@ import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -43,7 +44,6 @@ import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
-import java.lang.IllegalArgumentException
 
 @AndroidEntryPoint
 class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -226,10 +226,15 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun loadAppCard(content: String) {
-        val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
+        val appCardData = getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(content)
         val renderer = ShareAppCardRenderer(requireContext())
         binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
-        renderer.render(appCardData, requireContext().isNightMode())
+        appCardData?.let { data ->
+            renderer.render(
+                data,
+                requireContext().isNightMode()
+            )
+        }
     }
 
     private fun loadLive(content: String) {

@@ -4,16 +4,15 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.gson.Gson
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTranscriptBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -31,7 +30,6 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
-import java.lang.StringBuilder
 
 class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : BaseViewHolder(binding.root) {
     init {
@@ -179,7 +177,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
                         }
                         it.type == MessageCategory.APP_CARD.name -> {
                             try {
-                                val cardData = Gson().fromJson(it.content, AppCardData::class.java)
+                                val cardData = requireNotNull(getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(it.content!!))
                                 if (cardData.title.isBlank()) {
                                     str.append("${it.name}: [${itemView.context.getString(R.string.card)}]\n")
                                 } else {

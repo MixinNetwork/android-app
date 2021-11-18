@@ -31,6 +31,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.timeFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashEncoder
@@ -112,8 +113,11 @@ data class MessageItem(
         if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name) return null
         try {
             if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
-                appCardShareable =
-                    GsonHelper.customGson.fromJson(content, AppCardData::class.java).shareable
+                appCardShareable = requireNotNull(
+                    MoshiHelper.getTypeAdapter<AppCardData>(
+                        AppCardData::class.java
+                    ).fromJson(content!!)
+                ).shareable
             } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name) && appCardShareable == null) {
                 appCardShareable = GsonHelper.customGson.fromJson(
                     content,

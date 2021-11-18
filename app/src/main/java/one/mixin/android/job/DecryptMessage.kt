@@ -252,8 +252,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.createdAt,
             data.status
         )
-        val appCardData = gson.fromJson(message.content, AppCardData::class.java)
-        appCardData.appId?.let { id ->
+        val appCardData = getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(message.content)
+        appCardData?.appId?.let { id ->
             runBlocking {
                 var app = appDao.findAppById(id)
                 if (app?.updatedAt != appCardData.updatedAt) {
