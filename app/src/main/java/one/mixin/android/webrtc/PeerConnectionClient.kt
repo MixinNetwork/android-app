@@ -11,6 +11,7 @@ import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
+import org.webrtc.Logging
 import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
@@ -109,17 +110,25 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         doWhenSetFailure: (() -> Unit)? = null
     ) {
         val sdpConstraint = createMediaConstraint()
+        Timber.d("$TAG_CALL after createMediaConstraint")
         if (iceServerList != null) {
             iceServers.clear()
             iceServers.addAll(iceServerList)
         } else {
+            Timber.d("$TAG_CALL before add restartConstraint")
             sdpConstraint.mandatory.add(restartConstraint)
+            Timber.d("$TAG_CALL after add restartConstraint")
         }
+        Timber.d("$TAG_CALL before get peerConnection connectionState: ${peerConnection?.connectionState()} ")
         if (peerConnection == null || peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CLOSED) {
+            Timber.d("$TAG_CALL before create peerConnection: $peerConnection")
             peerConnection = createPeerConnectionInternal(frameKey)
+            Timber.d("$TAG_CALL after create peerConnection: $peerConnection")
         }
+        Timber.d("$TAG_CALL after get peerConnection: $peerConnection")
         val offerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
+                Timber.d("$TAG_CALL before setLocalDescription")
                 peerConnection?.setLocalDescription(
                     object : SdpObserverWrapper() {
                         override fun onSetFailure(error: String?) {
@@ -148,6 +157,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                     },
                     sdp
                 )
+                Timber.d("$TAG_CALL after setLocalDescription")
             }
 
             override fun onCreateFailure(error: String?) {
@@ -173,6 +183,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             }
         }
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
+        Timber.d("$TAG_CALL peerConnection createOffer: $peerConnection")
     }
 
     fun createAnswer(
@@ -394,6 +405,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
     private fun createPeerConnectionInternal(frameKey: ByteArray? = null): PeerConnection? {
         if (factory == null || isError) {
+            Timber.d("$TAG_CALL PeerConnectionFactory is not created")
             reportError("PeerConnectionFactory is not created")
             return null
         }
@@ -406,17 +418,23 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             enableDtlsSrtp = true
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
         }
+        Timber.d("$TAG_CALL internal before create")
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
+        Timber.d("$TAG_CALL internal after create")
         if (peerConnection == null) {
             reportError("PeerConnection is not created")
             return null
         }
-        // Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+        Timber.d("$TAG_CALL internal before log")
+        Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
+        Timber.d("$TAG_CALL internal before addTrack")
         rtpSender = peerConnection.addTrack(createAudioTrack())
+        Timber.d("$TAG_CALL internal before set frame key")
         setSenderFrameKey(frameKey)
+        Timber.d("$TAG_CALL internal after set frame key")
         return peerConnection
     }
 

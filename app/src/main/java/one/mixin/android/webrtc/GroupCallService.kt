@@ -150,12 +150,20 @@ class GroupCallService : CallService() {
         }
     }
 
+    private var turns: List<PeerConnection.IceServer>? = null
+
     private fun publish(conversationId: String) {
         Timber.d("$TAG_CALL publish")
         if (callState.isIdle()) return
 
         callState.addUser(conversationId, self.userId)
-        getTurnServer { turns ->
+        Timber.d("$TAG_CALL turns: $turns")
+        if (turns.isNullOrEmpty()) {
+            getTurnServer { turns ->
+                this.turns = turns
+                createOfferWithTurns(conversationId, turns)
+            }
+        } else {
             createOfferWithTurns(conversationId, turns)
         }
     }
@@ -175,11 +183,14 @@ class GroupCallService : CallService() {
 
     @SuppressLint("AutoDispose")
     private fun createOfferWithTurns(conversationId: String, turns: List<PeerConnection.IceServer>? = null) {
+        Timber.d("$TAG_CALL createOfferWithTurns")
         checkSessionSenderKey(conversationId)
         val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
+        Timber.d("$TAG_CALL ready to createOffer")
         peerConnectionClient.createOffer(
             turns,
             setLocalSuccess = {
+                Timber.d("$TAG_CALL setLocalSuccess")
                 val blazeMessageParam = BlazeMessageParam(
                     conversation_id = conversationId,
                     category = MessageCategory.KRAKEN_PUBLISH.name,
@@ -187,7 +198,9 @@ class GroupCallService : CallService() {
                     jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
+                Timber.d("$TAG_CALL before send publish")
                 val data = getBlazeMessageData(bm) ?: return@createOffer
+                Timber.d("$TAG_CALL before subscribe")
                 val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
                 subscribe(krakenData, conversationId)
             },
