@@ -19,8 +19,8 @@ class MentionRenderCache private constructor(maxSize: Int) : LruCache<Int, Map<S
                 val mentionMap = ArrayMap<String, String>()
                 MoshiHelper.getTypeListAdapter<List<MentionUser>>(MentionUser::class.java)
                     .fromJson(content)?.asSequence()?.forEach { data ->
-                    mentionMap[data.identityNumber] = data.fullName
-                }
+                        mentionMap[data.identityNumber] = data.fullName
+                    }
                 if (mentionMap.isEmpty) {
                     null
                 } else {

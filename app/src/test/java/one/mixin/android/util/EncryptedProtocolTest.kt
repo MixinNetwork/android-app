@@ -13,6 +13,7 @@ import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toByteArray
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import java.util.UUID
@@ -76,7 +77,7 @@ class EncryptedProtocolTest {
                 UxxsO7jR0fql/hEb/tBazUUrskOKpupJXPI5q7DYHzR5IWKFEsFrKwfJqmWNhG4pbu+oZKgn1FH7tp18TTyStVWh4kxhCoU7PTl8jaNFWC4yCTOSrc1zkf0X2Gzu
                 B9qsstbt3RH6Q+mmpraIAcgJZu8LTuGAoojTDfBd8g0y5wEWpYWsYBhRRaKKV2p2SM6JPrbe3xeiiixnHyGhbu6BdPIgSHkFFEs4//2Q==""".trimMargin()
         )
-        val content = GsonHelper.customGson.toJson(mockAttachmentMessagePayload).toByteArray()
+        val content = getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).toJson(mockAttachmentMessagePayload).toByteArray()
         testEncryptAndDecrypt(content)
     }
 

@@ -19,6 +19,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MoshiHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
@@ -74,8 +75,18 @@ class SendTranscriptAttachmentMessageJob(
             } catch (e: Exception) {
                 null
             } ?: try {
-                val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
-                AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
+                val payload =
+                    getTypeAdapter<AttachmentMessagePayload>(
+                        AttachmentMessagePayload::class
+                            .java
+                    ).fromJson(
+                        String(Base64.decode(transcriptMessage.content))
+                    ) ?: return
+                AttachmentExtra(
+                    payload.attachmentId,
+                    transcriptMessage.messageId,
+                    payload.createdAt
+                )
             } catch (e: Exception) {
                 null
             }

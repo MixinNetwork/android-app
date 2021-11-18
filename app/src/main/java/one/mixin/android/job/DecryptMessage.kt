@@ -48,6 +48,7 @@ import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.MoshiHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -592,10 +593,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
             data.category.endsWith("_IMAGE") -> {
-                val mediaData = gson.fromJson(
-                    encryptedAttachmentContentDecode(data, plainText),
-                    AttachmentMessagePayload::class.java
-                )
+                val mediaData = getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).fromJson(encryptedAttachmentContentDecode(data, plainText)) ?: return
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
@@ -647,10 +645,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_DATA") -> {
-                val mediaData = gson.fromJson(
-                    encryptedAttachmentContentDecode(data, plainText),
-                    AttachmentMessagePayload::class.java
-                )
+                val mediaData = getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).fromJson(encryptedAttachmentContentDecode(data, plainText)) ?: return
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAttachmentMessage(
                         data.messageId, data.conversationId, data.userId,
@@ -671,10 +666,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_AUDIO") -> {
-                val mediaData = gson.fromJson(
-                    encryptedAttachmentContentDecode(data, plainText),
-                    AttachmentMessagePayload::class.java
-                )
+                val mediaData = getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).fromJson(encryptedAttachmentContentDecode(data, plainText)) ?: return
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAudioMessage(
                         data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
@@ -1167,7 +1159,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.SIGNAL_DATA.name
         ) {
             val decoded = Base64.decode(plainText)
-            val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
+            val mediaData = getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).fromJson(String(decoded)) ?: return
             val duration = mediaData.duration?.toString()
             messageDao.updateAttachmentMessage(
                 messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,

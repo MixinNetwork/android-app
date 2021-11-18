@@ -10,7 +10,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getFileName
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.TranscriptMessage
 import timber.log.Timber
@@ -68,7 +68,7 @@ class ImportChatUtil {
                     }
                 }
             }
-            return GsonHelper.customGson.toJson(list)
+            return getTypeListAdapter<List<TranscriptMessage>>(TranscriptMessage::class.java).toJson(list)
         } finally {
             try {
                 inputStream?.close()

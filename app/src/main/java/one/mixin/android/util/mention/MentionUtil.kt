@@ -6,7 +6,7 @@ import androidx.collection.arraySetOf
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.session.Session
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User
@@ -71,7 +71,7 @@ fun parseMentionData(
     if (mentions.isEmpty()) {
         return Pair(null, false)
     }
-    val mentionData = GsonHelper.customGson.toJson(mentions)
+    val mentionData = getTypeListAdapter<List<MentionUser>>(MentionUser::class.java).toJson(mentions)
     val mentionMe = userId != account?.userId && numbers.contains(account?.identityNumber)
     messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, !mentionMe))
     return Pair(mentions, mentionMe)
