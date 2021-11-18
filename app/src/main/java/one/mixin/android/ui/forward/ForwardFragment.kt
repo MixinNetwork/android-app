@@ -50,6 +50,7 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_COMBINE_MESSA
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.MoshiHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.ShortcutInfo
 import one.mixin.android.util.generateDynamicShortcut
 import one.mixin.android.util.maxDynamicShortcutCount
@@ -457,11 +458,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Sticker -> {
-                        val stickerData = MoshiHelper.getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).fromJson(content) ?: return@checkData
+                        val stickerData = getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).fromJson(content) ?: return@checkData
                         chatViewModel.sendStickerMessage(conversationId, sender, stickerData, encryptCategory)
                     }
                     ForwardCategory.Location -> {
-                        val locationPayload = MoshiHelper.getTypeAdapter<LocationPayload>(LocationPayload::class.java).fromJson(content) ?: return@checkData
+                        val locationPayload = getTypeAdapter<LocationPayload>(LocationPayload::class.java).fromJson(content) ?: return@checkData
                         chatViewModel.sendLocationMessage(conversationId, sender.userId, locationPayload, encryptCategory)
                     }
                     ForwardCategory.Transcript -> {

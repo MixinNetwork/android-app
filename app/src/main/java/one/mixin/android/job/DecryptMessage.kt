@@ -685,7 +685,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 } else {
                     String(Base64.decode(plainText))
                 }
-                val mediaData = gson.fromJson(decoded, StickerMessagePayload::class.java)
+                val mediaData = requireNotNull(getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).fromJson(decoded))
                 val message = if (mediaData.stickerId == null) {
                     val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
                     if (sticker != null) {
@@ -1172,7 +1172,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
-            val stickerData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
+            val stickerData = requireNotNull(getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).fromJson(String(decoded)))
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
                 if (sticker == null) {
