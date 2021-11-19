@@ -12,9 +12,9 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
-import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
@@ -150,7 +150,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                MoshiHelper.getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
             )
         }
         binding.chatContentLayout.setOnClickListener {

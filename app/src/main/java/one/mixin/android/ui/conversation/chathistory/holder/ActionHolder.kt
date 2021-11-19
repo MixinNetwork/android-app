@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.ColorUtil
-import one.mixin.android.util.MoshiHelper
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.widget.ActionButton
@@ -48,7 +48,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
         }
         if (itemView.tag != messageItem.content?.hashCode()) {
             val buttons = requireNotNull(
-                MoshiHelper.getTypeListAdapter<List<AppButtonData>>(
+                getTypeListAdapter<List<AppButtonData>>(
                     AppButtonData::class.java
                 ).fromJson(messageItem.content!!)
             )

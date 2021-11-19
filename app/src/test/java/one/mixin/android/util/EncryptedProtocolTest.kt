@@ -13,7 +13,7 @@ import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toByteArray
-import one.mixin.android.util.MoshiHelper.getTypeAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import java.util.UUID

@@ -1,7 +1,7 @@
 package one.mixin.android.moshi
 
-import one.mixin.android.util.MoshiHelper.getQuoteMessageItemJsonAdapter
-import one.mixin.android.util.MoshiHelper.getTypeListAdapter
+import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.TranscriptMessage
 import org.junit.Test

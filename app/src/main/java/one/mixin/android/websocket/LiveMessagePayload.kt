@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 data class LiveMessagePayload(
@@ -18,4 +18,4 @@ data class LiveMessagePayload(
 )
 
 fun LiveMessagePayload.toJson(): String =
-    MoshiHelper.getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).toJson(this)
+    getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).toJson(this)

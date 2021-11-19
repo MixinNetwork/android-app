@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.room.Entity
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -76,10 +76,10 @@ data class QuoteMessageItem(
 }
 
 fun MessageItem.toQuoteMessageItemJson(): String? {
-    return MoshiHelper.getQuoteMessageItemJsonAdapter().toJson(QuoteMessageItem(this))
+    return getQuoteMessageItemJsonAdapter().toJson(QuoteMessageItem(this))
 }
 
 fun QuoteMessageItem?.toJson(): String? {
     val message = this ?: return null
-    return MoshiHelper.getQuoteMessageItemJsonAdapter().toJson(message)
+    return getQuoteMessageItemJsonAdapter().toJson(message)
 }

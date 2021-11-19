@@ -12,7 +12,7 @@ import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.DataMessagePayload
@@ -280,7 +280,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 return null
             }
             val shareable = try {
-                MoshiHelper.getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(requireNotNull(m.content))?.shareable
+                getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(requireNotNull(m.content))?.shareable
             } catch (e: Exception) {
                 null
             }

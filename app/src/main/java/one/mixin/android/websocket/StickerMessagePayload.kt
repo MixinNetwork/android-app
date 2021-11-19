@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 data class StickerMessagePayload(
@@ -15,4 +15,4 @@ data class StickerMessagePayload(
 )
 
 fun StickerMessagePayload.toJson(): String =
-    MoshiHelper.getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).toJson(this)
+    getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).toJson(this)

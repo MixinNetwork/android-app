@@ -41,6 +41,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -49,8 +50,6 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_ACTION
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_COMBINE_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.MoshiHelper
-import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.ShortcutInfo
 import one.mixin.android.util.generateDynamicShortcut
 import one.mixin.android.util.maxDynamicShortcutCount
@@ -360,7 +359,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         chatViewModel.sendPostMessage(conversationId, sender, content, encryptCategory)
                     }
                     ShareCategory.Image -> {
-                        val shareImageData = MoshiHelper.getTypeAdapter<ShareImageData>(ShareImageData::class.java).fromJson(content) ?: return@checkData
+                        val shareImageData = getTypeAdapter<ShareImageData>(ShareImageData::class.java).fromJson(content) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, shareImageData.url, shareImageData.attachmentExtra,
                             {
@@ -396,7 +395,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ShareCategory.Contact -> {
-                        val contactData = MoshiHelper.getTypeAdapter<ContactMessagePayload>(ContactMessagePayload::class.java).fromJson(content) ?: return@checkData
+                        val contactData = getTypeAdapter<ContactMessagePayload>(ContactMessagePayload::class.java).fromJson(content) ?: return@checkData
                         chatViewModel.sendContactMessage(conversationId, sender, contactData.userId, encryptCategory)
                     }
                     ShareCategory.Contact -> {
@@ -406,11 +405,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         chatViewModel.sendAppCardMessage(conversationId, sender, content)
                     }
                     ShareCategory.Live -> {
-                        val liveData = MoshiHelper.getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(content) ?: return@checkData
+                        val liveData = getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(content) ?: return@checkData
                         chatViewModel.sendLiveMessage(conversationId, sender, liveData, encryptCategory)
                     }
                     ForwardCategory.Video -> {
-                        val videoData = MoshiHelper.getTypeAdapter<VideoMessagePayload>(VideoMessagePayload::class.java).fromJson(content) ?: return@checkData
+                        val videoData = getTypeAdapter<VideoMessagePayload>(VideoMessagePayload::class.java).fromJson(content) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, videoData.url, videoData.attachmentExtra,
                             {
@@ -426,7 +425,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Data -> {
-                        val dataMessagePayload = MoshiHelper.getTypeAdapter<DataMessagePayload>(DataMessagePayload::class.java).fromJson(content) ?: return@checkData
+                        val dataMessagePayload = getTypeAdapter<DataMessagePayload>(DataMessagePayload::class.java).fromJson(content) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, dataMessagePayload.url, dataMessagePayload.attachmentExtra,
                             {
@@ -442,7 +441,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Audio -> {
-                        val audioData = MoshiHelper.getTypeAdapter<AudioMessagePayload>(AudioMessagePayload::class.java).fromJson(content) ?: return@checkData
+                        val audioData = getTypeAdapter<AudioMessagePayload>(AudioMessagePayload::class.java).fromJson(content) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, audioData.url, audioData.attachmentExtra,
                             {
@@ -494,7 +493,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     ) = withContext(Dispatchers.IO) {
         if (attachmentExtraString != null) {
             val attachmentExtra: AttachmentExtra = try {
-                MoshiHelper.getTypeAdapter<AttachmentExtra>(AttachmentExtra::class.java).fromJson(attachmentExtraString) as AttachmentExtra
+                getTypeAdapter<AttachmentExtra>(AttachmentExtra::class.java).fromJson(attachmentExtraString) as AttachmentExtra
             } catch (e: Exception) {
                 parseAsAttachmentMessagePayload(attachmentExtraString, sender, conversationId, getCategory.invoke(), mediaUrl, fallbackAction)
                 return@withContext
@@ -531,7 +530,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         fallbackAction: suspend () -> Unit
     ) {
         val payload: AttachmentMessagePayload = try {
-            MoshiHelper.getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).fromJson(String(Base64.decode(attachmentExtraString))) as AttachmentMessagePayload
+            getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).fromJson(String(Base64.decode(attachmentExtraString))) as AttachmentMessagePayload
         } catch (e: Exception) {
             fallbackAction.invoke()
             return

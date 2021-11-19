@@ -30,10 +30,10 @@ import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.SendTranscriptJob
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
-import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.EncryptCategory

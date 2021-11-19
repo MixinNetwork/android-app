@@ -8,10 +8,10 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.AudioPlayer
-import one.mixin.android.util.MoshiHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
@@ -178,7 +178,7 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
 
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                MoshiHelper.getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
             )
         }
         binding.chatQuote.setOnClickListener {

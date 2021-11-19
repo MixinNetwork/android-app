@@ -8,10 +8,10 @@ import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.util.MessageFts4Helper
-import one.mixin.android.util.MoshiHelper
-import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -116,7 +116,7 @@ open class SendMessageJob(
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
                     msg.id,
-                    MoshiHelper.getQuoteMessageItemJsonAdapter().toJson(quoteMsg)
+                    getQuoteMessageItemJsonAdapter().toJson(quoteMsg)
                 )
             }
             jobManager.cancelJobByMixinJobId(msg.id)

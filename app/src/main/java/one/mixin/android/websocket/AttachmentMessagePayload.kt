@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 data class AttachmentMessagePayload(
@@ -57,4 +57,4 @@ fun AttachmentMessagePayload.invalidData(): Boolean {
 }
 
 fun AttachmentMessagePayload.toJsonBase64() =
-    MoshiHelper.getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).toJson(this).base64Encode()
+    getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).toJson(this).base64Encode()

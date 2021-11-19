@@ -41,6 +41,7 @@ import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.UpdateRelationshipJob
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
@@ -50,7 +51,6 @@ import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.KeyLivePagedListBuilder
-import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
@@ -736,7 +736,7 @@ internal constructor(
         withContext(Dispatchers.IO) {
             transcriptMessages.forEach { transcript ->
                 if (transcript.quoteContent != null) {
-                    val quoteMessage = MoshiHelper.getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(transcript.quoteContent)
+                    val quoteMessage = getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(transcript.quoteContent)
                     transcript.quoteContent = quoteMessage.toJson()
                 }
             }

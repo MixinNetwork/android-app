@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 data class AudioMessagePayload(
@@ -17,4 +17,4 @@ data class AudioMessagePayload(
 )
 
 fun AudioMessagePayload.toJson(): String =
-    MoshiHelper.getTypeAdapter<AudioMessagePayload>(AudioMessagePayload::class.java).toJson(this)
+    getTypeAdapter<AudioMessagePayload>(AudioMessagePayload::class.java).toJson(this)

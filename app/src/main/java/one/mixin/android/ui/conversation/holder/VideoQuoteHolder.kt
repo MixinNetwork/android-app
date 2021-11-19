@@ -13,8 +13,8 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
+import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.MoshiHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -299,7 +299,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
 
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                MoshiHelper.getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
             )
         }
 

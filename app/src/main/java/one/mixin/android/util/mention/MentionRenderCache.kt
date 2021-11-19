@@ -2,7 +2,7 @@ package one.mixin.android.util.mention
 
 import androidx.collection.ArrayMap
 import androidx.collection.LruCache
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.MentionUser
 
 class MentionRenderCache private constructor(maxSize: Int) : LruCache<Int, Map<String, String>>(maxSize) {
@@ -17,7 +17,7 @@ class MentionRenderCache private constructor(maxSize: Int) : LruCache<Int, Map<S
                 result
             } else {
                 val mentionMap = ArrayMap<String, String>()
-                MoshiHelper.getTypeListAdapter<List<MentionUser>>(MentionUser::class.java)
+                getTypeListAdapter<List<MentionUser>>(MentionUser::class.java)
                     .fromJson(content)?.asSequence()?.forEach { data ->
                         mentionMap[data.identityNumber] = data.fullName
                     }

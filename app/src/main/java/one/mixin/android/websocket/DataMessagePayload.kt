@@ -2,8 +2,8 @@ package one.mixin.android.websocket
 
 import androidx.core.net.toUri
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.Attachment
-import one.mixin.android.util.MoshiHelper
 
 data class DataMessagePayload(
     val url: String,
@@ -20,4 +20,4 @@ data class DataMessagePayload(
 }
 
 fun DataMessagePayload.toJson(): String =
-    MoshiHelper.getTypeAdapter<DataMessagePayload>(DataMessagePayload::class.java).toJson(this)
+    getTypeAdapter<DataMessagePayload>(DataMessagePayload::class.java).toJson(this)

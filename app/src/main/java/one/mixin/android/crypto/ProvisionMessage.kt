@@ -3,7 +3,7 @@ package one.mixin.android.crypto
 import com.google.gson.annotations.SerializedName
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 class ProvisionMessage(
@@ -28,7 +28,7 @@ class ProvisionMessage(
 ) {
 
     fun toByteArray(): ByteArray {
-        return MoshiHelper.getTypeAdapter<ProvisionMessage>(ProvisionMessage::class.java).toJson(this).toByteArray()
+        return getTypeAdapter<ProvisionMessage>(ProvisionMessage::class.java).toJson(this).toByteArray()
     }
 }
 
@@ -43,6 +43,6 @@ class ProvisionEnvelope(
 ) {
 
     fun toByteArray(): ByteArray {
-        return MoshiHelper.getTypeAdapter<ProvisionEnvelope>(ProvisionEnvelope::class.java).toJson(this).toByteArray()
+        return getTypeAdapter<ProvisionEnvelope>(ProvisionEnvelope::class.java).toJson(this).toByteArray()
     }
 }

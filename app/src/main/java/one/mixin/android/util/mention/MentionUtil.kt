@@ -5,8 +5,8 @@ import android.widget.EditText
 import androidx.collection.arraySetOf
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
-import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User

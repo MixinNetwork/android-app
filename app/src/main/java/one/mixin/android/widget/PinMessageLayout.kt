@@ -22,8 +22,8 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
-import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.PinMessageItem
 import one.mixin.android.vo.PinMessageMinimal
@@ -97,7 +97,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
     fun bind(message: PinMessageItem, clickAction: (String) -> Unit) {
         val pinMessage = try {
             message.content.notNullWithElse({
-                MoshiHelper.getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
+                getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
                     .fromJson(it)
             }, null)
         } catch (e: Exception) {

@@ -47,6 +47,7 @@ import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendTranscriptAttachmentMessageJob
 import one.mixin.android.job.TranscriptAttachmentDownloadJob
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
@@ -60,7 +61,6 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.util.AudioPlayer
-import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.EncryptCategory

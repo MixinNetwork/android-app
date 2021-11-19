@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.util.MoshiHelper.getTypeAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @Parcelize
 @JsonClass(generateAdapter = true)

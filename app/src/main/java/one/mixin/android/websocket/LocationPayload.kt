@@ -6,7 +6,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.reportException
 
 @SuppressLint("ParcelCreator")
@@ -27,7 +27,7 @@ fun LocationPayload.getImageUrl(): String? {
 }
 
 fun LocationPayload.toJson(): String =
-    MoshiHelper.getTypeAdapter<LocationPayload>(LocationPayload::class.java).toJson(this)
+    getTypeAdapter<LocationPayload>(LocationPayload::class.java).toJson(this)
 
 fun checkLocationData(content: String): Boolean {
     return toLocationData(content) != null
@@ -36,7 +36,7 @@ fun checkLocationData(content: String): Boolean {
 fun toLocationData(content: String?): LocationPayload? {
     content ?: return null
     return try {
-        MoshiHelper.getTypeAdapter<LocationPayload>(LocationPayload::class.java).fromJson(content)?.run {
+        getTypeAdapter<LocationPayload>(LocationPayload::class.java).fromJson(content)?.run {
             if (latitude == 0.0 && longitude == 0.0) {
                 return null
             }

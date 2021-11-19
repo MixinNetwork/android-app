@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 data class ShareImageData(
@@ -12,4 +12,4 @@ data class ShareImageData(
 )
 
 fun ShareImageData.toJson(): String =
-    MoshiHelper.getTypeAdapter<ShareImageData>(ShareImageData::class.java).toJson(this)
+    getTypeAdapter<ShareImageData>(ShareImageData::class.java).toJson(this)

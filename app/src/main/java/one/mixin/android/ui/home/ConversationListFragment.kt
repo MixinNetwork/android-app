@@ -73,6 +73,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
@@ -88,8 +90,6 @@ import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.MoshiHelper
-import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppButtonData
@@ -791,7 +791,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType == MessageCategory.APP_CARD.name -> {
                     binding.groupNameTv.visibility = GONE
                     val cardData = requireNotNull(
-                        MoshiHelper.getTypeAdapter<AppCardData>(
+                        getTypeAdapter<AppCardData>(
                             AppCardData::class.java
                         ).fromJson(conversationItem.content!!)
                     )
@@ -826,7 +826,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
                     val pinMessage = try {
                         conversationItem.content.notNullWithElse({
-                            MoshiHelper.getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
+                            getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
                                 .fromJson(it)
                         }, null)
                     } catch (e: Exception) {

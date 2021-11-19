@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import one.mixin.android.R
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 class PinMessageMinimal(
@@ -19,7 +19,7 @@ class PinMessageMinimal(
     val content: String?
 ) : ICategory
 
-fun PinMessageMinimal.toJson(): String? = MoshiHelper.getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java).toJson(this)
+fun PinMessageMinimal.toJson(): String? = getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java).toJson(this)
 
 fun PinMessageMinimal?.explain(context: Context): CharSequence {
     return when {

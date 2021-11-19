@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 data class ContactMessagePayload(
@@ -11,4 +11,4 @@ data class ContactMessagePayload(
 )
 
 fun ContactMessagePayload.toJson(): String =
-    MoshiHelper.getTypeAdapter<ContactMessagePayload>(ContactMessagePayload::class.java).toJson(this)
+    getTypeAdapter<ContactMessagePayload>(ContactMessagePayload::class.java).toJson(this)

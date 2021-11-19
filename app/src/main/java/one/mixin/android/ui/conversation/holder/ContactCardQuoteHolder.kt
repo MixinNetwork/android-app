@@ -7,9 +7,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
+import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.MoshiHelper
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.showVerifiedOrBot
@@ -131,7 +131,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
         }
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                MoshiHelper.getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
             )
         }
         binding.chatQuote.setOnClickListener {
