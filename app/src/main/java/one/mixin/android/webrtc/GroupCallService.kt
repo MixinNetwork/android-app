@@ -172,13 +172,8 @@ class GroupCallService : CallService() {
         reconnectingTimeoutFuture?.cancel(true)
         reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), RECONNECTING_TIMEOUT, TimeUnit.SECONDS)
 
-        val pc = peerConnectionClient.getPeerConnection()
-        if (pc != null) {
-            callState.reconnecting = true
-            pc.close()
-        } else {
-            publish(conversationId)
-        }
+        callState.reconnecting = true
+        callExecutor.execute { publish(conversationId) }
     }
 
     @SuppressLint("AutoDispose")
@@ -891,13 +886,13 @@ class GroupCallService : CallService() {
             }
             bm.error != null -> {
                 return when (bm.error.code) {
-                    ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                    CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                         blazeMessage.params?.conversation_id?.let {
                             syncConversation(it)
                         }
                         MessageResult(false, retry = true)
                     }
-                    ErrorHandler.FORBIDDEN -> {
+                    FORBIDDEN -> {
                         MessageResult(true, retry = false)
                     }
                     else -> {

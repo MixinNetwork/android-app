@@ -114,13 +114,14 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         if (iceServerList != null) {
             iceServers.clear()
             iceServers.addAll(iceServerList)
-        } else {
+        } else if (peerConnection != null && peerConnection?.connectionState() != PeerConnection.PeerConnectionState.CLOSED) {
             Timber.d("$TAG_CALL before add restartConstraint")
-            sdpConstraint.mandatory.add(restartConstraint)
+            peerConnection?.restartIce()
             Timber.d("$TAG_CALL after add restartConstraint")
         }
         Timber.d("$TAG_CALL before get peerConnection connectionState: ${peerConnection?.connectionState()} ")
-        if (peerConnection == null || peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CLOSED) {
+        val connectionState = peerConnection?.connectionState()
+        if (peerConnection == null || connectionState == PeerConnection.PeerConnectionState.CLOSED || connectionState == PeerConnection.PeerConnectionState.FAILED || connectionState == PeerConnection.PeerConnectionState.DISCONNECTED) {
             Timber.d("$TAG_CALL before create peerConnection: $peerConnection")
             peerConnection = createPeerConnectionInternal(frameKey)
             Timber.d("$TAG_CALL after create peerConnection: $peerConnection")
@@ -415,7 +416,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-            enableDtlsSrtp = true
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
         }
         Timber.d("$TAG_CALL internal before create")
