@@ -6,14 +6,12 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.showVerifiedOrBot
 import org.jetbrains.anko.dip
 
@@ -98,11 +96,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             onItemListener.onContactCardClick(messageItem.sharedUserId!!)
         }
 
-        try {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
-        } catch (e: Exception) {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
-        }
+        binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
 
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

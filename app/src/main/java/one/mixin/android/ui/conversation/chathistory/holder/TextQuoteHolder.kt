@@ -19,7 +19,6 @@ import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
@@ -150,11 +149,8 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
             binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
         }
         binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
-        try {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
-        } catch (e: Exception) {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
-        }
+
+        binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
 
         binding.chatContentLayout.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
