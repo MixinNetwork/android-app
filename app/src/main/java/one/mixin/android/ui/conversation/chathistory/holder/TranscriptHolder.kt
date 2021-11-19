@@ -9,7 +9,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
-import one.mixin.android.moshi.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
@@ -151,7 +151,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
                         }
                         it.type == MessageCategory.APP_CARD.name -> {
                             try {
-                                val cardData = requireNotNull(MoshiHelper.getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(it.content!!))
+                                val cardData = requireNotNull(getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(it.content!!))
                                 if (cardData.title.isBlank()) {
                                     str.append("${it.name}: [${itemView.context.getString(R.string.card)}]\n")
                                 } else {

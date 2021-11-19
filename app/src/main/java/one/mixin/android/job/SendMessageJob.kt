@@ -8,7 +8,7 @@ import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.util.MessageFts4Helper
@@ -19,6 +19,7 @@ import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.ParticipantSessionKey
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isContact
@@ -116,7 +117,7 @@ open class SendMessageJob(
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
                     msg.id,
-                    getQuoteMessageItemJsonAdapter().toJson(quoteMsg)
+                    getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).toJson(quoteMsg)
                 )
             }
             jobManager.cancelJobByMixinJobId(msg.id)

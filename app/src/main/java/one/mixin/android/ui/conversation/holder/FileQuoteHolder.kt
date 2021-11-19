@@ -13,11 +13,12 @@ import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
@@ -242,7 +243,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
 
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(quoteContent)
             )
         }
 

@@ -12,12 +12,13 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
@@ -150,7 +151,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(quoteContent)
             )
         }
         binding.chatContentLayout.setOnClickListener {

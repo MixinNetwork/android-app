@@ -1,6 +1,5 @@
 package one.mixin.android.moshi
 
-import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.TranscriptMessage
@@ -48,7 +47,7 @@ class MoshiTest {
             "type":"PLAIN_TEXT","user_full_name":"宅学长",
             "userId":"639ec50a-d4f1-4135-8624-3c71189dcdcc","user_identity_number":"762532"}
         """
-        val jsonAdapter = getQuoteMessageItemJsonAdapter()
+        val jsonAdapter = getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java)
         val json = jsonAdapter.fromJson(content)
         val jsonContent = jsonAdapter.toJson(json)
         println(jsonContent)

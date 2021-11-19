@@ -42,7 +42,6 @@ import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
-import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
@@ -402,7 +401,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
-                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, requireNotNull(getQuoteMessageItemJsonAdapter().toJson(quoteMsg)))
+                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, requireNotNull(getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).toJson(quoteMsg)))
                 }
 
                 jobManager.cancelJobByMixinJobId(msg.id)
@@ -1199,7 +1198,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId)?.let {
-                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, requireNotNull(getQuoteMessageItemJsonAdapter().toJson(it)))
+                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, requireNotNull(getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).toJson(it)))
             }
         }
     }

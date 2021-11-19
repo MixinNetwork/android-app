@@ -6,7 +6,6 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import one.mixin.android.moshi.adaptrer.BitmapJsonAdapter
 import one.mixin.android.moshi.adaptrer.MentionUserJsonAdapter
-import one.mixin.android.moshi.adaptrer.QuoteMessageItemJsonAdapter
 import one.mixin.android.util.Base64ByteArrayAdapter
 import one.mixin.android.vo.MentionUser
 import java.lang.reflect.Type
@@ -16,6 +15,7 @@ object MoshiHelper {
         .add(MentionUser::class.java, MentionUserJsonAdapter())
         .add(ByteArray::class.java, Base64ByteArrayAdapter())
         .add(BitmapJsonAdapter)
+        .add(MoshiFactory)
         .add(KotlinJsonAdapterFactory())
         .build()
 
@@ -26,9 +26,5 @@ object MoshiHelper {
 
     fun <T> getTypeAdapter(type: Type): JsonAdapter<T> {
         return moshi.adapter(type)
-    }
-
-    fun getQuoteMessageItemJsonAdapter(): QuoteMessageItemJsonAdapter {
-        return QuoteMessageItemJsonAdapter(moshi)
     }
 }

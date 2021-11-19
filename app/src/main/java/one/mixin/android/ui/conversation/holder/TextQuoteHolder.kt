@@ -14,10 +14,11 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
-import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
@@ -213,7 +214,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
 
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(quoteContent)
             )
         }
 

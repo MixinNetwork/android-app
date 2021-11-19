@@ -12,17 +12,17 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.absolutePath
 import org.jetbrains.anko.dip
 
 class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : BaseViewHolder(binding.root) {
-    private val dp16 = itemView.context.dpToPx(16f)
     private val minWidth by lazy {
         (itemView.context.realSize().x * 0.5).toInt()
     }
@@ -223,7 +223,7 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : Bas
 
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(quoteContent)
             )
         }
 

@@ -6,11 +6,12 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
-import one.mixin.android.moshi.MoshiHelper.getQuoteMessageItemJsonAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.showVerifiedOrBot
 import org.jetbrains.anko.dip
 
@@ -97,7 +98,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
 
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
-                getQuoteMessageItemJsonAdapter().fromJson(quoteContent)
+                getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(quoteContent)
             )
         }
         binding.chatQuote.setOnClickListener {
