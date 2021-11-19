@@ -3,6 +3,7 @@ package one.mixin.android.webrtc
 import android.content.Context
 import androidx.collection.arrayMapOf
 import kotlinx.coroutines.delay
+import one.mixin.android.BuildConfig
 import one.mixin.android.RxBus
 import one.mixin.android.event.FrameKeyEvent
 import one.mixin.android.event.VoiceEvent
@@ -411,7 +412,9 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             reportError("PeerConnection is not created")
             return null
         }
-        Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+        if (BuildConfig.DEBUG) {
+            Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+        }
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
