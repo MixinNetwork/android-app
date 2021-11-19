@@ -60,7 +60,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.util.AudioPlayer
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.EncryptCategory
@@ -69,7 +69,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.copy
 import one.mixin.android.vo.generateForwardMessage
 import one.mixin.android.vo.isAppButtonGroup
 import one.mixin.android.vo.isEncrypted
@@ -460,8 +459,8 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onLocationClick(messageItem: ChatHistoryMessageItem) {
-                val location =
-                    GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
+                messageItem.content ?: return
+                val location = requireNotNull(getTypeAdapter<LocationPayload>(LocationPayload::class.java).fromJson(messageItem.content))
                 LocationActivity.show(this@ChatHistoryActivity, location)
             }
 

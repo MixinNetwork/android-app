@@ -8,8 +8,8 @@ import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -103,7 +103,7 @@ class SendTranscriptJob(
         } else {
             messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             message.mediaStatus = MediaStatus.DONE.name
-            message.content = GsonHelper.customGson.toJson(transcripts)
+            message.content = getTypeListAdapter<List<TranscriptMessage>>(TranscriptMessage::class.java).toJson(transcripts.toList())
             jobManager.addJob(SendMessageJob(message))
         }
     }

@@ -30,8 +30,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.timeFormat
 import one.mixin.android.extension.toast
-import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.MoshiHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashEncoder
@@ -114,15 +113,16 @@ data class MessageItem(
         try {
             if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
                 appCardShareable = requireNotNull(
-                    MoshiHelper.getTypeAdapter<AppCardData>(
+                    getTypeAdapter<AppCardData>(
                         AppCardData::class.java
                     ).fromJson(content!!)
                 ).shareable
             } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name) && appCardShareable == null) {
-                appCardShareable = GsonHelper.customGson.fromJson(
-                    content,
-                    LiveMessagePayload::class.java
-                ).shareable
+                content ?: return null
+                appCardShareable =
+                    getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(
+                        content
+                    )?.shareable
             }
         } catch (e: Exception) {
         }

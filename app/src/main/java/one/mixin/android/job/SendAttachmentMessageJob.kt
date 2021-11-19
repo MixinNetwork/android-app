@@ -17,7 +17,7 @@ import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -187,7 +187,7 @@ class SendAttachmentMessageJob(
             key, digest, attachmentId, mimeType, size, name, width, height,
             thumbnail, duration, waveform, createdAt = attachResponse.created_at,
         )
-        val plainText = GsonHelper.customGson.toJson(transferMediaData)
+        val plainText = getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
         messageDao.updateMessageContent(encoded, message.id)

@@ -77,4 +77,14 @@ class MoshiTest {
         println(camelJsonContent)
         assertEquals(jsonContent, camelJsonContent)
     }
+
+    @Test
+    fun stringArrayTest() {
+        val content = """
+           ["a","b","c"] 
+        """
+        val listAdapter = getTypeListAdapter<List<String>>(String::class.java)
+        val jsonList = listAdapter.fromJson(content)
+        println(jsonList)
+    }
 }

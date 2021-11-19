@@ -40,7 +40,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
@@ -149,8 +149,8 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             val topApps = mutableListOf<BotInterface>()
             val topIds = mutableListOf<String>()
             defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
-                val ids = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
-                ids.forEach { id ->
+                val ids = getTypeListAdapter<List<String>>(String::class.java).fromJson(it)
+                ids?.forEach { id ->
                     topIds.add(id)
                     when (id) {
                         INTERNAL_WALLET_ID -> {
@@ -250,7 +250,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
 
     private fun saveTopApps(apps: List<BotInterface>) {
         apps.map { it.getBotId() }.apply {
-            defaultSharedPreferences.putString(TOP_BOT, GsonHelper.customGson.toJson(this))
+            defaultSharedPreferences.putString(TOP_BOT, getTypeListAdapter<List<String>>(String::class.java).toJson(this))
         }
     }
 }

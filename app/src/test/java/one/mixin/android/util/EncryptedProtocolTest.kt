@@ -33,7 +33,7 @@ class EncryptedProtocolTest {
     fun testSticker() {
         val mockStickerId = UUID.randomUUID().toString()
         val mockStickerPayload = StickerMessagePayload(mockStickerId)
-        val content = GsonHelper.customGson.toJson(mockStickerPayload).base64Encode().toByteArray()
+        val content = getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).toJson(mockStickerPayload).base64Encode().toByteArray()
         testEncryptAndDecrypt(content)
     }
 

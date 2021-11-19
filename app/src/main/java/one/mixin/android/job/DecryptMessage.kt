@@ -47,8 +47,8 @@ import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
-import one.mixin.android.util.MoshiHelper
 import one.mixin.android.util.MoshiHelper.getTypeAdapter
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -252,8 +252,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.createdAt,
             data.status
         )
-        val appCardData = getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(message.content)
-        appCardData?.appId?.let { id ->
+        val appCardData = requireNotNull(getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(message.content!!))
+        appCardData.appId?.let { id ->
             runBlocking {
                 var app = appDao.findAppById(id)
                 if (app?.updatedAt != appCardData.updatedAt) {
@@ -761,7 +761,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     }
 
     private fun processTranscriptMessage(data: BlazeMessageData, plain: String): Message? {
-        val jsonAdapter = MoshiHelper.getTypeListAdapter<List<TranscriptMessage>>(TranscriptMessage::class.java)
+        val jsonAdapter = getTypeListAdapter<List<TranscriptMessage>>(TranscriptMessage::class.java)
         val transcripts = jsonAdapter.fromJson(plain)?.filter { t ->
             t.transcriptId == data.messageId
         }
@@ -861,7 +861,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.conversationId,
             data.userId,
             data.category,
-            gson.toJson(
+            getTypeListAdapter<List<TranscriptMinimal>>(TranscriptMinimal::class.java).toJson(
                 transcripts.sortedBy { t -> t.createdAt }
                     .filter { t -> t.transcriptId == data.messageId }.map {
                         TranscriptMinimal(it.userFullName ?: "", it.type, it.content)

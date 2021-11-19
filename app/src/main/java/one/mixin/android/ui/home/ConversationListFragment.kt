@@ -88,8 +88,8 @@ import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MoshiHelper
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppButtonData
@@ -567,7 +567,7 @@ class ConversationListFragment : LinkFragment() {
             binding.shadowView.secondIv.isGone = true
             binding.shadowView.thirdIv.isGone = true
             requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
-                val bots = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
+                val bots = getTypeListAdapter<List<String>>(String::class.java).fromJson(it) ?: return@let
                 bots.forEachIndexed { index, id ->
                     if (index > 2) return@launch
                     val view: ImageView =

@@ -11,8 +11,8 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MoshiHelper.getTypeAdapter
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -141,9 +141,13 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
 
         if (binding.chatTv.tag != messageItem.messageId) {
             if (!messageItem.content.isNullOrEmpty()) {
-                val transcripts = GsonHelper.customGson.fromJson(messageItem.content, Array<TranscriptMinimal>::class.java)
+                val transcripts =
+                    getTypeListAdapter<List<TranscriptMinimal>>(TranscriptMinimal::class.java)
+                        .fromJson(
+                            messageItem.content
+                        )
                 val str = StringBuilder()
-                transcripts.forEach {
+                transcripts?.forEach {
                     when {
                         it.isImage() -> {
                             str.append("${it.name}: [${itemView.context.getString(R.string.photo)}]\n")
