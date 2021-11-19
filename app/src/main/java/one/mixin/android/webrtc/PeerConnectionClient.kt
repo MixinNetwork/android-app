@@ -8,6 +8,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.FrameKeyEvent
 import one.mixin.android.event.VoiceEvent
 import one.mixin.android.session.Session
+import org.webrtc.AddIceObserver
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
@@ -218,7 +219,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 override fun onSetSuccess() {
                     Timber.d("$TAG_CALL createAnswer setRemoteSdp onSetSuccess remoteCandidateCache: ${remoteCandidateCache.size}")
                     remoteCandidateCache.forEach {
-                        peerConnection?.addIceCandidate(it)
+                        peerConnection?.addIceCandidate(it, iceObserver)
                     }
                     remoteCandidateCache.clear()
                 }
@@ -285,7 +286,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     fun addRemoteIceCandidate(candidate: IceCandidate) {
         Timber.d("$TAG_CALL addRemoteIceCandidate peerConnection: $peerConnection")
         if (peerConnection != null && peerConnection!!.remoteDescription != null) {
-            peerConnection?.addIceCandidate(candidate)
+            peerConnection?.addIceCandidate(candidate, iceObserver)
         } else {
             remoteCandidateCache.add(candidate)
         }
@@ -322,7 +323,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 override fun onSetSuccess() {
                     Timber.d("$TAG_CALL setAnswerSdp setRemoteSdp onSetSuccess remoteCandidateCache: ${remoteCandidateCache.size}")
                     remoteCandidateCache.forEach {
-                        peerConnection?.addIceCandidate(it)
+                        peerConnection?.addIceCandidate(it, iceObserver)
                     }
                     remoteCandidateCache.clear()
                 }
@@ -459,6 +460,16 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private fun createMediaConstraint() = MediaConstraints().apply {
         mandatory.add(offerReceiveAudioConstraint)
         mandatory.add(offerReceiveVideoConstraint)
+    }
+
+    private val iceObserver = object : AddIceObserver {
+        override fun onAddSuccess() {
+            Timber.d("$TAG_CALL iceObserver onAddSuccess")
+        }
+
+        override fun onAddFailure(error: String?) {
+            Timber.d("$TAG_CALL iceObserver onAddFailure error: $error")
+        }
     }
 
     private inner class PCObserver : PeerConnection.Observer {
