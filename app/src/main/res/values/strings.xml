@@ -850,6 +850,7 @@
     <string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
     <string name="default_time" translatable="false">00:00</string>
     <string name="action_open">Open in browser</string>
+    <string name="action_view_auth">View Authorization</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_update">Update</string>
     <string name="action_reload">Reload</string>
@@ -857,6 +858,7 @@
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>
     <string name="account_memo">Memo</string>
+    <string name="not_auth_yet">No permission has been granted to this bot</string>
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_address">Address</string>
     <string name="withdrawal_no_tag">No Memo</string>

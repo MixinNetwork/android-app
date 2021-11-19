@@ -32,7 +32,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.MessageResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.vo.CallType
@@ -164,11 +163,13 @@ class GroupCallService : CallService() {
         reconnectingTimeoutFuture?.cancel(true)
         reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), RECONNECTING_TIMEOUT, TimeUnit.SECONDS)
 
-        val pc = peerConnectionClient.getPeerConnection()
-        if (pc != null) {
-            callState.reconnecting = true
-            pc.close()
-        } else {
+        callState.reconnecting = true
+        callExecutor.execute {
+            val pc = peerConnectionClient.getPeerConnection()
+            if (pc != null && pc.connectionState() != PeerConnection.PeerConnectionState.CLOSED) {
+                Timber.d("$TAG_CALL reconnect pc.close()")
+                pc.close()
+            }
             publish(conversationId)
         }
     }
@@ -878,13 +879,13 @@ class GroupCallService : CallService() {
             }
             bm.error != null -> {
                 return when (bm.error.code) {
-                    ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                    CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                         blazeMessage.params?.conversation_id?.let {
                             syncConversation(it)
                         }
                         MessageResult(false, retry = true)
                     }
-                    ErrorHandler.FORBIDDEN -> {
+                    FORBIDDEN -> {
                         MessageResult(true, retry = false)
                     }
                     else -> {
