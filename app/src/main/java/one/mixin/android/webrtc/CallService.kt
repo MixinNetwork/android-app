@@ -283,21 +283,17 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     protected fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) = runBlocking {
         handleMixinResponse(
             invokeNetwork = {
-                Timber.d("$TAG_CALL getTurn")
                 accountService.getTurn()
             },
             successBlock = {
                 val array = it.data as Array<TurnServer>
-                Timber.d("$TAG_CALL getTurn success $it")
                 action.invoke(genIceServerList(array))
             },
             exceptionBlock = {
-                Timber.d("$TAG_CALL getTurn exception $it ")
                 handleFetchTurnError(it.message)
                 return@handleMixinResponse false
             },
             failureBlock = {
-                Timber.d("$TAG_CALL getTurn failure $it ")
                 handleFetchTurnError(it.error?.toString())
                 return@handleMixinResponse true
             }

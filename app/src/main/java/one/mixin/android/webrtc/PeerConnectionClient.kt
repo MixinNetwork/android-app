@@ -47,7 +47,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private val receiverIdUserIdMap = arrayMapOf<String, String>()
     private val receiverIdUserIdNoKeyMap = arrayMapOf<String, String>()
 
-    private val restartConstraint = MediaConstraints.KeyValuePair("IceRestart", "true")
     private val offerReceiveAudioConstraint = MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true")
     private val offerReceiveVideoConstraint = MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false")
 
@@ -110,26 +109,18 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         doWhenSetFailure: (() -> Unit)? = null
     ) {
         val sdpConstraint = createMediaConstraint()
-        Timber.d("$TAG_CALL after createMediaConstraint")
         if (iceServerList != null) {
             iceServers.clear()
             iceServers.addAll(iceServerList)
         } else if (peerConnection != null && peerConnection?.connectionState() != PeerConnection.PeerConnectionState.CLOSED) {
-            Timber.d("$TAG_CALL before add restartConstraint")
             peerConnection?.restartIce()
-            Timber.d("$TAG_CALL after add restartConstraint")
         }
-        Timber.d("$TAG_CALL before get peerConnection connectionState: ${peerConnection?.connectionState()} ")
         val connectionState = peerConnection?.connectionState()
-        if (peerConnection == null || connectionState == PeerConnection.PeerConnectionState.CLOSED || connectionState == PeerConnection.PeerConnectionState.FAILED || connectionState == PeerConnection.PeerConnectionState.DISCONNECTED) {
-            Timber.d("$TAG_CALL before create peerConnection: $peerConnection")
+        if (peerConnection == null || connectionState == PeerConnection.PeerConnectionState.CLOSED) {
             peerConnection = createPeerConnectionInternal(frameKey)
-            Timber.d("$TAG_CALL after create peerConnection: $peerConnection")
         }
-        Timber.d("$TAG_CALL after get peerConnection: $peerConnection")
         val offerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
-                Timber.d("$TAG_CALL before setLocalDescription")
                 peerConnection?.setLocalDescription(
                     object : SdpObserverWrapper() {
                         override fun onSetFailure(error: String?) {
@@ -158,7 +149,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                     },
                     sdp
                 )
-                Timber.d("$TAG_CALL after setLocalDescription")
             }
 
             override fun onCreateFailure(error: String?) {
@@ -184,7 +174,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             }
         }
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
-        Timber.d("$TAG_CALL peerConnection createOffer: $peerConnection")
     }
 
     fun createAnswer(
@@ -406,7 +395,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
     private fun createPeerConnectionInternal(frameKey: ByteArray? = null): PeerConnection? {
         if (factory == null || isError) {
-            Timber.d("$TAG_CALL PeerConnectionFactory is not created")
             reportError("PeerConnectionFactory is not created")
             return null
         }
@@ -418,23 +406,17 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
         }
-        Timber.d("$TAG_CALL internal before create")
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
-        Timber.d("$TAG_CALL internal after create")
         if (peerConnection == null) {
             reportError("PeerConnection is not created")
             return null
         }
-        Timber.d("$TAG_CALL internal before log")
         Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
-        Timber.d("$TAG_CALL internal before addTrack")
         rtpSender = peerConnection.addTrack(createAudioTrack())
-        Timber.d("$TAG_CALL internal before set frame key")
         setSenderFrameKey(frameKey)
-        Timber.d("$TAG_CALL internal after set frame key")
         return peerConnection
     }
 
