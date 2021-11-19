@@ -45,8 +45,8 @@ import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
 import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.MoshiHelper.getQuoteMessageItemJsonAdapter
 import one.mixin.android.util.MoshiHelper.getTypeAdapter
 import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.hyperlink.parseHyperlink
@@ -149,7 +149,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     }
 
     private var refreshKeyMap = arrayMapOf<String, Long?>()
-    private val gson = GsonHelper.customGson
 
     private val accountId = Session.getAccountId()
 
@@ -229,7 +228,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.createdAt,
             data.status
         )
-        val appButton = gson.fromJson(message.content, Array<AppButtonData>::class.java)
+        val appButton = requireNotNull(getTypeListAdapter<List<AppButtonData>>(AppButtonData::class.java).fromJson(message.content!!))
         for (item in appButton) {
             ColorUtil.parseColor(item.color.trim())
         }
@@ -283,26 +282,26 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun processSystemMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.SYSTEM_CONVERSATION.name) {
             val json = Base64.decode(data.data)
-            val systemMessage = gson.fromJson(String(json), SystemConversationMessagePayload::class.java)
+            val systemMessage = requireNotNull(getTypeAdapter<SystemConversationMessagePayload>(SystemConversationMessagePayload::class.java).fromJson(String(json)))
             if (systemMessage.action != SystemConversationAction.UPDATE.name) {
                 syncConversation(data)
             }
             processSystemConversationMessage(data, systemMessage)
         } else if (data.category == MessageCategory.SYSTEM_USER.name) {
             val json = Base64.decode(data.data)
-            val systemMessage = gson.fromJson(String(json), SystemUserMessagePayload::class.java)
+            val systemMessage = requireNotNull(getTypeAdapter<SystemUserMessagePayload>(SystemUserMessagePayload::class.java).fromJson(String(json)))
             processSystemUserMessage(systemMessage)
         } else if (data.category == MessageCategory.SYSTEM_CIRCLE.name) {
             val json = Base64.decode(data.data)
-            val systemMessage = gson.fromJson(String(json), SystemCircleMessagePayload::class.java)
+            val systemMessage = requireNotNull(getTypeAdapter<SystemCircleMessagePayload>(SystemCircleMessagePayload::class.java).fromJson(String(json)))
             processSystemCircleMessage(data, systemMessage)
         } else if (data.category == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name) {
             val json = Base64.decode(data.data)
-            val systemSnapshot = gson.fromJson(String(json), Snapshot::class.java)
+            val systemSnapshot = requireNotNull(getTypeAdapter<Snapshot>(Snapshot::class.java).fromJson(String(json)))
             processSystemSnapshotMessage(data, systemSnapshot)
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
-            val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
+            val systemSession = requireNotNull(getTypeAdapter<SystemSessionMessagePayload>(SystemSessionMessagePayload::class.java).fromJson(String(json)))
             processSystemSessionMessage(systemSession)
         }
 
@@ -316,7 +315,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun processPinMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.MESSAGE_PIN.name) {
             val decoded = Base64.decode(data.data)
-            val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
+            val transferPinData = requireNotNull(getTypeAdapter<PinMessagePayload>(PinMessagePayload::class.java).fromJson(String(decoded)))
             if (transferPinData.action == PinAction.PIN.name) {
                 transferPinData.messageIds.forEachIndexed { index, messageId ->
                     val message = messageDao.findMessageById(messageId)
@@ -383,7 +382,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
             val accountId = Session.getAccountId() ?: return
             val decoded = Base64.decode(data.data)
-            val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
+            val transferRecallData = requireNotNull(getTypeAdapter<RecallMessagePayload>(RecallMessagePayload::class.java).fromJson(String(decoded)))
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
                 RxBus.publish(RecallEvent(msg.id))
                 messageDao.recallFailedMessage(msg.id)
@@ -403,7 +402,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
-                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
+                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, requireNotNull(getQuoteMessageItemJsonAdapter().toJson(quoteMsg)))
                 }
 
                 jobManager.cancelJobByMixinJobId(msg.id)
@@ -419,7 +418,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun processPlainMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.PLAIN_JSON.name) {
             val json = Base64.decode(data.data)
-            val plainData = gson.fromJson(String(json), PlainJsonMessagePayload::class.java)
+            val plainData = requireNotNull(getTypeAdapter<PlainJsonMessagePayload>(PlainJsonMessagePayload::class.java).fromJson(String(json)))
             if (plainData.action == PlainDataAction.RESEND_KEY.name) {
                 if (signalProtocol.containsUserSession(data.userId)) {
                     jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.RESEND_KEY))
@@ -617,10 +616,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 generateNotification(message, data)
             }
             data.category.endsWith("_VIDEO") -> {
-                val mediaData = gson.fromJson(
-                    encryptedAttachmentContentDecode(data, plainText),
-                    AttachmentMessagePayload::class.java
-                )
+                val mediaData = requireNotNull(getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).fromJson(encryptedAttachmentContentDecode(data, plainText)))
                 if (mediaData.invalidData()) {
                     insertInvalidMessage(data)
                     return
@@ -715,7 +711,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 } else {
                     String(Base64.decode(plainText))
                 }
-                val contactData = gson.fromJson(decoded, ContactMessagePayload::class.java)
+                val contactData = requireNotNull(getTypeAdapter<ContactMessagePayload>(ContactMessagePayload::class.java).fromJson(decoded))
                 val user = syncUser(contactData.userId)
                 val message = generateMessage(data) { quoteMessageItem ->
                     createContactMessage(
@@ -737,7 +733,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 } else {
                     String(Base64.decode(plainText))
                 }
-                val liveData = gson.fromJson(plain, LiveMessagePayload::class.java)
+                val liveData = requireNotNull(getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(plain))
                 if (liveData.width <= 0 || liveData.height <= 0) {
                     insertInvalidMessage(data)
                     return
@@ -1182,12 +1178,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             stickerData.stickerId?.let { messageDao.updateStickerMessage(it, data.status, messageId) }
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
-            val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
+            val contactData = requireNotNull(getTypeAdapter<ContactMessagePayload>(ContactMessagePayload::class.java).fromJson(String(decoded)))
             messageDao.updateContactMessage(contactData.userId, data.status, messageId)
             syncUser(contactData.userId)
         } else if (data.category == MessageCategory.SIGNAL_LIVE.name) {
             val decoded = Base64.decode(plainText)
-            val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
+            val liveData = requireNotNull(getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(String(decoded)))
             messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_TRANSCRIPT.name) {
             val decoded = Base64.decode(plainText)
@@ -1203,13 +1199,13 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId)?.let {
-                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, gson.toJson(it))
+                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, requireNotNull(getQuoteMessageItemJsonAdapter().toJson(it)))
             }
         }
     }
 
     private fun requestResendKey(conversationId: String, recipientId: String, messageId: String, sessionId: String?) {
-        val plainText = gson.toJson(
+        val plainText = getTypeAdapter<PlainJsonMessagePayload>(PlainJsonMessagePayload::class.java).toJson(
             PlainJsonMessagePayload(
                 action = PlainDataAction.RESEND_KEY.name,
                 messageId = messageId
@@ -1229,7 +1225,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (messages.isEmpty()) {
             return
         }
-        val plainText = gson.toJson(PlainJsonMessagePayload(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
+        val plainText = getTypeAdapter<PlainJsonMessagePayload>(PlainJsonMessagePayload::class.java).toJson(PlainJsonMessagePayload(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
         val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, plainText.base64Encode(), sessionId))
         jobManager.addJobInBackground(SendPlaintextJob(bm))
         ratchetSenderKeyDao.delete(conversationId, SignalProtocolAddress(userId, sessionId.getDeviceId()).toString())
@@ -1251,7 +1247,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         refreshKeyMap[conversationId] = current
         val blazeMessage = createCountSignalKeys()
         val data = signalKeysChannel(blazeMessage) ?: return
-        val count = gson.fromJson(data, SignalKeyCount::class.java)
+        val count = getTypeAdapter<SignalKeyCount>(SignalKeyCount::class.java).fromJson(data.asString) ?: return
         if (count.preKeyCount >= RefreshOneTimePreKeysJob.PREKEY_MINI_NUM) {
             return
         }

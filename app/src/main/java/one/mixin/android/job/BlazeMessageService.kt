@@ -265,7 +265,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         jobs.map {
             requireNotNull(getTypeAdapter<BlazeAckMessage>(BlazeAckMessage::class.java).fromJson(it.blazeMessage!!))
         }.let {
-            val plainText = gson.toJson(
+            val plainText = getTypeAdapter<PlainJsonMessagePayload>(PlainJsonMessagePayload::class.java).toJson(
                 PlainJsonMessagePayload(
                     action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
                     ackMessages = it
@@ -315,7 +315,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val messages = floodMessageDao.findFloodMessages()
         return if (!messages.isNullOrEmpty()) {
             messages.forEach { message ->
-                val data = gson.fromJson(message.data, BlazeMessageData::class.java)
+                val data = requireNotNull(getTypeAdapter<BlazeMessageData>(BlazeMessageData::class.java).fromJson(message.data))
                 if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
                     callMessageDecrypt.onRun(data)
                 } else {

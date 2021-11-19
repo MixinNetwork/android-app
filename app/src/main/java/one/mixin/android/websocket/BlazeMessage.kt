@@ -10,7 +10,7 @@ data class BlazeMessage(
     var id: String,
     val action: String,
     val params: BlazeMessageParam?,
-    val data: JsonElement? = null,
+    val data: JsonElement? = null, // Todo replace
     val error: ResponseError? = null
 ) : Serializable {
 
