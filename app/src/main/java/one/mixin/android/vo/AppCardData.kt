@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.util.MoshiHelper.getTypeAdapter
 
 @Parcelize
 @JsonClass(generateAdapter = true)
@@ -28,3 +29,5 @@ data class AppCardData(
         description = description.take(128)
     }
 }
+
+fun AppCardData.toJson(): String = getTypeAdapter<AppCardData>(AppCardData::class.java).toJson(this)

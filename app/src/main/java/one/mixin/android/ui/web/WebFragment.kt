@@ -107,7 +107,6 @@ import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.qr.QRCodeProcessor
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -116,6 +115,7 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.matchResourcePattern
+import one.mixin.android.vo.toJson
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
@@ -904,7 +904,7 @@ class WebFragment : BaseFragment() {
                                         arrayListOf(
                                             ForwardMessage(
                                                 ShareCategory.AppCard,
-                                                GsonHelper.customGson.toJson(appCardData)
+                                                appCardData.toJson()
                                             )
                                         ),
                                         ForwardAction.App.Resultless()

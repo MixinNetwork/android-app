@@ -29,7 +29,6 @@ import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
@@ -94,7 +93,7 @@ class AttachmentDownloadJob(
             attachmentResponse.view_url?.let {
                 val result = decryptAttachment(it)
                 if (result) {
-                    val attachmentExtra = GsonHelper.customGson.toJson(AttachmentExtra(attachmentResponse.attachment_id, message.id, attachmentResponse.created_at))
+                    val attachmentExtra = AttachmentExtra(attachmentResponse.attachment_id, message.id, attachmentResponse.created_at).toString()
                     messageDao.updateMessageContent(attachmentExtra, message.id)
                 }
             }

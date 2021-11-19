@@ -33,7 +33,7 @@ import one.mixin.android.job.SendTranscriptJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.EncryptCategory
@@ -78,6 +78,7 @@ import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.PinMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.toJson
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.io.FileInputStream
@@ -192,7 +193,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             conversationId,
             sender.userId,
             category,
-            GsonHelper.customGson.toJson(
+            getTypeListAdapter<List<TranscriptMinimal>>(TranscriptMinimal::class.java).toJson(
                 transcriptMessages.sortedBy { t -> t.createdAt }.map {
                     TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
                 }
@@ -310,7 +311,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.SIGNAL_STICKER,
             MessageCategory.ENCRYPTED_STICKER
         )
-        val encoded = GsonHelper.customGson.toJson(transferStickerData).base64Encode()
+        val encoded = transferStickerData.toJson().base64Encode()
         transferStickerData.stickerId?.let {
             val message = createStickerMessage(
                 UUID.randomUUID().toString(),
@@ -342,7 +343,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.ENCRYPTED_CONTACT
         )
         val transferContactData = ContactMessagePayload(shareUserId)
-        val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
+        val encoded = transferContactData.toJson().base64Encode()
         val message = createContactMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category, encoded, shareUserId,
             MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItemJson()
@@ -366,7 +367,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
         list.forEach { messageItem ->
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
-            val encoded = GsonHelper.customGson.toJson(transferRecallData).base64Encode()
+            val encoded = transferRecallData.toJson().base64Encode()
             val message = createMessage(
                 UUID.randomUUID().toString(),
                 conversationId,
@@ -387,7 +388,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
 
     fun sendUnPinMessage(conversationId: String, sender: User, messageIds: List<String>) {
         val transferPinData = PinMessagePayload(PinAction.UNPIN.name, messageIds)
-        val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
+        val encoded = transferPinData.toJson().base64Encode()
         val message = createMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -411,7 +412,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         list: Collection<PinMessageMinimal>
     ) {
         val transferPinData = PinMessagePayload(action.name, list.map { it.messageId })
-        val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
+        val encoded = transferPinData.toJson().base64Encode()
         val message = createMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -467,8 +468,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.SIGNAL_LIVE,
             MessageCategory.ENCRYPTED_LIVE
         )
-        val encoded =
-            GsonHelper.customGson.toJson(transferLiveData)
+        val encoded = transferLiveData.toJson()
         val message = createLiveMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -518,7 +518,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                     conversationId,
                     senderId,
                     category,
-                    GsonHelper.customGson.toJson(location),
+                    location.toJson(),
                     MessageStatus.SENT.name,
                     nowInUtc()
                 )
