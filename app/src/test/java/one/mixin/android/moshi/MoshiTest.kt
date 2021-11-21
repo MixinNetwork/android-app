@@ -1,7 +1,10 @@
 package one.mixin.android.moshi
 
+import androidx.collection.arrayMapOf
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.MentionUser
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.TranscriptMessage
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -85,5 +88,19 @@ class MoshiTest {
         val listAdapter = getTypeListAdapter<List<String>>(String::class.java)
         val jsonList = listAdapter.fromJson(content)
         println(jsonList)
+    }
+
+    @Test
+    fun listMapTest() {
+        val map = arrayMapOf<String, String>()
+        map["key1"] = "value1"
+        map["key2"] = "value2"
+        val map1 = arrayMapOf<String, String>()
+        map1["key1"] = "value1"
+        map1["key2"] = "value2"
+        val list = listOf(map1, map)
+        val jsonAdapter = getTypeListAdapter<List<Map<String, String>>>(Map::class.java)
+        val json = jsonAdapter.toJson(list)
+        println(json)
     }
 }

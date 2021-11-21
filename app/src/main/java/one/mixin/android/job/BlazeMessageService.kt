@@ -37,7 +37,6 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.websocket.BlazeAckMessage
@@ -95,7 +94,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var messageService: MessageService
 
     private val accountId = Session.getAccountId()
-    private val gson = GsonHelper.customGson
 
     private val powerManager by lazy { getSystemService<PowerManager>() }
     private var isIgnoringBatteryOptimizations = false
