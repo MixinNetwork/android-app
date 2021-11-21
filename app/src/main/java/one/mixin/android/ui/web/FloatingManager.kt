@@ -9,7 +9,6 @@ import android.view.View
 import android.webkit.WebViewClient
 import androidx.annotation.ColorInt
 import androidx.core.view.drawToBitmap
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -22,10 +21,11 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
+import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
 private var screenshot: Bitmap? = null
@@ -123,10 +123,14 @@ fun holdClip(webClip: WebClip) {
 private fun initClips() {
     MixinApplication.appScope.launch(SINGLE_THREAD) {
         val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
-        val type = object : TypeToken<List<WebClip>>() {}.type
-        val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
+        val list = try {
+            getTypeListAdapter<List<WebClip>>(WebClip::class.java).fromJson(content)
+        } catch (e: Exception) {
+            Timber.e(e.message)
+            null
+        }
         clips.clear()
-        if (list.isEmpty()) return@launch
+        if (list.isNullOrEmpty()) return@launch
         clips.addAll(list)
         MixinApplication.get().currentActivity?.let { _ ->
             withContext(Dispatchers.Main) {
@@ -168,10 +172,14 @@ fun saveClips() {
         val localClips = mutableListOf<WebClip>().apply {
             addAll(clips)
         }
-        MixinApplication.appContext.defaultSharedPreferences.putString(
-            PREF_FLOATING,
-            GsonHelper.customGson.toJson(localClips)
-        )
+        try {
+            MixinApplication.appContext.defaultSharedPreferences.putString(
+                PREF_FLOATING,
+                getTypeListAdapter<List<WebClip>>(WebClip::class.java).toJson(localClips)
+            )
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
     }
 }
 
