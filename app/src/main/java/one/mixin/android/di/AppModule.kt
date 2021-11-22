@@ -7,6 +7,7 @@ import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import com.squareup.moshi.Types
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
 import dagger.Module
@@ -59,13 +60,13 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -162,7 +163,8 @@ object AppModule {
                         throw ServerErrorException(response.code)
                     }
                     val mixinResponse = try {
-                        GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
+                        val type = Types.newParameterizedType(MixinResponse::class.java, Any::class.java)
+                        requireNotNull(getTypeAdapter<MixinResponse<Any>>(type).fromJson(String(bytes)))
                     } catch (e: JsonSyntaxException) {
                         HostSelectionInterceptor.get().switch(request)
                         throw ServerErrorException(response.code)

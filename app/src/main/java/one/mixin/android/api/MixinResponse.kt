@@ -1,10 +1,12 @@
 package one.mixin.android.api
 
+import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.withContext
 import one.mixin.android.util.ErrorHandler
 import retrofit2.Response
 import kotlin.coroutines.CoroutineContext
 
+@JsonClass(generateAdapter = true)
 class MixinResponse<T>() {
 
     constructor(response: Response<T>) : this() {
