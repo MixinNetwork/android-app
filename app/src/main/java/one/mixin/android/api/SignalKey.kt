@@ -21,9 +21,9 @@ data class SignalKey(
     var preKey: OneTimePreKey,
     @Json(name = "registration_id")
     var registrationId: Int,
-    @Json(name="user_id")
+    @Json(name = "user_id")
     val userId: String?,
-    @Json(name="session_id")
+    @Json(name = "session_id")
     val sessionId: String?
 ) {
     fun getPreKeyPublic(): ECPublicKey? {

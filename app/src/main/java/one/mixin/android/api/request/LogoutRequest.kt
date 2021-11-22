@@ -5,6 +5,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class LogoutRequest(
-    @Json(name ="session_id")
+    @Json(name = "session_id")
     val sessionId: String
 )

@@ -7,7 +7,7 @@ import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import org.webrtc.SessionDescription
 
 @JsonClass(generateAdapter = true)
-data class KrakenData(val jsep: String, @Json(name ="track_id") val trackId: String) {
+data class KrakenData(val jsep: String, @Json(name = "track_id") val trackId: String) {
 
     fun getSessionDescription(): SessionDescription {
         val jsep = jsep.decodeBase64()

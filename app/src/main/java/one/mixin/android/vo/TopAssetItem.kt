@@ -16,19 +16,19 @@ import java.math.BigDecimal
 data class TopAssetItem(
     @PrimaryKey
     @ColumnInfo(name = "asset_id")
-    @Json(name ="asset_id")
+    @Json(name = "asset_id")
     val assetId: String,
     @ColumnInfo(name = "symbol")
     val symbol: String,
     @ColumnInfo(name = "name")
     val name: String,
     @ColumnInfo(name = "icon_url")
-    @Json(name ="icon_url")
+    @Json(name = "icon_url")
     val iconUrl: String,
-    @Json(name ="chain_id")
+    @Json(name = "chain_id")
     @ColumnInfo(name = "chain_id")
     val chainId: String,
-    @Json(name ="chain_icon_url")
+    @Json(name = "chain_icon_url")
     @ColumnInfo(name = "chain_icon_url")
     val chainIconUrl: String?,
     val priceUsd: String,

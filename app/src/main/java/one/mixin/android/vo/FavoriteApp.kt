@@ -12,15 +12,15 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class FavoriteApp(
 
-    @Json(name ="app_id")
+    @Json(name = "app_id")
     @ColumnInfo(name = "app_id")
     val appId: String,
 
-    @Json(name ="user_id")
+    @Json(name = "user_id")
     @ColumnInfo(name = "user_id")
     val userId: String,
 
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String
 )

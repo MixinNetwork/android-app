@@ -8,9 +8,9 @@ import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 class PinMessageMinimal(
-    @Json(name ="message_id")
+    @Json(name = "message_id")
     val messageId: String,
-    @Json(name ="category")
+    @Json(name = "category")
     override val type: String,
     @Json(name = "content")
     val content: String?

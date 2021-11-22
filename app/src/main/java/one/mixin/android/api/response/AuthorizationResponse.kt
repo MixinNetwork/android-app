@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
+import one.mixin.android.vo.CodeResponse
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.Scope.Companion.SCOPES
 
@@ -17,18 +18,18 @@ import one.mixin.android.vo.Scope.Companion.SCOPES
 @Parcelize
 @JsonClass(generateAdapter = true)
 class AuthorizationResponse(
-    @Json(name ="authorization_id")
+    @Json(name = "authorization_id")
     val authorizationId: String,
     val authorization_code: String,
     val scopes: List<String>,
-    @Json(name ="code_id")
+    @Json(name = "code_id")
     val codeId: String,
     val app: App,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     val createAt: String,
-    @Json(name ="accessed_at")
+    @Json(name = "accessed_at")
     val accessedAt: String
-) : Parcelable
+) : Parcelable, CodeResponse
 
 fun AuthorizationResponse.getScopes(
     ctx: Context,

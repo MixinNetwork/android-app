@@ -13,25 +13,25 @@ data class AttachmentMessagePayload(
     var digest: ByteArray?,
     @Json(name = "attachment_id")
     var attachmentId: String,
-    @Json(name ="mime_type")
+    @Json(name = "mime_type")
     var mimeType: String,
-    @Json(name ="size")
+    @Json(name = "size")
     var size: Long,
-    @Json(name ="name")
+    @Json(name = "name")
     var name: String?,
-    @Json(name ="width")
+    @Json(name = "width")
     var width: Int?,
-    @Json(name ="height")
+    @Json(name = "height")
     var height: Int?,
-    @Json(name ="thumbnail")
+    @Json(name = "thumbnail")
     var thumbnail: String?,
-    @Json(name ="duration")
+    @Json(name = "duration")
     var duration: Long? = null,
-    @Json(name ="waveform")
+    @Json(name = "waveform")
     var waveform: ByteArray? = null,
-    @Json(name ="caption")
+    @Json(name = "caption")
     var caption: String? = null,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     var createdAt: String? = null,
 )
 

@@ -34,10 +34,10 @@ class SignalKeyRequestJsonAdapter(
     }
 
     override fun fromJson(reader: JsonReader): SignalKeyRequest {
-       throw JsonDataException("Does not allow deserialization")
+        throw JsonDataException("Does not allow deserialization")
     }
 
-    override fun toJson(writer: JsonWriter, value_: SignalKeyRequest?): Unit {
+    override fun toJson(writer: JsonWriter, value_: SignalKeyRequest?) {
         if (value_ == null) {
             throw NullPointerException("value_ was null! Wrap in .nullSafe() to write nullable values.")
         }

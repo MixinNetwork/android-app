@@ -11,10 +11,10 @@ import com.squareup.moshi.JsonClass
 )
 @JsonClass(generateAdapter = true)
 data class StickerRelationship(
-    @Json(name ="album_id")
+    @Json(name = "album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String,
-    @Json(name ="sticker_id")
+    @Json(name = "sticker_id")
     @ColumnInfo(name = "sticker_id")
     val stickerId: String
 )

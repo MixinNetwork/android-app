@@ -15,6 +15,6 @@ data class NonFungibleToken(
     val tokenKey: String,
     @Json(name = "meta")
     val metadata: Metadata,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     val createdAt: String
 )

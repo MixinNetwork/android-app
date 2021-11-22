@@ -6,7 +6,7 @@ import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
 @JsonClass(generateAdapter = true)
 data class RecallMessagePayload(
-    @Json(name ="message_id")
+    @Json(name = "message_id")
     val messageId: String
 )
 

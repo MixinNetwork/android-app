@@ -26,49 +26,49 @@ import kotlinx.parcelize.Parcelize
 @JsonClass(generateAdapter = true)
 data class User(
     @PrimaryKey
-    @Json(name ="user_id")
+    @Json(name = "user_id")
     @ColumnInfo(name = "user_id")
     val userId: String,
-    @Json(name ="identity_number")
+    @Json(name = "identity_number")
     @ColumnInfo(name = "identity_number")
     val identityNumber: String,
     /**
      * @see UserRelationship
      */
-    @Json(name ="relationship")
+    @Json(name = "relationship")
     @ColumnInfo(name = "relationship")
     var relationship: String,
-    @Json(name ="biography")
+    @Json(name = "biography")
     @ColumnInfo(name = "biography")
     val biography: String,
-    @Json(name ="full_name")
+    @Json(name = "full_name")
     @ColumnInfo(name = "full_name")
     val fullName: String?,
-    @Json(name ="avatar_url")
+    @Json(name = "avatar_url")
     @ColumnInfo(name = "avatar_url")
     val avatarUrl: String?,
     @ColumnInfo(name = "phone")
     val phone: String?,
-    @Json(name ="is_verified")
+    @Json(name = "is_verified")
     @ColumnInfo(name = "is_verified")
     val isVerified: Boolean?,
-    @Json(name ="create_at")
+    @Json(name = "create_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String?,
-    @Json(name ="mute_until")
+    @Json(name = "mute_until")
     @ColumnInfo(name = "mute_until")
     var muteUntil: String?,
-    @Json(name ="has_pin")
+    @Json(name = "has_pin")
     @ColumnInfo(name = "has_pin")
     val hasPin: Boolean? = null,
-    @Json(name ="app_id")
+    @Json(name = "app_id")
     @ColumnInfo(name = "app_id")
     var appId: String? = null,
-    @Json(name ="is_scam")
+    @Json(name = "is_scam")
     @ColumnInfo(name = "is_scam")
     var isScam: Boolean? = null
-) : Parcelable {
-    @Json(name ="app")
+) : Parcelable, CodeResponse {
+    @Json(name = "app")
     @Ignore
     @IgnoredOnParcel
     var app: App? = null

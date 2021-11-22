@@ -5,6 +5,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 class DeauthorRequest(
-    @Json(name ="client_id")
+    @Json(name = "client_id")
     val clientId: String
 )

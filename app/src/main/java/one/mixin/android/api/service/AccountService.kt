@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import com.google.gson.JsonObject
 import io.reactivex.Observable
 import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
@@ -19,6 +18,7 @@ import one.mixin.android.api.response.DeviceCheckResponse
 import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.CodeResponse
 import one.mixin.android.vo.Fiat
 import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.Sticker
@@ -58,7 +58,7 @@ interface AccountService {
     suspend fun logout(@Body request: LogoutRequest): MixinResponse<Unit>
 
     @GET("codes/{id}")
-    fun code(@Path("id") id: String): Observable<MixinResponse<JsonObject>>
+    suspend fun code(@Path("id") id: String): MixinResponse<CodeResponse>
 
     @POST("pin/update")
     fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>

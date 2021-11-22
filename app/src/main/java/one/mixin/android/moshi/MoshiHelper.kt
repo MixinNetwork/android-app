@@ -12,12 +12,12 @@ import one.mixin.android.vo.MentionUser
 import java.lang.reflect.Type
 
 object MoshiHelper {
-    private val moshi = Moshi.Builder()
+    val moshi: Moshi = Moshi.Builder()
+        .add(MoshiFactory)
         .add(MentionUser::class.java, MentionUserJsonAdapter())
         .add(ByteArray::class.java, Base64ByteArrayAdapter())
         .add(BitmapJsonAdapter)
         .add(MoshiArrayListJsonAdapter.FACTORY)
-        .add(MoshiFactory)
         .add(KotlinJsonAdapterFactory())
         .build()
 

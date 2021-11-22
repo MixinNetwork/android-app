@@ -13,10 +13,10 @@ data class FloodMessage(
     @Json(name = "message_id")
     @ColumnInfo(name = "message_id")
     val messageId: String,
-    @Json(name ="data")
+    @Json(name = "data")
     @ColumnInfo(name = "data")
     val data: String,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String
 )

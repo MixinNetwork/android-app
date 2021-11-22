@@ -10,7 +10,7 @@ import java.util.Locale
 @JsonClass(generateAdapter = true)
 data class ContactRequest(
     val phone: String,
-    @Json(name ="full_name")
+    @Json(name = "full_name")
     val fullName: String
 )
 

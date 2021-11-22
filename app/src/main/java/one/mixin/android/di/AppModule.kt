@@ -60,6 +60,7 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.moshi.MoshiHelper
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
@@ -213,7 +214,7 @@ object AppModule {
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create(MoshiHelper.moshi))
             .client(okHttp)
         return builder.build()
     }

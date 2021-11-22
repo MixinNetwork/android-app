@@ -5,18 +5,18 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 class ConversationRequest(
-    @Json(name ="conversation_id")
+    @Json(name = "conversation_id")
     val conversationId: String,
-    @Json(name ="category")
+    @Json(name = "category")
     val category: String? = null,
-    @Json(name ="name")
+    @Json(name = "name")
     val name: String? = null,
-    @Json(name ="icon_base64")
+    @Json(name = "icon_base64")
     val iconBase64: String? = null,
-    @Json(name ="announcement")
+    @Json(name = "announcement")
     val announcement: String? = null,
-    @Json(name ="participants")
+    @Json(name = "participants")
     val participants: List<ParticipantRequest>? = null,
-    @Json(name ="duration")
+    @Json(name = "duration")
     val duration: Long? = null
 )

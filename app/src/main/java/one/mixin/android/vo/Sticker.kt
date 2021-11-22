@@ -10,28 +10,28 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class Sticker(
     @PrimaryKey
-    @Json(name ="sticker_id")
+    @Json(name = "sticker_id")
     @ColumnInfo(name = "sticker_id")
     val stickerId: String,
-    @Json(name ="album_id")
+    @Json(name = "album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String?,
-    @Json(name ="name")
+    @Json(name = "name")
     @ColumnInfo(name = "name")
     val name: String,
-    @Json(name ="asset_url")
+    @Json(name = "asset_url")
     @ColumnInfo(name = "asset_url")
     val assetUrl: String,
-    @Json(name ="asset_type")
+    @Json(name = "asset_type")
     @ColumnInfo(name = "asset_type")
     val assetType: String,
-    @Json(name ="asset_width")
+    @Json(name = "asset_width")
     @ColumnInfo(name = "asset_width")
     val assetWidth: Int,
-    @Json(name ="asset_height")
+    @Json(name = "asset_height")
     @ColumnInfo(name = "asset_height")
     val assetHeight: Int,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     @ColumnInfo(name = "created_at")
     var createdAt: String,
     @ColumnInfo(name = "last_use_at")

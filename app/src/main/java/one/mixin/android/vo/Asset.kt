@@ -53,7 +53,7 @@ data class Asset(
     @Json(name = "asset_key")
     @ColumnInfo(name = "asset_key")
     val assetKey: String?,
-    @Json(name ="reserve")
+    @Json(name = "reserve")
     @ColumnInfo(name = "reserve")
     val reserve: String?
 ) : Parcelable

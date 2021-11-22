@@ -5,14 +5,14 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 class Metadata(
-    @Json(name ="group")
+    @Json(name = "group")
     val groupName: String,
-    @Json(name ="name")
+    @Json(name = "name")
     val tokenName: String,
     val description: String,
-    @Json(name ="icon_url")
+    @Json(name = "icon_url")
     val iconUrl: String,
-    @Json(name ="media_url")
+    @Json(name = "media_url")
     val mediaUrl: String,
     val mime: String,
     val hash: String,

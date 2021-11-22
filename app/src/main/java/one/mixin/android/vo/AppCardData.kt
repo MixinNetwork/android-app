@@ -9,14 +9,14 @@ import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 @Parcelize
 @JsonClass(generateAdapter = true)
 data class AppCardData(
-    @Json(name ="app_id")
+    @Json(name = "app_id")
     val appId: String?,
-    @Json(name ="icon_url")
+    @Json(name = "icon_url")
     val iconUrl: String,
     var title: String,
     var description: String,
     val action: String,
-    @Json(name ="updated_at")
+    @Json(name = "updated_at")
     val updatedAt: String?,
     val shareable: Boolean?,
 ) : Parcelable {

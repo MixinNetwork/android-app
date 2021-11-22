@@ -7,8 +7,8 @@ import com.squareup.moshi.JsonClass
 data class VerificationResponse(
     val type: String,
     val id: String,
-    @Json(name ="has_emergency_contact")
+    @Json(name = "has_emergency_contact")
     val hasEmergencyContact: Boolean = false,
-    @Json(name ="contact_id")
+    @Json(name = "contact_id")
     val contactId: String? = null
 )

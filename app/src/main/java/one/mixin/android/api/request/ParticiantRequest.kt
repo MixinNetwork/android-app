@@ -5,11 +5,11 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 class ParticipantRequest(
-    @Json(name ="user_id")
+    @Json(name = "user_id")
     val userId: String,
-    @Json(name ="role")
+    @Json(name = "role")
     val role: String,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     val createdAt: String? = null
 )
 

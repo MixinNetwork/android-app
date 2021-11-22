@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.vo.CodeResponse
 
 @Parcelize
 @JsonClass(generateAdapter = true)
@@ -25,9 +26,9 @@ class MultisigsResponse(
     val state: String,
     @Json(name = "transaction_hash")
     val transactionHash: String,
-    @Json(name ="raw_transaction")
+    @Json(name = "raw_transaction")
     val rawTransaction: String,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     val createdAt: String,
     val memo: String?
-) : Parcelable
+) : Parcelable, CodeResponse

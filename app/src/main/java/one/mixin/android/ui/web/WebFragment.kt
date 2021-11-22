@@ -50,7 +50,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.google.gson.Gson
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -1312,19 +1311,19 @@ class WebFragment : BaseFragment() {
 
     @JsonClass(generateAdapter = true)
     class MixinContext(
-        @Json(name ="conversation_id")
+        @Json(name = "conversation_id")
         val conversationId: String?,
-        @Json(name ="immersive")
+        @Json(name = "immersive")
         val immersive: Boolean,
-        @Json(name ="app_version")
+        @Json(name = "app_version")
         val appVersion: String = BuildConfig.VERSION_NAME,
-        @Json(name ="appearance")
+        @Json(name = "appearance")
         val appearance: String,
-        @Json(name ="platform")
+        @Json(name = "platform")
         val platform: String = "Android",
-        @Json(name ="currency")
+        @Json(name = "currency")
         val currency: String = Session.getFiatCurrency(),
-        @Json(name ="locale")
+        @Json(name = "locale")
         val locale: String = "${Lingver.getInstance().getLocale().language}-${
         Lingver.getInstance().getLocale().country
         }"

@@ -9,6 +9,6 @@ import kotlinx.parcelize.Parcelize
 @JsonClass(generateAdapter = true)
 data class TranscriptData(
     val chatUri: String,
-    @Json(name ="document_uris")
+    @Json(name = "document_uris")
     val documentUris: List<String>
 ) : Parcelable

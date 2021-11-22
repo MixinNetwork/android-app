@@ -5,6 +5,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class SessionSecretResponse(
-    @Json(name ="pin_token")
+    @Json(name = "pin_token")
     val pinToken: String
 )

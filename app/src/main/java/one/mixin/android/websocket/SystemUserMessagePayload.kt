@@ -7,7 +7,7 @@ import com.squareup.moshi.JsonClass
 data class SystemUserMessagePayload(
     @Json(name = "action")
     val action: String,
-    @Json(name ="user_id")
+    @Json(name = "user_id")
     val userId: String
 )
 

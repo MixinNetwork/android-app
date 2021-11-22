@@ -23,43 +23,43 @@ interface BotInterface {
 @JsonClass(generateAdapter = true)
 data class App(
     @PrimaryKey
-    @Json(name ="app_id")
+    @Json(name = "app_id")
     @ColumnInfo(name = "app_id")
     val appId: String,
-    @Json(name ="app_number")
+    @Json(name = "app_number")
     @ColumnInfo(name = "app_number")
     val appNumber: String,
-    @Json(name ="home_uri")
+    @Json(name = "home_uri")
     @ColumnInfo(name = "home_uri")
     val homeUri: String,
-    @Json(name ="redirect_uri")
+    @Json(name = "redirect_uri")
     @ColumnInfo(name = "redirect_uri")
     val redirectUri: String,
-    @Json(name ="name")
+    @Json(name = "name")
     @ColumnInfo(name = "name")
     val name: String,
-    @Json(name ="icon_url")
+    @Json(name = "icon_url")
     @ColumnInfo(name = "icon_url")
     val iconUrl: String,
-    @Json(name ="category")
+    @Json(name = "category")
     @ColumnInfo(name = "category")
     val category: String?,
-    @Json(name ="description")
+    @Json(name = "description")
     @ColumnInfo(name = "description")
     val description: String,
-    @Json(name ="app_secret")
+    @Json(name = "app_secret")
     @ColumnInfo(name = "app_secret")
     val appSecret: String,
-    @Json(name ="capabilities")
+    @Json(name = "capabilities")
     @ColumnInfo(name = "capabilities")
     val capabilities: ArrayList<String>?,
-    @Json(name ="creator_id")
+    @Json(name = "creator_id")
     @ColumnInfo(name = "creator_id")
     val creatorId: String,
-    @Json(name ="resource_patterns")
+    @Json(name = "resource_patterns")
     @ColumnInfo(name = "resource_patterns")
     val resourcePatterns: ArrayList<String>?,
-    @Json(name ="updated_at")
+    @Json(name = "updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String?
 ) : Parcelable, BotInterface {

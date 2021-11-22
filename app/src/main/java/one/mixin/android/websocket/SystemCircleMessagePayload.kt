@@ -9,9 +9,9 @@ data class SystemCircleMessagePayload(
     val action: String,
     @Json(name = "circle_id")
     val circleId: String,
-    @Json(name ="conversation_id")
+    @Json(name = "conversation_id")
     val conversationId: String?,
-    @Json(name ="user_id")
+    @Json(name = "user_id")
     val userId: String?
 )
 

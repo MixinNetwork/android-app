@@ -10,40 +10,40 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class Snapshot(
     @PrimaryKey
-    @Json(name ="snapshot_id")
+    @Json(name = "snapshot_id")
     @ColumnInfo(name = "snapshot_id")
     val snapshotId: String,
-    @Json(name ="type")
+    @Json(name = "type")
     @ColumnInfo(name = "type")
     val type: String,
-    @Json(name ="asset_id")
+    @Json(name = "asset_id")
     @ColumnInfo(name = "asset_id")
     val assetId: String,
-    @Json(name ="amount")
+    @Json(name = "amount")
     @ColumnInfo(name = "amount")
     val amount: String,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
-    @Json(name ="opponent_id")
+    @Json(name = "opponent_id")
     @ColumnInfo(name = "opponent_id")
     val opponentId: String?,
-    @Json(name ="trace_id")
+    @Json(name = "trace_id")
     @ColumnInfo(name = "trace_id")
     val traceId: String?,
-    @Json(name ="transaction_hash")
+    @Json(name = "transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String?,
-    @Json(name ="sender")
+    @Json(name = "sender")
     @ColumnInfo(name = "sender")
     val sender: String?,
-    @Json(name ="receiver")
+    @Json(name = "receiver")
     @ColumnInfo(name = "receiver")
     val receiver: String?,
-    @Json(name ="memo")
+    @Json(name = "memo")
     @ColumnInfo(name = "memo")
     val memo: String?,
-    @Json(name ="confirmations")
+    @Json(name = "confirmations")
     @ColumnInfo(name = "confirmations")
     val confirmations: Int?
 )

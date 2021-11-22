@@ -8,7 +8,7 @@ import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 data class PinMessagePayload(
     @Json(name = "action")
     val action: String,
-    @Json(name ="message_ids")
+    @Json(name = "message_ids")
     val messageIds: List<String>
 )
 

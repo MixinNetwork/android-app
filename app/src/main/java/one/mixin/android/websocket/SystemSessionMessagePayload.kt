@@ -11,7 +11,7 @@ data class SystemSessionMessagePayload(
     val userId: String,
     @Json(name = "session_id")
     val sessionId: String,
-    @Json(name ="public_key")
+    @Json(name = "public_key")
     val publicKey: String?
 )
 

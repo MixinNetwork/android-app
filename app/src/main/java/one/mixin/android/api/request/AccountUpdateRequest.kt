@@ -3,22 +3,22 @@ package one.mixin.android.api.request
 import com.squareup.moshi.Json
 
 data class AccountUpdateRequest(
-    @Json(name ="full_name")
+    @Json(name = "full_name")
     val fullName: String? = null,
-    @Json(name ="avatar_base64")
+    @Json(name = "avatar_base64")
     val avatarBase64: String? = null,
-    @Json(name ="receive_message_source")
+    @Json(name = "receive_message_source")
     val receiveMessageSource: String? = null,
-    @Json(name ="accept_conversation_source")
+    @Json(name = "accept_conversation_source")
     val acceptConversationSource: String? = null,
-    @Json(name ="accept_search_source")
+    @Json(name = "accept_search_source")
     val acceptSearchSource: String? = null,
-    @Json(name ="biography")
+    @Json(name = "biography")
     val biography: String? = null,
-    @Json(name ="fiat_currency")
+    @Json(name = "fiat_currency")
     val fiatCurrency: String? = null,
-    @Json(name ="transfer_notification_threshold")
+    @Json(name = "transfer_notification_threshold")
     val transferNotificationThreshold: Double? = null,
-    @Json(name ="transfer_confirmation_threshold")
+    @Json(name = "transfer_confirmation_threshold")
     val transferConfirmationThreshold: Double? = null
 )

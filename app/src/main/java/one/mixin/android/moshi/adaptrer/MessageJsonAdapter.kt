@@ -116,8 +116,9 @@ class MessageJsonAdapter(
         reader.beginObject()
         while (reader.hasNext()) {
             when (reader.selectName(options)) {
-                0 -> id =
-                    stringAdapter.fromJson(reader) ?: throw Util.unexpectedNull("id", "id", reader)
+                0 ->
+                    id =
+                        stringAdapter.fromJson(reader) ?: throw Util.unexpectedNull("id", "id", reader)
                 1 -> conversationId = stringAdapter.fromJson(reader) ?: throw Util.unexpectedNull(
                     "conversationId",
                     "conversation_id",
@@ -367,7 +368,7 @@ class MessageJsonAdapter(
         }
     }
 
-    override fun toJson(writer: JsonWriter, value_: Message?): Unit {
+    override fun toJson(writer: JsonWriter, value_: Message?) {
         if (value_ == null) {
             throw NullPointerException(
                 "value_ was null! Wrap in .nullSafe() to write nullable " +

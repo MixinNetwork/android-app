@@ -11,6 +11,6 @@ data class UserSession(
     val sessionId: String,
     @Json(name = "platform")
     val platform: String?,
-    @Json(name ="public_key")
+    @Json(name = "public_key")
     val publicKey: String?,
 )

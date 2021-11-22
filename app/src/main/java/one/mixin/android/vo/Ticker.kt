@@ -6,9 +6,9 @@ import java.math.BigDecimal
 
 @JsonClass(generateAdapter = true)
 data class Ticker(
-    @Json(name ="price_usd")
+    @Json(name = "price_usd")
     val priceUsd: String,
-    @Json(name ="price_btc")
+    @Json(name = "price_btc")
     val priceBtc: String,
 ) {
 

@@ -16,9 +16,9 @@ import kotlinx.parcelize.Parcelize
 data class AssetsExtra(
     @PrimaryKey
     @ColumnInfo(name = "asset_id")
-    @Json(name ="asset_id")
+    @Json(name = "asset_id")
     val assetId: String,
-    @Json(name ="hidden")
+    @Json(name = "hidden")
     @ColumnInfo(name = "hidden")
     var hidden: Boolean?
 ) : Parcelable

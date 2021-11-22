@@ -29,17 +29,17 @@ data class Address(
     @ColumnInfo(name = "label")
     val label: String,
     @ColumnInfo(name = "updated_at")
-    @Json(name ="updated_at")
+    @Json(name = "updated_at")
     val updatedAt: String,
     @ColumnInfo(name = "reserve")
     val reserve: String,
     @ColumnInfo(name = "fee")
     val fee: String,
     @ColumnInfo(name = "tag")
-    @Json(name ="tag")
+    @Json(name = "tag")
     val tag: String?,
     @ColumnInfo(name = "dust")
-    @Json(name ="dust")
+    @Json(name = "dust")
     val dust: String?
 ) : Parcelable
 

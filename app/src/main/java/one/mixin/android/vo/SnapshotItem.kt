@@ -16,52 +16,52 @@ import kotlinx.parcelize.Parcelize
 @JsonClass(generateAdapter = true)
 data class SnapshotItem(
     @PrimaryKey
-    @Json(name ="snapshot_id")
+    @Json(name = "snapshot_id")
     @ColumnInfo(name = "snapshot_id")
     val snapshotId: String,
-    @Json(name ="type")
+    @Json(name = "type")
     @ColumnInfo(name = "type")
     val type: String,
-    @Json(name ="asset_id")
+    @Json(name = "asset_id")
     @ColumnInfo(name = "asset_id")
     val assetId: String,
-    @Json(name ="amount")
+    @Json(name = "amount")
     @ColumnInfo(name = "amount")
     val amount: String,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
-    @Json(name ="opponent_id")
+    @Json(name = "opponent_id")
     @ColumnInfo(name = "opponent_id")
     val opponentId: String?,
-    @Json(name ="opponent_ful_name")
+    @Json(name = "opponent_ful_name")
     @ColumnInfo(name = "opponent_ful_name")
     val opponentFullName: String?,
-    @Json(name ="transaction_hash")
+    @Json(name = "transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String?,
-    @Json(name ="sender")
+    @Json(name = "sender")
     @ColumnInfo(name = "sender")
     val sender: String?,
-    @Json(name ="receiver")
+    @Json(name = "receiver")
     @ColumnInfo(name = "receiver")
     val receiver: String?,
-    @Json(name ="memo")
+    @Json(name = "memo")
     @ColumnInfo(name = "memo")
     val memo: String?,
-    @Json(name ="asset_symbol")
+    @Json(name = "asset_symbol")
     @ColumnInfo(name = "asset_symbol")
     val assetSymbol: String?,
-    @Json(name ="confirmations")
+    @Json(name = "confirmations")
     @ColumnInfo(name = "confirmations")
     val confirmations: Int?,
-    @Json(name ="avatar_url")
+    @Json(name = "avatar_url")
     @ColumnInfo(name = "avatar_url")
     val avatarUrl: String?,
-    @Json(name ="asset_confirmations")
+    @Json(name = "asset_confirmations")
     @ColumnInfo(name = "asset_confirmations")
     val assetConfirmations: Int,
-    @Json(name ="trace_id")
+    @Json(name = "trace_id")
     @ColumnInfo(name = "trace_id")
     val traceId: String?,
 ) : Parcelable {

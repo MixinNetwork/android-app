@@ -10,13 +10,13 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class Circle(
     @PrimaryKey
-    @Json(name ="circle_id")
+    @Json(name = "circle_id")
     @ColumnInfo(name = "circle_id")
     val circleId: String,
-    @Json(name ="name")
+    @Json(name = "name")
     @ColumnInfo(name = "name")
     val name: String,
-    @Json(name ="created_at")
+    @Json(name = "created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
     // todo @Expose
