@@ -38,7 +38,7 @@ class IceCandidateJsonAdapter(
         var sdpMLineIndex: Int? = null
         var sdp: String? = null
         var serverUrl: String? = null
-        var adapterType: PeerConnection.AdapterType
+        var adapterType: PeerConnection.AdapterType = PeerConnection.AdapterType.UNKNOWN
         reader.beginObject()
         while (reader.hasNext()) {
             when (reader.selectName(options)) {
@@ -87,14 +87,21 @@ class IceCandidateJsonAdapter(
         }
         reader.endObject()
 
-        // Todo adapterType field
-        return IceCandidate(
+        val clazz = IceCandidate::class.java
+        val constructor = clazz.getConstructor(
+            String::class.java,
+            Int::class.java,
+            String::class.java,
+            String::class.java,
+            PeerConnection.AdapterType::class.java
+        )
+        return constructor.newInstance(
             sdpMid ?: throw Util.missingProperty("sdpMid", "sdpMid", reader),
             sdpMLineIndex ?: throw Util.missingProperty(
                 "sdpMLineIndex",
                 "sdpMLineIndex", reader
             ),
-            sdp ?: throw Util.missingProperty("sdp", "sdp", reader)
+            sdp ?: throw Util.missingProperty("sdp", "sdp", reader), serverUrl, adapterType
         )
     }
 
