@@ -1,12 +1,14 @@
 package one.mixin.android.api.response
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class VerificationResponse(
     val type: String,
     val id: String,
-    @SerializedName("has_emergency_contact")
+    @Json(name ="has_emergency_contact")
     val hasEmergencyContact: Boolean = false,
-    @SerializedName("contact_id")
+    @Json(name ="contact_id")
     val contactId: String? = null
 )

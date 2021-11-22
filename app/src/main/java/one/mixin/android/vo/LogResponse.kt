@@ -1,14 +1,16 @@
 package one.mixin.android.vo
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class LogResponse(
     val type: String,
-    @SerializedName("log_id")
+    @Json(name ="log_id")
     val logId: String,
     val code: String,
-    @SerializedName("ip_address")
+    @Json(name ="ip_address")
     val ipAddress: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     val createdAt: String
 )

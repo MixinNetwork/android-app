@@ -3,7 +3,8 @@ package one.mixin.android.api.response
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Parcelable
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
 import one.mixin.android.session.Session
@@ -14,17 +15,18 @@ import one.mixin.android.vo.Scope.Companion.SCOPES
 
 @SuppressLint("ParcelCreator")
 @Parcelize
+@JsonClass(generateAdapter = true)
 class AuthorizationResponse(
-    @SerializedName("authorization_id")
+    @Json(name ="authorization_id")
     val authorizationId: String,
     val authorization_code: String,
     val scopes: List<String>,
-    @SerializedName("code_id")
+    @Json(name ="code_id")
     val codeId: String,
     val app: App,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     val createAt: String,
-    @SerializedName("accessed_at")
+    @Json(name ="accessed_at")
     val accessedAt: String
 ) : Parcelable
 

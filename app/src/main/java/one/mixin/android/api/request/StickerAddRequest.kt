@@ -1,10 +1,12 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class StickerAddRequest(
-    @SerializedName("data_base64")
+    @Json(name ="data_base64")
     val dataBase64: String? = null,
-    @SerializedName("sticker_id")
+    @Json(name ="sticker_id")
     val stickerId: String? = null
 )

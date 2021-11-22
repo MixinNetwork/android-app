@@ -3,33 +3,35 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 @Entity(tableName = "stickers")
+@JsonClass(generateAdapter = true)
 data class Sticker(
     @PrimaryKey
-    @SerializedName("sticker_id")
+    @Json(name ="sticker_id")
     @ColumnInfo(name = "sticker_id")
     val stickerId: String,
-    @SerializedName("album_id")
+    @Json(name ="album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String?,
-    @SerializedName("name")
+    @Json(name ="name")
     @ColumnInfo(name = "name")
     val name: String,
-    @SerializedName("asset_url")
+    @Json(name ="asset_url")
     @ColumnInfo(name = "asset_url")
     val assetUrl: String,
-    @SerializedName("asset_type")
+    @Json(name ="asset_type")
     @ColumnInfo(name = "asset_type")
     val assetType: String,
-    @SerializedName("asset_width")
+    @Json(name ="asset_width")
     @ColumnInfo(name = "asset_width")
     val assetWidth: Int,
-    @SerializedName("asset_height")
+    @Json(name ="asset_height")
     @ColumnInfo(name = "asset_height")
     val assetHeight: Int,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     @ColumnInfo(name = "created_at")
     var createdAt: String,
     @ColumnInfo(name = "last_use_at")

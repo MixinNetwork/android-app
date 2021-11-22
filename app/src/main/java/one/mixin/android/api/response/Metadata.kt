@@ -1,16 +1,18 @@
 package one.mixin.android.api.response
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class Metadata(
-    @SerializedName("group")
+    @Json(name ="group")
     val groupName: String,
-    @SerializedName("name")
+    @Json(name ="name")
     val tokenName: String,
     val description: String,
-    @SerializedName("icon_url")
+    @Json(name ="icon_url")
     val iconUrl: String,
-    @SerializedName("media_url")
+    @Json(name ="media_url")
     val mediaUrl: String,
     val mime: String,
     val hash: String,

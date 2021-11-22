@@ -1,8 +1,10 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class DeauthorRequest(
-    @SerializedName("client_id")
+    @Json(name ="client_id")
     val clientId: String
 )

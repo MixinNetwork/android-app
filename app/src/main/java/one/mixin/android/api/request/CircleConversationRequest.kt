@@ -1,17 +1,19 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 data class CircleConversationPayload(
     val conversationId: String,
     val userId: String? = null
 )
 
+@JsonClass(generateAdapter = true)
 data class CircleConversationRequest(
-    @SerializedName("conversation_id")
+    @Json(name = "conversation_id")
     val conversationId: String,
-    @SerializedName("user_id")
+    @Json(name = "user_id")
     val userId: String? = null,
-    @SerializedName("action")
+    @Json(name = "action")
     val action: String
 )

@@ -13,14 +13,13 @@ import android.net.Uri
 import android.text.Editable
 import androidx.core.net.toUri
 import com.google.android.exoplayer2.util.Util
+import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.google.gson.JsonElement
-import com.google.gson.reflect.TypeToken
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.ByteMatrix
 import com.google.zxing.qrcode.encoder.Encoder
-import okhttp3.internal.and
 import okio.Buffer
 import okio.ByteString
 import okio.GzipSink

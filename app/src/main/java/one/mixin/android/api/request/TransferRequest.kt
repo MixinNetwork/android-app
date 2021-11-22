@@ -1,20 +1,22 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class TransferRequest(
-    @SerializedName("asset_id")
+    @Json(name ="asset_id")
     val assertId: String,
-    @SerializedName("opponent_id")
+    @Json(name ="opponent_id")
     val opponentId: String?,
-    @SerializedName("amount")
+    @Json(name ="amount")
     val amount: String,
-    @SerializedName("pin")
+    @Json(name ="pin")
     val pin: String?,
-    @SerializedName("trace_id")
+    @Json(name ="trace_id")
     val traceId: String? = null,
-    @SerializedName("memo")
+    @Json(name ="memo")
     val memo: String? = null,
-    @SerializedName("address_id")
+    @Json(name ="address_id")
     val addressId: String? = null
 )

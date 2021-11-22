@@ -1,18 +1,20 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.api.response.Metadata
 
+@JsonClass(generateAdapter = true)
 data class NonFungibleToken(
     val type: String,
-    @SerializedName("token_id")
+    @Json(name = "token_id")
     val tokenId: String,
-    @SerializedName("group")
+    @Json(name = "group")
     val groupKey: String,
-    @SerializedName("token")
+    @Json(name = "token")
     val tokenKey: String,
-    @SerializedName("meta")
+    @Json(name = "meta")
     val metadata: Metadata,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     val createdAt: String
 )

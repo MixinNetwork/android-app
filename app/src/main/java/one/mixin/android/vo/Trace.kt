@@ -4,35 +4,37 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 @Entity(tableName = "traces")
+@JsonClass(generateAdapter = true)
 data class Trace(
     @PrimaryKey
-    @SerializedName("trace_id")
+    @Json(name ="trace_id")
     @ColumnInfo(name = "trace_id")
     val traceId: String,
-    @SerializedName("asset_id")
+    @Json(name ="asset_id")
     @ColumnInfo(name = "asset_id")
     val assetId: String,
-    @SerializedName("amount")
+    @Json(name ="amount")
     @ColumnInfo(name = "amount")
     val amount: String,
-    @SerializedName("opponent_id")
+    @Json(name ="opponent_id")
     @ColumnInfo(name = "opponent_id")
     val opponentId: String?,
     @ColumnInfo(name = "destination")
-    @SerializedName("destination")
+    @Json(name ="destination")
     val destination: String?,
     @ColumnInfo(name = "tag")
-    @SerializedName("tag")
+    @Json(name ="tag")
     val tag: String?,
-    @SerializedName("snapshot_id")
+    @Json(name ="snapshot_id")
     @ColumnInfo(name = "snapshot_id")
     var snapshotId: String?,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String
 ) : Parcelable

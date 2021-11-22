@@ -6,60 +6,62 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
 @Entity
+@JsonClass(generateAdapter = true)
 data class SnapshotItem(
     @PrimaryKey
-    @SerializedName("snapshot_id")
+    @Json(name ="snapshot_id")
     @ColumnInfo(name = "snapshot_id")
     val snapshotId: String,
-    @SerializedName("type")
+    @Json(name ="type")
     @ColumnInfo(name = "type")
     val type: String,
-    @SerializedName("asset_id")
+    @Json(name ="asset_id")
     @ColumnInfo(name = "asset_id")
     val assetId: String,
-    @SerializedName("amount")
+    @Json(name ="amount")
     @ColumnInfo(name = "amount")
     val amount: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
-    @SerializedName("opponent_id")
+    @Json(name ="opponent_id")
     @ColumnInfo(name = "opponent_id")
     val opponentId: String?,
-    @SerializedName("opponent_ful_name")
+    @Json(name ="opponent_ful_name")
     @ColumnInfo(name = "opponent_ful_name")
     val opponentFullName: String?,
-    @SerializedName("transaction_hash")
+    @Json(name ="transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String?,
-    @SerializedName("sender")
+    @Json(name ="sender")
     @ColumnInfo(name = "sender")
     val sender: String?,
-    @SerializedName("receiver")
+    @Json(name ="receiver")
     @ColumnInfo(name = "receiver")
     val receiver: String?,
-    @SerializedName("memo")
+    @Json(name ="memo")
     @ColumnInfo(name = "memo")
     val memo: String?,
-    @SerializedName("asset_symbol")
+    @Json(name ="asset_symbol")
     @ColumnInfo(name = "asset_symbol")
     val assetSymbol: String?,
-    @SerializedName("confirmations")
+    @Json(name ="confirmations")
     @ColumnInfo(name = "confirmations")
     val confirmations: Int?,
-    @SerializedName("avatar_url")
+    @Json(name ="avatar_url")
     @ColumnInfo(name = "avatar_url")
     val avatarUrl: String?,
-    @SerializedName("asset_confirmations")
+    @Json(name ="asset_confirmations")
     @ColumnInfo(name = "asset_confirmations")
     val assetConfirmations: Int,
-    @SerializedName("trace_id")
+    @Json(name ="trace_id")
     @ColumnInfo(name = "trace_id")
     val traceId: String?,
 ) : Parcelable {

@@ -1,15 +1,17 @@
 package one.mixin.android.websocket
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 
+@JsonClass(generateAdapter = true)
 data class VideoMessagePayload(
     val url: String,
-    @SerializedName("message_id")
+    @Json(name = "message_id")
     val messageId: String? = null,
-    @SerializedName("created_at")
+    @Json(name = "created_at")
     val createdAt: String? = null,
-    @SerializedName("attachment_extra")
+    @Json(name = "attachment_extra")
     val attachmentExtra: String? = null,
 )
 

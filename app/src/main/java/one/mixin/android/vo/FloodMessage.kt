@@ -3,18 +3,20 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 @Entity(tableName = "flood_messages")
+@JsonClass(generateAdapter = true)
 data class FloodMessage(
     @PrimaryKey
-    @SerializedName("message_id")
+    @Json(name = "message_id")
     @ColumnInfo(name = "message_id")
     val messageId: String,
-    @SerializedName("data")
+    @Json(name ="data")
     @ColumnInfo(name = "data")
     val data: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String
 )

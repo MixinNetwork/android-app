@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
+import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import one.mixin.android.Constants.Account.PREF_FIAT_MAP
 import one.mixin.android.MixinApplication
 import one.mixin.android.R

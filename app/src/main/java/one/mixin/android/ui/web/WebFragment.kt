@@ -51,7 +51,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -92,6 +93,7 @@ import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -1280,7 +1282,7 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getContext(): String? = Gson().toJson(
+        fun getContext(): String? = getTypeAdapter<MixinContext>(MixinContext::class.java).toJson(
             MixinContext(
                 conversationId,
                 immersive,
@@ -1308,20 +1310,21 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    @JsonClass(generateAdapter = true)
     class MixinContext(
-        @SerializedName("conversation_id")
+        @Json(name ="conversation_id")
         val conversationId: String?,
-        @SerializedName("immersive")
+        @Json(name ="immersive")
         val immersive: Boolean,
-        @SerializedName("app_version")
+        @Json(name ="app_version")
         val appVersion: String = BuildConfig.VERSION_NAME,
-        @SerializedName("appearance")
+        @Json(name ="appearance")
         val appearance: String,
-        @SerializedName("platform")
+        @Json(name ="platform")
         val platform: String = "Android",
-        @SerializedName("currency")
+        @Json(name ="currency")
         val currency: String = Session.getFiatCurrency(),
-        @SerializedName("locale")
+        @Json(name ="locale")
         val locale: String = "${Lingver.getInstance().getLocale().language}-${
         Lingver.getInstance().getLocale().country
         }"

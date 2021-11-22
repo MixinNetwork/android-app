@@ -1,12 +1,14 @@
 package one.mixin.android.vo
 
 import android.os.Parcelable
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
+@JsonClass(generateAdapter = true)
 data class TranscriptData(
     val chatUri: String,
-    @SerializedName("document_uris")
+    @Json(name ="document_uris")
     val documentUris: List<String>
 ) : Parcelable

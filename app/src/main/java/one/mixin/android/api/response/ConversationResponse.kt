@@ -1,32 +1,34 @@
 package one.mixin.android.api.response
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.vo.CircleConversation
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 open class ConversationResponse(
-    @SerializedName("conversation_id")
+    @Json(name ="conversation_id")
     val conversationId: String,
-    @SerializedName("name")
+    @Json(name ="name")
     val name: String,
-    @SerializedName("category")
+    @Json(name ="category")
     val category: String,
-    @SerializedName("creator_id")
+    @Json(name ="creator_id")
     val creatorId: String,
-    @SerializedName("icon_url")
+    @Json(name ="icon_url")
     val iconUrl: String,
-    @SerializedName("code_url")
+    @Json(name ="code_url")
     val codeUrl: String,
-    @SerializedName("announcement")
+    @Json(name ="announcement")
     val announcement: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     val createdAt: String,
-    @SerializedName("participants")
+    @Json(name ="participants")
     val participants: List<ParticipantRequest>,
-    @SerializedName("participant_sessions")
+    @Json(name ="participant_sessions")
     val participantSessions: List<UserSession>?,
-    @SerializedName("circles")
+    @Json(name ="circles")
     val circles: List<CircleConversation>?,
-    @SerializedName("mute_until")
+    @Json(name ="mute_until")
     val muteUntil: String
 )

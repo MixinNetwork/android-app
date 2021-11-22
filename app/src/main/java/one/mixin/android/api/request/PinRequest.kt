@@ -1,10 +1,12 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class PinRequest(
-    @SerializedName("pin")
+    @Json(name ="pin")
     val pin: String,
-    @SerializedName("old_pin")
+    @Json(name ="old_pin")
     val oldPin: String? = null
 )

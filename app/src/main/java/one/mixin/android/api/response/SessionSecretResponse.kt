@@ -1,8 +1,10 @@
 package one.mixin.android.api.response
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class SessionSecretResponse(
-    @SerializedName("pin_token")
+    @Json(name ="pin_token")
     val pinToken: String
 )

@@ -1,12 +1,13 @@
 package one.mixin.android.vo
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import org.webrtc.SessionDescription
 
-data class KrakenData(val jsep: String, @SerializedName("track_id") val trackId: String) {
+@JsonClass(generateAdapter = true)
+data class KrakenData(val jsep: String, @Json(name ="track_id") val trackId: String) {
 
     fun getSessionDescription(): SessionDescription {
         val jsep = jsep.decodeBase64()

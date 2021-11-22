@@ -4,7 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
@@ -17,36 +18,37 @@ import java.util.UUID
         Index(value = arrayOf("action")),
     ]
 )
+@JsonClass(generateAdapter = true)
 data class Job(
     @PrimaryKey
-    @SerializedName("job_id")
+    @Json(name ="job_id")
     @ColumnInfo(name = "job_id")
     var jobId: String,
-    @SerializedName("action")
+    @Json(name ="action")
     @ColumnInfo(name = "action")
     var action: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     @ColumnInfo(name = "created_at")
     var created_at: String,
-    @SerializedName("order_id")
+    @Json(name ="order_id")
     @ColumnInfo(name = "order_id")
     var orderId: Int?,
-    @SerializedName("priority")
+    @Json(name ="priority")
     @ColumnInfo(name = "priority")
     var priority: Int,
-    @SerializedName("user_id")
+    @Json(name ="user_id")
     @ColumnInfo(name = "user_id")
     var userId: String?,
-    @SerializedName("blaze_message")
+    @Json(name ="blaze_message")
     @ColumnInfo(name = "blaze_message")
     var blazeMessage: String?,
-    @SerializedName("conversation_id")
+    @Json(name ="conversation_id")
     @ColumnInfo(name = "conversation_id")
     var conversationId: String?,
-    @SerializedName("resend_message_id")
+    @Json(name ="resend_message_id")
     @ColumnInfo(name = "resend_message_id")
     var resendMessageId: String?,
-    @SerializedName("run_count")
+    @Json(name ="run_count")
     @ColumnInfo(name = "run_count")
     var runCount: Int = 0
 )

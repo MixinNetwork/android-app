@@ -5,53 +5,55 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
 @Entity(tableName = "assets")
+@JsonClass(generateAdapter = true)
 data class Asset(
     @PrimaryKey
     @ColumnInfo(name = "asset_id")
-    @SerializedName("asset_id")
+    @Json(name = "asset_id")
     val assetId: String,
     @ColumnInfo(name = "symbol")
     val symbol: String,
     @ColumnInfo(name = "name")
     val name: String,
     @ColumnInfo(name = "icon_url")
-    @SerializedName("icon_url")
+    @Json(name = "icon_url")
     val iconUrl: String,
     @ColumnInfo(name = "balance")
     val balance: String,
-    @SerializedName("destination")
+    @Json(name = "destination")
     @ColumnInfo(name = "destination")
     val destination: String,
-    @SerializedName("tag")
+    @Json(name = "tag")
     @ColumnInfo(name = "tag")
     val tag: String?,
-    @SerializedName("price_btc")
+    @Json(name = "price_btc")
     @ColumnInfo(name = "price_btc")
     val priceBtc: String,
-    @SerializedName("price_usd")
+    @Json(name = "price_usd")
     @ColumnInfo(name = "price_usd")
     val priceUsd: String,
-    @SerializedName("chain_id")
+    @Json(name = "chain_id")
     @ColumnInfo(name = "chain_id")
     val chainId: String,
-    @SerializedName("change_usd")
+    @Json(name = "change_usd")
     @ColumnInfo(name = "change_usd")
     val changeUsd: String,
-    @SerializedName("change_btc")
+    @Json(name = "change_btc")
     @ColumnInfo(name = "change_btc")
     val changeBtc: String,
     @ColumnInfo(name = "confirmations")
     val confirmations: Int,
-    @SerializedName("asset_key")
+    @Json(name = "asset_key")
     @ColumnInfo(name = "asset_key")
     val assetKey: String?,
-    @SerializedName("reserve")
+    @Json(name ="reserve")
     @ColumnInfo(name = "reserve")
     val reserve: String?
 ) : Parcelable

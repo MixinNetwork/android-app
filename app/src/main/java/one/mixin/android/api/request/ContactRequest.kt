@@ -1,14 +1,16 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
 import com.google.i18n.phonenumbers.PhoneNumberUtil
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import ir.mirrajabi.rxcontacts.Contact
 import one.mixin.android.util.isValidNumber
 import java.util.Locale
 
+@JsonClass(generateAdapter = true)
 data class ContactRequest(
     val phone: String,
-    @SerializedName("full_name")
+    @Json(name ="full_name")
     val fullName: String
 )
 

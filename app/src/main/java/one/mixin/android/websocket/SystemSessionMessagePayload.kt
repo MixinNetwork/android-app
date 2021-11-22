@@ -1,17 +1,17 @@
 package one.mixin.android.websocket
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class SystemSessionMessagePayload(
-    @SerializedName("action")
+    @Json(name = "action")
     val action: String,
-    @SerializedName("user_id")
+    @Json(name = "user_id")
     val userId: String,
-    @SerializedName("session_id")
+    @Json(name = "session_id")
     val sessionId: String,
-    @SerializedName("public_key")
+    @Json(name ="public_key")
     val publicKey: String?
 )
 

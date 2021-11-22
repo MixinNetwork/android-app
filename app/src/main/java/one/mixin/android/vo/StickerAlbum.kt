@@ -3,27 +3,29 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 @Entity(tableName = "sticker_albums")
+@JsonClass(generateAdapter = true)
 data class StickerAlbum(
     @PrimaryKey
-    @SerializedName("album_id")
+    @Json(name ="album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String,
-    @SerializedName("name")
+    @Json(name ="name")
     @ColumnInfo(name = "name")
     val name: String,
-    @SerializedName("icon_url")
+    @Json(name ="icon_url")
     @ColumnInfo(name = "icon_url")
     val iconUrl: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
-    @SerializedName("update_at")
+    @Json(name ="update_at")
     @ColumnInfo(name = "update_at")
     val updateAt: String,
-    @SerializedName("user_id")
+    @Json(name ="user_id")
     @ColumnInfo(name = "user_id")
     val userId: String,
     @ColumnInfo(name = "category")

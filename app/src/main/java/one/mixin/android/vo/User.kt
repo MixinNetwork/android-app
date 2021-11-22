@@ -10,7 +10,8 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
@@ -22,51 +23,52 @@ import kotlinx.parcelize.Parcelize
         Index(value = arrayOf("relationship", "full_name")),
     ]
 )
+@JsonClass(generateAdapter = true)
 data class User(
     @PrimaryKey
-    @SerializedName("user_id")
+    @Json(name ="user_id")
     @ColumnInfo(name = "user_id")
     val userId: String,
-    @SerializedName("identity_number")
+    @Json(name ="identity_number")
     @ColumnInfo(name = "identity_number")
     val identityNumber: String,
     /**
      * @see UserRelationship
      */
-    @SerializedName("relationship")
+    @Json(name ="relationship")
     @ColumnInfo(name = "relationship")
     var relationship: String,
-    @SerializedName("biography")
+    @Json(name ="biography")
     @ColumnInfo(name = "biography")
     val biography: String,
-    @SerializedName("full_name")
+    @Json(name ="full_name")
     @ColumnInfo(name = "full_name")
     val fullName: String?,
-    @SerializedName("avatar_url")
+    @Json(name ="avatar_url")
     @ColumnInfo(name = "avatar_url")
     val avatarUrl: String?,
     @ColumnInfo(name = "phone")
     val phone: String?,
-    @SerializedName("is_verified")
+    @Json(name ="is_verified")
     @ColumnInfo(name = "is_verified")
     val isVerified: Boolean?,
-    @SerializedName("create_at")
+    @Json(name ="create_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String?,
-    @SerializedName("mute_until")
+    @Json(name ="mute_until")
     @ColumnInfo(name = "mute_until")
     var muteUntil: String?,
-    @SerializedName("has_pin")
+    @Json(name ="has_pin")
     @ColumnInfo(name = "has_pin")
     val hasPin: Boolean? = null,
-    @SerializedName("app_id")
+    @Json(name ="app_id")
     @ColumnInfo(name = "app_id")
     var appId: String? = null,
-    @SerializedName("is_scam")
+    @Json(name ="is_scam")
     @ColumnInfo(name = "is_scam")
     var isScam: Boolean? = null
 ) : Parcelable {
-    @SerializedName("app")
+    @Json(name ="app")
     @Ignore
     @IgnoredOnParcel
     var app: App? = null

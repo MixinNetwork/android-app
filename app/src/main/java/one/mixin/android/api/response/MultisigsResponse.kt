@@ -1,31 +1,33 @@
 package one.mixin.android.api.response
 
 import android.os.Parcelable
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
+@JsonClass(generateAdapter = true)
 class MultisigsResponse(
     val type: String,
-    @SerializedName("code_id")
+    @Json(name = "code_id")
     val codeId: String,
-    @SerializedName("request_id")
+    @Json(name = "request_id")
     val requestId: String,
     val action: String,
-    @SerializedName("user_id")
+    @Json(name = "user_id")
     val userId: String,
-    @SerializedName("asset_id")
+    @Json(name = "asset_id")
     val assetId: String,
     val amount: String,
     val senders: Array<String>,
     val receivers: Array<String>,
     val threshold: Int,
     val state: String,
-    @SerializedName("transaction_hash")
+    @Json(name = "transaction_hash")
     val transactionHash: String,
-    @SerializedName("raw_transaction")
+    @Json(name ="raw_transaction")
     val rawTransaction: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     val createdAt: String,
     val memo: String?
 ) : Parcelable

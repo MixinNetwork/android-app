@@ -1,6 +1,7 @@
 package one.mixin.android.api
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.getDeviceId
 import org.whispersystems.libsignal.IdentityKey
@@ -10,18 +11,19 @@ import org.whispersystems.libsignal.ecc.ECPublicKey
 import org.whispersystems.libsignal.state.PreKeyBundle
 import java.io.IOException
 
+@JsonClass(generateAdapter = true)
 data class SignalKey(
-    @SerializedName("identity_key")
+    @Json(name = "identity_key")
     var identityKey: String,
-    @SerializedName("signed_pre_key")
+    @Json(name = "signed_pre_key")
     var signedPreKey: SignedPreKey,
-    @SerializedName("one_time_pre_key")
+    @Json(name = "one_time_pre_key")
     var preKey: OneTimePreKey,
-    @SerializedName("registration_id")
+    @Json(name = "registration_id")
     var registrationId: Int,
-    @SerializedName("user_id")
+    @Json(name="user_id")
     val userId: String?,
-    @SerializedName("session_id")
+    @Json(name="session_id")
     val sessionId: String?
 ) {
     fun getPreKeyPublic(): ECPublicKey? {

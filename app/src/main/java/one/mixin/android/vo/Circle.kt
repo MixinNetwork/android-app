@@ -3,22 +3,23 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
 @Entity(tableName = "circles")
+@JsonClass(generateAdapter = true)
 data class Circle(
     @PrimaryKey
-    @SerializedName("circle_id")
+    @Json(name ="circle_id")
     @ColumnInfo(name = "circle_id")
     val circleId: String,
-    @SerializedName("name")
+    @Json(name ="name")
     @ColumnInfo(name = "name")
     val name: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
-    @Expose
+    // todo @Expose
     @ColumnInfo(name = "ordered_at")
     val orderedAt: String?
 )

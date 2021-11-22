@@ -1,20 +1,22 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class ConversationRequest(
-    @SerializedName("conversation_id")
+    @Json(name ="conversation_id")
     val conversationId: String,
-    @SerializedName("category")
+    @Json(name ="category")
     val category: String? = null,
-    @SerializedName("name")
+    @Json(name ="name")
     val name: String? = null,
-    @SerializedName("icon_base64")
+    @Json(name ="icon_base64")
     val iconBase64: String? = null,
-    @SerializedName("announcement")
+    @Json(name ="announcement")
     val announcement: String? = null,
-    @SerializedName("participants")
+    @Json(name ="participants")
     val participants: List<ParticipantRequest>? = null,
-    @SerializedName("duration")
+    @Json(name ="duration")
     val duration: Long? = null
 )

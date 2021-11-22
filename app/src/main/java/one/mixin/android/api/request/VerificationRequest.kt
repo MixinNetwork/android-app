@@ -1,14 +1,16 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.BuildConfig
 
+@JsonClass(generateAdapter = true)
 data class VerificationRequest(
     val phone: String?,
     val purpose: String,
-    @SerializedName("g_recaptcha_response")
+    @Json(name ="g_recaptcha_response")
     var gRecaptchaResponse: String? = null,
-    @SerializedName("hcaptcha_response")
+    @Json(name ="hcaptcha_response")
     var hCaptchaResponse: String? = null,
     val package_name: String = BuildConfig.APPLICATION_ID
 )

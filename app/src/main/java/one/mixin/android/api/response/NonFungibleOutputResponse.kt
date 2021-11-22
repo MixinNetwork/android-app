@@ -1,42 +1,44 @@
 package one.mixin.android.api.response
 
 import android.os.Parcelable
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
+@JsonClass(generateAdapter = true)
 class NonFungibleOutputResponse(
     val type: String,
-    @SerializedName("request_id")
+    @Json(name ="request_id")
     val requestId: String,
     val action: String,
-    @SerializedName("user_id")
+    @Json(name ="user_id")
     val userId: String,
-    @SerializedName("token_id")
+    @Json(name ="token_id")
     val tokenId: String,
     val amount: String,
-    @SerializedName("transaction_hash")
+    @Json(name ="transaction_hash")
     val transactionHash: String,
-    @SerializedName("raw_transaction")
+    @Json(name ="raw_transaction")
     val rawTransaction: String,
-    @SerializedName("output_id")
+    @Json(name ="output_id")
     val outputId: String,
-    @SerializedName("output_index")
+    @Json(name ="output_index")
     val outputIndex: Int,
-    @SerializedName("senders_threshold")
+    @Json(name ="senders_threshold")
     val sendersThreshold: Int,
     val senders: Array<String>,
-    @SerializedName("receivers_threshold")
+    @Json(name ="receivers_threshold")
     val receiversThreshold: Int,
     val receivers: Array<String>,
     val memo: String,
     val state: String,
-    @SerializedName("created_at")
+    @Json(name ="created_at")
     val createdAt: String,
-    @SerializedName("updated_at")
+    @Json(name ="updated_at")
     val updatedAt: String,
-    @SerializedName("signed_by")
+    @Json(name ="signed_by")
     val signedBy: String,
-    @SerializedName("signed_tx")
+    @Json(name ="signed_tx")
     val signedTx: String,
 ) : Parcelable

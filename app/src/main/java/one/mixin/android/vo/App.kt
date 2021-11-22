@@ -7,7 +7,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import com.google.gson.annotations.SerializedName
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
@@ -24,57 +23,44 @@ interface BotInterface {
 @JsonClass(generateAdapter = true)
 data class App(
     @PrimaryKey
-    @SerializedName("app_id")
+    @Json(name ="app_id")
     @ColumnInfo(name = "app_id")
-    @Json(name = "app_id")
     val appId: String,
-    @SerializedName("app_number")
+    @Json(name ="app_number")
     @ColumnInfo(name = "app_number")
-    @Json(name = "app_number")
     val appNumber: String,
-    @SerializedName("home_uri")
+    @Json(name ="home_uri")
     @ColumnInfo(name = "home_uri")
-    @Json(name = "home_uri")
     val homeUri: String,
-    @SerializedName("redirect_uri")
+    @Json(name ="redirect_uri")
     @ColumnInfo(name = "redirect_uri")
-    @Json(name = "redirect_uri")
     val redirectUri: String,
-    @SerializedName("name")
+    @Json(name ="name")
     @ColumnInfo(name = "name")
-    @Json(name = "name")
     val name: String,
-    @SerializedName("icon_url")
+    @Json(name ="icon_url")
     @ColumnInfo(name = "icon_url")
-    @Json(name = "icon_url")
     val iconUrl: String,
-    @SerializedName("category")
+    @Json(name ="category")
     @ColumnInfo(name = "category")
-    @Json(name = "category")
     val category: String?,
-    @SerializedName("description")
+    @Json(name ="description")
     @ColumnInfo(name = "description")
-    @Json(name = "description")
     val description: String,
-    @SerializedName("app_secret")
+    @Json(name ="app_secret")
     @ColumnInfo(name = "app_secret")
-    @Json(name = "app_secret")
     val appSecret: String,
-    @SerializedName("capabilities")
+    @Json(name ="capabilities")
     @ColumnInfo(name = "capabilities")
-    @Json(name = "capabilities")
     val capabilities: ArrayList<String>?,
-    @SerializedName("creator_id")
+    @Json(name ="creator_id")
     @ColumnInfo(name = "creator_id")
-    @Json(name = "creator_id")
     val creatorId: String,
-    @SerializedName("resource_patterns")
+    @Json(name ="resource_patterns")
     @ColumnInfo(name = "resource_patterns")
-    @Json(name = "resource_patterns")
     val resourcePatterns: ArrayList<String>?,
-    @SerializedName("updated_at")
+    @Json(name ="updated_at")
     @ColumnInfo(name = "updated_at")
-    @Json(name = "updated_at")
     val updatedAt: String?
 ) : Parcelable, BotInterface {
 

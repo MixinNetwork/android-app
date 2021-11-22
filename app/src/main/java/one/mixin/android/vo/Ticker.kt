@@ -1,12 +1,14 @@
 package one.mixin.android.vo
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import java.math.BigDecimal
 
+@JsonClass(generateAdapter = true)
 data class Ticker(
-    @SerializedName("price_usd")
+    @Json(name ="price_usd")
     val priceUsd: String,
-    @SerializedName("price_btc")
+    @Json(name ="price_btc")
     val priceBtc: String,
 ) {
 

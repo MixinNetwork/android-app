@@ -5,39 +5,41 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
 @Entity(tableName = "addresses")
+@JsonClass(generateAdapter = true)
 data class Address(
     @PrimaryKey
     @ColumnInfo(name = "address_id")
-    @SerializedName("address_id")
+    @Json(name = "address_id")
     val addressId: String,
     @ColumnInfo(name = "type")
     val type: String,
     @ColumnInfo(name = "asset_id")
-    @SerializedName("asset_id")
+    @Json(name = "asset_id")
     val assetId: String,
     @ColumnInfo(name = "destination")
-    @SerializedName("destination")
+    @Json(name = "destination")
     val destination: String,
     @ColumnInfo(name = "label")
     val label: String,
     @ColumnInfo(name = "updated_at")
-    @SerializedName("updated_at")
+    @Json(name ="updated_at")
     val updatedAt: String,
     @ColumnInfo(name = "reserve")
     val reserve: String,
     @ColumnInfo(name = "fee")
     val fee: String,
     @ColumnInfo(name = "tag")
-    @SerializedName("tag")
+    @Json(name ="tag")
     val tag: String?,
     @ColumnInfo(name = "dust")
-    @SerializedName("dust")
+    @Json(name ="dust")
     val dust: String?
 ) : Parcelable
 
