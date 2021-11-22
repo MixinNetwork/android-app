@@ -7,7 +7,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.internal.Util
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
-import timber.log.Timber
 import java.lang.reflect.InvocationTargetException
 
 class IceCandidateJsonAdapter(
@@ -58,8 +57,8 @@ class IceCandidateJsonAdapter(
                     "sdp",
                     reader
                 )
-                4 -> serverUrl = nullableStringAdapter.fromJson(reader)
-                5 -> {
+                3 -> serverUrl = nullableStringAdapter.fromJson(reader)
+                4 -> {
                     val type = stringAdapter.fromJson(reader) ?: throw Util.unexpectedNull(
                         "adapterType",
                         "adapterType",
@@ -127,13 +126,14 @@ class IceCandidateJsonAdapter(
         serverUrl: String?,
         adapterType: PeerConnection.AdapterType?
     ): IceCandidate {
-        val constructor = IceCandidate::class.java.getConstructor(
+        val constructor = IceCandidate::class.java.getDeclaredConstructor(
             String::class.java,
             Int::class.javaPrimitiveType,
             String::class.java,
             String::class.java,
             PeerConnection.AdapterType::class.java
         )
+        constructor.isAccessible = true
         return constructor.newInstance(sdpMid, sdpMLineIndex, sdp, serverUrl, adapterType)
     }
 

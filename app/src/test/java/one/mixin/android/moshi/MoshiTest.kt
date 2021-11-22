@@ -8,6 +8,7 @@ import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.TranscriptMessage
 import org.junit.Test
 import org.webrtc.IceCandidate
+import org.webrtc.PeerConnection
 import kotlin.test.assertEquals
 
 class MoshiTest {
@@ -110,24 +111,19 @@ class MoshiTest {
     @Test
     fun iceCandidateTest() {
         val content = """
-            {"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932 typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10",
-           "sdpMLineIndex":0,"sdpMid":"0"}
+            {"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932 typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10","sdpMLineIndex":0,"sdpMid":"0","serverUrl":"turn:35.240.137.101:443?transport\u003dtcp"}
         """
         val jsonAdapter = getTypeAdapter<IceCandidate>(IceCandidate::class.java)
         val iceCandidate = jsonAdapter.fromJson(content)
         println(jsonAdapter.toJson(iceCandidate))
+        assertEquals(iceCandidate?.adapterType, PeerConnection.AdapterType.UNKNOWN)
 
         val arrayContent = """
-           [{"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932
-           typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10",
-           "sdpMLineIndex":0,"sdpMid":"0","serverUrl":"turn:35.240.137.101:443?transport\u003dtcp"},
-           {"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932
-           typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10",
-           "sdpMLineIndex":0,"sdpMid":"0","serverUrl":"turn:35.240.137
-           .101:443?transport\u003dtcp"}]
+           [{"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932 typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10","sdpMLineIndex":0,"sdpMid":"0","serverUrl":"turn:35.240.137.101:443?transport\u003dtcp"},{"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932 typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10","sdpMLineIndex":0,"sdpMid":"0","serverUrl":"turn:35.240.137.101:443?transport\u003dtcp"}]
         """
         val listJsonAdapter = getTypeListAdapter<List<IceCandidate>>(IceCandidate::class.java)
         val iceCandidates = listJsonAdapter.fromJson(arrayContent)
         println(listJsonAdapter.toJson(iceCandidates))
+        assertEquals(iceCandidates?.size, 2)
     }
 }
