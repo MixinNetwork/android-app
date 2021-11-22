@@ -17,13 +17,17 @@ object MoshiFactory : JsonAdapter.Factory {
         annotations: MutableSet<out Annotation>,
         moshi: Moshi
     ): JsonAdapter<*>? {
-        if (Types.getRawType(type) == QuoteMessageItem::class.java) {
-            return QuoteMessageItemJsonAdapter(moshi)
-        } else if (Types.getRawType(type) == WebClip::class.java) {
-            return WebClipJsonAdapter(moshi)
-        } else if (Types.getRawType(type) == IceCandidate::class.java) {
-            return IceCandidateJsonAdapter(moshi)
+        return when {
+            Types.getRawType(type) == QuoteMessageItem::class.java -> {
+                QuoteMessageItemJsonAdapter(moshi)
+            }
+            Types.getRawType(type) == WebClip::class.java -> {
+                WebClipJsonAdapter(moshi)
+            }
+            Types.getRawType(type) == IceCandidate::class.java -> {
+                IceCandidateJsonAdapter(moshi)
+            }
+            else -> null
         }
-        return null
     }
 }

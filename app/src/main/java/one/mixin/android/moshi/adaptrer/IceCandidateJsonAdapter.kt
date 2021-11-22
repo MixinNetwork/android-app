@@ -7,6 +7,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.internal.Util
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
+import timber.log.Timber
+import java.lang.reflect.InvocationTargetException
 
 class IceCandidateJsonAdapter(
     moshi: Moshi
@@ -57,26 +59,41 @@ class IceCandidateJsonAdapter(
                     reader
                 )
                 4 -> serverUrl = nullableStringAdapter.fromJson(reader)
-                5 -> adapterType = when (intAdapter.fromJson(reader)) {
-                    PeerConnection.AdapterType.ETHERNET.bitMask -> PeerConnection.AdapterType
-                        .ETHERNET
-                    PeerConnection.AdapterType.WIFI.bitMask -> PeerConnection.AdapterType.WIFI
-                    PeerConnection.AdapterType.CELLULAR.bitMask -> PeerConnection.AdapterType
-                        .CELLULAR
-                    PeerConnection.AdapterType.VPN.bitMask -> PeerConnection.AdapterType.VPN
-                    PeerConnection.AdapterType.LOOPBACK.bitMask -> PeerConnection.AdapterType
-                        .LOOPBACK
-                    PeerConnection.AdapterType.ADAPTER_TYPE_ANY.bitMask -> PeerConnection
-                        .AdapterType.ADAPTER_TYPE_ANY
-                    PeerConnection.AdapterType.CELLULAR_2G.bitMask -> PeerConnection.AdapterType
-                        .CELLULAR_2G
-                    PeerConnection.AdapterType.CELLULAR_3G.bitMask -> PeerConnection.AdapterType
-                        .CELLULAR_3G
-                    PeerConnection.AdapterType.CELLULAR_4G.bitMask -> PeerConnection.AdapterType
-                        .CELLULAR_4G
-                    PeerConnection.AdapterType.CELLULAR_5G.bitMask -> PeerConnection.AdapterType
-                        .CELLULAR_5G
-                    else -> PeerConnection.AdapterType.UNKNOWN
+                5 -> {
+                    val type = stringAdapter.fromJson(reader) ?: throw Util.unexpectedNull(
+                        "adapterType",
+                        "adapterType",
+                        reader
+                    )
+                    adapterType = when (type) {
+                        PeerConnection.AdapterType.ETHERNET.name ->
+                            PeerConnection.AdapterType
+                                .ETHERNET
+                        PeerConnection.AdapterType.WIFI.name -> PeerConnection.AdapterType.WIFI
+                        PeerConnection.AdapterType.CELLULAR.name ->
+                            PeerConnection.AdapterType
+                                .CELLULAR
+                        PeerConnection.AdapterType.VPN.name -> PeerConnection.AdapterType.VPN
+                        PeerConnection.AdapterType.LOOPBACK.name ->
+                            PeerConnection.AdapterType
+                                .LOOPBACK
+                        PeerConnection.AdapterType.ADAPTER_TYPE_ANY.name ->
+                            PeerConnection
+                                .AdapterType.ADAPTER_TYPE_ANY
+                        PeerConnection.AdapterType.CELLULAR_2G.name ->
+                            PeerConnection.AdapterType
+                                .CELLULAR_2G
+                        PeerConnection.AdapterType.CELLULAR_3G.name ->
+                            PeerConnection.AdapterType
+                                .CELLULAR_3G
+                        PeerConnection.AdapterType.CELLULAR_4G.name ->
+                            PeerConnection.AdapterType
+                                .CELLULAR_4G
+                        PeerConnection.AdapterType.CELLULAR_5G.name ->
+                            PeerConnection.AdapterType
+                                .CELLULAR_5G
+                        else -> PeerConnection.AdapterType.UNKNOWN
+                    }
                 }
                 -1 -> {
                     // Unknown name, skip it.
@@ -87,15 +104,7 @@ class IceCandidateJsonAdapter(
         }
         reader.endObject()
 
-        val clazz = IceCandidate::class.java
-        val constructor = clazz.getConstructor(
-            String::class.java,
-            Int::class.java,
-            String::class.java,
-            String::class.java,
-            PeerConnection.AdapterType::class.java
-        )
-        return constructor.newInstance(
+        return constructorIceCandidate(
             sdpMid ?: throw Util.missingProperty("sdpMid", "sdpMid", reader),
             sdpMLineIndex ?: throw Util.missingProperty(
                 "sdpMLineIndex",
@@ -103,6 +112,29 @@ class IceCandidateJsonAdapter(
             ),
             sdp ?: throw Util.missingProperty("sdp", "sdp", reader), serverUrl, adapterType
         )
+    }
+
+    @Throws(
+        NoSuchMethodException::class,
+        IllegalAccessException::class,
+        InvocationTargetException::class,
+        InstantiationException::class
+    )
+    private fun constructorIceCandidate(
+        sdpMid: String?,
+        sdpMLineIndex: Int,
+        sdp: String?,
+        serverUrl: String?,
+        adapterType: PeerConnection.AdapterType?
+    ): IceCandidate {
+        val constructor = IceCandidate::class.java.getConstructor(
+            String::class.java,
+            Int::class.javaPrimitiveType,
+            String::class.java,
+            String::class.java,
+            PeerConnection.AdapterType::class.java
+        )
+        return constructor.newInstance(sdpMid, sdpMLineIndex, sdp, serverUrl, adapterType)
     }
 
     override fun toJson(writer: JsonWriter, value_: IceCandidate?) {
@@ -123,39 +155,39 @@ class IceCandidateJsonAdapter(
         when (value_.adapterType) {
             PeerConnection.AdapterType.ETHERNET -> writer.value(
                 PeerConnection.AdapterType
-                    .ETHERNET.bitMask
+                    .ETHERNET.name
             )
-            PeerConnection.AdapterType.WIFI -> writer.value(PeerConnection.AdapterType.WIFI.bitMask)
+            PeerConnection.AdapterType.WIFI -> writer.value(PeerConnection.AdapterType.WIFI.name)
             PeerConnection.AdapterType.CELLULAR -> writer.value(
                 PeerConnection.AdapterType
-                    .CELLULAR.bitMask
+                    .CELLULAR.name
             )
-            PeerConnection.AdapterType.VPN -> writer.value(PeerConnection.AdapterType.VPN.bitMask)
+            PeerConnection.AdapterType.VPN -> writer.value(PeerConnection.AdapterType.VPN.name)
             PeerConnection.AdapterType.LOOPBACK -> writer.value(
                 PeerConnection.AdapterType
-                    .LOOPBACK.bitMask
+                    .LOOPBACK.name
             )
             PeerConnection.AdapterType.ADAPTER_TYPE_ANY -> writer.value(
                 PeerConnection
-                    .AdapterType.ADAPTER_TYPE_ANY.bitMask
+                    .AdapterType.ADAPTER_TYPE_ANY.name
             )
             PeerConnection.AdapterType.CELLULAR_2G -> writer.value(
                 PeerConnection.AdapterType
-                    .CELLULAR_2G.bitMask
+                    .CELLULAR_2G.name
             )
             PeerConnection.AdapterType.CELLULAR_3G -> writer.value(
                 PeerConnection.AdapterType
-                    .CELLULAR_3G.bitMask
+                    .CELLULAR_3G.name
             )
             PeerConnection.AdapterType.CELLULAR_4G -> writer.value(
                 PeerConnection.AdapterType
-                    .CELLULAR_4G.bitMask
+                    .CELLULAR_4G.name
             )
             PeerConnection.AdapterType.CELLULAR_5G -> writer.value(
                 PeerConnection.AdapterType
-                    .CELLULAR_5G.bitMask
+                    .CELLULAR_5G.name
             )
-            else -> writer.value(PeerConnection.AdapterType.UNKNOWN.bitMask)
+            else -> writer.value(PeerConnection.AdapterType.UNKNOWN.name)
         }
         writer.endObject()
     }

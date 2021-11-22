@@ -7,6 +7,7 @@ import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.TranscriptMessage
 import org.junit.Test
+import org.webrtc.IceCandidate
 import kotlin.test.assertEquals
 
 class MoshiTest {
@@ -64,10 +65,12 @@ class MoshiTest {
     @Test
     fun mentionUserTest() {
         val content = """
-            [{"full_name":"宅学长","identity_number":"26832"},{"full_name":"senior 😜","identity_number":"37189829"},{"full_name":"马岱敲代码","identity_number":"35220"}]
+            [{"full_name":"宅学长","identity_number":"26832"},{"full_name":"senior 😜",
+            "identity_number":"37189829"},{"full_name":"马岱敲代码","identity_number":"35220"}]
         """
         val camelContent = """
-            [{"fullName":"宅学长","identityNumber":"26832"},{"fullName":"senior 😜","identityNumber":"37189829"},{"fullName":"马岱敲代码","identityNumber":"35220"}]
+            [{"fullName":"宅学长","identityNumber":"26832"},{"fullName":"senior 😜",
+            "identityNumber":"37189829"},{"fullName":"马岱敲代码","identityNumber":"35220"}]
         """
         val jsonAdapter = getTypeListAdapter<List<MentionUser>>(MentionUser::class.java)
         val json = jsonAdapter.fromJson(content)
@@ -102,5 +105,29 @@ class MoshiTest {
         val jsonAdapter = getTypeListAdapter<List<Map<String, String>>>(Map::class.java)
         val json = jsonAdapter.toJson(list)
         println(json)
+    }
+
+    @Test
+    fun iceCandidateTest() {
+        val content = """
+            {"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932 typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10",
+           "sdpMLineIndex":0,"sdpMid":"0"}
+        """
+        val jsonAdapter = getTypeAdapter<IceCandidate>(IceCandidate::class.java)
+        val iceCandidate = jsonAdapter.fromJson(content)
+        println(jsonAdapter.toJson(iceCandidate))
+
+        val arrayContent = """
+           [{"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932
+           typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10",
+           "sdpMLineIndex":0,"sdpMid":"0","serverUrl":"turn:35.240.137.101:443?transport\u003dtcp"},
+           {"adapterType":"UNKNOWN","sdp":"candidate:2029434911 1 udp 25108223 10.148.0.2 54932
+           typ relay raddr 0.0.0.0 rport 0 generation 0 ufrag hCP9 network-id 3 network-cost 10",
+           "sdpMLineIndex":0,"sdpMid":"0","serverUrl":"turn:35.240.137
+           .101:443?transport\u003dtcp"}]
+        """
+        val listJsonAdapter = getTypeListAdapter<List<IceCandidate>>(IceCandidate::class.java)
+        val iceCandidates = listJsonAdapter.fromJson(arrayContent)
+        println(listJsonAdapter.toJson(iceCandidates))
     }
 }
