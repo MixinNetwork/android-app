@@ -16,3 +16,5 @@ fun EncryptCategory.toCategory(
         EncryptCategory.ENCRYPTED -> encryptCategory
         else -> plainCategory
     }.name
+
+fun EncryptCategory.isEncrypt() = this != EncryptCategory.PLAIN

@@ -33,6 +33,7 @@
     <string name="unpin">取消置顶</string>
     <string name="save">保存</string>
     <string name="saving">保存中…</string>
+    <string name="show_in_chat">在聊天中展示</string>
     <string name="pb_dialog_message">请稍等…</string>
     <string name="other">其他</string>
     <string name="not_logged_in">还没有登录</string>
@@ -215,6 +216,7 @@
     <string name="qr_code_camera">自动识别二维码</string>
     <string name="qr_code_camera_code">打开相机会默认开启二维码识别，当二维码被检测到时会显示一个通知，点击通知识别二维码。</string>
     <string name="conversation_delete_tip">删除后，将同时清空该聊天的消息记录</string>
+    <string name="conversation_delete_title">删除会话：%1$s</string>
     <string name="qr_not_found">未发现二维码</string>
     <string name="no_flash_unit">闪光灯/手电筒硬件不可用</string>
     <!--search-->
@@ -392,8 +394,9 @@
     <string name="wallet_title">钱包</string>
     <string name="wallet_password_set_pin">设置密码</string>
     <string name="wallet_password_set_new_pin">设置新的密码</string>
-    <string name="wallet_password_set_pin_desc">设置 6 位数字密码。</string>
     <string name="wallet_password_set_new_pin_desc">设置新的 6 位数字密码</string>
+    <string name="wallet_password_set_pin_desc">设置 6 位数字密码创建你的第一个数字钱包，阅读文档以了解更多。</string>
+    <string name="wallet_password_set_pin_target">了解更多</string>
     <string name="wallet_password_confirm_pin">确认密码</string>
     <string name="wallet_password_confirm_1">确认 6 位密码并牢记它。如果忘记，你的钱包将无法找回。</string>
     <string name="wallet_password_confirm_2">请再次确认您的 6 位密码。 很少看到第三次确认吧！所以请牢记，密码丢失是无法找回的。</string>
@@ -473,6 +476,8 @@
     <string name="wallet_withdrawal_changed">手续费已从 %1$s 变更为 %2$s，要更新手续费并继续提现吗？</string>
     <string name="wallet_refresh_address_failed">手续费已变更且刷新失败，请重试。</string>
     <string name="wallet_address_add_tip">Mixin 不支持提现到</string>
+    <string name="wallet_pin_tops">了解更多</string>
+    <string name="wallet_pin_tops_desc">注意密码丢失无法找回，6 位数字密码是基于去中心化密钥派生协议 Throttled Identity Protocol，\n阅读文档以了解更多。</string>
     <!--pin logs-->
     <string name="logs">日志</string>
     <string name="log_category_pin_incorrect">密码错误</string>
@@ -826,6 +831,7 @@
     <string name="send_file">将 \"%1$s\" 发送给 %2$s?</string>
     <string name="send_file_group">将 \"%1$s\" 发送给 \"%2$s\"?</string>
     <string name="action_open">在浏览器中打开</string>
+    <string name="action_view_auth">查看授权</string>
     <string name="action_refresh">刷新</string>
     <string name="action_update">升级</string>
     <string name="action_reload">重新载入</string>
@@ -833,6 +839,7 @@
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
     <string name="account_memo">Memo（备注）</string>
+    <string name="not_auth_yet">还未授权此机器人任何权限</string>
     <string name="withdrawal_label">地址名称，例如 OceanOne</string>
     <string name="withdrawal_address">提现地址</string>
     <string name="withdrawal_no_tag">没有 Memo（备注）</string>

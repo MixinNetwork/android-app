@@ -247,23 +247,6 @@
                 android:layout_height="@dimen/setting_divider"
                 android:background="?attr/bg_window" />
 
-            <RelativeLayout
-                android:id="@+id/logs_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
-
-                <TextView
-                    android:id="@+id/logs"
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/logs"
-                    tools:ignore="RelativeOverlap" />
-            </RelativeLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

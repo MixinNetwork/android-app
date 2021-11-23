@@ -188,6 +188,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.debug.FileLogTree
@@ -220,6 +221,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isEncrypt
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPlain
@@ -231,12 +233,14 @@ import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toTranscript
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.ERROR_ROOM_FULL
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.webrtc.TAG_AUDIO
 import one.mixin.android.webrtc.anyCallServiceRunning
 import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
+import one.mixin.android.websocket.LIST_KRAKEN_PEERS
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.StickerMessagePayload
@@ -654,12 +658,14 @@ class ConversationFragment() :
             override fun onImageClick(messageItem: MessageItem, view: View) {
                 starTransition = true
                 if (messageItem.isLive()) {
-                    MediaPagerActivity.show(
-                        requireActivity(),
-                        view,
-                        messageItem.conversationId,
-                        messageItem.messageId,
-                        messageItem,
+                    getMediaResult.launch(
+                        MediaPagerActivity.MediaParam(
+                            messageItem.conversationId,
+                            messageItem.messageId,
+                            messageItem,
+                            MediaPagerActivity.MediaSource.Chat,
+                        ),
+                        MediaPagerActivity.getOptions(requireActivity(), view)
                     )
                     return
                 }
@@ -670,12 +676,14 @@ class ConversationFragment() :
                 }
                 val file = File(path)
                 if (file.exists()) {
-                    MediaPagerActivity.show(
-                        requireActivity(),
-                        view,
-                        messageItem.conversationId,
-                        messageItem.messageId,
-                        messageItem,
+                    getMediaResult.launch(
+                        MediaPagerActivity.MediaParam(
+                            messageItem.conversationId,
+                            messageItem.messageId,
+                            messageItem,
+                            MediaPagerActivity.MediaSource.Chat,
+                        ),
+                        MediaPagerActivity.getOptions(requireActivity(), view)
                     )
                 } else {
                     toast(R.string.error_file_exists)
@@ -1000,6 +1008,7 @@ class ConversationFragment() :
             binding.flagLayout.bottomFlag = !value
         }
     private var positionBeforeClickQuote: String? = null
+    private var inGroup = true
 
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService()!!
@@ -1036,6 +1045,7 @@ class ConversationFragment() :
     private lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
     lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
@@ -1045,6 +1055,7 @@ class ConversationFragment() :
         getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract(), resultRegistry, ::callbackForward)
         getCombineForwardResult = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
         getChatHistoryResult = registerForActivityResult(ChatHistoryContract(), resultRegistry, ::callbackChatHistory)
+        getMediaResult = registerForActivityResult(MediaPagerActivity.MediaContract(), resultRegistry, ::callbackChatHistory)
         getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEditor)
     }
 
@@ -1094,12 +1105,18 @@ class ConversationFragment() :
             .autoDispose(destroyScope)
             .subscribe { event ->
                 if (event.conversationId == conversationId) {
-                    alertDialogBuilder()
-                        .setMessage(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
-                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .show()
+                    if (event.errorCode == ERROR_ROOM_FULL) {
+                        alertDialogBuilder()
+                            .setMessage(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
+                            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .show()
+                    } else if (event.errorCode == FORBIDDEN && event.action == LIST_KRAKEN_PEERS) {
+                        if (viewDestroyed()) return@subscribe
+
+                        binding.tapJoinView.root.isVisible = false
+                    }
                 }
             }
 
@@ -1636,6 +1653,9 @@ class ConversationFragment() :
         callState.observe(
             viewLifecycleOwner,
             { state ->
+                if (!inGroup) {
+                    return@observe
+                }
                 binding.chatControl.calling = state != CallService.CallState.STATE_IDLE
                 if (isGroup) {
                     binding.tapJoinView.root.isVisible = callState.isPendingGroupCall(conversationId)
@@ -1923,7 +1943,7 @@ class ConversationFragment() :
 
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
-            binding.chatControl.showBot()
+            binding.chatControl.showBot(encryptCategory().isEncrypt())
         } else {
             binding.chatControl.hideBot()
         }
@@ -2221,6 +2241,11 @@ class ConversationFragment() :
                             binding.bottomCantSend.visibility = VISIBLE
                             binding.chatControl.chatEt.hideKeyboard()
                         }
+
+                        inGroup = p != null
+                        if (!inGroup && callState.conversationId == conversationId && callState.isNotIdle()) {
+                            callState.handleHangup(requireContext())
+                        }
                     }
                 }
             )
@@ -2291,6 +2316,7 @@ class ConversationFragment() :
         if (viewDestroyed()) return@launch
 
         app = chatViewModel.findAppById(user.appId!!)
+        binding.chatControl.hintEncrypt(encryptCategory().isEncrypt())
         if (app != null && app!!.creatorId == Session.getAccountId()) {
             val menuFragment = parentFragmentManager.findFragmentByTag(MenuFragment.TAG)
             if (menuFragment == null) {

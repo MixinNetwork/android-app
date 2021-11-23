@@ -368,8 +368,9 @@
     <string name="wallet_title">Dompet</string>
     <string name="wallet_password_set_pin">Tetapkan PIN</string>
     <string name="wallet_password_set_new_pin">Tetapkan PIN baru</string>
-    <string name="wallet_password_set_pin_desc">Sila tetapkan PIN 6 digit.</string>
     <string name="wallet_password_set_new_pin_desc">Sila tetapkan PIN 6 digit baharu.</string>
+    <string name="wallet_password_set_pin_desc">Sediakan PIN dompet 6 digit untuk membuat dompet digital pertama anda, baca dokumentasi kami untuk mengetahui lebih lanjut.</string>
+    <string name="wallet_password_set_pin_target">lebih lanjut</string>
     <string name="wallet_password_confirm_pin">Sahkan PIN</string>
     <string name="wallet_password_confirm_1">Sila sahkan PIN 6 digit dan ingat. Sekiranya hilang, tidak ada cara untuk mendapatkan semula dompet anda.</string>
     <string name="wallet_password_confirm_2">Sila sahkan PIN 6 digit anda sekali lagi. Sangat jarang untuk melihat pengesahan ketiga di tempat lain, jadi sila ingat bahawa PIN tidak dapat dipulihkan sekiranya hilang.</string>

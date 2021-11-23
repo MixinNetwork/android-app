@@ -6,10 +6,12 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
+import android.text.style.CharacterStyle
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.TextAppearanceSpan
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
@@ -139,4 +141,18 @@ fun AutoLinkTextView.renderMessage(
     this.mentionRenderContext = mentionRenderContext
     this.keyWord = keyWord
     this.text = text
+}
+
+fun EditText.clearCharacterStyle() {
+    editableText?.let { string ->
+        val toBeRemovedSpans = string.getSpans(0, string.length, CharacterStyle::class.java)
+        if (toBeRemovedSpans.isNotEmpty()) {
+            for (span in toBeRemovedSpans) {
+                string.removeSpan(span)
+            }
+            val curString = string.trim()
+            setText(curString)
+            setSelection(curString.length)
+        }
+    }
 }

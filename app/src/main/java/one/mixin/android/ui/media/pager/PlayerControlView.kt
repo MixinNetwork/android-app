@@ -11,7 +11,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.DefaultControlDispatcher
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.ui.TimeBar
@@ -32,7 +31,6 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
 
     private val componentListener = ComponentListener()
-    private val controlDispatcher = DefaultControlDispatcher()
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
     private val window = Timeline.Window()
@@ -220,7 +218,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     private fun seekTo(player: Player, windowIndex: Int, positionMs: Long): Boolean {
-        return controlDispatcher.dispatchSeekTo(player, windowIndex, positionMs)
+        player.seekTo(windowIndex, positionMs)
+        return true
     }
 
     private fun seekToTimeBarPosition(player: Player, positionMsParams: Long) {
@@ -482,15 +481,15 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                 when (playView.status) {
                     STATUS_IDLE -> {
                         if (player.playbackState == Player.STATE_IDLE) {
-                            controlDispatcher.dispatchPrepare(player)
+                            player.prepare()
                             preparePlayback?.invoke()
                         } else if (player.playbackState == Player.STATE_ENDED) {
                             seekTo(player, player.currentWindowIndex, C.TIME_UNSET)
                         }
-                        controlDispatcher.dispatchSetPlayWhenReady(player, true)
+                        player.playWhenReady = true
                     }
                     STATUS_PLAYING -> {
-                        controlDispatcher.dispatchSetPlayWhenReady(player, false)
+                        player.playWhenReady = false
                     }
                 }
             }

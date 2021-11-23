@@ -264,6 +264,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     private fun findBackUp() = lifecycleScope.launch(Dispatchers.IO) {
         val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             withContext(Dispatchers.Main) {
+                if (viewDestroyed()) return@withContext
                 binding.backupProgress.isVisible = true
                 binding.backupInfo.isInvisible = true
             }

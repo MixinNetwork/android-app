@@ -34,6 +34,7 @@
     <string name="unpin">Unpin</string>
     <string name="save">Save</string>
     <string name="saving">Saving…</string>
+    <string name="show_in_chat">Show in chat</string>
     <string name="pb_dialog_message">Please wait a bit…</string>
     <string name="other">OTHER</string>
     <string name="welcome" translatable="false">Welcome to Mixin</string>
@@ -228,6 +229,7 @@
     <string name="qr_code_camera">QR Code Camera</string>
     <string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
     <string name="conversation_delete_tip">Once deleted, all this chat messages will be cleared</string>
+    <string name="conversation_delete_title">Delete chat: %1$s</string>
     <string name="qr_not_found">Qr Code not found</string>
     <string name="no_flash_unit">Flash unit not available</string>
     <!--search-->
@@ -412,8 +414,9 @@
     <string name="wallet_title">Wallet</string>
     <string name="wallet_password_set_pin">Set PIN</string>
     <string name="wallet_password_set_new_pin">Set a new PIN</string>
-    <string name="wallet_password_set_pin_desc">Please set a 6 digit PIN.</string>
     <string name="wallet_password_set_new_pin_desc">Please set a new 6 digit PIN.</string>
+    <string name="wallet_password_set_pin_desc">Set a 6 digit PIN to create your first digital wallet, read the document to learn more.</string>
+    <string name="wallet_password_set_pin_target">learn more</string>
     <string name="wallet_password_confirm_pin">Confirm PIN</string>
     <string name="wallet_password_confirm_1">Please confirm the 6 digit PIN and remember it. If lost, there is no way to recover your wallet.</string>
     <string name="wallet_password_confirm_2">Please confirm your 6 digit PIN again. It\'s rare to see a third confirmation somewhere else, so please remember the PIN is unrecoverable if lost.</string>
@@ -493,6 +496,8 @@
     <string name="wallet_withdrawal_changed">The withdrawal fee has been changed from %1$s to %2$s, would you like to proceed  with the request?</string>
     <string name="wallet_refresh_address_failed">The withdrawal fee has been changed and the refresh fails, please try again.</string>
     <string name="wallet_address_add_tip">Mixin does not support withdrawal to the</string>
+    <string name="wallet_pin_tops">learn more</string>
+    <string name="wallet_pin_tops_desc">Please remember the PIN is unrecoverable if lost. The PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to learn more.</string>
     <!--pin logs-->
     <string name="logs">Logs</string>
     <string name="log_category_pin_incorrect">PIN incorrect</string>
@@ -718,28 +723,28 @@
     <string name="database_upgrade_tips">The database is being upgraded, it may take several minutes, please do not close this App.</string>
     <string name="database_upgrade_progress">Upgrading</string>
     <!-- notification -->
-    <string name="alert_key_group_text_message">%1$s send a message</string>
-    <string name="alert_key_group_image_message">%1$s send a photo</string>
-    <string name="alert_key_group_video_message">%1$s send a video</string>
-    <string name="alert_key_group_live_message">%1$s send a live</string>
-    <string name="alert_key_group_data_message">%1$s send a file</string>
-    <string name="alert_key_group_audio_message">%1$s send an audio</string>
-    <string name="alert_key_group_sticker_message">%1$s send a sticker</string>
+    <string name="alert_key_group_text_message">%1$s sent a message</string>
+    <string name="alert_key_group_image_message">%1$s sent a photo</string>
+    <string name="alert_key_group_video_message">%1$s sent a video</string>
+    <string name="alert_key_group_live_message">%1$s sent a live</string>
+    <string name="alert_key_group_data_message">%1$s sent a file</string>
+    <string name="alert_key_group_audio_message">%1$s sent an audio</string>
+    <string name="alert_key_group_sticker_message">%1$s sent a sticker</string>
     <string name="alert_key_group_contact_message">%1$s shared a contact</string>
-    <string name="alert_key_group_post_message">%1$s send a post</string>
-    <string name="alert_key_group_location_message">%1$s send a location</string>
+    <string name="alert_key_group_post_message">%1$s sent a post</string>
+    <string name="alert_key_group_location_message">%1$s sent a location</string>
     <string name="alert_key_group_transcript_message">%1$s shared a transcript</string>
-    <string name="alert_key_contact_text_message">send you a message</string>
-    <string name="alert_key_contact_image_message">send you a photo</string>
-    <string name="alert_key_contact_video_message">send you a video</string>
-    <string name="alert_key_contact_live_message">send you a live</string>
-    <string name="alert_key_contact_transfer_message">send you a transfer</string>
-    <string name="alert_key_contact_data_message">send a file</string>
-    <string name="alert_key_contact_audio_message">send an audio</string>
-    <string name="alert_key_contact_sticker_message">send you a sticker</string>
+    <string name="alert_key_contact_text_message">sent you a message</string>
+    <string name="alert_key_contact_image_message">sent you a photo</string>
+    <string name="alert_key_contact_video_message">sent you a video</string>
+    <string name="alert_key_contact_live_message">sent you a live</string>
+    <string name="alert_key_contact_transfer_message">sent you a transfer</string>
+    <string name="alert_key_contact_data_message">sent a file</string>
+    <string name="alert_key_contact_audio_message">sent an audio</string>
+    <string name="alert_key_contact_sticker_message">sent you a sticker</string>
     <string name="alert_key_contact_contact_message">shared a contact</string>
-    <string name="alert_key_contact_post_message">send a post</string>
-    <string name="alert_key_contact_location_message">send a location</string>
+    <string name="alert_key_contact_post_message">sent a post</string>
+    <string name="alert_key_contact_location_message">sent a location</string>
     <string name="alert_key_contact_audio_call_message">ask you an audio call</string>
     <string name="alert_key_contact_transcript_message">shared a transcript</string>
     <string name="unread">New Messages</string>
@@ -845,6 +850,7 @@
     <string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
     <string name="default_time" translatable="false">00:00</string>
     <string name="action_open">Open in browser</string>
+    <string name="action_view_auth">View Authorization</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_update">Update</string>
     <string name="action_reload">Reload</string>
@@ -852,6 +858,7 @@
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>
     <string name="account_memo">Memo</string>
+    <string name="not_auth_yet">No permission has been granted to this bot</string>
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_address">Address</string>
     <string name="withdrawal_no_tag">No Memo</string>

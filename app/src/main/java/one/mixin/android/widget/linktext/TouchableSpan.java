@@ -3,7 +3,6 @@ package one.mixin.android.widget.linktext;
 import android.text.style.ClickableSpan;
 
 public abstract class TouchableSpan extends ClickableSpan {
-
     protected boolean isPressed;
     protected int normalTextColor;
     protected int pressedTextColor;
@@ -18,5 +17,4 @@ public abstract class TouchableSpan extends ClickableSpan {
     void setPressed(boolean isSelected) {
         isPressed = isSelected;
     }
-
 }

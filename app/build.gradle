@@ -1,6 +1,6 @@
 def versionMajor = 0
-def versionMinor = 32
-def versionPatch = 8
+def versionMinor = 33
+def versionPatch = 6
 def versionBuild = 0
 
 apply plugin: 'com.android.application'
@@ -51,7 +51,7 @@ android {
 
         kotlinOptions {
             jvmTarget = '11'
-            freeCompilerArgs += ['-Xuse-experimental=kotlin.contracts.ExperimentalContracts']
+            freeCompilerArgs += ['-Xopt-in=kotlin.contracts.ExperimentalContracts']
         }
 
         vectorDrawables.useSupportLibrary = true
@@ -306,6 +306,7 @@ dependencies {
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
+    implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
@@ -316,10 +317,11 @@ dependencies {
     testImplementation "androidx.test:core:${testCoreVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 
-    testImplementation "org.robolectric:robolectric:${robolectricVersion}"
+    testImplementation("org.robolectric:robolectric:${robolectricVersion}", {
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    })
 
     // for jwt unit test
-    testImplementation "org.bouncycastle:bcprov-jdk16:${bcVersion}"
     testImplementation "org.json:json:${jsonVersion}"
 
     androidTestImplementation "junit:junit:${junitVersion}"

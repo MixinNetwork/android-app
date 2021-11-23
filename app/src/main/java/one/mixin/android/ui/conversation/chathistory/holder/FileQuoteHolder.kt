@@ -16,7 +16,6 @@ import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
@@ -183,11 +182,8 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
                 }
             }
         }
-        try {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, SnakeQuoteMessageItem::class.java))
-        } catch (e: Exception) {
-            binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
-        }
+
+        binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
 
         binding.chatQuote.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

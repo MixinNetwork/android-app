@@ -81,6 +81,7 @@ import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
@@ -107,6 +108,7 @@ import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.qr.QRCodeProcessor
+import one.mixin.android.ui.setting.PermissionListFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.App
@@ -700,6 +702,11 @@ class WebFragment : BaseFragment() {
                 immersive,
                 reloadThemeAction = { reloadTheme() },
                 playlistAction = { showPlaylist(it) },
+                closeAction = {
+                    lifecycleScope.launch {
+                        closeSelf()
+                    }
+                },
             )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             val extraHeaders = HashMap<String, String>()
@@ -717,6 +724,11 @@ class WebFragment : BaseFragment() {
             }
             webView.loadUrl(url, extraHeaders)
         }
+    }
+
+    private fun closeSelf() {
+        if (viewDestroyed()) return
+        requireActivity().finish()
     }
 
     private fun showPlaylist(playlist: Array<String>) {
@@ -969,27 +981,45 @@ class WebFragment : BaseFragment() {
                 }
             }
         }
+        val viewAuthMenu = menu {
+            title = getString(R.string.action_view_auth)
+            icon = R.drawable.ic_web_floating
+            action = {
+                val app = requireNotNull(app)
+                lifecycleScope.launch {
+                    bottomSheet.dismiss()
+                    val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
+                    if (auth == null) {
+                        toast(R.string.not_auth_yet)
+                        return@launch
+                    }
+                    val fragment = PermissionListFragment.newInstance(app, auth)
+                    navTo(fragment, PermissionListFragment.TAG)
+                }
+            }
+        }
         val list = if (isBot()) {
             menuList {
                 menuGroup {
                     menu(forwardMenu)
+                    menu(floatingMenu)
+                    menu(refreshMenu)
                 }
                 menuGroup {
                     menu(shareMenu)
-                    menu(floatingMenu)
-                    menu(refreshMenu)
+                    menu(viewAuthMenu)
                 }
             }
         } else {
             menuList {
                 menuGroup {
                     menu(forwardMenu)
-                }
-                menuGroup {
                     menu(shareMenu)
                     menu(floatingMenu)
-                    menu(copyMenu)
                     menu(refreshMenu)
+                }
+                menuGroup {
+                    menu(copyMenu)
                     menu(openMenu)
                 }
             }
@@ -1242,6 +1272,7 @@ class WebFragment : BaseFragment() {
         val immersive: Boolean,
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
+        var closeAction: (() -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -1269,6 +1300,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun playlist(list: Array<String>) {
             playlistAction?.invoke(list)
+        }
+
+        @JavascriptInterface
+        fun close() {
+            closeAction?.invoke()
         }
     }
 

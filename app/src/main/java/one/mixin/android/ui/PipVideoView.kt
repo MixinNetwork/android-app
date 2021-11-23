@@ -166,7 +166,7 @@ class PipVideoView {
         conversationId: String,
         messageId: String,
         isVideo: Boolean,
-        excludeLive: Boolean,
+        mediaSource: MediaPagerActivity.MediaSource,
         mediaUrl: String?
     ): TextureView {
         this.mediaUrl = mediaUrl
@@ -274,7 +274,7 @@ class PipVideoView {
                     conversationId,
                     messageId,
                     aspectRatio,
-                    excludeLive
+                    mediaSource,
                 )
             }
         }

@@ -257,8 +257,8 @@ class CircleManagerFragment : BaseFragment() {
                     0
                 }
                 position < favoriteSize + otherCircleItem.notNullWithElse({ it.size }, 0) -> {
-                1
-            }
+                    1
+                }
                 else -> {
                     2
                 }

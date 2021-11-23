@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemCallAddBinding
 import one.mixin.android.databinding.ItemCallUserBinding
+import one.mixin.android.event.FrameKeyEvent
 import one.mixin.android.event.VoiceEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
@@ -114,7 +115,8 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
             val vis =
                 user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
             binding.loading.isVisible = vis
-            binding.ring.setColor(R.color.call_voice)
+            binding.blinkRing.setColor(R.color.call_voice)
+            binding.ring.setColor(R.color.colorRed)
             binding.cover.isVisible = vis
             setOnClickListener {
                 callClicker(user.userId)
@@ -122,21 +124,39 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
         }
     }
 
+    private var blinkDisposable: Disposable? = null
     private var disposable: Disposable? = null
 
     fun listen(userId: String) {
-        if (disposable == null) {
-            disposable = RxBus.listen(VoiceEvent::class.java)
+        if (blinkDisposable == null) {
+            blinkDisposable = RxBus.listen(VoiceEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.userId == userId) {
-                        binding.ring.updateAudioLevel(it.audioLevel)
+                        binding.blinkRing.updateAudioLevel(it.audioLevel)
+                        if (it.audioLevel != 0f) {
+                            binding.ring.isVisible = false
+                        }
+                    }
+                }
+        }
+        if (disposable == null) {
+            disposable = RxBus.listen(FrameKeyEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (it.userId == userId) {
+                        binding.ring.isVisible = !it.hasKey
+                        if (!it.hasKey) {
+                            binding.blinkRing.isVisible = false
+                        }
                     }
                 }
         }
     }
 
     fun stopListen() {
+        blinkDisposable?.dispose()
+        blinkDisposable = null
         disposable?.dispose()
         disposable = null
     }

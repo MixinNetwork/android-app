@@ -45,6 +45,7 @@ import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.checkNumber
+import one.mixin.android.extension.clearCharacterStyle
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
@@ -643,6 +644,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
         @SuppressLint("SetTextI18n")
         override fun afterTextChanged(s: Editable) {
+            binding.amountEt.clearCharacterStyle()
             checkInputForbidden(s)
             if (s.isNotEmpty() && binding.assetRl.isEnabled && s.toString().checkNumber()) {
                 binding.continueTv.isEnabled = true

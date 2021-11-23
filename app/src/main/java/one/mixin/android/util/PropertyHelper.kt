@@ -33,12 +33,12 @@ object PropertyHelper {
 
     suspend fun checkFts4Upgrade(): Boolean {
         val propertyDao = checkMigrated()
-        return propertyDao.findValueByKey(PREF_FTS4_UPGRADE) != true.toString()
+        return propertyDao.findValueByKey(PREF_FTS4_UPGRADE)?.toBooleanStrictOrNull() != true
     }
 
     suspend fun checkAttachmentMigrated(action: () -> Unit) {
         val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT)?.toBoolean() ?: false
+        val value = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT)?.toBooleanStrictOrNull() ?: false
         if (value) {
             action.invoke()
         }
@@ -46,7 +46,7 @@ object PropertyHelper {
 
     suspend fun checkTranscriptAttachmentMigrated(action: () -> Unit) {
         val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() ?: false
+        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBooleanStrictOrNull() ?: false
         if (value) {
             action.invoke()
         }
@@ -54,14 +54,17 @@ object PropertyHelper {
 
     suspend fun checkTranscriptAttachmentUpdated(action: () -> Unit) {
         val propertyDao = checkMigrated()
-        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)?.toLong() ?: 0
+        val value = propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)?.toLongOrNull() ?: 0
         if (value > 0) {
             action.invoke()
         }
     }
 
     suspend fun checkBackupMigrated(action: () -> Unit) {
-        checkWithKey(PREF_MIGRATION_BACKUP, true.toString(), action)
+        val backupMigrated = findValueByKey(PREF_MIGRATION_BACKUP)?.toBooleanStrictOrNull()
+        if (backupMigrated == false) {
+            action.invoke()
+        }
     }
 
     suspend fun checkMigrated(): PropertyDao {
@@ -84,25 +87,15 @@ object PropertyHelper {
         return propertyDao.findValueByKey(key)
     }
 
-    private suspend fun checkWithKey(key: String, expectValue: String, action: () -> Unit) {
-        val propertyDao = checkMigrated()
-
-        val value = propertyDao.findValueByKey(key)
-        if (value != expectValue) {
-            action.invoke()
-        }
-    }
-
     private suspend fun migrateProperties(propertyDao: PropertyDao, messageDao: MessageDao, transcriptDao: TranscriptMessageDao) {
         val pref = MixinApplication.appContext.defaultSharedPreferences
         val updatedAt = nowInUtc()
-        val fts4Upgrade = pref.getBoolean(PREF_FTS4_UPGRADE, false)
+        val fts4Upgrade = pref.getBoolean(PREF_FTS4_UPGRADE, messageDao.hasMessage() == null)
         propertyDao.insertSuspend(Property(PREF_FTS4_UPGRADE, fts4Upgrade.toString(), updatedAt))
         val syncFtsOffset = pref.getInt(PREF_SYNC_FTS4_OFFSET, 0)
         propertyDao.insertSuspend(Property(PREF_SYNC_FTS4_OFFSET, syncFtsOffset.toString(), updatedAt))
 
         val backup = pref.getBoolean(PREF_BACKUP, false)
-        propertyDao.insertSuspend(Property(PREF_MIGRATION_BACKUP, backup.toString(), updatedAt))
         // Backup files need to be migrated
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             propertyDao.insertSuspend(Property(PREF_MIGRATION_BACKUP, backup.toString(), updatedAt))
@@ -136,7 +129,7 @@ object PropertyHelper {
             val transcriptDao = MixinDatabase.getDatabase(MixinApplication.appContext).transcriptDao()
             val updatedAt = nowInUtc()
             propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT, (messageDao.hasDoneAttachment()).toString(), updatedAt))
-            val lastDoneAttachmentId = transcriptDao.lastDoneAttachmentId()
+            val lastDoneAttachmentId = transcriptDao.lastDoneAttachmentId() ?: 0
             if (lastDoneAttachmentId > 0) {
                 propertyDao.insertSuspend(Property(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT, true.toString(), updatedAt))
                 propertyDao.insertSuspend(Property(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST, lastDoneAttachmentId.toString(), updatedAt))
@@ -146,5 +139,5 @@ object PropertyHelper {
     }
 
     private suspend fun hasMigrated(propertyDao: PropertyDao) =
-        propertyDao.findValueByKey(PREF_PROPERTY_MIGRATED)?.toBoolean() == true
+        propertyDao.findValueByKey(PREF_PROPERTY_MIGRATED)?.toBooleanStrictOrNull() == true
 }

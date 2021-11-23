@@ -5,9 +5,19 @@
     android:layout_height="wrap_content">
 
     <one.mixin.android.widget.BlinkRingView
-        android:id="@+id/ring"
+        android:id="@+id/blink_ring"
         android:layout_width="76dp"
         android:layout_height="76dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <one.mixin.android.widget.RingView
+        android:id="@+id/ring"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

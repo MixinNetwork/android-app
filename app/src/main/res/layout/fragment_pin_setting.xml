@@ -13,8 +13,37 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightIcon="@drawable/ic_help_outline"
         app:titleText="@string/pin" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:background="?attr/bg_white"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="92dp"
+            android:layout_height="83dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="36dp"
+            android:layout_marginBottom="20dp"
+            android:src="?attr/icon_emergency" />
+
+        <TextView
+            android:id="@+id/tip_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="24dp"
+            android:lineSpacingExtra="2dp"
+            android:gravity="center"
+            android:text="@string/setting_emergency_content"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp" />
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/biometrics_rl"
@@ -106,7 +135,19 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:text="@string/wallet_password_change"
-        android:textColor="@color/colorBlue"
+        style="@style/NormalTextStyle"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:foreground="?attr/selectableItemBackground"
+        android:background="?attr/bg_white" />
+
+    <TextView
+        android:id="@+id/logs"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:text="@string/logs"
+        style="@style/NormalTextStyle"
         android:gravity="center_vertical"
         android:paddingStart="@dimen/activity_horizontal_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin"

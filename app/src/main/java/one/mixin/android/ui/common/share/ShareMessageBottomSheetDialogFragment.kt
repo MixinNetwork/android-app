@@ -42,6 +42,7 @@ import one.mixin.android.vo.ShareImageData
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.lang.IllegalArgumentException
 
 @AndroidEntryPoint
@@ -98,7 +99,8 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         try {
             loadData()
         } catch (e: Exception) {
-            toast(getString(R.string.error_unknown_with_message, e.message))
+            Timber.e("Load \"${shareMessage.content}\" ERROR!!!")
+            toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
             dismiss()
             return
         }

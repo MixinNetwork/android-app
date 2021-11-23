@@ -222,7 +222,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     ) != MixinApplication.conversationId
                 ) {
                     RxBus.publish(BotCloseEvent())
-                    ConversationActivity.show(ctx, null, user.userId)
+                    ConversationActivity.showAndClear(ctx, null, user.userId)
                     dismiss()
                 }
             }
