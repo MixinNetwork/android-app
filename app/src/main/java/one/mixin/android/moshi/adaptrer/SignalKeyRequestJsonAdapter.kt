@@ -9,7 +9,6 @@ import com.squareup.moshi.Types
 import one.mixin.android.api.OneTimePreKey
 import one.mixin.android.api.SignedPreKey
 import one.mixin.android.api.request.SignalKeyRequest
-import java.util.ArrayList
 import kotlin.String
 
 class SignalKeyRequestJsonAdapter(
@@ -38,9 +37,7 @@ class SignalKeyRequestJsonAdapter(
     }
 
     override fun toJson(writer: JsonWriter, value_: SignalKeyRequest?) {
-        if (value_ == null) {
-            throw NullPointerException("value_ was null! Wrap in .nullSafe() to write nullable values.")
-        }
+        if(value_ == null) return
         writer.beginObject()
         writer.name("identity_key")
         stringAdapter.toJson(writer, value_.identityKey)

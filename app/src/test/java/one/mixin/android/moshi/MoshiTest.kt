@@ -140,4 +140,16 @@ class MoshiTest {
         val blazeMessage = jsonAdapter.fromJson(src)
         println("id:${blazeMessage?.id}")
     }
+
+    @Test
+    fun mapTest() {
+        val map = arrayMapOf<String, Double>()
+        map["1"] = 1.0
+        map["2"] = 2.0
+        val type = Types.newParameterizedType(Map::class.java, String::class.java, Double::class.javaObjectType)
+        val jsonAdapter = getTypeAdapter<Map<String, Double>>(type)
+        val mapString = jsonAdapter.toJson(map)
+        val json = jsonAdapter.fromJson(mapString)!!
+        assertEquals(json["1"], map["1"])
+    }
 }

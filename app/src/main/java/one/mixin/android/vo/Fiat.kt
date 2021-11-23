@@ -1,25 +1,26 @@
 package one.mixin.android.vo
 
-import com.google.common.reflect.TypeToken
-import com.google.gson.Gson
+import com.squareup.moshi.Types
 import one.mixin.android.Constants.Account.PREF_FIAT_MAP
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import java.util.concurrent.ConcurrentHashMap
 
 data class Fiat(val code: String, val rate: Double)
 
 object Fiats {
-    private val gson = Gson()
 
-    private val codeRateMap: ConcurrentHashMap<String, Double>
+    private val codeRateMap: MutableMap<String, Double>
 
     private val codeSymbolMap = ConcurrentHashMap<String, String>()
 
-    private val type = object : TypeToken<ConcurrentHashMap<String, Double>>() {}.type
+    private val jsonAdapter by lazy {
+        getTypeAdapter<Map<String, Double>>(Types.newParameterizedType(Map::class.java, String::class.java, Double::class.javaObjectType))
+    }
 
     init {
         MixinApplication.appContext.apply {
@@ -32,7 +33,9 @@ object Fiats {
             val codeRateMapString = defaultSharedPreferences.getString(PREF_FIAT_MAP, null)
             codeRateMap = if (codeRateMapString == null) {
                 ConcurrentHashMap()
-            } else gson.fromJson(codeRateMapString, type)
+            } else {
+                jsonAdapter.fromJson(codeRateMapString)!!.toMutableMap()
+            }
         }
     }
 
@@ -40,7 +43,7 @@ object Fiats {
         newFiatList.forEach { f ->
             codeRateMap[f.code] = f.rate
         }
-        val codeRateMapString = gson.toJson(codeRateMap)
+        val codeRateMapString = jsonAdapter.toJson(codeRateMap)
         MixinApplication.appContext.defaultSharedPreferences.putString(PREF_FIAT_MAP, codeRateMapString)
     }
 
