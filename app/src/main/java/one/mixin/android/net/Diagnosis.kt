@@ -21,7 +21,7 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.net.UnknownHostException
-import java.util.*
+import java.util.Enumeration
 
 fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     val result = StringBuilder()
