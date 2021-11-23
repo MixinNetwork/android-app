@@ -2,9 +2,10 @@
 
 package one.mixin.android.extension
 
-import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.NetworkInfo
 import android.telephony.TelephonyManager
 import one.mixin.android.Constants
@@ -92,22 +93,15 @@ suspend fun getAutoDownloadWifiValue() = PropertyHelper.findValueByKey(Constants
 suspend fun getAutoDownloadMobileValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_MOBILE)?.toIntOrNull() ?: MOBILE_DEFAULT
 suspend fun getAutoDownloadRoamingValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_ROAMING)?.toIntOrNull() ?: ROAMING_DEFAULT
 
-@SuppressLint("MissingPermission")
 fun Context.networkType(): String {
-    val manager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-    if (manager != null) {
-        val networkInfo = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-        if (networkInfo != null && networkInfo.isConnectedOrConnecting) {
-            return "WIFI"
-        }
-    }
-    val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
-        ?: return "Other"
-    return when (telephonyManager.networkType) {
-        TelephonyManager.NETWORK_TYPE_GPRS, TelephonyManager.NETWORK_TYPE_EDGE, TelephonyManager.NETWORK_TYPE_CDMA, TelephonyManager.NETWORK_TYPE_1xRTT, TelephonyManager.NETWORK_TYPE_IDEN -> "2G"
-        TelephonyManager.NETWORK_TYPE_UMTS, TelephonyManager.NETWORK_TYPE_EVDO_0, TelephonyManager.NETWORK_TYPE_EVDO_A, TelephonyManager.NETWORK_TYPE_HSDPA, TelephonyManager.NETWORK_TYPE_HSUPA, TelephonyManager.NETWORK_TYPE_HSPA, TelephonyManager.NETWORK_TYPE_EVDO_B, TelephonyManager.NETWORK_TYPE_EHRPD, TelephonyManager.NETWORK_TYPE_HSPAP -> "3G"
-        TelephonyManager.NETWORK_TYPE_LTE -> "4G"
-        else -> "Other"
+    val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+    val nw = connectivityManager.activeNetwork ?: return "-"
+    val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return "-"
+    return when {
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WIFI"
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ETHERNET"
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "CELLULAR"
+        else -> "?"
     }
 }
 

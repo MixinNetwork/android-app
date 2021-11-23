@@ -74,7 +74,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
             val ipAddr = addr.hostAddress ?: return@addr
             val pingResult = ping(ipAddr)
             Timber.i("Ping $ipAddr result: $pingResult")
-            result.append("$prefix Ping: [$ipAddr] [${if (pingResult != null) "SUCCESS" else "FAILURE"}]").appendLine()
+            result.append("$prefix Ping: [$ipAddr] [${if (pingResult.isNullOrEmpty()) "FAILURE" else "SUCCESS"}]").appendLine()
         }
     }
     diagnosisCallback(result.appendLine().toString())
