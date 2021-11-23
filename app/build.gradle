@@ -342,7 +342,6 @@ dependencies {
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
-    implementation 'fairy.easy:httpmodel:1.0.5'
 }
 
 task ktlint(type: JavaExec, group: "verification") {

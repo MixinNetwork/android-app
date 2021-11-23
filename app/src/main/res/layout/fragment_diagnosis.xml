@@ -13,16 +13,10 @@
         app:rightIcon="@drawable/ic_content_copy"
         app:titleText="@string/setting_diagnosis" />
 
-    <FrameLayout
-        android:layout_weight="1"
+    <TextView
+        android:id="@+id/result_tv"
         android:layout_width="match_parent"
-        android:layout_height="0dp">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/diagnosis_rv"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </FrameLayout>
-
+        android:layout_height="match_parent"
+        android:textColor="?attr/text_primary"
+        android:layout_margin="24dp"/>
 </LinearLayout>
