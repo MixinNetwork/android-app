@@ -11,12 +11,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:rightIcon="@drawable/ic_content_copy"
+        android:layout_marginBottom="24dp"
         app:titleText="@string/setting_diagnosis" />
 
-    <TextView
-        android:id="@+id/result_tv"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="?attr/text_primary"
-        android:layout_margin="24dp"/>
+        android:layout_marginBottom="24dp">
+
+        <TextView
+            android:id="@+id/result_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:textColor="?attr/text_primary" />
+    </ScrollView>
 </LinearLayout>

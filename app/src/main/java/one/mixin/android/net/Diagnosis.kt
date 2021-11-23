@@ -7,6 +7,8 @@ import okhttp3.Dns
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.API.Mixin_URL
+import one.mixin.android.Constants.API.URL
 import one.mixin.android.R
 import one.mixin.android.di.HostSelectionInterceptor.Companion.CURRENT_URL
 import one.mixin.android.extension.getNetworkOperatorName
@@ -49,8 +51,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     diagnosisCallback(result.toString())
     result.clear()
 
-    val host = requireNotNull(CURRENT_URL.toUri().host)
-    result.append("Nslookup for $host").appendLine()
+    val hosts = arrayOf(CURRENT_URL.toUri().host, (if (CURRENT_URL == URL) Mixin_URL.toUri() else URL.toUri()).host)
     val dnsList = arrayListOf(
         CustomDns("8.8.8.8"),
         CustomDns("1.1.1.1"),
@@ -58,26 +59,31 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
         Dns.SYSTEM
     )
     val prefix = context.getString(R.string.parse_dns_result)
-    dnsList.forEach { dns ->
-        val dnsHost = if (dns is CustomDns) "dns ${dns.dnsHostname}" else "System DNS"
-        result.append("Use $dnsHost").appendLine()
-        val addresses = try {
-            dns.lookup(host)
-        } catch (e: UnknownHostException) {
-            null
+    hosts.forEach host@{ host ->
+        requireNotNull(host)
+        result.append("Nslookup for $host").appendLine()
+        dnsList.forEach { dns ->
+            val dnsHost = if (dns is CustomDns) "dns ${dns.dnsHostname}" else "System DNS"
+            result.append("Use $dnsHost").appendLine()
+            val addresses = try {
+                dns.lookup(host)
+            } catch (e: UnknownHostException) {
+                null
+            }
+            if (addresses.isNullOrEmpty()) {
+                result.append("Nslookup for $host use dns $dns failed").appendLine()
+                return@forEach
+            }
+            addresses.forEach addr@{ addr ->
+                val ipAddr = addr.hostAddress ?: return@addr
+                val pingResult = ping(ipAddr)
+                Timber.i("Ping $ipAddr result: $pingResult")
+                result.append("$prefix Ping: [$ipAddr] [${if (pingResult.isNullOrEmpty()) "FAILURE" else "SUCCESS"}]").appendLine()
+            }
         }
-        if (addresses.isNullOrEmpty()) {
-            result.append("Nslookup for $host use dns $dns failed").appendLine()
-            return@forEach
-        }
-        addresses.forEach addr@{ addr ->
-            val ipAddr = addr.hostAddress ?: return@addr
-            val pingResult = ping(ipAddr)
-            Timber.i("Ping $ipAddr result: $pingResult")
-            result.append("$prefix Ping: [$ipAddr] [${if (pingResult.isNullOrEmpty()) "FAILURE" else "SUCCESS"}]").appendLine()
-        }
+        diagnosisCallback(result.appendLine().toString())
+        result.clear()
     }
-    diagnosisCallback(result.appendLine().toString())
     diagnosisCallback(context.getString(R.string.diagnosis_complete))
 }
 
