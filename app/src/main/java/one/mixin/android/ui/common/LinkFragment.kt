@@ -4,13 +4,16 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.VISIBLE
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
 import one.mixin.android.vo.LinkState
 import javax.inject.Inject
 
@@ -28,12 +31,9 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         floodMessageCount = floodMessageDao.getFloodMessageCount()
-        linkState.observe(
-            viewLifecycleOwner,
-            Observer { state ->
-                check(state)
-            }
-        )
+        linkState.observe(viewLifecycleOwner) { state ->
+            check(state)
+        }
     }
 
     @Synchronized
@@ -91,14 +91,24 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     }
 
     private fun setConnecting() {
-        progressBar.visibility = VISIBLE
         stateLayout.setBackgroundResource(R.color.colorBlue)
-        stateTv.setText(R.string.state_connecting)
+        val networkAvailable = requireContext().networkConnected()
+        if (networkAvailable) {
+            progressBar.isVisible = true
+            stateTv.setText(R.string.state_connecting)
+        } else {
+            progressBar.isVisible = false
+            stateTv.setText(R.string.state_network_unavailable)
+        }
+        stateLayout.setOnClickListener {
+            DiagnosisActivity.show(requireContext())
+        }
     }
 
     private fun setSyncing() {
         progressBar.visibility = VISIBLE
         stateLayout.setBackgroundResource(R.color.stateGreen)
         stateTv.setText(R.string.state_syncing)
+        stateLayout.setOnClickListener(null)
     }
 }

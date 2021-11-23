@@ -551,6 +551,7 @@
     <string name="group_removing">Removing…</string>
     <string name="group_creating">Creating…</string>
     <string name="state_connecting">Connecting</string>
+    <string name="state_network_unavailable">Network unavailable</string>
     <string name="state_syncing">Syncing messages</string>
     <string name="state_calling">Tap to return to call</string>
     <string name="group_cant_send">You can\'t send messages to this group because you\'re no longer a participant.</string>

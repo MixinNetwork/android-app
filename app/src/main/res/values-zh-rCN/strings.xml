@@ -531,6 +531,7 @@
     <string name="group_removing">正在移除…</string>
     <string name="group_creating">正在创建…</string>
     <string name="state_connecting">正在连接</string>
+    <string name="state_network_unavailable">网络连接不可用</string>
     <string name="state_syncing">正在同步消息</string>
     <string name="state_calling">点击返回通话</string>
     <string name="group_cant_send">您不能发送消息，因为您已经不再是此群组成员。</string>
