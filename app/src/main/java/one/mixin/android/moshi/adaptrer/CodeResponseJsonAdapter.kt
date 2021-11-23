@@ -428,14 +428,14 @@ class CodeResponseJsonAdapter(
             @Suppress("UNCHECKED_CAST")
             val localConstructor: Constructor<User> = this.constructorRef
                 ?: User::class.java.getDeclaredConstructor(
-                String::class.java, String::class.java,
-                String::class.java, String::class.java, String::class.java, String::class.java,
-                String::class.java, Boolean::class.javaObjectType, String::class.java, String::class.java,
-                Boolean::class.javaObjectType, String::class.java, Boolean::class.javaObjectType,
-                Int::class.javaPrimitiveType, Util.DEFAULT_CONSTRUCTOR_MARKER
-            ).also {
-                this.constructorRef = it
-            }
+                    String::class.java, String::class.java,
+                    String::class.java, String::class.java, String::class.java, String::class.java,
+                    String::class.java, Boolean::class.javaObjectType, String::class.java, String::class.java,
+                    Boolean::class.javaObjectType, String::class.java, Boolean::class.javaObjectType,
+                    Int::class.javaPrimitiveType, Util.DEFAULT_CONSTRUCTOR_MARKER
+                ).also {
+                    this.constructorRef = it
+                }
             result = localConstructor.newInstance(
                 userId ?: throw Util.missingProperty("userId", "user_id", reader),
                 identityNumber ?: throw Util.missingProperty("identityNumber", "identity_number", reader),

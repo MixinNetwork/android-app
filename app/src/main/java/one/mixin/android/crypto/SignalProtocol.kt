@@ -2,6 +2,8 @@ package one.mixin.android.crypto
 
 import android.content.Context
 import android.util.Log
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -38,9 +40,13 @@ import org.whispersystems.libsignal.state.PreKeyBundle
 
 class SignalProtocol(ctx: Context) {
 
+    @JsonClass(generateAdapter = true)
     data class ComposeMessageData(
+        @Json(name = "keyType")
         val keyType: Int,
+        @Json(name = "cipher")
         val cipher: ByteArray,
+        @Json(name = "resendMessageId")
         val resendMessageId: String? = null
     )
 

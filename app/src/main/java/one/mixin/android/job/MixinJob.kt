@@ -19,6 +19,7 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -270,7 +271,7 @@ abstract class MixinJob(
     }
 
     protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
-        val plainText = Gson().toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
+        val plainText = getTypeAdapter<PlainJsonMessagePayload>(PlainJsonMessagePayload::class.java).toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
         val encoded = plainText.base64Encode()
         val params = BlazeMessageParam(
             conversationId,

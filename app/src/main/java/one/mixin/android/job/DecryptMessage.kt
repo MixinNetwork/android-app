@@ -5,7 +5,7 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.JsonSyntaxException
+import com.squareup.moshi.JsonDataException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -1019,7 +1019,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val plaintext = String(decryptedContent)
             try {
                 processDecryptSuccess(data, plaintext)
-            } catch (e: JsonSyntaxException) {
+            } catch (e: JsonDataException) {
                 insertInvalidMessage(data)
             }
         } catch (e: Exception) {
