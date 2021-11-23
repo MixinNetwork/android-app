@@ -267,7 +267,7 @@ open class SendMessageJob(
         deliver(encryptNormalMessage())
     }
 
-    private fun encryptNormalMessage(): BlazeMessage {
+    private fun encryptNormalMessage(): BlazeMessage<String?> {
         if (message.isLive()) {
             message.content = message.content?.base64Encode()
         }

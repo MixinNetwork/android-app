@@ -5,7 +5,7 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.JsonSyntaxException
+import com.squareup.moshi.JsonDataException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -1019,7 +1019,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val plaintext = String(decryptedContent)
             try {
                 processDecryptSuccess(data, plaintext)
-            } catch (e: JsonSyntaxException) {
+            } catch (e: JsonDataException) {
                 insertInvalidMessage(data)
             }
         } catch (e: Exception) {
@@ -1245,14 +1245,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         }
         refreshKeyMap[conversationId] = current
         val blazeMessage = createCountSignalKeys()
-        val data = signalKeysChannel(blazeMessage) ?: return
-        val count = getTypeAdapter<SignalKeyCount>(SignalKeyCount::class.java).fromJson(data.asString) ?: return
+        val count = signalKeysChannel<SignalKeyCount>(blazeMessage) ?: return
         if (count.preKeyCount >= RefreshOneTimePreKeysJob.PREKEY_MINI_NUM) {
             return
         }
 
         val bm = createSyncSignalKeys(createSyncSignalKeysParam(RefreshOneTimePreKeysJob.generateKeys()))
-        val result = signalKeysChannel(bm)
+        // Maybe other class
+        val result = signalKeysChannel<SignalKeyCount>(bm)
         if (result == null) {
             Log.w(TAG, "Registering new pre keys...")
         }

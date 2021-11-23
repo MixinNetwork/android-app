@@ -3,8 +3,6 @@ package one.mixin.android.job
 import android.os.SystemClock
 import android.util.Log
 import com.birbit.android.jobqueue.Params
-import com.google.gson.Gson
-import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ChecksumException
@@ -16,9 +14,9 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -95,9 +93,8 @@ abstract class MixinJob(
 
         if (requestSignalKeyUsers.isNotEmpty()) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
-            val data = signalKeysChannel(blazeMessage)
-            if (data != null) {
-                val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
+            val signalKeys = signalKeysChannel<List<SignalKey>>(blazeMessage)
+            if (signalKeys != null) {
                 val keys = arrayListOf<BlazeMessageParamSession>()
                 if (signalKeys.isNotEmpty()) {
                     for (key in signalKeys) {
@@ -139,8 +136,7 @@ abstract class MixinJob(
 
     protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String): Boolean {
         val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
-        val data = signalKeysChannel(blazeMessage) ?: return false
-        val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+        val keys = signalKeysChannel<List<SignalKey>>(blazeMessage) ?: return false
         if (keys.isNotEmpty() && keys.count() > 0) {
             val preKeyBundle = createPreKeyBundle(keys[0])
             signalProtocol.processSession(recipientId, preKeyBundle)
@@ -179,8 +175,7 @@ abstract class MixinJob(
                 createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId)))
             )
 
-            val data = signalKeysChannel(blazeMessage) ?: return false
-            val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+            val keys = signalKeysChannel<List<SignalKey>>(blazeMessage) ?: return false
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
                 signalProtocol.processSession(recipientId, preKeyBundle)
@@ -191,8 +186,8 @@ abstract class MixinJob(
         return true
     }
 
-    protected tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): MessageResult {
-        val bm = chatWebSocket.sendMessage(blazeMessage)
+    protected tailrec fun deliverNoThrow(blazeMessage: BlazeMessage<String?>): MessageResult {
+        val bm = chatWebSocket.sendMessage<String?>(blazeMessage)
         if (bm == null) {
             if (!MixinApplication.appContext.networkConnected() || !LinkState.isOnline(linkState.state)) {
                 throw WebSocketException()
@@ -217,11 +212,11 @@ abstract class MixinJob(
         }
     }
 
-    protected fun deliver(blazeMessage: BlazeMessage): Boolean {
+    protected fun deliver(blazeMessage: BlazeMessage<String?>): Boolean {
         blazeMessage.params?.conversation_id?.let {
             blazeMessage.params.conversation_checksum = getCheckSum(it)
         }
-        val bm = chatWebSocket.sendMessage(blazeMessage)
+        val bm = chatWebSocket.sendMessage<String?>(blazeMessage)
         if (bm == null) {
             SystemClock.sleep(SLEEP_MILLIS)
             throw WebSocketException()
@@ -242,8 +237,8 @@ abstract class MixinJob(
         return true
     }
 
-    private tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
-        val bm = chatWebSocket.sendMessage(blazeMessage)
+    private tailrec fun <T> signalKeysChannel(blazeMessage: BlazeMessage<String?>): T? {
+        val bm = chatWebSocket.sendMessage<T>(blazeMessage)
         if (bm == null) {
             SystemClock.sleep(SLEEP_MILLIS)
             return signalKeysChannel(blazeMessage)
@@ -270,7 +265,7 @@ abstract class MixinJob(
     }
 
     protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
-        val plainText = Gson().toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
+        val plainText = getTypeAdapter<PlainJsonMessagePayload>(PlainJsonMessagePayload::class.java).toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
         val encoded = plainText.base64Encode()
         val params = BlazeMessageParam(
             conversationId,
@@ -280,7 +275,7 @@ abstract class MixinJob(
             encoded,
             MessageStatus.SENDING.name
         )
-        val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
+        val bm = BlazeMessage<String?>(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
         deliverNoThrow(bm)
     }
 

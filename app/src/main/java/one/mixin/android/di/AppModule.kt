@@ -5,8 +5,8 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
-import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.Types
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
@@ -165,7 +165,7 @@ object AppModule {
                     val mixinResponse = try {
                         val type = Types.newParameterizedType(MixinResponse::class.java, Any::class.java)
                         requireNotNull(getTypeAdapter<MixinResponse<Any>>(type).fromJson(String(bytes)))
-                    } catch (e: JsonSyntaxException) {
+                    } catch (e: JsonDataException) {
                         HostSelectionInterceptor.get().switch(request)
                         throw ServerErrorException(response.code)
                     }

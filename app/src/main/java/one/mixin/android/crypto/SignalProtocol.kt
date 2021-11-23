@@ -2,6 +2,8 @@ package one.mixin.android.crypto
 
 import android.content.Context
 import android.util.Log
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -38,9 +40,13 @@ import org.whispersystems.libsignal.state.PreKeyBundle
 
 class SignalProtocol(ctx: Context) {
 
+    @JsonClass(generateAdapter = true)
     data class ComposeMessageData(
+        @Json(name = "keyType")
         val keyType: Int,
+        @Json(name = "cipher")
         val cipher: ByteArray,
+        @Json(name = "resendMessageId")
         val resendMessageId: String? = null
     )
 
@@ -194,7 +200,7 @@ class SignalProtocol(ctx: Context) {
         resendMessageId: String? = null,
         sessionId: String? = null,
         mentionData: List<String>? = null
-    ): BlazeMessage {
+    ): BlazeMessage<String?> {
         val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId.getDeviceId())
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
         val blazeParam = BlazeMessageParam(
@@ -210,7 +216,7 @@ class SignalProtocol(ctx: Context) {
         return createParamBlazeMessage(blazeParam)
     }
 
-    fun encryptGroupMessage(message: Message, mentionData: List<String>?, isSilent: Boolean? = null): BlazeMessage {
+    fun encryptGroupMessage(message: Message, mentionData: List<String>?, isSilent: Boolean? = null): BlazeMessage<String?> {
         val address = SignalProtocolAddress(message.userId, DEFAULT_DEVICE_ID)
         val senderKeyName = SenderKeyName(message.conversationId, address)
         val groupCipher = GroupCipher(senderKeyStore, senderKeyName)

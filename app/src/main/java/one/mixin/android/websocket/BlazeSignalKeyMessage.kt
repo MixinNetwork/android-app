@@ -1,16 +1,18 @@
 package one.mixin.android.websocket
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import java.util.UUID
 
+@JsonClass(generateAdapter = true)
 data class BlazeSignalKeyMessage(
-    @SerializedName("message_id")
+    @Json(name = "message_id")
     val message_id: String,
-    @SerializedName("recipient_id")
+    @Json(name = "recipient_id")
     val recipient_id: String,
-    @SerializedName("data")
+    @Json(name = "data")
     val data: String,
-    @SerializedName("session_id")
+    @Json(name = "session_id")
     val sessionId: String? = null
 )
 

@@ -1,11 +1,13 @@
 package one.mixin.android.moshi
 
 import androidx.collection.arrayMapOf
+import com.squareup.moshi.Types
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.websocket.BlazeMessage
 import org.junit.Test
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
@@ -125,5 +127,17 @@ class MoshiTest {
         val iceCandidates = listJsonAdapter.fromJson(arrayContent)
         println(listJsonAdapter.toJson(iceCandidates))
         assertEquals(iceCandidates?.size, 2)
+    }
+
+    @Test
+    fun blazeMessage() {
+        val src = """
+           {"id":"9194f3bf-edd2-4761-bba6-acd23c06b926","action":"LIST_PENDING_MESSAGES"} 
+        """
+        val blazeMessageType =
+            Types.newParameterizedType(BlazeMessage::class.java, String::class.java)
+        val jsonAdapter = getTypeAdapter<BlazeMessage<String?>>(blazeMessageType)
+        val blazeMessage = jsonAdapter.fromJson(src)
+        println("id:${blazeMessage?.id}")
     }
 }

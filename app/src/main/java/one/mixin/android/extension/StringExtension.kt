@@ -13,9 +13,6 @@ import android.net.Uri
 import android.text.Editable
 import androidx.core.net.toUri
 import com.google.android.exoplayer2.util.Util
-import com.google.common.reflect.TypeToken
-import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.ByteMatrix
@@ -215,8 +212,6 @@ inline fun String.sha256(): ByteArray {
 inline fun String.isWebUrl(): Boolean {
     return startsWith("http://", true) || startsWith("https://", true)
 }
-
-inline fun <reified T> Gson.fromJson(json: JsonElement) = this.fromJson<T>(json, object : TypeToken<T>() {}.type)!!
 
 private val HEX_CHARS = "0123456789abcdef"
 fun ByteArray.toHex(): String {

@@ -1,16 +1,23 @@
 package one.mixin.android.websocket
 
-import com.google.gson.JsonElement
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.api.ResponseError
 import one.mixin.android.extension.notNullWithElse
 import java.io.Serializable
 import java.util.UUID
 
-data class BlazeMessage(
+@JsonClass(generateAdapter = true)
+data class BlazeMessage<T>(
+    @Json(name = "id")
     var id: String,
+    @Json(name = "action")
     val action: String,
+    @Json(name = "params")
     val params: BlazeMessageParam?,
-    val data: JsonElement? = null, // Todo replace
+    @Json(name = "data")
+    val data: T? = null,
+    @Json(name = "error")
     val error: ResponseError? = null
 ) : Serializable {
 
@@ -37,31 +44,31 @@ const val CREATE_KRAKEN = "CREATE_KRAKEN"
 const val LIST_KRAKEN_PEERS = "LIST_KRAKEN_PEERS"
 
 fun createParamBlazeMessage(param: BlazeMessageParam) =
-    BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
+    BlazeMessage<String?>(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
 
-fun createListPendingMessage(offset: String?) = BlazeMessage(
+fun createListPendingMessage(offset: String?) = BlazeMessage<String?>(
     UUID.randomUUID().toString(),
     LIST_PENDING_MESSAGES,
     offset.notNullWithElse({ BlazeMessageParam(offset = it) }, null)
 )
 
 fun createCountSignalKeys() =
-    BlazeMessage(UUID.randomUUID().toString(), COUNT_SIGNAL_KEYS, null)
+    BlazeMessage<String?>(UUID.randomUUID().toString(), COUNT_SIGNAL_KEYS, null)
 
 fun createConsumeSessionSignalKeys(param: BlazeMessageParam) =
-    BlazeMessage(UUID.randomUUID().toString(), CONSUME_SESSION_SIGNAL_KEYS, param)
+    BlazeMessage<String?>(UUID.randomUUID().toString(), CONSUME_SESSION_SIGNAL_KEYS, param)
 
 fun createSyncSignalKeys(param: BlazeMessageParam) =
-    BlazeMessage(UUID.randomUUID().toString(), SYNC_SIGNAL_KEYS, param)
+    BlazeMessage<String?>(UUID.randomUUID().toString(), SYNC_SIGNAL_KEYS, param)
 
 fun createSignalKeyMessage(param: BlazeMessageParam) =
-    BlazeMessage(UUID.randomUUID().toString(), CREATE_SIGNAL_KEY_MESSAGES, param)
+    BlazeMessage<String?>(UUID.randomUUID().toString(), CREATE_SIGNAL_KEY_MESSAGES, param)
 
 fun createCallMessage(param: BlazeMessageParam) =
-    BlazeMessage(UUID.randomUUID().toString(), CREATE_CALL, param)
+    BlazeMessage<String?>(UUID.randomUUID().toString(), CREATE_CALL, param)
 
 fun createKrakenMessage(param: BlazeMessageParam) =
-    BlazeMessage(UUID.randomUUID().toString(), CREATE_KRAKEN, param)
+    BlazeMessage<String?>(UUID.randomUUID().toString(), CREATE_KRAKEN, param)
 
 fun createListKrakenPeers(param: BlazeMessageParam) =
-    BlazeMessage(UUID.randomUUID().toString(), LIST_KRAKEN_PEERS, param)
+    BlazeMessage<String?>(UUID.randomUUID().toString(), LIST_KRAKEN_PEERS, param)

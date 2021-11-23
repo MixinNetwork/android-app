@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import android.os.SystemClock
-import com.google.gson.JsonElement
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -122,8 +121,8 @@ open class Injector {
         entryPoint.inject(this)
     }
 
-    protected tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
-        val bm = chatWebSocket.sendMessage(blazeMessage)
+    protected tailrec fun <T> signalKeysChannel(blazeMessage: BlazeMessage<String?>): T? {
+        val bm = chatWebSocket.sendMessage<T>(blazeMessage)
         if (bm == null) {
             SystemClock.sleep(SLEEP_MILLIS)
             return signalKeysChannel(blazeMessage)
