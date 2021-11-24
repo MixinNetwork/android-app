@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.Types.newParameterizedType
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
@@ -45,6 +46,7 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
+import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -176,7 +178,12 @@ class ChatWebSocket(
             try {
                 val json = bytes.ungzip()
                 val blazeMessageType = newParameterizedType(BlazeMessage::class.java, BlazeMessageData::class.java)
-                val blazeMessage = getTypeAdapter<BlazeMessage<BlazeMessageData?>>(blazeMessageType).fromJson(json) ?: return@launch
+                val blazeMessage = try {
+                    getTypeAdapter<BlazeMessage<BlazeMessageData?>>(blazeMessageType).fromJson(json) ?: return@launch
+                } catch (e: JsonDataException) {
+                    Timber.e("Can't parse blaze message: $json")
+                    return@launch
+                }
                 if (blazeMessage.error == null) {
                     if (transactions[blazeMessage.id] != null) {
                         transactions[blazeMessage.id]!!.success.success(blazeMessage)
