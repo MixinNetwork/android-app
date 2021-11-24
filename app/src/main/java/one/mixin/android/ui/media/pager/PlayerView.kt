@@ -221,6 +221,8 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         override fun onVideoSizeChanged(videoSize: VideoSize) {
             val pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio
             val unappliedRotationDegrees = videoSize.unappliedRotationDegrees
+            val width = videoSize.width
+            val height = videoSize.height
             if (VideoPlayer.player().mId != currentMessageId) {
                 return
             }
