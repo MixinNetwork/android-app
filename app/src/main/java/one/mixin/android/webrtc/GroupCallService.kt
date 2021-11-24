@@ -87,6 +87,8 @@ class GroupCallService : CallService() {
     @Inject
     lateinit var conversationApi: ConversationService
 
+    private val gson = Gson()
+
     private var disposable: Disposable? = null
 
     private var reconnectTimeoutCount = 0
@@ -330,7 +332,7 @@ class GroupCallService : CallService() {
         )
         val bm = createListKrakenPeers(blazeMessageParam)
         val json = getJsonElement(bm) ?: return null
-        return Gson().fromJson(json, PeerList::class.java)
+        return gson.fromJson(json, PeerList::class.java)
     }
 
     private fun handleReceiveInvite(intent: Intent) {
@@ -705,7 +707,7 @@ class GroupCallService : CallService() {
     private fun getBlazeMessageData(blazeMessage: BlazeMessage): BlazeMessageData? {
         val bm = webSocketChannel(blazeMessage)
         return if (bm != null) {
-            Gson().fromJson(bm.data, BlazeMessageData::class.java)
+            gson.fromJson(bm.data, BlazeMessageData::class.java)
         } else null
     }
 
@@ -831,7 +833,7 @@ class GroupCallService : CallService() {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
             val data = getJsonElement(blazeMessage)
             if (data != null) {
-                val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
+                val signalKeys = gson.fromJson<ArrayList<SignalKey>>(data)
                 val keys = arrayListOf<BlazeMessageParamSession>()
                 if (signalKeys.isNotEmpty()) {
                     for (key in signalKeys) {

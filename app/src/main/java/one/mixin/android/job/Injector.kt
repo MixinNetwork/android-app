@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import android.os.SystemClock
+import com.google.gson.Gson
 import com.google.gson.JsonElement
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -110,6 +111,8 @@ open class Injector {
     lateinit var pinMessageDao: PinMessageDao
     @Inject
     lateinit var database: MixinDatabase
+
+    protected val gson: Gson = Gson()
 
     @InstallIn(SingletonComponent::class)
     @EntryPoint

@@ -70,6 +70,8 @@ class ChatWebSocket(
     private val accountId = Session.getAccountId()
     private var homeUrl = Mixin_WS_URL
 
+    private val gson = Gson()
+
     companion object {
         val TAG = ChatWebSocket::class.java.simpleName
     }
@@ -125,7 +127,7 @@ class ChatWebSocket(
         )
         if (client != null && connected) {
             transactions[blazeMessage.id] = transaction
-            val result = client!!.send(Gson().toJson(blazeMessage).gzip())
+            val result = client!!.send(gson.toJson(blazeMessage).gzip())
             if (result) {
                 latch.await(5, TimeUnit.SECONDS)
             }
@@ -151,7 +153,7 @@ class ChatWebSocket(
             }
         )
         transactions[blazeMessage.id] = transaction
-        client?.send(Gson().toJson(blazeMessage).gzip())
+        client?.send(gson.toJson(blazeMessage).gzip())
     }
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -173,7 +175,7 @@ class ChatWebSocket(
         MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
             try {
                 val json = bytes.ungzip()
-                val blazeMessage = Gson().fromJson(json, BlazeMessage::class.java)
+                val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)
                 if (blazeMessage.error == null) {
                     if (transactions[blazeMessage.id] != null) {
                         transactions[blazeMessage.id]!!.success.success(blazeMessage)
@@ -269,7 +271,7 @@ class ChatWebSocket(
     }
 
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
-        val data = Gson().fromJson(blazeMessage.data, BlazeMessageData::class.java)
+        val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))

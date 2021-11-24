@@ -95,6 +95,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var messageService: MessageService
 
     private val accountId = Session.getAccountId()
+    private val gson = Gson()
 
     private val powerManager by lazy { getSystemService<PowerManager>() }
     private var isIgnoringBatteryOptimizations = false
@@ -241,7 +242,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
         try {
-            messageService.acknowledgements(ackMessages.map { Gson().fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
+            messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
@@ -254,8 +255,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (jobs.isEmpty() || accountId == null) {
             return
         }
-        jobs.map { Gson().fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-            val plainText =  Gson().toJson(
+        jobs.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+            val plainText =  gson.toJson(
                 PlainJsonMessagePayload(
                     action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
                     ackMessages = it

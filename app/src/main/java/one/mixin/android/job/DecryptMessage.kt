@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.Gson
 import com.squareup.moshi.JsonDataException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -1247,7 +1246,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         refreshKeyMap[conversationId] = current
         val blazeMessage = createCountSignalKeys()
         val data = signalKeysChannel(blazeMessage) ?: return
-        val count = Gson().fromJson(data, SignalKeyCount::class.java)
+        val count = gson.fromJson(data, SignalKeyCount::class.java)
         if (count.preKeyCount >= RefreshOneTimePreKeysJob.PREKEY_MINI_NUM) {
             return
         }
