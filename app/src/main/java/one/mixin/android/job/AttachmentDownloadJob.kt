@@ -33,6 +33,7 @@ import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.toJson
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import java.io.File
@@ -93,7 +94,7 @@ class AttachmentDownloadJob(
             attachmentResponse.view_url?.let {
                 val result = decryptAttachment(it)
                 if (result) {
-                    val attachmentExtra = AttachmentExtra(attachmentResponse.attachment_id, message.id, attachmentResponse.created_at).toString()
+                    val attachmentExtra = AttachmentExtra(attachmentResponse.attachment_id, message.id, attachmentResponse.created_at).toJson()
                     messageDao.updateMessageContent(attachmentExtra, message.id)
                 }
             }

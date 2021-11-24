@@ -1,7 +1,9 @@
 package one.mixin.android.api.request
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class AccountUpdateRequest(
     @Json(name = "full_name")
     val fullName: String? = null,
