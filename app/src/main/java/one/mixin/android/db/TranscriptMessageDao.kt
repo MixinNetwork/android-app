@@ -16,10 +16,10 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
             "'SIGNAL_DATA', 'PLAIN_DATA', 'ENCRYPTED_DATA', 'SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_AUDIO', 'PLAIN_AUDIO', 'ENCRYPTED_AUDIO', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO'"
     }
 
-    @Query("SELECT count(*) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
+    @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
     fun hasUploadedAttachment(transcriptId: String): Int
 
-    @Query("SELECT count(*) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
+    @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
@@ -69,7 +69,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     )
     fun getTranscriptMessages(transcriptId: String): LiveData<List<ChatHistoryMessageItem>>
 
-    @Query("SELECT count(*) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId)")
+    @Query("SELECT count(1) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId)")
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
@@ -115,10 +115,10 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("SELECT sum(media_size) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
     fun getMediaSizeTotalById(conversationId: String): Long?
 
-    @Query("SELECT count(*) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
+    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
     fun countTranscriptByConversationId(conversationId: String): Int
 
-    @Query("SELECT count(*) FROM transcript_messages WHERE message_id = :messageId")
+    @Query("SELECT count(1) FROM transcript_messages WHERE message_id = :messageId")
     fun countTranscriptByMessageId(messageId: String): Int
 
     @Query("DELETE FROM transcript_messages WHERE transcript_id = :transcriptId")

@@ -71,7 +71,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
         )
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
+
         messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
 
         val isMe = messageItem.userId == Session.getAccountId()
@@ -102,12 +102,15 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }
 
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
+            isRepresentative = false,
+            isSecret = false
+        )
+
         if (messageItem.transcriptId == null) {
             binding.root.setOnLongClickListener {
                 onItemListener.onMenu(binding.chatJump, messageItem)

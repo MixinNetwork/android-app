@@ -144,8 +144,10 @@
 
         </RelativeLayout>
 
-        <include
-            android:id="@+id/data_wrapper"
-            layout="@layout/date_wrapper" />
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

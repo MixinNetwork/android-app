@@ -5,6 +5,7 @@ import android.graphics.Color
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.SystemConversationAction
 

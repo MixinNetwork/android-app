@@ -5,7 +5,6 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextBinding
@@ -14,8 +13,8 @@ import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
@@ -182,18 +181,14 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
 
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             messageItem.status,
-            messageItem.isSecret(),
-            isRepresentative
-        ) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
+            messageItem.isPin ?: false,
+            isRepresentative,
+            messageItem.isSecret()
+        )
         chatLayout(isMe, isLast)
 
         attachAction = if (messageItem.mentionRead == false) {

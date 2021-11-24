@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:parentTag="LinearLayout">
+
+    <ImageView
+        android:id="@+id/chat_pin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:src="@drawable/ic_chat_pin"
+        android:layout_marginEnd="2dp"
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
+        android:id="@+id/chat_representative"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:src="@drawable/ic_chat_representative"
+        android:layout_marginEnd="2dp"
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
+        android:id="@+id/chat_secret"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:src="@drawable/ic_chat_secret"
+        android:layout_marginEnd="2dp"
+        tools:ignore="ContentDescription"/>
+
+    <TextView
+        android:id="@+id/chat_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_light"
+        android:textColor="@color/color_chat_date"
+        android:textSize="@dimen/chat_date_size"
+        android:layout_marginEnd="2dp"
+        tools:ignore="SmallSp"/>
+
+    <ImageView
+        android:id="@+id/chat_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_status_sent"
+        tools:ignore="ContentDescription"/>
+
+</merge>

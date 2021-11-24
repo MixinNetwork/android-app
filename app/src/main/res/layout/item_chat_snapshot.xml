@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -11,7 +12,8 @@
         android:layout_marginEnd="4dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="1.5dp"
-        android:background="@drawable/chat_bubble_other">
+        android:background="@drawable/chat_bubble_other"
+        tools:ignore="UselessParent">
 
         <Space
             android:id="@+id/center"
@@ -53,9 +55,12 @@
             android:textColor="@color/gray_50"
             android:textSize="12sp" />
 
-        <include
-            android:id="@+id/bill_time"
-            layout="@layout/date_wrapper" />
+        <one.mixin.android.widget.bubble.TimeBubble
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true" />
 
     </RelativeLayout>
 </FrameLayout>

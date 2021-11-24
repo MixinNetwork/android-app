@@ -78,13 +78,15 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
         } else {
             binding.chatName.visibility = View.GONE
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
+            isRepresentative = false,
+            isSecret = false
+        )
 
         binding.fileNameTv.text = messageItem.mediaName
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {

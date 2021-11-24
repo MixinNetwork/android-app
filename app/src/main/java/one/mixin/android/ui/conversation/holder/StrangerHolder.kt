@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation.holder
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatStrangerBinding
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 
 class StrangerHolder constructor(val binding: ItemChatStrangerBinding) : BaseViewHolder(binding.root) {
 

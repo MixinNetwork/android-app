@@ -19,7 +19,6 @@ import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.databinding.ItemChatAudioBinding
 import one.mixin.android.databinding.ItemChatAudioQuoteBinding
-import one.mixin.android.databinding.ItemChatBillBinding
 import one.mixin.android.databinding.ItemChatCallBinding
 import one.mixin.android.databinding.ItemChatCardBinding
 import one.mixin.android.databinding.ItemChatContactCardBinding
@@ -33,6 +32,7 @@ import one.mixin.android.databinding.ItemChatLocationBinding
 import one.mixin.android.databinding.ItemChatPostBinding
 import one.mixin.android.databinding.ItemChatRecallBinding
 import one.mixin.android.databinding.ItemChatSecretBinding
+import one.mixin.android.databinding.ItemChatSnapshotBinding
 import one.mixin.android.databinding.ItemChatStickerBinding
 import one.mixin.android.databinding.ItemChatStrangerBinding
 import one.mixin.android.databinding.ItemChatSystemBinding
@@ -56,9 +56,6 @@ import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
 import one.mixin.android.ui.conversation.holder.AudioQuoteHolder
-import one.mixin.android.ui.conversation.holder.BaseMentionHolder
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.holder.BillHolder
 import one.mixin.android.ui.conversation.holder.CallHolder
 import one.mixin.android.ui.conversation.holder.CardHolder
 import one.mixin.android.ui.conversation.holder.ContactCardHolder
@@ -74,6 +71,7 @@ import one.mixin.android.ui.conversation.holder.PinMessageHolder
 import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
+import one.mixin.android.ui.conversation.holder.SnapshotHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
 import one.mixin.android.ui.conversation.holder.StrangerHolder
 import one.mixin.android.ui.conversation.holder.SystemHolder
@@ -86,6 +84,8 @@ import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
+import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
@@ -326,8 +326,8 @@ class ConversationAdapter(
                 CARD_TYPE -> {
                     (holder as CardHolder).bind(it)
                 }
-                BILL_TYPE -> {
-                    (holder as BillHolder).bind(
+                SNAPSHOT_TYPE -> {
+                    (holder as SnapshotHolder).bind(
                         it,
                         isLast(position),
                         selectSet.size > 0,
@@ -710,8 +710,8 @@ class ConversationAdapter(
             CARD_TYPE -> {
                 CardHolder(ItemChatCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
-            BILL_TYPE -> {
-                BillHolder(ItemChatBillBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            SNAPSHOT_TYPE -> {
+                SnapshotHolder(ItemChatSnapshotBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             }
             WAITING_TYPE -> {
                 WaitingHolder(ItemChatWaitingBinding.inflate(LayoutInflater.from(parent.context), parent, false), onItemListener)
@@ -830,7 +830,7 @@ class ConversationAdapter(
                         }
                     }
                     item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
-                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
+                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> SNAPSHOT_TYPE
                     item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
                     item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
                     item.isContact() -> {
@@ -887,7 +887,7 @@ class ConversationAdapter(
         const val CONTACT_CARD_TYPE = 8
         const val CONTACT_CARD_QUOTE_TYPE = -8
         const val CARD_TYPE = 9
-        const val BILL_TYPE = 10
+        const val SNAPSHOT_TYPE = 10
         const val POST_TYPE = 11
         const val ACTION_TYPE = 12
         const val ACTION_CARD_TYPE = 13
@@ -923,7 +923,8 @@ class ConversationAdapter(
                     oldItem.assetUrl == newItem.assetUrl &&
                     oldItem.assetIcon == newItem.assetIcon &&
                     oldItem.mentionRead == newItem.mentionRead &&
-                    oldItem.content == newItem.content
+                    oldItem.content == newItem.content &&
+                    oldItem.isPin == newItem.isPin
             }
         }
     }

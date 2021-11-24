@@ -3,12 +3,10 @@ package one.mixin.android.ui.conversation.chathistory.holder
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
@@ -31,19 +29,14 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
         chatLayout(isMe, isLast)
-
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             MessageStatus.DELIVERED.name,
-            isSecret = false,
-            isRepresentative = false
-        ) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
+            false,
+            isRepresentative = false,
+            isSecret = false
+        )
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -97,11 +90,11 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
                 )
             }
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
-            (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd =
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd =
                 16.dp
         } else {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
-            (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,

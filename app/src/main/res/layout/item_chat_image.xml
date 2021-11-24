@@ -86,15 +86,15 @@
                 android:layout_height="wrap_content"
                 tools:ignore="ContentDescription" />
 
-            <one.mixin.android.widget.TimeView
+            <one.mixin.android.widget.bubble.TimeBubble
                 android:id="@+id/chat_time"
                 android:background="@drawable/bg_bubble_shadow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:layout_marginBottom="4dp"
-                android:fontFamily="@font/roboto_light"
-                android:gravity="end|center_vertical" />
-
+                android:gravity="end|bottom"
+                tools:text="7:48AM" />
         </one.mixin.android.widget.ShadowLayout>
 
         <one.mixin.android.widget.CircleProgress

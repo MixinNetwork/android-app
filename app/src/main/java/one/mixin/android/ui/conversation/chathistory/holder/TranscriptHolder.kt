@@ -10,7 +10,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.util.GsonHelper
@@ -196,19 +195,17 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(
+
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             MessageStatus.DELIVERED.name,
-            isSecret = false,
+            false,
             isRepresentative = false,
+            isSecret = false,
             isWhite = true
-        ) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+        )
+
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
             binding.root.setOnLongClickListener {

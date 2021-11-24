@@ -7,12 +7,11 @@ import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
-open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
+open class ShareContactRenderer(val context: Context) {
 
     private val binding = ItemChatContactCardBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
@@ -29,14 +28,17 @@ open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
         )
         binding.nameTv.text = user.fullName
         binding.idTv.text = user.identityNumber
-        binding.dataWrapper.chatTime.timeAgoClock(nowInUtc())
         user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
 
-        setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = true) { statusIcon, secretIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-        }
+        binding.chatTime.load(
+            true,
+            nowInUtc(),
+            MessageStatus.DELIVERED.name,
+            isPin = false,
+            isRepresentative = false,
+            isSecret = true,
+            isWhite = true
+        )
 
         binding.chatContentLayout.setBackgroundResource(
             if (!isNightMode) {

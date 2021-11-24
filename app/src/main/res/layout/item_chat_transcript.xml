@@ -105,15 +105,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <one.mixin.android.widget.TimeView
+        <one.mixin.android.widget.bubble.TimeBubble
             android:id="@+id/chat_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
             android:layout_marginBottom="6dp"
             android:background="@drawable/bg_bubble_shadow"
-            android:gravity="center_vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="7:48AM" />
 
         <ImageView
             android:id="@+id/chat_post"

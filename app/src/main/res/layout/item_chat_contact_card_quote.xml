@@ -163,15 +163,13 @@
                 </RelativeLayout>
             </one.mixin.android.widget.QuoteLayout>
 
-            <one.mixin.android.widget.TimeView
+            <one.mixin.android.widget.bubble.TimeBubble
                 android:id="@+id/chat_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
                 android:layout_marginEnd="4dp"
-                android:layout_marginBottom="4dp"
-                android:gravity="end|center_vertical"
-                app:text_color="@color/color_chat_date" />
+                android:layout_marginBottom="4dp" />
         </FrameLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
