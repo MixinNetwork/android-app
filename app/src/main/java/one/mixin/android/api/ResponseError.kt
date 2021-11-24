@@ -6,12 +6,12 @@ import java.io.Serializable
 
 @JsonClass(generateAdapter = true)
 data class ResponseError(
-    @Json(name = "data")
+    @Json(name = "status")
     val status: Int,
     @Json(name = "code")
     val code: Int,
     @Json(name = "description")
-    val description: String,
+    val description: String?,
     @Json(name = "extra")
     val extra: Map<String, String>? = null
 ) : Serializable {

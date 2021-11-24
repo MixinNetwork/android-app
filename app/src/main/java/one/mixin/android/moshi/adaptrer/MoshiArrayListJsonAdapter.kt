@@ -20,7 +20,9 @@ abstract class MoshiArrayListJsonAdapter<C : MutableCollection<T>?, T> private c
         val result = newCollection()
         reader.beginArray()
         while (reader.hasNext()) {
-            result?.add(elementAdapter.fromJson(reader)!!)
+            elementAdapter.fromJson(reader)?.let {
+                result?.add(it)
+            }
         }
         reader.endArray()
         return result
@@ -28,8 +30,9 @@ abstract class MoshiArrayListJsonAdapter<C : MutableCollection<T>?, T> private c
 
     @Throws(IOException::class)
     override fun toJson(writer: JsonWriter, value: C?) {
+        if (value == null) return
         writer.beginArray()
-        for (element in value!!) {
+        value.forEach { element ->
             elementAdapter.toJson(writer, element)
         }
         writer.endArray()

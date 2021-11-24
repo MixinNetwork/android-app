@@ -8,7 +8,6 @@ import one.mixin.android.vo.MessageStatus
 import java.io.Serializable
 import java.util.UUID
 
-@JsonClass(generateAdapter = true)
 data class BlazeMessageParam(
     @Json(name = "conversation_id")
     val conversation_id: String? = null,

@@ -8,6 +8,7 @@ import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.websocket.BlazeMessage
+import one.mixin.android.websocket.BlazeSignalKeyMessage
 import org.junit.Test
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
@@ -151,5 +152,19 @@ class MoshiTest {
         val mapString = jsonAdapter.toJson(map)
         val json = jsonAdapter.fromJson(mapString)!!
         assertEquals(json["1"], map["1"])
+    }
+
+    @Test
+    fun testBlazeMessage(){
+        val type = Types.newParameterizedType(List::class.java, BlazeSignalKeyMessage::class.java)
+        val jsonAdapter = getTypeAdapter<List<BlazeSignalKeyMessage>>(type)
+        println(jsonAdapter.toJson(null))
+    }
+
+    @Test
+    fun testEmptyData(){
+        val model = TestModel<Child?>("test title")
+        val jsonAdapter = getTypeAdapter<TestModel<Child?>>(Types.newParameterizedType(TestModel::class.java, Child::class.java))
+        println(jsonAdapter.toJson(model))
     }
 }
