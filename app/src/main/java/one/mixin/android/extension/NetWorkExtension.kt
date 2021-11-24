@@ -3,8 +3,11 @@
 package one.mixin.android.extension
 
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.NetworkInfo
+import android.telephony.TelephonyManager
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Download.MOBILE_DEFAULT
 import one.mixin.android.Constants.Download.ROAMING_DEFAULT
@@ -89,3 +92,20 @@ suspend fun Context.autoDownload(support: suspend (value: Int) -> Boolean, actio
 suspend fun getAutoDownloadWifiValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_WIFI)?.toIntOrNull() ?: WIFI_DEFAULT
 suspend fun getAutoDownloadMobileValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_MOBILE)?.toIntOrNull() ?: MOBILE_DEFAULT
 suspend fun getAutoDownloadRoamingValue() = PropertyHelper.findValueByKey(Constants.Download.AUTO_DOWNLOAD_ROAMING)?.toIntOrNull() ?: ROAMING_DEFAULT
+
+fun Context.networkType(): String {
+    val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+    val nw = connectivityManager.activeNetwork ?: return "-"
+    val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return "-"
+    return when {
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WIFI"
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ETHERNET"
+        actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "CELLULAR"
+        else -> "?"
+    }
+}
+
+fun Context.getNetworkOperatorName(): String {
+    val manager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    return manager.networkOperatorName
+}

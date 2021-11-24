@@ -551,6 +551,7 @@
     <string name="group_removing">Removing…</string>
     <string name="group_creating">Creating…</string>
     <string name="state_connecting">Connecting</string>
+    <string name="state_network_unavailable">Network unavailable</string>
     <string name="state_syncing">Syncing messages</string>
     <string name="state_calling">Tap to return to call</string>
     <string name="group_cant_send">You can\'t send messages to this group because you\'re no longer a participant.</string>
@@ -654,6 +655,7 @@
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
     <string name="setting_notification_confirmation">Notification and Confirmation</string>
     <string name="setting_appearance">Appearance</string>
+    <string name="setting_diagnosis">Net Diagnosis</string>
     <string name="setting_theme">Theme</string>
     <string name="setting_phone_number">Phone Number</string>
     <string name="setting_phone_number_privacy">Who can find me by my number</string>
@@ -1075,4 +1077,18 @@
     <string name="chat_pin_card_message">a card</string>
     <string name="unpin_success">Message unpinned</string>
     <string name="pin_success">Message pinned</string>
+
+    <!--  diagnosis  -->
+    <string name="app_version">App version</string>
+    <string name="manufacturer">Manufacturer</string>
+    <string name="model">Model</string>
+    <string name="system_version">System version</string>
+    <string name="is_network_available">isNetworkAvailable</string>
+    <string name="netWork_type">netWorkType</string>
+    <string name="local_ip">local IP</string>
+    <string name="export_ip">export IP</string>
+    <string name="operator">Operator</string>
+    <string name="network_operator">networkOperator</string>
+    <string name="parse_dns_result">Parse DNS result: </string>
+    <string name="diagnosis_complete">Diagnosis Complete</string>
 </resources>

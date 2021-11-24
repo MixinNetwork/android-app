@@ -531,6 +531,7 @@
     <string name="group_removing">正在移除…</string>
     <string name="group_creating">正在创建…</string>
     <string name="state_connecting">正在连接</string>
+    <string name="state_network_unavailable">网络连接不可用</string>
     <string name="state_syncing">正在同步消息</string>
     <string name="state_calling">点击返回通话</string>
     <string name="group_cant_send">您不能发送消息，因为您已经不再是此群组成员。</string>
@@ -635,6 +636,7 @@
     <string name="setting_notification_confirmation">通知和确认</string>
     <string name="contact_share_apps_no_app">没有应用</string>
     <string name="setting_appearance">外观</string>
+    <string name="setting_diagnosis">网络诊断</string>
     <string name="setting_theme">主题</string>
     <string name="setting_phone_number">手机号码</string>
     <string name="setting_phone_number_privacy">谁可以通过手机号找到你</string>
@@ -1054,4 +1056,18 @@
     <string name="chat_pin_card_message">一个卡片</string>
     <string name="unpin_success">置顶消息已取消</string>
     <string name="pin_success">消息已置顶</string>
+
+    <!--  diagnosis  -->
+    <string name="app_version">应用版本</string>
+    <string name="manufacturer">生产商</string>
+    <string name="model">手机型号</string>
+    <string name="system_version">系统版本</string>
+    <string name="is_network_available">网络已连接</string>
+    <string name="netWork_type">网络类型</string>
+    <string name="local_ip">本地 IP</string>
+    <string name="export_ip">出口 IP</string>
+    <string name="operator">运营商</string>
+    <string name="network_operator">网络运营商</string>
+    <string name="parse_dns_result">解析 DNS 结果</string>
+    <string name="diagnosis_complete">诊断完成</string>
 </resources>
