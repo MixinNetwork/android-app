@@ -126,9 +126,12 @@
                 app:layout_constraintStart_toEndOf="@id/file_progress"
                 app:layout_constraintTop_toBottomOf="@id/file_name_tv" />
 
-            <include
-                android:id="@+id/bill_time"
-                layout="@layout/date_wrapper" />
+            <one.mixin.android.widget.bubble.TimeBubble
+                android:id="@+id/chat_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>

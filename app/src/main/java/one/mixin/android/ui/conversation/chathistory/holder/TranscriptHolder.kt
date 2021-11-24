@@ -194,19 +194,17 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(
+
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             MessageStatus.DELIVERED.name,
-            isSecret = false,
+            false,
             isRepresentative = false,
+            isSecret = false,
             isWhite = true
-        ) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+        )
+
         chatLayout(isMe, isLast)
         if (messageItem.transcriptId == null) {
             binding.root.setOnLongClickListener {

@@ -127,13 +127,13 @@
                     </LinearLayout>
                 </FrameLayout>
 
-                <one.mixin.android.widget.TimeView
+                <one.mixin.android.widget.bubble.TimeBubble
                     android:id="@+id/chat_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|end"
                     android:background="@drawable/bg_bubble_shadow"
-                    android:gravity="end|center_vertical" />
+                    android:fontFamily="@font/roboto_light" />
 
             </one.mixin.android.widget.QuoteLayout>
         </FrameLayout>

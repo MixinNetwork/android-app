@@ -10,6 +10,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
@@ -81,7 +82,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
         )
         binding.nameTv.text = messageItem.sharedUserFullName
         binding.idTv.text = messageItem.sharedUserIdentityNumber
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
+
         messageItem.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
 
         val isMe = Session.getAccountId() == messageItem.userId
@@ -142,11 +143,13 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
     }
 }

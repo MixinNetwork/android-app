@@ -6,21 +6,20 @@ import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.`internal`.Util
+import one.mixin.android.api.request.SignalKeyRequest
+import one.mixin.android.websocket.BlazeMessageParam
+import one.mixin.android.websocket.BlazeMessageParamSession
+import one.mixin.android.websocket.BlazeSignalKeyMessage
 import java.lang.reflect.Constructor
 import java.util.ArrayList
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
-import kotlin.Unit
 import kotlin.collections.List
 import kotlin.collections.emptySet
 import kotlin.jvm.Volatile
 import kotlin.text.buildString
-import one.mixin.android.api.request.SignalKeyRequest
-import one.mixin.android.websocket.BlazeMessageParam
-import one.mixin.android.websocket.BlazeMessageParamSession
-import one.mixin.android.websocket.BlazeSignalKeyMessage
 
 class BlazeMessageParamJsonAdapter(
     moshi: Moshi
@@ -39,12 +38,13 @@ class BlazeMessageParamJsonAdapter(
 
     private val nullableArrayListOfBlazeMessageParamSessionAdapter:
         JsonAdapter<ArrayList<BlazeMessageParamSession>?> =
-        moshi.adapter(
-            Types.newParameterizedType(
-                ArrayList::class.java,
-                BlazeMessageParamSession::class.java
-            ), emptySet(), "recipients"
-        )
+            moshi.adapter(
+                Types.newParameterizedType(
+                    ArrayList::class.java,
+                    BlazeMessageParamSession::class.java
+                ),
+                emptySet(), "recipients"
+            )
 
     private val nullableSignalKeyRequestAdapter: JsonAdapter<SignalKeyRequest?> =
         moshi.adapter(SignalKeyRequest::class.java, emptySet(), "keys")
@@ -54,7 +54,8 @@ class BlazeMessageParamJsonAdapter(
             Types.newParameterizedType(
                 List::class.java,
                 BlazeSignalKeyMessage::class.java
-            ), emptySet(), "messages"
+            ),
+            emptySet(), "messages"
         )
 
     private val nullableListOfStringAdapter: JsonAdapter<List<String>?> =
@@ -287,7 +288,7 @@ class BlazeMessageParamJsonAdapter(
         }
     }
 
-    override fun toJson(writer: JsonWriter, value_: BlazeMessageParam?): Unit {
+    override fun toJson(writer: JsonWriter, value_: BlazeMessageParam?) {
         if (value_ == null) {
             writer.nullValue()
             return

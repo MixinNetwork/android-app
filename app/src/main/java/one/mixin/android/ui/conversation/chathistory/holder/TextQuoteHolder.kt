@@ -5,13 +5,11 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isInvisible
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
@@ -19,7 +17,6 @@ import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
@@ -101,7 +98,6 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
             }
         }
 
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
@@ -142,18 +138,20 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
-        binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
                 getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(quoteContent)
             )
         }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
+            isRepresentative = false,
+            isSecret = false
+        )
+
         binding.chatContentLayout.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
         }

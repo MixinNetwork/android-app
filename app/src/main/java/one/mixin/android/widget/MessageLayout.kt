@@ -6,12 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import one.mixin.android.R
-import one.mixin.android.extension.dpToPx
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.dp
 import kotlin.math.max
 
 open class MessageLayout : ViewGroup {
-    private val offset: Int
+    private val offset: Int = 8.dp
     private var lastLineWidth: Float = 0.toFloat()
     private var isRtl: Boolean = false
     private var maxWidth: Int = 0
@@ -26,9 +25,8 @@ open class MessageLayout : ViewGroup {
         attrs,
         defStyleAttr
     ) {
-        offset = context.dpToPx(8f)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.MessageLayout, defStyleAttr, 0)
-        maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, dip(300))
+        maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, 300.dp)
         contentPadding = ta.getDimensionPixelSize(R.styleable.MessageLayout_content_padding, 0)
         ta.recycle()
     }

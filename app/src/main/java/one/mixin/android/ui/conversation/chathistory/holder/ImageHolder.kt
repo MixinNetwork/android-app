@@ -11,7 +11,6 @@ import one.mixin.android.extension.loadGifMark
 import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
@@ -55,7 +54,6 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             binding.chatName.visibility = View.GONE
         }
 
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -103,18 +101,16 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
                 }
             }
         }
-        setStatusIcon(
+
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             MessageStatus.DELIVERED.name,
-            isSecret = false,
+            false,
             isRepresentative = false,
+            isSecret = false,
             isWhite = true
-        ) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+        )
 
         dataWidth = messageItem.mediaWidth
         dataHeight = messageItem.mediaHeight

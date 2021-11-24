@@ -33,7 +33,7 @@ interface MessageDao : BaseDao<Message> {
                 st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                 h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
                 su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
-                c.name AS groupName
+                pm.message_id IS NOT NULL as isPin, c.name AS groupName
                 FROM messages m
                 INNER JOIN users u ON m.user_id = u.user_id
                 LEFT JOIN users u1 ON m.participant_id = u1.user_id
@@ -44,6 +44,7 @@ interface MessageDao : BaseDao<Message> {
                 LEFT JOIN users su ON m.shared_user_id = su.user_id
                 LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
                 LEFT JOIN message_mentions mm ON m.id = mm.message_id 
+                LEFT JOIN pin_messages pm ON m.id = pm.message_id
             """
         private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
     }

@@ -8,6 +8,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.PinMessageMinimal

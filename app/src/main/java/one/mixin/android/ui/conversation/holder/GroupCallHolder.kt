@@ -6,6 +6,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 

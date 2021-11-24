@@ -75,19 +75,22 @@ class AudioQuoteHolder constructor(val binding: ItemChatAudioQuoteBinding) : Med
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
+
         val isMe = messageItem.userId == Session.getAccountId()
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             binding.audioDuration.setText(R.string.chat_expired)
         } else {
             binding.audioDuration.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
         }
-        setStatusIcon(isMe, MessageStatus.DELIVERED.name, isSecret = false, isRepresentative = false) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
+            isRepresentative = false,
+            isSecret = false
+        )
 
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE

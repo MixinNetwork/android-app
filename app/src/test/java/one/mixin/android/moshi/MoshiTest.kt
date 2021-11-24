@@ -155,14 +155,14 @@ class MoshiTest {
     }
 
     @Test
-    fun testBlazeMessage(){
+    fun testBlazeMessage() {
         val type = Types.newParameterizedType(List::class.java, BlazeSignalKeyMessage::class.java)
         val jsonAdapter = getTypeAdapter<List<BlazeSignalKeyMessage>>(type)
         println(jsonAdapter.toJson(null))
     }
 
     @Test
-    fun testEmptyData(){
+    fun testEmptyData() {
         val model = TestModel<Child?>("test title")
         val jsonAdapter = getTypeAdapter<TestModel<Child?>>(Types.newParameterizedType(TestModel::class.java, Child::class.java))
         println(jsonAdapter.toJson(model))

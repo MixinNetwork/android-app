@@ -143,16 +143,13 @@
                         android:textSize="12sp"
                         android:visibility="invisible" />
 
-                    <one.mixin.android.widget.TimeView
+                    <one.mixin.android.widget.bubble.TimeBubble
                         android:id="@+id/chat_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentBottom="true"
-                        android:layout_gravity="bottom|end"
-                        android:drawablePadding="3dp"
-                        android:gravity="center_vertical"
-                        app:text_color="@color/color_chat_date"/>
+                        android:layout_gravity="bottom|end" />
                 </RelativeLayout>
 
             </one.mixin.android.widget.InterceptLinearLayout>

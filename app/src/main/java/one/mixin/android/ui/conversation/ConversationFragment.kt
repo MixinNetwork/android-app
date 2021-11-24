@@ -166,7 +166,7 @@ import one.mixin.android.ui.conversation.chat.ChatItemCallback.Companion.SWAP_SL
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity.Companion.JUMP_ID
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryContract
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment

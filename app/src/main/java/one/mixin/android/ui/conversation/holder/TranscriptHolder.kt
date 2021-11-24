@@ -13,6 +13,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -238,13 +239,16 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+            isWhite = true
+        )
         chatLayout(isMe, isLast)
     }
 }

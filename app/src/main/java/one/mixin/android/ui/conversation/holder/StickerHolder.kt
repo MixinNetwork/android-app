@@ -5,23 +5,20 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import androidx.constraintlayout.widget.ConstraintLayout
-import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatStickerBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.textColorResource
 
 class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewHolder(binding.root) {
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
-        binding.chatTime.chatTime.textColorResource = R.color.color_chat_date
         binding.chatSticker.round(radius)
     }
 
@@ -101,7 +98,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         messageItem.assetUrl?.let { url ->
             binding.chatSticker.loadSticker(url, messageItem.assetType)
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
+
         if (isFirst && !isMe) {
             binding.chatName.visibility = VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -116,12 +113,14 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         } else {
             binding.chatName.visibility = GONE
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret()
+        )
         chatLayout(isMe, false)
     }
 

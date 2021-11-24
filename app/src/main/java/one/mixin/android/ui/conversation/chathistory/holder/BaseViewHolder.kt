@@ -25,7 +25,6 @@ import one.mixin.android.extension.getColorCode
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
-import one.mixin.android.vo.MessageStatus
 
 abstract class BaseViewHolder constructor(containerView: View) :
     RecyclerView.ViewHolder(containerView) {
@@ -134,84 +133,6 @@ abstract class BaseViewHolder constructor(containerView: View) :
             }
     }
 
-    protected fun setStatusIcon(
-        isMe: Boolean,
-        status: String,
-        isSecret: Boolean,
-        isRepresentative: Boolean,
-        handleAction: (Drawable?, Drawable?, Drawable?) -> Unit
-    ) {
-        setStatusIcon(isMe, status, isSecret, isRepresentative, false, handleAction)
-    }
-
-    protected fun setStatusIcon(
-        isMe: Boolean,
-        status: String,
-        isSecret: Boolean,
-        isRepresentative: Boolean,
-        isWhite: Boolean,
-        handleAction: (Drawable?, Drawable?, Drawable?) -> Unit
-    ) {
-        val secretIcon = if (isSecret) {
-            if (isWhite) {
-                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_secret_white)
-            } else {
-                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_secret)
-            }
-        } else {
-            null
-        }
-        val representativeIcon = if (isRepresentative) {
-            if (isWhite) {
-                AppCompatResources.getDrawable(
-                    itemView.context,
-                    R.drawable.ic_chat_representative_white
-                )
-            } else {
-                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_representative)
-            }
-        } else {
-            null
-        }
-        if (isMe) {
-            val statusIcon: Drawable? =
-                when (status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(
-                            itemView.context,
-                            if (isWhite) {
-                                R.drawable.ic_status_sending_white
-                            } else {
-                                R.drawable.ic_status_sending
-                            }
-                        )
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(
-                            itemView.context,
-                            if (isWhite) {
-                                R.drawable.ic_status_sent_white
-                            } else {
-                                R.drawable.ic_status_sent
-                            }
-                        )
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(
-                            itemView.context,
-                            if (isWhite) {
-                                R.drawable.ic_status_delivered_white
-                            } else {
-                                R.drawable.ic_status_delivered
-                            }
-                        )
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            handleAction(statusIcon, secretIcon, representativeIcon)
-        } else {
-            handleAction(null, secretIcon, representativeIcon)
-        }
-    }
     fun chatJumpLayout(
         chatJump: ImageView,
         isMe: Boolean,

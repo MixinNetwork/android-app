@@ -37,7 +37,7 @@ class SignalKeyRequestJsonAdapter(
     }
 
     override fun toJson(writer: JsonWriter, value_: SignalKeyRequest?) {
-        if(value_ == null) return
+        if (value_ == null) return
         writer.beginObject()
         writer.name("identity_key")
         stringAdapter.toJson(writer, value_.identityKey)

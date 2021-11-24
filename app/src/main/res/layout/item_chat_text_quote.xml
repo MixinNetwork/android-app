@@ -87,12 +87,15 @@
                     android:textColor="?attr/text_primary"
                     android:textSize="14sp"/>
 
-                <include android:id="@+id/data_wrapper" layout="@layout/date_wrapper"/>
+                <one.mixin.android.widget.bubble.TimeBubble
+                    android:id="@+id/chat_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
                 <one.mixin.android.widget.QuoteView
                     android:id="@+id/chat_quote"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content" />
             </one.mixin.android.widget.MessageLayout>
         </one.mixin.android.widget.GestureFrameLayout>
     </LinearLayout>

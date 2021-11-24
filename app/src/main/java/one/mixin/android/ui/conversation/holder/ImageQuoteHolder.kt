@@ -11,6 +11,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
@@ -123,7 +124,6 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
             }
         }
 
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -255,19 +255,12 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
-
+        binding.chatTime.load(isMe, messageItem.createdAt, messageItem.status, messageItem.isPin ?: false, isRepresentative, messageItem.isSecret(), true)
         messageItem.quoteContent?.let { quoteContent ->
             binding.chatQuote.bind(
                 getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(quoteContent)
             )
         }
-
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

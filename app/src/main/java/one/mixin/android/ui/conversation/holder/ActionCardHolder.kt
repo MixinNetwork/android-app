@@ -4,14 +4,13 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
@@ -47,13 +46,16 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
                 true
             }
         }
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSecret(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
+
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -98,10 +100,10 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
                 )
             }
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
-            (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 16.dp
         } else {
             (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
-            (binding.dataWrapper.root.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
+            (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 8.dp
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,

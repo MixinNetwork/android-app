@@ -14,7 +14,6 @@ import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
@@ -24,6 +23,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
 
 class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
@@ -177,20 +177,16 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                 }
             }
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
 
-        setStatusIcon(
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             MessageStatus.DELIVERED.name,
-            isSecret = false,
+            false,
             isRepresentative = false,
+            isSecret = messageItem.isSecret(),
             isWhite = true
-        ) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            binding.chatTime.setIcon(secretIcon, representativeIcon, statusIcon)
-        }
+        )
 
         dataWidth = messageItem.mediaWidth
         dataHeight = messageItem.mediaHeight
