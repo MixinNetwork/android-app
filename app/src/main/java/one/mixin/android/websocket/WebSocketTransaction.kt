@@ -1,11 +1,11 @@
 package one.mixin.android.websocket
 
 interface TransactionCallbackSuccess {
-    fun <T> success(data: BlazeMessage<T>)
+    fun  success(data: BlazeMessage)
 }
 
 interface TransactionCallbackError {
-    fun <T> error(data: BlazeMessage<T>?)
+    fun  error(data: BlazeMessage?)
 }
 
 class WebSocketTransaction(

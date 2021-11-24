@@ -131,18 +131,6 @@ class MoshiTest {
     }
 
     @Test
-    fun blazeMessage() {
-        val src = """
-           {"id":"9194f3bf-edd2-4761-bba6-acd23c06b926","action":"LIST_PENDING_MESSAGES"} 
-        """
-        val blazeMessageType =
-            Types.newParameterizedType(BlazeMessage::class.java, String::class.java)
-        val jsonAdapter = getTypeAdapter<BlazeMessage<String?>>(blazeMessageType)
-        val blazeMessage = jsonAdapter.fromJson(src)
-        println("id:${blazeMessage?.id}")
-    }
-
-    @Test
     fun mapTest() {
         val map = arrayMapOf<String, Double>()
         map["1"] = 1.0

@@ -13,6 +13,9 @@ import android.net.Uri
 import android.text.Editable
 import androidx.core.net.toUri
 import com.google.android.exoplayer2.util.Util
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.reflect.TypeToken
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.ByteMatrix
@@ -37,7 +40,6 @@ import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.util.Arrays
 import java.util.Formatter
-import java.util.HashMap
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -228,6 +230,8 @@ fun ByteArray.toHex(): String {
 
     return result.toString()
 }
+
+inline fun <reified T> Gson.fromJson(json: JsonElement) = this.fromJson<T>(json, object : TypeToken<T>() {}.type)!!
 
 fun String.hexStringToByteArray(): ByteArray {
     val result = ByteArray(length / 2)

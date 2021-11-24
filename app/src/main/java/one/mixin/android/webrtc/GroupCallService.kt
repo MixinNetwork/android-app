@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants.SLEEP_MILLIS
@@ -21,6 +23,7 @@ import one.mixin.android.event.CallEvent
 import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.networkConnected
@@ -261,7 +264,7 @@ class GroupCallService : CallService() {
                         track_id = krakenData.trackId
                     )
                     val bm = createKrakenMessage(blazeMessageParam)
-                    val data = webSocketChannel<BlazeMessageData>(bm)
+                    val data = webSocketChannel(bm) ?: return@createAnswer
                     Timber.d("$TAG_CALL answer data: $data")
                 },
                 doWhenSetFailure = {
@@ -326,7 +329,8 @@ class GroupCallService : CallService() {
             message_id = UUID.randomUUID().toString()
         )
         val bm = createListKrakenPeers(blazeMessageParam)
-        return getJsonElement<PeerList>(bm)
+        val json = getJsonElement(bm) ?: return null
+        return Gson().fromJson(json, PeerList::class.java)
     }
 
     private fun handleReceiveInvite(intent: Intent) {
@@ -688,7 +692,7 @@ class GroupCallService : CallService() {
                 track_id = trackId
             )
             val bm = createKrakenMessage(blazeMessageParam)
-            @Suppress("UNUSED_VARIABLE") val data = webSocketChannel<String?>(bm)
+            @Suppress("UNUSED_VARIABLE") val data = webSocketChannel(bm)
         }
     }
 
@@ -698,14 +702,17 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun getBlazeMessageData(blazeMessage: BlazeMessage<String?>): BlazeMessageData? {
-        return webSocketChannel<BlazeMessageData>(blazeMessage)?.data
+    private fun getBlazeMessageData(blazeMessage: BlazeMessage): BlazeMessageData? {
+        val bm = webSocketChannel(blazeMessage)
+        return if (bm != null) {
+            Gson().fromJson(bm.data, BlazeMessageData::class.java)
+        } else null
     }
 
-    private fun <T> getJsonElement(blazeMessage: BlazeMessage<String?>): T? =
-        webSocketChannel<T>(blazeMessage)?.data
+    private fun getJsonElement(blazeMessage: BlazeMessage): JsonElement? =
+        webSocketChannel(blazeMessage)?.data
 
-    private tailrec fun <T> webSocketChannel(blazeMessage: BlazeMessage<String?>): BlazeMessage<T>? {
+    private tailrec fun webSocketChannel(blazeMessage: BlazeMessage): BlazeMessage? {
         if (!networkConnected()) {
             Timber.d("$TAG_CALL network not connected, action: ${blazeMessage.action}")
             if (blazeMessage.action == LIST_KRAKEN_PEERS) return null
@@ -717,7 +724,7 @@ class GroupCallService : CallService() {
         blazeMessage.params?.conversation_id?.let {
             blazeMessage.params.conversation_checksum = getCheckSum(it)
         }
-        val bm = chatWebSocket.sendMessage<T>(blazeMessage)
+        val bm = chatWebSocket.sendMessage(blazeMessage)
         Timber.d("$TAG_CALL webSocketChannel $blazeMessage, bm: $bm")
         if (bm == null) {
             Timber.d("$TAG_CALL callExecutor: $callExecutor")
@@ -822,8 +829,9 @@ class GroupCallService : CallService() {
 
         if (requestSignalKeyUsers.isNotEmpty()) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
-            val signalKeys = getJsonElement<List<SignalKey>>(blazeMessage)
-            if (signalKeys != null) {
+            val data = getJsonElement(blazeMessage)
+            if (data != null) {
+                val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
                 val keys = arrayListOf<BlazeMessageParamSession>()
                 if (signalKeys.isNotEmpty()) {
                     for (key in signalKeys) {
@@ -851,7 +859,7 @@ class GroupCallService : CallService() {
         }
         val checksum = getCheckSum(conversationId)
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, signalKeyMessages, checksum))
-        val result = deliverNoThrow<String?>(bm)
+        val result = deliverNoThrow(bm)
         if (result.retry) {
             return checkSessionSenderKey(conversationId)
         }
@@ -863,12 +871,12 @@ class GroupCallService : CallService() {
         }
     }
 
-    private tailrec fun <T> deliverNoThrow(blazeMessage: BlazeMessage<String?>): MessageResult {
-        val bm = chatWebSocket.sendMessage<T>(blazeMessage)
+    private tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): MessageResult {
+        val bm = chatWebSocket.sendMessage(blazeMessage)
         when {
             bm == null -> {
                 SystemClock.sleep(SLEEP_MILLIS)
-                return deliverNoThrow<T>(blazeMessage)
+                return deliverNoThrow(blazeMessage)
             }
             bm.error != null -> {
                 return when (bm.error.code) {
@@ -884,7 +892,7 @@ class GroupCallService : CallService() {
                     else -> {
                         SystemClock.sleep(SLEEP_MILLIS)
                         // warning: may caused job leak if server return error data and come to this branch
-                        return deliverNoThrow<T>(blazeMessage)
+                        return deliverNoThrow(blazeMessage)
                     }
                 }
             }

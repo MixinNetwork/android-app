@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import com.google.gson.Gson
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -267,7 +268,7 @@ open class SendMessageJob(
         deliver(encryptNormalMessage())
     }
 
-    private fun encryptNormalMessage(): BlazeMessage<String?> {
+    private fun encryptNormalMessage(): BlazeMessage {
         if (message.isLive()) {
             message.content = message.content?.base64Encode()
         }
@@ -286,9 +287,9 @@ open class SendMessageJob(
 
     private fun getMentionData(messageId: String): List<String>? {
         return messageMentionDao.getMentionData(messageId)?.run {
-            getTypeListAdapter<List<MentionUser>>(MentionUser::class.java).fromJson(this)?.map {
+            Gson().fromJson(this, Array<MentionUser>::class.java).map {
                 it.identityNumber
-            }?.toSet()
+            }.toSet()
         }?.run {
             userDao.findMultiUserIdsByIdentityNumbers(this)
         }

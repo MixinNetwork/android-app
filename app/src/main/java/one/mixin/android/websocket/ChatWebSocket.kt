@@ -4,8 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.squareup.moshi.JsonDataException
-import com.squareup.moshi.Types.newParameterizedType
+import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.launch
@@ -46,7 +45,6 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
-import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -107,28 +105,27 @@ class ChatWebSocket(
     }
 
     @Synchronized
-    fun <T> sendMessage(blazeMessage: BlazeMessage<String?>): BlazeMessage<T>? {
-        var bm: BlazeMessage<T>? = null
+    fun sendMessage(blazeMessage: BlazeMessage): BlazeMessage? {
+        var bm: BlazeMessage? = null
         val latch = CountDownLatch(1)
         val transaction = WebSocketTransaction(
             blazeMessage.id,
             object : TransactionCallbackSuccess {
-                override fun <T> success(data: BlazeMessage<T>) {
-                    // bm = data
+                override fun  success(data: BlazeMessage) {
+                    bm = data
                     latch.countDown()
                 }
             },
             object : TransactionCallbackError {
-                override fun <T> error(data: BlazeMessage<T>?) {
-                    // bm = data
+                override fun  error(data: BlazeMessage?) {
+                    bm = data
                     latch.countDown()
                 }
             }
         )
         if (client != null && connected) {
             transactions[blazeMessage.id] = transaction
-            val type = newParameterizedType(BlazeMessage::class.java, String::class.java)
-            val result = client!!.send(getTypeAdapter<BlazeMessage<String?>>(type).toJson(blazeMessage).gzip())
+            val result = client!!.send(Gson().toJson(blazeMessage).gzip())
             if (result) {
                 latch.await(5, TimeUnit.SECONDS)
             }
@@ -138,24 +135,23 @@ class ChatWebSocket(
         return bm
     }
 
-    private fun <T> sendPendingMessage() {
+    private fun sendPendingMessage() {
         val blazeMessage = createListPendingMessage(floodMessageDao.getLastBlazeMessageCreatedAt())
         val transaction = WebSocketTransaction(
             blazeMessage.id,
             object : TransactionCallbackSuccess {
-                override fun <T> success(data: BlazeMessage<T>) {
+                override fun  success(data: BlazeMessage) {
                     listPendingOfferHandled = false
                 }
             },
             object : TransactionCallbackError {
-                override fun <T> error(data: BlazeMessage<T>?) {
-                    sendPendingMessage<T>()
+                override fun  error(data: BlazeMessage?) {
+                    sendPendingMessage()
                 }
             }
         )
         transactions[blazeMessage.id] = transaction
-        val type = newParameterizedType(BlazeMessage::class.java, String::class.java)
-        client?.send(getTypeAdapter<BlazeMessage<String?>>(type).toJson(blazeMessage).gzip())
+        client?.send(Gson().toJson(blazeMessage).gzip())
     }
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -169,7 +165,7 @@ class ChatWebSocket(
             connectTimer?.dispose()
             jobManager.start()
             jobManager.addJobInBackground(RefreshOffsetJob())
-            sendPendingMessage<String?>()
+            sendPendingMessage()
         }
     }
 
@@ -177,13 +173,7 @@ class ChatWebSocket(
         MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
             try {
                 val json = bytes.ungzip()
-                val blazeMessageType = newParameterizedType(BlazeMessage::class.java, BlazeMessageData::class.java)
-                val blazeMessage = try {
-                    getTypeAdapter<BlazeMessage<BlazeMessageData?>>(blazeMessageType).fromJson(json) ?: return@launch
-                } catch (e: JsonDataException) {
-                    Timber.e("Can't parse blaze message: $json")
-                    return@launch
-                }
+                val blazeMessage = Gson().fromJson(json, BlazeMessage::class.java)
                 if (blazeMessage.error == null) {
                     if (transactions[blazeMessage.id] != null) {
                         transactions[blazeMessage.id]!!.success.success(blazeMessage)
@@ -278,8 +268,8 @@ class ChatWebSocket(
         }
     }
 
-    private fun handleReceiveMessage(blazeMessage: BlazeMessage<BlazeMessageData?>) {
-        val data = blazeMessage.data ?: return
+    private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
+        val data = Gson().fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))

@@ -9,45 +9,25 @@ import java.io.Serializable
 import java.util.UUID
 
 data class BlazeMessageParam(
-    @Json(name = "conversation_id")
     val conversation_id: String? = null,
-    @Json(name = "recipient_id")
     val recipient_id: String? = null,
-    @Json(name = "message_id")
     val message_id: String? = null,
-    @Json(name = "category")
     val category: String? = null,
-    @Json(name = "data")
     val data: String? = null,
-    @Json(name = "status")
     val status: String? = null,
-    @Json(name = "recipients")
     val recipients: ArrayList<BlazeMessageParamSession>? = null,
-    @Json(name = "keys")
     val keys: SignalKeyRequest? = null,
-    @Json(name = "messages")
-    val messages: List<BlazeSignalKeyMessage>? = null,
-    @Json(name = "quote_message_id")
+    val messages: List<Any>? = null,
     val quote_message_id: String? = null,
-    @Json(name = "session_id")
     val session_id: String? = null,
-    @Json(name = "representative_id")
     var representative_id: String? = null,
-    @Json(name = "conversation_checksum")
     var conversation_checksum: String? = null,
-    @Json(name = "mentions")
     var mentions: List<String>? = null,
-    @Json(name = "jsep")
     var jsep: String? = null,
-    @Json(name = "candidate")
     var candidate: String? = null,
-    @Json(name = "track_id")
     var track_id: String? = null,
-    @Json(name = "recipient_ids")
     var recipient_ids: List<String>? = null,
-    @Json(name = "offset")
     val offset: String? = null,
-    @Json(name = "silent")
     val silent: Boolean? = null
 ) : Serializable {
     companion object {

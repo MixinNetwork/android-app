@@ -40,13 +40,9 @@ import org.whispersystems.libsignal.state.PreKeyBundle
 
 class SignalProtocol(ctx: Context) {
 
-    @JsonClass(generateAdapter = true)
     data class ComposeMessageData(
-        @Json(name = "keyType")
         val keyType: Int,
-        @Json(name = "cipher")
         val cipher: ByteArray,
-        @Json(name = "resendMessageId")
         val resendMessageId: String? = null
     )
 
@@ -200,7 +196,7 @@ class SignalProtocol(ctx: Context) {
         resendMessageId: String? = null,
         sessionId: String? = null,
         mentionData: List<String>? = null
-    ): BlazeMessage<String?> {
+    ): BlazeMessage {
         val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId.getDeviceId())
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
         val blazeParam = BlazeMessageParam(
@@ -216,7 +212,7 @@ class SignalProtocol(ctx: Context) {
         return createParamBlazeMessage(blazeParam)
     }
 
-    fun encryptGroupMessage(message: Message, mentionData: List<String>?, isSilent: Boolean? = null): BlazeMessage<String?> {
+    fun encryptGroupMessage(message: Message, mentionData: List<String>?, isSilent: Boolean? = null): BlazeMessage {
         val address = SignalProtocolAddress(message.userId, DEFAULT_DEVICE_ID)
         val senderKeyName = SenderKeyName(message.conversationId, address)
         val groupCipher = GroupCipher(senderKeyStore, senderKeyName)
