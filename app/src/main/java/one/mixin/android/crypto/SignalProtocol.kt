@@ -2,8 +2,6 @@ package one.mixin.android.crypto
 
 import android.content.Context
 import android.util.Log
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase

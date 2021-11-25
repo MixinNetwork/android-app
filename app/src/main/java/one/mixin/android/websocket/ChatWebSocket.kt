@@ -113,13 +113,13 @@ class ChatWebSocket(
         val transaction = WebSocketTransaction(
             blazeMessage.id,
             object : TransactionCallbackSuccess {
-                override fun  success(data: BlazeMessage) {
+                override fun success(data: BlazeMessage) {
                     bm = data
                     latch.countDown()
                 }
             },
             object : TransactionCallbackError {
-                override fun  error(data: BlazeMessage?) {
+                override fun error(data: BlazeMessage?) {
                     bm = data
                     latch.countDown()
                 }
@@ -142,12 +142,12 @@ class ChatWebSocket(
         val transaction = WebSocketTransaction(
             blazeMessage.id,
             object : TransactionCallbackSuccess {
-                override fun  success(data: BlazeMessage) {
+                override fun success(data: BlazeMessage) {
                     listPendingOfferHandled = false
                 }
             },
             object : TransactionCallbackError {
-                override fun  error(data: BlazeMessage?) {
+                override fun error(data: BlazeMessage?) {
                     sendPendingMessage()
                 }
             }

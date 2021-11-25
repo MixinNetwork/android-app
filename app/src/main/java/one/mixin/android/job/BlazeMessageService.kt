@@ -256,7 +256,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             return
         }
         jobs.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-            val plainText =  gson.toJson(
+            val plainText = gson.toJson(
                 PlainJsonMessagePayload(
                     action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
                     ackMessages = it
