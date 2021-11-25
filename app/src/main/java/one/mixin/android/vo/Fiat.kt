@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Types
 import one.mixin.android.Constants.Account.PREF_FIAT_MAP
 import one.mixin.android.MixinApplication
@@ -10,6 +11,7 @@ import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import java.util.concurrent.ConcurrentHashMap
 
+@JsonClass(generateAdapter = true)
 data class Fiat(val code: String, val rate: Double)
 
 object Fiats {
