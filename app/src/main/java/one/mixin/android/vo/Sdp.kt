@@ -15,11 +15,19 @@ data class KrakenData(@Json(name = "jsep")val jsep: String, @Json(name = "track_
     }
 }
 
+val krakenDataJsonAdapter by lazy {
+    getTypeAdapter<KrakenData>(KrakenData::class.java)
+}
+
 @JsonClass(generateAdapter = true)
 data class Sdp(val sdp: String, val type: String)
 
+val sdpJsonAdapter by lazy {
+    getTypeAdapter<Sdp>(Sdp::class.java)
+}
+
 fun getSdp(json: ByteArray): SessionDescription {
-    val sdp = requireNotNull(getTypeAdapter<Sdp>(Sdp::class.java).fromJson(String(json)))
+    val sdp = requireNotNull(sdpJsonAdapter.fromJson(String(json)))
     return SessionDescription(getType(sdp.type), sdp.sdp)
 }
 

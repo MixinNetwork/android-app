@@ -3,9 +3,8 @@ package one.mixin.android.vo
 import androidx.room.TypeConverter
 import com.squareup.moshi.Types
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
-import java.util.ArrayList
 
-object ArrayConverters {
+object ArrayListConverters {
     @JvmStatic
     @TypeConverter
     fun fromString(value: String?): ArrayList<String> {

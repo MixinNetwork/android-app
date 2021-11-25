@@ -9,8 +9,6 @@ import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.SendMessageJob
-import one.mixin.android.moshi.MoshiHelper
-import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.vo.CallType
@@ -21,6 +19,7 @@ import one.mixin.android.vo.Sdp
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.getSdp
+import one.mixin.android.vo.sdpJsonAdapter
 import one.mixin.android.websocket.BlazeMessageData
 import org.webrtc.IceCandidate
 import org.webrtc.SessionDescription
@@ -33,6 +32,10 @@ class VoiceCallService : CallService() {
 
     private var blazeMessageData: BlazeMessageData? = null
     private var declineTriggeredByUser: Boolean = true
+
+    private val iceCandidateListJsonAdapter by lazy {
+        getTypeListAdapter<List<IceCandidate>>(IceCandidate::class.java)
+    }
 
     override fun handleIntent(intent: Intent): Boolean {
         initWebRtc()
@@ -63,7 +66,7 @@ class VoiceCallService : CallService() {
                 null,
                 getSdp(blazeMessageData.data.decodeBase64()),
                 setLocalSuccess = {
-                    sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, getTypeAdapter<Sdp>(Sdp::class.java).toJson(Sdp(it.description, it.type.canonicalForm())))
+                    sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, sdpJsonAdapter.toJson(Sdp(it.description, it.type.canonicalForm())))
                 }
             )
             return
@@ -107,7 +110,7 @@ class VoiceCallService : CallService() {
 
             val pendingCandidateData = intent.getStringExtra(EXTRA_PENDING_CANDIDATES)
             if (pendingCandidateData != null && pendingCandidateData.isNotEmpty()) {
-                val list = getTypeListAdapter<List<IceCandidate>>(IceCandidate::class.java).fromJson(pendingCandidateData)
+                val list = iceCandidateListJsonAdapter.fromJson(pendingCandidateData)
                 list?.forEach {
                     peerConnectionClient.addRemoteIceCandidate(it)
                 }
@@ -143,7 +146,7 @@ class VoiceCallService : CallService() {
                 peerConnectionClient.createOffer(
                     turns,
                     setLocalSuccess = {
-                        sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, getTypeAdapter<Sdp>(Sdp::class.java).toJson(Sdp(it.description, it.type.canonicalForm())))
+                        sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, sdpJsonAdapter.toJson(Sdp(it.description, it.type.canonicalForm())))
                     }
                 )
             }
@@ -177,7 +180,7 @@ class VoiceCallService : CallService() {
                     turns,
                     getSdp(bmd.data.decodeBase64()),
                     setLocalSuccess = {
-                        sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, getTypeAdapter<Sdp>(Sdp::class.java).toJson(Sdp(it.description, it.type.canonicalForm())))
+                        sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, sdpJsonAdapter.toJson(Sdp(it.description, it.type.canonicalForm())))
                     }
                 )
             }
@@ -187,7 +190,7 @@ class VoiceCallService : CallService() {
     private fun handleCandidate(intent: Intent) {
         val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         val json = String(Base64.decode(blazeMessageData.data))
-        val ices = getTypeListAdapter<List<IceCandidate>>(IceCandidate::class.java).fromJson(json)
+        val ices = iceCandidateListJsonAdapter.fromJson(json)
         ices?.forEach {
             peerConnectionClient.addRemoteIceCandidate(it)
         }
@@ -292,7 +295,7 @@ class VoiceCallService : CallService() {
     }
 
     private fun getRemoteSdp(json: ByteArray): SessionDescription {
-        val sdp = requireNotNull(getTypeAdapter<Sdp>(Sdp::class.java).fromJson(String(json)))
+        val sdp = requireNotNull(sdpJsonAdapter.fromJson(String(json)))
         return SessionDescription(getType(sdp.type), sdp.sdp)
     }
 
@@ -311,7 +314,7 @@ class VoiceCallService : CallService() {
                 return@execute
             }
             val arr = arrayListOf(candidate)
-            sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, getTypeListAdapter<List<IceCandidate>>(IceCandidate::class.java).toJson(arr))
+            sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, iceCandidateListJsonAdapter.toJson(arr))
         }
     }
 
@@ -329,7 +332,7 @@ class VoiceCallService : CallService() {
             peerConnectionClient.createOffer(
                 null,
                 setLocalSuccess = {
-                    sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, MoshiHelper.getTypeAdapter<Sdp>(Sdp::class.java).toJson(Sdp(it.description, it.type.canonicalForm())))
+                    sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, sdpJsonAdapter.toJson(Sdp(it.description, it.type.canonicalForm())))
                 }
             )
         }

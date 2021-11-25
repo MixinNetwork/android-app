@@ -3,7 +3,7 @@ package one.mixin.android.vo
 import androidx.room.TypeConverters
 import java.util.ArrayList
 
-@TypeConverters(ArrayConverters::class)
+@TypeConverters(ArrayListConverters::class)
 class AppItem(
     val appId: String,
     val appNumber: String,

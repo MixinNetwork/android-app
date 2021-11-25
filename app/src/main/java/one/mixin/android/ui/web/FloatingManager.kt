@@ -9,6 +9,7 @@ import android.view.View
 import android.webkit.WebViewClient
 import androidx.annotation.ColorInt
 import androidx.core.view.drawToBitmap
+import com.squareup.moshi.JsonDataException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -125,7 +126,7 @@ private fun initClips() {
         val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
         val list = try {
             getTypeListAdapter<List<WebClip>>(WebClip::class.java).fromJson(content)
-        } catch (e: Exception) {
+        } catch (e: JsonDataException) {
             Timber.e(e.message)
             null
         }
@@ -177,7 +178,7 @@ fun saveClips() {
                 PREF_FLOATING,
                 getTypeListAdapter<List<WebClip>>(WebClip::class.java).toJson(localClips)
             )
-        } catch (e: Exception) {
+        } catch (e: JsonDataException) {
             Timber.e(e)
         }
     }

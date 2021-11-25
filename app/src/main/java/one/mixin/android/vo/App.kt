@@ -18,7 +18,7 @@ interface BotInterface {
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@TypeConverters(ArrayConverters::class)
+@TypeConverters(ArrayListConverters::class)
 @Entity(tableName = "apps")
 @JsonClass(generateAdapter = true)
 data class App(

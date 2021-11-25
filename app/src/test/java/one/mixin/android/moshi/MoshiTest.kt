@@ -160,8 +160,8 @@ class MoshiTest {
 
     @Test
     fun testMixinResponse() {
-        val response = MixinResponse<String?>(Response.error(400, "".toResponseBody()))
-        val jsonAdapter = getTypeAdapter<MixinResponse<String?>>(Types.newParameterizedType(MixinResponse::class.java, String::class.java))
+        val response = MixinResponse<Any>(Response.error(400, "".toResponseBody()))
+        val jsonAdapter = getTypeAdapter<MixinResponse<Any>>(Types.newParameterizedType(MixinResponse::class.java, String::class.java))
         val json = jsonAdapter.toJson(response)
         println(json)
         println(jsonAdapter.fromJson(json)?.errorCode)

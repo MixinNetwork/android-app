@@ -47,6 +47,8 @@ import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.generateConversationChecksum
 import one.mixin.android.vo.isGroupCallType
+import one.mixin.android.vo.krakenDataJsonAdapter
+import one.mixin.android.vo.sdpJsonAdapter
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.BlazeMessageParam
@@ -188,11 +190,11 @@ class GroupCallService : CallService() {
                     conversation_id = conversationId,
                     category = MessageCategory.KRAKEN_PUBLISH.name,
                     message_id = UUID.randomUUID().toString(),
-                    jsep = getTypeAdapter<Sdp>(Sdp::class.java).toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
+                    jsep = sdpJsonAdapter.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val data = getBlazeMessageData(bm) ?: return@createOffer
-                val krakenData = getTypeAdapter<KrakenData>(KrakenData::class.java).fromJson(String(data.data.decodeBase64())) ?: return@createOffer
+                val krakenData = krakenDataJsonAdapter.fromJson(String(data.data.decodeBase64())) ?: return@createOffer
                 subscribe(krakenData, conversationId)
             },
             frameKey = key,
@@ -245,7 +247,7 @@ class GroupCallService : CallService() {
         val bm = createKrakenMessage(blazeMessageParam)
         Timber.d("$TAG_CALL subscribe track id: $trackId")
         val bmData = getBlazeMessageData(bm) ?: return
-        val krakenData = getTypeAdapter<KrakenData>(KrakenData::class.java).fromJson(String(bmData.data.decodeBase64())) ?: return
+        val krakenData = krakenDataJsonAdapter.fromJson(String(bmData.data.decodeBase64())) ?: return
         answer(krakenData, conversationId)
     }
 
@@ -262,7 +264,7 @@ class GroupCallService : CallService() {
                         conversation_id = conversationId,
                         category = MessageCategory.KRAKEN_ANSWER.name,
                         message_id = UUID.randomUUID().toString(),
-                        jsep = getTypeAdapter<Sdp>(Sdp::class.java).toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
+                        jsep = sdpJsonAdapter.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
                         track_id = krakenData.trackId
                     )
                     val bm = createKrakenMessage(blazeMessageParam)
@@ -354,7 +356,7 @@ class GroupCallService : CallService() {
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val bmData = getBlazeMessageData(bm) ?: return
-                @Suppress("UNUSED_VARIABLE") val krakenData = getTypeAdapter<KrakenData>(KrakenData::class.java).fromJson(String(bmData.data.decodeBase64()))
+                @Suppress("UNUSED_VARIABLE") val krakenData = krakenDataJsonAdapter.fromJson(String(bmData.data.decodeBase64()))
             }
             return
         }
@@ -532,7 +534,7 @@ class GroupCallService : CallService() {
             )
             val bm = createKrakenMessage(blazeMessageParam)
             val bmData = getBlazeMessageData(bm) ?: return
-            @Suppress("UNUSED_VARIABLE") val krakenData = getTypeAdapter<KrakenData>(KrakenData::class.java).fromJson(String(bmData.data.decodeBase64()))
+            @Suppress("UNUSED_VARIABLE") val krakenData = krakenDataJsonAdapter.fromJson(String(bmData.data.decodeBase64()))
         } else {
             Timber.w("$TAG_CALL try send kraken decline message but inviter is null, conversationId: $cid")
         }
@@ -645,11 +647,11 @@ class GroupCallService : CallService() {
                         category = MessageCategory.KRAKEN_RESTART.name,
                         message_id = UUID.randomUUID().toString(),
                         track_id = trackId,
-                        jsep = getTypeAdapter<Sdp>(Sdp::class.java).toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
+                        jsep = sdpJsonAdapter.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
                     )
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = getBlazeMessageData(bm) ?: return@createOffer
-                    val krakenData = getTypeAdapter<KrakenData>(KrakenData::class.java).fromJson(String(data.data.decodeBase64())) ?: return@createOffer
+                    val krakenData = krakenDataJsonAdapter.fromJson(String(data.data.decodeBase64())) ?: return@createOffer
                     subscribe(krakenData, conversationId)
                 },
                 doWhenSetFailure = {

@@ -3,7 +3,7 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 import androidx.room.TypeConverters
 
-@TypeConverters(ArrayConverters::class)
+@TypeConverters(ArrayListConverters::class)
 class ParticipantSessionMinimal(
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
