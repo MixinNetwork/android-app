@@ -104,7 +104,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
             false,
             isRepresentative = false,
             isSecret = false,
-            isWhite = true
+            isWhite = false
         )
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
