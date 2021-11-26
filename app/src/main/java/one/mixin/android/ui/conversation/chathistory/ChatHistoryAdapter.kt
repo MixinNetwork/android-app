@@ -452,7 +452,7 @@ class ChatHistoryAdapter(
     }
 
     override fun isListLast(position: Int): Boolean {
-        return position == 0
+        return position == itemCount - 1
     }
 
     override fun getHeaderId(position: Int) = getItem(position).notNullWithElse(
