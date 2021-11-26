@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerAlbumBinding
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
+import one.mixin.android.ui.sticker.StickerStoreActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
@@ -45,30 +46,32 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             stickerViewModel.getSystemAlbums().observe(
-                viewLifecycleOwner,
-                { r ->
-                    r?.let {
-                        albums.clear()
-                        albums.addAll(r)
-                        albumAdapter.notifyDataSetChanged()
-                        context?.let { c ->
-                            for (i in 0 until albumAdapter.itemCount) {
-                                val tabView = albumAdapter.getTabView(i, c) as FrameLayout
-                                albumTl.getTabAt(i)?.customView = tabView
-                                if (albumTl.selectedTabPosition == i) {
-                                    tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
-                                }
+                viewLifecycleOwner
+            ) { r ->
+                r?.let {
+                    albums.clear()
+                    albums.addAll(r)
+                    albumAdapter.notifyDataSetChanged()
+                    context?.let { c ->
+                        for (i in 0 until albumAdapter.itemCount) {
+                            val tabView = albumAdapter.getTabView(i, c) as FrameLayout
+                            albumTl.getTabAt(i)?.customView = tabView
+                            if (albumTl.selectedTabPosition == i) {
+                                tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
                             }
+                        }
 
-                            val slidingTabStrip = albumTl.getChildAt(0) as ViewGroup
-                            for (i in 0 until slidingTabStrip.childCount) {
-                                val v = slidingTabStrip.getChildAt(i)
-                                v.backgroundResource = 0
-                            }
+                        val slidingTabStrip = albumTl.getChildAt(0) as ViewGroup
+                        for (i in 0 until slidingTabStrip.childCount) {
+                            val v = slidingTabStrip.getChildAt(i)
+                            v.backgroundResource = 0
                         }
                     }
                 }
-            )
+            }
+            storeFl.setOnClickListener {
+                StickerStoreActivity.show(requireContext())
+            }
             albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
                 override fun onScroll(dis: Float) {
                     rvCallback?.onScroll(dis)

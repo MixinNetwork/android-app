@@ -1072,4 +1072,9 @@
     <string name="network_operator">网络运营商</string>
     <string name="parse_dns_result">解析 DNS 结果</string>
     <string name="diagnosis_complete">诊断完成</string>
+
+    <!--  sticker store  -->
+    <string name="sticker_store">表情商店</string>
+    <string name="sticker_store_add">添加</string>
+    <string name="sticker_store_added">已添加</string>
 </resources>
