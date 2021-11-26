@@ -9,7 +9,7 @@ import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
@@ -63,13 +63,13 @@ class ImageQuoteHolder constructor(val binding: ItemChatImageQuoteBinding) : Med
         }
     }
 
-    private var onItemListener: TranscriptAdapter.OnItemListener? = null
+    private var onItemListener: ChatHistoryAdapter.OnItemListener? = null
 
     fun bind(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         this.onItemListener = onItemListener

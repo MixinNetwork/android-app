@@ -96,7 +96,7 @@ class ChatHistoryActivity : BaseActivity() {
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_NoActionBar
     override fun getDefaultThemeId(): Int = R.style.AppTheme_NoActionBar
     private val decoration by lazy {
-        MixinHeadersDecoration(adapter)
+        MixinHeadersDecoration(chatHistoryAdapter)
     }
 
     @Inject
@@ -170,7 +170,7 @@ class ChatHistoryActivity : BaseActivity() {
             }
         }
         binding.recyclerView.setHasFixedSize(true)
-        binding.recyclerView.adapter = adapter
+        binding.recyclerView.adapter = chatHistoryAdapter
         if (isTranscript) {
             binding.unpinTv.isVisible = false
             conversationRepository.findTranscriptMessageItemById(transcriptId)
@@ -178,7 +178,7 @@ class ChatHistoryActivity : BaseActivity() {
                     binding.titleView.rightIb.setOnClickListener {
                         showBottomSheet()
                     }
-                    adapter.transcripts = transcripts
+                    chatHistoryAdapter.transcripts = transcripts
                 }
             binding.titleView.rightAnimator.isVisible = true
             binding.titleView.rightIb.setImageResource(R.drawable.ic_more)
@@ -221,7 +221,7 @@ class ChatHistoryActivity : BaseActivity() {
                         ),
                         ""
                     )
-                    adapter.transcripts = list
+                    chatHistoryAdapter.transcripts = list
                 }
         }
     }
@@ -231,11 +231,11 @@ class ChatHistoryActivity : BaseActivity() {
         AudioPlayer.pause()
     }
 
-    private val adapter by lazy {
-        TranscriptAdapter(onItemListener, this)
+    private val chatHistoryAdapter by lazy {
+        ChatHistoryAdapter(onItemListener, this)
     }
     private val onItemListener by lazy {
-        object : TranscriptAdapter.OnItemListener() {
+        object : ChatHistoryAdapter.OnItemListener() {
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(
                     this@ChatHistoryActivity,

@@ -11,7 +11,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -97,7 +97,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         val nightMode = itemView.context.isNightMode()

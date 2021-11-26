@@ -74,7 +74,7 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs
 
-class TranscriptAdapter(
+class ChatHistoryAdapter(
     private val onItemListener: OnItemListener,
     private val context: Activity
 ) :

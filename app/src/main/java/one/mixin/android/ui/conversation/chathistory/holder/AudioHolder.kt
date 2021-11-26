@@ -8,7 +8,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
@@ -34,7 +34,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
@@ -165,7 +165,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
 
     private fun handleClick(
         messageItem: ChatHistoryMessageItem,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (messageItem.mediaUrl.isNullOrEmpty()) {
