@@ -58,7 +58,13 @@ class ShareHelper {
                 }
             } else {
                 val dataUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                dataUri?.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+                dataUri?.let { uri ->
+                    val fileName = uri.getFileName()
+                    uri.getFilePath(MixinApplication.appContext)?.systemMediaToMessage(
+                        ForwardCategory.Data,
+                        fileName
+                    )?.addTo(result)
+                }
             }
         } else if (Intent.ACTION_SEND_MULTIPLE == action) {
             when {
