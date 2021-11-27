@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppButtonData
@@ -27,7 +27,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()

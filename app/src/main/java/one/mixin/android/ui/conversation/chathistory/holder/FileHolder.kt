@@ -11,7 +11,7 @@ import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
@@ -25,7 +25,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()
@@ -180,7 +180,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
 
     private fun handleClick(
         messageItem: ChatHistoryMessageItem,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (messageItem.mediaUrl.isNullOrEmpty()) {

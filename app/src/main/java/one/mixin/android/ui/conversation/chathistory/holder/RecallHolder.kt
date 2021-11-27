@@ -4,7 +4,7 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatRecallBinding
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import org.jetbrains.anko.dip
 
@@ -14,7 +14,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         messageItem: ChatHistoryMessageItem,
         isFirst: Boolean,
         isLast: Boolean,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         val ctx = itemView.context
         val isMe = meId == messageItem.userId

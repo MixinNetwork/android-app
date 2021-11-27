@@ -11,7 +11,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -72,7 +72,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
 
@@ -188,7 +188,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
 
     private class TextQuoteGestureListener(
         var messageItem: ChatHistoryMessageItem,
-        var onItemListener: TranscriptAdapter.OnItemListener,
+        var onItemListener: ChatHistoryAdapter.OnItemListener,
     ) : GestureDetector.SimpleOnGestureListener() {
         override fun onDoubleTap(e: MotionEvent?): Boolean {
             onItemListener.onTextDoubleClick(messageItem)

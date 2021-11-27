@@ -16,7 +16,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -43,7 +43,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()

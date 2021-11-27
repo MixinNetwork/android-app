@@ -23,7 +23,7 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 
 abstract class BaseViewHolder constructor(containerView: View) :
@@ -138,7 +138,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         isMe: Boolean,
         messageId: String,
         @IdRes id: Int,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         chatJump.isVisible = true
         chatJump.setImageResource(
