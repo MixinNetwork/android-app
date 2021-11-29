@@ -151,7 +151,8 @@ inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(category: T): 
 
 inline fun <reified T : ForwardCategory> String.systemMediaToMessage(
     category: T,
-    name: String? = null
+    name: String? = null,
+    mimeType: String? = null,
 ): ForwardMessage =
     ForwardMessage(
         category,
@@ -160,7 +161,7 @@ inline fun <reified T : ForwardCategory> String.systemMediaToMessage(
                 ShareCategory.Image -> ShareImageData(this)
                 ForwardCategory.Video -> VideoMessagePayload(this)
                 ForwardCategory.Data -> {
-                    val attachment = MixinApplication.get().getAttachment(this.toUri())
+                    val attachment = MixinApplication.get().getAttachment(this.toUri(), mimeType)
                     attachment?.toDataMessagePayload(name)
                 }
                 else -> null
