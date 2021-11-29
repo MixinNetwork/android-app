@@ -8,7 +8,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
@@ -61,7 +61,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         binding.avatarIv.setInfo(

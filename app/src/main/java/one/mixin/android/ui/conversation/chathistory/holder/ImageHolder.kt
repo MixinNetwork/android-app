@@ -13,7 +13,7 @@ import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
@@ -35,7 +35,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         val isMe = messageItem.userId == Session.getAccountId()

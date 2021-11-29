@@ -14,6 +14,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
@@ -25,7 +26,7 @@ import java.io.File
 
 class SendTranscriptJob(
     val message: Message,
-    val transcriptMessages: List<TranscriptMessage>,
+    private val transcriptMessages: List<TranscriptMessage>,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.id) {
 
@@ -56,12 +57,12 @@ class SendTranscriptJob(
             messageDao.insert(message)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
-                    val mediaUrl = Uri.parse(transcript.mediaUrl).path
+                    val mediaUrl = Uri.parse(transcript.absolutePath())
                     if (mediaUrl == null) {
                         transcript.mediaUrl = null
                         transcript.mediaStatus = MediaStatus.DONE.name
                     } else {
-                        val file = File(mediaUrl)
+                        val file = File(requireNotNull(Uri.parse(transcript.absolutePath()).path))
                         if (file.exists()) {
                             val outFile = MixinApplication.appContext.getTranscriptFile(
                                 transcript.messageId,

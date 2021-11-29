@@ -74,7 +74,7 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs
 
-class TranscriptAdapter(
+class ChatHistoryAdapter(
     private val onItemListener: OnItemListener,
     private val context: Activity
 ) :
@@ -452,7 +452,7 @@ class TranscriptAdapter(
     }
 
     override fun isListLast(position: Int): Boolean {
-        return position == 0
+        return position == itemCount - 1
     }
 
     override fun getHeaderId(position: Int) = getItem(position).notNullWithElse(

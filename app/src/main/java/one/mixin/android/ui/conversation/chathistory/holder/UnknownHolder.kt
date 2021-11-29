@@ -7,7 +7,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatUnknownBinding
 import one.mixin.android.extension.highlightLinkText
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import org.jetbrains.anko.dip
 
@@ -52,7 +52,7 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
 
         val learn: String = MixinApplication.get().getString(R.string.chat_learn)

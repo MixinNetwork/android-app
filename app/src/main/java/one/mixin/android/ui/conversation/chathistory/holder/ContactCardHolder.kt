@@ -7,7 +7,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.showVerifiedOrBot
@@ -18,7 +18,7 @@ class ContactCardHolder(val binding: ItemChatContactCardBinding) : BaseViewHolde
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
         super.bind(messageItem)
         binding.avatarIv.setInfo(

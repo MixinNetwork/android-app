@@ -12,7 +12,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
@@ -69,7 +69,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener
+        onItemListener: ChatHistoryAdapter.OnItemListener
     ) {
 
         if (messageItem.mentions?.isNotBlank() == true) {
@@ -186,7 +186,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
     private class TextGestureListener(
         var view: View,
         var messageItem: ChatHistoryMessageItem,
-        var onItemListener: TranscriptAdapter.OnItemListener,
+        var onItemListener: ChatHistoryAdapter.OnItemListener,
         var absoluteAdapterPosition: Int = 0
     ) : GestureDetector.SimpleOnGestureListener() {
         var longPressed = false

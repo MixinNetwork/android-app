@@ -11,7 +11,7 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.postLengthOptimize
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
-import one.mixin.android.ui.conversation.chathistory.TranscriptAdapter
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
@@ -80,7 +80,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
         messageItem: ChatHistoryMessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
-        onItemListener: TranscriptAdapter.OnItemListener,
+        onItemListener: ChatHistoryAdapter.OnItemListener,
         miniMarkwon: Markwon
     ) {
         super.bind(messageItem)
