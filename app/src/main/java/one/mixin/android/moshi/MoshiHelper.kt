@@ -4,10 +4,10 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import one.mixin.android.moshi.adaptrer.Base64ByteArrayAdapter
 import one.mixin.android.moshi.adaptrer.BitmapJsonAdapter
 import one.mixin.android.moshi.adaptrer.MentionUserJsonAdapter
 import one.mixin.android.moshi.adaptrer.MoshiArrayListJsonAdapter
-import one.mixin.android.util.Base64ByteArrayAdapter
 import one.mixin.android.vo.MentionUser
 import java.lang.reflect.Type
 

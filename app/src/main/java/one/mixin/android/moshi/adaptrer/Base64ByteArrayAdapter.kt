@@ -1,4 +1,4 @@
-package one.mixin.android.util
+package one.mixin.android.moshi.adaptrer
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonReader
@@ -9,12 +9,20 @@ import java.io.IOException
 
 class Base64ByteArrayAdapter : JsonAdapter<ByteArray>() {
     @Throws(IOException::class)
-    override fun fromJson(reader: JsonReader): ByteArray {
-        return Base64.decode(reader.nextString())
+    override fun fromJson(reader: JsonReader): ByteArray? {
+        return if (reader.peek() == JsonReader.Token.NULL) {
+            reader.nextNull<ByteArray?>()
+        } else {
+            Base64.decode(reader.nextString())
+        }
     }
 
     @Throws(IOException::class)
     override fun toJson(writer: JsonWriter, value: ByteArray?) {
-        writer.value(value?.base64Encode())
+        if (value == null) {
+            writer.nullValue()
+        } else {
+            writer.value(value.base64Encode())
+        }
     }
 }
