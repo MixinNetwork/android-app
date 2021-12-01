@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerStoreBinding
@@ -11,8 +12,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
-import kotlin.math.abs
-import kotlin.math.max
+import one.mixin.android.widget.viewpager2.ScaleTransformer
 
 @AndroidEntryPoint
 class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
@@ -38,30 +38,17 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                 }
             }
             bannerPager.apply {
-                adapter = bannerAdapter
-                offscreenPageLimit = 3
-                currentItem = 1
-                val pageMargin = 20.dp
-                val pageOffset = 10.dp
-                setPageTransformer { page, position ->
-                    val offset = position * -(2 * pageOffset + pageMargin)
-                    if (position < -1) {
-                        page.translationX = -offset
-                    } else if (position <= 1) {
-                        val scale = max(0.7f, abs(position - 0.14285715f))
-                        page.translationX = offset
-                        page.scaleY = scale
-                    } else {
-                        page.translationX = offset
-                    }
-                }
+                @Suppress("UNCHECKED_CAST")
+                setAdapter(bannerAdapter as RecyclerView.Adapter<RecyclerView.ViewHolder>)
+                setPageMargin(20.dp, 4.dp)
+                    .addPageTransformer(ScaleTransformer())
             }
             viewModel.getSystemAlbums().observe(viewLifecycleOwner) { albums ->
                 val banners = albums
                     .filter { !it.banner.isNullOrEmpty() }
                     .take(3)
                     .map { Banner(requireNotNull(it.banner)) }
-                bannerAdapter.submitList(banners)
+                bannerAdapter.data = banners
             }
             albumRv.apply {
                 setHasFixedSize(true)
