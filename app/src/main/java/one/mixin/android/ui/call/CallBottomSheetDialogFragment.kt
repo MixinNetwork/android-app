@@ -222,6 +222,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 dismiss()
             }
+            binding.declineTv.setOnClickListener {
+                hangup()
+            }
             binding.subTitle.setOnClickListener {
                 showE2EETip()
             }
@@ -433,6 +436,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.hangupCb.isVisible = false
         binding.closeIb.isVisible = true
         binding.minimizeIb.isVisible = false
+        binding.declineTv.isVisible = true
         updateTitle(getString(R.string.call_notification_incoming_voice))
     }
 
@@ -443,6 +447,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.hangupCb.isVisible = false
         binding.closeIb.isVisible = true
         binding.minimizeIb.isVisible = false
+        binding.declineTv.isVisible = false
     }
 
     private fun handleDialing() {
@@ -452,6 +457,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.hangupCb.isVisible = true
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
+        binding.declineTv.isVisible = false
         updateTitle(getString(R.string.call_notification_outgoing))
     }
 
@@ -462,6 +468,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.hangupCb.fadeIn()
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
+        binding.declineTv.isVisible = false
         updateTitle(getString(R.string.call_connecting))
     }
 
@@ -484,6 +491,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
+        binding.declineTv.isVisible = false
     }
 
     private fun updateTitle(content: String) {

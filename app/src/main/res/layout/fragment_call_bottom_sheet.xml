@@ -73,14 +73,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/title" />
 
-        <ImageButton
+        <TextView
+            android:id="@+id/decline_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:background="@null"
             android:contentDescription="@null"
-            android:foreground="@drawable/mixin_ripple"
-            android:src="@drawable/ic_call_setting"
+            android:text="@string/call_decline"
+            android:textColor="@color/call_red"
+            android:textSize="16sp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/sub_title"
             app:layout_constraintEnd_toEndOf="parent"
