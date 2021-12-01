@@ -371,6 +371,7 @@
     <string name="chat_group_call_end">Group call has ended</string>
     <string name="chat_group_call_end_with_duration">Group call ended, duration: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Peer connection has been closed, please try again</string>
+    <string name="chat_group_call_mute">Your mic will be off to start</string>
     <string name="chat_call_title">Call</string>
     <string name="chat_call_add">Add</string>
     <string name="chat_call_bad_network_you">Connection is unstable</string>
