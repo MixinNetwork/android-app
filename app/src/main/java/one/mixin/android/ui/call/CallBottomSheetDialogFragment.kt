@@ -267,6 +267,15 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     updateUI()
                     if (callState.isGroupCall()) {
                         refreshUsers()
+
+                        if ((
+                            state == CallService.CallState.STATE_IDLE ||
+                                state == CallService.CallState.STATE_RINGING
+                            ) &&
+                            callState.needMuteWhenJoin(requireNotNull(cid))
+                        ) {
+                            updateTitle(getString(R.string.chat_group_call_mute))
+                        }
                     }
                     if (state == CallService.CallState.STATE_IDLE) {
                         if (callState.isNoneCallType()) {

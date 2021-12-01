@@ -560,6 +560,12 @@ class GroupCallService : CallService() {
         callExecutor.execute {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
+
+            val cid = callState.conversationId ?: return@execute
+            val needMute = callState.needMuteWhenJoin(cid)
+            if (needMute) {
+                muteAudio<GroupCallService>(this, true)
+            }
         }
     }
 
