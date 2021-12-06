@@ -134,7 +134,7 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
         return mediaUrl
     }
     if (mediaUrl.isFileUri()) {
-        return File(mediaUrl).toUri().toString()
+        return mediaUrl.toUri().toString()
     }
     return generatePath(context, false, this, conversationId, mediaUrl)?.run {
         if (this.exists()) return@run this
