@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerStoreBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
@@ -39,6 +40,7 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                     activity?.onBackPressed()
                 }
                 rightAnimator.setOnClickListener {
+                    navTo(StickerAlbumManagementFragment.newInstance(), StickerAlbumManagementFragment.TAG)
                 }
             }
             bannerPager.apply {

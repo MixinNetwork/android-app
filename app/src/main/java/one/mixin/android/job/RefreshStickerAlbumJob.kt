@@ -10,7 +10,7 @@ import one.mixin.android.vo.StickerRelationship
 
 class RefreshStickerAlbumJob : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(RefreshStickerAlbumJob.GROUP).requireNetwork()
+        .addTags(GROUP).requireNetwork()
 ) {
 
     companion object {

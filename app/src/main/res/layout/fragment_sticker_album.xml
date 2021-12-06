@@ -34,6 +34,17 @@
                 android:scaleType="centerInside"
                 android:layout_gravity="center"
                 android:contentDescription="@string/sticker_store"/>
+
+            <ImageView
+                android:id="@+id/dot_iv"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_gravity="end"
+                android:visibility="gone"
+                android:layout_marginEnd="10dp"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_dot_red"/>
         </FrameLayout>
 
         <com.google.android.material.tabs.TabLayout
