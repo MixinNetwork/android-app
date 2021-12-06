@@ -1,5 +1,8 @@
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package one.mixin.android.widget.viewpager2
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Outline
 import android.graphics.Rect
@@ -25,6 +28,7 @@ import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
 import java.lang.reflect.InvocationTargetException
 import kotlin.math.abs
+import kotlin.math.max
 
 class Banner @JvmOverloads constructor(
     context: Context,
@@ -35,7 +39,7 @@ class Banner @JvmOverloads constructor(
     private var changeCallback: OnPageChangeCallback? = null
     private var compositePageTransformer: CompositePageTransformer? = null
     private var adapterWrapper: BannerAdapterWrapper? = null
-    lateinit var viewPager2: ViewPager2
+    var viewPager2: ViewPager2 = ViewPager2(context)
     private var isAutoPlay = true
     private var isBeginPagerChange = true
     private var isTaskPostDelayed = false
@@ -51,7 +55,6 @@ class Banner @JvmOverloads constructor(
     private val scaledTouchSlop: Int = ViewConfiguration.get(context).scaledTouchSlop shr 1
 
     init {
-        viewPager2 = ViewPager2(context)
         viewPager2.layoutParams =
             ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         viewPager2.setPageTransformer(
@@ -66,6 +69,7 @@ class Banner @JvmOverloads constructor(
         addView(viewPager2)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun startPager(startPosition: Int) {
         if (sidePage == NORMAL_COUNT) {
             viewPager2.adapter = adapterWrapper
@@ -79,7 +83,7 @@ class Banner @JvmOverloads constructor(
     }
 
     private val realCount: Int
-        private get() = adapterWrapper!!.realCount
+        get() = adapterWrapper!!.realCount
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -270,9 +274,9 @@ class Banner @JvmOverloads constructor(
                 RecyclerView.LayoutManager::class.java.getDeclaredField("mRecyclerView")
             mRecyclerView.isAccessible = true
             mRecyclerView[o] = recyclerView
-            val LayoutMangerField = ViewPager2::class.java.getDeclaredField("mLayoutManager")
-            LayoutMangerField.isAccessible = true
-            LayoutMangerField[viewPager2] = proxyLayoutManger
+            val layoutMangerField = ViewPager2::class.java.getDeclaredField("mLayoutManager")
+            layoutMangerField.isAccessible = true
+            layoutMangerField[viewPager2] = proxyLayoutManger
             val pageTransformerAdapterField =
                 ViewPager2::class.java.getDeclaredField("mPageTransformerAdapter")
             pageTransformerAdapterField.isAccessible = true
@@ -384,23 +388,23 @@ class Banner @JvmOverloads constructor(
         return setPageMargin(multiWidth, multiWidth, pageMargin)
     }
 
-    fun setPageMargin(tlWidth: Int, brWidth: Int, pageMargin: Int): Banner {
-        var pageMargin = pageMargin
+    fun setPageMargin(tlWidth: Int, brWidth: Int, margin: Int): Banner {
+        var pageMargin = margin
         if (pageMargin < 0) pageMargin = 0
         addPageTransformer(MarginPageTransformer(pageMargin))
         val recyclerView = viewPager2.getChildAt(0) as RecyclerView
         if (viewPager2.orientation == ViewPager2.ORIENTATION_VERTICAL) {
             recyclerView.setPadding(
                 viewPager2.paddingLeft,
-                tlWidth + Math.abs(pageMargin),
+                tlWidth + abs(pageMargin),
                 viewPager2.paddingRight,
-                brWidth + Math.abs(pageMargin)
+                brWidth + abs(pageMargin)
             )
         } else {
             recyclerView.setPadding(
-                tlWidth + Math.abs(pageMargin),
+                tlWidth + abs(pageMargin),
                 viewPager2.paddingTop,
-                brWidth + Math.abs(pageMargin),
+                brWidth + abs(pageMargin),
                 viewPager2.paddingBottom
             )
         }
@@ -485,7 +489,7 @@ class Banner @JvmOverloads constructor(
     val currentPager: Int
         get() {
             val position = toRealPosition(tempPosition)
-            return Math.max(position, 0)
+            return max(position, 0)
         }
     var adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>?
         get() = adapterWrapper!!.adapter

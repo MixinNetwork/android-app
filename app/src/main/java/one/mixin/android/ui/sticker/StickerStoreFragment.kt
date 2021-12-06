@@ -3,9 +3,11 @@ package one.mixin.android.ui.sticker
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerStoreBinding
 import one.mixin.android.extension.dp
@@ -40,8 +42,13 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
             bannerPager.apply {
                 @Suppress("UNCHECKED_CAST")
                 setAdapter(bannerAdapter as RecyclerView.Adapter<RecyclerView.ViewHolder>)
-                setPageMargin(20.dp, 4.dp)
+                setPageMargin(30.dp, 10.dp)
                     .addPageTransformer(ScaleTransformer())
+            }
+            albumRv.apply {
+                setHasFixedSize(true)
+                layoutManager = LinearLayoutManager(requireContext())
+                adapter = albumAdapter
             }
             viewModel.getSystemAlbums().observe(viewLifecycleOwner) { albums ->
                 val banners = albums
@@ -49,11 +56,14 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                     .take(3)
                     .map { Banner(requireNotNull(it.banner)) }
                 bannerAdapter.data = banners
-            }
-            albumRv.apply {
-                setHasFixedSize(true)
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = albumAdapter
+
+                lifecycleScope.launch {
+                    val storeAlbums = mutableListOf<StoreAlbum>()
+                    albums.mapTo(storeAlbums) { album ->
+                        StoreAlbum(album, viewModel.findStickersByAlbumId(album.albumId))
+                    }
+                    albumAdapter.submitList(storeAlbums)
+                }
             }
         }
     }

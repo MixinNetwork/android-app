@@ -488,6 +488,8 @@ internal constructor(
 
     fun observeStickers(id: String) = accountRepository.observeStickers(id)
 
+    suspend fun findStickersByAlbumId(albumId: String) = accountRepository.findStickersByAlbumId(albumId)
+
     fun observePersonalStickers() = accountRepository.observePersonalStickers()
 
     fun recentStickers() = accountRepository.recentUsedStickers()

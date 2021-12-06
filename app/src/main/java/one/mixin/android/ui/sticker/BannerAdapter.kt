@@ -31,7 +31,6 @@ class BannerAdapter : RecyclerView.Adapter<BannerHolder>() {
 
 class BannerHolder(val binding: ItemBannerBinding) : RecyclerView.ViewHolder(binding.root) {
     fun bind(banner: Banner) {
-        binding.bannerIv.round(14.dp)
         binding.bannerIv.loadImage(banner.img)
     }
 }

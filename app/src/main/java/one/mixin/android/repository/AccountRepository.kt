@@ -157,6 +157,8 @@ constructor(
 
     fun observeStickers(id: String) = stickerRelationshipDao.observeStickersByAlbumId(id)
 
+    suspend fun findStickersByAlbumId(albumId: String) = stickerRelationshipDao.findStickersByAlbumId(albumId)
+
     fun observePersonalStickers() = stickerRelationshipDao.observePersonalStickers()
 
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
