@@ -509,6 +509,9 @@ class BottomSheetViewModel @Inject internal constructor(
                             loadAction(accountRepository.getFavoriteAppsByUserId(userId))
                         }
                     }
+                },
+                exceptionBlock = {
+                    return@handleMixinResponse true
                 }
             )
         }
