@@ -490,6 +490,8 @@ internal constructor(
 
     suspend fun findStickersByAlbumId(albumId: String) = accountRepository.findStickersByAlbumId(albumId)
 
+    suspend fun findAlbumById(albumId: String) = accountRepository.findAlbumById(albumId)
+
     fun observePersonalStickers() = accountRepository.observePersonalStickers()
 
     fun recentStickers() = accountRepository.recentUsedStickers()

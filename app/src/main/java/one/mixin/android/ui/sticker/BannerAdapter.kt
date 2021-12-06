@@ -5,9 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemBannerBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.round
 
 class BannerAdapter : RecyclerView.Adapter<BannerHolder>() {
     var data: List<Banner>? = null

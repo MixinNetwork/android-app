@@ -27,7 +27,9 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
     private val binding by viewBinding(FragmentStickerStoreBinding::bind)
 
     private val bannerAdapter = BannerAdapter()
-    private val albumAdapter = AlbumAdapter()
+    private val albumAdapter: AlbumAdapter by lazy {
+        AlbumAdapter(parentFragmentManager)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

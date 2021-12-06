@@ -1098,4 +1098,6 @@
     <string name="sticker_store">Sticker Store</string>
     <string name="sticker_store_add">Add</string>
     <string name="sticker_store_added">Added</string>
+    <string name="sticker_store_add_stickers">Add Stickers</string>
+    <string name="sticker_store_remove_stickers">Remove Stickers</string>
 </resources>
