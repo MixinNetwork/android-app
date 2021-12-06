@@ -38,7 +38,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     result.clear()
 
     result.append("${context.getString(R.string.is_network_available)}: ${context.networkConnected()}").appendLine()
-    result.append("${context.getString(R.string.netWork_type)}: ${context.networkType()}").appendLine()
+    result.append("${context.getString(R.string.network_type)}: ${context.networkType()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()

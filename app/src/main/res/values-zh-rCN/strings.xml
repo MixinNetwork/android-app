@@ -1064,7 +1064,7 @@
     <string name="model">手机型号</string>
     <string name="system_version">系统版本</string>
     <string name="is_network_available">网络已连接</string>
-    <string name="netWork_type">网络类型</string>
+    <string name="network_type">网络类型</string>
     <string name="local_ip">本地 IP</string>
     <string name="export_ip">出口 IP</string>
     <string name="operator">运营商</string>
