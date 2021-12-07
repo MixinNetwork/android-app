@@ -30,6 +30,7 @@ object Constants {
         const val PREF_WRONG_TIME = "pref_wrong_time"
         const val PREF_FTS4_UPGRADE = "pref_fts4_upgrade"
         const val PREF_SYNC_FTS4_OFFSET = "sync_fts4_offset"
+        const val PREF_FTS4_REDUCE = "pref_fts4_reduce"
         const val PREF_RESTORE = "pref_restore"
         const val PREF_RECALL_SHOW = "pref_recall_show"
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
