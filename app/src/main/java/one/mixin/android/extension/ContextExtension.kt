@@ -770,7 +770,7 @@ fun Context.isFirebaseDecodeAvailable() =
     isGooglePlayServicesAvailable() && Locale.getDefault() != Locale.CHINA
 
 fun Fragment.getTipsByAsset(asset: AssetItem) =
-    when (asset.chainId) {
+    when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eth)
         Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eos)
