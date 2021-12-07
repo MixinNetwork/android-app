@@ -45,7 +45,7 @@
         android:layout_marginStart="5dp"
         android:layout_marginTop="1.5dp"
         android:layout_marginEnd="5dp"
-        android:layout_marginBottom="1dp"
+        android:paddingBottom="2.5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

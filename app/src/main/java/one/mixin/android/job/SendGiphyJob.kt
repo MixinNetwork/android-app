@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import one.mixin.android.MixinApplication
