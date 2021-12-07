@@ -75,6 +75,9 @@ interface AccountService {
     @GET("stickers/albums/{id}")
     fun getStickersByAlbumId(@Path("id") id: String): Call<MixinResponse<List<Sticker>>>
 
+    @GET("stickers/albums/{id}")
+    suspend fun getStickersByAlbumIdSuspend(@Path("id") id: String): MixinResponse<List<Sticker>>
+
     @GET("stickers/{id}")
     fun getStickerById(@Path("id") id: String): Call<MixinResponse<Sticker>>
 

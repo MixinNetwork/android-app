@@ -490,6 +490,8 @@ internal constructor(
 
     suspend fun findStickersByAlbumId(albumId: String) = accountRepository.findStickersByAlbumId(albumId)
 
+    suspend fun findStickerById(stickerId: String) = accountRepository.findStickerById(stickerId)
+
     suspend fun findAlbumById(albumId: String) = accountRepository.findAlbumById(albumId)
 
     fun observePersonalStickers() = accountRepository.observePersonalStickers()
@@ -500,6 +502,24 @@ internal constructor(
         viewModelScope.launch {
             accountRepository.updateUsedAt(stickerId, System.currentTimeMillis().toString())
         }
+    }
+
+    suspend fun findOrRefreshAlbum(albumId: String): List<Sticker>? = withContext(Dispatchers.IO) {
+        val stickers = findStickersByAlbumId(albumId)
+        if (!stickers.isNullOrEmpty()) {
+            return@withContext stickers
+        }
+        return@withContext handleMixinResponse(
+            invokeNetwork = { accountRepository.getStickersByAlbumIdSuspend(albumId) },
+            successBlock = {
+                it.data?.let { stickers ->
+                    for (s in stickers) {
+                        accountRepository.addStickerWithoutRelationship(s)
+                    }
+                    stickers
+                }
+            }
+        )
     }
 
     fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>>? {

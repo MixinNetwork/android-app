@@ -58,6 +58,9 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
+        binding.chatSticker.setOnClickListener {
+            onItemListener.onStickerClick(messageItem)
+        }
         if (messageItem.assetWidth == null || messageItem.assetHeight == null) {
             binding.chatSticker.layoutParams.width = dp120
             binding.chatSticker.layoutParams.height = dp120

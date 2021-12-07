@@ -159,6 +159,8 @@ constructor(
 
     suspend fun findStickersByAlbumId(albumId: String) = stickerRelationshipDao.findStickersByAlbumId(albumId)
 
+    suspend fun findStickerById(stickerId: String) = stickerDao.findStickerById(stickerId)
+
     suspend fun findAlbumById(albumId: String) = stickerAlbumDao.findAlbumById(albumId)
 
     fun observePersonalStickers() = stickerRelationshipDao.observePersonalStickers()
@@ -168,6 +170,12 @@ constructor(
     suspend fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
 
     fun addStickerAsync(request: StickerAddRequest) = accountService.addStickerAsync(request)
+
+    suspend fun getStickersByAlbumIdSuspend(albumId: String) = accountService.getStickersByAlbumIdSuspend(albumId)
+
+    fun addStickerWithoutRelationship(sticker: Sticker) {
+        stickerDao.insertUpdate(sticker)
+    }
 
     fun addStickerLocal(sticker: Sticker, albumId: String) {
         stickerDao.insertUpdate(sticker)

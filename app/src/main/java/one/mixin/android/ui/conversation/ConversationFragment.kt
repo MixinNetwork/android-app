@@ -183,6 +183,7 @@ import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
+import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
@@ -688,6 +689,11 @@ class ConversationFragment() :
                 } else {
                     toast(R.string.error_file_exists)
                 }
+            }
+
+            override fun onStickerClick(messageItem: MessageItem) {
+                StickerPreviewBottomSheetFragment.newInstance(requireNotNull(messageItem.stickerId))
+                    .showNow(parentFragmentManager, StickerPreviewBottomSheetFragment.TAG)
             }
 
             @TargetApi(Build.VERSION_CODES.O)
