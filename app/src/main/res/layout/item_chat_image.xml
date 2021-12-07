@@ -60,7 +60,7 @@
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="1dp"
+        android:paddingBottom="2.5dp"
         android:layout_marginEnd="5dp"
         android:layout_marginStart="5dp"
         android:layout_marginTop="1.5dp"
