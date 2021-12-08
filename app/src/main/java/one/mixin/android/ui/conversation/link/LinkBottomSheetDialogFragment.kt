@@ -29,10 +29,12 @@ import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TransferRequest
+import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
+import one.mixin.android.api.response.getScopes
 import one.mixin.android.databinding.FragmentBottomSheetBinding
 import one.mixin.android.extension.appendQueryParamsFromOtherUri
 import one.mixin.android.extension.booleanFromAttribute
@@ -45,6 +47,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.session.Session
+import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
@@ -321,6 +324,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 parentFragmentManager,
                                 JoinGroupBottomSheetDialogFragment.TAG
                             )
+                        dismiss()
+                    }
+                } else if (data is AuthorizationResponse) {
+                    val assets = linkViewModel.simpleAssetsWithBalance()
+                    activity?.let {
+                        val scopes = data.getScopes(it, assets)
+                        AuthBottomSheetDialogFragment.newInstance(scopes, data)
+                            .showNow(parentFragmentManager, AuthBottomSheetDialogFragment.TAG)
+                        authOrPay = true
                         dismiss()
                     }
                 } else if (data is User) {
