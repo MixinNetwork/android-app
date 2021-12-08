@@ -155,6 +155,8 @@ enum class CallType {
     None, Voice, Group
 }
 
+private const val JOIN_MUTE_MIC_COUNT = 7
+
 class CallStateLiveData : LiveData<CallService.CallState>() {
     var state: CallService.CallState = CallService.CallState.STATE_IDLE
         set(value) {
@@ -179,6 +181,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     var reconnecting = false
 
     var audioEnable = true
+        set(value) {
+            if (field == value) return
+
+            field = value
+            postValue(state)
+        }
     var speakerEnable = false
     var customAudioDeviceAvailable = false
         set(value) {
@@ -267,6 +275,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         } ?: return null
         return groupCallState.userIds()
     }
+
+    fun needMuteWhenJoin(conversationId: String): Boolean =
+        getUsersCount(conversationId) > JOIN_MUTE_MIC_COUNT
+
+    fun needMuteWhenJoin(groupCallState: GroupCallState?): Boolean =
+        (groupCallState?.userIds()?.size ?: 0) > JOIN_MUTE_MIC_COUNT
 
     fun getUsersCount(conversationId: String): Int =
         getUsers(conversationId)?.size ?: 0

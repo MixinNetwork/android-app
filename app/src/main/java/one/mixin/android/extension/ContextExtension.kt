@@ -522,7 +522,7 @@ fun Fragment.selectAudio() {
     selectMediaType("audio/*", null, REQUEST_AUDIO)
 }
 
-fun Context.getAttachment(local: Uri): Attachment? {
+fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
     var cursor: Cursor? = null
     try {
         val uri = if (local.authority == null) {
@@ -534,7 +534,6 @@ fun Context.getAttachment(local: Uri): Attachment? {
         cursor = contentResolver.query(uri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
             val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-            val mimeType = contentResolver.getType(uri) ?: ""
 
             val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
             val resultUri = if (copyPath == null) {
@@ -543,7 +542,7 @@ fun Context.getAttachment(local: Uri): Attachment? {
                 getUriForFile(File(copyPath))
             }
             val fileSize = File(copyPath).length()
-            return Attachment(resultUri, fileName, mimeType, fileSize)
+            return Attachment(resultUri, fileName, mimeType ?: contentResolver.getType(uri) ?: "", fileSize)
         }
     } catch (e: SecurityException) {
         toast(R.string.error_file_exists)
@@ -771,7 +770,7 @@ fun Context.isFirebaseDecodeAvailable() =
     isGooglePlayServicesAvailable() && Locale.getDefault() != Locale.CHINA
 
 fun Fragment.getTipsByAsset(asset: AssetItem) =
-    when (asset.chainId) {
+    when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eth)
         Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eos)

@@ -350,6 +350,7 @@
     <string name="chat_group_call_end">群组语音已结束</string>
     <string name="chat_group_call_end_with_duration">群组语音结束，时长 %1$s</string>
     <string name="chat_group_call_remote_peer_closed">连接已结束，请重试</string>
+    <string name="chat_group_call_mute">你的麦克风在开始时会被关闭</string>
     <string name="chat_call_title">语音</string>
     <string name="chat_call_add">添加</string>
     <string name="chat_call_bad_network_you">当前通话网络不佳</string>
@@ -1063,7 +1064,7 @@
     <string name="model">手机型号</string>
     <string name="system_version">系统版本</string>
     <string name="is_network_available">网络已连接</string>
-    <string name="netWork_type">网络类型</string>
+    <string name="network_type">网络类型</string>
     <string name="local_ip">本地 IP</string>
     <string name="export_ip">出口 IP</string>
     <string name="operator">运营商</string>

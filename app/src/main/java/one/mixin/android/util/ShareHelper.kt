@@ -53,7 +53,8 @@ class ShareHelper {
                     val fileName = it.getFileName()
                     it.getFilePath(MixinApplication.appContext)?.systemMediaToMessage(
                         ForwardCategory.Data,
-                        fileName
+                        fileName,
+                        type
                     )?.addTo(result)
                 }
             } else {
@@ -74,22 +75,9 @@ class ShareHelper {
                 }
                 else -> {
                     intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.let { list ->
-                        // Todo parse whatsapp file
-                        // val importChatUtil = ImportChatUtil.get()
-                        // val exportingChatUris = importChatUtil.getImportChatUri(list)
-                        // if (exportingChatUris != null) {
-                        //     val (exportingChatUri, documentsUrisArray) = exportingChatUris
-                        //     result.add(
-                        //         ForwardMessage(
-                        //             ShareCategory.Transcript,
-                        //             GsonHelper.customGson.toJson(TranscriptData(exportingChatUri.toString(), documentsUrisArray.map { it.toString() }))
-                        //         )
-                        //     )
-                        // } else {
                         list.forEach { item ->
                             item.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
                         }
-                        // }
                     }
                 }
             }

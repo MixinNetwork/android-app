@@ -371,6 +371,7 @@
     <string name="chat_group_call_end">Group call has ended</string>
     <string name="chat_group_call_end_with_duration">Group call ended, duration: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Peer connection has been closed, please try again</string>
+    <string name="chat_group_call_mute">Your mic will be off to start</string>
     <string name="chat_call_title">Call</string>
     <string name="chat_call_add">Add</string>
     <string name="chat_call_bad_network_you">Connection is unstable</string>
@@ -1084,11 +1085,11 @@
     <string name="model">Model</string>
     <string name="system_version">System version</string>
     <string name="is_network_available">isNetworkAvailable</string>
-    <string name="netWork_type">netWorkType</string>
-    <string name="local_ip">local IP</string>
-    <string name="export_ip">export IP</string>
+    <string name="network_type">Network Type</string>
+    <string name="local_ip">Local IP</string>
+    <string name="export_ip">Export IP</string>
     <string name="operator">Operator</string>
-    <string name="network_operator">networkOperator</string>
+    <string name="network_operator">NetworkOperator</string>
     <string name="parse_dns_result">Parse DNS result: </string>
     <string name="diagnosis_complete">Diagnosis Complete</string>
 </resources>
