@@ -1,12 +1,11 @@
 package one.mixin.android.api
 
+import com.google.gson.annotations.SerializedName
 import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
 
-@JsonClass(generateAdapter = true)
 open class OneTimePreKey(
-    @Json(name = "key_id")
+    @SerializedName("key_id")
     val keyId: Int,
-    @Json(name = "pub_key")
+    @SerializedName("pub_key")
     val pubKey: String?
 )

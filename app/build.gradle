@@ -237,6 +237,7 @@ dependencies {
     implementation("com.jakewharton.rxbinding3:rxbinding:${rxbindingVersion}")
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}")
 
+    implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.squareup.moshi:moshi:${moshiVersion}"
     implementation "com.squareup.moshi:moshi-kotlin:${moshiVersion}"
     kapt "com.squareup.moshi:moshi-kotlin-codegen:${moshiVersion}"

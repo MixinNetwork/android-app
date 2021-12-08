@@ -86,6 +86,7 @@ buildscript {
         ext.testSupVersion = '1.0.1'
         ext.robolectricVersion = '4.7.3'
 
+        ext.gsonVersion = '2.8.9'
         ext.moshiVersion = '1.13.0-SNAPSHOT'
 
         ext.autodisposeVersion = '1.4.0'
