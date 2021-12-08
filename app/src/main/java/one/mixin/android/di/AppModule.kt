@@ -120,6 +120,18 @@ object AppModule {
         builder.retryOnConnectionFailure(false)
         builder.dns(DNS)
 
+        builder.addNetworkInterceptor {chain->
+            val requestId = UUID.randomUUID().toString()
+            val sourceRequest = chain.request()
+            val request = sourceRequest.newBuilder()
+                .addHeader("User-Agent", API_UA)
+                .addHeader("Accept-Language", Locale.getDefault().language)
+                .addHeader("Mixin-Device-Id", getDeviceId(resolver))
+                .addHeader(xRequestId, requestId)
+                .addHeader(authorization, "Bearer ${Session.signToken(Session.getAccount(), sourceRequest, requestId)}")
+                .build()
+            chain.proceed(request)
+        }
         builder.addInterceptor { chain ->
             val requestId = UUID.randomUUID().toString()
             val sourceRequest = chain.request()
