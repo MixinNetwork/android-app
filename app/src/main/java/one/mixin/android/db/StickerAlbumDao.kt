@@ -14,7 +14,7 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
     @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' AND added = 1 ORDER BY ordered_at ASC, created_at DESC")
     fun observeSystemAddedAlbums(): LiveData<List<StickerAlbum>>
 
-    @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY ordered_at ASC, created_at DESC")
+    @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY created_at DESC")
     fun observeSystemAlbums(): LiveData<List<StickerAlbum>>
 
     @Query("SELECT * FROM sticker_albums WHERE category = 'PERSONAL' ORDER BY created_at ASC")
@@ -31,4 +31,7 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
 
     @Query("SELECT * FROM sticker_albums WHERE album_id = :albumId")
     fun observeAlbumById(albumId: String): LiveData<StickerAlbum>
+
+    @Query("SELECT created_at FROM sticker_albums ORDER BY created_at DESC LIMIT 1")
+    suspend fun findLatestCreatedAt(): String?
 }

@@ -27,8 +27,8 @@ class RefreshStickerAlbumWorker @AssistedInject constructor(
 ) : BaseWork(context, parameters) {
 
     override suspend fun onRun(): Result {
-        val response = accountService.getStickerAlbums().execute().body()
-        if (response != null && response.isSuccess && response.data != null) {
+        val response = accountService.getStickerAlbums()
+        if (response.isSuccess && response.data != null) {
             val albums = response.data as List<StickerAlbum>
             for (a in albums) {
                 stickerAlbumDao.insert(a)

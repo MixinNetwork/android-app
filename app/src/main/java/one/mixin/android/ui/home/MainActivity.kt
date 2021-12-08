@@ -91,8 +91,6 @@ import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
-import one.mixin.android.job.RefreshStickerAlbumJob
-import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.job.TranscriptAttachmentUpdateJob
@@ -282,7 +280,6 @@ class MainActivity : BlazeBaseActivity() {
         checkStorage()
         sendSafetyNetRequest()
         checkBatteryOptimization()
-        refreshStickerAlbum()
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
@@ -496,25 +493,6 @@ class MainActivity : BlazeBaseActivity() {
             setAction(getString(R.string.restart)) { appUpdateManager.completeUpdate() }
             setActionTextColor(getColor(R.color.colorAccent))
             show()
-        }
-    }
-
-    private fun refreshStickerAlbum() =
-        runIntervalTask(REFRESH_STICKER_ALBUM_PRE_KEY, INTERVAL_24_HOURS) {
-            jobManager.addJobInBackground(RefreshStickerAlbumJob())
-        }
-
-    @Suppress("SameParameterValue")
-    private fun runIntervalTask(
-        spKey: String,
-        interval: Long,
-        task: () -> Unit
-    ) {
-        val cur = System.currentTimeMillis()
-        val last = defaultSharedPreferences.getLong(spKey, 0)
-        if (cur - last > interval) {
-            task.invoke()
-            defaultSharedPreferences.putLong(spKey, cur)
         }
     }
 
@@ -939,5 +917,20 @@ class MainActivity : BlazeBaseActivity() {
                 context.startActivity(this)
             }
         }
+    }
+}
+
+@Suppress("SameParameterValue")
+fun runIntervalTask(
+    spKey: String,
+    interval: Long,
+    task: () -> Unit
+) {
+    val defaultSharedPreferences = MixinApplication.appContext.defaultSharedPreferences
+    val cur = System.currentTimeMillis()
+    val last = defaultSharedPreferences.getLong(spKey, 0)
+    if (cur - last > interval) {
+        task.invoke()
+        defaultSharedPreferences.putLong(spKey, cur)
     }
 }

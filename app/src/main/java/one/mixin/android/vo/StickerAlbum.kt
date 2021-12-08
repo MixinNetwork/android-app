@@ -36,10 +36,10 @@ data class StickerAlbum(
     val banner: String?,
     @Expose
     @ColumnInfo(name = "ordered_at")
-    val orderedAt: String?,
+    var orderedAt: String?,
     @Expose
     @ColumnInfo(name = "added")
-    val added: Boolean?,
+    var added: Boolean?,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StickerAlbum>() {

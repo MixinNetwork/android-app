@@ -70,7 +70,7 @@ interface AccountService {
     fun updateSession(@Body request: SessionRequest): Observable<MixinResponse<Account>>
 
     @GET("stickers/albums")
-    fun getStickerAlbums(): Call<MixinResponse<List<StickerAlbum>>>
+    suspend fun getStickerAlbums(): MixinResponse<List<StickerAlbum>>
 
     @GET("stickers/albums/{id}")
     fun getStickersByAlbumId(@Path("id") id: String): Call<MixinResponse<List<Sticker>>>

@@ -1,15 +1,24 @@
 package one.mixin.android.ui.conversation
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentStickerAlbumBinding
+import one.mixin.android.event.AlbumEvent
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
+import one.mixin.android.job.RefreshStickerAlbumJob.Companion.PREF_NEW_ALBUM
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.ui.sticker.StickerStoreActivity
@@ -42,6 +51,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
 
     private val binding by viewBinding(FragmentStickerAlbumBinding::bind)
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -70,8 +80,11 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                 }
             }
             storeFl.setOnClickListener {
+                dotIv.isVisible = false
+                defaultSharedPreferences.putBoolean(PREF_NEW_ALBUM, false)
                 StickerStoreActivity.show(requireContext())
             }
+            dotIv.isVisible = defaultSharedPreferences.getBoolean(PREF_NEW_ALBUM, false)
             albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
                 override fun onScroll(dis: Float) {
                     rvCallback?.onScroll(dis)
@@ -106,6 +119,15 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                 }
             )
         }
+
+        RxBus.listen(AlbumEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { albumEvent ->
+                if (albumEvent.hasNew) {
+                    binding.dotIv.isVisible = true
+                }
+            }
     }
 
     fun setCallback(callback: Callback) {
