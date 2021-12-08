@@ -15,6 +15,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.widget.viewpager2.ScaleTransformer
 
 @AndroidEntryPoint
@@ -29,7 +30,11 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
 
     private val bannerAdapter = BannerAdapter()
     private val albumAdapter: AlbumAdapter by lazy {
-        AlbumAdapter(parentFragmentManager)
+        AlbumAdapter(parentFragmentManager) { albumId ->
+            lifecycleScope.launch {
+                viewModel.updateAlbumAdded(StickerAlbumAdded(albumId, true))
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,7 +59,7 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = albumAdapter
             }
-            viewModel.getSystemAlbums().observe(viewLifecycleOwner) { albums ->
+            viewModel.observeSystemAlbums().observe(viewLifecycleOwner) { albums ->
                 val banners = albums
                     .filter { !it.banner.isNullOrEmpty() }
                     .take(3)

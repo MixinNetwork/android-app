@@ -4,6 +4,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "sticker_albums")
@@ -33,6 +34,12 @@ data class StickerAlbum(
     val description: String,
     @ColumnInfo(name = "banner")
     val banner: String?,
+    @Expose
+    @ColumnInfo(name = "ordered_at")
+    val orderedAt: String?,
+    @Expose
+    @ColumnInfo(name = "added")
+    val added: Boolean?,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StickerAlbum>() {
@@ -40,7 +47,22 @@ data class StickerAlbum(
                 oldItem.albumId == newItem.albumId
 
             override fun areContentsTheSame(oldItem: StickerAlbum, newItem: StickerAlbum) =
-                oldItem == newItem
+                oldItem.added == newItem.added &&
+                    oldItem.orderedAt == newItem.orderedAt
         }
     }
 }
+
+data class StickerAlbumOrder(
+    @ColumnInfo(name = "album_id")
+    val albumId: String,
+    @ColumnInfo(name = "ordered_at")
+    val orderedAt: String?,
+)
+
+data class StickerAlbumAdded(
+    @ColumnInfo(name = "album_id")
+    val albumId: String,
+    @ColumnInfo(name = "added")
+    val added: Boolean?,
+)

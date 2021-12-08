@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 41,
-    "identityHash": "9e39de69455e70f97548b83dc784507e",
+    "identityHash": "20c18aac24862acb9e46533657d963e4",
     "entities": [
       {
         "tableName": "users",
@@ -975,7 +975,7 @@
       },
       {
         "tableName": "sticker_albums",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`album_id` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `update_at` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `description` TEXT NOT NULL, `banner` TEXT, PRIMARY KEY(`album_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`album_id` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `update_at` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `description` TEXT NOT NULL, `banner` TEXT, `ordered_at` TEXT, `added` INTEGER, PRIMARY KEY(`album_id`))",
         "fields": [
           {
             "fieldPath": "albumId",
@@ -1029,6 +1029,18 @@
             "fieldPath": "banner",
             "columnName": "banner",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "orderedAt",
+            "columnName": "ordered_at",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "added",
+            "columnName": "added",
+            "affinity": "INTEGER",
             "notNull": false
           }
         ],
@@ -2090,7 +2102,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9e39de69455e70f97548b83dc784507e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '20c18aac24862acb9e46533657d963e4')"
     ]
   }
 }

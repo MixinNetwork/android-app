@@ -40,6 +40,7 @@ import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
+import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
@@ -47,6 +48,8 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerAlbumAdded
+import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -151,7 +154,9 @@ constructor(
 
     suspend fun getAuthorizationByAppId(appId: String) = authService.getAuthorizationByAppId(appId)
 
-    fun getSystemAlbums() = stickerAlbumDao.getSystemAlbums()
+    fun observeSystemAddedAlbums() = stickerAlbumDao.observeSystemAddedAlbums()
+
+    fun observeSystemAlbums() = stickerAlbumDao.observeSystemAlbums()
 
     suspend fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
 
@@ -162,6 +167,16 @@ constructor(
     suspend fun findStickerById(stickerId: String) = stickerDao.findStickerById(stickerId)
 
     suspend fun findAlbumById(albumId: String) = stickerAlbumDao.findAlbumById(albumId)
+
+    fun observeAlbumById(albumId: String) = stickerAlbumDao.observeAlbumById(albumId)
+
+    suspend fun updateAlbumOrders(stickerAlbumOrders: List<StickerAlbumOrder>) {
+        withTransaction {
+            stickerAlbumOrders.forEach { o -> stickerAlbumDao.updateOrderedAt(o) }
+        }
+    }
+
+    suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = stickerAlbumDao.updateAdded(stickerAlbumAdded)
 
     fun observePersonalStickers() = stickerRelationshipDao.observePersonalStickers()
 

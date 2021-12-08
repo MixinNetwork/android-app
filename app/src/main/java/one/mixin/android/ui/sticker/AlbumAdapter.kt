@@ -1,7 +1,9 @@
 package one.mixin.android.ui.sticker
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.DiffUtil
@@ -17,10 +19,14 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.widget.RLottieImageView
 import one.mixin.android.widget.SpacesItemDecoration
+import org.jetbrains.anko.textColor
 
-class AlbumAdapter(private val fragmentManager: FragmentManager) : ListAdapter<StoreAlbum, AlbumHolder>(StoreAlbum.DIFF_CALLBACK) {
+class AlbumAdapter(
+    private val fragmentManager: FragmentManager,
+    private val addAction: (String) -> Unit,
+) : ListAdapter<StoreAlbum, AlbumHolder>(StoreAlbum.DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        AlbumHolder(ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false), fragmentManager)
+        AlbumHolder(ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false), fragmentManager, addAction)
 
     override fun onBindViewHolder(holder: AlbumHolder, position: Int) {
         getItem(position)?.let { album -> holder.bind(album) }
@@ -30,6 +36,7 @@ class AlbumAdapter(private val fragmentManager: FragmentManager) : ListAdapter<S
 class AlbumHolder(
     val binding: ItemAlbumBinding,
     private val fragmentManager: FragmentManager,
+    private val addAction: (String) -> Unit,
 ) : RecyclerView.ViewHolder(binding.root) {
     private val padding: Int = 4.dp
 
@@ -37,9 +44,9 @@ class AlbumHolder(
         val ctx = binding.root.context
         binding.apply {
             tileTv.text = album.album.name
-            actionTv.text = ctx.getString(R.string.sticker_store_add)
-            actionTv.setOnClickListener { }
-
+            actionTv.updateAlbumAdd(ctx, album.album.added == true) {
+                addAction.invoke(album.album.albumId)
+            }
             val adapter = StickerAdapter()
             stickerRv.apply {
                 setHasFixedSize(true)
@@ -103,5 +110,21 @@ data class StoreAlbum(
             override fun areContentsTheSame(oldItem: StoreAlbum, newItem: StoreAlbum) =
                 oldItem.album == newItem.album
         }
+    }
+}
+
+fun TextView.updateAlbumAdd(ctx: Context, added: Boolean, action: (() -> Unit)? = null) {
+    if (added) {
+        text = ctx.getString(R.string.sticker_store_added)
+        textColor = ctx.getColor(R.color.colorAccent)
+        setBackgroundResource(R.drawable.bg_round_gray_btn)
+        isEnabled = false
+        setOnClickListener(null)
+    } else {
+        text = ctx.getString(R.string.sticker_store_add)
+        textColor = ctx.getColor(R.color.white)
+        setBackgroundResource(R.drawable.bg_round_blue_btn)
+        isEnabled = true
+        setOnClickListener { action?.invoke() }
     }
 }

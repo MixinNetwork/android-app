@@ -9,12 +9,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.databinding.FragmentStickerPreviewBottomSheetBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
 
@@ -74,11 +76,15 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
             binding.pb.isVisible = true
             binding.bottomVa.displayedChild = 1
-            val album = viewModel.findAlbumById(albumId)
-            // TODO refresh album?
-            if (album != null) {
+            viewModel.observeAlbumById(albumId).observe(this@StickerPreviewBottomSheetFragment) { album ->
+                if (album == null) return@observe
+
                 binding.tileTv.text = album.name
-                // binding.actionTv
+                binding.actionTv.updateAlbumAdd(requireContext(), album.added == true) {
+                    lifecycleScope.launch {
+                        viewModel.updateAlbumAdded(StickerAlbumAdded(albumId, true))
+                    }
+                }
             }
             val stickers = viewModel.findOrRefreshAlbum(albumId)
             adapter.submitList(stickers)

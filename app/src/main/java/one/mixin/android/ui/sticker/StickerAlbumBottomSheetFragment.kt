@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerAlbumBottomSheetBinding
 import one.mixin.android.extension.dp
@@ -23,6 +24,8 @@ import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.vo.StickerAlbum
+import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.widget.MixinBottomSheetDialog
 import kotlin.properties.Delegates
 
@@ -98,21 +101,45 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
 
         lifecycleScope.launchWhenCreated {
             val albumId = requireNotNull(requireArguments().getString(EXTRA_ALBUM_ID))
-            val album = viewModel.findAlbumById(albumId)
+            viewModel.observeAlbumById(albumId).observe(this@StickerAlbumBottomSheetFragment) { album ->
+                binding.title.titleTv.text = album?.name
+                if (album != null) {
+                    updateAction(album)
+                }
+            }
             val stickers = viewModel.findStickersByAlbumId(albumId)
             val padding = PADDING.dp
 
             val stickerAdapter = StickerAdapter()
             binding.apply {
-                title.titleTv.text = album?.name
                 title.rightIv.setOnClickListener { dismiss() }
-
                 stickerRv.layoutManager = GridLayoutManager(context, COLUMN)
                 stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
                 stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
                 stickerRv.adapter = stickerAdapter
-
                 stickerAdapter.submitList(stickers)
+            }
+        }
+    }
+
+    private fun updateAction(album: StickerAlbum) {
+        binding.actionTv.apply {
+            if (album.added == true) {
+                text = getString(R.string.sticker_store_remove_stickers)
+                setBackgroundResource(R.drawable.bg_round_red_btn)
+                setOnClickListener {
+                    lifecycleScope.launch {
+                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, false))
+                    }
+                }
+            } else {
+                text = getString(R.string.sticker_store_add_stickers)
+                setBackgroundResource(R.drawable.bg_round_blue_btn)
+                setOnClickListener {
+                    lifecycleScope.launch {
+                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, true))
+                    }
+                }
             }
         }
     }

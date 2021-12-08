@@ -25,32 +25,19 @@
         android:layout_alignParentBottom="true"
         android:background="?attr/bg_white">
 
-        <ViewAnimator
-            android:id="@+id/action_va"
-            android:layout_width="116dp"
-            android:layout_height="40dp"
+        <TextView
+            android:id="@+id/action_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
-            android:inAnimation="@anim/fade_in"
-            android:outAnimation="@anim/fade_out"
-            android:background="@drawable/bg_round_blue_btn">
-
-            <TextView
-                android:id="@+id/action_tv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/sticker_store_add_stickers"
-                android:textColor="@color/white"
-                android:textSize="14sp" />
-
-            <ProgressBar
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:theme="@style/AppTheme.WhiteAccent" />
-        </ViewAnimator>
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:text="@string/sticker_store_add_stickers"
+            android:background="@drawable/bg_round_blue_btn"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
     </FrameLayout>
 </RelativeLayout>

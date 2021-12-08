@@ -45,7 +45,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            stickerViewModel.getSystemAlbums().observe(
+            stickerViewModel.observeSystemAddedAlbums().observe(
                 viewLifecycleOwner
             ) { r ->
                 r?.let {

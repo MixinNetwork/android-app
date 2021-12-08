@@ -73,6 +73,8 @@ import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerAlbumAdded
+import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
@@ -482,7 +484,9 @@ internal constructor(
         }
     }
 
-    fun getSystemAlbums() = accountRepository.getSystemAlbums()
+    fun observeSystemAddedAlbums() = accountRepository.observeSystemAddedAlbums()
+
+    fun observeSystemAlbums() = accountRepository.observeSystemAlbums()
 
     suspend fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
 
@@ -493,6 +497,14 @@ internal constructor(
     suspend fun findStickerById(stickerId: String) = accountRepository.findStickerById(stickerId)
 
     suspend fun findAlbumById(albumId: String) = accountRepository.findAlbumById(albumId)
+
+    fun observeAlbumById(albumId: String) = accountRepository.observeAlbumById(albumId)
+
+    suspend fun updateAlbumOrders(orders: List<StickerAlbumOrder>) = withContext(Dispatchers.IO) {
+        accountRepository.updateAlbumOrders(orders)
+    }
+
+    suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = accountRepository.updateAlbumAdded(stickerAlbumAdded)
 
     fun observePersonalStickers() = accountRepository.observePersonalStickers()
 
