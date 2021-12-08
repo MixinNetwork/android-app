@@ -1,11 +1,14 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -55,9 +58,21 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                 val auth = authResponseList?.find { it.app.appId == app.appId } ?: return
                 val fragment = PermissionListFragment.newInstance(app, auth)
                 fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
-                    override fun onSuccess() {
+                    @SuppressLint("SetJavaScriptEnabled")
+                    override fun onSuccess(url: String) {
                         list?.removeIf { it.appId == app.appId }
                         authResponseList?.removeIf { it.app.appId == app.appId }
+                        WebView(requireContext()).apply {
+                            settings.javaScriptEnabled = true
+                            settings.domStorageEnabled = true
+                            webViewClient = object: WebViewClient(){
+                                override fun onPageFinished(webView: WebView, url: String?) {
+                                    super.onPageFinished(webView, url)
+                                    webView.loadUrl("javascript:localStorage.clear()")
+                                }
+                            }
+                            loadUrl(url)
+                        }
                         dataChange()
                     }
                 }

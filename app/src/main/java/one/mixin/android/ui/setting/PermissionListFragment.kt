@@ -91,7 +91,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                 viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe(
                     {
                         clearRelatedCookies(app)
-                        deauthCallback?.onSuccess()
+                        deauthCallback?.onSuccess(app.homeUri)
                         activity?.onBackPressed()
                     },
                     {
@@ -143,6 +143,6 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     var deauthCallback: DeauthCallback? = null
 
     interface DeauthCallback {
-        fun onSuccess()
+        fun onSuccess(url: String)
     }
 }

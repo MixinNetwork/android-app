@@ -994,6 +994,11 @@ class WebFragment : BaseFragment() {
                         return@launch
                     }
                     val fragment = PermissionListFragment.newInstance(app, auth)
+                    fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
+                        override fun onSuccess(url: String) {
+                            webView.loadUrl("javascript:localStorage.clear()")
+                        }
+                    }
                     navTo(fragment, PermissionListFragment.TAG)
                 }
             }
