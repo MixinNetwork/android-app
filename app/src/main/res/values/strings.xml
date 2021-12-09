@@ -330,7 +330,7 @@
     <string name="week_sunday">Sunday</string>
     <string name="today">Today</string>
     <string name="chat_item_title">CHATS</string>
-    <string name="copy_success">Copy to clipboard</string>
+    <string name="copy_success">Copied to Clipboard</string>
     <string name="photo">Photo</string>
     <string name="title_participants">%1$d participants</string>
     <string name="save_success">Save success</string>
