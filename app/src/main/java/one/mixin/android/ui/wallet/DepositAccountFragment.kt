@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.core.view.isVisible
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -74,7 +73,7 @@ class DepositAccountFragment : DepositFragment() {
                 getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}").highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
             } else SpannableStringBuilder()
             val confirmation = getString(R.string.deposit_confirmation, asset.confirmations).highLight(requireContext(), asset.confirmations.toString())
-            warningTv.text = getString(R.string.deposit_memo_notice, asset.symbol)
+            accountNameWarningTv.text = getString(R.string.deposit_notice, asset.symbol)
             tipTv.text = buildBulletLines(requireContext(), SpannableStringBuilder(getTipsByAsset(asset)), confirmation, reserveTip)
             accountNameQrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
@@ -82,12 +81,12 @@ class DepositAccountFragment : DepositFragment() {
             accountMemoQrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_TAG).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
-            accountNameCopyTv.setOnClickListener {
+            accountNameCopyIv.setOnClickListener {
                 context?.getClipboardManager()
                     ?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
                 toast(R.string.copy_success)
             }
-            accountMemoCopyTv.setOnClickListener {
+            accountMemoCopyIv.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.tag))
                 toast(R.string.copy_success)
             }
@@ -100,10 +99,9 @@ class DepositAccountFragment : DepositFragment() {
         alertDialogBuilder()
             .setTitle(R.string.notice)
             .setCancelable(false)
-            .setMessage(getString(R.string.deposit_memo_notice, asset.symbol))
+            .setMessage(getString(R.string.deposit_notice, asset.symbol))
             .setPositiveButton(R.string.ok) { dialog, _ ->
                 dialog.dismiss()
-                binding.warningFl.isVisible = true
             }.show()
     }
 
