@@ -149,7 +149,7 @@ class BottomSheetViewModel @Inject internal constructor(
         assetRepository.saveAddr(addr)
     }
 
-    suspend fun deleteAddr(id: String, code: String): MixinResponse<Unit> =
+    suspend fun deleteAddr(id: String, code: String): MixinResponse<Map<String, String?>> =
         assetRepository.deleteAddr(id, encryptPin(Session.getPinToken()!!, code)!!)
 
     suspend fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)

@@ -55,7 +55,7 @@ interface AccountService {
     fun getMe(): Call<MixinResponse<Account>>
 
     @POST("logout")
-    suspend fun logout(@Body request: LogoutRequest): MixinResponse<Unit>
+    suspend fun logout(@Body request: LogoutRequest): MixinResponse<Map<String, String?>>
 
     @GET("codes/{id}")
     suspend fun code(@Path("id") id: String): MixinResponse<CodeResponse>
