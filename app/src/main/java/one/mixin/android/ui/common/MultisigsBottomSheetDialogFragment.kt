@@ -169,7 +169,7 @@ class MultisigsBottomSheetDialogFragment :
                 )
             }
             else -> {
-                MixinResponse<Void>()
+                MixinResponse<Map<String, String?>?>()
             }
         }
     }

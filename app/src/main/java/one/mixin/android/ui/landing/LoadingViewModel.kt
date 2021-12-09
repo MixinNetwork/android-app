@@ -42,7 +42,7 @@ constructor(
     private val senderKeyDao: SenderKeyDao =
         SignalDatabase.getDatabase(MixinApplication.appContext).senderKeyDao()
 
-    suspend fun pushAsyncSignalKeys(): MixinResponse<Void> = withContext(Dispatchers.IO) {
+    suspend fun pushAsyncSignalKeys(): MixinResponse<Map<String, String?>?> = withContext(Dispatchers.IO) {
         val start = System.currentTimeMillis()
         val signalKeys = RefreshOneTimePreKeysJob.generateKeys()
         val response = signalKeyService.pushSignalKeys(signalKeys).await()

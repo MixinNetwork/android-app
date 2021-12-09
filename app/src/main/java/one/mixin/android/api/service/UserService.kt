@@ -53,7 +53,7 @@ interface UserService {
     suspend fun getUserFavoriteApps(@Path("user_id") userId: String): MixinResponse<List<FavoriteApp>>
 
     @POST("apps/{app_id}/unfavorite")
-    suspend fun removeFavoriteApp(@Path("app_id") appId: String): MixinResponse<Void>
+    suspend fun removeFavoriteApp(@Path("app_id") appId: String): MixinResponse<Map<String, String?>?>
 
     @GET("users/{id}")
     suspend fun getUserByIdSuspend(@Path("id") id: String): MixinResponse<User>

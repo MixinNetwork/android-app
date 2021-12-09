@@ -27,7 +27,7 @@ interface CircleService {
     suspend fun updateCircle(@Path("id") id: String, @Body body: CircleName): MixinResponse<Circle>
 
     @POST("circles/{id}/delete")
-    suspend fun deleteCircle(@Path("id") id: String): MixinResponse<Any>
+    suspend fun deleteCircle(@Path("id") id: String): MixinResponse<Map<String, String?>>
 
     @POST("circles/{id}/conversations")
     suspend fun updateCircleConversations(

@@ -12,7 +12,7 @@ import retrofit2.http.POST
 interface SignalKeyService {
 
     @POST("signal/keys")
-    fun pushSignalKeys(@Body signalKeyRequest: SignalKeyRequest): Deferred<MixinResponse<Void>>
+    fun pushSignalKeys(@Body signalKeyRequest: SignalKeyRequest): Deferred<MixinResponse<Map<String, String?>?>>
 
     @GET("signal/keys/count")
     fun getSignalKeyCount(): Call<MixinResponse<SignalKeyCount>>

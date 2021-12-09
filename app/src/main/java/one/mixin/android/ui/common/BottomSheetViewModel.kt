@@ -470,7 +470,7 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun transactions(
         rawTransactionsRequest: RawTransactionsRequest,
         pin: String
-    ): MixinResponse<Void> {
+    ): MixinResponse<Map<String, String?>?> {
         rawTransactionsRequest.pin = encryptPin(Session.getPinToken()!!, pin)!!
         return accountRepository.transactions(rawTransactionsRequest)
     }
