@@ -46,6 +46,7 @@
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="64dp"
                     android:layout_marginTop="4dp"
+                    android:textStyle="bold"
                     android:textSize="16sp"
                     android:textColor="?attr/text_primary"
                     app:layout_constraintStart_toStartOf="parent"
@@ -58,12 +59,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="12dp"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:padding="8dp"
                     android:foreground="@drawable/mixin_ripple"
                     android:src="@drawable/ic_copy_gray"
-                    app:layout_constraintTop_toTopOf="@id/key_code"
+                    app:layout_constraintTop_toBottomOf="@id/address_title"
                     app:layout_constraintEnd_toEndOf="parent"/>
 
                 <FrameLayout
