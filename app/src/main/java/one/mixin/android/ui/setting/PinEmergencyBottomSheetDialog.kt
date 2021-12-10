@@ -48,7 +48,7 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
 
     var pinEmergencyCallback: PinEmergencyCallback? = null
 
-    abstract class PinEmergencyCallback : Callback {
+    abstract class PinEmergencyCallback : Callback() {
         abstract fun onSuccess(pinCode: String)
 
         override fun onSuccess() {
