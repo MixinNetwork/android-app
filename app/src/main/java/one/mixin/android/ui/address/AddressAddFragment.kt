@@ -131,7 +131,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 )
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
+            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
                 override fun onSuccess() {
                     activity?.onBackPressed()
                 }

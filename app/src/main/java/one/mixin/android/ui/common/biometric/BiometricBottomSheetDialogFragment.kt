@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common.biometric
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
@@ -48,6 +49,11 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             contentView.removeCallbacks(dismissRunnable)
             callback?.onSuccess()
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        callback?.onDismiss()
     }
 
     abstract fun getBiometricInfo(): BiometricInfo
@@ -205,7 +211,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     var callback: Callback? = null
 
-    interface Callback {
-        fun onSuccess()
+    open class Callback {
+        open fun onSuccess() {}
+        open fun onDismiss() {}
     }
 }
