@@ -60,7 +60,7 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
                 override fun endDrag() {
                     lifecycleScope.launch {
                         val now = System.currentTimeMillis()
-                        val orders = albumAdapter.data?.mapIndexed { index, item ->
+                        val orders = albumAdapter.data?.reversed()?.mapIndexed { index, item ->
                             StickerAlbumOrder(
                                 item.albumId,
                                 Instant.ofEpochMilli(now + index).toString()

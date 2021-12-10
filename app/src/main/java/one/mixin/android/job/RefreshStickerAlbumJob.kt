@@ -46,9 +46,7 @@ class RefreshStickerAlbumJob : BaseJob(
                     a.orderedAt = Instant.now().toString()
                     stickerAlbumDao.insertSuspend(a)
                 } else {
-                    // old version users have all albums but lack the added field,
-                    // we should keep these albums be showing by set added to true.
-                    a.added = localAlbum.added ?: true
+                    a.added = localAlbum.added
                     a.orderedAt = localAlbum.orderedAt
                     stickerAlbumDao.update(a)
                 }

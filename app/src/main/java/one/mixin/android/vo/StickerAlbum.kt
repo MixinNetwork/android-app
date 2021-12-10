@@ -35,11 +35,11 @@ data class StickerAlbum(
     @ColumnInfo(name = "banner")
     val banner: String?,
     @Expose
-    @ColumnInfo(name = "ordered_at")
-    var orderedAt: String?,
+    @ColumnInfo(name = "ordered_at", defaultValue = "0")
+    var orderedAt: String = "0",
     @Expose
-    @ColumnInfo(name = "added")
-    var added: Boolean?,
+    @ColumnInfo(name = "added", defaultValue = "0")
+    var added: Boolean = false,
 ) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StickerAlbum>() {
