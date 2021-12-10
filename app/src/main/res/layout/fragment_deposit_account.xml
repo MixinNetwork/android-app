@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -22,49 +22,18 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:animateLayoutChanges="true"
             android:orientation="vertical">
-
-            <FrameLayout
-                android:id="@+id/warning_fl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:background="?attr/bg_white">
-
-                <TextView
-                    android:id="@+id/warning_tv"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="10dp"
-                    android:padding="10dp"
-                    android:drawablePadding="8dp"
-                    android:background="@drawable/bg_round_8_solid_pink"
-                    android:textColor="?attr/text_primary"
-                    android:text="@string/deposit_memo_notice"
-                    app:drawableStartCompat="@drawable/ic_deposit_warning" />
-            </FrameLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/bg_white">
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_line2"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.4" />
+                android:layout_height="wrap_content" >
 
                 <TextView
                     android:id="@+id/account_memo_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="8dp"
                     android:text="@string/account_memo"
                     android:textColor="?attr/text_assist"
                     app:layout_constraintStart_toStartOf="parent"
@@ -74,34 +43,42 @@
                     android:id="@+id/account_memo_key_code"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/account_memo_title"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="@dimen/margin16"
-                    android:layout_marginEnd="32dp"
-                    android:layout_marginBottom="@dimen/margin16"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="64dp"
+                    android:layout_marginTop="4dp"
                     android:layout_toStartOf="@+id/account_memo_qr_fl"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
                     android:textColor="?attr/text_primary"
-                    app:layout_constraintBottom_toTopOf="@id/account_memo_copy_tv"
-                    app:layout_constraintEnd_toStartOf="@id/guide_line2"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/account_memo_title"
                     app:layout_constraintVertical_bias="0" />
 
-                <Button
-                    android:id="@+id/account_memo_copy_tv"
-                    style="@style/AppTheme.MaterialButton"
+                <TextView
+                    android:id="@+id/account_memo_warning_tv"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="64dp"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/colorRed"
+                    android:text="@string/deposit_memo_notice"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/account_memo_key_code"
+                    app:layout_constraintVertical_bias="0" />
+
+                <ImageView
+                    android:id="@+id/account_memo_copy_iv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginBottom="@dimen/margin16"
-                    android:minWidth="70dp"
-                    android:minHeight="30dp"
-                    android:text="@string/copy"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    android:layout_marginEnd="12dp"
+                    android:padding="8dp"
+                    android:foreground="@drawable/mixin_ripple"
+                    android:src="@drawable/ic_copy_gray"
+                    app:layout_constraintTop_toBottomOf="@id/account_memo_title"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
                 <FrameLayout
                     android:id="@+id/account_memo_qr_fl"
@@ -109,17 +86,15 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:layout_marginTop="@dimen/margin16"
-                    android:layout_marginBottom="@dimen/margin16"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="@id/guide_line2"
-                    app:layout_constraintTop_toTopOf="parent">
+                    app:layout_constraintTop_toBottomOf="@id/account_memo_warning_tv">
 
                     <ImageView
                         android:id="@+id/account_memo_qr"
-                        android:layout_width="200dp"
-                        android:layout_height="200dp"
+                        android:layout_width="240dp"
+                        android:layout_height="240dp"
                         tools:ignore="ContentDescription" />
 
                     <one.mixin.android.widget.BadgeCircleImageView
@@ -130,29 +105,15 @@
                 </FrameLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="10dp"
-                android:background="?attr/bg_window" />
-
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/bg_white">
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_line1"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.4" />
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/account_name_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginStart="20dp"
                     android:text="@string/address"
                     android:textColor="?attr/text_assist"
                     app:layout_constraintStart_toStartOf="parent"
@@ -163,32 +124,42 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/account_name_title"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="@dimen/margin16"
-                    android:layout_marginEnd="32dp"
-                    android:layout_marginBottom="@dimen/margin16"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="64dp"
+                    android:layout_marginTop="4dp"
                     android:layout_toStartOf="@+id/account_name_qr_fl"
                     android:textColor="?attr/text_primary"
-                    app:layout_constraintBottom_toTopOf="@id/account_name_copy_tv"
-                    app:layout_constraintEnd_toStartOf="@id/guide_line1"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/account_name_title"
                     app:layout_constraintVertical_bias="0" />
 
-                <Button
-                    android:id="@+id/account_name_copy_tv"
-                    style="@style/AppTheme.MaterialButton"
+                <TextView
+                    android:id="@+id/account_name_warning_tv"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="64dp"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/colorRed"
+                    android:text="@string/deposit_notice"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/account_name_key_code"
+                    app:layout_constraintVertical_bias="0" />
+
+                <ImageView
+                    android:id="@+id/account_name_copy_iv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginBottom="@dimen/margin16"
-                    android:minWidth="70dp"
-                    android:minHeight="30dp"
-                    android:text="@string/copy"
-                    android:textSize="14sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    android:layout_marginEnd="12dp"
+                    android:padding="8dp"
+                    android:foreground="@drawable/mixin_ripple"
+                    android:src="@drawable/ic_copy_gray"
+                    app:layout_constraintTop_toBottomOf="@id/account_name_title"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
                 <FrameLayout
                     android:id="@+id/account_name_qr_fl"
@@ -196,16 +167,15 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:layout_marginBottom="@dimen/margin16"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="@id/guide_line1"
-                    app:layout_constraintTop_toTopOf="parent">
+                    app:layout_constraintTop_toBottomOf="@id/account_name_warning_tv">
 
                     <ImageView
                         android:id="@+id/account_name_qr"
-                        android:layout_width="200dp"
-                        android:layout_height="200dp"
+                        android:layout_width="240dp"
+                        android:layout_height="240dp"
                         tools:ignore="ContentDescription" />
 
                     <one.mixin.android.widget.BadgeCircleImageView
@@ -216,22 +186,15 @@
                 </FrameLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="15dp"
-                android:background="?attr/bg_window" />
-
             <TextView
                 android:id="@+id/tip_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/bg_round_8_solid_gray"
                 android:gravity="start"
-                android:paddingStart="8dp"
-                android:paddingTop="3dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="3dp"
+                android:padding="10dp"
                 android:textColor="?attr/text_minor"
                 android:textSize="13sp" />
         </LinearLayout>
