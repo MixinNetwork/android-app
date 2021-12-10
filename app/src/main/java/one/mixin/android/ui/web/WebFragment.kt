@@ -995,7 +995,7 @@ class WebFragment : BaseFragment() {
                     }
                     val fragment = PermissionListFragment.newInstance(app, auth)
                     fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
-                        override fun onSuccess() {
+                        override fun onSuccess(url: String) {
                             webView.loadUrl("javascript:localStorage.clear()")
                         }
                     }
@@ -1067,6 +1067,7 @@ class WebFragment : BaseFragment() {
 
     private fun refresh() {
         webView.clearCache(true)
+        webView.loadUrl("javascript:localStorage.clear()")
         webView.reload()
         _binding?.failLoadView?.isVisible = false
     }

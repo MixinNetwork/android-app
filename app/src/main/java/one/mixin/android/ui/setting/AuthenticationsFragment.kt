@@ -1,11 +1,14 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -25,6 +28,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
+import timber.log.Timber
 
 @AndroidEntryPoint
 class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) {
@@ -55,9 +59,22 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                 val auth = authResponseList?.find { it.app.appId == app.appId } ?: return
                 val fragment = PermissionListFragment.newInstance(app, auth)
                 fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
-                    override fun onSuccess() {
+                    @SuppressLint("SetJavaScriptEnabled")
+                    override fun onSuccess(url: String) {
                         list?.removeIf { it.appId == app.appId }
                         authResponseList?.removeIf { it.app.appId == app.appId }
+                        WebView(requireContext()).apply {
+                            settings.javaScriptEnabled = true
+                            settings.domStorageEnabled = true
+                            loadUrl("http://192.168.31.59:8081/")
+                            webViewClient = object: WebViewClient(){
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    super.onPageFinished(view, url)
+                                    Timber.d("onPageFinished")
+                                    view?.loadUrl("javascript:localStorage.clear()")
+                                }
+                            }
+                        }
                         dataChange()
                     }
                 }
