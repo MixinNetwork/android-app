@@ -195,6 +195,7 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
+    implementation "androidx.webkit:webkit:${webkitVersion}"
 
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
