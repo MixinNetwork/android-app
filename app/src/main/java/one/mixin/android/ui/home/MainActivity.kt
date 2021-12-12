@@ -46,6 +46,7 @@ import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
+import one.mixin.android.Constants.Account.PREF_FTS4_REDUCE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -84,6 +85,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.ReduceFts4Job
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshFiatsJob
@@ -328,6 +330,11 @@ class MainActivity : BlazeBaseActivity() {
 
         PropertyHelper.checkBackupMigrated() {
             jobManager.addJobInBackground(BackupJob(force = true, delete = true))
+        }
+
+        val ftsReduce = PropertyHelper.findValueByKey(PREF_FTS4_REDUCE)?.toBooleanStrictOrNull()
+        if (ftsReduce != false) {
+            jobManager.addJobInBackground(ReduceFts4Job())
         }
 
         WorkManager.getInstance(this@MainActivity)
