@@ -74,10 +74,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="12dp"
+                    android:layout_marginTop="-8dp"
                     android:padding="8dp"
                     android:foreground="@drawable/mixin_ripple"
                     android:src="@drawable/ic_copy_gray"
-                    app:layout_constraintTop_toBottomOf="@id/account_memo_title"
+                    app:layout_constraintTop_toTopOf="@id/account_memo_key_code"
                     app:layout_constraintEnd_toEndOf="parent"/>
 
                 <FrameLayout
@@ -155,10 +156,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="12dp"
+                    android:layout_marginTop="-8dp"
                     android:padding="8dp"
                     android:foreground="@drawable/mixin_ripple"
                     android:src="@drawable/ic_copy_gray"
-                    app:layout_constraintTop_toBottomOf="@id/account_name_title"
+                    app:layout_constraintTop_toTopOf="@id/account_name_key_code"
                     app:layout_constraintEnd_toEndOf="parent"/>
 
                 <FrameLayout
