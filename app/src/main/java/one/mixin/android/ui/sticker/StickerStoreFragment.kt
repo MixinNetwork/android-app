@@ -32,7 +32,8 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
     private val albumAdapter: AlbumAdapter by lazy {
         AlbumAdapter(parentFragmentManager) { albumId ->
             lifecycleScope.launch {
-                viewModel.updateAlbumAdded(StickerAlbumAdded(albumId, true))
+                val maxOrder = viewModel.findMaxOrder()
+                viewModel.updateAlbumAdded(StickerAlbumAdded(albumId, true, maxOrder + 1))
             }
         }
     }

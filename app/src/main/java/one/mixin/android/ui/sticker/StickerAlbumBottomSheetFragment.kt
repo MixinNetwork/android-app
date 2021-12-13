@@ -124,12 +124,12 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun updateAction(album: StickerAlbum) {
         binding.actionTv.apply {
-            if (album.added == true) {
+            if (album.added) {
                 text = getString(R.string.sticker_store_remove_stickers)
                 setBackgroundResource(R.drawable.bg_round_red_btn)
                 setOnClickListener {
                     lifecycleScope.launch {
-                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, false))
+                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, false, 0))
                     }
                 }
             } else {
@@ -137,7 +137,8 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
                 setBackgroundResource(R.drawable.bg_round_blue_btn)
                 setOnClickListener {
                     lifecycleScope.launch {
-                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, true))
+                        val maxOrder = viewModel.findMaxOrder()
+                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, true, maxOrder + 1))
                     }
                 }
             }

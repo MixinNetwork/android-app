@@ -29,7 +29,7 @@ class RefreshStickerAlbumJob : BaseJob(
     override fun onRun() = runBlocking {
         val response = accountService.getStickerAlbums()
         if (response.isSuccess && response.data != null) {
-            val albums = response.data as List<StickerAlbum>
+            val albums = (response.data as List<StickerAlbum>).sortedBy { it.createdAt }
 
             val localLatestCreatedAt = stickerAlbumDao.findLatestCreatedAt()?.let { createdAt ->
                 parseCreatedAt(createdAt)
@@ -39,11 +39,13 @@ class RefreshStickerAlbumJob : BaseJob(
                 hasNewAlbum = true
             }
 
+            var maxOrder = stickerAlbumDao.findMaxOrder() ?: 0
             for (a in albums) {
                 val localAlbum = stickerAlbumDao.findAlbumById(a.albumId)
                 if (localAlbum == null) {
-                    a.added = !a.banner.isNullOrBlank()
-                    a.orderedAt = Instant.now().toString()
+                    maxOrder++
+                    a.added = false
+                    a.orderedAt = maxOrder
                     stickerAlbumDao.insertSuspend(a)
                 } else {
                     a.added = localAlbum.added

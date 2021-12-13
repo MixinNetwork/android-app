@@ -80,9 +80,10 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 if (album == null) return@observe
 
                 binding.tileTv.text = album.name
-                binding.actionTv.updateAlbumAdd(requireContext(), album.added == true) {
+                binding.actionTv.updateAlbumAdd(requireContext(), album.added) {
                     lifecycleScope.launch {
-                        viewModel.updateAlbumAdded(StickerAlbumAdded(albumId, true))
+                        val maxOrder = viewModel.findMaxOrder()
+                        viewModel.updateAlbumAdded(StickerAlbumAdded(albumId, true, maxOrder + 1))
                     }
                 }
             }

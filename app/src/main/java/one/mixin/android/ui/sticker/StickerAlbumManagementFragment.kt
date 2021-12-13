@@ -18,7 +18,6 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
-import org.threeten.bp.Instant
 
 @AndroidEntryPoint
 class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_album_management) {
@@ -49,7 +48,7 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
             albumAdapter.albumListener = object : AlbumListener {
                 override fun onDelete(album: StickerAlbum) {
                     lifecycleScope.launch {
-                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, false))
+                        viewModel.updateAlbumAdded(StickerAlbumAdded(album.albumId, false, 0))
                     }
                 }
 
@@ -59,12 +58,8 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
 
                 override fun endDrag() {
                     lifecycleScope.launch {
-                        val now = System.currentTimeMillis()
                         val orders = albumAdapter.data?.reversed()?.mapIndexed { index, item ->
-                            StickerAlbumOrder(
-                                item.albumId,
-                                Instant.ofEpochMilli(now + index).toString()
-                            )
+                            StickerAlbumOrder(item.albumId, index + 1)
                         } ?: return@launch
                         viewModel.updateAlbumOrders(orders)
                     }

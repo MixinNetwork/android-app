@@ -44,7 +44,7 @@ class AlbumHolder(
         val ctx = binding.root.context
         binding.apply {
             tileTv.text = album.album.name
-            actionTv.updateAlbumAdd(ctx, album.album.added == true) {
+            actionTv.updateAlbumAdd(ctx, album.album.added) {
                 addAction.invoke(album.album.albumId)
             }
             val adapter = StickerAdapter()

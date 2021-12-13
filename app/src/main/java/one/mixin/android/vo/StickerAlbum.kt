@@ -1,6 +1,5 @@
 package one.mixin.android.vo
 
-import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -36,33 +35,24 @@ data class StickerAlbum(
     val banner: String?,
     @Expose
     @ColumnInfo(name = "ordered_at", defaultValue = "0")
-    var orderedAt: String = "0",
+    var orderedAt: Int = 0,
     @Expose
     @ColumnInfo(name = "added", defaultValue = "0")
     var added: Boolean = false,
-) {
-    companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StickerAlbum>() {
-            override fun areItemsTheSame(oldItem: StickerAlbum, newItem: StickerAlbum) =
-                oldItem.albumId == newItem.albumId
-
-            override fun areContentsTheSame(oldItem: StickerAlbum, newItem: StickerAlbum) =
-                oldItem.added == newItem.added &&
-                    oldItem.orderedAt == newItem.orderedAt
-        }
-    }
-}
+)
 
 data class StickerAlbumOrder(
     @ColumnInfo(name = "album_id")
     val albumId: String,
     @ColumnInfo(name = "ordered_at")
-    val orderedAt: String?,
+    val orderedAt: Int,
 )
 
 data class StickerAlbumAdded(
     @ColumnInfo(name = "album_id")
     val albumId: String,
     @ColumnInfo(name = "added")
-    val added: Boolean?,
+    val added: Boolean,
+    @ColumnInfo(name = "ordered_at")
+    var orderedAt: Int,
 )

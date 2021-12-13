@@ -506,6 +506,8 @@ internal constructor(
 
     suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = accountRepository.updateAlbumAdded(stickerAlbumAdded)
 
+    suspend fun findMaxOrder() = accountRepository.findMaxOrder()
+
     fun observePersonalStickers() = accountRepository.observePersonalStickers()
 
     fun recentStickers() = accountRepository.recentUsedStickers()

@@ -178,6 +178,8 @@ constructor(
 
     suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = stickerAlbumDao.updateAdded(stickerAlbumAdded)
 
+    suspend fun findMaxOrder() = stickerAlbumDao.findMaxOrder() ?: 0
+
     fun observePersonalStickers() = stickerRelationshipDao.observePersonalStickers()
 
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
