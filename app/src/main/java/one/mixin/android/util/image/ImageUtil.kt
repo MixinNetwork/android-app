@@ -10,13 +10,13 @@ import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import kotlin.jvm.Throws
+import java.io.InputStream
 
 internal object ImageUtil {
 
     @Throws(IOException::class)
     fun compressImage(
-        imageFile: File,
+        imageFile: InputStream,
         reqWidth: Int,
         reqHeight: Int,
         compressFormat: Bitmap.CompressFormat,
@@ -43,18 +43,17 @@ internal object ImageUtil {
     }
 
     @Throws(IOException::class)
-    fun decodeSampledBitmapFromFile(imageFile: File, reqWidth: Int, reqHeight: Int): Bitmap {
+    fun decodeSampledBitmapFromFile(imageFile: InputStream, reqWidth: Int, reqHeight: Int): Bitmap {
         val options = BitmapFactory.Options()
         options.inJustDecodeBounds = true
-        BitmapFactory.decodeFile(imageFile.absolutePath, options)
 
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
 
         options.inJustDecodeBounds = false
 
-        var scaledBitmap = BitmapFactory.decodeFile(imageFile.absolutePath, options)
+        var scaledBitmap = BitmapFactory.decodeStream(imageFile, null, options)
 
-        val exif = ExifInterface(imageFile.absolutePath)
+        val exif = ExifInterface(imageFile)
         val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0)
         val matrix = Matrix()
         when (orientation) {
@@ -62,7 +61,7 @@ internal object ImageUtil {
             ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
             ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
         }
-        scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
+        scaledBitmap = Bitmap.createBitmap(scaledBitmap!!, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
         return scaledBitmap
     }
 

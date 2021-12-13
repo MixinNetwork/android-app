@@ -588,21 +588,18 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         }
 
         val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
-        val path = uri.getFilePath(MixinApplication.get()) ?: return -1
         val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
-            val source = ImageDecoder.createSource(File(path))
+            val source = ImageDecoder.createSource(MixinApplication.get().contentResolver, uri)
             val bitmap = ImageDecoder.decodeBitmap(source)
             temp.outputStream().use {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
             }
             temp
         } else {
+            val fileInputStream = MixinApplication.get().contentResolver.openInputStream(uri) ?: return -1
             Compressor()
                 .setCompressFormat(Bitmap.CompressFormat.JPEG)
-                .compressToFile(
-                    File(path),
-                    temp.absolutePath
-                )
+                .compressToFile(fileInputStream, temp.absolutePath)
         }
         val length = imageFile.length()
         if (length <= 0) {
