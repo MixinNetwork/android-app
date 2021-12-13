@@ -28,10 +28,6 @@ class SignalKeyRequestJsonAdapter(
             emptySet(), "oneTimePreKeys"
         )
 
-    override fun toString(): String = buildString(38) {
-        append("GeneratedJsonAdapter(").append("SignalKeyRequest").append(')')
-    }
-
     override fun fromJson(reader: JsonReader): SignalKeyRequest {
         throw JsonDataException("Does not allow deserialization")
     }

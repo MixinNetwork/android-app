@@ -37,7 +37,7 @@ class RefreshOneTimePreKeysJob : MixinJob(
     private fun refresh() = runBlocking {
         val signalKeysRequest = generateKeys()
         Log.w(TAG, "Registering new pre keys...")
-        val response = signalKeyService.pushSignalKeys(signalKeysRequest).await()
+        val response = signalKeyService.pushSignalKeys(signalKeysRequest)
         if (response.isSuccess) {
         }
     }
