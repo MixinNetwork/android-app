@@ -33,7 +33,6 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.webkit.WebViewClient.ERROR_CONNECT
 import android.webkit.WebViewClient.ERROR_HOST_LOOKUP
 import android.webkit.WebViewClient.ERROR_IO
@@ -49,6 +48,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.webkit.WebViewClientCompat
 import com.bumptech.glide.Glide
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -787,7 +787,7 @@ class WebFragment : BaseFragment() {
         webAppInterface = null
         webView.removeJavascriptInterface("MixinContext")
         webView.webChromeClient = null
-        webView.webViewClient = object : WebViewClient() {}
+        webView.webViewClient = object : WebViewClientCompat() {}
 
         return WebClip(
             currentUrl,
@@ -814,7 +814,7 @@ class WebFragment : BaseFragment() {
             }
             index < 0 -> {
                 webView.destroy()
-                webView.webViewClient = object : WebViewClient() {}
+                webView.webViewClient = object : WebViewClientCompat() {}
                 webView.webChromeClient = null
             }
             else -> {
@@ -1190,7 +1190,7 @@ class WebFragment : BaseFragment() {
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
-    ) : WebViewClient() {
+    ) : WebViewClientCompat() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             onPageFinishedListener.onPageFinished()
@@ -1207,7 +1207,7 @@ class WebFragment : BaseFragment() {
             onReceivedError(errorCode, description, failingUrl)
         }
 
-        override fun onPageCommitVisible(view: WebView?, url: String?) {
+        override fun onPageCommitVisible(view: WebView, url: String) {
             super.onPageCommitVisible(view, url)
             onPageFinishedListener.onPageFinished()
         }

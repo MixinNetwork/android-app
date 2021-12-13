@@ -150,6 +150,7 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
         pinMessageDao().deleteByMessageId(messageId)
         mentionMessageDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
+        messageFts4Dao().deleteByMessageId(messageId)
     }
 }
 

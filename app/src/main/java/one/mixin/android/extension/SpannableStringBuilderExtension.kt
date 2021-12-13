@@ -47,16 +47,21 @@ internal fun buildAmountSymbol(
 
 internal fun buildBulletLines(context: Context, vararg lines: SpannableStringBuilder): CharSequence {
     val builder = SpannableStringBuilder()
-    lines.forEachIndexed { i, l ->
-        if (l.isBlank()) return@forEachIndexed
-
-        if (i < lines.size - 1) {
-            l.append("\n\n")
-            l.setSpan(AbsoluteSizeSpan(8, true), l.length - 2, l.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+    lines.filter { l -> l.isNotBlank() }.let { nonBlankLines ->
+        nonBlankLines.forEachIndexed { i, l ->
+            if (i < nonBlankLines.size - 1) {
+                l.append("\n\n")
+                l.setSpan(
+                    AbsoluteSizeSpan(8, true),
+                    l.length - 2,
+                    l.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+            val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_minor))
+            l.setSpan(bulletSpan, 0, l.length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+            builder.append(l)
         }
-        val bulletSpan = BulletSpan(8.dp, context.colorFromAttribute(R.attr.text_minor))
-        l.setSpan(bulletSpan, 0, l.length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
-        builder.append(l)
     }
     return builder
 }

@@ -59,7 +59,7 @@ class DepositPublicKeyFragment : DepositFragment() {
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
             qrAvatar.setBorder()
-            copyTv.setOnClickListener {
+            copyIv.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
                 toast(R.string.copy_success)
             }
@@ -71,7 +71,7 @@ class DepositPublicKeyFragment : DepositFragment() {
                 getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
                     .highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
             } else SpannableStringBuilder()
-            confirmTv.text = buildBulletLines(
+            tipTv.text = buildBulletLines(
                 requireContext(),
                 SpannableStringBuilder(getTipsByAsset(asset)),
                 confirmation,
