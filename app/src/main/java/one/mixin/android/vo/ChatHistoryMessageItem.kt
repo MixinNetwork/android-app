@@ -110,7 +110,7 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
 }
 
 fun ChatHistoryMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
-    mediaUrl?.let {
+    absolutePath()?.let {
         if (isLive()) {
             VideoPlayer.player().loadHlsVideo(it, messageId)
         } else {
