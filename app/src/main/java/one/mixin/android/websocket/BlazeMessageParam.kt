@@ -49,12 +49,9 @@ data class KrakenParam(
     }
 }
 
-@JsonClass(generateAdapter = true)
 data class BlazeMessageParamSession(
-    @Json(name = "user_id")
     val user_id: String,
-    @Json(name = "session_id")
-    val session_id: String? = null,
+    val session_id: String? = null
 )
 
 fun createAckParam(message_id: String, status: String) =

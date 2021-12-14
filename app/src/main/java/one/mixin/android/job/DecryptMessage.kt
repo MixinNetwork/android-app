@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import android.app.Activity
 import android.app.NotificationManager
-import android.util.Log
 import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.squareup.moshi.JsonDataException
@@ -143,7 +142,7 @@ import java.util.UUID
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     companion object {
-        val TAG = DecryptMessage::class.java.simpleName
+        private val TAG = DecryptMessage::class.java.simpleName
         const val GROUP = "DecryptMessage"
     }
 
@@ -1072,7 +1071,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 requestResendMessage(data.conversationId, data.userId, data.sessionId)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "decrypt failed " + data.messageId, e)
+            Timber.tag(TAG).e(e, "decrypt failed ${data.messageId}")
             reportDecryptFailed(data, e, resendMessageId)
 
             if (resendMessageId != null) {
@@ -1254,7 +1253,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         val bm = createSyncSignalKeys(createSyncSignalKeysParam(RefreshOneTimePreKeysJob.generateKeys()))
         val result = signalKeysChannel(bm)
         if (result == null) {
-            Log.w(TAG, "Registering new pre keys...")
+            Timber.tag(TAG).w("Registering new pre keys...")
         }
     }
 
