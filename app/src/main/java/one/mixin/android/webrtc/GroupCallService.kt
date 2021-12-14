@@ -5,14 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.Gson
 import com.google.gson.JsonElement
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.SignalKey
 import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
@@ -23,11 +21,13 @@ import one.mixin.android.event.CallEvent
 import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
-import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.toBlazeMessageData
+import one.mixin.android.extension.toPeerList
+import one.mixin.android.extension.toSignalKeys
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MessageResult
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
@@ -88,8 +88,6 @@ class GroupCallService : CallService() {
     lateinit var participantDao: ParticipantDao
     @Inject
     lateinit var conversationApi: ConversationService
-
-    private val gson = Gson()
 
     private var disposable: Disposable? = null
 
@@ -334,7 +332,7 @@ class GroupCallService : CallService() {
         )
         val bm = createListKrakenPeers(blazeMessageParam)
         val json = getJsonElement(bm) ?: return null
-        return gson.fromJson(json, PeerList::class.java)
+        return json.toPeerList()
     }
 
     private fun handleReceiveInvite(intent: Intent) {
@@ -714,9 +712,7 @@ class GroupCallService : CallService() {
 
     private fun getBlazeMessageData(blazeMessage: BlazeMessage): BlazeMessageData? {
         val bm = webSocketChannel(blazeMessage)
-        return if (bm != null) {
-            gson.fromJson(bm.data, BlazeMessageData::class.java)
-        } else null
+        return bm?.data?.toBlazeMessageData()
     }
 
     private fun getJsonElement(blazeMessage: BlazeMessage): JsonElement? =
@@ -841,7 +837,7 @@ class GroupCallService : CallService() {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
             val data = getJsonElement(blazeMessage)
             if (data != null) {
-                val signalKeys = gson.fromJson<ArrayList<SignalKey>>(data)
+                val signalKeys = data.toSignalKeys()
                 val keys = arrayListOf<BlazeMessageParamSession>()
                 if (signalKeys.isNotEmpty()) {
                     for (key in signalKeys) {

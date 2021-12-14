@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.launch
@@ -26,9 +25,10 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.di.isNeedSwitch
-import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.ungzip
+import one.mixin.android.extension.toBlazeMessage
+import one.mixin.android.extension.toBlazeMessageData
+import one.mixin.android.extension.toJson
 import one.mixin.android.job.DecryptCallMessage.Companion.listPendingOfferHandled
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
@@ -45,6 +45,7 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
+import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -69,8 +70,6 @@ class ChatWebSocket(
     private val transactions = ConcurrentHashMap<String, WebSocketTransaction>()
     private val accountId = Session.getAccountId()
     private var homeUrl = Mixin_WS_URL
-
-    private val gson = Gson()
 
     companion object {
         val TAG = ChatWebSocket::class.java.simpleName
@@ -127,12 +126,12 @@ class ChatWebSocket(
         )
         if (client != null && connected) {
             transactions[blazeMessage.id] = transaction
-            val result = client!!.send(gson.toJson(blazeMessage).gzip())
+            val result = client!!.send(blazeMessage.toJson())
             if (result) {
                 latch.await(5, TimeUnit.SECONDS)
             }
         } else {
-            Log.e(TAG, "WebSocket not connect")
+            Timber.e("WebSocket not connect")
         }
         return bm
     }
@@ -153,7 +152,7 @@ class ChatWebSocket(
             }
         )
         transactions[blazeMessage.id] = transaction
-        client?.send(gson.toJson(blazeMessage).gzip())
+        client?.send(blazeMessage.toJson())
     }
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -174,8 +173,7 @@ class ChatWebSocket(
     override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
         MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
             try {
-                val json = bytes.ungzip()
-                val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)
+                val blazeMessage = bytes.toBlazeMessage()
                 if (blazeMessage.error == null) {
                     if (transactions[blazeMessage.id] != null) {
                         transactions[blazeMessage.id]!!.success.success(blazeMessage)
@@ -271,7 +269,7 @@ class ChatWebSocket(
     }
 
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
-        val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
+        val data = blazeMessage.data!!.toBlazeMessageData()
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))

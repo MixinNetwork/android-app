@@ -17,7 +17,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -95,7 +94,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var messageService: MessageService
 
     private val accountId = Session.getAccountId()
-    private val gson = Gson()
 
     private val powerManager by lazy { getSystemService<PowerManager>() }
     private var isIgnoringBatteryOptimizations = false
@@ -242,7 +240,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
         try {
-            messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
+            messageService.acknowledgements(ackMessages.map { getTypeAdapter<BlazeAckMessage>(BlazeAckMessage::class.java).fromJson(it.blazeMessage!!)!! })
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
@@ -255,8 +253,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (jobs.isEmpty() || accountId == null) {
             return
         }
-        jobs.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-            val plainText = gson.toJson(
+        jobs.map { getTypeAdapter<BlazeAckMessage>(BlazeAckMessage::class.java).fromJson(it.blazeMessage!!)!! }.let {
+            val plainText = getTypeAdapter<PlainJsonMessagePayload>(PlainJsonMessagePayload::class.java).toJson(
                 PlainJsonMessagePayload(
                     action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
                     ackMessages = it

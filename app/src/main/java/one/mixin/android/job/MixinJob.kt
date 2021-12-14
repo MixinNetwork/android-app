@@ -1,24 +1,22 @@
 package one.mixin.android.job
 
 import android.os.SystemClock
-import android.util.Log
 import com.birbit.android.jobqueue.Params
-import com.google.gson.Gson
 import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ChecksumException
 import one.mixin.android.api.NetworkException
-import one.mixin.android.api.SignalKey
 import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.toSignalKeys
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -97,7 +95,7 @@ abstract class MixinJob(
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
             val data = signalKeysChannel(blazeMessage)
             if (data != null) {
-                val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
+                val signalKeys = data.toSignalKeys()
                 val keys = arrayListOf<BlazeMessageParamSession>()
                 if (signalKeys.isNotEmpty()) {
                     for (key in signalKeys) {
@@ -108,7 +106,7 @@ abstract class MixinJob(
                         keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
                     }
                 } else {
-                    Log.e(TAG, "No any group signal key from server: " + requestSignalKeyUsers.toString())
+                    Timber.e("No any group signal key from server: $requestSignalKeyUsers")
                 }
 
                 val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
@@ -140,7 +138,7 @@ abstract class MixinJob(
     protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String): Boolean {
         val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
         val data = signalKeysChannel(blazeMessage) ?: return false
-        val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+        val keys = data.toSignalKeys()
         if (keys.isNotEmpty() && keys.count() > 0) {
             val preKeyBundle = createPreKeyBundle(keys[0])
             signalProtocol.processSession(recipientId, preKeyBundle)
@@ -180,7 +178,7 @@ abstract class MixinJob(
             )
 
             val data = signalKeysChannel(blazeMessage) ?: return false
-            val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+            val keys = data.toSignalKeys()
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
                 signalProtocol.processSession(recipientId, preKeyBundle)
@@ -270,7 +268,7 @@ abstract class MixinJob(
     }
 
     protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
-        val plainText = Gson().toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
+        val plainText = getTypeAdapter<PlainJsonMessagePayload>(PlainJsonMessagePayload::class.java).toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
         val encoded = plainText.base64Encode()
         val params = BlazeMessageParam(
             conversationId,

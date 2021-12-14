@@ -13,7 +13,6 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.vo.RatchetSenderKey
@@ -41,6 +40,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toByteArray
+import one.mixin.android.extension.toSignalKeyCount
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
@@ -1246,7 +1246,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         refreshKeyMap[conversationId] = current
         val blazeMessage = createCountSignalKeys()
         val data = signalKeysChannel(blazeMessage) ?: return
-        val count = gson.fromJson(data, SignalKeyCount::class.java)
+        val count = data.toSignalKeyCount()
         if (count.preKeyCount >= RefreshOneTimePreKeysJob.PREKEY_MINI_NUM) {
             return
         }

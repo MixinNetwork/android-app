@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import com.google.gson.Gson
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -10,6 +9,7 @@ import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
@@ -286,9 +286,9 @@ open class SendMessageJob(
 
     private fun getMentionData(messageId: String): List<String>? {
         return messageMentionDao.getMentionData(messageId)?.run {
-            Gson().fromJson(this, Array<MentionUser>::class.java).map {
+            getTypeListAdapter<List<MentionUser>>(MentionUser::class.java).fromJson(this)?.map {
                 it.identityNumber
-            }.toSet()
+            }?.toSet()
         }?.run {
             userDao.findMultiUserIdsByIdentityNumbers(this)
         }
