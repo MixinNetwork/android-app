@@ -19,7 +19,6 @@ data class Circle(
     @Json(name = "created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
-    // todo @Expose
     @ColumnInfo(name = "ordered_at")
     val orderedAt: String?
 )

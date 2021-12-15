@@ -88,7 +88,7 @@ buildscript {
         ext.robolectricVersion = '4.7.3'
 
         ext.gsonVersion = '2.8.9'
-        ext.moshiVersion = '1.13.0-SNAPSHOT'
+        ext.moshiVersion = '1.13.0'
 
         ext.autodisposeVersion = '1.4.0'
         ext.jsoupVersion = '1.13.1'
@@ -112,7 +112,6 @@ buildscript {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.4'
@@ -129,7 +128,6 @@ allprojects {
         google()
         mavenCentral()
         maven { url "https://jitpack.io" }
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
         maven {
             url 'https://api.mapbox.com/downloads/v2/releases/maven'
             authentication {

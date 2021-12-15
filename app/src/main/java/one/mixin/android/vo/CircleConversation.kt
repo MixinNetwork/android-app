@@ -23,7 +23,6 @@ data class CircleConversation(
     @ColumnInfo(name = "created_at")
     @Json(name = "created_at")
     val createdAt: String,
-    // todo @Expose
     @ColumnInfo(name = "pin_time")
     val pinTime: String?
 )
