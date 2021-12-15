@@ -306,7 +306,7 @@ dependencies {
     implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}"
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
-    implementation "org.chromium.net:cronet-fallback:76.3809.111"
+    implementation "org.chromium.net:cronet-fallback:95.4638.50"
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
     implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
 
