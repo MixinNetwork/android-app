@@ -161,6 +161,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:screenOrientation="portrait"
+            android:excludeFromRecents="true"
             android:targetActivity=".ui.forward.ForwardActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -265,6 +266,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:documentLaunchMode="intoExisting"
             android:launchMode="singleTop"
+            android:excludeFromRecents="true"
             android:theme="@style/AppTheme.Call"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
