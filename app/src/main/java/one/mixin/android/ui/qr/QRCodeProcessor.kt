@@ -1,10 +1,10 @@
 package one.mixin.android.ui.qr
 
 import android.graphics.Bitmap
-import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode.FORMAT_QR_CODE
 import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,7 @@ import one.mixin.android.extension.decodeQR
 class QRCodeProcessor {
     private val scanner: BarcodeScanner = BarcodeScanning.getClient(
         BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .setBarcodeFormats(FORMAT_QR_CODE)
             .build()
     )
 
