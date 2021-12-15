@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.databinding.ItemAddressBinding
 import one.mixin.android.extension.fullDate
-import one.mixin.android.extension.timeAgo
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.displayAddress
 
