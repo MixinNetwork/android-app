@@ -13,7 +13,7 @@ class SignalKeyRequest(ik: IdentityKey, spk: SignedPreKeyRecord, otp: List<PreKe
     val identityKey: String = ik.serialize().base64Encode()
     @SerializedName("signed_pre_key")
     var signedPreKey: SignedPreKey
-    @SerializedName("signed_pre_key")
+    @SerializedName("one_time_pre_keys")
     lateinit var oneTimePreKeys: ArrayList<OneTimePreKey>
 
     init {
