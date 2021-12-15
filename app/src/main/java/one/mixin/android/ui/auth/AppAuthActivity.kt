@@ -41,7 +41,7 @@ class AppAuthActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
-        binding.swirl.postDelayed(showPromptRunnable, 200)
+        binding.swirl.postDelayed(showPromptRunnable, 100)
     }
 
     override fun onStop() {
