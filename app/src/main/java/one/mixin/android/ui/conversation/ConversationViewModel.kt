@@ -27,7 +27,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.deserialize
+import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
@@ -202,7 +205,7 @@ internal constructor(
         messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, encryptCategory, replyMessage)
     }
 
-    fun sendAudioMessage(
+    suspend fun sendAudioMessage(
         conversationId: String,
         sender: User,
         audioMessagePayload: AudioMessagePayload,
@@ -210,10 +213,17 @@ internal constructor(
         replyMessage: MessageItem? = null
     ) {
         val messageId = audioMessagePayload.messageId
-        val file = File(audioMessagePayload.url)
         val duration = audioMessagePayload.duration
         val waveForm = audioMessagePayload.waveForm
-        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, encryptCategory, replyMessage)
+        withContext(Dispatchers.IO) {
+            val inputStream =
+                MixinApplication.appContext.contentResolver.openInputStream(audioMessagePayload.url.toUri())
+                    ?: return@withContext
+            val audioFile = MixinApplication.get().getAudioPath()
+                .createAudioTemp(conversationId, audioMessagePayload.messageId, "ogg")
+            audioFile.copyFromInputStream(inputStream)
+            messenger.sendAudioMessage(conversationId, messageId, sender, audioFile, duration, waveForm, encryptCategory, replyMessage)
+        }
     }
 
     fun sendStickerMessage(

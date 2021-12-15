@@ -20,7 +20,6 @@ import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.websocket.toLocationData
-import java.io.File
 import java.util.UUID
 
 @SuppressLint("ParcelCreator")
@@ -262,13 +261,14 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
         }
         m.category.endsWith("_AUDIO") -> {
-            val url = m.absolutePath() ?: return null
-            if (!File(url.getFilePath()).exists()) return null
+            if (m.absolutePath()?.fileExists() != true) {
+                return null
+            }
             val duration = m.mediaDuration?.toLongOrNull() ?: return null
             val waveForm = m.mediaWaveform ?: return null
             val audioData = AudioMessagePayload(
                 UUID.randomUUID().toString(),
-                url,
+                requireNotNull(m.absolutePath()),
                 duration,
                 waveForm,
                 m.content,

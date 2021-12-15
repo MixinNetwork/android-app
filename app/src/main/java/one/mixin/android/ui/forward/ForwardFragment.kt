@@ -69,6 +69,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
 import one.mixin.android.vo.isGroupConversation
@@ -85,7 +86,6 @@ import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import java.io.File
 import java.io.FileInputStream
-import java.lang.Exception
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -585,7 +585,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 message.mediaKey, message.mediaDigest, attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
                 message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform,
             )
-            val file = Uri.parse(message.mediaUrl).toFile()
+            val file = Uri.parse(message.absolutePath()).toFile()
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
             outfile.copyFromInputStream(FileInputStream(file))
             return Message(
