@@ -13,7 +13,7 @@ import java.net.InetAddress
 import java.net.UnknownHostException
 import kotlin.jvm.Throws
 
-class CustomDns(private val dnsHostname: String) : Dns {
+class CustomDns(val dnsHostname: String) : Dns {
 
     override fun lookup(hostname: String): List<InetAddress> {
         val resolver: Resolver = SimpleResolver(dnsHostname)

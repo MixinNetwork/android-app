@@ -7,6 +7,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.startsWithIgnoreCase
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroupConversation
@@ -40,29 +43,29 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
         if (!keyword.isNullOrBlank()) {
             conversations = sourceConversations?.filter {
                 if (it.isGroupConversation()) {
-                    it.groupName != null && (it.groupName.contains(keyword.toString(), ignoreCase = true))
+                    it.groupName != null && (it.groupName.containsIgnoreCase(keyword))
                 } else {
-                    it.name.contains(keyword.toString(), ignoreCase = true) ||
-                        it.ownerIdentityNumber.startsWith(keyword.toString(), ignoreCase = true)
+                    it.name.containsIgnoreCase(keyword) ||
+                        it.ownerIdentityNumber.startsWithIgnoreCase(keyword)
                 }
             }?.sortedByDescending {
                 if (it.isGroupConversation()) {
-                    it.groupName == keyword
+                    it.groupName.equalsIgnoreCase(keyword)
                 } else {
-                    it.name == keyword || it.ownerIdentityNumber == keyword
+                    it.name.equalsIgnoreCase(keyword) || it.ownerIdentityNumber.equalsIgnoreCase(keyword)
                 }
             }
             friends = sourceFriends?.filter {
-                (it.fullName != null && it.fullName.contains(keyword.toString(), ignoreCase = true)) ||
-                    it.identityNumber.startsWith(keyword.toString(), ignoreCase = true)
+                (it.fullName != null && it.fullName.containsIgnoreCase(keyword)) ||
+                    it.identityNumber.startsWithIgnoreCase(keyword)
             }?.sortedByDescending {
-                it.fullName == keyword || it.identityNumber == keyword
+                it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword)
             }
             bots = sourceBots?.filter {
-                (it.fullName != null && it.fullName.contains(keyword.toString(), ignoreCase = true)) ||
-                    it.identityNumber.startsWith(keyword.toString(), ignoreCase = true)
+                (it.fullName != null && it.fullName.containsIgnoreCase(keyword)) ||
+                    it.identityNumber.startsWithIgnoreCase(keyword)
             }?.sortedByDescending {
-                it.fullName == keyword || it.identityNumber == keyword
+                it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword)
             }
             showHeader = false
         } else {

@@ -3,7 +3,9 @@ package one.mixin.android.ui.qr
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -11,6 +13,9 @@ import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.FLASH_MODE_OFF
@@ -18,12 +23,14 @@ import androidx.camera.core.ImageCapture.FLASH_MODE_ON
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.UseCase
 import androidx.camera.core.VideoCapture
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCaptureBinding
 import one.mixin.android.extension.bounce
@@ -32,6 +39,7 @@ import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasNavigationBar
@@ -40,6 +48,8 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.ui.imageeditor.ImageEditorActivity
+import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITOR_RESULT
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CameraOpView
@@ -47,17 +57,40 @@ import java.io.File
 import kotlin.math.max
 
 @AndroidEntryPoint
-class CaptureFragment : BaseCameraxFragment() {
+class CaptureFragment() : BaseCameraxFragment() {
     companion object {
         const val TAG = "CaptureFragment"
 
         fun newInstance() = CaptureFragment()
+
+        @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+        fun newInstance(testRegistry: ActivityResultRegistry) = CaptureFragment(testRegistry)
     }
 
     private var imageCaptureFile: File? = null
 
     private var imageCapture: ImageCapture? = null
     private var videoCapture: VideoCapture? = null
+
+    // for testing
+    private lateinit var resultRegistry: ActivityResultRegistry
+
+    // testing constructor
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    constructor(
+        testRegistry: ActivityResultRegistry,
+    ) : this() {
+        resultRegistry = testRegistry
+    }
+
+    lateinit var getEditResult: ActivityResultLauncher<Pair<Uri, String?>>
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+
+        getEditResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEdit)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -172,12 +205,12 @@ class CaptureFragment : BaseCameraxFragment() {
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             imageCaptureFile?.let { uri ->
-                openEdit(uri.toString(), false)
+                getEditResult.launch(Pair(uri.toUri(), getString(R.string.next)))
             }
         }
 
         override fun onError(exception: ImageCaptureException) {
-            context?.toast("Photo capture failed: ${exception.message}")
+            toast("Photo capture failed: ${exception.message}")
             reportException("$CRASHLYTICS_CAMERAX-Photo capture failed,", exception)
         }
     }
@@ -288,7 +321,7 @@ class CaptureFragment : BaseCameraxFragment() {
                 }
 
                 override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-                    context?.toast("Video capture failed: $message")
+                    toast("Video capture failed: $message")
                     reportException(
                         IllegalStateException(
                             "$CRASHLYTICS_CAMERAX-Video capture failed, " +
@@ -307,5 +340,17 @@ class CaptureFragment : BaseCameraxFragment() {
         binding.chronometer.base = SystemClock.elapsedRealtime()
         binding.chronometer.start()
         binding.op.startProgress()
+    }
+
+    private fun callbackEdit(data: Intent?) {
+        val uri = data?.getParcelableExtra<Uri>(ARGS_EDITOR_RESULT)
+        if (uri != null) {
+            val path = uri.getFilePath(MixinApplication.get())
+            if (path == null) {
+                toast(R.string.error_image)
+            } else {
+                openEdit(path, false)
+            }
+        }
     }
 }

@@ -13,13 +13,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddressManagementBinding
 import one.mixin.android.databinding.ItemAddressBinding
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
@@ -82,7 +83,7 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
             override fun onAddrLongClick(view: View, addr: Address) {
                 val popMenu = PopupMenu(requireActivity(), ItemAddressBinding.bind(view).addrTv)
-                popMenu.menuInflater.inflate(R.menu.address_mamangement_item, popMenu.menu)
+                popMenu.menuInflater.inflate(R.menu.address_management_item, popMenu.menu)
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {
                         showBottomSheet(addr, asset)
@@ -115,10 +116,16 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
                         val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
                         val bottomSheet = showBottomSheet(addr, asset)
                         parentFragmentManager.executePendingTransactions()
-                        bottomSheet.dialog?.setOnDismissListener {
-                            bottomSheet.dismiss()
-                            if (!deleteSuccess) {
-                                adapter.restoreItem(deleteItem, deletePos)
+                        bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
+                            override fun onSuccess() {
+                                deleteSuccess = true
+                            }
+
+                            override fun onDismiss() {
+                                bottomSheet.dismiss()
+                                if (!deleteSuccess) {
+                                    adapter.restoreItem(deleteItem, deletePos)
+                                }
                             }
                         }
                     }
@@ -130,8 +137,8 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         binding.searchEt.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
-                    it.label.contains(s.toString(), ignoreCase = true)
-                }?.sortedByDescending { it.label == s.toString() }?.toMutableList()
+                    it.label.containsIgnoreCase(s)
+                }?.sortedByDescending { it.label.equalsIgnoreCase(s) }?.toMutableList()
             }
 
             override fun onSearch() {
@@ -140,11 +147,13 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
         addressViewModel.refreshAddressesByAssetId(asset.assetId)
     }
 
-    private fun showBottomSheet(addr: Address, asset: AssetItem): MixinBottomSheetDialogFragment {
+    private fun showBottomSheet(addr: Address, asset: AssetItem): BiometricBottomSheetDialogFragment {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(
             addressId = addr.addressId,
             assetUrl = asset.iconUrl,
+            assetSymbol = asset.symbol,
             chainId = asset.chainId,
+            chainName = asset.chainName,
             chainIconUrl = asset.chainIconUrl,
             destination = addr.destination,
             label = addr.label,
@@ -153,11 +162,6 @@ class AddressManagementFragment : BaseFragment(R.layout.fragment_address_managem
             type = DELETE
         )
         bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-        bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
-            override fun onSuccess() {
-                deleteSuccess = true
-            }
-        }
         return bottomSheet
     }
 }

@@ -2,11 +2,9 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.GestureDetector
-import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.widget.FrameLayout
-import androidx.core.view.isVisible
+import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
@@ -14,13 +12,13 @@ import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
@@ -40,9 +38,9 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (binding.chatLayout.layoutParams as FrameLayout.LayoutParams)
+        val lp = (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
-            lp.gravity = Gravity.END
+            lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
@@ -57,7 +55,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
                 )
             }
         } else {
-            lp.gravity = Gravity.START
+            lp.horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatContentLayout,
@@ -166,7 +164,6 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
             }
         }
 
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
@@ -198,13 +195,15 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
-        binding.dataWrapper.chatSecret.isVisible = messageItem.isSignal()
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret()
+        )
         binding.chatContentLayout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
@@ -213,8 +212,12 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
             }
         }
 
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        val quoteMessage = GsonHelper.customGson.fromJson(
+            messageItem.quoteContent,
+            QuoteMessageItem::class.java
+        )
         binding.chatQuote.bind(quoteMessage)
+
         binding.chatQuote.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

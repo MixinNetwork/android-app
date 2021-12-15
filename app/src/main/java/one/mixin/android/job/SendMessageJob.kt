@@ -1,25 +1,34 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import com.bugsnag.android.Bugsnag
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.ParticipantSessionKey
+import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
+import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.websocket.BlazeMessage
@@ -39,6 +48,7 @@ open class SendMessageJob(
     private var recipientIds: List<String>? = null,
     private val recallMessageId: String? = null,
     private val krakenParam: KrakenParam? = null,
+    private val isSilent: Boolean? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.id) {
 
@@ -66,7 +76,7 @@ open class SendMessageJob(
         if (conversation != null) {
             if (message.isRecall()) {
                 recallMessage()
-            } else {
+            } else if (!message.isPin()) {
                 if (message.isText()) {
                     message.content?.let { content ->
                         content.findLastUrl()?.let {
@@ -82,7 +92,7 @@ open class SendMessageJob(
                 }
             }
         } else {
-            Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
+            reportException(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
     }
 
@@ -109,7 +119,9 @@ open class SendMessageJob(
                 )
             }
             jobManager.cancelJobByMixinJobId(msg.id)
+            messageDao.recallPinMessage(recallMessageId, msg.conversationId)
         }
+        pinMessageDao.deleteByMessageId(recallMessageId)
         messageDao.recallMessage(recallMessageId)
     }
 
@@ -124,9 +136,11 @@ open class SendMessageJob(
             return
         }
         jobManager.saveJob(this)
-        if (message.isPlain() || message.isCall() || message.isRecall() || message.category == MessageCategory.APP_CARD.name) {
+        if (message.isPlain() || message.isCall() || message.isRecall() || message.isPin() || message.category == MessageCategory.APP_CARD.name) {
             sendPlainMessage()
-        } else {
+        } else if (message.isEncrypted()) {
+            sendEncryptedMessage()
+        } else if (message.isSignal()) {
             sendSignalMessage()
         }
         removeJob()
@@ -156,7 +170,8 @@ open class SendMessageJob(
             content,
             quote_message_id = message.quoteMessageId,
             mentions = getMentionData(message.id),
-            recipient_ids = recipientIds
+            recipient_ids = recipientIds,
+            silent = isSilent,
         )
         val blazeMessage = if (message.isCall()) {
             if (message.isKraken()) {
@@ -172,6 +187,69 @@ open class SendMessageJob(
         }
         deliver(blazeMessage)
     }
+
+    @ExperimentalUnsignedTypes
+    private fun sendEncryptedMessage() {
+        val accountId = Session.getAccountId()!!
+        val conversation = conversationDao.findConversationById(message.conversationId) ?: return
+        checkConversationExist(conversation)
+        var participantSessionKey = getBotSessionKey(accountId)
+        if (participantSessionKey == null || participantSessionKey.publicKey.isNullOrBlank()) {
+            syncConversation(message.conversationId)
+            participantSessionKey = getBotSessionKey(accountId)
+        }
+        // Workaround No session key, can't encrypt message, send PLAIN directly
+        if (participantSessionKey?.publicKey == null) {
+            message.category = message.category.replace("ENCRYPTED_", "PLAIN_")
+            messageDao.updateCategoryById(message.id, message.category)
+            sendPlainMessage()
+            return
+        }
+
+        val extensionSessionKey =
+            Session.getExtensionSessionId().notNullWithElse({ participantSessionDao.getParticipantSessionKeyBySessionId(message.conversationId, accountId, it) }, null)
+
+        val privateKey = Session.getEd25519PrivateKey() ?: return
+        val plaintext = if (message.isAttachment() || message.isSticker() || message.isContact()) {
+            message.content!!.base64RawUrlDecode()
+        } else {
+            message.content!!.toByteArray()
+        }
+        val encryptContent = encryptedProtocol.encryptMessage(
+            privateKey,
+            plaintext,
+            participantSessionKey.publicKey!!.base64RawUrlDecode(),
+            participantSessionKey.sessionId,
+            extensionSessionKey?.publicKey?.base64RawUrlDecode(),
+            extensionSessionKey?.sessionId
+        )
+
+        val blazeParam = BlazeMessageParam(
+            message.conversationId,
+            recipientId,
+            message.id,
+            message.category,
+            encryptContent.base64Encode(),
+            quote_message_id = message.quoteMessageId,
+            mentions = getMentionData(message.id),
+            recipient_ids = recipientIds
+        )
+        val blazeMessage = createParamBlazeMessage(blazeParam)
+        deliver(blazeMessage)
+    }
+
+    private fun getBotSessionKey(accountId: String): ParticipantSessionKey? =
+        if (recipientId != null) {
+            participantSessionDao.getParticipantSessionKeyByUserId(
+                message.conversationId,
+                recipientId!!
+            )
+        } else {
+            participantSessionDao.getParticipantSessionKeyWithoutSelf(
+                message.conversationId,
+                accountId
+            )
+        }
 
     private fun sendSignalMessage() {
         if (resendData != null) {
@@ -200,7 +278,7 @@ open class SendMessageJob(
                 getMentionData(message.id)
             )
         } else {
-            signalProtocol.encryptGroupMessage(message, getMentionData(message.id))
+            signalProtocol.encryptGroupMessage(message, getMentionData(message.id), isSilent)
         }
     }
 

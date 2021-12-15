@@ -1,11 +1,12 @@
 package one.mixin.android.job
 
-import android.net.Uri
-import androidx.core.net.toUri
+import android.os.Build
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT_LAST
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT_OFFSET
+import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_LAST
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_ATTACHMENT_OFFSET
+import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
@@ -14,22 +15,24 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.createWebpTemp
-import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getAncientMediaPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getOldMediaPath
+import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.putLong
+import one.mixin.android.extension.nowInUtc
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.Property
+import one.mixin.android.vo.getFile
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
-import java.io.File
+import java.io.IOException
+import java.nio.file.Files
 
 class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
@@ -37,52 +40,74 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         private const val EACH = 10
     }
 
-    override fun onRun() {
+    override fun onRun() = runBlocking {
         val startTime = System.currentTimeMillis()
-        val preferences = MixinApplication.appContext.defaultSharedPreferences
-        var migrationLast = preferences.getLong(PREF_ATTACHMENT_LAST, -1)
-        val offset = preferences.getLong(PREF_ATTACHMENT_OFFSET, 0)
+        var migrationLast = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_LAST)?.toLongOrNull() ?: -1
+
         if (migrationLast == -1L) {
             migrationLast = messageDao.getLastMessageRowid()
-            preferences.putLong(PREF_ATTACHMENT_LAST, migrationLast)
+            propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_LAST, migrationLast.toString(), nowInUtc()))
         }
-        if (!hasWritePermission()) return
+
+        if (!hasWritePermission()) return@runBlocking
+        val offset = propertyDao.findValueByKey(PREF_MIGRATION_ATTACHMENT_OFFSET)?.toLongOrNull() ?: 0
         val list = messageDao.findAttachmentMigration(migrationLast, EACH, offset)
         list.forEach { attachment ->
-            val path = attachment.mediaUrl?.toUri()?.getFilePath() ?: return@forEach
-            val fromFile = File(path)
-            if (!fromFile.exists()) return@forEach
+            val fromFile = attachment.getFile(MixinApplication.appContext) ?: return@forEach
+            if (!fromFile.exists()) {
+                Timber.d("Attachment migration no exists ${fromFile.absoluteFile}")
+                return@forEach
+            }
             val toFile = when (attachment.category) {
                 MessageCategory.PLAIN_IMAGE.name, MessageCategory.SIGNAL_IMAGE.name -> {
                     when {
                         attachment.mediaMimeType?.isImageSupport() == false -> {
-                            MixinApplication.get().getImagePath().createEmptyTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getImagePath()
+                                .createEmptyTemp(attachment.conversationId, attachment.messageId)
                         }
                         attachment.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createImageTemp(attachment.conversationId, attachment.messageId, ".png")
+                            MixinApplication.get().getImagePath().createImageTemp(
+                                attachment.conversationId,
+                                attachment.messageId,
+                                ".png"
+                            )
                         }
                         attachment.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createGifTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getImagePath()
+                                .createGifTemp(attachment.conversationId, attachment.messageId)
                         }
                         attachment.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createWebpTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getImagePath()
+                                .createWebpTemp(attachment.conversationId, attachment.messageId)
                         }
                         else -> {
-                            MixinApplication.get().getImagePath().createImageTemp(attachment.conversationId, attachment.messageId, ".jpg")
+                            MixinApplication.get().getImagePath().createImageTemp(
+                                attachment.conversationId,
+                                attachment.messageId,
+                                ".jpg"
+                            )
                         }
                     }
                 }
                 MessageCategory.PLAIN_DATA.name, MessageCategory.SIGNAL_DATA.name -> {
                     val extensionName = attachment.name?.getExtensionName()
                     MixinApplication.get().getDocumentPath()
-                        .createDocumentTemp(attachment.conversationId, attachment.messageId, extensionName)
+                        .createDocumentTemp(
+                            attachment.conversationId,
+                            attachment.messageId,
+                            extensionName
+                        )
                 }
                 MessageCategory.PLAIN_VIDEO.name, MessageCategory.SIGNAL_VIDEO.name -> {
                     val extensionName = attachment.name?.getExtensionName().let {
                         it ?: "mp4"
                     }
                     MixinApplication.get().getVideoPath()
-                        .createVideoTemp(attachment.conversationId, attachment.messageId, extensionName)
+                        .createVideoTemp(
+                            attachment.conversationId,
+                            attachment.messageId,
+                            extensionName
+                        )
                 }
                 MessageCategory.PLAIN_AUDIO.name, MessageCategory.SIGNAL_AUDIO.name -> {
                     MixinApplication.get().getAudioPath()
@@ -91,14 +116,39 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 else -> null
             }
             toFile ?: return@forEach
-            fromFile.renameTo(toFile)
-            messageDao.updateMediaMessageUrl(Uri.fromFile(toFile).toString(), attachment.messageId)
+            try {
+                if (fromFile.absolutePath != toFile.absolutePath) {
+                    if (toFile.parentFile?.exists() != true) {
+                        toFile.parentFile?.mkdirs()
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        Files.move(fromFile.toPath(), toFile.toPath())
+                    } else {
+                        fromFile.renameTo(toFile)
+                    }
+                }
+            } catch (e: IOException) {
+                Timber.e("Attachment migration ${e.message}")
+                reportException(e)
+            }
+            Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
+            if (attachment.mediaUrl != toFile.name) {
+                messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
+            }
         }
-        preferences.putLong(PREF_ATTACHMENT_OFFSET, offset + list.size)
+        propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))
         Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
         if (list.size < EACH) {
-            MixinApplication.appContext.getOldMediaPath()?.deleteRecursively()
-            preferences.putBoolean(Constants.Account.PREF_ATTACHMENT, true)
+            Timber.d("Attachment start delete ancient media path")
+            MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()
+            Timber.d("Attachment delete ancient media path completed!!!")
+            if (propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() != true) {
+                Timber.d("Attachment start delete media path")
+                MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
+                Timber.d("Attachment delete media path completed!!!")
+            }
+            propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
+            Timber.d("Attachment migration completed!!!")
         } else {
             jobManager.addJobInBackground(AttachmentMigrationJob())
         }

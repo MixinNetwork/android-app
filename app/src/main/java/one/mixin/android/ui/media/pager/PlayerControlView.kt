@@ -11,14 +11,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.DefaultControlDispatcher
-import com.google.android.exoplayer2.PlaybackPreparer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Util
-import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerControlBinding
 import one.mixin.android.extension.dp
@@ -34,7 +31,6 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
 
     private val componentListener = ComponentListener()
-    private val controlDispatcher = DefaultControlDispatcher()
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
     private val window = Timeline.Window()
@@ -70,7 +66,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     var showTimeoutMs = DEFAULT_SHOW_TIMEOUT_MS
     var scrubbing = false
 
-    var playbackPreparer: PlaybackPreparer? = null
+    var preparePlayback: (() -> Unit)? = null
 
     var player: Player? = null
         set(value) {
@@ -135,6 +131,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     public override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         attachedToWindow = true
+        player?.addListener(componentListener)
         if (hideAtMs != C.TIME_UNSET) {
             val delayMs = hideAtMs - SystemClock.uptimeMillis()
             if (delayMs <= 0) {
@@ -150,6 +147,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     public override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         attachedToWindow = false
+        player?.removeListener(componentListener)
         removeCallbacks(updateProgressAction)
         removeCallbacks(hideAction)
     }
@@ -220,7 +218,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     private fun seekTo(player: Player, windowIndex: Int, positionMs: Long): Boolean {
-        return controlDispatcher.dispatchSeekTo(player, windowIndex, positionMs)
+        player.seekTo(windowIndex, positionMs)
+        return true
     }
 
     private fun seekToTimeBarPosition(player: Player, positionMsParams: Long) {
@@ -437,10 +436,9 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     inner class ComponentListener :
-        Player.EventListener,
+        Player.Listener,
         TimeBar.OnScrubListener,
-        OnClickListener,
-        VideoListener {
+        OnClickListener {
         override fun onScrubMove(timeBar: TimeBar, position: Long) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
@@ -483,14 +481,15 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
                 when (playView.status) {
                     STATUS_IDLE -> {
                         if (player.playbackState == Player.STATE_IDLE) {
-                            playbackPreparer?.preparePlayback()
+                            player.prepare()
+                            preparePlayback?.invoke()
                         } else if (player.playbackState == Player.STATE_ENDED) {
                             seekTo(player, player.currentWindowIndex, C.TIME_UNSET)
                         }
-                        controlDispatcher.dispatchSetPlayWhenReady(player, true)
+                        player.playWhenReady = true
                     }
                     STATUS_PLAYING -> {
-                        controlDispatcher.dispatchSetPlayWhenReady(player, false)
+                        player.playWhenReady = false
                     }
                 }
             }

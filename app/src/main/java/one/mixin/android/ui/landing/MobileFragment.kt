@@ -13,7 +13,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.fragment.app.viewModels
-import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
@@ -29,19 +28,20 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.databinding.FragmentMobileBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
-import java.lang.IndexOutOfBoundsException
 
 @AndroidEntryPoint
 class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
@@ -219,7 +219,9 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private fun handleEditView(str: String) {
         binding.apply {
             mobileEt.setSelection(mobileEt.text.toString().length)
-            if (str.isNotEmpty() && isValidNumber(mCountry.dialCode + str)) {
+            val validResult = isValidNumber(phoneUtil, mCountry.dialCode + str, mCountry.code, mCountry.dialCode)
+            phoneNumber = validResult.second
+            if (str.isNotEmpty() && validResult.first) {
                 mobileFab.visibility = VISIBLE
             } else {
                 mobileFab.visibility = INVISIBLE
@@ -234,16 +236,6 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         countryPicker.setLocationCountry(mCountry)
     }
 
-    private fun isValidNumber(number: String): Boolean {
-        val phone = Phone(number)
-        return try {
-            phoneNumber = phoneUtil.parse(phone.phone, mCountry.code)
-            phoneUtil.isValidNumber(phoneNumber)
-        } catch (e: NumberParseException) {
-            false
-        }
-    }
-
     private fun showCountry() {
         activity?.supportFragmentManager?.inTransaction {
             setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
@@ -253,7 +245,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.tickVibrate()
             if (viewDestroyed()) {
                 return
             }
@@ -289,7 +281,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.clickVibrate()
             if (viewDestroyed()) {
                 return
             }
@@ -319,6 +311,4 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             handleEditView(s.toString())
         }
     }
-
-    class Phone(var phone: String)
 }

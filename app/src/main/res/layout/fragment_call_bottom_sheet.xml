@@ -15,16 +15,20 @@
 
         <TextView
             android:id="@+id/title"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:textColor="?attr/text_primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="52dp"
+            android:layout_marginEnd="52dp"
+            android:ellipsize="end"
             android:textSize="16sp"
             android:textStyle="bold"
             android:gravity="center"
+            android:singleLine="true"
             tools:text="Group Call(00:38)" />
 
         <TextView
@@ -69,14 +73,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/title" />
 
-        <ImageButton
+        <TextView
+            android:id="@+id/decline_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:background="@null"
             android:contentDescription="@null"
-            android:foreground="@drawable/mixin_ripple"
-            android:src="@drawable/ic_call_setting"
+            android:text="@string/call_decline"
+            android:textColor="@color/call_red"
+            android:textSize="16sp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/sub_title"
             app:layout_constraintEnd_toEndOf="parent"
@@ -87,7 +92,7 @@
         android:id="@+id/users_rv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottom_layout"
+        android:layout_above="@id/participants"
         android:layout_below="@id/title_layout"
         android:paddingStart="6dp"
         android:paddingEnd="6dp"
@@ -96,10 +101,27 @@
         app:spanCount="4"
         tools:listitem="@layout/item_bot_manager" />
 
+    <TextView
+        android:id="@+id/participants"
+        android:layout_width="match_parent"
+        android:gravity="center"
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp"
+        android:paddingTop="30dp"
+        android:paddingBottom="30dp"
+        android:visibility="gone"
+        android:layout_above="@id/bottom_layout"
+        android:background="?attr/bg_white"
+        android:textColor="?text_minor"
+        android:layout_height="wrap_content" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottom_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="10dp"
         android:layout_alignParentBottom="true"
         android:background="?attr/bg_white"
         android:padding="16dp">
@@ -114,9 +136,10 @@
             app:ic_checked="@drawable/ic_call_speaker_checked"
             app:ic_disable="@drawable/ic_call_speaker_disable"
             app:ic_unchecked="@drawable/ic_call_speaker_unchecked"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_status"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="2dp"
             tools:ignore="ContentDescription" />
 
         <one.mixin.android.widget.CallButton
@@ -128,9 +151,10 @@
             android:foreground="@drawable/mixin_ripple"
             app:ic_checked="@drawable/ic_call_mute_checked"
             app:ic_unchecked="@drawable/ic_call_mute_unchecked"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_status"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="2dp"
             tools:ignore="ContentDescription" />
 
         <one.mixin.android.widget.CallButton
@@ -139,10 +163,11 @@
             android:layout_height="wrap_content"
             app:bg_circle_checked="@drawable/bg_call_hangup"
             app:ic_checked="@drawable/ic_call_end_white_48dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_status"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="2dp"
             tools:ignore="ContentDescription" />
 
         <one.mixin.android.widget.CallButton
@@ -151,11 +176,22 @@
             android:layout_height="wrap_content"
             app:bg_circle_checked="@drawable/bg_call_answer"
             app:ic_checked="@drawable/ic_call_end_white_48dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_status"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="2dp"
             tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/call_status"
+            android:layout_width="0dp"
+            android:gravity="center"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="?attr/text_minor"
+            android:layout_height="wrap_content" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

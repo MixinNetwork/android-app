@@ -11,37 +11,32 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <EditText
+        <ImageView
+            android:id="@+id/close_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            android:src="@drawable/ic_close_black" />
+
+        <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="8dp"
-            android:layout_toStartOf="@id/cancel_tv"
-            android:background="@drawable/bg_search"
+            android:layout_height="?actionBarSize"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_toEndOf="@id/close_iv"
+            android:background="@null"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
             android:hint="@string/sticker_search_giphy"
             android:imeOptions="actionSearch"
             android:inputType="text"
-            android:padding="8dp"
-            android:paddingStart="@dimen/margin16"
-            android:paddingEnd="@dimen/margin16"
-            android:textColor="@color/black"
-            android:textColorHint="@color/gray_50"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/cancel_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/mixin_ripple"
-            android:padding="4dp"
-            android:text="@string/cancel"
-            android:textColor="?attr/text_primary" />
+            android:maxLines="1"
+            app:circle_clear_icon="true"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_minor"
+            android:textSize="14sp" />
     </RelativeLayout>
 
     <ViewAnimator

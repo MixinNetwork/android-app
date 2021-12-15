@@ -86,10 +86,10 @@ class WalletSearchFragment : BaseFragment() {
                 searchEt.hideKeyboard()
                 activity?.onBackPressed()
             }
-            searchEt.hint = getString(R.string.wallet_search_hint)
+            searchEt.setHint(getString(R.string.wallet_search_hint))
             searchEt.post { searchEt.showKeyboard() }
             @SuppressLint("AutoDispose")
-            disposable = searchEt.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
+            disposable = searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     {
@@ -126,6 +126,7 @@ class WalletSearchFragment : BaseFragment() {
     override fun onStop() {
         super.onStop()
         currentSearch?.cancel()
+        binding.pb.isVisible = false
     }
 
     override fun onDestroyView() {
@@ -145,7 +146,7 @@ class WalletSearchFragment : BaseFragment() {
             viewLifecycleOwner,
             {
                 searchDefaultAdapter.topAssets = it
-                if (binding.searchEt.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
+                if (binding.searchEt.et.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
                     binding.rvVa.displayedChild = POS_DEFAULT
                 }
 

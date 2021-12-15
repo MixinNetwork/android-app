@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BackgroundConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:background="?attr/bg_translucence"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:left_icon="@drawable/ic_more"
+        app:need_divider="true" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:text="@string/unpin_all"
+        app:layout_constraintTop_toBottomOf="@id/title_view"
+        app:layout_constraintBottom_toTopOf="@id/unpin_tv" />
+
+    <TextView
+        android:id="@+id/unpin_tv"
+        android:layout_height="@dimen/chat_control_height"
+        android:layout_width="0dp"
+        android:visibility="visible"
+        android:text="@string/unpin_all"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="@color/selector_tv_blue"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground"
+        android:translationZ="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</one.mixin.android.widget.BackgroundConstraintLayout>

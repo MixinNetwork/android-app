@@ -30,8 +30,11 @@
     <string name="forward_success">Forward success</string>
     <string name="combine_forward">Combine forward</string>
     <string name="message_sent">Message sent</string>
+    <string name="delete">Delete</string>
+    <string name="unpin">Unpin</string>
     <string name="save">Save</string>
     <string name="saving">Saving…</string>
+    <string name="show_in_chat">Show in chat</string>
     <string name="pb_dialog_message">Please wait a bit…</string>
     <string name="other">OTHER</string>
     <string name="welcome" translatable="false">Welcome to Mixin</string>
@@ -96,7 +99,8 @@
     <string name="language">Language</string>
     <string name="try_again">Try Again</string>
     <string name="ok">OK</string>
-    <string name="verify_by_PIN">Verify by PIN</string>
+    <string name="verify_by_PIN">Verify with PIN</string>
+    <string name="login_by_PIN">Login with PIN</string>
     <string name="verify_by_biometric">Verify by Biometric</string>
     <string name="transfer_without_pin">You must setup PIN for transfer</string>
     <string name="voice_call">Voice call</string>
@@ -137,6 +141,24 @@
     <string name="disabled">Disabled</string>
     <string name="not_recognized">Not recognized</string>
     <string name="hi">Hi</string>
+    <string name="eos_contract_address">EOS contract address</string>
+    <string name="save_md">Save markdown</string>
+    <string name="save_pdf">Save pdf</string>
+    <string name="notice">Notice</string>
+    <string name="common_close">Close</string>
+    <string name="common_copy">Copy</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_add_sticker">Add sticker</string>
+    <string name="common_forward">Forward</string>
+    <string name="common_reply">Reply</string>
+    <string name="common_share">Share</string>
+    <string name="common_pin">Pin</string>
+    <string name="common_unpin">Unpin</string>
+    <string name="crop">Crop</string>
+    <string name="text">Text</string>
+    <string name="draw">Draw</string>
+    <string name="size">Size</string>
+    <string name="exit_without_save">Exit without save?</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -166,14 +188,15 @@
     <string name="error_unable_to_open_media">Can\'t find an app able to open this media.</string>
     <string name="error_open_location">Can\'t find an map app</string>
     <string name="error_file_exists">File does not exist</string>
-    <string name="error_address_exists">Address does not exist</string>
+    <string name="error_address_exists">The address does not exist, please make sure that the address is added successfully</string>
+    <string name="error_address_not_sync">Address refresh failed, please try again</string>
     <string name="error_asset_exists">Asset does not exist</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
     <string name="error_used_phone">ERROR %1$d: Phone is used by someone else.</string>
-    <string name="error_insufficient_transaction_fee">ERROR %1$d: Insufficient transaction fee.</string>
+    <string name="error_insufficient_transaction_fee_with_amount">ERROR %1$d: Insufficient transaction fee. Please make sure your wallet has %2$s as fee</string>
     <string name="error_blockchain">ERROR %1$d: Blockchain not in sync, please try again later.</string>
-    <string name="error_invalid_address">ERROR %1$d: Invalid address format.</string>
-    <string name="error_invalid_address_eos">ERROR %1$d: Invalid address format. Mixin does not support withdrawal to the EOS contract address!</string>
+    <string name="error_invalid_address_plain">ERROR %1$d: Invalid address format.</string>
+    <string name="error_invalid_address">ERROR %1$d: Invalid address format. Please enter the correct %2$s %3$s address!</string>
     <string name="error_phone_verification_code_expired">ERROR %1$d: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR %1$d: Invalid phone verification code</string>
     <string name="error_phone_invalid_format">ERROR %1$d: Invalid phone number</string>
@@ -200,11 +223,13 @@
     <string name="title_home">Contacts</string>
     <string name="search_hint">assets, contacts and messages</string>
     <string name="conversation_waiting">Waiting for this message.</string>
+    <string name="conversation_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
     <string name="text_qr">TEXT QR CODE</string>
     <string name="detect_qr_tip">Detected a Mixin QR code, tap to recognize</string>
     <string name="qr_code_camera">QR Code Camera</string>
     <string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
     <string name="conversation_delete_tip">Once deleted, all this chat messages will be cleared</string>
+    <string name="conversation_delete_title">Delete chat: %1$s</string>
     <string name="qr_not_found">Qr Code not found</string>
     <string name="no_flash_unit">Flash unit not available</string>
     <!--search-->
@@ -264,7 +289,7 @@
     <string name="contact_my_qr_tip">Scan the QR code to add me on Mixin</string>
     <string name="contact_my_share_apps">My shared apps</string>
     <string name="contact_receive_money">Receive Money</string>
-    <string name="contact_receive_tip">Scan the QR Code to pay me</string>
+    <string name="contact_receive_tip">Scan QR code payment</string>
     <string name="add_contact">+ Add Contact</string>
     <string name="add_bot">+ Add Bot</string>
     <string name="contact_search_hint">Name, Mixin ID</string>
@@ -305,7 +330,7 @@
     <string name="week_sunday">Sunday</string>
     <string name="today">Today</string>
     <string name="chat_item_title">CHATS</string>
-    <string name="copy_success">Copy to clipboard</string>
+    <string name="copy_success">Copied to Clipboard</string>
     <string name="photo">Photo</string>
     <string name="title_participants">%1$d participants</string>
     <string name="save_success">Save success</string>
@@ -343,12 +368,11 @@
     <string name="chat_group_call_invite">%1$s has invited you to a group call</string>
     <string name="chat_group_call_decline">%1$s has declined group call</string>
     <string name="chat_group_call_cancel">%1$s has canceled group call</string>
-    <string name="chat_group_call_end">Group call ended, duration: %1$s</string>
+    <string name="chat_group_call_end">Group call has ended</string>
+    <string name="chat_group_call_end_with_duration">Group call ended, duration: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Peer connection has been closed, please try again</string>
-    <string name="chat_group_call_title">Group Call</string>
-    <string name="chat_group_call_title_suffix">Group Call(%1$s)</string>
+    <string name="chat_group_call_mute">Your mic will be off to start</string>
     <string name="chat_call_title">Call</string>
-    <string name="chat_call_title_suffix">Call(%1$s)</string>
     <string name="chat_call_add">Add</string>
     <string name="chat_call_bad_network_you">Connection is unstable</string>
     <string name="chat_call_bad_network">Other user\'s connection is unstable</string>
@@ -359,9 +383,9 @@
     <string name="chat_import_fail_content">Message import failed! Do you want to send it as a file?</string>
     <string name="chat_import">Import</string>
     <string name="chat_send_file">Send as file</string>
-    <string name="app_card_shareable_false">Disallow sharing of this card</string>
-    <string name="live_shareable_false">Disallow sharing of this live</string>
     <string name="link_shareable_false">Disallow sharing of this URL</string>
+    <string name="app_card_shareable_false">Contained disallow sharing of this card</string>
+    <string name="live_shareable_false">Contained disallow sharing of this live</string>
     <!--contact-->
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>
@@ -391,8 +415,9 @@
     <string name="wallet_title">Wallet</string>
     <string name="wallet_password_set_pin">Set PIN</string>
     <string name="wallet_password_set_new_pin">Set a new PIN</string>
-    <string name="wallet_password_set_pin_desc">Please set a 6 digit PIN.</string>
     <string name="wallet_password_set_new_pin_desc">Please set a new 6 digit PIN.</string>
+    <string name="wallet_password_set_pin_desc">Set a 6 digit PIN to create your first digital wallet, read the document to learn more.</string>
+    <string name="wallet_password_set_pin_target">learn more</string>
     <string name="wallet_password_confirm_pin">Confirm PIN</string>
     <string name="wallet_password_confirm_1">Please confirm the 6 digit PIN and remember it. If lost, there is no way to recover your wallet.</string>
     <string name="wallet_password_confirm_2">Please confirm your 6 digit PIN again. It\'s rare to see a third confirmation somewhere else, so please remember the PIN is unrecoverable if lost.</string>
@@ -471,6 +496,9 @@
     <string name="wallet_transfer_no_available_assets">No Available Assets</string>
     <string name="wallet_withdrawal_changed">The withdrawal fee has been changed from %1$s to %2$s, would you like to proceed  with the request?</string>
     <string name="wallet_refresh_address_failed">The withdrawal fee has been changed and the refresh fails, please try again.</string>
+    <string name="wallet_address_add_tip">Mixin does not support withdrawal to the</string>
+    <string name="wallet_pin_tops">learn more</string>
+    <string name="wallet_pin_tops_desc">Please remember the PIN is unrecoverable if lost. The PIN is based on the Throttled Identity Protocol, which is the decentralized key derivation protocol, read the document to learn more.</string>
     <!--pin logs-->
     <string name="logs">Logs</string>
     <string name="log_category_pin_incorrect">PIN incorrect</string>
@@ -524,6 +552,7 @@
     <string name="group_removing">Removing…</string>
     <string name="group_creating">Creating…</string>
     <string name="state_connecting">Connecting</string>
+    <string name="state_network_unavailable">Network unavailable</string>
     <string name="state_syncing">Syncing messages</string>
     <string name="state_calling">Tap to return to call</string>
     <string name="group_cant_send">You can\'t send messages to this group because you\'re no longer a participant.</string>
@@ -627,6 +656,7 @@
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
     <string name="setting_notification_confirmation">Notification and Confirmation</string>
     <string name="setting_appearance">Appearance</string>
+    <string name="setting_diagnosis">Net Diagnosis</string>
     <string name="setting_theme">Theme</string>
     <string name="setting_phone_number">Phone Number</string>
     <string name="setting_phone_number_privacy">Who can find me by my number</string>
@@ -653,6 +683,8 @@
         <item>Dark</item>
         <item>Follow system</item>
     </string-array>
+    <string name="setting_battery_optimize_title">To ensure that Mixin receives messages properly, please set Mixin\'s battery optimization policy to \"Don\'t Optimize\"</string>
+    <string name="go_set">Go settings</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>
@@ -685,7 +717,7 @@
     <string name="invite_invalid">Invalid Link</string>
     <string name="invite_qr_code">QR code</string>
     <string name="conversation_pin">Pin to top</string>
-    <string name="conversation_pin_clear">Clear Pin</string>
+    <string name="conversation_pin_clear">Unpin</string>
     <string name="group_role">You\' re now an admin</string>
     <string name="loading_init">Initializing…</string>
     <string name="loading_wait">Please wait a moment</string>
@@ -694,28 +726,28 @@
     <string name="database_upgrade_tips">The database is being upgraded, it may take several minutes, please do not close this App.</string>
     <string name="database_upgrade_progress">Upgrading</string>
     <!-- notification -->
-    <string name="alert_key_group_text_message">%1$s send a message</string>
-    <string name="alert_key_group_image_message">%1$s send a photo</string>
-    <string name="alert_key_group_video_message">%1$s send a video</string>
-    <string name="alert_key_group_live_message">%1$s send a live</string>
-    <string name="alert_key_group_data_message">%1$s send a file</string>
-    <string name="alert_key_group_audio_message">%1$s send an audio</string>
-    <string name="alert_key_group_sticker_message">%1$s send a sticker</string>
+    <string name="alert_key_group_text_message">%1$s sent a message</string>
+    <string name="alert_key_group_image_message">%1$s sent a photo</string>
+    <string name="alert_key_group_video_message">%1$s sent a video</string>
+    <string name="alert_key_group_live_message">%1$s sent a live</string>
+    <string name="alert_key_group_data_message">%1$s sent a file</string>
+    <string name="alert_key_group_audio_message">%1$s sent an audio</string>
+    <string name="alert_key_group_sticker_message">%1$s sent a sticker</string>
     <string name="alert_key_group_contact_message">%1$s shared a contact</string>
-    <string name="alert_key_group_post_message">%1$s send a post</string>
-    <string name="alert_key_group_location_message">%1$s send a location</string>
+    <string name="alert_key_group_post_message">%1$s sent a post</string>
+    <string name="alert_key_group_location_message">%1$s sent a location</string>
     <string name="alert_key_group_transcript_message">%1$s shared a transcript</string>
-    <string name="alert_key_contact_text_message">send you a message</string>
-    <string name="alert_key_contact_image_message">send you a photo</string>
-    <string name="alert_key_contact_video_message">send you a video</string>
-    <string name="alert_key_contact_live_message">send you a live</string>
-    <string name="alert_key_contact_transfer_message">send you a transfer</string>
-    <string name="alert_key_contact_data_message">send a file</string>
-    <string name="alert_key_contact_audio_message">send an audio</string>
-    <string name="alert_key_contact_sticker_message">send you a sticker</string>
+    <string name="alert_key_contact_text_message">sent you a message</string>
+    <string name="alert_key_contact_image_message">sent you a photo</string>
+    <string name="alert_key_contact_video_message">sent you a video</string>
+    <string name="alert_key_contact_live_message">sent you a live</string>
+    <string name="alert_key_contact_transfer_message">sent you a transfer</string>
+    <string name="alert_key_contact_data_message">sent a file</string>
+    <string name="alert_key_contact_audio_message">sent an audio</string>
+    <string name="alert_key_contact_sticker_message">sent you a sticker</string>
     <string name="alert_key_contact_contact_message">shared a contact</string>
-    <string name="alert_key_contact_post_message">send a post</string>
-    <string name="alert_key_contact_location_message">send a location</string>
+    <string name="alert_key_contact_post_message">sent a post</string>
+    <string name="alert_key_contact_location_message">sent a location</string>
     <string name="alert_key_contact_audio_call_message">ask you an audio call</string>
     <string name="alert_key_contact_transcript_message">shared a transcript</string>
     <string name="unread">New Messages</string>
@@ -725,6 +757,7 @@
     <string name="bot_interact_hi">Say Hi</string>
     <string name="notification_group">Group Notification</string>
     <string name="notification_message">Message Notification</string>
+    <string name="notification_silence">Silence Notification</string>
     <string name="notification_node">Messaging Node</string>
     <string name="notification_reply">Reply</string>
     <string name="notification_mark">Mark as read</string>
@@ -754,6 +787,8 @@
     <string name="auth_circles_read_description">access your circle list</string>
     <string name="auth_circles_write">Write Circles</string>
     <string name="auth_circles_write_description">manage all your circles</string>
+    <string name="auth_collectibles_read">Read Collectibles</string>
+    <string name="auth_collectibles_read_description">access your collectibles</string>
 
     <string name="permission_video">Allow to record video?</string>
     <string name="permission_camera">Allow to take pictures?</string>
@@ -781,8 +816,9 @@
 
     <!--withdrawal-->
     <string name="withdrawal">Withdrawal</string>
-    <string name="withdrawal_fee">A transaction fee of %1$s is required for withdrawing %2$s</string>
-    <string name="withdrawal_fee_with_reserve">A transaction fee of %1$s is required for withdrawing %2$s. %3$s has a minimum %4$s %5$s reserve requirement.</string>
+    <string name="withdrawal_network_fee">Network fee:</string>
+    <string name="withdrawal_minimum_withdrawal">Minimum withdrawal:</string>
+    <string name="withdrawal_minimum_reserve">Minimum reserve:</string>
     <string name="withdrawal_addr_add">+ Add Address</string>
     <string name="withdrawal_addr_new">New %1$s Address</string>
     <string name="withdrawal_addr_modify">Modify %1$s Address</string>
@@ -812,10 +848,12 @@
     <string name="group_info_show_more_omit"> show more</string>
     <string name="group_info_show_more">show more</string>
     <string name="send">Send</string>
+    <string name="send_silence">Send Without Sound</string>
     <string name="send_file">Send \"%1$s\" to %2$s?</string>
     <string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
     <string name="default_time" translatable="false">00:00</string>
     <string name="action_open">Open in browser</string>
+    <string name="action_view_auth">View Authorization</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_update">Update</string>
     <string name="action_reload">Reload</string>
@@ -823,13 +861,16 @@
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>
     <string name="account_memo">Memo</string>
+    <string name="not_auth_yet">No permission has been granted to this bot</string>
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_address">Address</string>
     <string name="withdrawal_no_tag">No Memo</string>
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both a Memo and an Address are required to successfully deposit your %1$s to Mixin Messenger.</string>
+    <string name="deposit_notice">Both Memo and Address are required to deposit your %1$s to you account.</string>
+    <string name="deposit_memo_notice">Memo is required, or you will lose your coins.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
-    <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
-    <string name="deposit_reserve">Deposit at least %1$s %2$s for the first time.</string>
+    <string name="deposit_confirmation">Deposit will arrive %1$d block confirmations</string>
+    <string name="deposit_reserve">Deposit at least %1$s for the first time.</string>
     <string name="bottom_withdrawal_title">%1$s Withdrawal</string>
     <string name="bottom_withdrawal_change_amount">Change Amount</string>
     <string name="bottom_withdrawal_change_amount_count">Change Amount (%1$d)</string>
@@ -837,10 +878,10 @@
     <string name="bottom_withdrawal_address_continue">Continue</string>
     <string name="bottom_withdrawal_least_tip">Minimum withdraw amount is %1$s %2$s</string>
     <string name="bottom_deposit_title">%1$s Deposit</string>
-    <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, BLACK, OCT, KARMA, etc.</string>
-    <string name="bottom_deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, TUSD, HT, LOOM, LEO, etc.</string>
-    <string name="bottom_deposit_tip_btc">This address only supports BTC and Omni USDT.</string>
-    <string name="bottom_deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens, such as TRX, BTT, USDT-TRON, etc.</string>
+    <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens.</string>
+    <string name="bottom_deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, etc.</string>
+    <string name="bottom_deposit_tip_btc">This address only supports BTC.</string>
+    <string name="bottom_deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens.</string>
     <string name="bottom_deposit_tip_common">This address only supports %1$s.</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chosen is correct. If you transfer to the wrong person, your assets will be lost!</string>
     <!--sticker-->
@@ -889,6 +930,7 @@
     <string name="restore_found">Backup found</string>
     <string name="restore_skip">SKIP</string>
     <string name="restore_retry">RETRY</string>
+    <string name="restore_choose">CHOOSE</string>
     <string name="restore_restore">RESTORE</string>
     <string name="restore_authorization">authorization</string>
     <string name="restore_message">Back up your messages and media to external storage. You can restore them when you reinstall Mixin. Your messages and media will also back up to your phone\'s internal storage. Media and messages your back up are not protected by Mixin end-to-end encryption while in external storage.</string>
@@ -896,6 +938,7 @@
     <string name="restore_path">Path: %1$s</string>
     <string name="restore_failure">Failure</string>
     <string name="restore_not_found">Not found, please copy the backup file into %1$s</string>
+    <string name="restore_choose_backup_folder">Choose backup folder</string>
     <string name="restore_not_support">Not support</string>
     <string name="restore_notification_title">Restore in progress</string>
     <string name="restore_notification_content">Preparing restore&#8230;</string>
@@ -904,6 +947,10 @@
     <string name="backup_external_storage">External storage: %1$s</string>
     <string name="backup_never">Never</string>
     <string name="backup">Backup</string>
+    <string name="backup_media">Include media files</string>
+    <string name="backup_media_title">Back up to external storage</string>
+    <string name="backup_choose_folder">Choose folder</string>
+    <string name="backup_choose_a_folder">Choose a folder, backups will be saved to this location</string>
     <string name="backup_delete">Backup delete</string>
     <string name="backup_dialog_title">Auto back up to external storage</string>
     <string name="backup_ing">External storage backup&#8230;</string>
@@ -930,6 +977,7 @@
     <string name="multisig_state_unlocked">This multisig link has already been unlocked by someone, you can not make a duplicate operation.</string>
 
     <string name="desktop_upgrade">Please upgrade Mixin Messenger Desktop to the latest version.</string>
+    <string name="desktop_login_no_pin">For your account security, please set up the PIN before logging into the desktop app.</string>
     <!-- location -->
     <string name="location_send_current_location">Send your Current Location</string>
     <string name="location_send_this_location">Send This Location</string>
@@ -976,7 +1024,7 @@
     <string name="web_clear">Remove All</string>
     <string name="web_full">Floating limit reached. Close some before adding new ones.</string>
     <string name="web_delete_tip">Remove all floats?</string>
-    <string name="web_floating_permission">You can\'t floting as Mixin isn\'t authorized to use floating windows</string>
+    <string name="web_floating_permission">You can\'t floating as Mixin isn\'t authorized to use floating windows</string>
     <string name="web_close">close</string>
     <string name="web_debug_enable">Enable web debug</string>
     <string name="web_debug_disable">Disable web debug</string>
@@ -1011,4 +1059,38 @@
     <string name="enable_immediately">Enabled immediately</string>
     <string name="enable_after_1_minute">Enabled after 1 minute</string>
     <string name="enable_after_30_minutes">Enabled after 30 minutes</string>
+
+    <!--  Pin message  -->
+    <string name="unpin_all">Cancel all pinned message</string>
+    <string name="pinned_message">Pinned Messages</string>
+    <string name="pinned_message_title">%1$d Pinned Messages</string>
+    <string name="chat_pin_message">%1$s pinned %2$s</string>
+    <string name="chat_pin_empty_message">a message</string>
+    <string name="chat_pin_image_message">a photo</string>
+    <string name="chat_pin_video_message">a video</string>
+    <string name="chat_pin_live_message">a live</string>
+    <string name="chat_pin_data_message">a file</string>
+    <string name="chat_pin_audio_message">an audio</string>
+    <string name="chat_pin_sticker_message">a sticker</string>
+    <string name="chat_pin_contact_message">a contact</string>
+    <string name="chat_pin_post_message">a post</string>
+    <string name="chat_pin_location_message">a location</string>
+    <string name="chat_pin_transcript_message">a transcript</string>
+    <string name="chat_pin_card_message">a card</string>
+    <string name="unpin_success">Message unpinned</string>
+    <string name="pin_success">Message pinned</string>
+
+    <!--  diagnosis  -->
+    <string name="app_version">App version</string>
+    <string name="manufacturer">Manufacturer</string>
+    <string name="model">Model</string>
+    <string name="system_version">System version</string>
+    <string name="is_network_available">isNetworkAvailable</string>
+    <string name="network_type">Network Type</string>
+    <string name="local_ip">Local IP</string>
+    <string name="export_ip">Export IP</string>
+    <string name="operator">Operator</string>
+    <string name="network_operator">NetworkOperator</string>
+    <string name="parse_dns_result">Parse DNS result: </string>
+    <string name="diagnosis_complete">Diagnosis Complete</string>
 </resources>

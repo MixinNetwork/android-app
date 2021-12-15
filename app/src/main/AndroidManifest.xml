@@ -36,6 +36,7 @@
         android:theme="@style/AppTheme"
         android:hasFragileUserData="true"
         android:requestLegacyExternalStorage="true"
+        android:preserveLegacyExternalStorage="true"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
         android:extractNativeLibs="true"
         tools:replace="allowBackup">
@@ -133,10 +134,10 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"/>
 
         <activity
-            android:name=".ui.conversation.transcript.TranscriptActivity"
+            android:name=".ui.conversation.chathistory.ChatHistoryActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.Blur"
+            android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"/>
 
         <activity
@@ -160,6 +161,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:screenOrientation="portrait"
+            android:excludeFromRecents="true"
             android:targetActivity=".ui.forward.ForwardActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -237,6 +239,12 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:name=".ui.setting.diagnosis.DiagnosisActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
@@ -258,6 +266,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:documentLaunchMode="intoExisting"
             android:launchMode="singleTop"
+            android:excludeFromRecents="true"
             android:theme="@style/AppTheme.Call"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
@@ -298,6 +307,16 @@
             android:theme="@style/AppTheme.Blur"
             android:launchMode="singleTop" />
 
+        <activity android:name=".ui.common.BatteryOptimizationDialogActivity"
+            android:theme="@style/AppTheme.Music"
+            android:launchMode="singleTop" />
+
+        <activity
+            android:name=".ui.imageeditor.ImageEditorActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -309,8 +328,8 @@
         </provider>
 
         <provider
-            android:name="androidx.work.impl.WorkManagerInitializer"
-            android:authorities="${applicationId}.workmanager-init"
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="remove" />
 
@@ -360,9 +379,6 @@
                 android:name="one.mixin.android.startup.FirebaseAppInitializer"
                 android:value="androidx.startup" />
             <meta-data
-                android:name="one.mixin.android.startup.BugsnagInitializer"
-                android:value="androidx.startup" />
-            <meta-data
                 android:name="one.mixin.android.startup.AndroidThreeTenInitializer"
                 android:value="androidx.startup" />
         </provider>
@@ -383,5 +399,10 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
     </application>
-
+    
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
 </manifest>

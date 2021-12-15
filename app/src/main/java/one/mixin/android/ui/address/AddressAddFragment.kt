@@ -10,15 +10,20 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.core.text.bold
+import androidx.core.text.buildSpannedString
+import androidx.core.text.color
 import androidx.core.view.isVisible
 import com.sandro.bitcoinpaymenturi.BitcoinPaymentURI
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
+import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddressAddBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
@@ -46,7 +51,6 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
     }
 
     lateinit var asset: AssetItem
-
     private var memoEnabled = true
 
     // for testing
@@ -60,15 +64,24 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         resultRegistry = testRegistry
     }
 
-    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
-
+    private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private lateinit var getScanMemoResult: ActivityResultLauncher<Pair<String, Boolean>>
     private val binding by viewBinding(FragmentAddressAddBinding::bind)
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+        if (!::resultRegistry.isInitialized) resultRegistry =
+            requireActivity().activityResultRegistry
 
-        getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
+        getScanResult = registerForActivityResult(
+            CaptureActivity.CaptureContract(),
+            resultRegistry,
+            ::callbackScan
+        )
+        getScanMemoResult = registerForActivityResult(
+            CaptureActivity.CaptureContract(),
+            resultRegistry,
+            ::callbackScanMemo
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,7 +116,9 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                     asset.assetId,
                     asset.name,
                     assetUrl = asset.iconUrl,
+                    assetSymbol = asset.symbol,
                     chainId = asset.chainId,
+                    chainName = asset.chainName,
                     chainIconUrl = asset.chainIconUrl,
                     label = binding.labelEt.text.toString(),
                     destination = destination,
@@ -116,7 +131,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 )
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
+            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
                 override fun onSuccess() {
                     activity?.onBackPressed()
                 }
@@ -127,6 +142,20 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             binding.tagEt.setHint(R.string.withdrawal_addr_tag_hint)
         } else {
             binding.tagEt.setHint(R.string.withdrawal_addr_memo_hint)
+        }
+        if (asset.chainId == EOS_CHAIN_ID) {
+            binding.tipTv.isVisible = true
+            binding.tipTv.text = buildSpannedString {
+                append(getString(R.string.wallet_address_add_tip))
+                bold {
+                    append(" ")
+                    color(requireContext().colorFromAttribute(R.attr.text_primary)) {
+                        append(getString(R.string.eos_contract_address))
+                    }
+                }
+            }
+        } else {
+            binding.tipTv.isVisible = false
         }
         binding.labelEt.addTextChangedListener(mWatcher)
         binding.addrEt.addTextChangedListener(mWatcher)
@@ -196,18 +225,22 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    this.isAddr = isAddr
-                    getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    if (isAddr) {
+                        getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    } else {
+                        getScanMemoResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
+                    }
                 } else {
                     context?.openPermissionSetting()
                 }
             }
     }
 
-    var isAddr = false
-        private set
+    private fun callbackScanMemo(data: Intent?) {
+        callbackScan(data, false)
+    }
 
-    private fun callbackScan(data: Intent?) {
+    private fun callbackScan(data: Intent?, isAddr: Boolean = true) {
         val text = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         if (text != null) {
             if (isAddr) {

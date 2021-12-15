@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,9 +18,12 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositAccountBinding
+import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -39,7 +43,7 @@ class DepositAccountFragment : DepositFragment() {
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDepositAccountBinding.inflate(inflater, container, false).apply { this.root.setOnClickListener { } }
         return binding.root
     }
@@ -65,25 +69,26 @@ class DepositAccountFragment : DepositFragment() {
             accountMemoQrAvatar.setBorder()
             accountNameKeyCode.text = asset.destination
             accountMemoKeyCode.text = asset.tag
-            tipTv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
             val reserveTip = if (asset.needShowReserve()) {
-                getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
-            } else ""
-            warningTv.text = "${getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
+                getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}").highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
+            } else SpannableStringBuilder()
+            val confirmation = getString(R.string.deposit_confirmation, asset.confirmations).highLight(requireContext(), asset.confirmations.toString())
+            accountNameWarningTv.text = getString(R.string.deposit_notice, asset.symbol)
+            tipTv.text = buildBulletLines(requireContext(), SpannableStringBuilder(getTipsByAsset(asset)), confirmation, reserveTip)
             accountNameQrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
             accountMemoQrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_TAG).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
-            accountNameCopyTv.setOnClickListener {
+            accountNameCopyIv.setOnClickListener {
                 context?.getClipboardManager()
                     ?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
-                context?.toast(R.string.copy_success)
+                toast(R.string.copy_success)
             }
-            accountMemoCopyTv.setOnClickListener {
+            accountMemoCopyIv.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.tag))
-                context?.toast(R.string.copy_success)
+                toast(R.string.copy_success)
             }
 
             showQR(accountNameQr, accountNameQrAvatar, asset.destination)
@@ -91,7 +96,13 @@ class DepositAccountFragment : DepositFragment() {
                 showQR(accountMemoQr, accountMemoQrAvatar, asset.tag!!)
             }
         }
-        showTip()
+        alertDialogBuilder()
+            .setTitle(R.string.notice)
+            .setCancelable(false)
+            .setMessage(getString(R.string.deposit_notice, asset.symbol))
+            .setPositiveButton(R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }.show()
     }
 
     override fun onDestroyView() {

@@ -13,8 +13,8 @@ import java.net.ProtocolException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
-import kotlin.jvm.Throws
 
 fun Throwable.isNeedSwitch(): Boolean {
     return (
@@ -24,7 +24,8 @@ fun Throwable.isNeedSwitch(): Boolean {
             this is ProtocolException ||
             this is NoRouteToHostException ||
             this is SocketException ||
-            this is SSLPeerUnverifiedException
+            this is SSLPeerUnverifiedException ||
+            this is SSLHandshakeException
         )
 }
 
@@ -33,6 +34,7 @@ class HostSelectionInterceptor private constructor() : Interceptor {
     private var host: HttpUrl? = URL.toHttpUrlOrNull()
 
     private fun setHost(url: String) {
+        CURRENT_URL = url
         this.host = url.toHttpUrlOrNull()
     }
 
@@ -64,6 +66,9 @@ class HostSelectionInterceptor private constructor() : Interceptor {
     }
 
     companion object {
+        var CURRENT_URL: String = URL
+            private set
+
         @Synchronized
         fun get(): HostSelectionInterceptor {
             if (instance == null) {

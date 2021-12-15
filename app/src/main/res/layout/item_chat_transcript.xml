@@ -23,6 +23,21 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
+     <ImageView
+        android:id="@+id/chat_jump"
+        android:padding="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_chat_jump"
+        android:foreground="@drawable/jump_ripple"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/chat_layout"
+        app:layout_constraintTop_toTopOf="@id/chat_layout"
+        app:layout_constraintBottom_toBottomOf="@id/chat_layout"
+        tools:ignore="ContentDescription" />
+
     <TextView
         android:id="@+id/chat_name"
         android:layout_width="wrap_content"
@@ -90,18 +105,13 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <TextView
+        <one.mixin.android.widget.bubble.TimeBubble
             android:id="@+id/chat_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginBottom="6dp"
             android:background="@drawable/bg_bubble_shadow"
-            android:drawablePadding="3dp"
-            android:fontFamily="@font/roboto_light"
-            android:gravity="end|bottom"
-            android:textColor="@color/white"
-            android:textSize="@dimen/chat_date_size"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="7:48AM" />

@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatPostBinding
 import one.mixin.android.extension.dp
@@ -13,12 +12,11 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageStatus
 
-open class SharePostRenderer(val context: Activity) : ShareMessageRenderer {
+open class SharePostRenderer(val context: Activity) {
 
     private val binding = ItemChatPostBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
@@ -43,12 +41,15 @@ open class SharePostRenderer(val context: Activity) : ShareMessageRenderer {
 
     fun render(content: String, isNightMode: Boolean) {
         miniMarkwon.setMarkdown(binding.chatTv, content.postOptimize())
-        binding.chatTime.timeAgoClock(nowInUtc())
-        setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = true) { statusIcon, secretIcon ->
-            statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
-            secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon, null, statusIcon, null)
-        }
+        binding.chatTime.load(
+            true,
+            nowInUtc(),
+            MessageStatus.DELIVERED.name,
+            isPin = false,
+            isRepresentative = false,
+            isSecret = true,
+            isWhite = true
+        )
         binding.chatTv.setOnClickListener {
             MarkdownActivity.show(context, content)
         }

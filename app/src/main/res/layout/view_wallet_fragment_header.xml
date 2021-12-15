@@ -33,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:fontFamily="@font/mixin_condensed"
+                android:fontFamily="@font/mixin_font"
                 android:gravity="center"
                 android:textColor="?attr/text_primary"
                 android:textSize="40sp"
@@ -55,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@font/mixin_condensed"
+                android:fontFamily="@font/mixin_font"
                 android:textColor="?attr/text_primary"
                 android:textSize="18sp"
                 tools:text="0.123" />

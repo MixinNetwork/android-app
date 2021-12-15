@@ -1,11 +1,16 @@
 package one.mixin.android.vo
 
+import android.content.Context
 import android.os.Parcelable
+import androidx.core.net.toUri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
-import one.mixin.android.util.JsonSkip
+import one.mixin.android.MixinApplication
+import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.getTranscriptDirPath
+import java.io.File
 import java.io.Serializable
 
 @Parcelize
@@ -33,7 +38,6 @@ class TranscriptMessage(
     @ColumnInfo(name = "content")
     val content: String?,
     @ColumnInfo(name = "media_url")
-    @JsonSkip
     var mediaUrl: String? = null,
     @SerializedName("media_name")
     @ColumnInfo(name = "media_name")
@@ -53,7 +57,6 @@ class TranscriptMessage(
     @SerializedName("media_duration")
     @ColumnInfo(name = "media_duration")
     val mediaDuration: Long? = null,
-    @JsonSkip
     @ColumnInfo(name = "media_status")
     var mediaStatus: String? = null,
     @SerializedName("media_waveform")
@@ -127,4 +130,14 @@ fun TranscriptMessage.copy(tid: String): TranscriptMessage {
         quoteContent,
         caption
     )
+}
+
+fun TranscriptMessage.absolutePath(context: Context = MixinApplication.appContext): String? {
+    val mediaPath = MixinApplication.appContext.getMediaPath()?.toUri()?.toString() ?: return null
+    val url = mediaUrl
+    return when {
+        url == null -> null
+        url.startsWith(mediaPath) -> url
+        else -> File(context.getTranscriptDirPath(), url).toUri().toString()
+    }
 }

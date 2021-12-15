@@ -94,6 +94,9 @@ public class AlbumLoader extends CursorLoader {
 
     private static final String BUCKET_ORDER_BY = "datetaken DESC";
 
+    // workaround with device with too much albums
+    private static final int MAX_ALBUM_COUNT = 5000;
+
     private AlbumLoader(Context context, String selection, String[] selectionArgs) {
         super(
                 context,
@@ -147,7 +150,7 @@ public class AlbumLoader extends CursorLoader {
             String allAlbumCoverPath = "";
             SparseArray<Album> albumList = new SparseArray<>();
             if (albums != null) {
-                while (albums.moveToNext()) {
+                while (albums.moveToNext() && totalCount < MAX_ALBUM_COUNT) {
                     String albumCoverPath = albums.getString(albums.getColumnIndex(MediaStore.MediaColumns.DATA));
                     if ("".equals(allAlbumCoverPath)) {
                         allAlbumCoverPath = albumCoverPath;

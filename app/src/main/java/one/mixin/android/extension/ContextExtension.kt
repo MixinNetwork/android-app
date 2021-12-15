@@ -15,6 +15,7 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.Cursor
@@ -28,7 +29,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
+import android.os.VibrationEffect.EFFECT_CLICK
+import android.os.VibrationEffect.EFFECT_DOUBLE_CLICK
+import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
+import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
+import android.os.storage.StorageManager
+import android.os.storage.StorageVolume
 import android.provider.Browser
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -37,6 +44,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.Window
 import android.view.WindowManager
+import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -61,8 +69,9 @@ import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.TranscriptMessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
@@ -168,17 +177,45 @@ fun Context.isActivityNotDestroyed(): Boolean {
     return true
 }
 
-@Suppress("DEPRECATION")
-fun Context.vibrate(pattern: LongArray) {
-    if (Build.VERSION.SDK_INT >= 26) {
+fun Context.vibrate(effect: VibrationEffect?, pattern: LongArray = longArrayOf(0, 20L)) {
+    if (effect != null && Build.VERSION.SDK_INT >= 26) {
+        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(effect)
+    } else if (Build.VERSION.SDK_INT >= 26) {
         (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(VibrationEffect.createWaveform(pattern, -1))
     } else {
         (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).vibrate(pattern, -1)
     }
 }
+fun Context.tickVibrate() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        vibrate(VibrationEffect.createPredefined(EFFECT_TICK))
+    } else {
+        vibrate(effect = null, pattern = longArrayOf(0, 10L))
+    }
+}
 
-fun Context.tapVibrate() {
-    vibrate(longArrayOf(0, 30L))
+fun Context.clickVibrate() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        vibrate(VibrationEffect.createPredefined(EFFECT_CLICK))
+    } else {
+        vibrate(effect = null, pattern = longArrayOf(0, 20L))
+    }
+}
+
+fun Context.heavyClickVibrate() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        vibrate(VibrationEffect.createPredefined(EFFECT_HEAVY_CLICK))
+    } else {
+        vibrate(effect = null, pattern = longArrayOf(0, 30L))
+    }
+}
+
+fun Context.doubleClickVibrate() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        vibrate(VibrationEffect.createPredefined(EFFECT_DOUBLE_CLICK))
+    } else {
+        vibrate(effect = null, pattern = longArrayOf(0, 30L))
+    }
 }
 
 fun Context.dpToPx(dp: Float): Int {
@@ -343,7 +380,16 @@ fun Fragment.openCamera(output: Uri) {
     if (intent.resolveActivity(requireContext().packageManager) != null) {
         startActivityForResult(intent, REQUEST_CAMERA)
     } else {
-        context?.toast(R.string.error_no_camera)
+        toast(R.string.error_no_camera)
+    }
+}
+
+fun String.isFileUri(): Boolean {
+    try {
+        val uri = Uri.parse(this)
+        return uri.scheme == ContentResolver.SCHEME_FILE
+    } catch (e: Exception) {
+        return false
     }
 }
 
@@ -353,7 +399,7 @@ fun Context.openMedia(messageItem: MessageItem) {
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     try {
-        messageItem.mediaUrl?.let {
+        messageItem.absolutePath()?.let {
             val uri = Uri.parse(it)
             if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
                 intent.setDataAndType(uri, messageItem.mediaMimeType)
@@ -362,7 +408,7 @@ fun Context.openMedia(messageItem: MessageItem) {
                 val path = if (uri.scheme == ContentResolver.SCHEME_FILE) {
                     uri.path
                 } else {
-                    messageItem.mediaUrl
+                    messageItem.absolutePath()
                 }
                 if (path == null) {
                     toast(R.string.error_file_exists)
@@ -384,13 +430,13 @@ fun Context.openMedia(messageItem: MessageItem) {
     }
 }
 
-fun Context.openMedia(messageItem: TranscriptMessageItem) {
+fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
     val intent = Intent()
     intent.action = Intent.ACTION_VIEW
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     try {
-        messageItem.mediaUrl?.let {
+        messageItem.absolutePath()?.let {
             val uri = Uri.parse(it)
             if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
                 intent.setDataAndType(uri, messageItem.mediaMimeType)
@@ -399,7 +445,7 @@ fun Context.openMedia(messageItem: TranscriptMessageItem) {
                 val path = if (uri.scheme == ContentResolver.SCHEME_FILE) {
                     uri.path
                 } else {
-                    messageItem.mediaUrl
+                    messageItem.absolutePath()
                 }
                 if (path == null) {
                     toast(R.string.error_file_exists)
@@ -476,7 +522,7 @@ fun Fragment.selectAudio() {
     selectMediaType("audio/*", null, REQUEST_AUDIO)
 }
 
-fun Context.getAttachment(local: Uri): Attachment? {
+fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
     var cursor: Cursor? = null
     try {
         val uri = if (local.authority == null) {
@@ -488,7 +534,6 @@ fun Context.getAttachment(local: Uri): Attachment? {
         cursor = contentResolver.query(uri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
             val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-            val mimeType = contentResolver.getType(uri) ?: ""
 
             val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
             val resultUri = if (copyPath == null) {
@@ -497,7 +542,7 @@ fun Context.getAttachment(local: Uri): Attachment? {
                 getUriForFile(File(copyPath))
             }
             val fileSize = File(copyPath).length()
-            return Attachment(resultUri, fileName, mimeType, fileSize)
+            return Attachment(resultUri, fileName, mimeType ?: contentResolver.getType(uri) ?: "", fileSize)
         }
     } catch (e: SecurityException) {
         toast(R.string.error_file_exists)
@@ -725,7 +770,7 @@ fun Context.isFirebaseDecodeAvailable() =
     isGooglePlayServicesAvailable() && Locale.getDefault() != Locale.CHINA
 
 fun Fragment.getTipsByAsset(asset: AssetItem) =
-    when (asset.chainId) {
+    when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eth)
         Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eos)
@@ -774,11 +819,7 @@ fun Context.isLandscape() = resources.configuration.orientation == Configuration
 
 fun Context.isAutoRotate() = Settings.System.getInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1
 
-fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
-
-fun Fragment.toastShort(textResource: Int) = requireActivity().toast(textResource, ToastDuration.Short)
-
-fun Fragment.toast(text: CharSequence) = requireActivity().toast(text)
+fun toastShort(textResource: Int) = toast(textResource, ToastDuration.Short)
 
 fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
     Constants.Theme.THEME_CURRENT_ID,
@@ -895,4 +936,79 @@ fun getDeviceId(resolver: ContentResolver): String {
 
 fun Context.getDeviceId(): String {
     return getDeviceId(contentResolver)
+}
+
+fun Context.handleIgnoreBatteryOptimization(newTask: Boolean = false) {
+    if (Build.MANUFACTURER.equalsIgnoreCase("google") || Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
+        requestIgnoreBatteryOptimization(newTask)
+    } else {
+        openIgnoreBatteryOptimizationSetting(newTask)
+    }
+}
+
+fun Context.requestIgnoreBatteryOptimization(newTask: Boolean = false) {
+    Intent().apply {
+        action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+        data = Uri.parse("package:$packageName")
+        if (newTask) {
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            startActivity(this)
+        } catch (e: ActivityNotFoundException) {
+            Timber.w("Battery optimization activity not found")
+        }
+    }
+}
+
+fun Context.openIgnoreBatteryOptimizationSetting(newTask: Boolean = false) {
+    Intent().apply {
+        action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+        if (newTask) {
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            startActivity(this)
+        } catch (e: ActivityNotFoundException) {
+            Timber.w("Power setting activity not found")
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.N)
+fun Context.getDisplayPath(uri: Uri): String {
+    val lastPathSegment = requireNotNull(uri.lastPathSegment)
+    val backupVolume = lastPathSegment.replaceFirst(":.*".toRegex(), "")
+    val backupName = lastPathSegment.replaceFirst(".*:".toRegex(), "")
+    val storageManager: StorageManager = requireNotNull(
+        ContextCompat.getSystemService(
+            this,
+            StorageManager::class.java
+        )
+    )
+    val storageVolumes = storageManager.storageVolumes
+    var storageVolume: StorageVolume? = null
+    for (volume in storageVolumes) {
+        if (volume.uuid == backupVolume) {
+            storageVolume = volume
+            break
+        }
+    }
+    return if (storageVolume == null) {
+        backupName
+    } else {
+        String.format("%s/%s", storageVolume.getDescription(this), backupName)
+    }
+}
+
+inline fun <reified T> Fragment.findListener(): T? {
+    var parent: Fragment? = parentFragment
+    while (parent != null) {
+        if (parent is T) {
+            return parent
+        }
+        parent = parent.parentFragment
+    }
+
+    return requireActivity() as? T
 }

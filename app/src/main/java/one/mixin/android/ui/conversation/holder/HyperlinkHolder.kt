@@ -3,18 +3,17 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatHyperlinkBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
@@ -27,6 +26,8 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
     init {
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
+        binding.chatTv.setMentionModeColor(LINK_COLOR)
+        binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxWidth = itemView.context.maxItemWidth()
     }
 
@@ -109,6 +110,9 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
                 }
+                AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
+                    onItemListener.onMentionClick(matchedText)
+                }
                 else -> {
                 }
             }
@@ -166,13 +170,15 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
 
         itemView.setOnClickListener {
             if (hasSelect) {

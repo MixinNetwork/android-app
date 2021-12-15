@@ -15,6 +15,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
+import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -230,7 +231,7 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }
 
-    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
+    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         conversationRepo.deleteMessageByConversationId(conversationId)
     }
 
@@ -298,8 +299,10 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.logout(sessionId)
     }
 
-    suspend fun findAddressById(addressId: String, assetId: String) = withContext(Dispatchers.IO) {
-        assetRepository.findAddressById(addressId, assetId) ?: assetRepository.refreshAndGetAddress(addressId, assetId)
+    suspend fun findAddressById(addressId: String, assetId: String): Pair<Address?, Boolean> = withContext(Dispatchers.IO) {
+        val address = assetRepository.findAddressById(addressId, assetId)
+            ?: return@withContext assetRepository.refreshAndGetAddress(addressId, assetId)
+        return@withContext Pair(address, false)
     }
 
     suspend fun findAssetItemById(assetId: String): AssetItem? =
@@ -400,7 +403,7 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun findMultiUsers(
         senders: Array<String>,
         receivers: Array<String>
-    ): List<User> = withContext(Dispatchers.IO) {
+    ): Pair<ArrayList<User>, ArrayList<User>>? = withContext(Dispatchers.IO) {
         val userIds = mutableSetOf<String>().apply {
             addAll(senders)
             addAll(receivers)
@@ -409,8 +412,8 @@ class BottomSheetViewModel @Inject internal constructor(
         val queryUsers = userIds.filter {
             !existUserIds.contains(it)
         }
-        if (queryUsers.isNotEmpty()) {
-            return@withContext handleMixinResponse(
+        val users = if (queryUsers.isNotEmpty()) {
+            handleMixinResponse(
                 invokeNetwork = {
                     userRepository.fetchUser(queryUsers)
                 },
@@ -423,8 +426,21 @@ class BottomSheetViewModel @Inject internal constructor(
                 }
             ) ?: emptyList()
         } else {
-            return@withContext userRepository.findMultiUsersByIds(userIds)
+            userRepository.findMultiUsersByIds(userIds)
         }
+
+        if (users.isEmpty()) return@withContext null
+        val s = arrayListOf<User>()
+        val r = arrayListOf<User>()
+        users.forEach { u ->
+            if (u.userId in senders) {
+                s.add(u)
+            }
+            if (u.userId in receivers) {
+                r.add(u)
+            }
+        }
+        return@withContext Pair(s, r)
     }
 
     suspend fun signMultisigs(requestId: String, pin: String) =
@@ -443,6 +459,14 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.cancelMultisigs(requestId)
     }
 
+    suspend fun getToken(tokenId: String) = accountRepository.getToken(tokenId)
+
+    suspend fun signCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) = accountRepository.signCollectibleTransfer(requestId, pinRequest)
+
+    suspend fun unlockCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) = accountRepository.unlockCollectibleTransfer(requestId, pinRequest)
+
+    suspend fun cancelCollectibleTransfer(requestId: String) = accountRepository.cancelCollectibleTransfer(requestId)
+
     suspend fun transactions(
         rawTransactionsRequest: RawTransactionsRequest,
         pin: String
@@ -453,7 +477,9 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findSnapshotById(snapshotId: String) = assetRepository.findSnapshotById(snapshotId)
 
-    fun insertSnapshot(snapshot: Snapshot) = assetRepository.insertSnapshot(snapshot)
+    fun insertSnapshot(snapshot: Snapshot) = viewModelScope.launch(Dispatchers.IO) {
+        assetRepository.insertSnapshot(snapshot)
+    }
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -483,6 +509,9 @@ class BottomSheetViewModel @Inject internal constructor(
                             loadAction(accountRepository.getFavoriteAppsByUserId(userId))
                         }
                     }
+                },
+                exceptionBlock = {
+                    return@handleMixinResponse true
                 }
             )
         }
@@ -545,5 +574,14 @@ class BottomSheetViewModel @Inject internal constructor(
                 }
             }
         }
+    }
+
+    suspend fun getAuthorizationByAppId(appId: String): AuthorizationResponse? = withContext(Dispatchers.IO) {
+        return@withContext handleMixinResponse(
+            invokeNetwork = { accountRepository.getAuthorizationByAppId(appId) },
+            successBlock = {
+                return@handleMixinResponse it.data?.firstOrNull()
+            }
+        )
     }
 }

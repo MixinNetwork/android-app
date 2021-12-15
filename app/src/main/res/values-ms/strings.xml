@@ -132,6 +132,7 @@
     <string name="strikethrough">mencoret</string>
     <string name="italic">Italik</string>
     <string name="bold">tebal</string>
+    <string name="eos_contract_address">alamat kontrak EOS</string>
     <!--error-->
     <string name="error_no_connection">Tiada sambungan rangkaian</string>
     <string name="error_connection_timeout">Tamat masa sambungan rangkaian</string>
@@ -160,14 +161,11 @@
     <string name="error_unable_to_open_media">Tidak dapat mencari aplikasi yang dapat buka media ini.</string>
     <string name="error_open_location">Tidak dapat mencari aplikasi peta</string>
     <string name="error_file_exists">Fail tidak wujud</string>
-    <string name="error_address_exists">Alamat tidak wujud</string>
     <string name="error_asset_exists">Aset tidak wujud</string>
     <string name="error_pin_check_too_many_request">Anda telah mencuba lebih dari 5 kali, sila tunggu sekurang-kurangnya 24 jam untuk mencuba lagi.</string>
     <string name="error_used_phone">RALAT %1$d: Telefon digunakan oleh orang lain.</string>
-    <string name="error_insufficient_transaction_fee">RALAT %1$d: Bayaran transaksi tidak mencukupi.</string>
     <string name="error_blockchain">RALAT %1$d: Rantai blok tidak diselaraskan, sila cuba sebentar lagi.</string>
-    <string name="error_invalid_address">RALAT %1$d: Format alamat tidak sah.</string>
-    <string name="error_invalid_address_eos">RALAT %1$d: Format alamat tidak sah. Mixin tidak menyokong penarikan ke alamat kontrak EOS!</string>
+    <string name="error_invalid_address_plain">RALAT %1$d: Format alamat tidak sah.</string>
     <string name="error_phone_verification_code_expired">RALAT %1$d: Kod pengesahan telefon yang telah tamat tempoh</string>
     <string name="error_phone_verification_code_invalid">RALAT %1$d: Kod pengesahan telefon tidak sah</string>
     <string name="error_phone_invalid_format">RALAT %1$d: Nombor telefon tidak sah</string>
@@ -193,6 +191,7 @@
     <string name="title_home">Kenalan</string>
     <string name="search_hint">aset, kenalan dan mesej</string>
     <string name="conversation_waiting">Menunggu mesej ini.</string>
+    <string name="conversation_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini.</string>
     <string name="text_qr">KOD QR TEKS</string>
     <string name="detect_qr_tip">Mengesan kod QR Mixin, ketuk untuk mengenali</string>
     <string name="qr_code_camera">Kamera Kod QR</string>
@@ -336,7 +335,7 @@
     <string name="chat_group_call_invite">%1$s telah menjemput anda ke panggilan kumpulan</string>
     <string name="chat_group_call_decline">%1$s telah menolak panggilan kumpulan</string>
     <string name="chat_group_call_cancel">%1$s telah membatalkan panggilan kumpulan</string>
-    <string name="chat_group_call_end">Panggilan kumpulan berakhir, tempoh: %1$s</string>
+    <string name="chat_group_call_end_with_duration">Panggilan kumpulan berakhir, tempoh: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Sambungan rakan telah ditutup, sila cuba lagi</string>
     <string name="chat_call_bad_network_you">Sambungan tidak stabil</string>
     <string name="chat_call_bad_network">Sambungan pengguna lain tidak stabil</string>
@@ -369,8 +368,9 @@
     <string name="wallet_title">Dompet</string>
     <string name="wallet_password_set_pin">Tetapkan PIN</string>
     <string name="wallet_password_set_new_pin">Tetapkan PIN baru</string>
-    <string name="wallet_password_set_pin_desc">Sila tetapkan PIN 6 digit.</string>
     <string name="wallet_password_set_new_pin_desc">Sila tetapkan PIN 6 digit baharu.</string>
+    <string name="wallet_password_set_pin_desc">Sediakan PIN dompet 6 digit untuk membuat dompet digital pertama anda, baca dokumentasi kami untuk mengetahui lebih lanjut.</string>
+    <string name="wallet_password_set_pin_target">lebih lanjut</string>
     <string name="wallet_password_confirm_pin">Sahkan PIN</string>
     <string name="wallet_password_confirm_1">Sila sahkan PIN 6 digit dan ingat. Sekiranya hilang, tidak ada cara untuk mendapatkan semula dompet anda.</string>
     <string name="wallet_password_confirm_2">Sila sahkan PIN 6 digit anda sekali lagi. Sangat jarang untuk melihat pengesahan ketiga di tempat lain, jadi sila ingat bahawa PIN tidak dapat dipulihkan sekiranya hilang.</string>
@@ -447,6 +447,7 @@
     <string name="wallet_trending">Sohor Kini</string>
     <string name="wallet_recent_search">Carian terkini</string>
     <string name="wallet_transfer_no_available_assets">Tiada Aset Yang Tersedia</string>
+    <string name="wallet_address_add_tip">Mixin tidak menyokong penarikan ke</string>
     <!--pin logs-->
     <string name="logs">Log</string>
     <string name="log_category_pin_incorrect">PIN tidak betul</string>
@@ -749,8 +750,6 @@
     <string name="background_connection_enabled">Nod pesanan berjalan</string>
     <!--withdrawal-->
     <string name="withdrawal">Pengeluaran</string>
-    <string name="withdrawal_fee">Bayaran urus niaga %1$s diperlukan untuk pengeluaran %2$s</string>
-    <string name="withdrawal_fee_with_reserve">Bayaran urus niaga %1$s diperlukan untuk pengeluaran %2$s. %3$s mempunyai syarat simpanan minimum %4$s %5$s.</string>
     <string name="withdrawal_addr_add">+ Tambah Alamat</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baharu</string>
     <string name="withdrawal_addr_modify">Ubah suai Alamat %1$s</string>
@@ -797,7 +796,7 @@
     <string name="deposit_account_attention">Perhatian: Cuba sebilangan kecil untuk deposit pertama. Kedua-dua Memo dan Alamat diperlukan untuk memasukkan deposit anda dengan jayanya %1$s ke Mixin Messenger.</string>
     <string name="deposit_attention">Cuba sedikit untuk deposit pertama.</string>
     <string name="deposit_confirmation">Deposit akan tiba setelah sekurang-kurangnya %1$d pengesahan sekatan</string>
-    <string name="deposit_reserve">Deposit sekurang-kurangnya %1$s %2$s untuk pertama kalinya.</string>
+    <string name="deposit_reserve">Deposit sekurang-kurangnya %1$s untuk pertama kalinya.</string>
     <string name="bottom_withdrawal_title">%1$s Pengeluaran</string>
     <string name="bottom_withdrawal_change_amount">Tukar Jumlah</string>
     <string name="bottom_withdrawal_change_amount_count">Tukar Jumlah (%1$d)</string>
@@ -805,9 +804,9 @@
     <string name="bottom_withdrawal_address_continue">Teruskan</string>
     <string name="bottom_withdrawal_least_tip">Jumlah pengeluaran minimum ialah %1$s %2$s</string>
     <string name="bottom_deposit_title">Deposit %1$s</string>
-    <string name="bottom_deposit_tip_eos">Alamat ini menyokong semua asas pada token EOS, seperti EOS, IQ, BLACK, OCT, KARMA, dll.</string>
-    <string name="bottom_deposit_tip_eth">Alamat ini menyokong semua token ERC-20, seperti ETH, XIN, TUSD, HT, LOOM, LEO, dll.</string>
-    <string name="bottom_deposit_tip_btc">Alamat ini hanya menyokong BTC dan Omni USDT.</string>
+    <string name="bottom_deposit_tip_eos">Alamat ini menyokong semua asas pada token EOS, seperti EOS, IQ, dll.</string>
+    <string name="bottom_deposit_tip_eth">Alamat ini menyokong semua token ERC-20, seperti ETH, XIN, dll.</string>
+    <string name="bottom_deposit_tip_btc">Alamat ini hanya menyokong BTC.</string>
     <string name="bottom_deposit_tip_trx">Alamat ini menyokong semua token TRC-10 dan TRC-20, seperti TRX, BTT, USDT-TRON, dll.</string>
     <string name="bottom_deposit_tip_common">Alamat ini hanya menyokong %1$s.</string>
     <string name="bottom_transfer_stranger_tip">ID Mixin %1$s tidak ada dalam senarai kenalan anda. Pastikan penerima yang anda pilih betul. Sekiranya anda pindah ke orang yang salah, aset anda akan hilang!</string>

@@ -23,6 +23,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity.Companion.PREFIX
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.loadVideoOrLive
 import one.mixin.android.widget.CircleProgress
@@ -96,15 +97,15 @@ class VideoHolder(
                 }
             }
         }
-        val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
+        val ratio = (messageItem.mediaWidth ?: 1).toFloat() / (messageItem.mediaHeight ?: 1).toFloat()
         setSize(context, ratio, itemView)
         itemView.tag = "$PREFIX${messageItem.messageId}"
         if (messageItem.isLive()) {
             circleProgress.isVisible = false
             binding.previewIv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
         } else {
-            if (messageItem.mediaUrl != null) {
-                binding.previewIv.loadVideo(messageItem.mediaUrl)
+            if (messageItem.absolutePath() != null) {
+                binding.previewIv.loadVideo(messageItem.absolutePath())
             } else {
                 val imageData = messageItem.thumbImage?.decodeBase64()
                 Glide.with(itemView).load(imageData).into(binding.previewIv)
@@ -125,7 +126,7 @@ class VideoHolder(
                         circleProgress.enableDownload()
                     }
                 } else {
-                    // TODO expired
+                    circleProgress.isVisible = false
                 }
                 circleProgress.setOnClickListener {
                     mediaPagerAdapterListener.onCircleProgressClick(messageItem)

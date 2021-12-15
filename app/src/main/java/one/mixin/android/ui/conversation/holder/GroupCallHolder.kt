@@ -6,6 +6,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 
@@ -60,7 +61,7 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) : BaseView
                 } catch (e: Exception) {
                     ""
                 }
-                binding.chatInfo.text = context.getString(R.string.chat_group_call_end, duration)
+                binding.chatInfo.text = context.getString(R.string.chat_group_call_end_with_duration, duration)
             }
         }
     }

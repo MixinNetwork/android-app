@@ -1,13 +1,9 @@
 package one.mixin.android.job
 
-import android.util.ArrayMap
 import com.birbit.android.jobqueue.CancelReason
 import com.birbit.android.jobqueue.Job
 import com.birbit.android.jobqueue.Params
 import com.birbit.android.jobqueue.RetryConstraint
-import com.bugsnag.android.Bugsnag
-import com.bugsnag.android.MetaData
-import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
@@ -26,6 +22,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AppDao
@@ -44,6 +41,8 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.PropertyDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
@@ -54,6 +53,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import java.io.IOException
@@ -71,6 +71,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var jobManager: MixinJobManager
+    @Inject
+    @Transient
+    lateinit var mixinDatabase: MixinDatabase
     @Inject
     @Transient
     lateinit var conversationApi: ConversationService
@@ -181,7 +184,16 @@ abstract class BaseJob(params: Params) : Job(params) {
     lateinit var transcriptMessageDao: TranscriptMessageDao
     @Inject
     @Transient
+    lateinit var pinMessageDao: PinMessageDao
+    @Inject
+    @Transient
+    lateinit var propertyDao: PropertyDao
+    @Inject
+    @Transient
     lateinit var signalProtocol: SignalProtocol
+    @Inject
+    @Transient
+    lateinit var encryptedProtocol: EncryptedProtocol
     @Transient
     @Inject
     lateinit var appDatabase: MixinDatabase
@@ -215,18 +227,7 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     public override fun shouldReRunOnThrowable(throwable: Throwable, runCount: Int, maxRunCount: Int): RetryConstraint {
         if (runCount >= 10) {
-            Bugsnag.notify(throwable) { report ->
-                report.error.metaData = MetaData().apply {
-                    addToTab("Job", "shouldReRunOnThrowable", "Retry max count:$runCount")
-                }
-            }
-            Crashes.trackError(
-                throwable,
-                ArrayMap<String, String>().apply {
-                    put("Job_shouldReRunOnThrowable", "Retry max count:$runCount")
-                },
-                null
-            )
+            reportException("Job shouldReRunOnThrowable retry max count:$runCount", throwable)
         }
         return if (shouldRetry(throwable)) {
             RetryConstraint.RETRY
@@ -241,11 +242,7 @@ abstract class BaseJob(params: Params) : Job(params) {
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         if (cancelReason == CancelReason.REACHED_RETRY_LIMIT) {
             throwable?.let {
-                Bugsnag.notify(it) { report ->
-                    report.error.metaData = MetaData().apply {
-                        addToTab("Job", "CancelReason", "REACHED_RETRY_LIMIT")
-                    }
-                }
+                reportException("Job cancelReason REACHED_RETRY_LIMIT", it)
             }
         }
     }

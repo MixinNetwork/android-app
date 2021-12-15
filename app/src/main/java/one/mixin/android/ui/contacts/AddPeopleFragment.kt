@@ -7,25 +7,24 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.fragment.app.viewModels
-import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddPeopleBinding
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
-import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
-import java.lang.IndexOutOfBoundsException
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -82,7 +81,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
                                     UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                                 }
                             }
-                            r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
+                            r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.error_user_not_found)
                             else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
                     },
@@ -98,14 +97,9 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
 
     private fun valid(number: String): Boolean {
         if (number.startsWith("+")) {
-            val phone = MobileFragment.Phone(number)
             val phoneUtil = PhoneNumberUtil.getInstance()
-            return try {
-                val phoneNumber = phoneUtil.parse(phone.phone, Locale.getDefault().country)
-                phoneUtil.isValidNumber(phoneNumber)
-            } catch (e: NumberParseException) {
-                false
-            }
+            val validationResult = isValidNumber(phoneUtil, number, Locale.getDefault().country)
+            return validationResult.first
         }
         if (number.length >= 2) {
             return true
@@ -115,7 +109,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.tickVibrate()
             if (viewDestroyed()) {
                 return
             }
@@ -152,7 +146,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
         }
 
         override fun onLongClick(position: Int, value: String) {
-            context?.tapVibrate()
+            context?.clickVibrate()
             if (viewDestroyed()) {
                 return
             }

@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.media.ThumbnailUtils
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -68,32 +69,29 @@ fun Context.checkStorageNotLow(lowAction: () -> Unit, defaultAction: () -> Unit)
     }
 }
 
-private fun Context.getAppPath(): File? {
-    return if (!hasWritePermission()) {
-        null
-    } else if (isAvailable()) {
-        File(
-            "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
-        )
-    } else {
-        val externalFile = ContextCompat.getExternalFilesDirs(this, null)
-        val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}")
-        root.mkdirs()
-        return if (root.exists()) {
-            root
-        } else {
-            getBestAvailableCacheRoot()
+private fun Context.getAppPath(legacy: Boolean = false): File? {
+    return when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !legacy -> {
+            externalMediaDirs.first()
+        }
+        hasWritePermission() && isAvailable() -> {
+            File(
+                "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
+            )
+        }
+        else -> {
+            null
         }
     }
 }
 
-fun Context.getMediaPath(): File? {
-    val path = getAppPath() ?: return null
+fun Context.getMediaPath(legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
-fun Context.getOldMediaPath(): File? {
+fun Context.getAncientMediaPath(): File? {
     val path = getAppPath() ?: return null
     val f = File("${path.absolutePath}${File.separator}Media")
     if (f.exists()) {
@@ -102,8 +100,8 @@ fun Context.getOldMediaPath(): File? {
     return null
 }
 
-fun Context.getBackupPath(create: Boolean = false): File? {
-    val path = getAppPath() ?: return null
+fun Context.getLegacyBackupPath(create: Boolean = false, legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Backup")
     if (create && (!f.exists() || !f.isDirectory)) {
@@ -113,8 +111,8 @@ fun Context.getBackupPath(create: Boolean = false): File? {
     return f
 }
 
-fun Context.getOldBackupPath(create: Boolean = false): File? {
-    val path = getAppPath() ?: return null
+fun Context.getOldBackupPath(create: Boolean = false, legacy: Boolean = false): File? {
+    val path = getAppPath(legacy) ?: return null
     val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$identityNumber")
     if (create && (!f.exists() || !f.isDirectory)) {
@@ -222,41 +220,40 @@ private fun Context.getBestAvailableCacheRoot(): File {
 fun File.generateConversationPath(conversationId: String): File {
     return File("$this${File.separator}$conversationId")
 }
-
-fun Context.getImagePath(): File {
-    val root = getMediaPath()
+fun Context.getImagePath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Images")
 }
 
-fun Context.getOtherPath(): File {
-    val root = getMediaPath()
+fun Context.getOtherPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Others")
 }
 
-fun Context.getDocumentPath(): File {
-    val root = getMediaPath()
+fun Context.getDocumentPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Files")
 }
 
-fun Context.getVideoPath(): File {
-    val root = getMediaPath()
+fun Context.getVideoPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Videos")
 }
 
-fun Context.getAudioPath(): File {
-    val root = getMediaPath()
-    return File("$root${File.separator}Audios")
+fun Context.getAudioPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
+    return File("${root}${File.separator}Audios")
 }
 
-fun Context.getTranscriptFile(name: String, type: String): File {
-    return getTranscriptDirPath().newTempFile(
+fun Context.getTranscriptFile(name: String, type: String, legacy: Boolean = false): File {
+    return getTranscriptDirPath(legacy).newTempFile(
         name, type,
         true
     )
 }
 
-fun Context.getTranscriptDirPath(): File {
-    val root = getMediaPath()
+fun Context.getTranscriptDirPath(legacy: Boolean = false): File {
+    val root = getMediaPath(legacy)
     return File("$root${File.separator}Transcripts${File.separator}")
 }
 
@@ -396,6 +393,15 @@ fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
     }
 }
 
+fun File.createPdfTemp(prefix: String? = null): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
+    return if (prefix != null) {
+        newTempFile("${prefix}_POST_$time", ".pdf", false)
+    } else {
+        newTempFile("POST_$time", ".pdf", false)
+    }
+}
+
 fun File.createGifTemp(conversationId: String, messageId: String, noMedia: Boolean = true): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(messageId, ".gif", noMedia)
@@ -434,8 +440,22 @@ fun File.createDocumentTemp(conversationId: String, messageId: String, type: Str
     )
 }
 
-private fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair<File, Boolean> {
-    val defaultName = "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())}"
+private fun File.createDocumentFile(
+    noMedia: Boolean = true,
+    name: String? = null,
+    extensionName: String? = null
+): Pair<File, Boolean> {
+    val defaultName = "FILE_${
+    SimpleDateFormat(
+        "yyyyMMdd_HHmmss_SSS", Locale.US
+    ).format(Date())
+    }${
+    if (extensionName == null) {
+        ""
+    } else {
+        ".$extensionName"
+    }
+    }"
     val fileName = name ?: defaultName
     if (!this.exists()) {
         this.mkdirs()
@@ -572,8 +592,9 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
     if (this.authority != null) {
         var input: InputStream? = null
         return try {
+            val extensionName = getFileName(context).getExtensionName()
             input = context.contentResolver.openInputStream(this) ?: return null
-            val pair = context.getDocumentPath().createDocumentFile(name = name)
+            val pair = context.getDocumentPath()?.createDocumentFile(name = name, extensionName = extensionName) ?: return null
             val outFile = pair.first
             if (!pair.second) {
                 outFile.copyFromInputStream(input)
@@ -602,6 +623,14 @@ fun Uri.getOrCreate(context: Context = MixinApplication.appContext, name: String
 fun File.copyFromInputStream(inputStream: InputStream) {
     inputStream.use { input ->
         this.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
+}
+
+fun Uri.copyFromInputStream(inputStream: InputStream) {
+    inputStream.use { input ->
+        MixinApplication.appContext.contentResolver.openOutputStream(this, "w")?.use { output ->
             input.copyTo(output)
         }
     }
@@ -722,12 +751,14 @@ fun ByteArray.encodeBitmap(): Bitmap? {
 
 fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
 
+private const val MAX_BLUR_HASH_DIMEN = 20
+
 fun String.toDrawable(width: Int, height: Int): Drawable? {
     return try {
         if (!Base83.isValid(this)) {
             this.decodeBase64().encodeBitmap()?.toDrawable()
         } else {
-            BlurHashDecoder.decode(this, maxOf(width, 64), maxOf(height, 64), 1.0)?.toDrawable()
+            BlurHashDecoder.decode(this, minOf(width, MAX_BLUR_HASH_DIMEN), minOf(height, MAX_BLUR_HASH_DIMEN), 1.0)?.toDrawable()
         }
     } catch (e: Exception) {
         null
@@ -1020,4 +1051,16 @@ fun File.toByteArray(): ByteArray? {
     }
 
     return byteArray
+}
+
+val MediaPath by lazy {
+    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
+}
+
+val oldMediaPath by lazy {
+    MixinApplication.appContext.getMediaPath(true)?.toUri()?.toString()
+}
+
+val ancientMediaPath by lazy {
+    MixinApplication.appContext.getAncientMediaPath()?.toUri()?.toString()
 }

@@ -132,4 +132,12 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun providesTranscriptDao(db: MixinDatabase) = db.transcriptDao()
+
+    @Singleton
+    @Provides
+    fun providesPinMessageDao(db: MixinDatabase) = db.pinMessageDao()
+
+    @Singleton
+    @Provides
+    fun providesPropertyDao(db: MixinDatabase) = db.propertyDao()
 }

@@ -28,7 +28,9 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCallBottomSheetBinding
 import one.mixin.android.extension.alertDialogBuilder
@@ -39,6 +41,7 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.showPipPermissionNotification
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
@@ -111,7 +114,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val peekHeight by lazy {
-        470.dp
+        480.dp
     }
 
     private var translationOffset by Delegates.notNull<Float>()
@@ -120,7 +123,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         PipCallView.get()
     }
 
-    @SuppressLint("RestrictedApi")
+    private var groupName: String? = null
+
+    @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         _binding = FragmentCallBottomSheetBinding.inflate(LayoutInflater.from(context), null, false)
@@ -131,6 +136,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         behavior.peekHeight = peekHeight
         binding.root.doOnPreDraw { root ->
             translationOffset = (peekHeight - root.measuredHeight).toFloat()
+            binding.participants.translationY = translationOffset
             binding.bottomLayout.translationY = translationOffset
         }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
@@ -139,6 +145,13 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                userAdapter?.let {
+                    if (it.itemCount > 8) {
+                        binding.participants.translationY = 0f
+                    } else {
+                        binding.participants.translationY = translationOffset * (1 - slideOffset)
+                    }
+                }
                 binding.bottomLayout.translationY = translationOffset * (1 - slideOffset)
             }
         })
@@ -150,34 +163,26 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         join = requireArguments().getBoolean(EXTRA_JOIN, false)
         lifecycleScope.launchWhenCreated {
             val cid = callState.conversationId
+            val account = Session.getAccount()!!
             self = if (cid == null) {
-                val account = Session.getAccount()!!
                 CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
             } else {
-                viewModel.findSelfCallUser(cid, Session.getAccountId()!!)
+                var callUser = viewModel.findSelfCallUser(cid, account.userId)
+                if (callUser == null) {
+                    callUser = CallUser(account.userId, account.identityNumber, account.fullName, account.avatarUrl, "")
+                    viewModel.refreshConversation(cid)
+                }
+                callUser
             }
             if (callState.isGroupCall()) {
-                binding.title.text = getString(R.string.chat_group_call_title)
+                withContext(Dispatchers.IO) {
+                    groupName = viewModel.getConversationNameById(requireNotNull(cid))
+                }
+                binding.title.text = "$groupName"
                 binding.avatarLl.isVisible = false
                 binding.usersRv.isVisible = true
-                if (userAdapter == null) {
-                    userAdapter = CallUserAdapter(self) { userId ->
-                        if (userId != null) {
-                            lifecycleScope.launch {
-                                val user = viewModel.suspendFindUserById(userId) ?: return@launch
-                                UserBottomSheetDialogFragment.newInstance(user)
-                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                            }
-                        } else if (callState.isGroupCall() && callState.conversationId != null) {
-                            GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
-                                .showNow(
-                                    parentFragmentManager,
-                                    GroupUsersBottomSheetDialogFragment.TAG
-                                )
-                        }
-                    }
-                }
-                binding.usersRv.adapter = userAdapter
+                binding.participants.isVisible = true
+                setAdapter()
                 refreshUsers()
             } else {
                 binding.title.text = getString(R.string.chat_call_title)
@@ -213,9 +218,12 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (!checkPipPermission()) {
                         return@setOnClickListener
                     }
-                    pipCallView.show(requireActivity(), callState.connectedTime, callState)
+                    pipCallView.show(callState.connectedTime, callState)
                 }
-                dismissAllowingStateLoss()
+                dismiss()
+            }
+            binding.declineTv.setOnClickListener {
+                hangup()
             }
             binding.subTitle.setOnClickListener {
                 showE2EETip()
@@ -262,9 +270,28 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     updateUI()
                     if (callState.isGroupCall()) {
                         refreshUsers()
+
+                        if ((
+                            state == CallService.CallState.STATE_IDLE ||
+                                state == CallService.CallState.STATE_RINGING
+                            ) &&
+                            callState.needMuteWhenJoin(requireNotNull(cid))
+                        ) {
+                            updateTitle(getString(R.string.chat_group_call_mute))
+                        }
                     }
                     if (state == CallService.CallState.STATE_IDLE) {
-                        contentView.post { handleDisconnected() }
+                        if (callState.isNoneCallType()) {
+                            handleDisconnected()
+                        } else {
+                            cid?.let {
+                                val groupCallState = callState.getGroupCallStateOrNull(cid)
+                                if (groupCallState == null || groupCallState.users?.isNullOrEmpty() == true) {
+                                    toast(R.string.chat_group_call_end)
+                                    dismiss()
+                                }
+                            }
+                        }
                         return@Observer
                     }
                     if (uiState >= state) {
@@ -313,11 +340,34 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
+    private fun setAdapter() {
+        if (userAdapter == null) {
+            userAdapter = CallUserAdapter(self) { userId ->
+                if (userId != null) {
+                    lifecycleScope.launch {
+                        val user = viewModel.suspendFindUserById(userId) ?: return@launch
+                        UserBottomSheetDialogFragment.newInstance(user)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    }
+                } else if (callState.isGroupCall() && callState.conversationId != null) {
+                    GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
+                        .showNow(
+                            parentFragmentManager,
+                            GroupUsersBottomSheetDialogFragment.TAG
+                        )
+                }
+            }
+        }
+        binding.usersRv.adapter = userAdapter
+    }
+
     private var timer: Timer? = null
+    private var timerTask: TimerTask? = null
 
     private fun startTimer() {
         timer = Timer(true)
-        val timerTask = object : TimerTask() {
+        timerTask?.cancel()
+        timerTask = object : TimerTask() {
             override fun run() {
                 lifecycleScope.launch {
                     if (callState.connectedTime != null) {
@@ -331,6 +381,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun stopTimer() {
+        timerTask?.cancel()
+        timerTask = null
         timer?.cancel()
         timer?.purge()
         timer = null
@@ -344,7 +396,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun hangup() {
         callState.handleHangup(requireContext(), join)
-        requireActivity().finishAndRemoveTask()
     }
 
     private fun handleAnswer() {
@@ -367,11 +418,15 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun handleDisconnected() {
-        dismissAllowingStateLoss()
+        dismiss()
     }
 
     private fun handleBusy() {
         handleDisconnected()
+    }
+
+    override fun dismiss() {
+        safeDismiss()
     }
 
     private fun handleRinging() {
@@ -381,6 +436,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.hangupCb.isVisible = false
         binding.closeIb.isVisible = true
         binding.minimizeIb.isVisible = false
+        binding.declineTv.isVisible = true
         updateTitle(getString(R.string.call_notification_incoming_voice))
     }
 
@@ -391,6 +447,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.hangupCb.isVisible = false
         binding.closeIb.isVisible = true
         binding.minimizeIb.isVisible = false
+        binding.declineTv.isVisible = false
     }
 
     private fun handleDialing() {
@@ -400,6 +457,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.hangupCb.isVisible = true
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
+        binding.declineTv.isVisible = false
         updateTitle(getString(R.string.call_notification_outgoing))
     }
 
@@ -410,6 +468,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.hangupCb.fadeIn()
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
+        binding.declineTv.isVisible = false
         updateTitle(getString(R.string.call_connecting))
     }
 
@@ -425,26 +484,25 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             binding.hangupCb.fadeIn()
         }
         if (disconnected) {
+            stopTimer()
             updateTitle(getString(R.string.chat_call_bad_network_you))
         } else {
             startTimer()
         }
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
+        binding.declineTv.isVisible = false
     }
 
     private fun updateTitle(content: String) {
         binding.title.text = if (callState.isGroupCall()) {
-            getString(
-                R.string.chat_group_call_title_suffix,
-                content
-            )
+            "$groupName"
         } else {
             getString(
-                R.string.chat_call_title_suffix,
-                content
+                R.string.chat_call_title
             )
         }
+        binding.callStatus.text = content
     }
 
     private var userAdapter: CallUserAdapter? = null
@@ -459,10 +517,13 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         if (calls.isNullOrEmpty()) {
             userAdapter?.submitList(null)
+            binding.participants.text = getString(R.string.title_participants, 0)
         } else {
             val last = calls.lastOrNull()
             if (calls.size == 1 && last == self.userId) {
                 userAdapter?.submitList(listOf(self))
+                binding.participants.text = getString(R.string.title_participants, 1)
+                binding.participants.translationY = binding.bottomLayout.translationY
                 return@launch
             }
             val users = viewModel.findMultiCallUsersByIds(cid, calls.toSet())
@@ -485,7 +546,15 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                     }
                 }
-            userAdapter?.submitList(users)
+            userAdapter?.apply {
+                submitList(users)
+                if (itemCount > 8) {
+                    binding.participants.translationY = 0f
+                } else {
+                    binding.participants.translationY = binding.bottomLayout.translationY
+                }
+            }
+            binding.participants.text = getString(R.string.title_participants, users.size)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
         val newGuestsNotConnected = callState.getPendingUsers(cid)
@@ -530,11 +599,18 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             startTimer()
         }
         super.onResume()
+        if (binding.usersRv.adapter == null && ::self.isInitialized) {
+            setAdapter()
+        }
     }
 
     override fun onPause() {
         stopTimer()
         super.onPause()
+
+        // this will make RecyclerView adapter call onViewDetachedFromWindow()
+        // to prevent leak Fragment and Activity
+        binding.usersRv.adapter = null
     }
 
     override fun onStop() {
@@ -549,8 +625,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 return
             }
-            if (checkPipPermission()) {
-                pipCallView.show(requireActivity(), callState.connectedTime, callState)
+            if (callState.isInUse() && checkPipPermission()) {
+                pipCallView.show(callState.connectedTime, callState)
             }
         }
     }
@@ -571,11 +647,26 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         instant = null
     }
 
-    override fun dismissAllowingStateLoss() {
-        try {
-            super.dismissAllowingStateLoss()
-        } catch (e: IllegalStateException) {
-            Timber.w(e)
+    private fun safeDismiss() {
+        if (isAdded) {
+            dialog?.dismiss()
+            dialog?.setOnDismissListener {
+                try {
+                    super.dismissAllowingStateLoss()
+                } catch (e: IllegalStateException) {
+                    Timber.w(e)
+                } finally {
+                    requireActivity().finish()
+                }
+            }
+        } else {
+            try {
+                super.dismissAllowingStateLoss()
+            } catch (e: IllegalStateException) {
+                Timber.w(e)
+            } finally {
+                requireActivity().finish()
+            }
         }
     }
 

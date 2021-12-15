@@ -5,29 +5,24 @@ import android.graphics.Color
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
-import android.view.Gravity
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.SeekBar
-import androidx.core.view.isVisible
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileBinding
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 
 class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
-    init {
-        binding.billTime.chatFlag.visibility = View.GONE
-    }
 
     @SuppressLint("SetTextI18n")
     fun bind(
@@ -46,7 +41,6 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        binding.billTime.chatSecret.isVisible = messageItem.isSignal()
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
@@ -63,7 +57,6 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         } else {
             binding.chatName.visibility = View.GONE
         }
-        binding.billTime.chatTime.timeAgoClock(messageItem.createdAt)
         keyword.notNullWithElse(
             { k ->
                 messageItem.mediaName?.let { str ->
@@ -104,12 +97,15 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(messageItem.mediaSize?.fileSize())
             }
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            binding.billTime.chatFlag.isVisible = statusIcon != null
-            binding.billTime.chatFlag.setImageDrawable(statusIcon)
-            binding.billTime.chatSecret.isVisible = secretIcon != null
-            binding.billTime.chatRepresentative.isVisible = representativeIcon != null
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            MessageStatus.DELIVERED.name,
+            false,
+            isRepresentative = false,
+            isSecret = false,
+            isWhite = false
+        )
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -271,9 +267,9 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (binding.chatLayout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
         } else {
-            (binding.chatLayout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,

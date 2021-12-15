@@ -20,6 +20,7 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.ByteMatrix
 import com.google.zxing.qrcode.encoder.Encoder
+import okhttp3.internal.and
 import okio.Buffer
 import okio.ByteString
 import okio.GzipSink
@@ -35,6 +36,7 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
 import java.math.BigDecimal
+import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.util.Arrays
@@ -253,6 +255,26 @@ inline fun Long.toLeByteArray(): ByteArray {
         num = num shr 8
     }
     return result
+}
+
+@ExperimentalUnsignedTypes
+fun toLeByteArray(v: UInt): ByteArray {
+    val b = ByteArray(2)
+    b[0] = v.toByte()
+    b[1] = (v shr 8).toByte()
+    return b
+}
+
+@ExperimentalUnsignedTypes
+fun leByteArrayToInt(bytes: ByteArray): UInt {
+    return bytes[0].toUInt() + (bytes[1].toUInt() shl 8)
+}
+
+fun UUID.toByteArray(): ByteArray {
+    val bb = ByteBuffer.wrap(ByteArray(16))
+    bb.putLong(this.mostSignificantBits)
+    bb.putLong(this.leastSignificantBits)
+    return bb.array()
 }
 
 fun String.formatPublicKey(): String {
@@ -557,7 +579,12 @@ fun String?.toUri(): Uri = this?.let { Uri.parse(it) } ?: Uri.EMPTY
 
 fun String?.containsCaseInsensitive(other: String?) =
     if (this != null && other != null) {
-        toLowerCase(Locale.getDefault()).contains(other.toLowerCase(Locale.getDefault()))
+        lowercase(Locale.getDefault()).contains(other.lowercase(Locale.getDefault()))
     } else {
         this == other
     }
+
+fun String?.equalsIgnoreCase(other: String?): Boolean = this?.equals(other, true) == true
+fun String?.equalsIgnoreCase(other: CharSequence?): Boolean = equalsIgnoreCase(other.toString())
+fun String?.containsIgnoreCase(other: CharSequence?): Boolean = this?.contains(other.toString(), true) == true
+fun String?.startsWithIgnoreCase(other: CharSequence?): Boolean = this?.startsWith(other.toString(), true) == true

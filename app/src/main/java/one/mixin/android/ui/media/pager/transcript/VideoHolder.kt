@@ -22,8 +22,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity.Companion.PREFIX
 import one.mixin.android.ui.media.pager.PlayerView
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.TranscriptMessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.loadVideoOrLive
 import one.mixin.android.widget.CircleProgress
@@ -40,7 +41,7 @@ class VideoHolder(
     }
 
     fun bind(
-        messageItem: TranscriptMessageItem,
+        messageItem: ChatHistoryMessageItem,
         needPostTransition: Boolean,
         videoStatusCache: LruCache<String, String>
     ) {
@@ -105,7 +106,7 @@ class VideoHolder(
             binding.previewIv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
         } else {
             if (messageItem.mediaUrl != null) {
-                binding.previewIv.loadVideo(messageItem.mediaUrl)
+                binding.previewIv.loadVideo(messageItem.absolutePath())
             } else {
                 val imageData = messageItem.thumbImage?.decodeBase64()
                 Glide.with(itemView).load(imageData).into(binding.previewIv)
@@ -139,7 +140,7 @@ class VideoHolder(
         }
     }
 
-    private fun maybeLoadVideo(videoStatusCache: LruCache<String, String>, messageItem: TranscriptMessageItem) {
+    private fun maybeLoadVideo(videoStatusCache: LruCache<String, String>, messageItem: ChatHistoryMessageItem) {
         val preStatus = videoStatusCache[messageItem.messageId] ?: return
         if (preStatus != MediaStatus.DONE.name && preStatus != MediaStatus.READ.name &&
             (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name)

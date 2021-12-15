@@ -1,14 +1,11 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
-import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatVideoBinding
 import one.mixin.android.extension.dpToPx
@@ -18,14 +15,15 @@ import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
 
 class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
@@ -258,21 +256,23 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
                 }
             }
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
 
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+            isWhite = true
+        )
 
         dataWidth = messageItem.mediaWidth
         dataHeight = messageItem.mediaHeight
         dataUrl = if (messageItem.isLive()) {
             messageItem.thumbUrl
         } else {
-            messageItem.mediaUrl
+            messageItem.absolutePath()
         }
         type = messageItem.type
         dataThumbImage = messageItem.thumbImage
@@ -288,13 +288,13 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (binding.durationTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
             (binding.liveTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
             (binding.chatTime.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
         } else {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.chatImageLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (binding.durationTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
             (binding.liveTv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10

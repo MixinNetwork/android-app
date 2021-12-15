@@ -14,6 +14,8 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGroupUsersBottomSheetBinding
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -84,7 +86,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = view
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
-            setCustomViewHeight((requireContext().realSize().y * .6f).toInt())
+            setCustomViewHeight(requireContext().realSize().y * 2 / 3)
         }
         val inGroupCallUsers = callState.getUsers(conversationId)
 
@@ -162,16 +164,16 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         lifecycleScope.launch {
             val users = bottomViewModel.getParticipantsWithoutBot(conversationId)
             this@GroupUsersBottomSheetDialogFragment.users = users
-            filter(binding.searchEt.text.toString().trim(), users)
+            filter(binding.searchEt.et.text.toString().trim(), users)
         }
     }
 
     private fun filter(keyword: String, users: List<User>?) {
         groupUserAdapter.submitList(
             users?.filter {
-                it.fullName!!.contains(keyword, true) ||
-                    it.identityNumber.contains(keyword, true)
-            }?.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword }
+                it.fullName!!.containsIgnoreCase(keyword) ||
+                    it.identityNumber.containsIgnoreCase(keyword)
+            }?.sortedByDescending { it.fullName.equalsIgnoreCase(keyword) || it.identityNumber.equalsIgnoreCase(keyword) }
         )
     }
 }

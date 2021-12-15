@@ -22,6 +22,7 @@
     <color name="colorIcon">#FF000000</color>
     <color name="colorIconWhite">#FFFFFF</color>
     <color name="colorIconGray">#D2D4DA</color>
+    <color name="colorIconAction">@color/colorGray</color>
 
     <color name="badger">#3D75E3</color>
     <color name="badgerMute">#B8BDC7</color>
@@ -39,6 +40,7 @@
     <color name="bgMenuBorder">#E5E7EC</color>
     <color name="bgGrayLight">#F5F7FA</color>
     <color name="bgBubble">#FFFFFF</color>
+    <color name="bgFlag">#FFFFFF</color>
     <color name="bgTranslucence">#EEFFFFFF</color>
     <color name="bgConfirmation">@color/wallet_blue_light</color>
 
@@ -111,6 +113,8 @@
     <color name="camera_notification_bg">#D8D8D8</color>
     <color name="text_color_error_tip">#F67070</color>
     <color name="call_light_green">#5DBC7A</color>
+
+    <color name="call_voice">#50BD5C</color>
 
     <array name="name_colors">
         <item>#8C8DFF</item>

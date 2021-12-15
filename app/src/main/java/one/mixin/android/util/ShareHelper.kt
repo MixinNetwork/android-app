@@ -3,6 +3,7 @@ package one.mixin.android.util
 import android.content.Intent
 import android.net.Uri
 import one.mixin.android.MixinApplication
+import one.mixin.android.extension.getFileName
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -49,7 +50,12 @@ class ShareHelper {
                 imageUri?.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
             } else if (type.startsWith("application/") || type.startsWith("audio/")) {
                 intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
-                    it.getFilePath(MixinApplication.appContext)?.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+                    val fileName = it.getFileName()
+                    it.getFilePath(MixinApplication.appContext)?.systemMediaToMessage(
+                        ForwardCategory.Data,
+                        fileName,
+                        type
+                    )?.addTo(result)
                 }
             } else {
                 val dataUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
@@ -69,22 +75,9 @@ class ShareHelper {
                 }
                 else -> {
                     intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.let { list ->
-                        // Todo parse whatsapp file
-                        // val importChatUtil = ImportChatUtil.get()
-                        // val exportingChatUris = importChatUtil.getImportChatUri(list)
-                        // if (exportingChatUris != null) {
-                        //     val (exportingChatUri, documentsUrisArray) = exportingChatUris
-                        //     result.add(
-                        //         ForwardMessage(
-                        //             ShareCategory.Transcript,
-                        //             GsonHelper.customGson.toJson(TranscriptData(exportingChatUri.toString(), documentsUrisArray.map { it.toString() }))
-                        //         )
-                        //     )
-                        // } else {
                         list.forEach { item ->
                             item.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
                         }
-                        // }
                     }
                 }
             }

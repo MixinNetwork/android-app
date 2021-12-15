@@ -41,15 +41,10 @@
                 android:textColor="?attr/text_primary"
                 android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/chat_time"
+            <one.mixin.android.widget.bubble.TimeBubble
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:drawablePadding="3dp"
-                android:textColor="#9B9B9B"
-                android:textSize="@dimen/chat_date_size"
-                tools:ignore="SmallSp" />
+                android:layout_gravity="end" />
         </LinearLayout>
     </RelativeLayout>
 </FrameLayout>

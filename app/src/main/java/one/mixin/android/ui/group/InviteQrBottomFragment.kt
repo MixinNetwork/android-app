@@ -77,7 +77,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                                     if (!isAdded) return@launch
                                     val path = contentLl.capture(requireContext())
                                     withContext(Dispatchers.Main) {
-                                        requireContext().toast(getString(R.string.save_to, path))
+                                        toast(getString(R.string.save_to, path))
                                     }
                                 }
                             } else {
@@ -85,7 +85,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                             }
                         },
                         {
-                            requireContext().toast(R.string.save_failure)
+                            toast(R.string.save_failure)
                         }
                     )
             }

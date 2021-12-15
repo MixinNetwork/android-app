@@ -6,6 +6,7 @@ import android.support.v4.media.MediaMetadataCompat
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlaybackException.TYPE_SOURCE
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.DISCONTINUITY_REASON_REMOVE
@@ -43,6 +44,7 @@ import one.mixin.android.ui.player.internal.title
 import one.mixin.android.ui.player.internal.toMediaSource
 import one.mixin.android.ui.player.isMusicServiceRunning
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isData
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
@@ -145,7 +147,7 @@ class MusicPlayer private constructor() {
         }
     }
 
-    private inner class PlayerListener : Player.EventListener {
+    private inner class PlayerListener : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) {
                 id?.let { id -> RxBus.publish(pauseEvent(id)) }
@@ -172,17 +174,17 @@ class MusicPlayer private constructor() {
             }
         }
 
-        override fun onPlayerError(error: ExoPlaybackException) {
+        override fun onPlayerError(error: PlaybackException) {
             if (error.cause is UnrecognizedInputFormatException) {
                 status = STATUS_ERROR
                 id?.let { id -> RxBus.publish(errorEvent(id)) }
-                MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
+                toast(R.string.error_not_supported_audio_format)
                 messageItem?.let {
                     MixinApplication.appContext.openMedia(it)
                 }
             } else {
-                if (error.type == TYPE_SOURCE) {
-                    MixinApplication.appContext.toast(R.string.player_playback_failed)
+                if (error is ExoPlaybackException && error.type == TYPE_SOURCE) {
+                    toast(R.string.player_playback_failed)
                 }
 
                 status = STATUS_PAUSE
@@ -236,10 +238,10 @@ class MusicPlayer private constructor() {
 
     private fun playMusic(messageItem: MessageItem) {
         if (messageItem.mediaUrl == null) {
-            MixinApplication.appContext.toast(R.string.error_bad_data)
+            toast(R.string.error_bad_data)
             return
-        } else if (!messageItem.mediaUrl.fileExists()) {
-            MixinApplication.appContext.toast(R.string.error_file_exists)
+        } else if (!messageItem.absolutePath()!!.fileExists()) {
+            toast(R.string.error_file_exists)
             return
         }
 
@@ -436,7 +438,7 @@ class MusicPlayer private constructor() {
             id = messageItem.messageId
             title = messageItem.mediaName
             album = messageItem.conversationId
-            mediaUri = messageItem.mediaUrl
+            mediaUri = messageItem.absolutePath()
             flag = MediaBrowser.MediaItem.FLAG_PLAYABLE
         }.build()
 }

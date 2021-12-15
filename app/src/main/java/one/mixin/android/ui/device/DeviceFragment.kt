@@ -197,7 +197,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private fun confirm(url: String) {
-        ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url) {
+        ConfirmBottomFragment.show(requireContext(), childFragmentManager, url) {
             updateUI(true)
         }
     }

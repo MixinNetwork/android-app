@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -15,6 +16,7 @@ import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 
+@SuppressLint("UseCompatLoadingForDrawables")
 class RecordCircleView : View {
 
     private val colorCircle: Int by lazy {
@@ -24,7 +26,7 @@ class RecordCircleView : View {
         )
     }
     private val colorLock: Int by lazy { ContextCompat.getColor(context, R.color.text_gray) }
-    private val colorOrange: Int by lazy { ContextCompat.getColor(context, R.color.color_blink) }
+    private val colorOrange: Int by lazy { ContextCompat.getColor(context, R.color.color_record_circle_bg) }
 
     private val paint: Paint by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -49,7 +51,7 @@ class RecordCircleView : View {
     private var animateToAmplitude = 0f
     private var animateAmplitudeDiff = 0f
     private var lastUpdateTime = 0L
-    var lockAnimatedTranslation = 0f
+    private var lockAnimatedTranslation = 0f
         set(value) {
             field = value
             invalidate()
@@ -149,6 +151,7 @@ class RecordCircleView : View {
         return 1
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (locked) {
             val x = event.x.toInt()
@@ -162,7 +165,7 @@ class RecordCircleView : View {
             } else if (pressedEnd) {
                 if (event.action == MotionEvent.ACTION_UP) {
                     if (lockBackgroundDrawable.bounds.contains(x, y)) {
-                        callback.onCancel()
+                        callback.onPreview()
                     }
                 }
                 return true
@@ -343,6 +346,7 @@ class RecordCircleView : View {
     }
 
     interface Callback {
+        fun onPreview()
         fun onSend()
         fun onCancel()
     }

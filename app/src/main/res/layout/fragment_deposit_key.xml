@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -12,121 +12,96 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:need_divider="false"
-        app:rightIcon="@drawable/ic_help_outline"/>
+        app:rightIcon="@drawable/ic_help_outline"
+        app:titleText="@string/wallet_bottom_deposit" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white">
+        android:layout_height="wrap_content">
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_line"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.4"/>
-
-        <TextView
-            android:id="@+id/address_title"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
-            android:text="@string/address"
-            android:textColor="?attr/text_minor"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/key_code"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="@dimen/margin16"
-            android:layout_marginEnd="@dimen/margin16"
-            android:layout_marginBottom="@dimen/margin16"
-            android:textColor="?attr/text_primary"
-            app:layout_constraintBottom_toTopOf="@id/copy_tv"
-            app:layout_constraintEnd_toStartOf="@id/guide_line"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/address_title"
-            app:layout_constraintVertical_bias="0"/>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
 
-        <Button
-            android:id="@+id/copy_tv"
-            style="@style/AppTheme.MaterialButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginBottom="32dp"
-            android:minWidth="70dp"
-            android:minHeight="30dp"
-            android:text="@string/copy"
-            android:textSize="14sp"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+                <TextView
+                    android:id="@+id/address_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/address"
+                    android:textColor="?attr/text_assist"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <FrameLayout
-            android:id="@+id/qr_fl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/margin16"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/guide_line"
-            app:layout_constraintTop_toTopOf="parent">
+                <TextView
+                    android:id="@+id/key_code"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="64dp"
+                    android:layout_marginTop="4dp"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="?attr/text_primary"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/address_title"
+                    app:layout_constraintVertical_bias="0" />
 
-            <ImageView
-                android:id="@+id/qr"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                tools:ignore="ContentDescription"/>
+                <ImageView
+                    android:id="@+id/copy_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginTop="-8dp"
+                    android:padding="8dp"
+                    android:foreground="@drawable/mixin_ripple"
+                    android:src="@drawable/ic_copy_gray"
+                    app:layout_constraintTop_toTopOf="@id/key_code"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
-            <one.mixin.android.widget.BadgeCircleImageView
-                android:id="@+id/qr_avatar"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="center"/>
-        </FrameLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <FrameLayout
+                    android:id="@+id/qr_fl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/key_code">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="15dp"
-        android:background="?attr/bg_window"/>
+                    <ImageView
+                        android:id="@+id/qr"
+                        android:layout_width="240dp"
+                        android:layout_height="240dp"
+                        tools:ignore="ContentDescription" />
 
-    <TextView
-        android:id="@+id/confirm_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
-        android:gravity="center"
-        android:paddingStart="8dp"
-        android:paddingTop="3dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="3dp"
-        android:textColor="?attr/text_minor"
-        android:textSize="12sp"/>
+                    <one.mixin.android.widget.BadgeCircleImageView
+                        android:id="@+id/qr_avatar"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/warning_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="@dimen/margin12"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="32dp"
-        android:gravity="center"
-        android:paddingStart="8dp"
-        android:paddingTop="3dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="3dp"
-        android:text="@string/deposit_attention"
-        android:textColor="@color/colorRed"
-        android:textSize="12sp"/>
+            <TextView
+                android:id="@+id/tip_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/bg_round_8_solid_gray"
+                android:gravity="start"
+                android:padding="10dp"
+                android:textColor="?attr/text_minor"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

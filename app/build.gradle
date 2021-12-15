@@ -1,7 +1,7 @@
 def versionMajor = 0
-def versionMinor = 31
-def versionPatch = 2
-def versionBuild = 2
+def versionMinor = 33
+def versionPatch = 9
+def versionBuild = 1
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -11,13 +11,13 @@ apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-parcelize'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
-    ndkVersion "21.3.6528147"
+    compileSdkVersion 31
+    buildToolsVersion "31.0.0"
+    ndkVersion "23.0.7599858"
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 23
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
@@ -31,7 +31,6 @@ android {
             }
         }
 
-        buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
         buildConfigField 'String', 'APPCENTER_API_KEY', "\"${propOrEmpty('MIXIN_APPCENTER_API_KEY')}\""
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
         buildConfigField 'String', 'HCAPTCHA_KEY', "\"${propOrEmpty('MIXIN_HCAPTCHA_KEY')}\""
@@ -51,8 +50,8 @@ android {
         }
 
         kotlinOptions {
-            jvmTarget = '1.8'
-            freeCompilerArgs += ['-Xuse-experimental=kotlin.contracts.ExperimentalContracts']
+            jvmTarget = '11'
+            freeCompilerArgs += ['-Xopt-in=kotlin.contracts.ExperimentalContracts']
         }
 
         vectorDrawables.useSupportLibrary = true
@@ -86,8 +85,8 @@ android {
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_11
     }
 
     dependenciesInfo {
@@ -170,7 +169,7 @@ android {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-    implementation platform("com.google.firebase:firebase-bom:28.2.1")
+    implementation platform("com.google.firebase:firebase-bom:29.0.2")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
@@ -196,6 +195,7 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
+    implementation "androidx.webkit:webkit:${webkitVersion}"
 
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
@@ -227,10 +227,6 @@ dependencies {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
-    implementation("com.bugsnag:bugsnag-android:${bugsnagVersion}") {
-        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-anr"
-        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-ndk"
-    }
 
     // retrofit
     implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
@@ -262,7 +258,7 @@ dependencies {
     implementation "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
-    implementation "com.zlc.glide:webpdecoder:$webpdecoderVesion"
+    implementation "com.github.zjupure:webpdecoder:2.0.$glideVersion"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
@@ -311,6 +307,8 @@ dependencies {
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "org.chromium.net:cronet-fallback:76.3809.111"
+    implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
+    implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
@@ -321,10 +319,11 @@ dependencies {
     testImplementation "androidx.test:core:${testCoreVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 
-    testImplementation "org.robolectric:robolectric:${robolectricVersion}"
+    testImplementation("org.robolectric:robolectric:${robolectricVersion}", {
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    })
 
     // for jwt unit test
-    testImplementation "org.bouncycastle:bcprov-jdk16:${bcVersion}"
     testImplementation "org.json:json:${jsonVersion}"
 
     androidTestImplementation "junit:junit:${junitVersion}"
@@ -344,6 +343,7 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

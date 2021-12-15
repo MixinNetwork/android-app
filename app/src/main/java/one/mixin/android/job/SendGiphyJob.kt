@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import one.mixin.android.MixinApplication
@@ -51,14 +50,13 @@ class SendGiphyJob(
         file.copyFromInputStream(FileInputStream(f))
         val size = getImageSize(file)
         val thumbnail = file.blurThumbnail(size)?.bitmap2String()
-        val url = Uri.fromFile(file).toString()
         val mediaSize = file.length()
         val message = createMediaMessage(
-            messageId, conversationId, senderId, category, null, url,
+            messageId, conversationId, senderId, category, null, file.name,
             MimeType.GIF.toString(), mediaSize, width, height, thumbnail, null, null,
             time, MediaStatus.PENDING, MessageStatus.SENDING.name
         )
-        messageDao.updateGiphyMessage(messageId, url, mediaSize, thumbnail)
+        messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 }

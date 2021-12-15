@@ -4,16 +4,20 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import com.twilio.audioswitch.AudioSwitch
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.extension.supportsOreo
-import one.mixin.android.extension.tapVibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
@@ -41,11 +45,10 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     protected val callExecutor: ThreadPoolExecutor = Executors.newFixedThreadPool(1) as ThreadPoolExecutor
     protected val timeoutExecutor: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
+    private val observeStatsDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     protected var timeoutFuture: ScheduledFuture<*>? = null
 
-    protected val peerConnectionClient: PeerConnectionClient by lazy {
-        PeerConnectionClient(this, this)
-    }
+    protected lateinit var peerConnectionClient: PeerConnectionClient
 
     protected lateinit var audioManager: CallAudioManager
 
@@ -77,17 +80,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     override fun onCreate() {
         super.onCreate()
-        callExecutor.execute {
-            peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
-        }
-        audioManager = CallAudioManager(
-            this, audioSwitch,
-            object : CallAudioManager.Callback {
-                override fun customAudioDeviceAvailable(available: Boolean) {
-                    callState.customAudioDeviceAvailable = available
-                }
-            }
-        )
         Session.getAccount()?.toUser().let { user ->
             if (user == null) {
                 stopSelf()
@@ -99,13 +91,19 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        if (intent == null || intent.action == null) {
+        val action = intent?.action
+        if (intent == null || action == null) {
             return START_NOT_STICKY
         }
         if (isDestroyed.get()) {
             stopSelf()
             return Service.START_NOT_STICKY
         }
+
+        if (needInitWebRtc(action)) {
+            initWebRtc()
+        }
+
         callExecutor.execute {
             if (!handleIntent(intent)) {
                 when (intent.action) {
@@ -124,8 +122,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
             Timber.d("$TAG_CALL real onDestroy")
-            audioManager.release()
-            peerConnectionClient.release()
+            if (::audioManager.isInitialized) {
+                audioManager.release()
+            }
+            if (::peerConnectionClient.isInitialized) {
+                peerConnectionClient.release()
+            }
 
             onDestroyed()
         }
@@ -146,6 +148,26 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         }
     }
 
+    protected fun initWebRtc() {
+        if (::peerConnectionClient.isInitialized && ::audioManager.isInitialized) {
+            return
+        }
+
+        peerConnectionClient = PeerConnectionClient(MixinApplication.appContext, this)
+        callExecutor.execute {
+            peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
+        }
+        audioManager = CallAudioManager(
+            this, audioSwitch,
+            object : CallAudioManager.Callback {
+                override fun customAudioDeviceAvailable(available: Boolean) {
+                    callState.customAudioDeviceAvailable = available
+                }
+            }
+        )
+    }
+
+    abstract fun needInitWebRtc(action: String): Boolean
     abstract fun handleIntent(intent: Intent): Boolean
     abstract fun onCallDisconnected()
     abstract fun onDestroyed()
@@ -197,7 +219,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             callState.connectedTime = connectedTime
             callState.state = CallState.STATE_CONNECTED
             updateForegroundNotification()
-            tapVibrate()
+            heavyClickVibrate()
             audioManager.stop()
             pipCallView.startTimer(connectedTime)
         }
@@ -207,6 +229,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         peerConnectionClient.enableCommunication()
         callState.disconnected = false
         callState.reconnecting = false
+
+        lifecycleScope.launch(observeStatsDispatcher) {
+            peerConnectionClient.observeStats {
+                pipCallView.shown
+            }
+        }
     }
 
     private fun handleMuteAudio(intent: Intent) {

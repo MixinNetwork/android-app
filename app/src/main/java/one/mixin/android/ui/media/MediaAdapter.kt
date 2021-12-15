@@ -1,6 +1,5 @@
 package one.mixin.android.ui.media
 
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,11 +8,11 @@ import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemMediaBinding
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.loadBase64ImageCenterCrop
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.gallery.MimeType
@@ -56,37 +55,33 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
             width = size
             height = size
         }
-        if (item.mediaUrl == null && item.thumbImage != null) {
-            val imageData = Base64.decode(item.thumbImage, Base64.DEFAULT)
-            imageView.loadBase64ImageCenterCrop(imageData)
+        if (item.isImage()) {
+            val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
+            if (isGif) {
+                imageView.loadGif(
+                    item.absolutePath(),
+                    centerCrop = true,
+                    holder = R.drawable.ic_giphy_place_holder,
+                    base64Holder = item.thumbImage
+                )
+                binding.gifTv.isVisible = true
+            } else {
+                imageView.loadImageCenterCrop(item.absolutePath(), item.thumbImage)
+                binding.gifTv.isVisible = false
+            }
+            binding.videoIv.isVisible = false
+            binding.durationTv.isVisible = false
         } else {
-            if (item.isImage()) {
-                val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
-                if (isGif) {
-                    imageView.loadGif(
-                        item.mediaUrl.toString(),
-                        centerCrop = true,
-                        holder = R.drawable.ic_giphy_place_holder
-                    )
-                    binding.gifTv.isVisible = true
-                } else {
-                    imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
-                    binding.gifTv.isVisible = false
-                }
+            binding.gifTv.isVisible = false
+            if (item.isVideo()) {
+                binding.videoIv.isVisible = true
+                binding.durationTv.isVisible = true
+                binding.durationTv.text = item.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
+            } else {
                 binding.videoIv.isVisible = false
                 binding.durationTv.isVisible = false
-            } else {
-                binding.gifTv.isVisible = false
-                if (item.isVideo()) {
-                    binding.videoIv.isVisible = true
-                    binding.durationTv.isVisible = true
-                    binding.durationTv.text = item.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
-                } else {
-                    binding.videoIv.isVisible = false
-                    binding.durationTv.isVisible = false
-                }
-                imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
             }
+            imageView.loadImageCenterCrop(item.absolutePath(), R.drawable.image_holder)
         }
         itemView.setOnClickListener {
             onClickListener(binding.thumbnailIv, item)

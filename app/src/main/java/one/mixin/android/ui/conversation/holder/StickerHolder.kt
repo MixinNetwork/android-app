@@ -1,33 +1,24 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.widget.FrameLayout
-import androidx.core.widget.TextViewCompat
-import one.mixin.android.R
+import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.databinding.ItemChatStickerBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.image.ImageListener
-import one.mixin.android.util.image.LottieLoader
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isLottie
-import one.mixin.android.vo.isSignal
-import one.mixin.android.widget.RLottieDrawable
+import one.mixin.android.vo.isSecret
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.textColorResource
 
 class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewHolder(binding.root) {
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
-        binding.chatTime.textColorResource = R.color.color_chat_date
         binding.chatSticker.round(radius)
     }
 
@@ -105,28 +96,9 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
             binding.chatTime.visibility = VISIBLE
         }
         messageItem.assetUrl?.let { url ->
-            if (messageItem.isLottie()) {
-                LottieLoader.fromUrl(
-                    itemView.context,
-                    url,
-                    url,
-                    binding.chatSticker.layoutParams.width,
-                    binding.chatSticker.layoutParams.height
-                )
-                    .addListener(
-                        object : ImageListener<RLottieDrawable> {
-                            override fun onResult(result: RLottieDrawable) {
-                                binding.chatSticker.setAnimation(result)
-                                binding.chatSticker.playAnimation()
-                                binding.chatSticker.setAutoRepeat(true)
-                            }
-                        }
-                    )
-            } else {
-                binding.chatSticker.loadSticker(url, messageItem.assetType)
-            }
+            binding.chatSticker.loadSticker(url, messageItem.assetType)
         }
-        binding.chatTime.timeAgoClock(messageItem.createdAt)
+
         if (isFirst && !isMe) {
             binding.chatName.visibility = VISIBLE
             binding.chatName.text = messageItem.userFullName
@@ -141,22 +113,24 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         } else {
             binding.chatName.visibility = GONE
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            representativeIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(binding.chatTime, secretIcon ?: representativeIcon, null, statusIcon, null)
-        }
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret()
+        )
         chatLayout(isMe, false)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             itemView.requestLayout()
         } else {
-            (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             itemView.requestLayout()
         }
     }

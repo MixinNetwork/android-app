@@ -1,15 +1,14 @@
 package one.mixin.android.ui.web
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
-import android.webkit.WebViewClient
 import androidx.annotation.ColorInt
 import androidx.core.view.drawToBitmap
+import androidx.webkit.WebViewClientCompat
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -72,17 +71,17 @@ fun expand(context: Context) {
     FloatingWebClip.getInstance().hide()
 }
 
-fun collapse(activity: Activity) {
+fun collapse() {
     if (clips.size > 0) {
-        FloatingWebClip.getInstance().show(activity)
+        FloatingWebClip.getInstance().show()
     }
 }
 
 var clips = mutableListOf<WebClip>()
 
 data class WebClip(
-    val url: String,
-    val app: App?,
+    var url: String,
+    var app: App?,
     @ColorInt
     val titleColor: Int,
     val name: String?,
@@ -98,7 +97,7 @@ fun updateClip(index: Int, webClip: WebClip) {
     if (index < clips.size) {
         if (clips[index].webView != webClip.webView) {
             clips[index].webView?.destroy()
-            clips[index].webView?.webViewClient = object : WebViewClient() {}
+            clips[index].webView?.webViewClient = object : WebViewClientCompat() {}
             clips[index].webView?.webChromeClient = null
         }
         clips.removeAt(index)
@@ -106,50 +105,49 @@ fun updateClip(index: Int, webClip: WebClip) {
     }
 }
 
-fun showClip(activity: Activity) {
-    collapse(activity)
+fun showClip() {
+    collapse()
 }
 
-fun holdClip(activity: Activity, webClip: WebClip) {
+fun holdClip(webClip: WebClip) {
     if (!clips.contains(webClip)) {
         if (clips.size >= 6) {
-            activity.toast(R.string.web_full)
+            toast(R.string.web_full)
         } else {
             clips.add(webClip)
-            FloatingWebClip.getInstance().show(activity)
+            FloatingWebClip.getInstance().show()
         }
     }
 }
 
-private fun initClips(activity: Activity) {
+private fun initClips() {
     MixinApplication.appScope.launch(SINGLE_THREAD) {
-        val content =
-            activity.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
+        val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
         val type = object : TypeToken<List<WebClip>>() {}.type
         val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
         clips.clear()
         if (list.isEmpty()) return@launch
         clips.addAll(list)
-        MixinApplication.get().currentActivity?.let { activity ->
+        MixinApplication.get().currentActivity?.let { _ ->
             withContext(Dispatchers.Main) {
-                FloatingWebClip.getInstance().show(activity)
+                FloatingWebClip.getInstance().show()
             }
         }
     }
 }
 
-fun refresh(activity: Activity) {
+fun refresh() {
     if (clips.isEmpty()) {
-        initClips(activity)
+        initClips()
     } else {
-        FloatingWebClip.getInstance().show(activity, false)
+        FloatingWebClip.getInstance().show()
     }
 }
 
 fun releaseClip(index: Int) {
     if (index < clips.size && index >= 0) {
         clips[index].webView?.destroy()
-        clips[index].webView?.webViewClient = object : WebViewClient() {}
+        clips[index].webView?.webViewClient = object : WebViewClientCompat() {}
         clips[index].webView?.webChromeClient = null
         clips.removeAt(index)
         if (clips.isEmpty()) {
@@ -177,10 +175,25 @@ fun saveClips() {
     }
 }
 
+fun replaceApp(app: App) {
+    var hasChange = false
+    clips.forEachIndexed { index, webClip ->
+        if (webClip.url == webClip.app?.homeUri && webClip.url != app.homeUri && webClip.app?.appId == app.appId) {
+            webClip.url = app.homeUri
+            webClip.app = app
+            clips[index] = webClip
+            hasChange = true
+        }
+    }
+    if (hasChange) {
+        saveClips()
+    }
+}
+
 fun releaseAll() {
     clips.forEach { clip ->
         clip.webView?.destroy()
-        clip.webView?.webViewClient = object : WebViewClient() {}
+        clip.webView?.webViewClient = object : WebViewClientCompat() {}
         clip.webView?.webChromeClient = null
     }
     clips.clear()

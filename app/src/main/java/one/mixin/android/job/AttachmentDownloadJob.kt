@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import okhttp3.Call
 import okhttp3.Interceptor
@@ -26,17 +25,15 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.okhttp.ProgressListener
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import java.io.File
@@ -132,19 +129,18 @@ class AttachmentDownloadJob(
                 val originalResponse = chain.proceed(chain.request())
                 originalResponse.newBuilder().body(
                     ProgressResponseBody(
-                        originalResponse.body,
-                        ProgressListener { bytesRead, contentLength, done ->
-                            if (!done) {
-                                val progress = try {
-                                    bytesRead.toFloat() / contentLength.toFloat()
-                                } catch (e: Exception) {
-                                    0f
-                                }
-                                attachmentProcess[message.id] = (progress * 100).toInt()
-                                RxBus.publish(loadingEvent(message.id, progress))
+                        originalResponse.body
+                    ) { bytesRead, contentLength, done ->
+                        if (!done) {
+                            val progress = try {
+                                bytesRead.toFloat() / contentLength.toFloat()
+                            } catch (e: Exception) {
+                                0f
                             }
+                            attachmentProcess[message.id] = (progress * 100).toInt()
+                            RxBus.publish(loadingEvent(message.id, progress))
                         }
-                    )
+                    }
                 ).build()
             }
             .build()
@@ -170,7 +166,7 @@ class AttachmentDownloadJob(
             sink.writeAll(response.body!!.source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
-                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {
+                val attachmentCipherInputStream = if (!isNullOrEmpty(message.mediaKey) && !isNullOrEmpty(message.mediaDigest)) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -193,12 +189,12 @@ class AttachmentDownloadJob(
                     }
                 }
                 imageFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(imageFile.name, message.id)
                 messageDao.updateMediaSize(imageFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_DATA")) {
-                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_DATA.name) {
+                val attachmentCipherInputStream = if (!isNullOrEmpty(message.mediaKey) && !isNullOrEmpty(message.mediaDigest)) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -207,12 +203,12 @@ class AttachmentDownloadJob(
                 val dataFile = MixinApplication.get().getDocumentPath()
                     .createDocumentTemp(message.conversationId, message.id, extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(MixinApplication.appContext.getUriForFile(dataFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(dataFile.name, message.id)
                 messageDao.updateMediaSize(dataFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_VIDEO")) {
-                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_VIDEO.name) {
+                val attachmentCipherInputStream = if (!isNullOrEmpty(message.mediaKey) && !isNullOrEmpty(message.mediaDigest)) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -223,12 +219,12 @@ class AttachmentDownloadJob(
                 val videoFile = MixinApplication.get().getVideoPath()
                     .createVideoTemp(message.conversationId, message.id, extensionName)
                 videoFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(videoFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(videoFile.name, message.id)
                 messageDao.updateMediaSize(videoFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)
             } else if (message.category.endsWith("_AUDIO")) {
-                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_AUDIO.name) {
+                val attachmentCipherInputStream = if (!isNullOrEmpty(message.mediaKey) && !isNullOrEmpty(message.mediaDigest)) {
                     AttachmentCipherInputStream.createForAttachment(destination, 0, message.mediaKey, message.mediaDigest)
                 } else {
                     FileInputStream(destination)
@@ -236,7 +232,7 @@ class AttachmentDownloadJob(
                 val audioFile = MixinApplication.get().getAudioPath()
                     .createAudioTemp(message.conversationId, message.id, "ogg")
                 audioFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(audioFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(audioFile.name, message.id)
                 messageDao.updateMediaSize(audioFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 attachmentProcess.remove(message.id)

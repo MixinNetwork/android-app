@@ -49,6 +49,7 @@ import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.MemoryCallback
 import one.mixin.android.util.debug.FileLogTree
+import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -129,6 +130,8 @@ open class MixinApplication :
             Analytics::class.java,
             Crashes::class.java
         )
+
+        initNativeLibs(applicationContext)
 
         registerComponentCallbacks(MemoryCallback())
     }
@@ -265,14 +268,14 @@ open class MixinApplication :
             if (activity !is WebActivity) {
                 currentActivity = activity
                 appScope.launch(Dispatchers.Main) {
-                    refresh(activity)
+                    refresh()
                 }
             }
             if (activity !is MusicActivity) {
                 currentActivity = activity
                 appScope.launch(Dispatchers.Main) {
                     if (isMusicServiceRunning(activity)) {
-                        FloatingPlayer.getInstance(activity.isNightMode()).show(activity, false)
+                        FloatingPlayer.getInstance(activity.isNightMode()).show()
                     }
                 }
             }

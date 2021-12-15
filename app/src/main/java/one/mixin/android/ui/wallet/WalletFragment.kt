@@ -69,7 +69,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
     private val walletViewModel by viewModels<WalletViewModel>()
-    private val binding by viewBinding(FragmentWalletBinding::bind)
+    private val binding by viewBinding(FragmentWalletBinding::bind, destroyTask = { b ->
+        b.coinsRv.adapter = null
+    })
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
 
@@ -141,7 +143,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
             } else {
                 assets = it
                 assetsAdapter.setAssetList(it)
-                renderPie(assets)
+
+                lifecycleScope.launch {
+                    var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
+                    if (bitcoin == null) {
+                        bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                    }
+
+                    renderPie(assets, bitcoin)
+                }
             }
         }
         checkPin()
@@ -153,17 +163,25 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        assetsAdapter.headerView = null
+        assetsAdapter.onItemListener = null
         _headBinding = null
         _bottomBinding = null
+        super.onDestroyView()
     }
 
-    private fun renderPie(assets: List<AssetItem>) {
+    private fun renderPie(assets: List<AssetItem>, bitcoin: AssetItem?) {
         var totalBTC = BigDecimal.ZERO
         var totalFiat = BigDecimal.ZERO
         assets.map {
-            totalBTC = totalBTC.add(it.btc())
             totalFiat = totalFiat.add(it.fiat())
+            if (bitcoin == null) {
+                totalBTC = totalBTC.add(it.btc())
+            }
+        }
+        if (bitcoin != null) {
+            totalBTC = totalFiat.divide(BigDecimal(Fiats.getRate()), 16, BigDecimal.ROUND_HALF_UP)
+                .divide(BigDecimal(bitcoin.priceUsd), 16, BigDecimal.ROUND_HALF_UP)
         }
         _headBinding?.apply {
             totalAsTv.text = try {

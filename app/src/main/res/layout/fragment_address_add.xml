@@ -146,6 +146,19 @@
                 android:layout_marginEnd="20dp"
                 android:textColor="?attr/text_primary" />
 
+            <TextView
+                android:id="@+id/tip_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="@dimen/margin16"
+                android:lineSpacingExtra="2dp"
+                android:textColor="?attr/text_primary"
+                android:textSize="12sp"
+                android:visibility="gone"/>
+
             <Button
                 android:id="@+id/save_tv"
                 style="@style/AppTheme.MaterialButton"
@@ -153,6 +166,7 @@
                 android:layout_height="40dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
+                android:layout_marginBottom="20dp"
                 android:enabled="false"
                 android:text="@string/save"
                 android:textColor="?attr/text_minor"

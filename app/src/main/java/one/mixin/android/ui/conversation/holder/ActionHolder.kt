@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppButtonData

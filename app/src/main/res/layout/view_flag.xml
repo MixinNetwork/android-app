@@ -13,11 +13,12 @@
 
         <ImageView
             android:id="@+id/mention_flag"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginTop="12dp"
+            android:foreground="@drawable/mixin_ripple_small"
             android:background="@drawable/bg_quick_flag"
-            android:padding="12dp"
+            android:padding="9dp"
             android:src="@drawable/ic_mention"
             android:translationZ="1dp"
             tools:ignore="ContentDescription" />
@@ -39,15 +40,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clipChildren="false"
-        android:clipToPadding="false">
+        android:clipToPadding="false"
+        android:layout_marginTop="8dp">
 
         <ImageView
             android:id="@+id/down_flag"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginTop="12dp"
+            android:foreground="@drawable/mixin_ripple_small"
             android:background="@drawable/bg_quick_flag"
-            android:padding="8dp"
+            android:padding="6dp"
             android:src="@drawable/ic_scroll_down"
             android:translationZ="1dp"
             tools:ignore="ContentDescription" />

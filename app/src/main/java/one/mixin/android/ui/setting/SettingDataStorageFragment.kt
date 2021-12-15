@@ -5,7 +5,9 @@ import android.view.View
 import android.view.WindowManager
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_DOCUMENT
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_MOBILE
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_PHOTO
@@ -26,6 +28,7 @@ import one.mixin.android.extension.getAutoDownloadRoamingValue
 import one.mixin.android.extension.getAutoDownloadWifiValue
 import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 import org.jetbrains.anko.layoutInflater
 
@@ -52,22 +55,30 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                     SettingStorageFragment.TAG
                 )
             }
-            storageMobile.setOnClickListener { showMenu(AUTO_DOWNLOAD_MOBILE, requireContext().getAutoDownloadMobileValue(), R.string.setting_data_mobile) }
+            storageMobile.setOnClickListener {
+                lifecycleScope.launch {
+                    showMenu(AUTO_DOWNLOAD_MOBILE, getAutoDownloadMobileValue(), R.string.setting_data_mobile)
+                }
+            }
             storageWifi.setOnClickListener {
-                showMenu(
-                    AUTO_DOWNLOAD_WIFI,
-                    requireContext().getAutoDownloadWifiValue(),
-                    R.string
-                        .setting_data_wifi
-                )
+                lifecycleScope.launch {
+                    showMenu(
+                        AUTO_DOWNLOAD_WIFI,
+                        getAutoDownloadWifiValue(),
+                        R.string
+                            .setting_data_wifi
+                    )
+                }
             }
             storageRoaming.setOnClickListener {
-                showMenu(
-                    AUTO_DOWNLOAD_ROAMING,
-                    requireContext().getAutoDownloadRoamingValue(),
-                    R.string
-                        .setting_data_roaming
-                )
+                lifecycleScope.launch {
+                    showMenu(
+                        AUTO_DOWNLOAD_ROAMING,
+                        getAutoDownloadRoamingValue(),
+                        R.string
+                            .setting_data_roaming
+                    )
+                }
             }
         }
     }
@@ -77,15 +88,15 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
         refresh()
     }
 
-    private fun refresh() {
+    private fun refresh() = lifecycleScope.launch {
         binding.apply {
-            storageMobileInfo.text = getInfo(requireContext().getAutoDownloadMobileValue())
-            storageWifiInfo.text = getInfo(requireContext().getAutoDownloadWifiValue())
-            storageRoamingInfo.text = getInfo(requireContext().getAutoDownloadRoamingValue())
+            storageMobileInfo.text = getInfo(getAutoDownloadMobileValue())
+            storageWifiInfo.text = getInfo(getAutoDownloadWifiValue())
+            storageRoamingInfo.text = getInfo(getAutoDownloadRoamingValue())
         }
     }
 
-    private fun getInfo(value: Int): String {
+    private suspend fun getInfo(value: Int): String {
         val list = mutableListOf<String>()
         if (autoDownloadPhoto(value)) list.add(getString(R.string.setting_data_photo))
         if (autoDownloadVideo(value)) list.add(getString(R.string.setting_data_video))
@@ -103,7 +114,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
     }
 
     private var menuDialog: AlertDialog? = null
-    private fun showMenu(key: String, value: Int, @StringRes titleId: Int) {
+    private suspend fun showMenu(key: String, value: Int, @StringRes titleId: Int) {
         menuDialog?.dismiss()
         val menuBinding = ViewStotageDataBinding.inflate(requireContext().layoutInflater, null, false).apply {
             this.checkPhoto.apply {
@@ -136,9 +147,12 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
                 if (menuBinding.checkDocument.isChecked) {
                     localValue += (AUTO_DOWNLOAD_DOCUMENT)
                 }
-                defaultSharedPreferences.putInt(key, localValue)
-                refresh()
-                dialog.dismiss()
+                lifecycleScope.launch {
+                    PropertyHelper.updateKeyValue(key, localValue.toString())
+                    defaultSharedPreferences.putInt(key, localValue)
+                    refresh()
+                    dialog.dismiss()
+                }
             }.create().apply {
                 this.window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
             }

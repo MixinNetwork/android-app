@@ -33,6 +33,7 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
+import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.databinding.FragmentBottomSheetBinding
@@ -53,10 +54,12 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.common.NftBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
+import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
@@ -150,7 +153,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 segments[0]
             }
             if (!userId.isUUID()) {
-                context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
             } else {
                 lifecycleScope.launch {
@@ -161,7 +164,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 linkViewModel.getUser(userId).execute()
                             }
                         } catch (t: Throwable) {
-                            context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                            toast(getUserOrAppNotFoundTip(isAppScheme))
                             dismiss()
                             return@launch
                         }
@@ -169,7 +172,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             user = response.body()?.data
                         }
                         if (user == null) {
-                            context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                            toast(getUserOrAppNotFoundTip(isAppScheme))
                             dismiss()
                             return@launch
                         }
@@ -208,10 +211,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 segments[0]
             }
             if (!userId.isUUID()) {
-                context?.toast(R.string.error_user_not_found)
+                toast(R.string.error_user_not_found)
                 dismiss()
             } else if (userId == Session.getAccountId()) {
-                context?.toast(R.string.cant_transfer_self)
+                toast(R.string.cant_transfer_self)
                 dismiss()
             } else {
                 lifecycleScope.launch {
@@ -222,7 +225,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 linkViewModel.getUser(userId).execute()
                             }
                         } catch (t: Throwable) {
-                            context?.toast(R.string.error_user_not_found)
+                            toast(R.string.error_user_not_found)
                             dismiss()
                             return@launch
                         }
@@ -230,7 +233,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             user = response.body()?.data
                         }
                         if (user == null) {
-                            context?.toast(R.string.error_user_not_found)
+                            toast(R.string.error_user_not_found)
                             dismiss()
                             return@launch
                         }
@@ -267,7 +270,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             val found = response.participants.find { it.userId == Session.getAccountId() }
                             if (found != null) {
                                 linkViewModel.refreshConversation(response.conversationId)
-                                context?.toast(R.string.group_already_in)
+                                toast(R.string.group_already_in)
                                 context?.let { ConversationActivity.show(it, response.conversationId) }
                                 dismiss()
                             } else {
@@ -312,7 +315,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             val user = result.second as User
                             val account = Session.getAccount()
                             if (account != null && account.userId == (result.second as User).userId) {
-                                context?.toast("It's your QR Code, please try another.")
+                                toast("It's your QR Code, please try another.")
                             } else {
                                 UserBottomSheetDialogFragment.newInstance(user)
                                     .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -360,6 +363,29 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                             }
                         }
+                        QrCodeType.non_fungible_request.name -> {
+                            if (checkHasPin()) return@subscribe
+                            val nfoResponse = result.second as NonFungibleOutputResponse
+                            lifecycleScope.launch {
+                                val nftBiometricItem = NftBiometricItem(
+                                    requestId = nfoResponse.requestId,
+                                    action = nfoResponse.action,
+                                    tokenId = nfoResponse.tokenId,
+                                    senders = nfoResponse.senders,
+                                    receivers = nfoResponse.receivers,
+                                    sendersThreshold = nfoResponse.sendersThreshold,
+                                    receiversThreshold = nfoResponse.receiversThreshold,
+                                    rawTransaction = nfoResponse.rawTransaction,
+                                    amount = nfoResponse.amount,
+                                    pin = null,
+                                    memo = nfoResponse.memo,
+                                    state = nfoResponse.state
+                                )
+                                NftBottomSheetDialogFragment.newInstance(nftBiometricItem)
+                                    .showNow(parentFragmentManager, NftBottomSheetDialogFragment.TAG)
+                                dismiss()
+                            }
+                        }
                         QrCodeType.payment.name -> {
                             if (checkHasPin()) return@subscribe
 
@@ -403,16 +429,21 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val addressId = uri.getQueryParameter("address")
                 if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
                     lifecycleScope.launch {
-                        val address = linkViewModel.findAddressById(addressId, assetId)
-                        if (address == null) {
+                        val pair = linkViewModel.findAddressById(addressId, assetId)
+                        val address = pair.first
+                        if (pair.second) {
                             showError(R.string.error_address_exists)
+                        } else if (address == null) {
+                            showError(R.string.error_address_not_sync)
                         } else {
                             val asset = checkAsset(assetId)
                             if (asset != null) {
                                 PinAddrBottomSheetDialogFragment.newInstance(
                                     assetId = assetId,
                                     assetUrl = asset.iconUrl,
+                                    assetSymbol = asset.symbol,
                                     chainId = asset.chainId,
+                                    chainName = asset.chainName,
                                     chainIconUrl = asset.chainIconUrl,
                                     assetName = asset.name,
                                     addressId = addressId,
@@ -446,7 +477,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             PinAddrBottomSheetDialogFragment.newInstance(
                                 assetId = assetId,
                                 assetUrl = asset.iconUrl,
+                                assetSymbol = asset.symbol,
                                 chainId = asset.chainId,
+                                chainName = asset.chainName,
                                 chainIconUrl = asset.chainIconUrl,
                                 assetName = asset.name,
                                 label = label,
@@ -515,11 +548,17 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showError()
             } else {
                 lifecycleScope.launch {
-                    val address = linkViewModel.findAddressById(addressId, assetId)
+                    val pair = linkViewModel.findAddressById(addressId, assetId)
+                    val address = pair.first
                     val asset = checkAsset(assetId)
                     if (asset != null) {
-                        when (address) {
-                            null -> showError(R.string.error_address_exists)
+                        when {
+                            pair.second -> {
+                                showError(R.string.error_address_exists)
+                            }
+                            address == null -> {
+                                showError(R.string.error_address_not_sync)
+                            }
                             else -> {
                                 val dust = address.dust?.toDoubleOrNull()
                                 val amountDouble = amount.toDoubleOrNull()
@@ -714,7 +753,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         showPreconditionBottom(biometricItem)
     }
 
-    private fun showPreconditionBottom(biometricItem: BiometricItem) {
+    private fun showPreconditionBottom(biometricItem: AssetBiometricItem) {
         val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem, FROM_LINK)
         preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
             override fun onSuccess() {

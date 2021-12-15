@@ -71,6 +71,9 @@
         <attr name="bg" format="color"/>
         <attr name="color" format="color"/>
     </declare-styleable>
+    <declare-styleable name="PlayButton">
+        <attr name="play_color" format="color"/>
+    </declare-styleable>
     <declare-styleable name="MessageLayout">
         <attr name="max_width" format="dimension" />
         <attr name="content_padding" format="dimension" />
@@ -104,6 +107,9 @@
         <attr name="right_icon" format="reference" />
         <attr name="left_icon" format="reference" />
     </declare-styleable>
+    <declare-styleable name="TimeView">
+        <attr name="text_color" format="reference" />
+    </declare-styleable>
     <declare-styleable name="BalanceLayout">
         <attr name="center" format="boolean"/>
     </declare-styleable>
@@ -123,5 +129,10 @@
     </declare-styleable>
     <declare-styleable name="KeyboardLayout">
         <attr name="input_aera_id" format="reference"/>
+    </declare-styleable>
+    <declare-styleable name="SearchView">
+        <attr name="circle_clear_icon" format="boolean" />
+        <attr name="android:hint" format="string"/>
+        <attr name="android:imeOptions" format="integer" />
     </declare-styleable>
 </resources>

@@ -1,30 +1,25 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.view.Gravity
 import android.view.View
-import android.widget.LinearLayout
-import androidx.core.view.isVisible
+import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatAudioBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 import kotlin.math.min
 
 class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolder(binding.root) {
-    init {
-        binding.billTime.chatFlag.visibility = View.GONE
-    }
 
     private val maxWidth by lazy {
         itemView.context.dpToPx(255f)
@@ -69,7 +64,6 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
         } else {
             binding.chatName.visibility = View.GONE
         }
-        binding.billTime.chatTime.timeAgoClock(messageItem.createdAt)
 
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             binding.audioDuration.textResource = R.string.chat_expired
@@ -86,12 +80,15 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
             binding.chatLayout.layoutParams.width =
                 min((minWidth + (duration / 1000f) * dp15).toInt(), maxWidth)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
-            binding.billTime.chatFlag.isVisible = statusIcon != null
-            binding.billTime.chatFlag.setImageDrawable(statusIcon)
-            binding.billTime.chatSecret.isVisible = secretIcon != null
-            binding.billTime.chatRepresentative.isVisible = representativeIcon != null
-        }
+
+        binding.chatTime.load(
+            isMe,
+            messageItem.createdAt,
+            messageItem.status,
+            messageItem.isPin ?: false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
+        )
 
         messageItem.mediaWaveform?.let {
             binding.audioWaveform.setWaveform(it)
@@ -232,9 +229,9 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
                     R.drawable.bill_bubble_me_night
                 )
             }
-            (binding.chatLayout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
         } else {
-            (binding.chatLayout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
+            (binding.chatMsgLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             if (isLast) {
                 setItemBackgroundResource(
                     binding.chatLayout,

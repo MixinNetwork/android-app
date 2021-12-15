@@ -55,6 +55,7 @@ import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -67,7 +68,6 @@ import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.tapVibrate
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -97,6 +97,8 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.PinMessageMinimal
+import one.mixin.android.vo.explain
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
@@ -107,6 +109,7 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isLocation
+import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
@@ -235,7 +238,7 @@ class ConversationListFragment : LinkFragment() {
 
                     if (height >= vibrateDis) {
                         if (!vibrated) {
-                            requireContext().tapVibrate()
+                            requireContext().clickVibrate()
                             vibrated = true
                         }
                         animDownIcon(true)
@@ -250,7 +253,7 @@ class ConversationListFragment : LinkFragment() {
             override fun onRelease(fling: Int) {
                 val shouldVibrate = false
                 if (shouldVibrate && !vibrated) {
-                    requireContext().tapVibrate()
+                    requireContext().clickVibrate()
                     vibrated = true
                 }
                 val topFl = _binding?.topFl
@@ -294,7 +297,7 @@ class ConversationListFragment : LinkFragment() {
                         )
                     ) {
                         if (!requireContext().networkConnected()) {
-                            context?.toast(R.string.error_network)
+                            toast(R.string.error_network)
                             return
                         }
                         lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
@@ -447,6 +450,7 @@ class ConversationListFragment : LinkFragment() {
         }
         viewBinding.deleteTv.setOnClickListener {
             alertDialogBuilder()
+                .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
@@ -700,6 +704,15 @@ class ConversationListFragment : LinkFragment() {
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
                 }
+                conversationItem.messageStatus == MessageStatus.UNKNOWN.name -> {
+                    conversationItem.content?.let {
+                        conversationItem.content.let {
+                            setConversationName(conversationItem)
+                            binding.msgTv.setText(R.string.conversation_not_support)
+                        }
+                    }
+                    null
+                }
                 conversationItem.isText() -> {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)
@@ -806,6 +819,45 @@ class ConversationListFragment : LinkFragment() {
                     binding.msgTv.setText(R.string.conversation_status_group_call)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
+                conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
+                    val pinMessage = try {
+                        GsonHelper.customGson.fromJson(
+                            conversationItem.content,
+                            PinMessageMinimal::class.java
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (conversationItem.mentions != null) {
+                        binding.msgTv.renderMessage(
+                            String.format(
+                                getText(R.string.chat_pin_message),
+                                if (Session.getAccountId() == conversationItem.participantUserId) {
+                                    getText(R.string.chat_you_start)
+                                } else {
+                                    conversationItem.senderFullName
+                                },
+                                pinMessage?.let { msg ->
+                                    " \"${msg.content}\""
+                                } ?: getText(R.string.chat_pin_empty_message)
+                            ),
+                            MentionRenderCache.singleton.getMentionRenderContext(
+                                conversationItem.mentions
+                            )
+                        )
+                    } else {
+                        binding.msgTv.text = String.format(
+                            getText(R.string.chat_pin_message),
+                            if (id == conversationItem.senderId) {
+                                getText(R.string.chat_you_start)
+                            } else {
+                                conversationItem.senderFullName
+                            },
+                            pinMessage.explain(itemView.context)
+                        )
+                    }
+                    null
+                }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
                     when (conversationItem.actionName) {
                         SystemConversationAction.CREATE.name -> {
@@ -909,7 +961,8 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
                 !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
-                !conversationItem.isGroupCall()
+                !conversationItem.isGroupCall() &&
+                !conversationItem.isPin()
             ) {
                 when (conversationItem.messageStatus) {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(
@@ -1048,7 +1101,7 @@ class ConversationListFragment : LinkFragment() {
                                     conversationItem.conversationId,
                                     response.data!!.muteUntil
                                 )
-                                context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
+                                toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
                             }
                         )
                     }
@@ -1069,7 +1122,7 @@ class ConversationListFragment : LinkFragment() {
                                         conversationItem.ownerId,
                                         response.data!!.muteUntil
                                     )
-                                    context?.toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
                                 }
                             )
                         }
@@ -1102,7 +1155,7 @@ class ConversationListFragment : LinkFragment() {
                             conversationItem.conversationId,
                             response.data!!.muteUntil
                         )
-                        context?.toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
+                        toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
                     }
                 )
             }
@@ -1122,7 +1175,7 @@ class ConversationListFragment : LinkFragment() {
                                 conversationItem.ownerId,
                                 response.data!!.muteUntil
                             )
-                            context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
+                            toast(getString(R.string.un_mute) + " ${conversationItem.name}")
                         }
                     )
                 }

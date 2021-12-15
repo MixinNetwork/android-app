@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,9 +17,11 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositKeyBinding
+import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -56,16 +59,24 @@ class DepositPublicKeyFragment : DepositFragment() {
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
             qrAvatar.setBorder()
-            copyTv.setOnClickListener {
+            copyIv.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
-                context?.toast(R.string.copy_success)
+                toast(R.string.copy_success)
             }
             keyCode.text = asset.destination
-            confirmTv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
+
+            val confirmation = getString(R.string.deposit_confirmation, asset.confirmations)
+                .highLight(requireContext(), asset.confirmations.toString())
             val reserveTip = if (asset.needShowReserve()) {
-                getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
-            } else ""
-            warningTv.text = "${getString(R.string.deposit_attention)} $reserveTip"
+                getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
+                    .highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
+            } else SpannableStringBuilder()
+            tipTv.text = buildBulletLines(
+                requireContext(),
+                SpannableStringBuilder(getTipsByAsset(asset)),
+                confirmation,
+                reserveTip
+            )
             qrFl.setOnClickListener {
                 DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
@@ -89,7 +100,6 @@ class DepositPublicKeyFragment : DepositFragment() {
                     )
             }
         }
-        showTip()
     }
 
     override fun onDestroyView() {

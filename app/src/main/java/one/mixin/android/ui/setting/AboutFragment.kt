@@ -14,6 +14,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DebugClickListener
 
@@ -68,6 +69,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
                 }
 
                 override fun onSingleClick() {
+                    navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
                 }
             })
             twitter.setOnClickListener { context?.openUrl("https://twitter.com/MixinMessenger") }

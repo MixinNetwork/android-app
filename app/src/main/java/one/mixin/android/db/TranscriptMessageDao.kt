@@ -3,8 +3,10 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RoomWarnings
+import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.TranscriptAttachmentMigration
 import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.TranscriptMessageItem
 
 @Dao
 interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
@@ -14,12 +16,13 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
             "'SIGNAL_DATA', 'PLAIN_DATA', 'ENCRYPTED_DATA', 'SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_AUDIO', 'PLAIN_AUDIO', 'ENCRYPTED_AUDIO', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO'"
     }
 
-    @Query("SELECT count(*) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
+    @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
     fun hasUploadedAttachment(transcriptId: String): Int
 
-    @Query("SELECT count(*) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
+    @Query("SELECT count(1) FROM transcript_messages WHERE transcript_id = :transcriptId AND category IN ($ATTACHMENT_CATEGORY) AND media_status IN ('PENDING', 'CANCELED')")
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String): Int
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId")
     fun getTranscript(transcriptId: String): List<TranscriptMessage>
 
@@ -46,11 +49,12 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("UPDATE transcript_messages SET media_status = :mediaStatus WHERE transcript_id = :transcriptId AND message_id = :messageId")
     fun updateMediaStatus(transcriptId: String, messageId: String, mediaStatus: String)
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-        SELECT t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
-        t.category AS type, t.content, t.created_at AS createdAt, t.media_status AS mediaStatus, t.media_name AS mediaName, 
-        t.thumb_image AS thumbImage, t.media_url AS mediaUrl, t.media_width AS mediaWidth, t.media_height AS mediaHeight, st.asset_width AS assetWidth, 
+        SELECT t.transcript_id AS transcriptId, t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
+        t.category AS type, t.content, t.created_at AS createdAt, t.media_status AS mediaStatus, t.media_name AS mediaName, t.media_mime_type AS mediaMimeType, t.media_size AS mediaSize,
+        t.thumb_image AS thumbImage, t.thumb_url AS thumbUrl, t.media_url AS mediaUrl, t.media_width AS mediaWidth, t.media_height AS mediaHeight, st.asset_width AS assetWidth, 
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
@@ -63,13 +67,14 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         ORDER BY t.created_at ASC, t.rowid ASC
     """
     )
-    fun getTranscriptMessages(transcriptId: String): LiveData<List<TranscriptMessageItem>>
+    fun getTranscriptMessages(transcriptId: String): LiveData<List<ChatHistoryMessageItem>>
 
-    @Query("SELECT count(*) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId)")
+    @Query("SELECT count(1) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId)")
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String): Int
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        """  SELECT t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
+        """  SELECT t.transcript_id AS transcriptId, t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
         t.category AS type, t.content, t.created_at AS createdAt, t.media_status AS mediaStatus, t.media_name AS mediaName, 
         t.thumb_image AS thumbImage, t.media_url AS mediaUrl, t.media_width AS mediaWidth, t.media_height AS mediaHeight, st.asset_width AS assetWidth, 
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
@@ -85,14 +90,14 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         ORDER BY t.created_at ASC, t.rowid ASC
         """
     )
-    suspend fun getTranscriptMediaMessage(transcriptId: String): List<TranscriptMessageItem>
+    suspend fun getTranscriptMediaMessage(transcriptId: String): List<ChatHistoryMessageItem>
 
     @Query(
         """
             SELECT count(1) FROM transcript_messages 
             WHERE transcript_id = :transcriptId
             AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
-            AND created_at < (SELECT created_at FROM transcript_messages WHERE message_id = :messageId)
+            AND created_at < (SELECT created_at FROM transcript_messages WHERE message_id = :messageId AND transcript_id = :transcriptId)
             ORDER BY created_at ASC, rowid ASC
         """
     )
@@ -110,12 +115,23 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("SELECT sum(media_size) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
     fun getMediaSizeTotalById(conversationId: String): Long?
 
-    @Query("SELECT count(*) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
+    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
     fun countTranscriptByConversationId(conversationId: String): Int
 
-    @Query("SELECT count(*) FROM transcript_messages WHERE message_id = :messageId")
+    @Query("SELECT count(1) FROM transcript_messages WHERE message_id = :messageId")
     fun countTranscriptByMessageId(messageId: String): Int
 
     @Query("DELETE FROM transcript_messages WHERE transcript_id = :transcriptId")
     fun deleteTranscript(transcriptId: String)
+
+    @Query("SELECT rowid FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' ORDER BY rowid DESC LIMIT 1")
+    suspend fun lastDoneAttachmentId(): Long?
+
+    @Query(
+        "SELECT rowid, message_id, media_url FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND rowid <= :rowId ORDER BY rowid DESC LIMIT :limit"
+    )
+    suspend fun findAttachmentMigration(rowId: Long, limit: Int): List<TranscriptAttachmentMigration>
+
+    @Query("UPDATE transcript_messages SET media_url = :mediaUrl WHERE message_id = :messageId")
+    suspend fun updateMediaUrl(mediaUrl: String, messageId: String)
 }

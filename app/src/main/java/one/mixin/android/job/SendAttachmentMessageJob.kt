@@ -21,6 +21,8 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
@@ -115,21 +117,17 @@ class SendAttachmentMessageJob(
         )
     }
 
-    private fun isPlain(): Boolean {
-        return message.category.startsWith("PLAIN_")
-    }
-
     private fun processAttachment(attachResponse: AttachmentResponse): Boolean {
-        val key = if (isPlain()) {
+        val key = if (message.isPlain()) {
             null
         } else {
             Util.getSecretBytes(64)
         }
         val inputStream = try {
-            MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
+            MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.absolutePath()))
         } catch (e: FileNotFoundException) {
             MixinApplication.appScope.launch(Dispatchers.Main) {
-                MixinApplication.get().toast(R.string.error_file_exists)
+                toast(R.string.error_file_exists)
             }
             null
         }
@@ -138,7 +136,7 @@ class SendAttachmentMessageJob(
                 message.mediaMimeType,
                 inputStream,
                 message.mediaSize!!,
-                if (isPlain()) {
+                if (message.isPlain()) {
                     null
                 } else {
                     AttachmentCipherOutputStreamFactory(key, null)
@@ -153,7 +151,7 @@ class SendAttachmentMessageJob(
                 RxBus.publish(loadingEvent(message.id, pg))
             }
         val digest = try {
-            if (isPlain()) {
+            if (message.isPlain()) {
                 uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)
                 null
             } else {
@@ -163,7 +161,7 @@ class SendAttachmentMessageJob(
             Timber.e(e)
             if (e is SocketTimeoutException) {
                 MixinApplication.appScope.launch(Dispatchers.Main) {
-                    MixinApplication.get().toast(R.string.upload_timeout)
+                    toast(R.string.upload_timeout)
                 }
             }
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)

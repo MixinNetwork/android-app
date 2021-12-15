@@ -11,9 +11,10 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutPinBiometricBinding
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.tapVibrate
+import one.mixin.android.extension.tickVibrate
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -58,7 +59,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         keyboard.setOnClickKeyboardListener(
             object : Keyboard.OnClickKeyboardListener {
                 override fun onKeyClick(position: Int, value: String) {
-                    context?.tapVibrate()
+                    context?.tickVibrate()
                     if (position == 11) {
                         binding.pin.delete()
                     } else {
@@ -67,7 +68,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                 }
 
                 override fun onLongClick(position: Int, value: String) {
-                    context?.tapVibrate()
+                    context?.clickVibrate()
                     if (position == 11) {
                         binding.pin.clear()
                     } else {

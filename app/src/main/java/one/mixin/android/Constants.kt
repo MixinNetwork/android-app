@@ -21,6 +21,7 @@ object Constants {
         const val CENTER = "https://mixinmessenger.zendesk.com"
         const val EMERGENCY = "https://mixinmessenger.zendesk.com/hc/articles/360029154692"
         const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
+        const val TIP = "https://tip.id"
     }
 
     object Account {
@@ -29,6 +30,7 @@ object Constants {
         const val PREF_WRONG_TIME = "pref_wrong_time"
         const val PREF_FTS4_UPGRADE = "pref_fts4_upgrade"
         const val PREF_SYNC_FTS4_OFFSET = "sync_fts4_offset"
+        const val PREF_FTS4_REDUCE = "pref_fts4_reduce"
         const val PREF_RESTORE = "pref_restore"
         const val PREF_RECALL_SHOW = "pref_recall_show"
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
@@ -39,10 +41,8 @@ object Constants {
         const val PREF_EMERGENCY_CONTACT = "pref_emergency_contact"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
         const val PREF_SYNC_CIRCLE = "pref_sync_circle"
-        const val PREF_ATTACHMENT = "pref_attachment"
-        const val PREF_ATTACHMENT_LAST = "pref_attachment_last"
-        const val PREF_ATTACHMENT_OFFSET = "pref_attachment_row_offset"
         const val PREF_BACKUP = "pref_attachment_backup"
+        const val PREF_BACKUP_DIRECTORY = "pref_attachment_backup_directory"
         const val PREF_CHECK_STORAGE = "pref_check_storage"
         const val PREF_TRIED_UPDATE_KEY = "pref_tried_update_key"
         const val PREF_DUPLICATE_TRANSFER = "pref_duplicate_transfer"
@@ -51,6 +51,16 @@ object Constants {
         const val PREF_INCOGNITO_KEYBOARD = "pref_incognito_keyboard"
         const val PREF_APP_AUTH = "pref_app_auth"
         const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
+        const val PREF_DEVICE_SDK = "pref_device_sdk"
+        const val PREF_ATTACHMENT = "pref_attachment"
+        object Migration {
+            const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
+            const val PREF_MIGRATION_ATTACHMENT_OFFSET = "pref_migration_attachment_offset"
+            const val PREF_MIGRATION_ATTACHMENT_LAST = "pref_migration_attachment_last"
+            const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT = "pref_migration_transcript_attachment"
+            const val PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST = "pref_migration_transcript_attachment_last"
+            const val PREF_MIGRATION_BACKUP = "pref_migration_backup"
+        }
     }
 
     object Scheme {
@@ -78,7 +88,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 38
+        const val CURRENT_VERSION = 40
     }
 
     object Storage {
@@ -92,6 +102,7 @@ object Constants {
     object BackUp {
         const val BACKUP_PERIOD = "backup_period"
         const val BACKUP_LAST_TIME = "backup_last_time"
+        const val BACKUP_MEDIA = "backup_media"
     }
 
     object CIRCLE {
@@ -155,14 +166,14 @@ object Constants {
     const val DEVICE_ID = "device_id"
 
     const val SLEEP_MILLIS: Long = 1000
-    const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
-    const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
-    const val INTERVAL_10_MINS: Long = 1000 * 60 * 10
-    const val INTERVAL_30_MINS: Long = 1000 * 60 * 30
-    const val INTERVAL_1_MIN: Long = 1000 * 60
+    const val INTERVAL_24_HOURS: Long = (1000 * 60 * 60 * 24).toLong()
+    const val INTERVAL_48_HOURS: Long = (1000 * 60 * 60 * 48).toLong()
+    const val INTERVAL_10_MINS: Long = (1000 * 60 * 10).toLong()
+    const val INTERVAL_30_MINS: Long = (1000 * 60 * 30).toLong()
+    const val INTERVAL_1_MIN: Long = (1000 * 60).toLong()
     const val INTERVAL_7_DAYS: Long = INTERVAL_24_HOURS * 7
     const val DELAY_SECOND = 60
-    const val ALLOW_INTERVAL: Long = 5 * 60 * 1000
+    const val ALLOW_INTERVAL: Long = (5 * 60 * 1000).toLong()
 
     const val SAFETY_NET_INTERVAL_KEY = "safety_net_interval_key"
 
@@ -186,7 +197,7 @@ object Constants {
     const val BIOMETRICS_PIN = "biometrics_pin"
     const val BIOMETRICS_IV = "biometrics_iv"
     const val BIOMETRIC_INTERVAL = "biometric_interval"
-    const val BIOMETRIC_INTERVAL_DEFAULT: Long = 1000 * 60 * 60 * 2
+    const val BIOMETRIC_INTERVAL_DEFAULT: Long = (1000 * 60 * 60 * 2).toLong()
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
 
     const val RECENT_USED_BOTS_MAX_COUNT = 12

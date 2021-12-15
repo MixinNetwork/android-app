@@ -119,7 +119,7 @@ class WebActivity : BaseActivity() {
         super.onResume()
         supportFragmentManager.findFragmentByTag(WebFragment.TAG).run {
             if (this != null && this.isVisible) {
-                showClip(this@WebActivity)
+                showClip()
             }
         }
     }
@@ -128,7 +128,7 @@ class WebActivity : BaseActivity() {
         if (!isExpand) {
             supportFragmentManager.findFragmentByTag(WebFragment.TAG).notNullWithElse(
                 {
-                    showClip(this@WebActivity)
+                    showClip()
                     isExpand = true
                     supportFragmentManager.beginTransaction().show(it).commit()
                     if (it is WebFragment) {
@@ -232,7 +232,7 @@ class WebActivity : BaseActivity() {
     private var isExpand = false
 
     override fun finish() {
-        collapse(this)
+        collapse()
         super.finish()
         if (isExpand) {
             overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)

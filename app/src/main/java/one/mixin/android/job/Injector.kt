@@ -11,6 +11,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.AppDao
@@ -27,6 +28,7 @@ import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.ResendSessionMessageDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
@@ -89,6 +91,8 @@ open class Injector {
     @Inject
     lateinit var signalProtocol: SignalProtocol
     @Inject
+    lateinit var encryptedProtocol: EncryptedProtocol
+    @Inject
     lateinit var ratchetSenderKeyDao: RatchetSenderKeyDao
     @Inject
     lateinit var resendMessageDao: ResendSessionMessageDao
@@ -102,6 +106,8 @@ open class Injector {
     lateinit var transcriptMessageDao: TranscriptMessageDao
     @Inject
     lateinit var messagesFts4Dao: MessagesFts4Dao
+    @Inject
+    lateinit var pinMessageDao: PinMessageDao
     @Inject
     lateinit var database: MixinDatabase
 

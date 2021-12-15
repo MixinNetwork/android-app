@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -106,7 +105,7 @@ class CircleManagerFragment : BaseFragment() {
     }
 
     private fun loadData() {
-        bottomViewModel.viewModelScope.launch {
+        lifecycleScope.launch {
             val includeCircleItem = bottomViewModel.getIncludeCircleItem(
                 conversationId ?: generateConversationId(
                     Session.getAccountId()!!, userId!!

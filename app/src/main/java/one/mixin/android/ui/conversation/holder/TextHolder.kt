@@ -5,21 +5,19 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.event.MentionReadEvent
+import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
-import one.mixin.android.extension.tapVibrate
-import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
+import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root) {
@@ -123,24 +121,11 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             }
         }
 
-        binding.root.setOnClickListener {
+        itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
-
-        if (textGestureListener == null) {
-            textGestureListener = TextGestureListener(messageItem, hasSelect, isSelect, onItemListener, absoluteAdapterPosition)
-        } else {
-            textGestureListener?.apply {
-                this.messageItem = messageItem
-                this.hasSelect = hasSelect
-                this.isSelect = isSelect
-                this.onItemListener = onItemListener
-                this.absoluteAdapterPosition = this@TextHolder.absoluteAdapterPosition
-            }
-        }
-        binding.chatLayout.listener = textGestureListener
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
@@ -151,11 +136,18 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             }
         }
 
-        itemView.setOnClickListener {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+        if (textGestureListener == null) {
+            textGestureListener = TextGestureListener(itemView, messageItem, hasSelect, isSelect, onItemListener, absoluteAdapterPosition)
+        } else {
+            textGestureListener?.apply {
+                this.messageItem = messageItem
+                this.hasSelect = hasSelect
+                this.isSelect = isSelect
+                this.onItemListener = onItemListener
+                this.absoluteAdapterPosition = this@TextHolder.absoluteAdapterPosition
             }
         }
+        binding.chatLayout.listener = textGestureListener
 
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
@@ -189,18 +181,14 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
 
-        binding.dataWrapper.chatTime.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(
+        binding.chatTime.load(
             isMe,
+            messageItem.createdAt,
             messageItem.status,
-            messageItem.isSignal(),
-            isRepresentative
-        ) { statusIcon, secretIcon, representativeIcon ->
-            binding.dataWrapper.chatFlag.isVisible = statusIcon != null
-            binding.dataWrapper.chatFlag.setImageDrawable(statusIcon)
-            binding.dataWrapper.chatSecret.isVisible = secretIcon != null
-            binding.dataWrapper.chatRepresentative.isVisible = representativeIcon != null
-        }
+            messageItem.isPin ?: false,
+            isRepresentative,
+            messageItem.isSecret()
+        )
         chatLayout(isMe, isLast)
 
         attachAction = if (messageItem.mentionRead == false) {
@@ -216,6 +204,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
     private var textGestureListener: TextGestureListener? = null
 
     private class TextGestureListener(
+        var view: View,
         var messageItem: MessageItem,
         var hasSelect: Boolean = false,
         var isSelect: Boolean = false,
@@ -225,6 +214,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         var longPressed = false
 
         override fun onDoubleTap(e: MotionEvent?): Boolean {
+            view.context.doubleClickVibrate()
             onItemListener.onTextDoubleClick(messageItem)
             return true
         }
@@ -243,8 +233,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
             }
 
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-                MixinApplication.appContext.tapVibrate()
+                view.performLongClick()
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }

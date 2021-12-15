@@ -1,9 +1,8 @@
 package one.mixin.android.ui.common.share.renderer
 
 import android.content.Context
-import android.view.Gravity
 import android.view.LayoutInflater
-import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionCardBinding
@@ -11,13 +10,13 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
 import one.mixin.android.vo.AppCardData
 
-open class ShareAppCardRenderer(context: Context) : ShareMessageRenderer {
+open class ShareAppCardRenderer(context: Context) {
 
     private val binding = ItemChatActionCardBinding.inflate(LayoutInflater.from(context), null, false)
     val contentView get() = binding.root
 
     init {
-        (binding.chatLayout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
+        (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0.5f
         binding.chatName.isVisible = false
     }
 
@@ -25,11 +24,12 @@ open class ShareAppCardRenderer(context: Context) : ShareMessageRenderer {
         binding.chatIcon.loadRoundImage(actionCard.iconUrl, 4.dp, R.drawable.holder_bot)
         binding.chatTitle.text = actionCard.title
         binding.chatDescription.text = actionCard.description
-        binding.chatLayout.setBackgroundResource(
+        binding.chatTime.isVisible = false
+        binding.chatContentLayout.setBackgroundResource(
             if (!isNightMode) {
-                R.drawable.bill_bubble_me_last
+                R.drawable.chat_bubble_other
             } else {
-                R.drawable.bill_bubble_me_last_night
+                R.drawable.chat_bubble_other_night
             }
         )
     }

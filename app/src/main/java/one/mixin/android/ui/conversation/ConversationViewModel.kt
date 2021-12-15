@@ -28,10 +28,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.deserialize
-import one.mixin.android.extension.fileExists
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
@@ -60,7 +57,7 @@ import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -69,20 +66,24 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.ShareImageData
-import one.mixin.android.vo.SnakeQuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createConversation
+import one.mixin.android.vo.encryptedCategory
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.generateForwardMessage
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
@@ -90,13 +91,12 @@ import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
-import one.mixin.android.websocket.ContactMessagePayload
-import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
+import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
-import one.mixin.android.websocket.toLocationData
+import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -150,23 +150,24 @@ internal constructor(
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
-    fun saveDraft(conversationId: String, text: String) = viewModelScope.launch {
+    fun saveDraft(conversationId: String, text: String) = MixinApplication.appScope.launch {
         conversationRepository.saveDraft(conversationId, text)
     }
 
     fun findUserById(conversationId: String): LiveData<User> =
         userRepository.findUserById(conversationId)
 
-    fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
-        messenger.sendTextMessage(viewModelScope, conversationId, sender, content, isPlain)
+    fun sendTextMessage(conversationId: String, sender: User, content: String, encryptCategory: EncryptCategory, isSilent: Boolean? = null) {
+        messenger.sendTextMessage(viewModelScope, conversationId, sender, content, encryptCategory, isSilent)
     }
 
-    fun sendTranscriptMessage(conversationId: String, messageId: String?, sender: User, transcriptMessages: List<TranscriptMessage>, isPlain: Boolean) {
-        messenger.sendTranscriptMessage(messageId ?: UUID.randomUUID().toString(), conversationId, sender, transcriptMessages, isPlain)
+    // todo
+    fun sendTranscriptMessage(conversationId: String, messageId: String?, sender: User, transcriptMessages: List<TranscriptMessage>, encryptCategory: EncryptCategory) {
+        messenger.sendTranscriptMessage(messageId ?: UUID.randomUUID().toString(), conversationId, sender, transcriptMessages, encryptCategory)
     }
 
-    fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
-        messenger.sendPostMessage(conversationId, sender, content, isPlain)
+    fun sendPostMessage(conversationId: String, sender: User, content: String, encryptCategory: EncryptCategory) {
+        messenger.sendPostMessage(conversationId, sender, content, encryptCategory)
     }
 
     fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
@@ -178,13 +179,14 @@ internal constructor(
         sender: User,
         content: String,
         replyMessage: MessageItem,
-        isPlain: Boolean
+        encryptCategory: EncryptCategory,
+        isSilentMessage: Boolean? = null
     ) {
-        messenger.sendReplyTextMessage(conversationId, sender, content, replyMessage, isPlain)
+        messenger.sendReplyTextMessage(conversationId, sender, content, replyMessage, encryptCategory, isSilentMessage)
     }
 
-    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean, replyMessage: MessageItem? = null) {
-        messenger.sendAttachmentMessage(conversationId, sender, attachment, isPlain, replyMessage)
+    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, encryptCategory: EncryptCategory, replyMessage: MessageItem? = null) {
+        messenger.sendAttachmentMessage(conversationId, sender, attachment, encryptCategory, replyMessage)
     }
 
     fun sendAudioMessage(
@@ -194,39 +196,39 @@ internal constructor(
         file: File,
         duration: Long,
         waveForm: ByteArray,
-        isPlain: Boolean,
+        encryptCategory: EncryptCategory,
         replyMessage: MessageItem? = null
     ) {
-        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage)
+        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, encryptCategory, replyMessage)
     }
 
     fun sendAudioMessage(
         conversationId: String,
         sender: User,
         audioMessagePayload: AudioMessagePayload,
-        isPlain: Boolean,
+        encryptCategory: EncryptCategory,
         replyMessage: MessageItem? = null
     ) {
         val messageId = audioMessagePayload.messageId
         val file = File(audioMessagePayload.url)
         val duration = audioMessagePayload.duration
         val waveForm = audioMessagePayload.waveForm
-        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage)
+        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, encryptCategory, replyMessage)
     }
 
     fun sendStickerMessage(
         conversationId: String,
         sender: User,
         transferStickerData: StickerMessagePayload,
-        isPlain: Boolean
+        encryptCategory: EncryptCategory
     ) {
-        messenger.sendStickerMessage(conversationId, sender, transferStickerData, isPlain)
+        messenger.sendStickerMessage(conversationId, sender, transferStickerData, encryptCategory)
     }
 
-    fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean, replyMessage: MessageItem? = null) {
+    fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, encryptCategory: EncryptCategory, replyMessage: MessageItem? = null) {
         viewModelScope.launch {
             val user = userRepository.suspendFindUserById(shareUserId)
-            messenger.sendContactMessage(conversationId, sender, shareUserId, user?.fullName, isPlain, replyMessage)
+            messenger.sendContactMessage(conversationId, sender, shareUserId, user?.fullName, encryptCategory, replyMessage)
         }
     }
 
@@ -234,63 +236,92 @@ internal constructor(
         conversationId: String,
         senderId: String,
         uri: Uri,
-        isPlain: Boolean,
+        encryptCategory: EncryptCategory,
         messageId: String? = null,
         createdAt: String? = null,
         replyMessage: MessageItem? = null
     ) {
-        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage)
+        messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
     }
 
     fun sendVideoMessage(
         conversationId: String,
         senderId: String,
         videoMessagePayload: VideoMessagePayload,
-        isPlain: Boolean,
+        encryptCategory: EncryptCategory,
         replyMessage: MessageItem? = null
     ) {
         val uri = videoMessagePayload.url.toUri()
         val messageId = videoMessagePayload.messageId
         val createdAt = videoMessagePayload.createdAt
-        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage)
+        messenger.sendVideoMessage(conversationId, senderId, uri, encryptCategory, messageId, createdAt, replyMessage)
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
         messenger.sendRecallMessage(conversationId, sender, list)
     }
 
+    suspend fun sendPinMessage(
+        conversationId: String,
+        sender: User,
+        action: PinAction,
+        list: Collection<MessageItem>
+    ) {
+        if (list.isEmpty()) return
+        withContext(Dispatchers.IO) {
+            if (action == PinAction.PIN) {
+                conversationRepository.insertPinMessages(
+                    list.map {
+                        PinMessage(
+                            it.messageId, it.conversationId,
+                            nowInUtc()
+                        )
+                    }
+                )
+            } else if (action == PinAction.UNPIN) {
+                conversationRepository.deletePinMessageByIds(list.map { it.messageId })
+            }
+            messenger.sendPinMessage(
+                conversationId, sender, action,
+                list.map {
+                    PinMessageMinimal(it.messageId, requireNotNull(it.type), it.content)
+                }
+            )
+        }
+    }
+
     fun sendLiveMessage(
         conversationId: String,
         sender: User,
         transferLiveData: LiveMessagePayload,
-        isPlain: Boolean
+        encryptCategory: EncryptCategory
     ) {
-        messenger.sendLiveMessage(conversationId, sender, transferLiveData, isPlain)
+        messenger.sendLiveMessage(conversationId, sender, transferLiveData, encryptCategory)
     }
 
     fun sendGiphyMessage(
         conversationId: String,
         senderId: String,
         image: Image,
-        isPlain: Boolean,
+        encryptCategory: EncryptCategory,
         previewUrl: String
     ) {
-        messenger.sendGiphyMessage(conversationId, senderId, image, isPlain, previewUrl)
+        messenger.sendGiphyMessage(conversationId, senderId, image, encryptCategory, previewUrl)
     }
 
-    fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, isPlain: Boolean) {
-        messenger.sendLocationMessage(conversationId, senderId, location, isPlain)
+    fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, encryptCategory: EncryptCategory) {
+        messenger.sendLocationMessage(conversationId, senderId, location, encryptCategory)
     }
 
     fun sendImageMessage(
         conversationId: String,
         sender: User,
         uri: Uri,
-        isPlain: Boolean,
+        encryptCategory: EncryptCategory,
         mime: String? = null,
         replyMessage: MessageItem? = null,
     ): Int {
-        return messenger.sendImageMessage(conversationId, sender, uri, isPlain, mime, replyMessage)
+        return messenger.sendImageMessage(conversationId, sender, uri, encryptCategory, mime, replyMessage)
     }
 
     fun updateRelationship(request: RelationshipRequest) {
@@ -342,7 +373,11 @@ internal constructor(
                                 it.conversationId,
                                 it.userId,
                                 Uri.parse(it.mediaUrl),
-                                it.category.startsWith("PLAIN"),
+                                when {
+                                    it.isSignal() -> EncryptCategory.SIGNAL
+                                    it.isEncrypted() -> EncryptCategory.ENCRYPTED
+                                    else -> EncryptCategory.PLAIN
+                                },
                                 it.id,
                                 it.createdAt
                             )
@@ -350,14 +385,14 @@ internal constructor(
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
+                } else if (it.isImage() && it.mediaMimeType == MimeType.GIF.toString() && it.mediaUrl?.startsWith("http") == true) { // un-downloaded GIPHY
                     val category =
                         if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
-                                it.conversationId, it.userId, it.mediaUrl!!, it.mediaWidth!!, it.mediaHeight!!,
-                                it.mediaSize, category, it.id, it.thumbImage ?: "", it.createdAt
+                                it.conversationId, it.userId, it.mediaUrl, it.mediaWidth!!, it.mediaHeight!!,
+                                it.mediaSize ?: 0L, category, it.id, it.thumbImage ?: "", it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
@@ -381,8 +416,8 @@ internal constructor(
     }
 
     fun markMessageRead(conversationId: String, accountId: String) {
+        notificationManager.cancel(conversationId.hashCode())
         MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
-            notificationManager.cancel(conversationId.hashCode())
             while (true) {
                 val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)
                 if (list.isEmpty()) return@launch
@@ -425,7 +460,7 @@ internal constructor(
             list.forEach { item ->
                 conversationRepository.deleteMessage(
                     item.messageId,
-                    item.mediaUrl,
+                    item.absolutePath(),
                     item.mediaStatus == MediaStatus.DONE.name
                 )
                 if (item.isTranscript()) {
@@ -589,133 +624,7 @@ internal constructor(
             val list = ArrayList<ForwardMessage>()
             val sortMessages = conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
             for (m in sortMessages) {
-                val forwardMessage: ForwardMessage? = when {
-                    m.category.endsWith("_TEXT") ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ShareCategory.Text, c, m.id)
-                            },
-                            { null }
-                        )
-                    m.category.endsWith("_IMAGE") ->
-                        m.mediaUrl.notNullWithElse<String, ForwardMessage?>(
-                            { url ->
-                                ForwardMessage(
-                                    ShareCategory.Image,
-                                    GsonHelper.customGson.toJson(ShareImageData(url, m.content))
-                                )
-                            },
-                            { null }
-                        )
-                    m.category.endsWith("_DATA") -> {
-                        if (m.mediaUrl == null || !m.mediaUrl.fileExists()) {
-                            continue
-                        }
-                        m.name ?: continue
-                        m.mediaMimeType ?: continue
-                        m.mediaSize ?: continue
-                        val dataMessagePayload = DataMessagePayload(
-                            m.mediaUrl,
-                            m.name,
-                            m.mediaMimeType,
-                            m.mediaSize,
-                            m.content,
-                        )
-                        ForwardMessage(ForwardCategory.Data, GsonHelper.customGson.toJson(dataMessagePayload), m.id)
-                    }
-                    m.category.endsWith("_VIDEO") -> {
-                        if (m.mediaUrl == null || !m.mediaUrl.fileExists()) {
-                            continue
-                        }
-                        val videoData = VideoMessagePayload(
-                            m.mediaUrl,
-                            UUID.randomUUID().toString(),
-                            nowInUtc(),
-                            m.content,
-                        )
-                        ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.id)
-                    }
-                    m.category.endsWith("_CONTACT") -> {
-                        val shareUserId = m.sharedUserId ?: continue
-                        val contactData = ContactMessagePayload(shareUserId)
-                        ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData), m.id)
-                    }
-                    m.category.endsWith("_STICKER") -> {
-                        val stickerData = StickerMessagePayload(
-                            name = m.name,
-                            stickerId = m.stickerId
-                        )
-                        ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
-                    }
-                    m.category.endsWith("_AUDIO") -> {
-                        val url = m.mediaUrl?.getFilePath() ?: continue
-                        if (!File(url).exists()) continue
-
-                        val duration = m.mediaDuration?.toLongOrNull() ?: continue
-                        val waveForm = m.mediaWaveform ?: continue
-
-                        val audioData = AudioMessagePayload(
-                            UUID.randomUUID().toString(),
-                            url,
-                            duration,
-                            waveForm,
-                            m.content,
-                        )
-                        ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.id)
-                    }
-                    m.category.endsWith("_LIVE") -> {
-                        if (m.mediaWidth == null ||
-                            m.mediaWidth == 0 ||
-                            m.mediaHeight == null ||
-                            m.mediaHeight == 0 ||
-                            m.mediaUrl.isNullOrBlank()
-                        ) {
-                            continue
-                        }
-                        val shareable = try {
-                            GsonHelper.customGson.fromJson(m.content, LiveMessagePayload::class.java).shareable
-                        } catch (e: Exception) {
-                            null
-                        }
-                        val liveData = LiveMessagePayload(
-                            m.mediaWidth,
-                            m.mediaHeight,
-                            m.thumbUrl ?: "",
-                            m.mediaUrl,
-                            shareable
-                        )
-                        ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.id)
-                    }
-                    m.category.endsWith("_POST") ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ShareCategory.Post, c, m.id)
-                            },
-                            { null }
-                        )
-                    m.category.endsWith("_LOCATION") ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ForwardCategory.Location, GsonHelper.customGson.toJson(toLocationData(c)), m.id)
-                            },
-                            { null }
-                        )
-                    m.category == MessageCategory.APP_CARD.name ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ShareCategory.AppCard, c, m.id)
-                            },
-                            { null }
-                        )
-                    m.category.endsWith("_TRANSCRIPT") ->
-                        m.content.notNullWithElse<String, ForwardMessage?>(
-                            { c ->
-                                ForwardMessage(ForwardCategory.Transcript, c, m.id)
-                            },
-                            { null }
-                        )
-                    else -> null
-                }
+                val forwardMessage = generateForwardMessage(m)
                 forwardMessage?.let { fm -> list.add(fm) }
             }
             return@withContext list
@@ -767,25 +676,25 @@ internal constructor(
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
         assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 
-    suspend fun checkData(selectItem: SelectItem, callback: suspend (String, Boolean) -> Unit) {
+    suspend fun checkData(selectItem: SelectItem, callback: suspend (String, EncryptCategory) -> Unit) {
         withContext(Dispatchers.IO) {
             if (selectItem.conversationId != null) {
                 val conversation = conversationRepository.getConversation(selectItem.conversationId)
                 if (conversation != null) {
                     if (conversation.isGroupConversation()) {
                         withContext(Dispatchers.Main) {
-                            callback(conversation.conversationId, false)
+                            callback(conversation.conversationId, EncryptCategory.SIGNAL)
                         }
                     } else {
                         userRepository.findContactByConversationId(selectItem.conversationId)?.let { user ->
                             withContext(Dispatchers.Main) {
-                                callback(conversation.conversationId, user.isBot())
+                                callback(conversation.conversationId, user.encryptedCategory())
                             }
                         }
                     }
                 }
             } else if (selectItem.userId != null) {
-                userRepository.getUserById(selectItem.userId)?.let { user ->
+                userRepository.findForwardUserById(selectItem.userId)?.let { user ->
                     val conversation = conversationRepository.findContactConversationByOwnerId(user.userId)
                     if (conversation == null) {
                         val createdAt = nowInUtc()
@@ -804,7 +713,11 @@ internal constructor(
                             participants
                         )
                         withContext(Dispatchers.Main) {
-                            callback(conversationId, user.isBot())
+                            callback(conversationId, user.encryptedCategory())
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            callback(conversation.conversationId, user.encryptedCategory())
                         }
                     }
                 }
@@ -827,17 +740,7 @@ internal constructor(
                     } catch (e: Exception) {
                         null
                     }
-                    if (quoteMessage?.messageId != null) {
-                        transcript.quoteContent = GsonHelper.customGson.toJson(SnakeQuoteMessageItem(quoteMessage))
-                    } else {
-                        try {
-                            GsonHelper.customGson.fromJson(transcript.quoteContent, SnakeQuoteMessageItem::class.java)
-                        } catch (e: Exception) {
-                            null
-                        }?.let {
-                            transcript.quoteContent = GsonHelper.customGson.toJson(it)
-                        }
-                    }
+                    transcript.quoteContent = GsonHelper.customGson.toJson(quoteMessage)
                 }
             }
         }
@@ -852,4 +755,14 @@ internal constructor(
             }
             return@withContext transcripts
         }
+
+    fun getLastPinMessages(conversationId: String) =
+        conversationRepository.getLastPinMessages(conversationId)
+
+    fun countPinMessages(conversationId: String) =
+        conversationRepository.countPinMessages(conversationId)
+
+    suspend fun findPinMessageById(messageId: String) = withContext(Dispatchers.IO) {
+        conversationRepository.findPinMessageById(messageId)
+    }
 }

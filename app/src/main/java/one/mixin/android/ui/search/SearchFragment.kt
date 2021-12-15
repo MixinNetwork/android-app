@@ -159,7 +159,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                     UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                                 }
                             }
-                            r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
+                            r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.error_user_not_found)
                             else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
                     },

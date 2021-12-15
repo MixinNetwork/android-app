@@ -33,7 +33,7 @@ interface MessageDao : BaseDao<Message> {
                 st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                 h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
                 su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
-                c.name AS groupName
+                pm.message_id IS NOT NULL as isPin, c.name AS groupName
                 FROM messages m
                 INNER JOIN users u ON m.user_id = u.user_id
                 LEFT JOIN users u1 ON m.participant_id = u1.user_id
@@ -44,6 +44,7 @@ interface MessageDao : BaseDao<Message> {
                 LEFT JOIN users su ON m.shared_user_id = su.user_id
                 LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
                 LEFT JOIN message_mentions mm ON m.id = mm.message_id 
+                LEFT JOIN pin_messages pm ON m.id = pm.message_id
             """
         private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
     }
@@ -52,6 +53,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId ORDER BY m.created_at DESC")
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem>
 
@@ -72,7 +74,7 @@ interface MessageDao : BaseDao<Message> {
         INDEXED BY index_messages_conversation_id_category
         INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
+        AND m.category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE', 'ENCRYPTED_LIVE') 
         ORDER BY m.created_at ASC, m.rowid ASC
         """
     )
@@ -97,7 +99,7 @@ interface MessageDao : BaseDao<Message> {
             SELECT count(1) FROM messages 
             INDEXED BY index_messages_conversation_id_category
             WHERE conversation_id = :conversationId
-            AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
+            AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE', 'ENCRYPTED_LIVE') 
             AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
             ORDER BY created_at ASC, rowid ASC
         """
@@ -116,7 +118,7 @@ interface MessageDao : BaseDao<Message> {
         INDEXED BY index_messages_conversation_id_category
         INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
+        AND m.category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO')
         ORDER BY m.created_at DESC, m.rowid DESC
         """
     )
@@ -126,7 +128,7 @@ interface MessageDao : BaseDao<Message> {
         """SELECT count(1) FROM messages
         INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
-        AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
+        AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO')
         AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
         ORDER BY created_at DESC, rowid DESC
         """
@@ -159,7 +161,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration,  m.media_waveform AS mediaWaveform
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ('SIGNAL_POST', 'PLAIN_POST')
+        AND m.category IN ('SIGNAL_POST', 'PLAIN_POST', 'ENCRYPTED_POST')
         ORDER BY m.created_at DESC
         """
     )
@@ -171,7 +173,7 @@ interface MessageDao : BaseDao<Message> {
             h.site_name AS siteName, h.site_title AS siteTitle, m.created_at AS createdAt
             FROM hyperlinks h INNER JOIN messages m ON h.hyperlink = m.hyperlink
             WHERE m.conversation_id = :conversationId
-            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT')
+            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'ENCRYPTED_TEXT')
             ORDER BY m.created_at DESC
         """
     )
@@ -186,7 +188,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ('SIGNAL_DATA', 'PLAIN_DATA')
+        AND m.category IN ('SIGNAL_DATA', 'PLAIN_DATA', 'ENCRYPTED_DATA')
         ORDER BY m.created_at DESC
         """
     )
@@ -240,7 +242,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages) AND status != 'FAILED'")
+    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages) AND status != 'FAILED' AND status != 'UNKNOWN'")
     fun markMessageRead(messages: List<String>)
 
     @Query("UPDATE messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
@@ -253,6 +255,9 @@ interface MessageDao : BaseDao<Message> {
             "album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL WHERE id = :id"
     )
     fun recallMessage(id: String)
+
+    @Query("UPDATE messages SET content = NULL WHERE category = 'MESSAGE_PIN' AND quote_message_id = :id AND conversation_id = :conversationId")
+    fun recallPinMessage(id: String, conversationId: String)
 
     @Query("UPDATE messages SET media_status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaStatus(status: String, id: String)
@@ -384,18 +389,22 @@ interface MessageDao : BaseDao<Message> {
     ): List<MessageMinimal>?
 
     @Query(
-        "SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND " +
-            "status = 'FAILED' ORDER BY created_at DESC LIMIT 1000"
+        """SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND
+            status = 'FAILED' ORDER BY created_at DESC LIMIT 1000"""
     )
     fun findFailedMessages(conversationId: String, userId: String): List<String>
 
     @Query(
-        "SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory) ORDER BY created_at ASC"
+        """SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m 
+        WHERE conversation_id = :conversationId AND media_status = 'DONE' 
+        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) ORDER BY created_at ASC
+        """
     )
     fun getMediaByConversationIdAndCategory(
         conversationId: String,
         signalCategory: String,
-        plainCategory: String
+        plainCategory: String,
+        encryptedCategory: String
     ): List<MediaMessageMinimal>?
 
     @Query(
@@ -411,14 +420,14 @@ interface MessageDao : BaseDao<Message> {
     suspend fun updateConversationUnseen(userId: String, conversationId: String)
 
     @Query(
-        "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId " +
-            "AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId "
+        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId
+            AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId"""
     )
     fun takeUnseen(userId: String, conversationId: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO') AND m.created_at >= :createdAt AND " +
+        "$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO' OR m.category = 'ENCRYPTED_AUDIO') AND m.created_at >= :createdAt AND " +
             "m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1"
     )
     suspend fun findNextAudioMessageItem(
@@ -429,8 +438,9 @@ interface MessageDao : BaseDao<Message> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "SELECT * FROM messages WHERE conversation_id = :conversationId AND (category = 'SIGNAL_AUDIO' OR category = 'PLAIN_AUDIO') " +
-            "AND created_at >= :createdAt AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1"
+        """SELECT * FROM messages WHERE conversation_id = :conversationId AND (category = 'SIGNAL_AUDIO' OR category = 'PLAIN_AUDIO' OR category = 'ENCRYPTED_AUDIO')
+                AND created_at >= :createdAt AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1
+            """
     )
     suspend fun findNextAudioMessage(
         conversationId: String,
@@ -447,6 +457,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastMessage(conversationId: String): String?
+
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
+    fun findLastMessageId(conversationId: String): String?
 
     @Query(
         """
@@ -491,28 +504,46 @@ interface MessageDao : BaseDao<Message> {
     suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
 
     @Query(
-        "SELECT id, conversation_id, name, category, media_url, media_mine_type FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset"
+        """SELECT id, conversation_id, name, category, media_url, media_mine_type 
+            FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO','SIGNAL_DATA', 'PLAIN_DATA', 'ENCRYPTED_DATA','SIGNAL_AUDIO', 'PLAIN_AUDIO', 'ENCRYPTED_AUDIO') 
+            AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset"""
     )
     fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
+
+    @Query("SELECT rowid IS NOT NULL FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' LIMIT 1")
+    fun hasDoneAttachment(): Boolean
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowid(): Long
 
     // DELETE COUNT
-    @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory)")
-    fun countDeleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String): Int
+    @Query(
+        """SELECT count(id) FROM messages 
+        WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory, :encryptedCategory)
+    """
+    )
+    fun countDeleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String): Int
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId")
     suspend fun countDeleteMessageByConversationId(conversationId: String): Int
 
     // DELETE
     @Query("DELETE FROM messages WHERE id = :id")
-    fun deleteMessage(id: String)
+    fun deleteMessageById(id: String)
 
     @Query(
-        "DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE  conversation_id = :conversationId AND  media_status = 'DONE' AND category IN (:signalCategory, :plainCategory) LIMIT :limit)"
+        """DELETE FROM messages WHERE id IN (
+        SELECT id FROM messages WHERE  conversation_id = :conversationId AND  media_status = 'DONE'
+        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit)
+    """
     )
-    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, limit: Int)
+    fun deleteMediaMessageByConversationAndCategory(
+        conversationId: String,
+        signalCategory: String,
+        plainCategory: String,
+        encryptedCategory: String,
+        limit: Int
+    )
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
@@ -525,6 +556,7 @@ interface MessageDao : BaseDao<Message> {
         }
     }
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -551,6 +583,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun observeMediaStatus(conversationId: String): LiveData<List<MessageIdIdAndMediaStatus>>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -564,9 +597,16 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun suspendFindMessagesByIds(conversationId: String, ids: List<String>): List<MessageItem>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.id = :messageId")
     fun findMessageItemByMessageId(messageId: String): LiveData<MessageItem?>
 
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category in ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
     suspend fun findTranscriptIdByConversationId(conversationId: String): List<String>
+
+    @Query("UPDATE messages SET category = :category WHERE id = :messageId")
+    fun updateCategoryById(messageId: String, category: String)
+
+    @Query("SELECT id FROM messages LIMIT 1")
+    suspend fun hasMessage(): String?
 }

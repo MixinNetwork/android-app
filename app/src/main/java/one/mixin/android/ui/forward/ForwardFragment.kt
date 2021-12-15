@@ -5,6 +5,7 @@ import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -14,6 +15,7 @@ import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
@@ -27,11 +29,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.databinding.FragmentForwardBinding
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -51,6 +57,7 @@ import one.mixin.android.util.maxDynamicShortcutCount
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.ConversationMinimal
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -65,6 +72,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
 import one.mixin.android.vo.isGroupConversation
+import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.AttachmentMessagePayload
@@ -76,6 +84,7 @@ import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
 import java.io.File
+import java.io.FileInputStream
 import java.lang.Exception
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -303,10 +312,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     private fun sendCombineMessage(selectItems: List<SelectItem>) = lifecycleScope.launch {
         if (sender == null) return@launch
         selectItems.forEach { item ->
-            chatViewModel.checkData(item) { conversationId: String, isPlain: Boolean ->
+            chatViewModel.checkData(item) { conversationId: String, encryptCategory: EncryptCategory ->
                 val transcripts = chatViewModel.processTranscript(combineMessages)
                 val messageId = transcripts[0].transcriptId
-                chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, isPlain)
+                chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
             }
         }
         val result = Intent().apply {
@@ -340,22 +349,26 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
         val errList = arrayListOf<String>()
         messages.forEach { m ->
-            chatViewModel.checkData(item) { conversationId: String, isPlain: Boolean ->
+            chatViewModel.checkData(item) { conversationId: String, encryptCategory: EncryptCategory ->
                 val content = m.content
                 var errorString: String? = null
                 when (m.category) {
                     ShareCategory.Text -> {
-                        chatViewModel.sendTextMessage(conversationId, sender, content, isPlain)
+                        chatViewModel.sendTextMessage(conversationId, sender, content, encryptCategory)
                     }
                     ShareCategory.Post -> {
-                        chatViewModel.sendPostMessage(conversationId, sender, content, isPlain)
+                        chatViewModel.sendPostMessage(conversationId, sender, content, encryptCategory)
                     }
                     ShareCategory.Image -> {
                         val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
                         sendAttachmentMessage(
                             conversationId, sender, shareImageData.url, shareImageData.attachmentExtra,
                             {
-                                if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                                encryptCategory.toCategory(
+                                    MessageCategory.PLAIN_IMAGE,
+                                    MessageCategory.SIGNAL_IMAGE,
+                                    MessageCategory.ENCRYPTED_IMAGE
+                                )
                             },
                             {
                                 val code = if (shareImageData.url.startsWith("http", true)) {
@@ -365,12 +378,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                         null
                                     }
                                     if (file == null) {
-                                        chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), isPlain)
+                                        chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), encryptCategory)
                                     } else {
-                                        chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain)
+                                        chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), encryptCategory)
                                     }
                                 } else {
-                                    chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), isPlain)
+                                    chatViewModel.sendImageMessage(conversationId, sender, shareImageData.url.toUri(), encryptCategory)
                                 }
                                 val errorRes = ShareCategory.Image.getErrorStringOrNull(code)
                                 if (errorRes != null) {
@@ -384,27 +397,31 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     }
                     ShareCategory.Contact -> {
                         val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
-                        chatViewModel.sendContactMessage(conversationId, sender, contactData.userId, isPlain)
+                        chatViewModel.sendContactMessage(conversationId, sender, contactData.userId, encryptCategory)
                     }
                     ShareCategory.Contact -> {
-                        chatViewModel.sendPostMessage(conversationId, sender, content, isPlain)
+                        chatViewModel.sendPostMessage(conversationId, sender, content, encryptCategory)
                     }
                     ShareCategory.AppCard -> {
                         chatViewModel.sendAppCardMessage(conversationId, sender, content)
                     }
                     ShareCategory.Live -> {
                         val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
-                        chatViewModel.sendLiveMessage(conversationId, sender, liveData, isPlain)
+                        chatViewModel.sendLiveMessage(conversationId, sender, liveData, encryptCategory)
                     }
                     ForwardCategory.Video -> {
                         val videoData = GsonHelper.customGson.fromJson(content, VideoMessagePayload::class.java)
                         sendAttachmentMessage(
                             conversationId, sender, videoData.url, videoData.attachmentExtra,
                             {
-                                if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+                                encryptCategory.toCategory(
+                                    MessageCategory.PLAIN_VIDEO,
+                                    MessageCategory.SIGNAL_VIDEO,
+                                    MessageCategory.ENCRYPTED_VIDEO
+                                )
                             },
                             {
-                                chatViewModel.sendVideoMessage(conversationId, sender.userId, videoData, isPlain)
+                                chatViewModel.sendVideoMessage(conversationId, sender.userId, videoData, encryptCategory)
                             }
                         )
                     }
@@ -413,10 +430,14 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         sendAttachmentMessage(
                             conversationId, sender, dataMessagePayload.url, dataMessagePayload.attachmentExtra,
                             {
-                                if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
+                                encryptCategory.toCategory(
+                                    MessageCategory.PLAIN_DATA,
+                                    MessageCategory.SIGNAL_DATA,
+                                    MessageCategory.ENCRYPTED_DATA
+                                )
                             },
                             {
-                                chatViewModel.sendAttachmentMessage(conversationId, sender, dataMessagePayload.toAttachment(), isPlain)
+                                chatViewModel.sendAttachmentMessage(conversationId, sender, dataMessagePayload.toAttachment(), encryptCategory)
                             }
                         )
                     }
@@ -425,26 +446,30 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         sendAttachmentMessage(
                             conversationId, sender, audioData.url, audioData.attachmentExtra,
                             {
-                                if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+                                encryptCategory.toCategory(
+                                    MessageCategory.PLAIN_AUDIO,
+                                    MessageCategory.SIGNAL_AUDIO,
+                                    MessageCategory.ENCRYPTED_AUDIO
+                                )
                             },
                             {
-                                chatViewModel.sendAudioMessage(conversationId, sender, audioData, isPlain)
+                                chatViewModel.sendAudioMessage(conversationId, sender, audioData, encryptCategory)
                             }
                         )
                     }
                     ForwardCategory.Sticker -> {
                         val stickerData = GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java)
-                        chatViewModel.sendStickerMessage(conversationId, sender, stickerData, isPlain)
+                        chatViewModel.sendStickerMessage(conversationId, sender, stickerData, encryptCategory)
                     }
                     ForwardCategory.Location -> {
                         val locationPayload = GsonHelper.customGson.fromJson(content, LocationPayload::class.java)
-                        chatViewModel.sendLocationMessage(conversationId, sender.userId, locationPayload, isPlain)
+                        chatViewModel.sendLocationMessage(conversationId, sender.userId, locationPayload, encryptCategory)
                     }
                     ForwardCategory.Transcript -> {
                         m.messageId?.let { messageId ->
                             val id = UUID.randomUUID().toString()
                             val list = chatViewModel.getTranscripts(messageId, id)
-                            chatViewModel.sendTranscriptMessage(conversationId, id, sender, list, isPlain)
+                            chatViewModel.sendTranscriptMessage(conversationId, id, sender, list, encryptCategory)
                         }
                     }
                     else -> {
@@ -487,6 +512,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 return@withContext
             }
             val newMessage = buildAttachmentMessage(conversationId, sender, category, attachmentExtra.attachmentId, message)
+            if (newMessage == null) {
+                fallbackAction.invoke()
+                return@withContext
+            }
             chatViewModel.sendMessage(newMessage)
         } else {
             fallbackAction.invoke()
@@ -519,29 +548,57 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             fallbackAction.invoke()
             return
         }
-        val message = Message(
-            UUID.randomUUID().toString(), conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), mediaUrl,
-            payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
-            payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
-            caption = payload.caption,
-        )
-        chatViewModel.sendMessage(message)
+        if (mediaUrl == null) {
+            fallbackAction.invoke()
+            return
+        }
+        val file = try {
+            Uri.parse(mediaUrl).toFile()
+        } catch (e: Exception) {
+            null
+        }
+        if (file?.exists() != true) {
+            fallbackAction.invoke()
+            return
+        }
+        try {
+            val messageId = UUID.randomUUID().toString()
+            val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
+            outfile.copyFromInputStream(FileInputStream(file))
+            val message = Message(
+                messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.name,
+                payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
+                payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
+                caption = payload.caption,
+            )
+            chatViewModel.sendMessage(message)
+        } catch (e: Exception) {
+            fallbackAction.invoke()
+            return
+        }
     }
 
-    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentId: String, message: Message): Message {
-        val messageId = UUID.randomUUID().toString()
-        val attachmentMessagePayload = AttachmentMessagePayload(
-            message.mediaKey, message.mediaDigest, attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
-            message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform,
-        )
-        return Message(
-            messageId, conversationId, sender.userId, category,
-            GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), message.mediaUrl, message.mediaMimeType,
-            message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
-            message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
-            message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
-            nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform,
-        )
+    private fun buildAttachmentMessage(conversationId: String, sender: User, category: String, attachmentId: String, message: Message): Message? {
+        try {
+            val messageId = UUID.randomUUID().toString()
+            val attachmentMessagePayload = AttachmentMessagePayload(
+                message.mediaKey, message.mediaDigest, attachmentId, message.mediaMimeType!!, message.mediaSize ?: 0, message.name, message.mediaWidth,
+                message.mediaHeight, message.thumbImage, message.mediaDuration?.toLongOrNull(), message.mediaWaveform,
+            )
+            val file = Uri.parse(message.mediaUrl).toFile()
+            val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
+            outfile.copyFromInputStream(FileInputStream(file))
+            return Message(
+                messageId, conversationId, sender.userId, category,
+                GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), outfile.name, message.mediaMimeType,
+                message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
+                message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
+                message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,
+                nowInUtc(), name = message.name, mediaWaveform = message.mediaWaveform,
+            )
+        } catch (e: Exception) {
+            return null
+        }
     }
 
     private fun sendDirectMessages(cid: String) = lifecycleScope.launch {
@@ -565,7 +622,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val shortcutInfo = if (s is ConversationMinimal) {
                 val bitmap = loadBitmap(s.iconUrl()) ?: continue
                 val intent = ConversationActivity.getShortcutIntent(
-                    requireContext(),
+                    MixinApplication.appContext,
                     s.conversationId,
                     null
                 )
@@ -578,23 +635,23 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     s.userId
                 )
                 val intent = ConversationActivity.getShortcutIntent(
-                    requireContext(),
+                    MixinApplication.appContext,
                     cid,
                     s.userId
                 )
                 ShortcutInfo(cid, s.fullName ?: "", bitmap, intent)
             }
-            shortcuts.add(generateDynamicShortcut(requireContext(), shortcutInfo))
+            shortcuts.add(generateDynamicShortcut(MixinApplication.appContext, shortcutInfo))
         }
-        val exists = ShortcutManagerCompat.getDynamicShortcuts(requireContext())
+        val exists = ShortcutManagerCompat.getDynamicShortcuts(MixinApplication.appContext)
         val keepSize = maxDynamicShortcutCount - shortcuts.size
         if (keepSize >= 0 && exists.size > keepSize) {
             val removeIds = mutableListOf<String>()
             exists.take(exists.size - keepSize)
                 .mapTo(removeIds) { it.id }
-            ShortcutManagerCompat.removeDynamicShortcuts(requireContext(), removeIds)
+            ShortcutManagerCompat.removeDynamicShortcuts(MixinApplication.appContext, removeIds)
         }
-        ShortcutManagerCompat.addDynamicShortcuts(requireContext(), shortcuts)
+        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
     }
 
     private suspend fun loadBitmap(url: String?): Bitmap? {

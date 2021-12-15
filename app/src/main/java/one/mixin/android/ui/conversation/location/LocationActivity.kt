@@ -152,7 +152,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
                 val stub = mentionLocation.mapboxStub
                 mapBoxView = stub.inflate() as MapView
             } else {
-                MapsInitializer.initialize(MixinApplication.appContext)
+                try {
+                    MapsInitializer.initialize(MixinApplication.appContext)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
             }
             mixinMapView = MixinMapView(this@LocationActivity, mentionLocation.googleMapView, mapBoxView).apply {
                 onCreate(savedInstanceState)

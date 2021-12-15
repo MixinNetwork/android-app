@@ -17,6 +17,10 @@ import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
+import one.mixin.android.util.image.ImageListener
+import one.mixin.android.util.image.LottieLoader
+import one.mixin.android.widget.RLottieDrawable
+import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.runOnUiThread
 
 fun ImageView.loadImage(uri: String?) {
@@ -48,13 +52,13 @@ fun ImageView.loadImage(uri: String?, width: Int, height: Int) {
     Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
 }
 
-fun ImageView.loadBase64ImageCenterCrop(imageByteArray: ByteArray?, @DrawableRes holder: Int? = null) {
+fun ImageView.loadImageCenterCrop(uri: String?, holder: String? = null) {
     if (!isActivityNotDestroyed()) return
-    Glide.with(this).asBitmap().load(imageByteArray)
+    Glide.with(this).load(uri)
         .apply(
             RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
                 if (holder != null) {
-                    this.placeholder(holder)
+                    this.placeholder(holder.toDrawable(this@loadImageCenterCrop.width, this@loadImageCenterCrop.height))
                 }
             }
         ).into(this)
@@ -368,16 +372,37 @@ fun ImageView.loadVideo(uri: String?, holder: String?, width: Int, height: Int) 
     }.into(this)
 }
 
-fun ImageView.loadSticker(uri: String?, type: String?) {
+fun RLottieImageView.loadSticker(uri: String?, type: String?) {
     if (!isActivityNotDestroyed()) return
     uri?.let {
-        when (type) {
+        when (type?.uppercase()) {
+            "JSON" ->
+                loadLottie(it)
             "GIF" -> {
                 loadGif(uri)
             }
             else -> loadImage(uri)
         }
     }
+}
+
+fun RLottieImageView.loadLottie(uri: String) {
+    LottieLoader.fromUrl(
+        context,
+        uri,
+        uri,
+        layoutParams.width,
+        layoutParams.height
+    )
+        .addListener(
+            object : ImageListener<RLottieDrawable> {
+                override fun onResult(result: RLottieDrawable) {
+                    setAnimation(result)
+                    playAnimation()
+                    setAutoRepeat(true)
+                }
+            }
+        )
 }
 
 fun ImageView.loadBase64(uri: ByteArray?, width: Int, height: Int, mark: Int) {

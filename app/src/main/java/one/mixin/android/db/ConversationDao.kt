@@ -13,6 +13,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.ParticipantSessionMinimal
 
 @Dao
 interface ConversationDao : BaseDao<Conversation> {
@@ -112,7 +113,7 @@ interface ConversationDao : BaseDao<Conversation> {
     suspend fun getConversationByIdSuspend(conversationId: String): Conversation?
 
     @Query("SELECT name FROM conversations WHERE conversation_id = :conversationId")
-    fun observeConversationNameById(conversationId: String): LiveData<String>
+    suspend fun getConversationNameById(conversationId: String): String?
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun searchConversationById(conversationId: String): Maybe<Conversation>
@@ -178,12 +179,13 @@ interface ConversationDao : BaseDao<Conversation> {
     fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>>
 
     @Query(
-        """select c.conversation_id from conversations c
+        """select c.conversation_id, u.app_id, a.capabilities from conversations c
         inner join users u on c.owner_id = u.user_id
         left join participants p on p.conversation_id = c.conversation_id
-        where  p.user_id = :userId AND u.app_id IS NULL"""
+        left join apps a on a.app_id = u.app_id
+        where p.user_id = :userId"""
     )
-    fun getConversationsByUserId(userId: String): List<String>
+    fun getConversationsByUserId(userId: String): List<ParticipantSessionMinimal>
 
     @Query("SELECT announcement FROM conversations WHERE conversation_id = :conversationId ")
     suspend fun getAnnouncementByConversationId(conversationId: String): String?

@@ -32,6 +32,7 @@
         <item name="icon_white">@color/colorIconWhite</item>
         <item name="icon_black">@color/colorIcon</item>
         <item name="icon_gray">@color/colorIconGray</item>
+        <item name="icon_action">@color/colorIconAction</item>
 
         <item name="badger">@color/badger</item>
         <item name="badger_mute">@color/badgerMute</item>
@@ -55,6 +56,8 @@
         <item name="bg_bot">@color/bgBot</item>
         <item name="bg_divider">@color/divider</item>
         <item name="bg_translucence">@color/bgTranslucence</item>
+        <item name="bg_pin_content">@drawable/chat_bubble_pin_message</item>
+        <item name="bg_flag">@color/bgFlag</item>
 
         <item name="music_played">@color/musicPlayed</item>
         <item name="music_unplayed">@color/musicUnPlayed</item>
@@ -76,6 +79,22 @@
 
         <item name="swirl_ridgeColor">@color/gray_light</item>
         <item name="swirl_errorColor">@color/colorRed</item>
+
+        <item name="popupMenuStyle">@style/AppTheme.PopupMenuStyle</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceSmall</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/AppTheme.PopupMenuStyle.MenuTextAppearanceLarge</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">?attr/bg_white</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle.MenuTextAppearanceSmall" parent="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu.Small">
+                <item name="android:textColor">?attr/text_primary</item>
+    </style>
+
+    <style name="AppTheme.PopupMenuStyle.MenuTextAppearanceLarge" parent="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu.Large">
+        <item name="android:textColor">?attr/text_primary</item>
     </style>
 
     <style name="NoneHFTextViewStyle" parent="Widget.AppCompat.TextView">
@@ -114,6 +133,10 @@
         <item name="android:colorControlNormal">?attr/text_primary</item>
         <item name="android:background">?attr/bg_white</item>
         <item name="android:textColor">?attr/text_primary</item>
+    </style>
+
+    <style name="MixinAlertDialogWarningTheme" parent="MixinAlertDialogTheme">
+        <item name="android:textColorPrimary">@color/colorRed</item>
     </style>
 
     <style name="PositiveButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">

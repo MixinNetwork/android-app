@@ -22,6 +22,7 @@
     <attr name="icon_white" format="color|reference" />
     <attr name="icon_gray" format="color|reference" />
     <attr name="icon_black" format="color|reference" />
+    <attr name="icon_action" format="color|reference" />
 
     <attr name="badger" format="color|reference" />
     <attr name="badger_mute" format="color|reference" />
@@ -43,6 +44,8 @@
     <attr name="bg_bubble" format="color|reference" />
     <attr name="bg_translucence" format="color|reference" />
     <attr name="bg_bot" format="color|reference" />
+    <attr name="bg_pin_content" format="reference" />
+    <attr name="bg_flag" format="color|reference" />
 
     <attr name="music_played" format="color|reference" />
     <attr name="music_unplayed" format="color|reference" />

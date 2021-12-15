@@ -10,6 +10,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AuthorizeRequest
+import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.LogoutRequest
@@ -22,6 +23,7 @@ import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
+import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AccountService
@@ -116,6 +118,10 @@ constructor(
                         val resp = Gson().fromJson(response.data, MultisigsResponse::class.java)
                         Pair(type, resp)
                     }
+                    QrCodeType.non_fungible_request.name -> {
+                        val resp = Gson().fromJson(response.data, NonFungibleOutputResponse::class.java)
+                        Pair(type, resp)
+                    }
                     QrCodeType.payment.name -> {
                         val resp = Gson().fromJson(response.data, PaymentCodeResponse::class.java)
                         Pair(type, resp)
@@ -142,6 +148,8 @@ constructor(
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 
     fun deAuthorize(deauthorRequest: DeauthorRequest) = authService.deAuthorize(deauthorRequest)
+
+    suspend fun getAuthorizationByAppId(appId: String) = authService.getAuthorizationByAppId(appId)
 
     fun getSystemAlbums() = stickerAlbumDao.getSystemAlbums()
 
@@ -214,6 +222,17 @@ constructor(
 
     suspend fun cancelMultisigs(requestId: String) =
         accountService.cancelMultisigs(requestId)
+
+    suspend fun getToken(tokenId: String) = accountService.getToken(tokenId)
+
+    suspend fun signCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) =
+        accountService.signCollectibleTransfer(requestId, pinRequest)
+
+    suspend fun unlockCollectibleTransfer(requestId: String, pinRequest: CollectibleRequest) =
+        accountService.unlockCollectibleTransfer(requestId, pinRequest)
+
+    suspend fun cancelCollectibleTransfer(requestId: String) =
+        accountService.cancelCollectibleTransfer(requestId)
 
     suspend fun transactions(rawTransactionsRequest: RawTransactionsRequest) =
         accountService.transactions(rawTransactionsRequest)

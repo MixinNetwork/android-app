@@ -36,23 +36,18 @@ class MusicNotificationManager(
     init {
         val mediaController = MediaControllerCompat(context, sessionToken)
 
-        notificationManager = PlayerNotificationManager.createWithNotificationChannel(
-            context,
-            NOW_PLAYING_CHANNEL_ID,
-            R.string.notification_channel,
-            R.string.notification_channel_description,
-            NOW_PLAYING_NOTIFICATION_ID,
-            DescriptionAdapter(mediaController),
-            notificationListener
-        ).apply {
-
-            setMediaSessionToken(sessionToken)
-            setSmallIcon(R.drawable.ic_msg_default)
-
-            // Don't display the rewind or fast-forward buttons.
-            setRewindIncrementMs(0)
-            setFastForwardIncrementMs(0)
-        }
+        notificationManager = PlayerNotificationManager.Builder(context, NOW_PLAYING_NOTIFICATION_ID, NOW_PLAYING_CHANNEL_ID)
+            .setMediaDescriptionAdapter(DescriptionAdapter(mediaController))
+            .setChannelNameResourceId(R.string.notification_channel)
+            .setChannelDescriptionResourceId(R.string.notification_channel_description)
+            .setNotificationListener(notificationListener)
+            .build()
+            .apply {
+                setMediaSessionToken(sessionToken)
+                setSmallIcon(R.drawable.ic_msg_default)
+                setUseFastForwardAction(false)
+                setUseRewindAction(false)
+            }
     }
 
     fun hideNotification() {

@@ -134,7 +134,7 @@ fun String.checkUserOrApp(
         segments[0]
     }
     if (!userId.isUUID()) {
-        ctx.toast(getUserOrAppNotFoundTip(isAppScheme))
+        toast(getUserOrAppNotFoundTip(isAppScheme))
         return
     }
 
@@ -177,6 +177,15 @@ private fun String.isAppScheme() = startsWith(Constants.Scheme.APPS, true) ||
 private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
 
+fun Uri.getRawQueryParameter(key: String): String? {
+    val parameters = this.getQueryParameters("data")
+    return if (parameters.isEmpty()) {
+        null
+    } else {
+        parameters.first()
+    }
+}
+
 fun Uri.handleSchemeSend(
     context: Context,
     supportFragmentManager: FragmentManager,
@@ -207,7 +216,7 @@ fun Uri.handleSchemeSend(
                     null
                 }
             }
-            val data = this.getQueryParameter("data")
+            val data = this.getRawQueryParameter("data")
             val shareCategory = category?.getShareCategory()
             if (shareCategory != null && data != null) {
                 try {

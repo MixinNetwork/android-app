@@ -5,9 +5,14 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemCallAddBinding
 import one.mixin.android.databinding.ItemCallUserBinding
+import one.mixin.android.event.FrameKeyEvent
+import one.mixin.android.event.VoiceEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
 import one.mixin.android.vo.CallUser
@@ -65,6 +70,20 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
             notifyDataSetChanged()
         }
     }
+
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        if (holder is CallUserHolder) {
+            getItem(holder.layoutPosition - 1)?.let {
+                holder.listen(it.userId)
+            }
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        if (holder is CallUserHolder) {
+            holder.stopListen()
+        }
+    }
 }
 
 class AddUserHolder(val binding: ItemCallAddBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -96,10 +115,49 @@ class CallUserHolder(val binding: ItemCallUserBinding) : RecyclerView.ViewHolder
             val vis =
                 user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
             binding.loading.isVisible = vis
+            binding.blinkRing.setColor(R.color.call_voice)
+            binding.ring.setColor(R.color.colorRed)
             binding.cover.isVisible = vis
             setOnClickListener {
                 callClicker(user.userId)
             }
         }
+    }
+
+    private var blinkDisposable: Disposable? = null
+    private var disposable: Disposable? = null
+
+    fun listen(userId: String) {
+        if (blinkDisposable == null) {
+            blinkDisposable = RxBus.listen(VoiceEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (it.userId == userId) {
+                        binding.blinkRing.updateAudioLevel(it.audioLevel)
+                        if (it.audioLevel != 0f) {
+                            binding.ring.isVisible = false
+                        }
+                    }
+                }
+        }
+        if (disposable == null) {
+            disposable = RxBus.listen(FrameKeyEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (it.userId == userId) {
+                        binding.ring.isVisible = !it.hasKey
+                        if (!it.hasKey) {
+                            binding.blinkRing.isVisible = false
+                        }
+                    }
+                }
+        }
+    }
+
+    fun stopListen() {
+        blinkDisposable?.dispose()
+        blinkDisposable = null
+        disposable?.dispose()
+        disposable = null
     }
 }

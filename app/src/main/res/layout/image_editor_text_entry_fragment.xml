@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/color_indicator"
+            android:layout_width="68dp"
+            android:layout_height="80dp"
+            android:layout_marginBottom="8dp"
+            android:alpha="0"
+            android:importantForAccessibility="no"
+            android:paddingBottom="12dp"
+            android:scaleType="centerInside"
+            android:layout_centerInParent="true"
+            android:src="@drawable/color_indicator_circle"
+            tools:alpha="1"
+            tools:tint="@color/colorRed" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/color_rv"
+            android:layout_width="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_height="?actionBarSize" />
+    </RelativeLayout>
+</one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout>

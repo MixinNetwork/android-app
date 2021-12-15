@@ -137,7 +137,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 if (!isAdded) return@launch
                                 val path = binding.bottomLl.capture(requireContext()) ?: return@launch
                                 withContext(Dispatchers.Main) {
-                                    context?.toast(getString(R.string.save_to, path))
+                                    toast(getString(R.string.save_to, path))
                                 }
                             }
                         } else {
@@ -145,7 +145,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }
                     },
                     {
-                        context?.toast(R.string.save_failure)
+                        toast(R.string.save_failure)
                     }
                 )
             bottomSheet.dismiss()

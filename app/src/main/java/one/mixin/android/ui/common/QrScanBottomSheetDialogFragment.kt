@@ -18,7 +18,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet

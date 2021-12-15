@@ -57,6 +57,7 @@ data class App(
     @SerializedName("resource_patterns")
     @ColumnInfo(name = "resource_patterns")
     val resourcePatterns: ArrayList<String>?,
+    @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String?
 ) : Parcelable, BotInterface {
@@ -76,7 +77,7 @@ data class App(
     override fun getBotId() = appId
 }
 
-enum class AppCap { GROUP, CONTACT, IMMERSIVE }
+enum class AppCap { GROUP, CONTACT, IMMERSIVE, ENCRYPTED }
 
 fun App?.matchResourcePattern(url: String): Boolean {
     contract {

@@ -1,21 +1,18 @@
 package one.mixin.android.util
 
 import androidx.collection.ArrayMap
-import com.bugsnag.android.Bugsnag
-import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.crashes.Crashes
 import org.jetbrains.anko.getStackTraceString
 
 fun reportException(e: Throwable) {
-    Bugsnag.notify(e)
     FirebaseCrashlytics.getInstance().recordException(e)
     Crashes.trackError(e)
 }
 
 fun reportException(msg: String, e: Throwable) {
-    Bugsnag.notify(e)
     FirebaseCrashlytics.getInstance().log(msg + e.getStackTraceString())
     Crashes.trackError(
         e,
@@ -26,11 +23,11 @@ fun reportException(msg: String, e: Throwable) {
     )
 }
 
-fun reportExoPlayerException(prefix: String, error: ExoPlaybackException) {
+fun reportExoPlayerException(prefix: String, error: PlaybackException) {
     val cause = error.cause
     if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 404) {
         return
     }
-    val msg = "$prefix onPlayerError type: ${error.type}, cause: $cause"
+    val msg = "$prefix onPlayerError errorCode: ${error.errorCode}, errorCodeName: ${error.errorCodeName} cause: $cause"
     reportException(msg, error)
 }

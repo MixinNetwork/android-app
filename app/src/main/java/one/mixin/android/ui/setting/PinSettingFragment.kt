@@ -15,6 +15,7 @@ import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPinSettingBinding
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
@@ -38,12 +39,17 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            title.leftIb.setOnClickListener { activity?.onBackPressed() }
+            title.apply {
+                leftIb.setOnClickListener { activity?.onBackPressed() }
+            }
             changeTv.setOnClickListener {
                 navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
             }
             timeRl.setOnClickListener {
                 navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
+            }
+            logs.setOnClickListener {
+                navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
             }
             biometricsSc.isClickable = false
             biometricsRl.setOnClickListener(biometricsClickListener)
@@ -56,6 +62,10 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
                 biometricsSc.isChecked = false
                 timeRl.visibility = GONE
             }
+            val url = Constants.HelpLink.TIP
+            val target = getString(R.string.wallet_pin_tops)
+            val desc = getString(R.string.wallet_pin_tops_desc)
+            tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }
     }
 
@@ -94,7 +104,7 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         } else {
             val bottomSheet =
                 PinBiometricsBottomSheetDialogFragment.newInstance(true)
-            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
+            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback() {
                 override fun onSuccess() {
                     updateWhenSuccess()
                 }

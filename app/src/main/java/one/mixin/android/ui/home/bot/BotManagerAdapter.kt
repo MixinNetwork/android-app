@@ -12,8 +12,8 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemBotManagerBinding
+import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.notEmptyWithElse
-import one.mixin.android.extension.tapVibrate
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 
@@ -84,7 +84,7 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
             return@setOnDragListener true
         }
         v.alpha = 0.2f
-        v.context.tapVibrate()
+        v.context.clickVibrate()
         return false
     }
 }

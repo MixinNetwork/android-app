@@ -8,6 +8,7 @@ import androidx.room.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.CallUser
+import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.User
 
@@ -53,8 +54,8 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId")
     fun findPlainUserByConversationId(conversationId: String): User?
 
-    @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
-    fun findContactByConversationId(conversationId: String): User?
+    @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u, conversations c LEFT JOIN apps a on u.app_id = a.app_id WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
+    fun findContactByConversationId(conversationId: String): ForwardUser?
 
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     suspend fun suspendFindContactByConversationId(conversationId: String): User?
@@ -105,28 +106,22 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
     fun findContactUsers(): LiveData<List<User>>
 
-    @Query(
-        """
-        SELECT u.user_id FROM users u INNER JOIN participants p ON p.user_id = u.user_id 
-        WHERE p.conversation_id = :conversationId AND u.identity_number = :appNumber
-        """
-    )
-    suspend fun findUserIdByAppNumber(conversationId: String, appNumber: String): String?
-
     @Query("SELECT * FROM users WHERE user_id IN (:userIds)")
     suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)"""
     )
     suspend fun findMultiCallUsersByIds(conversationId: String, userIds: Set<String>): List<CallUser>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id = :userId"""
     )
-    suspend fun findSelfCallUser(conversationId: String, userId: String): CallUser
+    suspend fun findSelfCallUser(conversationId: String, userId: String): CallUser?
 
     @Query("SELECT user_id FROM users WHERE identity_number IN (:identityNumbers)")
     fun findMultiUserIdsByIdentityNumbers(identityNumbers: Set<String>): List<String>
@@ -140,4 +135,7 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE app_id = :appId")
     suspend fun findUserByAppId(appId: String): User?
+
+    @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u INNER JOIN apps a on a.app_id = u.app_id WHERE u.user_id = :id")
+    fun findForwardUserById(id: String): ForwardUser?
 }

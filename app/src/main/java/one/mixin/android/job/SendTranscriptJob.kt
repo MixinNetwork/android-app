@@ -1,9 +1,7 @@
 package one.mixin.android.job
 
 import android.net.Uri
-import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
-import com.bugsnag.android.Bugsnag
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.getExtensionName
@@ -12,9 +10,11 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
@@ -26,7 +26,7 @@ import java.io.File
 
 class SendTranscriptJob(
     val message: Message,
-    val transcriptMessages: List<TranscriptMessage>,
+    private val transcriptMessages: List<TranscriptMessage>,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").persist(), message.id) {
 
@@ -57,12 +57,12 @@ class SendTranscriptJob(
             messageDao.insert(message)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
-                    val mediaUrl = transcript.mediaUrl
+                    val mediaUrl = Uri.parse(transcript.absolutePath())
                     if (mediaUrl == null) {
                         transcript.mediaUrl = null
                         transcript.mediaStatus = MediaStatus.DONE.name
                     } else {
-                        val file = File(Uri.parse(mediaUrl).path!!)
+                        val file = File(requireNotNull(Uri.parse(transcript.absolutePath()).path))
                         if (file.exists()) {
                             val outFile = MixinApplication.appContext.getTranscriptFile(
                                 transcript.messageId,
@@ -71,7 +71,7 @@ class SendTranscriptJob(
                             if (!outFile.exists() || outFile.length() <= 0) {
                                 file.copy(outFile)
                             }
-                            transcript.mediaUrl = outFile.toUri().toString()
+                            transcript.mediaUrl = outFile.name
                             transcript.mediaStatus = MediaStatus.CANCELED.name
                         } else {
                             transcript.mediaUrl = null
@@ -82,7 +82,7 @@ class SendTranscriptJob(
             }
             transcriptMessageDao.insertList(transcriptMessages)
         } else {
-            Bugsnag.notify(Throwable("Insert failed, no conversation exist"))
+            reportException(Throwable("Insert failed, no conversation exist"))
         }
     }
 

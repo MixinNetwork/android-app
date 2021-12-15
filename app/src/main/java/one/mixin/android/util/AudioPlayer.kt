@@ -27,9 +27,11 @@ import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.mediaDownloaded
+import one.mixin.android.widget.ChatControlView.Companion.PREVIEW
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
@@ -93,7 +95,7 @@ class AudioPlayer private constructor() {
 
         private var statusListener: StatusListener? = null
 
-        fun setStatusListener(statusListener: StatusListener) {
+        fun setStatusListener(statusListener: StatusListener?) {
             this.statusListener = statusListener
         }
 
@@ -104,6 +106,12 @@ class AudioPlayer private constructor() {
             whenPlayNewAudioMessage: ((Message) -> Unit)? = null
         ) {
             get().play(messageItem, autoPlayNext, continuePlayOnlyToday, whenPlayNewAudioMessage)
+        }
+        fun play(filePath: String) {
+            get().play(filePath)
+        }
+        fun clear() {
+            get().clear()
         }
     }
 
@@ -151,7 +159,7 @@ class AudioPlayer private constructor() {
                     if (error.cause is UnrecognizedInputFormatException) {
                         status = STATUS_ERROR
                         id?.let { id -> RxBus.publish(errorEvent(id)) }
-                        MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
+                        toast(R.string.error_not_supported_audio_format)
                         messageItem?.let {
                             MixinApplication.appContext.openMedia(it)
                         }
@@ -185,6 +193,26 @@ class AudioPlayer private constructor() {
         fun onStatusChange(status: Int)
     }
 
+    private fun clear() {
+        id = null
+        status = STATUS_PLAY
+        player.pause()
+        stopTimber()
+    }
+
+    private fun play(filePath: String) {
+        this.autoPlayNext = false
+        this.continuePlayOnlyToday = false
+        id = PREVIEW
+        player.loadAudio(filePath)
+        status = STATUS_PLAY
+        player.start()
+        id?.let {
+            RxBus.publish(playEvent(it))
+        }
+        startTimer()
+    }
+
     private fun play(
         messageItem: MessageItem,
         autoPlayNext: Boolean = true,
@@ -194,22 +222,22 @@ class AudioPlayer private constructor() {
         this.autoPlayNext = autoPlayNext
         this.continuePlayOnlyToday = continuePlayOnlyToday
         if (messageItem.mediaUrl == null) {
-            MixinApplication.appContext.toast(R.string.error_bad_data)
+            toast(R.string.error_bad_data)
             return
-        } else if (!messageItem.mediaUrl.fileExists()) {
-            MixinApplication.appContext.toast(R.string.error_file_exists)
+        } else if (!messageItem.absolutePath()!!.fileExists()) {
+            toast(R.string.error_file_exists)
             return
         }
         if (id != messageItem.messageId) {
             id = messageItem.messageId
             this.messageItem = messageItem
-            player.loadAudio(messageItem.mediaUrl)
+            player.loadAudio(messageItem.absolutePath()!!)
 
             if (autoPlayNext && messageItem.isAudio()) {
                 markAudioReadAndCheckNextAudioAvailable(messageItem, whenPlayNewAudioMessage)
             }
         } else if (status == STATUS_DONE || status == STATUS_ERROR) {
-            player.loadAudio(messageItem.mediaUrl)
+            player.loadAudio(messageItem.absolutePath()!!)
         }
         status = STATUS_PLAY
         player.start()
@@ -244,7 +272,7 @@ class AudioPlayer private constructor() {
         id?.let { id -> RxBus.publish(playEvent(id, p)) }
     }
 
-    var timerDisposable: Disposable? = null
+    private var timerDisposable: Disposable? = null
     var progress = 0f
     private fun startTimer() {
         if (timerDisposable == null) {

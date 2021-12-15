@@ -42,7 +42,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
-import com.bugsnag.android.Bugsnag
 import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.autoDispose
@@ -51,13 +50,18 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewChatControlBinding
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.media.AudioEndStatus
+import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.reportException
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.KeyboardLayout
 import org.jetbrains.anko.dip
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
@@ -70,6 +74,10 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
         const val RECORD_DELAY = 200L
         const val RECORD_TIP_MILLIS = 2000L
+
+        const val LONG_CLICK_DELAY = 400L
+
+        const val PREVIEW = "PREVIEW"
     }
 
     private enum class STATUS {
@@ -102,6 +110,11 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private val binding get() = _binding
     val chatEt get() = binding.chatEt
     val replyView get() = binding.replyView
+    val anchorView get() = if (replyView.isVisible) {
+        replyView
+    } else {
+        binding.chatSendIb
+    }
 
     private var controlState: STATUS = STATUS.COLLAPSED
         set(value) {
@@ -235,7 +248,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "ClickableViewAccessibility")
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
         context,
         attrs,
@@ -299,11 +312,21 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         initTransitions()
     }
 
-    fun showBot() {
+    fun showBot(isEncrypt: Boolean) {
         botHide = false
         binding.chatBotIv.visibility = View.VISIBLE
-        binding.chatEt.hint = context.getString(R.string.type_a_message)
+        hintEncrypt(isEncrypt)
         initTransitions()
+    }
+
+    fun hintEncrypt(isEncrypt: Boolean) {
+        binding.chatEt.hint = context.getString(
+            if (isEncrypt) {
+                R.string.end_to_end_encryption
+            } else {
+                R.string.type_a_message
+            }
+        )
     }
 
     fun toggleKeyboard(shown: Boolean) {
@@ -401,10 +424,51 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         checkSend(false)
     }
 
-    private fun handleCancelOrEnd(cancel: Boolean) {
-        if (cancel) callback.onRecordCancel() else callback.onRecordEnd()
+    private fun handleCancelOrEnd(status: AudioEndStatus) {
+        when (status) {
+            AudioEndStatus.SEND -> {
+                callback.onRecordSend()
+            }
+            AudioEndStatus.CANCEL -> {
+                callback.onRecordCancel()
+            }
+            AudioEndStatus.PREVIEW -> {
+                callback.onRecordPreview()
+            }
+        }
         cleanUp()
         updateRecordCircleAndSendIcon()
+    }
+
+    private var audioFile: File? = null
+    fun previewAudio(audioFile: File, waveForm: ByteArray, duration: Long, sendCallback: () -> Unit) {
+        AudioPlayer.clear()
+        binding.chatAudioWaveform.setWaveform(waveForm, true)
+        binding.chatAudioWaveform.setBind(PREVIEW)
+        binding.chatAudioPlay.setBind(PREVIEW)
+        this.audioFile?.deleteOnExit()
+        this.audioFile = audioFile
+        binding.chatAudioPlay.setOnClickListener {
+            if (AudioPlayer.isPlay(PREVIEW)) {
+                AudioPlayer.pause()
+            } else {
+                AudioPlayer.play(audioFile.absolutePath)
+            }
+        }
+        binding.chatAudioSend.setOnClickListener {
+            AudioPlayer.seekTo(0)
+            AudioPlayer.pause()
+            sendCallback.invoke()
+            binding.chatAudioLayout.isVisible = false
+        }
+        binding.chatAudioDelete.setOnClickListener {
+            AudioPlayer.seekTo(0)
+            AudioPlayer.pause()
+            audioFile.deleteOnExit()
+            binding.chatAudioLayout.isVisible = false
+        }
+        binding.chatAudioDuration.text = duration.formatMillis() ?: "00:00"
+        binding.chatAudioLayout.isVisible = true
     }
 
     private fun updateRecordCircleAndSendIcon() {
@@ -599,6 +663,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         remainFocusable()
     }
 
+    @SuppressLint("CheckResult")
     private val onChatImgClickListener = OnClickListener {
         RxPermissions(activity!! as FragmentActivity)
             .request(
@@ -812,8 +877,18 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                 return@OnTouchListener true
             }
             ACTION_MOVE -> {
+                if (sendStatus == SEND && !triggeredCancel) {
+                    if (System.currentTimeMillis() - startTime > LONG_CLICK_DELAY) {
+                        val text = binding.chatEt.text?.trim()?.toString()
+                        if (!text.isNullOrBlank()) {
+                            callback.onSendLongClick(text)
+                            triggeredCancel = true
+                            cleanUp()
+                        }
+                    }
+                    return@OnTouchListener true
+                }
                 if (!currentAudio() || recordCircle.locked || !hasStartRecord) return@OnTouchListener false
-
                 val x = recordCircle.setLockTranslation(event.y)
                 if (x == 2) {
                     ObjectAnimator.ofFloat(
@@ -834,7 +909,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     binding.chatSlide.slideText(startX - moveX)
                     if (originX - moveX > maxScrollX) {
                         removeRecordRunnable()
-                        handleCancelOrEnd(true)
+                        handleCancelOrEnd(AudioEndStatus.CANCEL)
                         binding.chatSlide.parent.requestDisallowInterceptTouchEvent(false)
                         triggeredCancel = true
                         return@OnTouchListener false
@@ -859,10 +934,10 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     }
                 } else if (!isRecording) {
                     removeRecordRunnable()
-                    handleCancelOrEnd(true)
+                    handleCancelOrEnd(AudioEndStatus.CANCEL)
                 } else if (!recordCircle.locked) {
                     removeRecordRunnable()
-                    handleCancelOrEnd(false)
+                    handleCancelOrEnd(AudioEndStatus.SEND)
                 } else {
                     cleanUp(true)
                 }
@@ -905,7 +980,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
                     )
                     .autoDispose(this)
-                    .subscribe({}, { Bugsnag.notify(it) })
+                    .subscribe({}, { reportException(it) })
                 return@Runnable
             }
             callback.onRecordStart(sendStatus == AUDIO)
@@ -934,31 +1009,37 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
 
     private val chatSlideCallback = object : SlidePanelView.Callback {
         override fun onTimeout() {
-            handleCancelOrEnd(false)
+            handleCancelOrEnd(AudioEndStatus.SEND)
         }
 
         override fun onCancel() {
-            handleCancelOrEnd(true)
+            handleCancelOrEnd(AudioEndStatus.CANCEL)
         }
     }
 
     private val recordCircleCallback = object : RecordCircleView.Callback {
         override fun onSend() {
-            handleCancelOrEnd(false)
+            handleCancelOrEnd(AudioEndStatus.SEND)
         }
 
         override fun onCancel() {
-            handleCancelOrEnd(true)
+            handleCancelOrEnd(AudioEndStatus.CANCEL)
+        }
+
+        override fun onPreview() {
+            handleCancelOrEnd(AudioEndStatus.PREVIEW)
         }
     }
 
     interface Callback {
         fun onStickerClick()
         fun onSendClick(text: String)
+        fun onSendLongClick(text: String)
         fun onRecordStart(audio: Boolean)
         fun isReady(): Boolean
-        fun onRecordEnd()
+        fun onRecordSend()
         fun onRecordCancel()
+        fun onRecordPreview()
         fun onCalling()
         fun onMenuClick()
         fun onBotClick()

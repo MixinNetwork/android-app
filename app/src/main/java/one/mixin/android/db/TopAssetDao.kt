@@ -21,4 +21,11 @@ interface TopAssetDao : BaseDao<TopAsset> {
     """
     )
     fun topAssets(): LiveData<List<TopAssetItem>>
+
+    @Query(
+        """
+        DELETE FROM top_assets WHERE asset_id NOT IN (:ids)
+    """
+    )
+    suspend fun deleteNotInIds(ids: List<String>)
 }

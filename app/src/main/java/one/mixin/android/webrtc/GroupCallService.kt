@@ -18,7 +18,6 @@ import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
-import one.mixin.android.db.findFullNameById
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.SenderKeyChange
@@ -33,13 +32,15 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.MessageResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
+import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.vo.CallType
 import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.ParticipantSessionSent
 import one.mixin.android.vo.Sdp
 import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.createCallMessage
@@ -162,11 +163,13 @@ class GroupCallService : CallService() {
         reconnectingTimeoutFuture?.cancel(true)
         reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), RECONNECTING_TIMEOUT, TimeUnit.SECONDS)
 
-        val pc = peerConnectionClient.getPeerConnection()
-        if (pc != null) {
-            callState.reconnecting = true
-            pc.close()
-        } else {
+        callState.reconnecting = true
+        callExecutor.execute {
+            val pc = peerConnectionClient.getPeerConnection()
+            if (pc != null && pc.connectionState() != PeerConnection.PeerConnectionState.CLOSED) {
+                Timber.d("$TAG_CALL reconnect pc.close()")
+                pc.close()
+            }
             publish(conversationId)
         }
     }
@@ -200,12 +203,10 @@ class GroupCallService : CallService() {
                 if (event.conversationId != conversationId) {
                     return@subscribe
                 }
+                Timber.d("$TAG_CALL SenderKeyChange: $event")
                 if (event.userId != null && event.sessionId != null) {
-                    val users = callState.getUsers(event.conversationId) ?: return@subscribe
-                    if (users.contains(event.userId)) {
-                        val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
-                        peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
-                    }
+                    val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
+                    peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
                 } else if (event.userId != null) {
                     checkSessionSenderKey(event.conversationId)
                 } else {
@@ -275,14 +276,7 @@ class GroupCallService : CallService() {
     private fun handleCheckPeer(intent: Intent) {
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         requireNotNull(cid)
-
-        val peerList = sendPeer(cid) ?: return
-        Timber.d("$TAG_CALL handleCheckPeer : ${peerList.peers}")
-        if (peerList.peers.isNullOrEmpty()) return
-
-        val userIdList = arrayListOf<String>()
-        peerList.peers.mapTo(userIdList) { it.userId }
-        callState.setUsersByConversationId(cid, userIdList)
+        getPeers(cid, true)
     }
 
     private fun startCheckPeers(cid: String) {
@@ -300,7 +294,7 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun getPeers(conversationId: String) {
+    private fun getPeers(conversationId: String, setWhenCurrentListEmpty: Boolean = false) {
         val peerList = sendPeer(conversationId) ?: return
         Timber.d("$TAG_CALL getPeers : ${peerList.peers}")
         if (peerList.peers.isNullOrEmpty()) {
@@ -319,6 +313,11 @@ class GroupCallService : CallService() {
                     userIdList
                 )
             }
+        } else if (currentList == null && setWhenCurrentListEmpty) {
+            callState.setUsersByConversationId(
+                conversationId,
+                userIdList
+            )
         }
     }
 
@@ -356,28 +355,42 @@ class GroupCallService : CallService() {
             }
             return
         }
+        val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
+        if (playRing) {
+            if (isDisconnected.compareAndSet(true, false)) {
+                callState.state = CallState.STATE_RINGING
+                callState.callType = CallType.Group
+                updateForegroundNotification()
+                callState.conversationId = cid
+                userId?.let {
+                    callState.setInviter(cid, it)
+                    callState.addPendingUsers(cid, arrayListOf(it))
+                }
+                callState.isOffer = false
+                timeoutFuture = timeoutExecutor.schedule(
+                    TimeoutRunnable(),
+                    DEFAULT_TIMEOUT_MINUTES,
+                    TimeUnit.MINUTES
+                )
+                CallActivity.show(this, !playRing)
+                audioManager.start(false, playRing)
+                startCheckPeers(cid)
 
-        if (isDisconnected.compareAndSet(true, false)) {
-            callState.state = CallState.STATE_RINGING
+                userId?.let {
+                    saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+                }
+            }
+        } else {
+            callState.state = CallState.STATE_IDLE
             callState.callType = CallType.Group
-            updateForegroundNotification()
             callState.conversationId = cid
             userId?.let {
                 callState.setInviter(cid, it)
                 callState.addPendingUsers(cid, arrayListOf(it))
             }
             callState.isOffer = false
-            val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
-            if (playRing) {
-                timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-            }
-            CallActivity.show(this, !playRing)
-            audioManager.start(false, playRing)
             startCheckPeers(cid)
-
-            userId?.let {
-                saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
-            }
+            CallActivity.show(this, !playRing)
         }
     }
 
@@ -399,10 +412,6 @@ class GroupCallService : CallService() {
 
         callState.removeUser(cid, userId)
         saveMessage(cid, userId, MessageCategory.KRAKEN_CANCEL.name)
-        val fullName = database.findFullNameById(userId)
-        mainThread {
-            toast(getString(R.string.chat_group_call_cancel, fullName))
-        }
         if (callState.isBeforeAnswering()) {
             disconnect()
             checkConversationUserCount(cid)
@@ -417,10 +426,6 @@ class GroupCallService : CallService() {
 
         callState.removeUser(cid, userId)
         saveMessage(cid, userId, MessageCategory.KRAKEN_DECLINE.name)
-        val fullName = database.findFullNameById(userId)
-        mainThread {
-            toast(getString(R.string.chat_group_call_decline, fullName))
-        }
     }
 
     private fun handleAcceptInvite() {
@@ -433,6 +438,7 @@ class GroupCallService : CallService() {
         }
         if (callState.isAnswering()) return
 
+        isDisconnected.set(false)
         callState.state = CallState.STATE_ANSWERING
         callState.callType = CallType.Group
         updateForegroundNotification()
@@ -547,11 +553,19 @@ class GroupCallService : CallService() {
         cid?.let { checkConversationUserCount(cid) }
     }
 
+    override fun needInitWebRtc(action: String) = action != ACTION_CHECK_PEER
+
     override fun onConnected() {
         super.onConnected()
         callExecutor.execute {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
+
+            val cid = callState.conversationId ?: return@execute
+            val needMute = callState.needMuteWhenJoin(cid)
+            if (needMute) {
+                muteAudio<GroupCallService>(this, true)
+            }
         }
     }
 
@@ -729,7 +743,7 @@ class GroupCallService : CallService() {
         } else if (bm.error != null) {
             Timber.d("$TAG_CALL $bm")
             return when (bm.error.code) {
-                ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                     blazeMessage.params?.conversation_id?.let {
                         syncConversation(it)
                         // send sender key
@@ -738,14 +752,24 @@ class GroupCallService : CallService() {
                     blazeMessage.id = UUID.randomUUID().toString()
                     webSocketChannel(blazeMessage)
                 }
-                ErrorHandler.FORBIDDEN -> {
+                FORBIDDEN -> {
+                    val cid = blazeMessage.params?.conversation_id
+                    Timber.d("$TAG_CALL  ${blazeMessage.action} meet error code FORBIDDEN, conversation id: $cid")
+                    cid?.let {
+                        RxBus.publish(CallEvent(it, FORBIDDEN, blazeMessage.action))
+                    }
+                    if (blazeMessage.action == LIST_KRAKEN_PEERS) {
+                        callExecutor.execute {
+                            handleLocalEnd()
+                        }
+                    }
                     null
                 }
                 ERROR_ROOM_FULL -> {
                     val cid = blazeMessage.params?.conversation_id
                     Timber.d("$TAG_CALL try to publish and join a group call, but the room is full, conversation id: $cid.")
                     cid?.let {
-                        RxBus.publish(CallEvent(it))
+                        RxBus.publish(CallEvent(it, ERROR_ROOM_FULL))
                     }
                     disconnect()
                     null
@@ -829,9 +853,9 @@ class GroupCallService : CallService() {
                 val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
                 if (noKeyList.isNotEmpty()) {
                     val sentSenderKeys = noKeyList.map {
-                        ParticipantSession(conversationId, it.user_id, it.session_id!!, SenderKeyStatus.UNKNOWN.ordinal)
+                        ParticipantSessionSent(conversationId, it.user_id, it.session_id!!, SenderKeyStatus.UNKNOWN.ordinal)
                     }
-                    participantSessionDao.updateList(sentSenderKeys)
+                    participantSessionDao.updateParticipantSessionSent(sentSenderKeys)
                 }
             }
         }
@@ -846,9 +870,9 @@ class GroupCallService : CallService() {
         }
         if (result.success) {
             val sentSenderKeys = signalKeyMessages.map {
-                ParticipantSession(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
+                ParticipantSessionSent(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
             }
-            participantSessionDao.updateList(sentSenderKeys)
+            participantSessionDao.updateParticipantSessionSent(sentSenderKeys)
         }
     }
 
@@ -861,13 +885,13 @@ class GroupCallService : CallService() {
             }
             bm.error != null -> {
                 return when (bm.error.code) {
-                    ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                    CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                         blazeMessage.params?.conversation_id?.let {
                             syncConversation(it)
                         }
                         MessageResult(false, retry = true)
                     }
-                    ErrorHandler.FORBIDDEN -> {
+                    FORBIDDEN -> {
                         MessageResult(true, retry = false)
                     }
                     else -> {
@@ -893,18 +917,22 @@ class GroupCallService : CallService() {
     }
 
     private fun syncConversation(conversationId: String) {
-        val response = conversationApi.getConversation(conversationId).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let { data ->
-                val remote = data.participants.map {
-                    Participant(conversationId, it.userId, it.role, it.createdAt!!)
-                }
-                participantDao.replaceAll(conversationId, remote)
+        try {
+            val response = conversationApi.getConversation(conversationId).execute().body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { data ->
+                    val remote = data.participants.map {
+                        Participant(conversationId, it.userId, it.role, it.createdAt!!)
+                    }
+                    participantDao.replaceAll(conversationId, remote)
 
-                data.participantSessions?.let {
-                    syncParticipantSession(conversationId, it)
+                    data.participantSessions?.let {
+                        syncParticipantSession(conversationId, it)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Timber.w(e)
         }
     }
 

@@ -43,12 +43,12 @@
             android:layout_marginTop="22dp"
             android:layout_marginStart="20dp"/>
 
-        <one.mixin.android.widget.KerningTextView
+        <TextView
             android:id="@+id/balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxWidth="200dp"
-            android:fontFamily="@font/mixin_condensed"
+            android:fontFamily="@font/mixin_font"
             app:kv_spacing="0.7"
             android:textSize="24sp"
             android:layout_alignTop="@+id/avatar"

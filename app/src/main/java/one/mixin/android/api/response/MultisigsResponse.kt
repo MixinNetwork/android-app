@@ -29,11 +29,3 @@ class MultisigsResponse(
     val createdAt: String,
     val memo: String?
 ) : Parcelable
-
-enum class MultisigsAction {
-    cancel, sign, unlock
-}
-
-enum class MultisigsState {
-    initial, unlocked, signed
-}

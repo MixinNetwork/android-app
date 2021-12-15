@@ -20,6 +20,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
@@ -40,7 +41,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
-class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
+class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<AssetBiometricItem>() {
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
 
@@ -50,7 +51,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             }
     }
 
-    private val t: BiometricItem by lazy {
+    private val t: AssetBiometricItem by lazy {
         requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
     }
 
@@ -132,7 +133,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         val trace: Trace
-        val request = when (val t = this.t) {
+        val response = when (val t = this.t) {
             is TransferBiometricItem -> {
                 trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
                 bottomViewModel.transfer(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
@@ -145,7 +146,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         }
         bottomViewModel.insertTrace(trace)
         bottomViewModel.deletePreviousTraces()
-        return request
+        return response
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
@@ -156,12 +157,15 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 updateFirstWithdrawalSet(t)
             }
         }
+        val data = response.data
+        if (data is Snapshot) {
+            bottomViewModel.insertSnapshot(data)
+        }
 
         t.traceId?.let { traceId ->
             lifecycleScope.launch {
                 val trace = bottomViewModel.suspendFindTraceById(traceId)
                 if (trace != null) {
-                    val data = response.data
                     if (data is Snapshot) {
                         trace.snapshotId = data.snapshotId
                         bottomViewModel.insertTrace(trace)
@@ -186,6 +190,14 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         ) {
             t.traceId?.let { traceId ->
                 bottomViewModel.suspendDeleteTraceById(traceId)
+            }
+
+            if (errorCode == INSUFFICIENT_TRANSACTION_FEE && t is WithdrawBiometricItem) {
+                val item = t as WithdrawBiometricItem
+                return getString(
+                    R.string.error_insufficient_transaction_fee_with_amount,
+                    INSUFFICIENT_TRANSACTION_FEE, "${item.fee} ${t.asset.chainSymbol}"
+                )
             }
         } else if (errorCode == ErrorHandler.WITHDRAWAL_FEE_TOO_SMALL) {
             if (t is WithdrawBiometricItem) {

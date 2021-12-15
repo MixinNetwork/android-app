@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.view.View
-import androidx.core.text.color
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.skydoves.balloon.BalloonAnimation
@@ -50,7 +49,7 @@ interface TransactionInterface {
                     val asset = walletViewModel.simpleAssetItem(assetId)
                     val snapshot = walletViewModel.snapshotLocal(assetId, snapshotId)
                     if (asset == null || snapshot == null) {
-                        fragment.context?.toast(R.string.error_data)
+                        toast(R.string.error_data)
                     } else {
                         contentBinding.avatar.setOnClickListener {
                             clickAvatar(fragment, asset)
@@ -75,7 +74,7 @@ interface TransactionInterface {
                     }
                 }
             } else {
-                fragment.toast(R.string.error_data)
+                toast(R.string.error_data)
             }
         } else {
             contentBinding.avatar.setOnClickListener {
@@ -276,11 +275,8 @@ interface TransactionInterface {
             val symbolColor = fragment.requireContext().colorFromAttribute(R.attr.text_primary)
             valueTv.text = buildAmountSymbol(fragment.requireContext(), amountText, asset.symbol, amountColor, symbolColor)
             val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).numberFormat2()
-            val pricePerUnit = if (BuildConfig.DEBUG) {
+            val pricePerUnit =
                 "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
-            } else {
-                ""
-            }
 
             valueAsTv.text = fragment.getString(
                 R.string.wallet_transaction_current_value,

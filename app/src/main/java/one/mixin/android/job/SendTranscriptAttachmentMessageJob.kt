@@ -3,18 +3,18 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
+import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.GsonHelper
@@ -22,6 +22,8 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
+import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isValidAttachment
@@ -59,7 +61,6 @@ class SendTranscriptAttachmentMessageJob(
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
 
-    @DelicateCoroutinesApi
     override fun onRun() {
         if (transcriptMessage.isPlain() == isPlain) {
             if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
@@ -96,7 +97,7 @@ class SendTranscriptAttachmentMessageJob(
         }
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
         disposable = conversationApi.requestAttachment().map {
-            val file = File(requireNotNull(Uri.parse(transcriptMessage.mediaUrl).path))
+            val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
             if (it.isSuccess && !isCancelled) {
                 val result = it.data!!
                 processAttachment(transcriptMessage, file, result)
@@ -122,7 +123,6 @@ class SendTranscriptAttachmentMessageJob(
         )
     }
 
-    @DelicateCoroutinesApi
     private fun processAttachment(transcriptMessage: TranscriptMessage, file: File, attachResponse: AttachmentResponse): Boolean {
         val key = if (transcriptMessage.isPlain()) {
             null
@@ -132,8 +132,8 @@ class SendTranscriptAttachmentMessageJob(
         val inputStream = try {
             MixinApplication.appContext.contentResolver.openInputStream(Uri.fromFile(file))
         } catch (e: FileNotFoundException) {
-            GlobalScope.launch(Dispatchers.Main) {
-                MixinApplication.get().toast(R.string.error_file_exists)
+            MixinApplication.appScope.launch(Dispatchers.Main) {
+                toast(R.string.error_file_exists)
             }
             return false
         }
@@ -153,6 +153,7 @@ class SendTranscriptAttachmentMessageJob(
                 } catch (e: Exception) {
                     0f
                 }
+                RxBus.publish(ProgressEvent.loadingEvent("${transcriptMessage.transcriptId}${transcriptMessage.messageId}", pg))
             }
         val digest = try {
             if (isPlain) {
@@ -164,8 +165,8 @@ class SendTranscriptAttachmentMessageJob(
         } catch (e: Exception) {
             Timber.e(e)
             if (e is SocketTimeoutException) {
-                GlobalScope.launch(Dispatchers.Main) {
-                    MixinApplication.get().toast(R.string.upload_timeout)
+                MixinApplication.appScope.launch(Dispatchers.Main) {
+                    toast(R.string.upload_timeout)
                 }
             }
             removeJob()
@@ -204,7 +205,12 @@ class SendTranscriptAttachmentMessageJob(
         val transcripts = transcriptMessageDao.getTranscript(transcriptId)
         list.addAll(transcripts)
         transcripts.asSequence().apply {
-            forEach { t -> t.mediaUrl = null }
+            forEach { t ->
+                if (t.isAttachment()) {
+                    t.mediaUrl = null
+                    t.mediaStatus = null
+                }
+            }
         }.filter { t -> t.isTranscript() }.forEach { transcriptMessage ->
             getTranscripts(transcriptMessage.messageId, list)
         }
