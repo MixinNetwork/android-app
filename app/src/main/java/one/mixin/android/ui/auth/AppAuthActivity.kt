@@ -13,6 +13,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.reportException
 
 class AppAuthActivity : BaseActivity() {
     companion object {
@@ -65,9 +66,13 @@ class AppAuthActivity : BaseActivity() {
     }
 
     private fun pressHome() {
-        Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-            startActivity(this)
+        try {
+            Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                startActivity(this)
+            }
+        } catch (e: Exception) {
+            reportException("AppAuth pressHome", e)
         }
     }
 
