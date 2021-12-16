@@ -11,8 +11,9 @@ import android.text.TextUtils
 import android.text.style.BackgroundColorSpan
 import android.util.AttributeSet
 import android.view.View
+import android.widget.TextView
 import androidx.annotation.ColorInt
-import androidx.appcompat.widget.AppCompatTextView
+import androidx.emoji2.widget.EmojiTextView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -29,7 +30,7 @@ import java.util.LinkedList
 import java.util.regex.Pattern
 
 open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
-    AppCompatTextView(context, attrs) {
+    EmojiTextView(context, attrs) {
 
     private var coroutineScope: CoroutineScope? = null
     private var autoLinkOnClickListener: ((AutoLinkMode, String) -> Unit)? = null
@@ -58,7 +59,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             }
         }
 
-    override fun setText(text: CharSequence, type: BufferType) {
+    override fun setText(text: CharSequence, type: TextView.BufferType) {
         if (TextUtils.isEmpty(text)) {
             super.setText(text, type)
             return

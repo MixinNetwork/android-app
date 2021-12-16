@@ -10,17 +10,17 @@ import android.util.AttributeSet
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
 import android.view.inputmethod.InputConnection
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.core.view.inputmethod.InputContentInfoCompat
+import androidx.emoji2.widget.EmojiEditText
 import one.mixin.android.Constants
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.widget.gallery.MimeType
 
-open class ContentEditText : AppCompatEditText {
+open class ContentEditText : EmojiEditText {
 
     constructor(context: Context) : super(context)
 
