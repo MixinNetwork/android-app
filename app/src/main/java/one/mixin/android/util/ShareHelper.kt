@@ -8,6 +8,7 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.addTo
 import one.mixin.android.vo.systemMediaToMessage
 
@@ -44,7 +45,7 @@ class ShareHelper {
                 }
             } else if (type.startsWith("image/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                imageUri?.systemMediaToMessage(ShareCategory.Image)?.addTo(result)
+                ForwardMessage(ShareCategory.Image, GsonHelper.customGson.toJson(ShareImageData(imageUri.toString()))).addTo(result)
             } else if (type.startsWith("video/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                 imageUri?.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
