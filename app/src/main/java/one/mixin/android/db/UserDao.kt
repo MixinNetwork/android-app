@@ -136,6 +136,6 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE app_id = :appId")
     suspend fun findUserByAppId(appId: String): User?
 
-    @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u INNER JOIN apps a on a.app_id = u.app_id WHERE u.user_id = :id")
+    @Query("SELECT u.user_id, u.app_id, a.capabilities FROM users u LEFT JOIN apps a on a.app_id = u.app_id WHERE u.user_id = :id")
     fun findForwardUserById(id: String): ForwardUser?
 }
