@@ -7,14 +7,20 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentAuthenticationsBinding
@@ -28,6 +34,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) {
@@ -62,18 +70,43 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                     override fun onSuccess(url: String) {
                         list?.removeIf { it.appId == app.appId }
                         authResponseList?.removeIf { it.app.appId == app.appId }
-                        WebView(requireContext()).apply {
-                            settings.javaScriptEnabled = true
-                            settings.domStorageEnabled = true
-                            webViewClient = object: WebViewClient(){
-                                override fun onPageFinished(webView: WebView, url: String?) {
-                                    super.onPageFinished(webView, url)
-                                    webView.loadUrl("javascript:localStorage.clear()")
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val latch = CountDownLatch(1)
+                            withContext((Dispatchers.Main)) {
+                                WebView(requireContext()).apply {
+                                    settings.javaScriptEnabled = true
+                                    settings.domStorageEnabled = true
+                                    webViewClient = object : WebViewClient() {
+                                        override fun onPageFinished(
+                                            webView: WebView,
+                                            url: String?
+                                        ) {
+                                            super.onPageFinished(webView, url)
+                                            webView.loadUrl("javascript:localStorage.clear()")
+                                            endLoading(webView)
+                                        }
+
+                                        override fun onReceivedError(
+                                            view: WebView?,
+                                            request: WebResourceRequest?,
+                                            error: WebResourceError?
+                                        ) {
+                                            super.onReceivedError(view, request, error)
+                                            view?.let { endLoading(it) }
+                                        }
+
+                                        private fun endLoading(webView: WebView) {
+                                            webView.webViewClient = WebViewClient()
+                                            webView.stopLoading()
+                                            latch.countDown()
+                                        }
+                                    }
+                                    loadUrl(url)
                                 }
+                                dataChange()
                             }
-                            loadUrl(url)
+                            latch.await(10, TimeUnit.SECONDS)
                         }
-                        dataChange()
                     }
                 }
                 binding.searchEt.hideKeyboard()
