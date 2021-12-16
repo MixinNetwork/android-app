@@ -85,6 +85,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
                         if (result) {
                             bottomViewModel.refreshConversation(c.conversationId)
                             ConversationActivity.showAndClear(requireContext(), c.conversationId)
+                            dismiss()
                         }
                     } else {
                         ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
