@@ -16,7 +16,7 @@ android {
     ndkVersion "23.0.7599858"
     defaultConfig {
         applicationId "one.mixin.messenger"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -210,6 +210,11 @@ dependencies {
     implementation "androidx.room:room-rxjava2:${roomVersion}"
     implementation "androidx.room:room-ktx:${roomVersion}"
     testImplementation "androidx.room:room-testing:${roomVersion}"
+
+    // emoji
+    implementation "androidx.emoji:emoji:${emojiVerison}"
+    implementation "androidx.emoji:emoji-appcompat:${emojiVerison}"
+    implementation "androidx.emoji:emoji-bundled:${emojiVerison}"
 
     // DI
     implementation "com.google.dagger:hilt-android:${hiltVersion}"

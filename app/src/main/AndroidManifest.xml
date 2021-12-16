@@ -381,6 +381,9 @@
             <meta-data
                 android:name="one.mixin.android.startup.AndroidThreeTenInitializer"
                 android:value="androidx.startup" />
+            <meta-data
+                android:name="one.mixin.android.startup.EmojiAppInitializer"
+                android:value="androidx.startup" />
         </provider>
 
         <meta-data
