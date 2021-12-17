@@ -55,6 +55,12 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                 setPageMargin(30.dp, 10.dp)
                     .addPageTransformer(ScaleTransformer())
             }
+            bannerAdapter.bannerListener = object : BannerListener {
+                override fun onBannerClick(banner: Banner) {
+                    StickerAlbumBottomSheetFragment.newInstance(banner.albumId)
+                        .showNow(parentFragmentManager, StickerAlbumBottomSheetFragment.TAG)
+                }
+            }
             albumRv.apply {
                 setHasFixedSize(true)
                 layoutManager = LinearLayoutManager(requireContext())
@@ -64,7 +70,7 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                 val banners = albums
                     .filter { !it.banner.isNullOrEmpty() }
                     .take(3)
-                    .map { Banner(requireNotNull(it.banner)) }
+                    .map { Banner(it.albumId, requireNotNull(it.banner)) }
                 bannerAdapter.data = banners
 
                 lifecycleScope.launch {

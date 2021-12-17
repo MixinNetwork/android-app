@@ -16,6 +16,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
@@ -65,6 +66,11 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 layoutManager =
                     LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
                 this.adapter = adapter
+            }
+            adapter.stickerListener = object : StickerListener {
+                override fun onItemClick(sticker: Sticker) {
+                    previewIv.loadImage(sticker.assetUrl)
+                }
             }
         }
         lifecycleScope.launchWhenCreated {
