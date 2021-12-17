@@ -23,6 +23,7 @@ import one.mixin.android.databinding.ItemPermissionListBinding
 import one.mixin.android.databinding.LayoutPermissionListFootBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
 import one.mixin.android.ui.common.BaseFragment
@@ -88,13 +89,19 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
             }
             .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                    setCancelable(false)
+                }
                 viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe(
                     {
                         clearRelatedCookies(app)
-                        deauthCallback?.onSuccess()
+                        deauthCallback?.onSuccess(app.homeUri)
+
+                        pb.dismiss()
                         activity?.onBackPressed()
                     },
                     {
+                        pb.dismiss()
                         ErrorHandler.handleError(it)
                     }
                 )
@@ -143,6 +150,6 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
     var deauthCallback: DeauthCallback? = null
 
     interface DeauthCallback {
-        fun onSuccess()
+        fun onSuccess(url: String)
     }
 }

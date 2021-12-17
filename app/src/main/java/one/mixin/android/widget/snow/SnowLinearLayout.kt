@@ -32,7 +32,7 @@ class SnowLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout(con
     private val freeParticles = ArrayList<SnowParticle>()
     private var color = 0
     private val accelerateInterpolator = AccelerateInterpolator()
-    private val display = System.currentTimeMillis() <= 1609689600000L // Easter Egg
+    private val display = System.currentTimeMillis() in 1640275200000..1641225600000 // Easter Egg
 
     init {
         setWillNotDraw(false)

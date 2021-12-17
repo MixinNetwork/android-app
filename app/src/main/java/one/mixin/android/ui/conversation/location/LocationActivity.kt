@@ -358,8 +358,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
         locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 100f, mLocationListener)
     }
 
-    override fun onMapReady(googleMap: GoogleMap?) {
-        googleMap ?: return
+    override fun onMapReady(googleMap: GoogleMap) {
         mixinMapView.googleMap = googleMap
         if (this.isNightMode()) {
             val style = MapStyleOptions.loadRawResourceStyle(applicationContext, R.raw.mapstyle_night)
@@ -420,11 +419,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
             Timber.e(e)
         }
         with(googleMap) {
-            uiSettings?.isMyLocationButtonEnabled = false
-            uiSettings?.isZoomControlsEnabled = false
-            uiSettings?.isCompassEnabled = false
-            uiSettings?.isIndoorLevelPickerEnabled = false
-            uiSettings?.isRotateGesturesEnabled = false
+            uiSettings.isMyLocationButtonEnabled = false
+            uiSettings.isZoomControlsEnabled = false
+            uiSettings.isCompassEnabled = false
+            uiSettings.isIndoorLevelPickerEnabled = false
+            uiSettings.isRotateGesturesEnabled = false
         }
         googleMap.setOnCameraMoveStartedListener { reason ->
             if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {

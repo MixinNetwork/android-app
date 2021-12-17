@@ -40,6 +40,7 @@ class ConvertDataJob(
         jobManager.saveJob(this)
 
         message.mediaUrl?.getFilePath()?.let { _ ->
+            // Here mediaUrl is the full url.
             val inputStream = MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl)) ?: return@let
             val extensionName = message.name?.getExtensionName()
             val file = MixinApplication.appContext.getDocumentPath().createDocumentTemp(message.conversationId, message.id, extensionName)

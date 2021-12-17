@@ -7,6 +7,7 @@ import androidx.annotation.LayoutRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
+import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -16,6 +17,8 @@ import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getDeviceId
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
@@ -93,6 +96,7 @@ abstract class PinCodeFragment(@LayoutRes contentLayoutId: Int) : FabLoadingFrag
         Session.storeEd25519Seed(privateKey.seed.base64Encode())
         Session.storePinToken(pinToken.base64Encode())
         Session.storeAccount(account)
+        defaultSharedPreferences.putString(DEVICE_ID, requireContext().getDeviceId())
 
         verificationKeyboard.animate().translationY(300f).start()
         MixinApplication.get().onlining.set(true)

@@ -81,6 +81,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -220,6 +221,7 @@ class MainActivity : BlazeBaseActivity() {
         if (deviceId == null) {
             defaultSharedPreferences.putString(DEVICE_ID, this.getDeviceId())
         } else if (deviceId != this.getDeviceId()) {
+            defaultSharedPreferences.remove(DEVICE_ID)
             MixinApplication.get().closeAndClear()
             finish()
             return

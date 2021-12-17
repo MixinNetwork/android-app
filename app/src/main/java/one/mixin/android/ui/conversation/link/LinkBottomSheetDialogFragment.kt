@@ -777,10 +777,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private suspend fun checkAsset(assetId: String): AssetItem? {
-        val asset = linkViewModel.findAssetItemById(assetId)
+        var asset = linkViewModel.findAssetItemById(assetId)
         if (asset == null) {
-            linkViewModel.refreshAsset(assetId)
-        } else if (asset.assetId != asset.chainId && linkViewModel.findAssetItemById(asset.chainId) == null) {
+            asset = linkViewModel.refreshAsset(assetId)
+        }
+        if (asset != null && asset.assetId != asset.chainId && linkViewModel.findAssetItemById(asset.chainId) == null) {
             linkViewModel.refreshAsset(asset.chainId)
         }
         return linkViewModel.findAssetItemById(assetId)
