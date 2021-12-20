@@ -773,9 +773,10 @@ class WebFragment : BaseFragment() {
     private fun isBot() = app != null
     private var hold = false
     private var icon: Bitmap? = null
-    private fun generateWebClip(): WebClip {
+    private fun generateWebClip(): WebClip? {
         val currentUrl = webView.url ?: url
         val v = webView
+        if (v.height <= 0) return null
         val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
         val c = Canvas(screenshot)
         c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
@@ -809,7 +810,9 @@ class WebFragment : BaseFragment() {
         webView.stopLoading()
         when {
             hold -> {
-                holdClip(generateWebClip())
+                generateWebClip()?.let { webClip ->
+                    holdClip(webClip)
+                }
             }
             index < 0 -> {
                 webView.destroy()
@@ -817,7 +820,9 @@ class WebFragment : BaseFragment() {
                 webView.webChromeClient = null
             }
             else -> {
-                updateClip(index, generateWebClip())
+                generateWebClip()?.let { webClip ->
+                    updateClip(index, webClip)
+                }
             }
         }
         unregisterForContextMenu(webView)
