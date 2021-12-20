@@ -142,6 +142,13 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
         behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    try {
+                        super@CallBottomSheetDialogFragment.dismissAllowingStateLoss()
+                    } catch (e: IllegalStateException) {
+                        Timber.i(e)
+                    }
+                }
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
