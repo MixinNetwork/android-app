@@ -39,6 +39,7 @@
                 android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/about_follow_twitter"
                 android:textColor="@color/colorBlue"
+                android:foreground="?attr/selectableItemBackground"
                 android:textSize="16sp" />
 
             <TextView
@@ -50,6 +51,7 @@
                 android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/about_follow_facebook"
                 android:textColor="@color/colorBlue"
+                android:foreground="?attr/selectableItemBackground"
                 android:textSize="16sp" />
 
             <TextView
@@ -61,6 +63,7 @@
                 android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/about_help_center"
                 android:textColor="@color/colorBlue"
+                 android:foreground="?attr/selectableItemBackground"
                 android:textSize="16sp" />
 
             <TextView
@@ -72,6 +75,7 @@
                 android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/landing_terms_service"
                 android:textColor="@color/colorBlue"
+                 android:foreground="?attr/selectableItemBackground"
                 android:textSize="16sp" />
 
             <TextView
@@ -83,18 +87,41 @@
                 android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/landing_privacy_policy"
                 android:textColor="@color/colorBlue"
+                 android:foreground="?attr/selectableItemBackground"
                 android:textSize="16sp" />
 
-            <TextView
-                android:id="@+id/checkUpdates"
+            <LinearLayout
+                android:id="@+id/checkUpdatesLl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
-                android:gravity="center_vertical"
-                android:paddingStart="@dimen/activity_horizontal_margin"
-                android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/landing_check_updates"
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp" />
+                android:orientation="horizontal"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/checkUpdates"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/landing_check_updates"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/newVersion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:text="@string/version_title"
+                    android:textColor="@color/colorRed"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:background="@drawable/bg_round_red"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/database"
@@ -105,6 +132,7 @@
                 android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/database_debug"
                 android:textColor="@color/colorBlue"
+                 android:foreground="?attr/selectableItemBackground"
                 android:textSize="16sp" />
         </LinearLayout>
     </ScrollView>

@@ -1096,6 +1096,5 @@
 
     <!-- version check -->
     <string name="version_title">New version</string>
-    <string name="version_content">There is a new version update</string>
-    <string name="version_update">Update</string>
+
 </resources>

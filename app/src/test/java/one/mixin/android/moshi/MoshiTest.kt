@@ -449,7 +449,8 @@ class MoshiTest {
 """
 
         val jsonAdapter = getTypeListAdapter<List<Asset>>(
-            Asset::class.java)
+            Asset::class.java
+        )
         val array = jsonAdapter.fromJson(MOCK_ASSETS_JSON)?.toTypedArray()
         println(array?.size)
     }

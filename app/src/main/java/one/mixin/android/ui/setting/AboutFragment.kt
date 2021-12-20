@@ -83,7 +83,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
-            checkUpdates.setOnClickListener { context?.openMarket() }
+            checkUpdatesLl.setOnClickListener { context?.openMarket() }
             database.isVisible = defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
             database.setOnClickListener {
                 navTo(
@@ -95,12 +95,8 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
         lifecycleScope.launchWhenResumed {
             try {
                 val response = accountRepository.latest()
-                if(response.hasNewVersion()){
-                    Timber.e("New version")
-                }else{
-                    Timber.e("No new version")
-                }
-            }catch(e: Exception){
+                binding.newVersion.isVisible = response.hasNewVersion()
+            } catch (e: Exception) {
                 Timber.e(e)
             }
         }

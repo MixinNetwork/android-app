@@ -1,22 +1,22 @@
 package one.mixin.android.vo.github
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.BuildConfig
 
+@JsonClass(generateAdapter = true)
 data class Latest(
-    @SerializedName("tag_name")
+    @Json(name = "tag_name")
     val tagName: String?
 ) {
-    val versionCode: Int?
-        get() {
-            return tagName?.run {
-                this.substring(1).replace(".", "").toInt() * 100
-            }
+    private fun versionCode(): Int? {
+        return tagName?.run {
+            this.substring(1).replace(".", "").toInt() * 100
         }
+    }
 
     fun hasNewVersion(): Boolean {
-        return versionCode?.run { this > BuildConfig.VERSION_CODE }
+        return versionCode()?.run { this > BuildConfig.VERSION_CODE }
             ?: false
     }
 }
-

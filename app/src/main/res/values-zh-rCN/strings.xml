@@ -1075,6 +1075,4 @@
 
     <!-- version check -->
     <string name="version_title">新版本</string>
-    <string name="version_content">发现新版本更新</string>
-    <string name="version_update">更新</string>
 </resources>
