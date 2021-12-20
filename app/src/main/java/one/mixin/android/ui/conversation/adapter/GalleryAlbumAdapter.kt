@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation.adapter
 
 import androidx.collection.ArrayMap
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.adapter.FragmentViewHolder
 import one.mixin.android.ui.conversation.GalleryItemFragment
@@ -11,8 +10,8 @@ import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 
 class GalleryAlbumAdapter(
-    private val context: FragmentActivity
-) : FragmentStateAdapter(context) {
+    private val fragment: Fragment
+) : FragmentStateAdapter(fragment) {
 
     var callback: GalleryCallback? = null
     var rvCallback: DraggableRecyclerView.Callback? = null
@@ -53,7 +52,7 @@ class GalleryAlbumAdapter(
 
     override fun onBindViewHolder(holder: FragmentViewHolder, position: Int, payloads: MutableList<Any>) {
         super.onBindViewHolder(holder, position, payloads)
-        val fragment: GalleryItemFragment? = context.supportFragmentManager.findFragmentByTag("f$position") as? GalleryItemFragment?
+        val fragment: GalleryItemFragment? = fragment.childFragmentManager.findFragmentByTag("f$position") as? GalleryItemFragment?
         fragment?.reloadAlbum()
     }
 

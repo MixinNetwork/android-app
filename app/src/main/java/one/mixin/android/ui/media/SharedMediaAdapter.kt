@@ -1,13 +1,12 @@
 package one.mixin.android.ui.media
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
 class SharedMediaAdapter(
-    activity: FragmentActivity,
+    fragment: Fragment,
     private val conversationId: String
-) : FragmentStateAdapter(activity) {
+) : FragmentStateAdapter(fragment) {
     companion object {
         private const val TAB_COUNT = 5
     }
