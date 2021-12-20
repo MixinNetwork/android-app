@@ -40,7 +40,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_36_37
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_37_38
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_38_39
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_39_40
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Address
@@ -202,7 +202,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     }
                     result.add(map)
                 } while (cursor.moveToNext())
-                return "${GsonHelper.customGson.toJson(result)} ${System.currentTimeMillis() - start}ms"
+                return "${getTypeListAdapter<List<Map<String, String>>>(Map::class.java).toJson(result)} ${System.currentTimeMillis() - start}ms"
             } catch (e: Exception) {
                 return e.message
             } finally {

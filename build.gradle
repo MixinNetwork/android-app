@@ -37,7 +37,7 @@ buildscript {
         ext.retrofitVersion = '2.9.0'
         ext.coroutineAdapterVersion = '0.9.2'
         ext.loggerVersion = '2.2.0'
-        ext.kotlin_version = '1.6.10'
+        ext.kotlinVersion = '1.6.10'
         ext.libphonenumberVersion = '8.12.39'
         ext.anko_version = '0.10.8'
         ext.coroutines_version = '1.5.2'
@@ -88,6 +88,8 @@ buildscript {
         ext.robolectricVersion = '4.7.3'
 
         ext.gsonVersion = '2.8.9'
+        ext.moshiVersion = '1.13.0'
+
         ext.autodisposeVersion = '1.4.0'
         ext.jsoupVersion = '1.13.1'
         ext.isoparserVersion = '1.0.6'
@@ -114,7 +116,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.4'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.3.10'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.8.1'
         classpath "com.google.dagger:hilt-android-gradle-plugin:${hiltVersion}"

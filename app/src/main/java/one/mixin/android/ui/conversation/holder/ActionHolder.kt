@@ -6,10 +6,10 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.databinding.ItemChatActionBinding
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.ColorUtil
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.ActionButton
@@ -65,7 +65,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
             binding.chatName.visibility = View.GONE
         }
         if (itemView.tag != messageItem.content?.hashCode()) {
-            val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<AppButtonData>::class.java)
+            val buttons = requireNotNull(getTypeListAdapter<List<AppButtonData>>(AppButtonData::class.java).fromJson(messageItem.content!!))
             binding.chatLayout.removeAllViews()
             for (b in buttons) {
                 val button = ActionButton(itemView.context)

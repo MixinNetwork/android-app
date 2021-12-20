@@ -29,7 +29,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -73,6 +72,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
@@ -88,7 +89,6 @@ import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppButtonData
@@ -566,7 +566,7 @@ class ConversationListFragment : LinkFragment() {
             binding.shadowView.secondIv.isGone = true
             binding.shadowView.thirdIv.isGone = true
             requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
-                val bots = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
+                val bots = getTypeListAdapter<List<String>>(String::class.java).fromJson(it) ?: return@let
                 bots.forEachIndexed { index, id ->
                     if (index > 2) return@launch
                     val view: ImageView =
@@ -780,17 +780,19 @@ class ConversationListFragment : LinkFragment() {
                 }
                 conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
                     binding.groupNameTv.visibility = GONE
-                    val buttons =
-                        Gson().fromJson(conversationItem.content, Array<AppButtonData>::class.java)
+                    val buttons = getTypeListAdapter<List<AppButtonData>>(AppButtonData::class.java).fromJson(conversationItem.content!!)
                     var content = ""
-                    buttons.map { content += "[" + it.label + "]" }
+                    buttons?.map { content += "[" + it.label + "]" }
                     binding.msgTv.text = content
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
                 conversationItem.contentType == MessageCategory.APP_CARD.name -> {
                     binding.groupNameTv.visibility = GONE
-                    val cardData =
-                        Gson().fromJson(conversationItem.content, AppCardData::class.java)
+                    val cardData = requireNotNull(
+                        getTypeAdapter<AppCardData>(
+                            AppCardData::class.java
+                        ).fromJson(conversationItem.content!!)
+                    )
                     binding.msgTv.text = "[${cardData.title}]"
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
@@ -821,10 +823,10 @@ class ConversationListFragment : LinkFragment() {
                 }
                 conversationItem.contentType == MessageCategory.MESSAGE_PIN.name -> {
                     val pinMessage = try {
-                        GsonHelper.customGson.fromJson(
-                            conversationItem.content,
-                            PinMessageMinimal::class.java
-                        )
+                        conversationItem.content.notNullWithElse({
+                            getTypeAdapter<PinMessageMinimal>(PinMessageMinimal::class.java)
+                                .fromJson(it)
+                        }, null)
                     } catch (e: Exception) {
                         null
                     }

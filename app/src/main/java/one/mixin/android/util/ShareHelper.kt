@@ -11,6 +11,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.addTo
 import one.mixin.android.vo.systemMediaToMessage
+import one.mixin.android.vo.toJson
 
 class ShareHelper {
 
@@ -45,7 +46,7 @@ class ShareHelper {
                 }
             } else if (type.startsWith("image/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                ForwardMessage(ShareCategory.Image, GsonHelper.customGson.toJson(ShareImageData(imageUri.toString()))).addTo(result)
+                ForwardMessage(ShareCategory.Image, ShareImageData(imageUri.toString()).toJson()).addTo(result)
             } else if (type.startsWith("video/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                 imageUri?.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)

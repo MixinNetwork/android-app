@@ -1,5 +1,8 @@
 package one.mixin.android.vo.foursquare
 
+import com.squareup.moshi.JsonClass
+
+@JsonClass(generateAdapter = true)
 class Location(
     val address: String?,
     val lat: Double,

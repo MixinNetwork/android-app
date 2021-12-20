@@ -8,9 +8,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionCardBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
@@ -70,8 +70,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         } else {
             binding.chatName.visibility = View.GONE
         }
-        val actionCard =
-            GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
+        val actionCard = requireNotNull(getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(messageItem.content!!))
         binding.chatIcon.loadRoundImage(actionCard.iconUrl, radius, R.drawable.holder_bot)
         binding.chatTitle.text = actionCard.title
         binding.chatDescription.text = actionCard.description

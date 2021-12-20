@@ -1,10 +1,12 @@
 package one.mixin.android.api
 
+import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.withContext
 import one.mixin.android.util.ErrorHandler
 import retrofit2.Response
 import kotlin.coroutines.CoroutineContext
 
+@JsonClass(generateAdapter = true)
 class MixinResponse<T>() {
 
     constructor(response: Response<T>) : this() {
@@ -30,7 +32,7 @@ class MixinResponse<T>() {
         get() = if (error != null) error!!.code else 0
 
     val errorDescription: String
-        get() = if (error != null) error!!.description else ""
+        get() = if (error != null) error!!.description ?: "" else ""
 }
 
 suspend fun <T, R> handleMixinResponse(

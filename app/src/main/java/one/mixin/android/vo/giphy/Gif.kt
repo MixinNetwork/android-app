@@ -1,14 +1,12 @@
 package one.mixin.android.vo.giphy
 
 import androidx.recyclerview.widget.DiffUtil
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class Gif(
-    @SerializedName("id")
     val id: String,
-    @SerializedName("type")
     val type: String,
-    @SerializedName("images")
     val images: ImageSet
 ) {
     companion object {

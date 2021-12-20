@@ -1,5 +1,7 @@
 package one.mixin.android.websocket
 
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -33,9 +35,13 @@ data class BlazeMessageParam(
     }
 }
 
+@JsonClass(generateAdapter = true)
 data class KrakenParam(
+    @Json(name = "jsep")
     var jsep: String? = null,
+    @Json(name = "candidate")
     var candidate: String? = null,
+    @Json(name = "track_id")
     var track_id: String? = null
 ) : Serializable {
     companion object {
@@ -45,7 +51,7 @@ data class KrakenParam(
 
 data class BlazeMessageParamSession(
     val user_id: String,
-    val session_id: String? = null,
+    val session_id: String? = null
 )
 
 fun createAckParam(message_id: String, status: String) =

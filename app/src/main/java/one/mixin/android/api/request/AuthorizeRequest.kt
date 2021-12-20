@@ -1,9 +1,11 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 class AuthorizeRequest(
-    @SerializedName("authorization_id")
+    @Json(name = "authorization_id")
     val authorizationId: String,
     val scopes: List<String>
 )

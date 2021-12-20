@@ -146,6 +146,7 @@ import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
@@ -189,7 +190,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
@@ -908,7 +908,12 @@ class ConversationFragment() :
             }
 
             override fun onLocationClick(messageItem: MessageItem) {
-                val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
+                messageItem.content ?: return
+                val location = requireNotNull(
+                    getTypeAdapter<LocationPayload>(LocationPayload::class.java).fromJson(
+                        messageItem.content
+                    )
+                )
                 LocationActivity.show(requireContext(), location)
             }
 

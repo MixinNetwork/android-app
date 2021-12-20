@@ -1,20 +1,22 @@
 package one.mixin.android.vo
 
 import androidx.recyclerview.widget.DiffUtil
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class HyperlinkItem(
-    @SerializedName("hyperlink")
+    @Json(name = "hyperlink")
     val hyperlink: String,
-    @SerializedName("site_name")
+    @Json(name = "site_name")
     val siteName: String,
-    @SerializedName("site_title")
+    @Json(name = "site_title")
     val siteTitle: String,
-    @SerializedName("site_description")
+    @Json(name = "site_description")
     val siteDescription: String?,
-    @SerializedName("site_image")
+    @Json(name = "site_image")
     val siteImage: String?,
-    @SerializedName("created_at")
+    @Json(name = "created_at")
     val createdAt: String
 ) {
     companion object {

@@ -33,7 +33,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.databinding.FragmentForwardBinding
-import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.hideKeyboard
@@ -42,6 +41,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -50,7 +50,6 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_ACTION
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_COMBINE_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.ShortcutInfo
 import one.mixin.android.util.generateDynamicShortcut
 import one.mixin.android.util.maxDynamicShortcutCount
@@ -84,6 +83,7 @@ import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
+import one.mixin.android.websocket.toJsonBase64
 import java.io.File
 import java.io.FileInputStream
 import java.util.UUID
@@ -360,7 +360,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         chatViewModel.sendPostMessage(conversationId, sender, content, encryptCategory)
                     }
                     ShareCategory.Image -> {
-                        val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
+                        val shareImageData = getTypeAdapter<ShareImageData>(ShareImageData::class.java).fromJson(content) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, shareImageData.url, shareImageData.attachmentExtra,
                             {
@@ -396,7 +396,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ShareCategory.Contact -> {
-                        val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
+                        val contactData = getTypeAdapter<ContactMessagePayload>(ContactMessagePayload::class.java).fromJson(content) ?: return@checkData
                         chatViewModel.sendContactMessage(conversationId, sender, contactData.userId, encryptCategory)
                     }
                     ShareCategory.Contact -> {
@@ -406,11 +406,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         chatViewModel.sendAppCardMessage(conversationId, sender, content)
                     }
                     ShareCategory.Live -> {
-                        val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
+                        val liveData = getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(content) ?: return@checkData
                         chatViewModel.sendLiveMessage(conversationId, sender, liveData, encryptCategory)
                     }
                     ForwardCategory.Video -> {
-                        val videoData = GsonHelper.customGson.fromJson(content, VideoMessagePayload::class.java)
+                        val videoData = getTypeAdapter<VideoMessagePayload>(VideoMessagePayload::class.java).fromJson(content) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, videoData.url, videoData.attachmentExtra,
                             {
@@ -426,7 +426,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Data -> {
-                        val dataMessagePayload = GsonHelper.customGson.fromJson(content, DataMessagePayload::class.java)
+                        val dataMessagePayload = getTypeAdapter<DataMessagePayload>(DataMessagePayload::class.java).fromJson(content) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, dataMessagePayload.url, dataMessagePayload.attachmentExtra,
                             {
@@ -442,7 +442,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Audio -> {
-                        val audioData = GsonHelper.customGson.fromJson(content, AudioMessagePayload::class.java)
+                        val audioData = getTypeAdapter<AudioMessagePayload>(AudioMessagePayload::class.java).fromJson(content) ?: return@checkData
                         sendAttachmentMessage(
                             conversationId, sender, audioData.url, audioData.attachmentExtra,
                             {
@@ -458,11 +458,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                         )
                     }
                     ForwardCategory.Sticker -> {
-                        val stickerData = GsonHelper.customGson.fromJson(content, StickerMessagePayload::class.java)
+                        val stickerData = getTypeAdapter<StickerMessagePayload>(StickerMessagePayload::class.java).fromJson(content) ?: return@checkData
                         chatViewModel.sendStickerMessage(conversationId, sender, stickerData, encryptCategory)
                     }
                     ForwardCategory.Location -> {
-                        val locationPayload = GsonHelper.customGson.fromJson(content, LocationPayload::class.java)
+                        val locationPayload = getTypeAdapter<LocationPayload>(LocationPayload::class.java).fromJson(content) ?: return@checkData
                         chatViewModel.sendLocationMessage(conversationId, sender.userId, locationPayload, encryptCategory)
                     }
                     ForwardCategory.Transcript -> {
@@ -494,7 +494,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     ) = withContext(Dispatchers.IO) {
         if (attachmentExtraString != null) {
             val attachmentExtra: AttachmentExtra = try {
-                GsonHelper.customGson.fromJson(attachmentExtraString, AttachmentExtra::class.java)
+                getTypeAdapter<AttachmentExtra>(AttachmentExtra::class.java).fromJson(attachmentExtraString) as AttachmentExtra
             } catch (e: Exception) {
                 parseAsAttachmentMessagePayload(attachmentExtraString, sender, conversationId, getCategory.invoke(), mediaUrl, fallbackAction)
                 return@withContext
@@ -531,7 +531,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         fallbackAction: suspend () -> Unit
     ) {
         val payload: AttachmentMessagePayload = try {
-            GsonHelper.customGson.fromJson(String(Base64.decode(attachmentExtraString)), AttachmentMessagePayload::class.java)
+            getTypeAdapter<AttachmentMessagePayload>(AttachmentMessagePayload::class.java).fromJson(String(Base64.decode(attachmentExtraString))) as AttachmentMessagePayload
         } catch (e: Exception) {
             fallbackAction.invoke()
             return
@@ -566,7 +566,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             val outfile = File(file.parentFile?.parentFile, "$conversationId${File.separator}$messageId${file.name.getExtensionName().notNullWithElse({ ".$it" }, "")}")
             outfile.copyFromInputStream(FileInputStream(file))
             val message = Message(
-                messageId, conversationId, sender.userId, category, GsonHelper.customGson.toJson(payload).base64Encode(), outfile.name,
+                messageId, conversationId, sender.userId, category, payload.toJsonBase64(), outfile.name,
                 payload.mimeType, payload.size, payload.duration?.toString(), payload.width, payload.height, null, payload.thumbnail, null,
                 payload.key, payload.digest, MediaStatus.DONE.name, MessageStatus.SENDING.name, nowInUtc(), name = payload.name, mediaWaveform = payload.waveform,
                 caption = payload.caption,
@@ -590,7 +590,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             outfile.copyFromInputStream(FileInputStream(file))
             return Message(
                 messageId, conversationId, sender.userId, category,
-                GsonHelper.customGson.toJson(attachmentMessagePayload).base64Encode(), outfile.name, message.mediaMimeType,
+                attachmentMessagePayload.toJsonBase64(), outfile.name, message.mediaMimeType,
                 message.mediaSize ?: 0L, message.mediaDuration, message.mediaWidth,
                 message.mediaHeight, message.mediaHash, message.thumbImage, message.thumbUrl,
                 message.mediaKey, message.mediaDigest, MediaStatus.DONE.name, MessageStatus.SENDING.name,

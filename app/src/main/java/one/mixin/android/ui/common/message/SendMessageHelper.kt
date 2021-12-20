@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
-import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
@@ -31,10 +30,10 @@ import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.SendTranscriptJob
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.EncryptCategory
@@ -43,7 +42,6 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PinMessageMinimal
-import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMinimal
 import one.mixin.android.vo.User
@@ -72,7 +70,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toCategory
-import one.mixin.android.vo.toQuoteMessageItem
+import one.mixin.android.vo.toQuoteMessageItemJson
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
@@ -80,6 +78,7 @@ import one.mixin.android.websocket.PinAction
 import one.mixin.android.websocket.PinMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.toJson
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.io.FileInputStream
@@ -194,7 +193,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             conversationId,
             sender.userId,
             category,
-            GsonHelper.customGson.toJson(
+            getTypeListAdapter<List<TranscriptMinimal>>(TranscriptMinimal::class.java).toJson(
                 transcriptMessages.sortedBy { t -> t.createdAt }.map {
                     TranscriptMinimal(it.userFullName ?: "", it.type, it.content)
                 }
@@ -227,7 +226,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             nowInUtc(),
             MessageStatus.SENDING.name,
             replyMessage.messageId,
-            Gson().toJson(QuoteMessageItem(replyMessage))
+            replyMessage.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(SendMessageJob(message, isSilent = isSilentMessage))
     }
@@ -273,7 +272,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(ConvertDataJob(message))
     }
@@ -296,7 +295,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         val message = createAudioMessage(
             messageId, conversationId, sender.userId, null, category,
             file.length(), file.name, duration.toString(), nowInUtc(), waveForm, null, null,
-            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
@@ -312,7 +311,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.SIGNAL_STICKER,
             MessageCategory.ENCRYPTED_STICKER
         )
-        val encoded = GsonHelper.customGson.toJson(transferStickerData).base64Encode()
+        val encoded = transferStickerData.toJson().base64Encode()
         transferStickerData.stickerId?.let {
             val message = createStickerMessage(
                 UUID.randomUUID().toString(),
@@ -344,10 +343,10 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.ENCRYPTED_CONTACT
         )
         val transferContactData = ContactMessagePayload(shareUserId)
-        val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
+        val encoded = transferContactData.toJson().base64Encode()
         val message = createContactMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category, encoded, shareUserId,
-            MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -368,7 +367,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
         list.forEach { messageItem ->
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
-            val encoded = GsonHelper.customGson.toJson(transferRecallData).base64Encode()
+            val encoded = transferRecallData.toJson().base64Encode()
             val message = createMessage(
                 UUID.randomUUID().toString(),
                 conversationId,
@@ -389,7 +388,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
 
     fun sendUnPinMessage(conversationId: String, sender: User, messageIds: List<String>) {
         val transferPinData = PinMessagePayload(PinAction.UNPIN.name, messageIds)
-        val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
+        val encoded = transferPinData.toJson().base64Encode()
         val message = createMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -413,7 +412,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         list: Collection<PinMessageMinimal>
     ) {
         val transferPinData = PinMessagePayload(action.name, list.map { it.messageId })
-        val encoded = GsonHelper.customGson.toJson(transferPinData).base64Encode()
+        val encoded = transferPinData.toJson().base64Encode()
         val message = createMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -469,8 +468,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MessageCategory.SIGNAL_LIVE,
             MessageCategory.ENCRYPTED_LIVE
         )
-        val encoded =
-            GsonHelper.customGson.toJson(transferLiveData)
+        val encoded = transferLiveData.toJson()
         val message = createLiveMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -520,7 +518,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                     conversationId,
                     senderId,
                     category,
-                    GsonHelper.customGson.toJson(location),
+                    location.toJson(),
                     MessageStatus.SENT.name,
                     nowInUtc()
                 )
@@ -581,7 +579,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 MediaStatus.PENDING,
                 MessageStatus.SENDING.name,
                 replyMessage?.messageId,
-                replyMessage?.toQuoteMessageItem()
+                replyMessage?.toQuoteMessageItemJson()
             )
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
             return 0
@@ -625,7 +623,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             MediaStatus.PENDING,
             MessageStatus.SENDING.name,
             replyMessage?.messageId,
-            replyMessage?.toQuoteMessageItem()
+            replyMessage?.toQuoteMessageItemJson()
         )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         return 0

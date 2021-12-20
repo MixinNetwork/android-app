@@ -72,7 +72,6 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ConversationCategory
@@ -87,6 +86,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.toJson
 import org.threeten.bp.Instant
 import timber.log.Timber
 import java.io.File
@@ -368,7 +368,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             arrayListOf(
                                 ForwardMessage(
                                     ShareCategory.Contact,
-                                    GsonHelper.customGson.toJson(ContactMessagePayload(u.userId))
+                                    ContactMessagePayload(u.userId).toJson()
                                 )
                             ),
                             ForwardAction.App.Resultless()

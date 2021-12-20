@@ -1,8 +1,6 @@
 package one.mixin.android.repository
 
-import com.google.gson.Gson
 import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.PIN_ERROR_MAX
@@ -20,17 +18,14 @@ import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
-import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
-import one.mixin.android.api.response.MultisigsResponse
-import one.mixin.android.api.response.NonFungibleOutputResponse
-import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
+import one.mixin.android.api.service.GithubService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.FavoriteAppDao
@@ -43,12 +38,12 @@ import one.mixin.android.db.insertUpdateList
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
+import one.mixin.android.vo.github.Latest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -67,6 +62,7 @@ constructor(
     private val stickerAlbumDao: StickerAlbumDao,
     private val stickerRelationshipDao: StickerRelationshipDao,
     private val giphyService: GiphyService,
+    private val githubService: GithubService,
     private val emergencyService: EmergencyService
 ) {
 
@@ -90,48 +86,7 @@ constructor(
         return conversationService.join(conversationId)
     }
 
-    fun searchCode(code: String): Observable<Pair<String, Any>> =
-        accountService.code(code).subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-            .map { response ->
-                if (!response.isSuccess) {
-                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
-                    return@map Pair("", "")
-                }
-                val result: Pair<String, Any>
-                val type = response.data?.get("type")?.asString
-                result = when (type) {
-                    QrCodeType.user.name -> {
-                        val user = Gson().fromJson(response.data, User::class.java)
-                        userDao.insertUpdate(user, appDao)
-                        Pair(type, user)
-                    }
-                    QrCodeType.conversation.name -> {
-                        val conversationResponse =
-                            Gson().fromJson(response.data, ConversationResponse::class.java)
-                        Pair(type, conversationResponse)
-                    }
-                    QrCodeType.authorization.name -> {
-                        val resp = Gson().fromJson(response.data, AuthorizationResponse::class.java)
-                        Pair(type, resp)
-                    }
-                    QrCodeType.multisig_request.name -> {
-                        val resp = Gson().fromJson(response.data, MultisigsResponse::class.java)
-                        Pair(type, resp)
-                    }
-                    QrCodeType.non_fungible_request.name -> {
-                        val resp = Gson().fromJson(response.data, NonFungibleOutputResponse::class.java)
-                        Pair(type, resp)
-                    }
-                    QrCodeType.payment.name -> {
-                        val resp = Gson().fromJson(response.data, PaymentCodeResponse::class.java)
-                        Pair(type, resp)
-                    }
-                    else -> Pair("", "")
-                }
-                result
-            }.doOnError {
-                ErrorHandler.handleError(it)
-            }
+    suspend fun searchCode(code: String) = accountService.code(code)
 
     fun search(query: String): Observable<MixinResponse<User>> = userService.search(query)
 
@@ -273,4 +228,6 @@ constructor(
     }
 
     suspend fun modifySessionSecret(request: SessionSecretRequest) = accountService.modifySessionSecret(request)
+
+    suspend fun latest(): Latest = githubService.latest()
 }

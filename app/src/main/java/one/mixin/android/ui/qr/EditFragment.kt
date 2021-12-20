@@ -43,14 +43,15 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
+import one.mixin.android.vo.toJson
 import one.mixin.android.websocket.VideoMessagePayload
+import one.mixin.android.websocket.toJson
 import java.io.File
 
 @AndroidEntryPoint
@@ -159,7 +160,7 @@ class EditFragment : VisionFragment() {
                     arrayListOf(
                         ForwardMessage(
                             ForwardCategory.Video,
-                            GsonHelper.customGson.toJson(VideoMessagePayload(path))
+                            VideoMessagePayload(path).toJson()
                         )
                     ),
                     ForwardAction.System(name = getString(R.string.send))
@@ -170,7 +171,7 @@ class EditFragment : VisionFragment() {
                     arrayListOf(
                         ForwardMessage(
                             ShareCategory.Image,
-                            GsonHelper.customGson.toJson(ShareImageData(path))
+                            ShareImageData(path).toJson()
                         )
                     ),
                     ForwardAction.System(name = getString(R.string.send))

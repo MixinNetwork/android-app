@@ -3,7 +3,7 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 import androidx.room.TypeConverters
 
-@TypeConverters(ArrayConverters::class)
+@TypeConverters(ArrayListConverters::class)
 data class ForwardUser(
     @ColumnInfo(name = "user_id")
     val userId: String,

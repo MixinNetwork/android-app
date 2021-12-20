@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import com.google.gson.JsonObject
 import io.reactivex.Observable
 import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
@@ -19,6 +18,7 @@ import one.mixin.android.api.response.DeviceCheckResponse
 import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.CodeResponse
 import one.mixin.android.vo.Fiat
 import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.Sticker
@@ -55,10 +55,10 @@ interface AccountService {
     fun getMe(): Call<MixinResponse<Account>>
 
     @POST("logout")
-    suspend fun logout(@Body request: LogoutRequest): MixinResponse<Unit>
+    suspend fun logout(@Body request: LogoutRequest): MixinResponse<Map<String, String?>>
 
     @GET("codes/{id}")
-    fun code(@Path("id") id: String): Observable<MixinResponse<JsonObject>>
+    suspend fun code(@Path("id") id: String): MixinResponse<CodeResponse>
 
     @POST("pin/update")
     fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>
@@ -88,7 +88,7 @@ interface AccountService {
     suspend fun getTurn(): MixinResponse<Array<TurnServer>>
 
     @GET("/")
-    fun ping(): Call<MixinResponse<Void>>
+    fun ping(): Call<MixinResponse<Map<String, String?>?>>
 
     @GET("fiats")
     suspend fun getFiats(): MixinResponse<List<Fiat>>
@@ -97,13 +97,13 @@ interface AccountService {
     suspend fun getPinLogs(@Query("category") category: String? = null, @Query("offset") offset: String? = null, @Query("limit") limit: Int? = null): MixinResponse<List<LogResponse>>
 
     @POST("multisigs/{id}/cancel")
-    suspend fun cancelMultisigs(@Path("id") id: String): MixinResponse<Void>
+    suspend fun cancelMultisigs(@Path("id") id: String): MixinResponse<Map<String, String?>?>
 
     @POST("multisigs/{id}/sign")
-    suspend fun signMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Void>
+    suspend fun signMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Map<String, String?>?>
 
     @POST("multisigs/{id}/unlock")
-    suspend fun unlockMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Void>
+    suspend fun unlockMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Map<String, String?>?>
 
     @GET("collectibles/tokens/{id}")
     suspend fun getToken(@Path("id") id: String): MixinResponse<NonFungibleToken>
@@ -118,7 +118,7 @@ interface AccountService {
     suspend fun unlockCollectibleTransfer(@Path("id") id: String, @Body request: CollectibleRequest): MixinResponse<NonFungibleToken>
 
     @POST("transactions")
-    suspend fun transactions(@Body request: RawTransactionsRequest): MixinResponse<Void>
+    suspend fun transactions(@Body request: RawTransactionsRequest): MixinResponse<Map<String, String?>?>
 
     @POST("session/secret")
     suspend fun modifySessionSecret(@Body request: SessionSecretRequest): MixinResponse<SessionSecretResponse>

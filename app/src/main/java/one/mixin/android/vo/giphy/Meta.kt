@@ -1,14 +1,10 @@
 package one.mixin.android.vo.giphy
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.JsonClass
 
-class Meta(
-    @SerializedName("status")
+@JsonClass(generateAdapter = true)
+data class Meta(
     val status: Int,
-
-    @SerializedName("msg")
     val msg: String,
-
-    @SerializedName("response_id")
     val response_id: String
 )

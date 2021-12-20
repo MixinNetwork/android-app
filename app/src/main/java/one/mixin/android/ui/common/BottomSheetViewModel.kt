@@ -66,8 +66,8 @@ class BottomSheetViewModel @Inject internal constructor(
     private val assetRepository: AssetRepository,
     private val conversationRepo: ConversationRepository
 ) : ViewModel() {
-    fun searchCode(code: String): Observable<Pair<String, Any>> {
-        return accountRepository.searchCode(code).observeOn(AndroidSchedulers.mainThread())
+    suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
+        accountRepository.searchCode(code)
     }
 
     fun join(code: String): Observable<MixinResponse<ConversationResponse>> =
@@ -149,7 +149,7 @@ class BottomSheetViewModel @Inject internal constructor(
         assetRepository.saveAddr(addr)
     }
 
-    suspend fun deleteAddr(id: String, code: String): MixinResponse<Unit> =
+    suspend fun deleteAddr(id: String, code: String): MixinResponse<Map<String, String?>> =
         assetRepository.deleteAddr(id, encryptPin(Session.getPinToken()!!, code)!!)
 
     suspend fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
@@ -470,7 +470,7 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun transactions(
         rawTransactionsRequest: RawTransactionsRequest,
         pin: String
-    ): MixinResponse<Void> {
+    ): MixinResponse<Map<String, String?>?> {
         rawTransactionsRequest.pin = encryptPin(Session.getPinToken()!!, pin)!!
         return accountRepository.transactions(rawTransactionsRequest)
     }

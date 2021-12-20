@@ -16,8 +16,8 @@ import one.mixin.android.mock.MOCK_SNAPSHOTS
 import one.mixin.android.mock.MOCK_TOP_ASSETS_JSON
 import one.mixin.android.mock.MOCK_USERS_JSON
 import one.mixin.android.mock.mockAccount
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetsExtra
@@ -41,27 +41,27 @@ class WalletRule : TestRule {
             db = MixinDatabase.getDatabase(ctx)
 
             fun initAssets() {
-                val assets = GsonHelper.customGson.fromJson(MOCK_ASSETS_JSON, Array<Asset>::class.java)
+                val assets = getTypeListAdapter<List<Asset>>(Asset::class.java).fromJson(MOCK_ASSETS_JSON)?.toTypedArray()
                 db.assetDao().insert(*assets)
             }
 
             fun initAssetExtras() {
-                val assetsExtras = GsonHelper.customGson.fromJson(MOCK_ASSET_EXTRA_LIST_JSON, Array<AssetsExtra>::class.java)
+                val assetsExtras = getTypeListAdapter<List<AssetsExtra>>(AssetsExtra::class.java).fromJson(MOCK_ASSET_EXTRA_LIST_JSON)?.toTypedArray()
                 db.assetsExtraDao().insert(*assetsExtras)
             }
 
             fun initTopAssets() {
-                val topAssets = GsonHelper.customGson.fromJson(MOCK_TOP_ASSETS_JSON, Array<TopAsset>::class.java)
+                val topAssets = getTypeListAdapter<List<TopAsset>>(TopAsset::class.java).fromJson(MOCK_TOP_ASSETS_JSON)?.toTypedArray()
                 db.topAssetDao().insert(*topAssets)
             }
 
             fun initSnapshots() {
-                val snapshots = GsonHelper.customGson.fromJson(MOCK_SNAPSHOTS, Array<Snapshot>::class.java)
+                val snapshots = getTypeListAdapter<List<Snapshot>>(Snapshot::class.java).fromJson(MOCK_SNAPSHOTS)?.toTypedArray()
                 db.snapshotDao().insert(*snapshots)
             }
 
             fun initAddresses() {
-                val addresses = GsonHelper.customGson.fromJson(MOCK_ADDRESSES_JSON, Array<Address>::class.java)
+                val addresses = getTypeListAdapter<List<Address>>(Address::class.java).fromJson(MOCK_ADDRESSES_JSON)?.toTypedArray()
                 db.addressDao().insert(*addresses)
             }
 
@@ -71,7 +71,7 @@ class WalletRule : TestRule {
             }
 
             fun initUsers() {
-                val users = GsonHelper.customGson.fromJson(MOCK_USERS_JSON, Array<User>::class.java)
+                val users = getTypeListAdapter<List<User>>(User::class.java).fromJson(MOCK_USERS_JSON)?.toTypedArray()
                 db.userDao().insert(*users)
             }
 

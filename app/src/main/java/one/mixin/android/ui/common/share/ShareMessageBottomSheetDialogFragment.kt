@@ -21,6 +21,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.renderer.ShareAppCardRenderer
@@ -31,7 +32,6 @@ import one.mixin.android.ui.common.share.renderer.SharePostRenderer
 import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -43,7 +43,6 @@ import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
-import java.lang.IllegalArgumentException
 
 @AndroidEntryPoint
 class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -197,7 +196,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun loadImage(content: String) {
-        val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
+        val shareImageData = requireNotNull(getTypeAdapter<ShareImageData>(ShareImageData::class.java).fromJson(content))
         val renderer = ShareImageRenderer(requireContext())
         binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(shareImageData)
@@ -205,7 +204,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun loadContact(content: String) {
         lifecycleScope.launch {
-            val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
+            val contactData = requireNotNull(getTypeAdapter<ContactMessagePayload>(ContactMessagePayload::class.java).fromJson(content))
             binding.progress.isVisible = true
             val user = viewModel.refreshUser(contactData.userId)
             if (user == null) {
@@ -226,14 +225,19 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun loadAppCard(content: String) {
-        val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
+        val appCardData = getTypeAdapter<AppCardData>(AppCardData::class.java).fromJson(content)
         val renderer = ShareAppCardRenderer(requireContext())
         binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
-        renderer.render(appCardData, requireContext().isNightMode())
+        appCardData?.let { data ->
+            renderer.render(
+                data,
+                requireContext().isNightMode()
+            )
+        }
     }
 
     private fun loadLive(content: String) {
-        val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
+        val liveData = requireNotNull(getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(content))
         if (liveData.width <= 0 || liveData.height <= 0) {
             toast(getString(R.string.error_unknown_with_message, "Illegal size"))
             dismiss()

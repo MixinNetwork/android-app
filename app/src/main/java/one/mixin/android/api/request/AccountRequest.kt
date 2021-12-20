@@ -1,8 +1,10 @@
 package one.mixin.android.api.request
 
 import android.os.Build
+import com.squareup.moshi.JsonClass
 import one.mixin.android.BuildConfig
 
+@JsonClass(generateAdapter = true)
 data class AccountRequest(
     val code: String?,
     val notification_token: String? = null,

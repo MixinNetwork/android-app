@@ -8,8 +8,9 @@ import one.mixin.android.extension.base64RawUrlDecode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
@@ -18,6 +19,7 @@ import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.ParticipantSessionKey
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isContact
@@ -115,7 +117,7 @@ open class SendMessageJob(
                 messageDao.updateQuoteContentByQuoteId(
                     message.conversationId,
                     msg.id,
-                    GsonHelper.customGson.toJson(quoteMsg)
+                    getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).toJson(quoteMsg)
                 )
             }
             jobManager.cancelJobByMixinJobId(msg.id)
@@ -284,9 +286,9 @@ open class SendMessageJob(
 
     private fun getMentionData(messageId: String): List<String>? {
         return messageMentionDao.getMentionData(messageId)?.run {
-            GsonHelper.customGson.fromJson(this, Array<MentionUser>::class.java).map {
+            getTypeListAdapter<List<MentionUser>>(MentionUser::class.java).fromJson(this)?.map {
                 it.identityNumber
-            }.toSet()
+            }?.toSet()
         }?.run {
             userDao.findMultiUserIdsByIdentityNumbers(this)
         }

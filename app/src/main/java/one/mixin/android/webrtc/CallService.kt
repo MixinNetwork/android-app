@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
 import com.twilio.audioswitch.AudioSwitch
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -66,8 +65,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     lateinit var conversationRepo: ConversationRepository
     @Inject
     lateinit var signalProtocol: SignalProtocol
-
-    protected val gson = Gson()
 
     protected lateinit var self: User
 

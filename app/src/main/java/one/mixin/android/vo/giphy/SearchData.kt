@@ -1,14 +1,10 @@
 package one.mixin.android.vo.giphy
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.JsonClass
 
-class SearchData(
-    @SerializedName("data")
+@JsonClass(generateAdapter = true)
+data class SearchData(
     val data: List<Gif>,
-
-    @SerializedName("meta")
     val meta: Meta,
-
-    @SerializedName("pagination")
     val pagination: Pagination
 )

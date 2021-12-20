@@ -10,9 +10,9 @@ import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
@@ -138,6 +138,11 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }
+        messageItem.quoteContent?.let { quoteContent ->
+            binding.chatQuote.bind(
+                getTypeAdapter<QuoteMessageItem>(QuoteMessageItem::class.java).fromJson(quoteContent)
+            )
+        }
         binding.chatTime.load(
             isMe,
             messageItem.createdAt,
@@ -146,8 +151,6 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
             isRepresentative = false,
             isSecret = false
         )
-
-        binding.chatQuote.bind(GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java))
 
         binding.chatContentLayout.setOnClickListener {
             onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)

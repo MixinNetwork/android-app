@@ -3,6 +3,7 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -13,10 +14,13 @@ import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DebugClickListener
+import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AboutFragment : BaseFragment(R.layout.fragment_about) {
@@ -27,6 +31,8 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
     }
 
     private val binding by viewBinding(FragmentAboutBinding::bind)
+    @Inject
+    lateinit var accountRepository: AccountRepository
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -77,13 +83,21 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
-            checkUpdates.setOnClickListener { context?.openMarket() }
+            checkUpdatesLl.setOnClickListener { context?.openMarket() }
             database.isVisible = defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
             database.setOnClickListener {
                 navTo(
                     DatabaseDebugFragment.newInstance(),
                     DatabaseDebugFragment.TAG
                 )
+            }
+        }
+        lifecycleScope.launchWhenResumed {
+            try {
+                val response = accountRepository.latest()
+                binding.newVersion.isVisible = response.hasNewVersion()
+            } catch (e: Exception) {
+                Timber.e(e)
             }
         }
     }

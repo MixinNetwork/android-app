@@ -5,8 +5,9 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
-import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.Types
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
 import dagger.Module
@@ -22,6 +23,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
+import one.mixin.android.Constants.API.GITHUB_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
@@ -39,6 +41,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.api.service.GiphyService
+import one.mixin.android.api.service.GithubService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.api.service.SignalKeyService
@@ -59,13 +62,14 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.moshi.MoshiHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.JwtResult
 import one.mixin.android.session.Session
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -73,7 +77,7 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -161,8 +165,9 @@ object AppModule {
                         throw ServerErrorException(response.code)
                     }
                     val mixinResponse = try {
-                        GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
-                    } catch (e: JsonSyntaxException) {
+                        val type = Types.newParameterizedType(MixinResponse::class.java, Any::class.java)
+                        requireNotNull(getTypeAdapter<MixinResponse<Any>>(type).fromJson(String(bytes)))
+                    } catch (e: JsonDataException) {
                         HostSelectionInterceptor.get().switch(request)
                         throw ServerErrorException(response.code)
                     }
@@ -211,7 +216,7 @@ object AppModule {
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create(MoshiHelper.moshi))
             .client(okHttp)
         return builder.build()
     }
@@ -337,11 +342,28 @@ object AppModule {
         }.build()
         val retrofit = Retrofit.Builder()
             .baseUrl(GIPHY_URL)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .client(client)
             .build()
         return retrofit.create(GiphyService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGithubService(httpLoggingInterceptor: HttpLoggingInterceptor?): GithubService {
+        val client = OkHttpClient.Builder().apply {
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(GITHUB_URL)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(GithubService::class.java)
     }
 
     @Provides
@@ -354,7 +376,7 @@ object AppModule {
         }.build()
         val retrofit = Retrofit.Builder()
             .baseUrl(FOURSQUARE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)
             .build()

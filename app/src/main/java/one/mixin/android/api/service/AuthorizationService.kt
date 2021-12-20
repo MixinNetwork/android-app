@@ -22,5 +22,5 @@ interface AuthorizationService {
     suspend fun getAuthorizationByAppId(@Query("app") appId: String): MixinResponse<List<AuthorizationResponse>>
 
     @POST("oauth/cancel")
-    fun deAuthorize(@Body request: DeauthorRequest): Observable<MixinResponse<Unit>>
+    fun deAuthorize(@Body request: DeauthorRequest): Observable<MixinResponse<Map<String, String?>>>
 }

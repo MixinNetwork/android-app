@@ -1,10 +1,12 @@
 package one.mixin.android.api.request
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class AssetFee(
     val type: String,
-    @SerializedName("asset_id")
+    @Json(name = "asset_id")
     val assetId: String,
     val amount: String
 )

@@ -12,13 +12,14 @@ import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.VideoMessagePayload
+import one.mixin.android.websocket.toJson
 import one.mixin.android.websocket.toLocationData
 import java.util.UUID
 
@@ -152,21 +153,18 @@ inline fun <reified T : ForwardCategory> String.systemMediaToMessage(
     category: T,
     name: String? = null,
     mimeType: String? = null,
-): ForwardMessage =
-    ForwardMessage(
-        category,
-        GsonHelper.customGson.toJson(
-            when (category) {
-                ShareCategory.Image -> ShareImageData(this)
-                ForwardCategory.Video -> VideoMessagePayload(this)
-                ForwardCategory.Data -> {
-                    val attachment = MixinApplication.get().getAttachment(this.toUri(), mimeType)
-                    attachment?.toDataMessagePayload(name)
-                }
-                else -> null
-            }
-        )
-    )
+): ForwardMessage {
+    val content = when (category) {
+        ShareCategory.Image -> ShareImageData(this).toJson()
+        ForwardCategory.Video -> VideoMessagePayload(this).toJson()
+        ForwardCategory.Data -> {
+            val attachment = MixinApplication.get().getAttachment(this.toUri(), mimeType)
+            attachment?.toDataMessagePayload(name)?.toJson()
+        }
+        else -> null
+    } ?: ""
+    return ForwardMessage(category, content)
+}
 
 val ShareCategories = arrayOf(
     ShareCategory.Text,
@@ -206,12 +204,10 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 {
                     ForwardMessage(
                         ShareCategory.Image,
-                        GsonHelper.customGson.toJson(
-                            ShareImageData(
-                                requireNotNull(m.absolutePath()),
-                                m.content
-                            )
-                        )
+                        ShareImageData(
+                            requireNotNull(m.absolutePath()),
+                            m.content
+                        ).toJson()
                     )
                 },
                 { null }
@@ -232,7 +228,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
             )
             ForwardMessage(
                 ForwardCategory.Data,
-                GsonHelper.customGson.toJson(dataMessagePayload),
+                dataMessagePayload.toJson(),
                 m.id
             )
         }
@@ -246,19 +242,19 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 nowInUtc(),
                 m.content,
             )
-            ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData), m.id)
+            ForwardMessage(ForwardCategory.Video, videoData.toJson(), m.id)
         }
         m.category.endsWith("_CONTACT") -> {
             val shareUserId = m.sharedUserId ?: return null
             val contactData = ContactMessagePayload(shareUserId)
-            ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData), m.id)
+            ForwardMessage(ShareCategory.Contact, contactData.toJson(), m.id)
         }
         m.category.endsWith("_STICKER") -> {
             val stickerData = StickerMessagePayload(
                 name = m.name,
                 stickerId = m.stickerId
             )
-            ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData), m.id)
+            ForwardMessage(ForwardCategory.Sticker, stickerData.toJson(), m.id)
         }
         m.category.endsWith("_AUDIO") -> {
             if (m.absolutePath()?.fileExists() != true) {
@@ -273,7 +269,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 waveForm,
                 m.content,
             )
-            ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData), m.id)
+            ForwardMessage(ForwardCategory.Audio, audioData.toJson(), m.id)
         }
         m.category.endsWith("_LIVE") -> {
             if (m.mediaWidth == null ||
@@ -285,7 +281,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 return null
             }
             val shareable = try {
-                GsonHelper.customGson.fromJson(m.content, LiveMessagePayload::class.java).shareable
+                getTypeAdapter<LiveMessagePayload>(LiveMessagePayload::class.java).fromJson(requireNotNull(m.content))?.shareable
             } catch (e: Exception) {
                 null
             }
@@ -296,7 +292,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 m.mediaUrl,
                 shareable
             )
-            ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData), m.id)
+            ForwardMessage(ShareCategory.Live, liveData.toJson(), m.id)
         }
         m.category.endsWith("_POST") ->
             m.content.notNullWithElse<String, ForwardMessage?>(
@@ -310,9 +306,7 @@ fun generateForwardMessage(m: Message): ForwardMessage? {
                 { c ->
                     ForwardMessage(
                         ForwardCategory.Location,
-                        GsonHelper.customGson.toJson(
-                            toLocationData(c)
-                        ),
+                        toLocationData(c)?.toJson() ?: "",
                         m.id
                     )
                 },

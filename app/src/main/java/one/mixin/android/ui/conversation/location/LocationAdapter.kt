@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.location
 
+import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -16,12 +17,14 @@ import one.mixin.android.websocket.LocationPayload
 
 class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPayload) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
     var venues: List<Venue>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
     var accurate: String? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()

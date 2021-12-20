@@ -17,7 +17,8 @@ import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.MediaStatus
@@ -69,12 +70,28 @@ class SendTranscriptAttachmentMessageJob(
                 return
             }
             val attachmentExtra = try {
-                GsonHelper.customGson.fromJson(transcriptMessage.content, AttachmentExtra::class.java)
+                if (transcriptMessage.content.isNullOrEmpty()) {
+                    null
+                } else {
+                    getTypeAdapter<AttachmentExtra>(AttachmentExtra::class.java).fromJson(
+                        transcriptMessage.content
+                    )
+                }
             } catch (e: Exception) {
                 null
             } ?: try {
-                val payload = GsonHelper.customGson.fromJson(String(Base64.decode(transcriptMessage.content)), AttachmentMessagePayload::class.java)
-                AttachmentExtra(payload.attachmentId, transcriptMessage.messageId, payload.createdAt)
+                val payload =
+                    getTypeAdapter<AttachmentMessagePayload>(
+                        AttachmentMessagePayload::class
+                            .java
+                    ).fromJson(
+                        String(Base64.decode(transcriptMessage.content))
+                    ) ?: return
+                AttachmentExtra(
+                    payload.attachmentId,
+                    transcriptMessage.messageId,
+                    payload.createdAt
+                )
             } catch (e: Exception) {
                 null
             }
@@ -194,7 +211,8 @@ class SendTranscriptAttachmentMessageJob(
             messageDao.findMessageById(parentId ?: transcriptMessage.transcriptId)?.let { msg ->
                 val transcripts = mutableSetOf<TranscriptMessage>()
                 getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
-                msg.content = GsonHelper.customGson.toJson(transcripts)
+                val jsonAdapter = getTypeListAdapter<List<TranscriptMessage>>(TranscriptMessage::class.java)
+                msg.content = jsonAdapter.toJson(transcripts.toList())
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
                 jobManager.addJob(SendMessageJob(msg))
             }

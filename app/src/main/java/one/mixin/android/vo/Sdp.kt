@@ -1,11 +1,13 @@
 package one.mixin.android.vo
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import one.mixin.android.extension.decodeBase64
-import one.mixin.android.util.GsonHelper
+import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import org.webrtc.SessionDescription
 
-data class KrakenData(val jsep: String, @SerializedName("track_id") val trackId: String) {
+@JsonClass(generateAdapter = true)
+data class KrakenData(@Json(name = "jsep")val jsep: String, @Json(name = "track_id") val trackId: String) {
 
     fun getSessionDescription(): SessionDescription {
         val jsep = jsep.decodeBase64()
@@ -13,10 +15,19 @@ data class KrakenData(val jsep: String, @SerializedName("track_id") val trackId:
     }
 }
 
+val krakenDataJsonAdapter by lazy {
+    getTypeAdapter<KrakenData>(KrakenData::class.java)
+}
+
+@JsonClass(generateAdapter = true)
 data class Sdp(val sdp: String, val type: String)
 
+val sdpJsonAdapter by lazy {
+    getTypeAdapter<Sdp>(Sdp::class.java)
+}
+
 fun getSdp(json: ByteArray): SessionDescription {
-    val sdp = GsonHelper.customGson.fromJson(String(json), Sdp::class.java)
+    val sdp = requireNotNull(sdpJsonAdapter.fromJson(String(json)))
     return SessionDescription(getType(sdp.type), sdp.sdp)
 }
 

@@ -12,8 +12,8 @@ import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
@@ -260,7 +260,7 @@ class DecryptCallMessage(
                 if (pendingCandidateList == null || pendingCandidateList.isEmpty()) {
                     incomingCall(ctx, user, data)
                 } else {
-                    incomingCall(ctx, user, data, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
+                    incomingCall(ctx, user, data, getTypeListAdapter<List<IceCandidate>>(IceCandidate::class.java).toJson(pendingCandidateList))
                     pendingCandidateList.clear()
                     listPendingCandidateMap.remove(data.messageId, pendingCandidateList)
                 }
@@ -269,12 +269,14 @@ class DecryptCallMessage(
             listPendingJobMap[data.quoteMessageId]?.let { pair ->
                 if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_ICE_CANDIDATE.name) {
                     val json = String(Base64.decode(data.data))
-                    val ices = GsonHelper.customGson.fromJson(json, Array<IceCandidate>::class.java)
+                    val ices = getTypeListAdapter<List<IceCandidate>>(IceCandidate::class.java).fromJson(json)
                     var list = listPendingCandidateMap[data.quoteMessageId]
                     if (list == null) {
                         list = arrayListOf()
                     }
-                    list.addAll(ices)
+                    if (ices != null) {
+                        list.addAll(ices)
+                    }
                     listPendingCandidateMap[data.quoteMessageId] = list
                     return@let
                 }

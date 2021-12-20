@@ -1,18 +1,20 @@
 package one.mixin.android.vo
 
-import com.google.gson.annotations.SerializedName
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class PendingDeposit(
     val type: String,
-    @SerializedName("transaction_id")
+    @Json(name = "transaction_id")
     val transactionId: String,
-    @SerializedName("transaction_hash")
+    @Json(name = "transaction_hash")
     val transactionHash: String,
     val sender: String,
     val amount: String,
     val confirmations: Int,
     val threshold: Int,
-    @SerializedName("created_at")
+    @Json(name = "created_at")
     val createdAt: String
 )
 
