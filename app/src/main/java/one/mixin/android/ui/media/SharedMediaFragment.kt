@@ -27,7 +27,7 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
     }
 
     private val adapter: SharedMediaAdapter by lazy {
-        SharedMediaAdapter(requireActivity(), conversationId)
+        SharedMediaAdapter(this, conversationId)
     }
 
     private val binding by viewBinding(FragmentSharedMediaBinding::bind)

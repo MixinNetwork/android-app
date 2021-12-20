@@ -37,7 +37,7 @@ class GalleryAlbumFragment : Fragment(R.layout.fragment_gallery_album), AlbumCol
     private val albumCollection = AlbumCollection()
 
     private val albumAdapter: GalleryAlbumAdapter by lazy {
-        GalleryAlbumAdapter(requireActivity())
+        GalleryAlbumAdapter(this)
     }
 
     private val binding by viewBinding(FragmentGalleryAlbumBinding::bind)
