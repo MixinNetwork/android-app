@@ -41,6 +41,14 @@ fun String.date(): String {
     return date as String
 }
 
+fun localDateString(time: Long): String = DateTimeFormatter.ofPattern(
+    if (Lingver.getInstance().isCurrChinese()) {
+        "yyyy 年 MM 月 d 日"
+    } else {
+        "MMM d, yyyy"
+    }
+).withZone(LocaleZone).format(Instant.ofEpochMilli(time))
+
 fun String.within24Hours() = withinTime((60 * 60 * 1000 * 24).toLong())
 
 fun String.within6Hours() = withinTime((60 * 60 * 1000 * 6).toLong())

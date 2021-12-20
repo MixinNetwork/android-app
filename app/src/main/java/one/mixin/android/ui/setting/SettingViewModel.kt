@@ -64,4 +64,6 @@ internal constructor(
     suspend fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
 
     suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
+    suspend fun findAllAssetIdSuspend() = assetRepository.findAllAssetIdSuspend()
 }

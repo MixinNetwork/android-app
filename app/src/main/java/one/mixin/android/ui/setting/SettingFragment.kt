@@ -47,8 +47,8 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
             backupRl.setOnClickListener {
                 navTo(BackUpFragment.newInstance(), BackUpFragment.TAG)
             }
-            privacyRl.setOnClickListener {
-                navTo(PrivacyFragment.newInstance(), PrivacyFragment.TAG)
+            accountRl.setOnClickListener {
+                navTo(AccountFragment.newInstance(), AccountFragment.TAG)
             }
             appearanceRl.setOnClickListener {
                 navTo(AppearanceFragment.newInstance(), AppearanceFragment.TAG)

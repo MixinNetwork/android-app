@@ -283,6 +283,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = accountRepository.verifyPin(code)
 
+    suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = accountRepository.deactivate(pin, verificationId)
+
     fun trendingGifs(limit: Int, offset: Int): Observable<List<Gif>> =
         accountRepository.trendingGifs(limit, offset).map { it.data }
             .subscribeOn(Schedulers.io())

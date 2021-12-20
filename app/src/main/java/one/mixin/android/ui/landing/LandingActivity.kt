@@ -12,6 +12,7 @@ import one.mixin.android.databinding.ActivityLandingBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_ACCOUNT
 import one.mixin.android.util.viewBinding
 import javax.inject.Inject
 
@@ -47,7 +48,7 @@ class LandingActivity : BaseActivity() {
         setContentView(binding.root)
         val pin = intent.getStringExtra(ARGS_PIN)
         val fragment = if (pin != null) {
-            MobileFragment.newInstance(pin)
+            MobileFragment.newInstance(pin, FROM_CHANGE_PHONE_ACCOUNT)
         } else {
             lifecycleScope.launch(Dispatchers.IO) {
                 jobManager.clear()

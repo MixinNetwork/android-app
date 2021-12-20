@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_window"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:rightIcon="@drawable/ic_help_outline"
+        app:titleText="@string/setting_delete_account" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:background="?attr/bg_white"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="92dp"
+            android:layout_height="83dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="36dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/ic_delete_account" />
+
+        <one.mixin.android.widget.DotTextLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:src="@drawable/dot_gray"
+                android:layout_width="wrap_content"
+                android:layout_height="14sp"
+                android:padding="4dp"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="3dp"
+                android:lineSpacingExtra="2dp"
+                android:text="@string/setting_delete_account_content_1"
+                android:textColor="?attr/text_primary"
+                android:textSize="14sp" />
+        </one.mixin.android.widget.DotTextLayout>
+
+        <one.mixin.android.widget.DotTextLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:src="@drawable/dot_gray"
+                android:layout_width="wrap_content"
+                android:layout_height="14sp"
+                android:padding="4dp"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="3dp"
+                android:lineSpacingExtra="2dp"
+                android:text="@string/setting_delete_account_content_2"
+                android:textColor="?attr/text_primary"
+                android:textSize="14sp" />
+        </one.mixin.android.widget.DotTextLayout>
+
+        <one.mixin.android.widget.DotTextLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="28dp"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:src="@drawable/dot_gray"
+                android:layout_width="wrap_content"
+                android:layout_height="14sp"
+                android:padding="4dp"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="3dp"
+                android:lineSpacingExtra="2dp"
+                android:text="@string/setting_delete_account_content_3"
+                android:textColor="?attr/text_primary"
+                android:textSize="14sp" />
+        </one.mixin.android.widget.DotTextLayout>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/delete_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:layout_marginBottom="24dp"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/delete_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_delete_account"
+            android:textColor="@color/colorRed"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/change_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:layout_marginBottom="24dp"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/change_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_delete_account_change"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+</LinearLayout>

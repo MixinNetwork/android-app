@@ -49,15 +49,21 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     companion object {
         const val TAG: String = "MobileFragment"
         const val ARGS_PHONE_NUM = "args_phone_num"
+        const val ARGS_FROM = "args_from"
+        const val FROM_LANDING = 0
+        const val FROM_CHANGE_PHONE_ACCOUNT = 1
+        const val FROM_DELETE_ACCOUNT = 2
 
-        fun newInstance(pin: String? = null): MobileFragment = MobileFragment().apply {
-            val b = Bundle().apply {
-                if (pin != null) {
-                    putString(ARGS_PIN, pin)
+        fun newInstance(pin: String? = null, from: Int = FROM_LANDING): MobileFragment =
+            MobileFragment().apply {
+                val b = Bundle().apply {
+                    if (pin != null) {
+                        putString(ARGS_PIN, pin)
+                    }
+                    putInt(ARGS_FROM, from)
                 }
+                arguments = b
             }
-            arguments = b
-        }
     }
 
     private val mobileViewModel by viewModels<MobileViewModel>()
@@ -69,6 +75,9 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private var phoneNumber: Phonenumber.PhoneNumber? = null
 
     private var pin: String? = null
+    private val from: Int by lazy {
+        requireArguments().getInt(ARGS_FROM, FROM_LANDING)
+    }
 
     private var captchaView: CaptchaView? = null
 
@@ -149,7 +158,17 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
-            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name
+            when (from) {
+                FROM_DELETE_ACCOUNT -> {
+                    VerificationPurpose.DEACTIVATED.name
+                }
+                FROM_CHANGE_PHONE_ACCOUNT -> {
+                    VerificationPurpose.PHONE.name
+                }
+                else -> {
+                    VerificationPurpose.SESSION.name
+                }
+            }
         )
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
@@ -172,16 +191,34 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     }
                     hideLoading()
                     val verificationResponse = r.data as VerificationResponse
-                    activity?.addFragment(
-                        this@MobileFragment,
-                        VerificationFragment.newInstance(
-                            verificationResponse.id,
-                            phoneNum,
-                            pin,
-                            verificationResponse.hasEmergencyContact
-                        ),
-                        VerificationFragment.TAG
-                    )
+                    if (r.data?.deactivatedAt.isNullOrBlank() && from == FROM_LANDING) {
+                        LandingDeleteAccountFragment.newInstance(r.data?.deactivatedAt)
+                            .setContinueCallback {
+                                activity?.addFragment(
+                                    this@MobileFragment,
+                                    VerificationFragment.newInstance(
+                                        verificationResponse.id,
+                                        phoneNum,
+                                        pin,
+                                        verificationResponse.hasEmergencyContact,
+                                        from
+                                    ),
+                                    VerificationFragment.TAG
+                                )
+                            }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
+                    } else {
+                        activity?.addFragment(
+                            this@MobileFragment,
+                            VerificationFragment.newInstance(
+                                verificationResponse.id,
+                                phoneNum,
+                                pin,
+                                verificationResponse.hasEmergencyContact,
+                                from
+                            ),
+                            VerificationFragment.TAG
+                        )
+                    }
                 },
                 { t: Throwable ->
                     hideLoading()
@@ -219,7 +256,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private fun handleEditView(str: String) {
         binding.apply {
             mobileEt.setSelection(mobileEt.text.toString().length)
-            val validResult = isValidNumber(phoneUtil, mCountry.dialCode + str, mCountry.code, mCountry.dialCode)
+            val validResult =
+                isValidNumber(phoneUtil, mCountry.dialCode + str, mCountry.code, mCountry.dialCode)
             phoneNumber = validResult.second
             if (str.isNotEmpty() && validResult.first) {
                 mobileFab.visibility = VISIBLE
@@ -243,62 +281,63 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         }
     }
 
-    private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.tickVibrate()
-            if (viewDestroyed()) {
-                return
+    private val mKeyboardListener: Keyboard.OnClickKeyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(position: Int, value: String) {
+                context?.tickVibrate()
+                if (viewDestroyed()) {
+                    return
+                }
+                binding.apply {
+                    val editable = mobileEt.text
+                    val start = mobileEt.selectionStart
+                    val end = mobileEt.selectionEnd
+                    try {
+                        if (position == 11) {
+                            if (editable.isNullOrEmpty()) return
+
+                            if (start == end) {
+                                if (start == 0) {
+                                    mobileEt.text?.delete(0, end)
+                                } else {
+                                    mobileEt.text?.delete(start - 1, end)
+                                }
+                                if (start > 0) {
+                                    mobileEt.setSelection(start - 1)
+                                }
+                            } else {
+                                mobileEt.text?.delete(start, end)
+                                mobileEt.setSelection(start)
+                            }
+                        } else {
+                            mobileEt.text = editable?.insert(start, value)
+                            mobileEt.setSelection(start + 1)
+                        }
+                    } catch (e: IndexOutOfBoundsException) {
+                        Timber.w(e)
+                    }
+                }
             }
-            binding.apply {
-                val editable = mobileEt.text
-                val start = mobileEt.selectionStart
-                val end = mobileEt.selectionEnd
-                try {
+
+            override fun onLongClick(position: Int, value: String) {
+                context?.clickVibrate()
+                if (viewDestroyed()) {
+                    return
+                }
+                binding.apply {
+                    val editable = mobileEt.text
                     if (position == 11) {
                         if (editable.isNullOrEmpty()) return
 
-                        if (start == end) {
-                            if (start == 0) {
-                                mobileEt.text?.delete(0, end)
-                            } else {
-                                mobileEt.text?.delete(start - 1, end)
-                            }
-                            if (start > 0) {
-                                mobileEt.setSelection(start - 1)
-                            }
-                        } else {
-                            mobileEt.text?.delete(start, end)
-                            mobileEt.setSelection(start)
-                        }
+                        mobileEt.text?.clear()
                     } else {
+                        val start = mobileEt.selectionStart
                         mobileEt.text = editable?.insert(start, value)
                         mobileEt.setSelection(start + 1)
                     }
-                } catch (e: IndexOutOfBoundsException) {
-                    Timber.w(e)
                 }
             }
         }
-
-        override fun onLongClick(position: Int, value: String) {
-            context?.clickVibrate()
-            if (viewDestroyed()) {
-                return
-            }
-            binding.apply {
-                val editable = mobileEt.text
-                if (position == 11) {
-                    if (editable.isNullOrEmpty()) return
-
-                    mobileEt.text?.clear()
-                } else {
-                    val start = mobileEt.selectionStart
-                    mobileEt.text = editable?.insert(start, value)
-                    mobileEt.setSelection(start + 1)
-                }
-            }
-        }
-    }
 
     private val mWatcher: TextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {

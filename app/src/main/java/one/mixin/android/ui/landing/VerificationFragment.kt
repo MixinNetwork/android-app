@@ -41,8 +41,13 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_FROM
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_ACCOUNT
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
+import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.viewBinding
@@ -62,13 +67,15 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             id: String,
             phoneNum: String,
             pin: String? = null,
-            hasEmergencyContact: Boolean = false
+            hasEmergencyContact: Boolean = false,
+            from: Int = FROM_LANDING
         ): VerificationFragment = VerificationFragment().apply {
             arguments = bundleOf(
                 ARGS_ID to id,
                 ARGS_PHONE_NUM to phoneNum,
                 ARGS_PIN to pin,
-                ARGS_HAS_EMERGENCY_CONTACT to hasEmergencyContact
+                ARGS_HAS_EMERGENCY_CONTACT to hasEmergencyContact,
+                ARGS_FROM to from
             )
         }
     }
@@ -79,6 +86,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
 
     private val pin: String? by lazy {
         requireArguments().getString(ARGS_PIN)
+    }
+    private val from: Int by lazy {
+        requireArguments().getInt(ARGS_FROM, FROM_LANDING)
     }
     private val phoneNum by lazy { requireArguments().getString(ARGS_PHONE_NUM)!! }
 
@@ -114,10 +124,16 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     override fun clickNextFab() {
-        if (isPhoneModification()) {
-            handlePhoneModification()
-        } else {
-            handleLogin()
+        when (from) {
+            FROM_CHANGE_PHONE_ACCOUNT -> {
+                handlePhoneModification()
+            }
+            FROM_DELETE_ACCOUNT -> {
+                handleDeleteAccount()
+            }
+            else -> {
+                handleLogin()
+            }
         }
     }
 
@@ -144,6 +160,27 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             bottomSheet.dismiss()
         }
         bottomSheet.show()
+    }
+
+    private fun handleDeleteAccount() {
+        showLoading()
+        viewModel.deactiveVerification(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code())
+            .autoDispose(stopScope).subscribe(
+                { r: MixinResponse<VerificationResponse> ->
+                    binding.verificationNextFab.hide()
+                    binding.verificationCover.visibility = GONE
+                    if (!r.isSuccess) {
+                        handleFailure(r)
+                        return@subscribe
+                    }
+                    DeleteAccountPinBottomSheetDialogFragment.newInstance(
+                        r.data!!.id
+                    ).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
+                },
+                { t: Throwable ->
+                    handleError(t)
+                }
+            )
     }
 
     private fun handlePhoneModification() {

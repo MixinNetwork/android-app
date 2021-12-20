@@ -159,6 +159,7 @@
     <string name="draw">Draw</string>
     <string name="size">Size</string>
     <string name="exit_without_save">Exit without save?</string>
+    <string name="verify_to_continue">Enter your PIN to continue</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -265,6 +266,8 @@
     <string name="landing_verification_lost_mobile">Lost your mobile number?</string>
     <string name="landing_verification_tip_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="landing_check_updates">Version Update</string>
+    <string name="landing_delete_title">Continue to log in and abort\naccount deletion</string>
+    <string name="landing_delete_content">Your account will be deleted on %1$s, if you continue to log in, the request to delete your account will be cancelled.</string>
     <string name="update_mixin">Update Mixin</string>
     <string name="update_mixin_description">The current version (%1$s) is no longer avaliable!\nPlease click "Update" below to update to the latest version from the Google Play.</string>
     <string name="database_debug">Debug database</string>
@@ -643,7 +646,9 @@
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_desktop_confirm"> Confirm login to\nMixin Messenger Desktop</string>
     <string name="setting_desktop_login">Log in</string>
-    <string name="setting_privacy_security">Privacy and Security</string>
+    <string name="setting_account">Account</string>
+    <string name="setting_privacy">Privacy</string>
+    <string name="setting_security">Security</string>
     <string name="setting_mobile_contact">Phone Contacts</string>
     <string name="setting_mobile_contact_desc">Mixin syncs your address book to Mixin servers to help you connect with other Mixin users.</string>
     <string name="setting_mobile_contact_warning">This will remove your contacts from the Mixin servers.</string>
@@ -675,6 +680,18 @@
     <string name="setting_biometric_error_not_secure">The key NOT resides inside secure hardware (TEE)</string>
     <string name="setting_biometric_error_rooted">The device has been rooted</string>
     <string name="setting_enable_biometric_pay">Enable Biometric Pay?</string>
+    <string name="setting_delete_account">Delete My Account</string>
+    <string name="setting_delete_account_change">Change Number Instead</string>
+    <string name="setting_delete_view_wallet">View Wallet</string>
+    <string name="setting_delete_account_content_1">Delete your account into and profile photo</string>
+    <string name="setting_delete_account_content_2">Local messages and iCloud Backups will not be Deleted automatically</string>
+    <string name="setting_delete_account_content_3">Transactions CANNOT be deleted</string>
+    <string name="setting_delete_account_tip">Your Mixin wallet still has some assets that can be withdrawn to other wallets or exchanges. Once the account is cancelled, these assets will be \n abandoned along with the wallet and cannot be recovered.</string>
+    <string name="setting_delete_account_continue">Continue</string>
+    <string name="setting_delete_account_pin_title">Enter your PIN to delete your account</string>
+    <string name="setting_delete_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to Learn more.</string>
+    <string name="setting_delete_account_pin_content_more">Learn more</string>
+    <string name="setting_delete_account_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
     <string-array name="setting_night_array">
         <item>Light</item>
         <item>Dark</item>

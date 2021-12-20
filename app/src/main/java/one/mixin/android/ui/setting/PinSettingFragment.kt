@@ -48,9 +48,6 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
             timeRl.setOnClickListener {
                 navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
             }
-            logs.setOnClickListener {
-                navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
-            }
             biometricsSc.isClickable = false
             biometricsRl.setOnClickListener(biometricsClickListener)
             val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)

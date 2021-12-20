@@ -563,7 +563,9 @@
     <string name="setting_desktop_logout_failed">Gagal keluar dari desktop.</string>
     <string name="setting_desktop_confirm">Konfirmasikan masuk ke\nMixin Messenger Desktop</string>
     <string name="setting_desktop_login">Masuk</string>
-    <string name="setting_privacy_security">Privasi dan Keamanan</string>
+    <string name="setting_account">Akun</string>
+    <string name="setting_privacy">Privasi</string>
+    <string name="setting_security">Keamanan</string>
     <string name="setting_mobile_contact">Kontak Telepon</string>
     <string name="setting_mobile_contact_desc">Mixin menyinkronkan buku alamat Anda ke server Mixin untuk membantu Anda terhubung dengan pengguna Mixin yang lain.</string>
     <string name="setting_mobile_contact_warning">Ini akan menghapus kontak Anda dari server Mixin.</string>

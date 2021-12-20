@@ -22,6 +22,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
@@ -37,6 +38,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
         const val FROM_PHONE = 0
         const val FROM_EMERGENCY = 1
+        const val FROM_DELETE_ACCOUNT = 2
 
         const val ARGS_FROM = "args_from"
 
@@ -109,11 +111,21 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                 activity?.supportFragmentManager?.inTransaction {
                     remove(this@VerifyFragment)
                 }
-                if (from == FROM_PHONE) {
-                    LandingActivity.show(requireContext(), pinCode)
-                } else if (from == FROM_EMERGENCY) {
-                    val f = FriendsNoBotFragment.newInstance(pinCode)
-                    activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
+                when (from) {
+                    FROM_PHONE -> {
+                        LandingActivity.show(requireContext(), pinCode)
+                    }
+                    FROM_EMERGENCY -> {
+                        val f = FriendsNoBotFragment.newInstance(pinCode)
+                        activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
+                    }
+                    FROM_DELETE_ACCOUNT -> {
+                        val f = MobileFragment.newInstance(from = from)
+                        activity?.addFragment(this@VerifyFragment, f, MobileFragment.TAG)
+                    }
+                    else -> {
+                        throw IllegalArgumentException("Illegal argument")
+                    }
                 }
             },
             failureBlock = {
@@ -125,7 +137,13 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                 } else if (it.errorCode == ErrorHandler.PIN_INCORRECT) {
                     val errorCount = accountRepository.errorCount()
                     hideLoading()
-                    toast(getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount))
+                    toast(
+                        getString(
+                            R.string.error_pin_incorrect_with_times,
+                            ErrorHandler.PIN_INCORRECT,
+                            errorCount
+                        )
+                    )
                     return@handleMixinResponse true
                 }
                 hideLoading()
@@ -139,23 +157,24 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
         )
     }
 
-    private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.tickVibrate()
-            if (position == 11) {
-                binding.pin.delete()
-            } else {
-                binding.pin.append(value)
+    private val keyboardListener: Keyboard.OnClickKeyboardListener =
+        object : Keyboard.OnClickKeyboardListener {
+            override fun onKeyClick(position: Int, value: String) {
+                context?.tickVibrate()
+                if (position == 11) {
+                    binding.pin.delete()
+                } else {
+                    binding.pin.append(value)
+                }
             }
-        }
 
-        override fun onLongClick(position: Int, value: String) {
-            context?.clickVibrate()
-            if (position == 11) {
-                binding.pin.clear()
-            } else {
-                binding.pin.append(value)
+            override fun onLongClick(position: Int, value: String) {
+                context?.clickVibrate()
+                if (position == 11) {
+                    binding.pin.clear()
+                } else {
+                    binding.pin.append(value)
+                }
             }
         }
-    }
 }

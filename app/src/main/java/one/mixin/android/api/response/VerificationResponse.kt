@@ -8,5 +8,7 @@ data class VerificationResponse(
     @SerializedName("has_emergency_contact")
     val hasEmergencyContact: Boolean = false,
     @SerializedName("contact_id")
-    val contactId: String? = null
+    val contactId: String? = null,
+    @SerializedName("deactivated_at")
+    val deactivatedAt: String?
 )

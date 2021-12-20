@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.DeactivateVerificationRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
@@ -52,6 +53,13 @@ constructor(
                 pin = encryptPin(Session.getPinToken()!!, pin)
             )
         ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+    fun deactiveVerification(id: String, code: String): Observable<MixinResponse<VerificationResponse>> =
+        accountRepository.deactiveVerification(
+            id, DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code)
+        ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+    suspend fun deactivate(pin: String, verificationId: String, code: String) = accountRepository.deactivate(pin, verificationId)
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
