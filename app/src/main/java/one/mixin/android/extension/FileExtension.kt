@@ -503,6 +503,7 @@ fun File.processing(to: File) {
 
 fun String.getFilePath(): String? = Uri.parse(this).getFilePath()
 
+@Deprecated("Don’t get the file path on the URI")
 fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
     val scheme = this.scheme
     var data: String? = null

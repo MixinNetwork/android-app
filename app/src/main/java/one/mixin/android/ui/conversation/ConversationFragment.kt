@@ -1401,8 +1401,7 @@ class ConversationFragment() :
                 ) {
                     lifecycleScope.launch(Dispatchers.IO) {
                         if (inputContentInfo != null) {
-                            val url = inputContentInfo.contentUri.getFilePath(requireContext()) ?: return@launch
-                            sendImageMessage(url.toUri())
+                            sendImageMessage(inputContentInfo.contentUri)
                         }
                     }
                 }
