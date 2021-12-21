@@ -21,7 +21,6 @@ import org.webrtc.PeerConnectionFactory
 import org.webrtc.RTCFrameDecryptor
 import org.webrtc.RTCFrameEncryptor
 import org.webrtc.RtpReceiver
-import org.webrtc.RtpSender
 import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
@@ -44,13 +43,10 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private var peerConnection: PeerConnection? = null
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
-    private var rtpSender: RtpSender? = null
+    private var rtpTransceiver: RtpTransceiver? = null
     private val rtpReceivers = arrayMapOf<String, RtpReceiver>()
     private val receiverIdUserIdMap = arrayMapOf<String, String>()
     private val receiverIdUserIdNoKeyMap = arrayMapOf<String, String>()
-
-    private val offerReceiveAudioConstraint = MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true")
-    private val offerReceiveVideoConstraint = MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false")
 
     suspend fun observeStats(callPipShown: () -> Boolean) {
         while (peerConnection != null && peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CONNECTED) {
@@ -110,7 +106,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         frameKey: ByteArray? = null,
         doWhenSetFailure: (() -> Unit)? = null
     ) {
-        val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
             iceServers.clear()
             iceServers.addAll(iceServerList)
@@ -175,7 +170,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 Timber.d("$TAG_CALL createOffer onSetSuccess")
             }
         }
-        peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
+        peerConnection?.createOffer(offerSdpObserver, MediaConstraints())
     }
 
     fun createAnswer(
@@ -184,7 +179,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         setLocalSuccess: (sdp: SessionDescription) -> Unit,
         doWhenSetFailure: (() -> Unit)? = null
     ) {
-        val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
             iceServers.clear()
             iceServers.addAll(iceServerList)
@@ -280,7 +274,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
             }
         }
-        peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
+        peerConnection?.createAnswer(answerSdpObserver, MediaConstraints())
     }
 
     fun addRemoteIceCandidate(candidate: IceCandidate) {
@@ -333,9 +327,9 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     }
 
     fun setAudioEnable(enable: Boolean) {
-        if (peerConnection == null || audioTrack == null || isError) return
+        if (peerConnection == null || rtpTransceiver == null || isError) return
 
-        audioTrack?.setEnabled(enable)
+        rtpTransceiver?.sender?.track()?.setEnabled(enable)
     }
 
     fun enableCommunication() {
@@ -357,7 +351,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         audioSource?.dispose()
         audioSource = null
         isError = false
-        rtpSender = null
+        rtpTransceiver = null
         rtpReceivers.clear()
         events.onPeerConnectionClosed()
     }
@@ -419,14 +413,17 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
-        rtpSender = peerConnection.addTrack(createAudioTrack())
+        rtpTransceiver = peerConnection.addTransceiver(
+            createAudioTrack(),
+            RtpTransceiver.RtpTransceiverInit(RtpTransceiver.RtpTransceiverDirection.SEND_RECV)
+        )
         setSenderFrameKey(frameKey)
         return peerConnection
     }
 
     fun setSenderFrameKey(frameKey: ByteArray? = null) {
-        if (frameKey != null && rtpSender != null) {
-            rtpSender!!.setFrameEncryptor(RTCFrameEncryptor(frameKey))
+        if (frameKey != null && rtpTransceiver != null) {
+            rtpTransceiver?.sender?.setFrameEncryptor(RTCFrameEncryptor(frameKey))
         }
     }
 
@@ -455,11 +452,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         audioTrack = factory!!.createAudioTrack(AUDIO_TRACK_ID, audioSource)
         audioTrack!!.setEnabled(true)
         return audioTrack!!
-    }
-
-    private fun createMediaConstraint() = MediaConstraints().apply {
-        mandatory.add(offerReceiveAudioConstraint)
-        mandatory.add(offerReceiveVideoConstraint)
     }
 
     private val iceObserver = object : AddIceObserver {
