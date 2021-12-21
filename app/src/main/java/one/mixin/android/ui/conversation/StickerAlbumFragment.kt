@@ -32,7 +32,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
     private val albums = mutableListOf<StickerAlbum>()
 
     private val albumAdapter: StickerAlbumAdapter by lazy {
-        StickerAlbumAdapter(requireActivity(), albums).apply {
+        StickerAlbumAdapter(this, albums).apply {
             callback = this@StickerAlbumFragment.callback
         }
     }

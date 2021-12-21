@@ -15,6 +15,7 @@ import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_UP
 import android.view.ScaleGestureDetector
+import android.view.Surface
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.camera.core.Camera
@@ -332,7 +333,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
     }
 
-    private fun getRotation() = viewFinder.display.rotation
+    private fun getRotation(): Int = viewFinder.display?.rotation ?: Surface.ROTATION_0
 
     private fun isLensBack() = CameraSelector.LENS_FACING_BACK == lensFacing
 
