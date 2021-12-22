@@ -40,7 +40,7 @@ buildscript {
         ext.kotlin_version = '1.6.10'
         ext.libphonenumberVersion = '8.12.39'
         ext.anko_version = '0.10.8'
-        ext.coroutines_version = '1.5.2'
+        ext.coroutines_version = '1.6.0'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
         ext.firebaseDylinkVersion = '19.1.1'
