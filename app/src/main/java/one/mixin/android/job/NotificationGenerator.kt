@@ -31,6 +31,7 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.supportsR
+import one.mixin.android.ui.conversation.BubbleActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager
@@ -395,7 +396,7 @@ object NotificationGenerator : Injector() {
             updateShortcuts(mutableListOf(shortcut))
             notificationBuilder.setShortcutInfo(shortcut)
 
-            val target = ConversationActivity.putIntent(context, conversation.conversationId, if (conversation.isGroupConversation()) null else message.userId)
+            val target = BubbleActivity.putIntent(context, conversation.conversationId, if (conversation.isGroupConversation()) null else message.userId)
             val bubbleIntent = PendingIntent.getActivity(context, conversation.conversationId.hashCode(), target, PendingIntent.FLAG_UPDATE_CURRENT)
             val bubbleMetadata = NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
                 .setDesiredHeight(640.dp)
