@@ -1904,7 +1904,7 @@ class ConversationFragment() :
                 if (isFirstMessage) {
                     isFirstMessage = false
                 }
-                chatViewModel.markMessageRead(conversationId, sender.userId)
+                chatViewModel.markMessageRead(conversationId, sender.userId, (activity as? ConversationActivity)?.isBubbled == true)
             }
             conversationAdapter.submitList(list) {
                 if (countable) return@submitList

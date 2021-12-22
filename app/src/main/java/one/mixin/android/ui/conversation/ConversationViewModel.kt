@@ -425,8 +425,10 @@ internal constructor(
         }
     }
 
-    fun markMessageRead(conversationId: String, accountId: String) {
-        notificationManager.cancel(conversationId.hashCode())
+    fun markMessageRead(conversationId: String, accountId: String, isBubbled: Boolean) {
+        if (isBubbled.not()) {
+            notificationManager.cancel(conversationId.hashCode())
+        }
         MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
             while (true) {
                 val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)

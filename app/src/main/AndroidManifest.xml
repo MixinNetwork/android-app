@@ -143,10 +143,12 @@
         <activity
             android:name=".ui.conversation.ConversationActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize|stateHidden"/>
+            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:documentLaunchMode="always"
+            android:allowEmbedded="true"
+            android:resizeableActivity="true"/>
 
         <activity
             android:name=".ui.forward.ForwardActivity"

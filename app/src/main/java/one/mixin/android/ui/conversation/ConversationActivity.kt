@@ -3,7 +3,9 @@ package one.mixin.android.ui.conversation
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+import android.os.Build
 import android.os.Bundle
+import android.view.Display
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,9 +31,19 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ConversationActivity : BlazeBaseActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        isBubbled = if (Build.VERSION.SDK_INT >= 31) {
+            isLaunchedFromBubble
+        } else {
+            val displayId = if (Build.VERSION.SDK_INT >= 30) {
+                display?.displayId
+            } else {
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay.displayId
+            }
+            displayId != Display.DEFAULT_DISPLAY
+        }
         setContentView(R.layout.activity_chat)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
@@ -57,6 +69,8 @@ class ConversationActivity : BlazeBaseActivity() {
         }
         super.finish()
     }
+
+    var isBubbled = false
 
     @Inject
     lateinit var conversationRepository: ConversationRepository
