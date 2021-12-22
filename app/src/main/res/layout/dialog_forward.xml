@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"
         android:textStyle="bold"
+        android:foreground="?attr/selectableItemBackground"
         android:padding="8dp"/>
 
     <TextView
@@ -22,6 +23,7 @@
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"
         android:textStyle="bold"
+        android:foreground="?attr/selectableItemBackground"
         android:padding="8dp"/>
 
     <TextView
@@ -31,6 +33,7 @@
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"
         android:textStyle="bold"
+        android:foreground="?attr/selectableItemBackground"
         android:padding="8dp"/>
 
 </LinearLayout>
