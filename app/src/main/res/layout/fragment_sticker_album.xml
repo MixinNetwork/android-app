@@ -1,63 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="?attr/bg_white">
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/album_ll"/>
+        android:layout_above="@id/album_tl"/>
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/album_ll"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/album_tl"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
-
-        <FrameLayout
-            android:id="@+id/store_fl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_gravity="center">
-
-            <ImageView
-                android:id="@+id/store_iv"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:padding="8dp"
-                android:src="@drawable/ic_sticker_store"
-                android:scaleType="centerInside"
-                android:layout_gravity="center"
-                android:contentDescription="@string/sticker_store"/>
-
-            <ImageView
-                android:id="@+id/dot_iv"
-                android:layout_width="6dp"
-                android:layout_height="6dp"
-                android:layout_gravity="end"
-                android:visibility="gone"
-                android:layout_marginEnd="10dp"
-                android:layout_marginTop="8dp"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_dot_red"/>
-        </FrameLayout>
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/album_tl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            app:tabPaddingStart="0dp"
-            app:tabPaddingEnd="0dp"
-            app:tabMaxWidth="48dp"
-            app:tabIndicatorHeight="0dp"
-            app:tabBackground="@null"/>
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:tabPaddingStart="0dp"
+        app:tabPaddingEnd="0dp"
+        app:tabMaxWidth="48dp"
+        app:tabIndicatorHeight="0dp"
+        app:tabBackground="@null" />
 </RelativeLayout>
