@@ -3,7 +3,6 @@ package one.mixin.android.ui.home
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -264,11 +263,6 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
 
         checkAsync()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        getSystemService<NotificationManager>()?.cancelAll()
     }
 
     override fun onDestroy() {
