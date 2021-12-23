@@ -3,6 +3,7 @@ package one.mixin.android
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.MutableContextWrapper
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebStorage
@@ -229,10 +230,14 @@ open class MixinApplication :
 
     var activityInForeground = true
     var currentActivity: Activity? = null
+    val contextWrapper by lazy {
+        MutableContextWrapper(this@MixinApplication)
+    }
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
     }
 
     override fun onActivityStarted(activity: Activity) {
+        contextWrapper.baseContext = activity
         if (activity !is AppAuthActivity) {
             activityReferences += 1
         } else {

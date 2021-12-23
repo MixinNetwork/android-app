@@ -292,10 +292,10 @@ class WebFragment : BaseFragment() {
                     binding.iconIv.setImageBitmap(icon)
                 }
                 isFinished = clip.isFinished
-                clip.webView ?: MixinWebView(MixinApplication.appContext)
+                clip.webView ?: MixinWebView(MixinApplication.get().contextWrapper)
             }
         } else {
-            MixinWebView(MixinApplication.appContext)
+            MixinWebView(MixinApplication.get().contextWrapper)
         }
         if (webView.parent != null) {
             (webView.parent as? ViewGroup)?.removeView(webView)

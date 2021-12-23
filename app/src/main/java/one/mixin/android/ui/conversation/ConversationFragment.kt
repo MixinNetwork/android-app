@@ -3201,7 +3201,7 @@ class ConversationFragment() :
         return DialogForwardBinding.inflate(LayoutInflater.from(requireActivity()), null, false)
             .apply {
                 this.cancel.setOnClickListener {
-                    deleteDialog?.dismiss()
+                    forwardDialog?.dismiss()
                 }
             }
     }
