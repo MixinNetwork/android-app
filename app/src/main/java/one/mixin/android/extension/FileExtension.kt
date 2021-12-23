@@ -13,6 +13,7 @@ import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.StatFs
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Base64
@@ -35,12 +36,14 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.StorageUsage
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
+import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.LinkedList
@@ -335,6 +338,24 @@ fun Context.getStorageUsageByConversationAndType(conversationId: String, type: S
             null
         }
     }
+}
+
+
+fun File.dirSize(): Long? {
+    if (!this.isDirectory) return null
+    try {
+        val du = Runtime.getRuntime().exec(
+            "/system/bin/du -sc $canonicalPath",
+            arrayOf(),
+            Environment.getRootDirectory()
+        )
+        val br = BufferedReader(InputStreamReader(du.inputStream))
+        val parts: List<String> = br.readLine().replace("\t","@").split("@")
+        return parts[0].toLongOrNull()
+    } catch (e: IOException) {
+        Timber.e("Could not find size of directory $absolutePath, ${e.message}")
+    }
+    return null
 }
 
 fun Context.getPublicPicturePath(): File {
@@ -658,29 +679,6 @@ fun File.blurThumbnail(size: Size): Bitmap? {
         }
     } while (true)
     return blurThumbnail(size.width / scale, size.height / scale)
-}
-
-fun File.dirSize(): Long? {
-    return if (isDirectory) {
-        var result = 0L
-        val dirList = LinkedList<File>()
-        dirList.clear()
-        dirList.push(this)
-        while (!dirList.isEmpty()) {
-            val dirCurrent = dirList.pop()
-            val fileList = dirCurrent.listFiles()
-            for (f in fileList) {
-                if (f.isDirectory) {
-                    dirList.push(f)
-                } else {
-                    result += f.length()
-                }
-            }
-        }
-        return result
-    } else {
-        null
-    }
 }
 
 fun File.encodeBlurHash(): String? {
