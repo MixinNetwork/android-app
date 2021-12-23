@@ -44,7 +44,7 @@ class RefreshStickerAlbumJob : BaseJob(
                 val localAlbum = stickerAlbumDao.findAlbumById(a.albumId)
                 if (localAlbum == null) {
                     maxOrder++
-                    a.added = false
+                    a.added = a.banner.isNullOrBlank().not()
                     a.orderedAt = maxOrder
                     stickerAlbumDao.insertSuspend(a)
                 } else {
