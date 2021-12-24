@@ -3,6 +3,7 @@ package one.mixin.android.ui.home
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -263,6 +264,14 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
 
         checkAsync()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val notificationManager = getSystemService<NotificationManager>() ?: return
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()).not()) {
+            notificationManager.cancelAll()
+        }
     }
 
     override fun onDestroy() {

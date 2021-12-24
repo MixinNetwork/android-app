@@ -59,6 +59,7 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.notificationManager
+import timber.log.Timber
 
 const val KEY_REPLY = "key_reply"
 const val CONVERSATION_ID = "conversation_id"
