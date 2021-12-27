@@ -110,7 +110,12 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
             editInputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
             allowEmpty = false
             rightAction = {
-                savePreference(it.toDouble(), isNotification)
+                val result = it.toDoubleOrNull()
+                if (result == null) {
+                    toast(R.string.error_data)
+                } else {
+                    savePreference(it.toDouble(), isNotification)
+                }
             }
         }
     }
