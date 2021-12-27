@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.core.content.pm.ShortcutInfoCompat
-import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -54,6 +53,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.ShortcutInfo
 import one.mixin.android.util.generateDynamicShortcut
 import one.mixin.android.util.maxDynamicShortcutCount
+import one.mixin.android.util.updateShortcuts
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.ConversationMinimal
@@ -643,15 +643,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
             shortcuts.add(generateDynamicShortcut(MixinApplication.appContext, shortcutInfo))
         }
-        val exists = ShortcutManagerCompat.getDynamicShortcuts(MixinApplication.appContext)
-        val keepSize = maxDynamicShortcutCount - shortcuts.size
-        if (keepSize >= 0 && exists.size > keepSize) {
-            val removeIds = mutableListOf<String>()
-            exists.take(exists.size - keepSize)
-                .mapTo(removeIds) { it.id }
-            ShortcutManagerCompat.removeDynamicShortcuts(MixinApplication.appContext, removeIds)
-        }
-        ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
+        updateShortcuts(shortcuts)
     }
 
     private suspend fun loadBitmap(url: String?): Bitmap? {

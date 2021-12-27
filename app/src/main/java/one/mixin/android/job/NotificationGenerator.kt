@@ -2,14 +2,19 @@ package one.mixin.android.job
 
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
+import androidx.core.content.LocusIdCompat
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.graphics.drawable.IconCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -21,9 +26,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.supportsNougat
+import one.mixin.android.extension.supportsR
+import one.mixin.android.ui.conversation.BubbleActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager
@@ -31,6 +39,8 @@ import one.mixin.android.util.ChannelManager.Companion.GROUP
 import one.mixin.android.util.ChannelManager.Companion.MESSAGES
 import one.mixin.android.util.ChannelManager.Companion.SILENCE
 import one.mixin.android.util.mention.rendMentionContent
+import one.mixin.android.util.updateShortcuts
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
@@ -49,6 +59,7 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import org.jetbrains.anko.notificationManager
+import timber.log.Timber
 
 const val KEY_REPLY = "key_reply"
 const val CONVERSATION_ID = "conversation_id"
@@ -85,18 +96,19 @@ object NotificationGenerator : Injector() {
         val conversationIntent = ConversationActivity
             .putIntent(context, message.conversationId)
 
-        val notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channelId: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (isSilent) {
-                NotificationCompat.Builder(context, ChannelManager.getChannelId(SILENCE))
+                ChannelManager.getChannelId(SILENCE)
             } else if (conversation.isGroupConversation()) {
-                NotificationCompat.Builder(context, ChannelManager.getChannelId(GROUP))
+                ChannelManager.getChannelId(GROUP)
             } else {
-                NotificationCompat.Builder(context, ChannelManager.getChannelId(MESSAGES))
+                ChannelManager.getChannelId(MESSAGES)
             }
         } else {
-            NotificationCompat.Builder(context, ChannelManager.CHANNEL_MESSAGE)
+            ChannelManager.CHANNEL_MESSAGE
         }
 
+        val notificationBuilder = NotificationCompat.Builder(context, channelId)
         notificationBuilder.setContentIntent(
             PendingIntent.getActivities(
                 context,
@@ -136,6 +148,7 @@ object NotificationGenerator : Injector() {
             notificationBuilder.addAction(readAction)
         }
 
+        var contentText: String? = null
         when {
             message.isText() -> {
                 if (conversation.isGroupConversation() || message.isRepresentativeMessage(conversation)) {
@@ -143,11 +156,11 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_text_message, user.fullName)
                     )
-                    notificationBuilder.setContentText("${user.fullName} : ${rendMentionContent(message.content, userMap)}")
+                    contentText = "${user.fullName} : ${rendMentionContent(message.content, userMap)}"
                 } else {
                     notificationBuilder.setContentTitle(user.fullName)
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_text_message))
-                    notificationBuilder.setContentText(rendMentionContent(message.content, userMap))
+                    contentText = rendMentionContent(message.content, userMap)
                 }
             }
             message.isImage() -> {
@@ -156,13 +169,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_image_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_image_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_image_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_image_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_image_message))
+                    contentText = context.getString(R.string.alert_key_contact_image_message)
                 }
             }
             message.isVideo() -> {
@@ -171,13 +182,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_video_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_video_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_video_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_video_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_video_message))
+                    contentText = context.getString(R.string.alert_key_contact_video_message)
                 }
             }
             message.isLive() -> {
@@ -186,13 +195,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_live_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_live_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_live_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_live_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_live_message))
+                    contentText = context.getString(R.string.alert_key_contact_live_message)
                 }
             }
             message.isData() -> {
@@ -201,13 +208,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_data_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_data_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_data_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_data_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_data_message))
+                    contentText = context.getString(R.string.alert_key_contact_data_message)
                 }
             }
             message.isAudio() -> {
@@ -216,13 +221,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_audio_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_audio_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_audio_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_audio_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_audio_message))
+                    contentText = context.getString(R.string.alert_key_contact_audio_message)
                 }
             }
             message.isSticker() -> {
@@ -231,13 +234,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_sticker_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_sticker_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_sticker_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_sticker_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_sticker_message))
+                    contentText = context.getString(R.string.alert_key_contact_sticker_message)
                 }
             }
             message.isContact() -> {
@@ -246,13 +247,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_contact_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_contact_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_contact_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_contact_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_contact_message))
+                    contentText = context.getString(R.string.alert_key_contact_contact_message)
                 }
             }
             message.isLocation() -> {
@@ -261,13 +260,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_location_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_location_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_location_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_location_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_location_message))
+                    contentText = context.getString(R.string.alert_key_contact_location_message)
                 }
             }
             message.isPost() -> {
@@ -276,11 +273,11 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_post_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText("${user.fullName}: ${rendMentionContent(message.content, userMap)}")
+                    contentText = "${user.fullName}: ${rendMentionContent(message.content, userMap)}"
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_post_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText("${user.fullName}: ${rendMentionContent(message.content, userMap)}")
+                    contentText = "${user.fullName}: ${rendMentionContent(message.content, userMap)}"
                 }
             }
             message.isTranscript() -> {
@@ -289,20 +286,18 @@ object NotificationGenerator : Injector() {
                         context.getString(R.string.alert_key_group_transcript_message, user.fullName)
                     )
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_transcript_message, user.fullName)
-                    )
+                    contentText = context.getString(R.string.alert_key_group_transcript_message, user.fullName)
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transcript_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_transcript_message))
+                    contentText = context.getString(R.string.alert_key_contact_transcript_message)
                 }
             }
             message.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
                 if (message.action == SnapshotType.transfer.name) {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_transfer_message))
+                    contentText = context.getString(R.string.alert_key_contact_transfer_message)
                 }
             }
             message.type == MessageCategory.APP_BUTTON_GROUP.name ||
@@ -312,11 +307,11 @@ object NotificationGenerator : Injector() {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_text_message, user.fullName)
                     )
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_text_message))
+                    contentText = context.getString(R.string.alert_key_contact_text_message)
                 } else {
                     notificationBuilder.setContentTitle(user.fullName)
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_text_message))
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_text_message))
+                    contentText = context.getString(R.string.alert_key_contact_text_message)
                 }
             }
             message.type == MessageCategory.SYSTEM_CONVERSATION.name -> {
@@ -324,13 +319,14 @@ object NotificationGenerator : Injector() {
             }
             message.type == MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
                 notificationBuilder.setContentTitle(user.fullName)
-                notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_audio_call_message))
+                contentText = context.getString(R.string.alert_key_contact_audio_call_message)
             }
             else -> {
                 // No support
                 return@launch
             }
         }
+        notificationBuilder.setContentText(contentText)
         notificationBuilder.setSmallIcon(R.drawable.ic_msg_default)
         notificationBuilder.color = ContextCompat.getColor(context, R.color.colorLightBlue)
         notificationBuilder.setWhen(System.currentTimeMillis())
@@ -344,47 +340,114 @@ object NotificationGenerator : Injector() {
         } else {
             NotificationCompat.PRIORITY_HIGH
         }
-        user.notNullWithElse(
-            {
-                context.mainThread {
-                    val height = context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
-                    val width = context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width)
 
-                    Glide.with(context)
-                        .asBitmap()
-                        .load(it.avatarUrl)
-                        .apply(RequestOptions().fitCenter().circleCrop())
-                        .listener(
-                            object : RequestListener<Bitmap> {
-                                override fun onResourceReady(
-                                    resource: Bitmap?,
-                                    model: Any?,
-                                    target: Target<Bitmap>?,
-                                    dataSource: DataSource?,
-                                    isFirstResource: Boolean
-                                ): Boolean {
-                                    notificationBuilder.setLargeIcon(resource)
-                                    notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
-                                    return false
-                                }
+        var person: Person? = null
+        supportsR({
+            person = Person.Builder()
+                .setName(conversation.getConversationName())
+                .setImportant(true)
+                .build()
 
-                                override fun onLoadFailed(
-                                    e: GlideException?,
-                                    model: Any?,
-                                    target: Target<Bitmap>?,
-                                    isFirstResource: Boolean
-                                ): Boolean {
-                                    notificationBuilder.setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar))
-                                    notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
-                                    return false
-                                }
-                            }
-                        ).submit(width, height)
-                }
-            },
-            {
+            val messagingStyle = NotificationCompat.MessagingStyle(requireNotNull(person)).also { style ->
+                style.addMessage(NotificationCompat.MessagingStyle.Message(contentText, System.currentTimeMillis(), person))
+                style.isGroupConversation = false
+            }
+
+            notificationBuilder.setShortcutId(conversation.conversationId)
+                .addPerson(person)
+                .setLocusId(LocusIdCompat(conversation.conversationId))
+                .setStyle(messagingStyle)
+        })
+
+        val canBubble = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()
+        if (canBubble) {
+            loadBitmap(context, conversation.iconUrl()) { bitmap ->
+                val resource = bitmap ?: BitmapFactory.decodeResource(context.resources, R.drawable.ic_msg_default)
+                notificationBuilder.setLargeIcon(resource)
+                buildBubble(context, conversation, notificationBuilder, message, resource, person)
                 notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
             }
-        )
+        } else {
+            user.notNullWithElse(
+                {
+                    loadBitmap(context, it.avatarUrl) { bitmap ->
+                        val resource = bitmap ?: BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar)
+                        notificationBuilder.setLargeIcon(resource)
+                        notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
+                    }
+                },
+                {
+                    notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
+                }
+            )
+        }
+    }
+
+    private fun buildBubble(context: Context, conversation: ConversationItem, notificationBuilder: NotificationCompat.Builder, message: Message, bitmap: Bitmap, person: Person? = null) {
+        supportsR({
+            val icon = IconCompat.createWithBitmap(bitmap)
+            val shortcut = ShortcutInfoCompat.Builder(context, conversation.conversationId)
+                .setIntent(Intent(Intent.ACTION_DEFAULT))
+                .setLongLived(true)
+                .setIcon(icon)
+                .setShortLabel(conversation.getConversationName()).apply {
+                    person?.let { setPerson(it) }
+                }
+                .build()
+            updateShortcuts(mutableListOf(shortcut))
+            notificationBuilder.setShortcutInfo(shortcut)
+
+            val userId = when {
+                conversation.isGroupConversation() -> null
+                message.isRepresentativeMessage(conversation) -> conversation.ownerId
+                else -> message.userId
+            }
+            val target = BubbleActivity.putIntent(context, conversation.conversationId, userId)
+            val bubbleIntent = PendingIntent.getActivity(context, conversation.conversationId.hashCode(), target, PendingIntent.FLAG_UPDATE_CURRENT)
+            val bubbleMetadata = NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
+                .setDesiredHeight(640.dp)
+                .setSuppressNotification(MixinApplication.conversationId == conversation.conversationId)
+                .setAutoExpandBubble(false)
+                .build()
+            notificationBuilder.bubbleMetadata = bubbleMetadata
+        })
+    }
+
+    private fun loadBitmap(context: Context, url: String?, onComplete: (Bitmap?) -> Unit) {
+        context.mainThread {
+            val height =
+                context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
+            val width =
+                context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width)
+
+            Glide.with(context)
+                .asBitmap()
+                .load(url)
+                .apply(RequestOptions().fitCenter().circleCrop())
+                .listener(
+                    object : RequestListener<Bitmap> {
+                        override fun onResourceReady(
+                            resource: Bitmap,
+                            model: Any?,
+                            target: Target<Bitmap>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            onComplete(resource)
+                            return false
+                        }
+
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Bitmap>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            onComplete(null)
+                            return false
+                        }
+                    }
+                ).submit(width, height)
+        }
     }
 }
