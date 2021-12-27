@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <one.mixin.android.widget.snow.SnowLinearLayout
+    <one.mixin.android.widget.surprise.SurpriseLinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -89,7 +89,7 @@
             android:layout_marginBottom="32dp"
             android:orientation="horizontal"
             android:visibility="gone" />
-    </one.mixin.android.widget.snow.SnowLinearLayout>
+    </one.mixin.android.widget.surprise.SurpriseLinearLayout>
 
     <View
         android:layout_width="match_parent"
