@@ -43,17 +43,11 @@ internal object ImageUtil {
     }
 
     @Throws(IOException::class)
-    fun decodeSampledBitmapFromFile(imageFile: InputStream, reqWidth: Int, reqHeight: Int): Bitmap {
+    fun decodeSampledBitmapFromFile(imageStream: InputStream, reqWidth: Int, reqHeight: Int): Bitmap {
         val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
-
-        options.inJustDecodeBounds = false
-
-        var scaledBitmap = BitmapFactory.decodeStream(imageFile, null, options)
-
-        val exif = ExifInterface(imageFile)
+        var bitmap = requireNotNull(BitmapFactory.decodeStream(imageStream, null, options))
+        val scale = calculateInScale(bitmap.width,bitmap.height, reqWidth, reqHeight)
+        val exif = ExifInterface(imageStream)
         val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0)
         val matrix = Matrix()
         when (orientation) {
@@ -61,29 +55,20 @@ internal object ImageUtil {
             ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
             ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
         }
-        scaledBitmap = Bitmap.createBitmap(scaledBitmap!!, 0, 0, scaledBitmap.width, scaledBitmap.height, matrix, true)
-        return scaledBitmap
+        matrix.postScale(scale, scale)
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        return bitmap
     }
 
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val height = options.outHeight
-        val width = options.outWidth
-        var inSampleSize = 1
+    private fun calculateInScale(width:Int, height:Int, reqWidth: Int, reqHeight: Int): Float {
 
         if (width == 0 || height == 0 || height / width >= 3 || width / height >= 3) {
-            return inSampleSize
+            return 1f
         }
-
-        if (height > reqHeight || width > reqWidth) {
-
-            val halfHeight = height / 2
-            val halfWidth = width / 2
-
-            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
-                inSampleSize *= 2
-            }
+        return if (width > height) {
+            reqWidth / width.toFloat()
+        } else {
+            reqHeight / height.toFloat()
         }
-
-        return inSampleSize
     }
 }
