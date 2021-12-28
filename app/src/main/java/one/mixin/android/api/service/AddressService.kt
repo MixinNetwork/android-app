@@ -16,7 +16,7 @@ interface AddressService {
     suspend fun addresses(@Body request: AddressRequest): MixinResponse<Address>
 
     @POST("addresses/{id}/delete")
-    suspend fun delete(@Path("id") id: String, @Body pin: Pin): MixinResponse<Map<String, String?>>
+    suspend fun delete(@Path("id") id: String, @Body pin: Pin): MixinResponse<Map<String, String?>?>
 
     @GET("addresses/{id}")
     suspend fun address(@Path("id") id: String): MixinResponse<Address>

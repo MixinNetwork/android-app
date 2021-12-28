@@ -11,7 +11,7 @@ import retrofit2.http.POST
 interface ContactService {
 
     @POST("contacts")
-    suspend fun syncContacts(@Body contacts: List<ContactRequest>): MixinResponse<Map<String, String?>>
+    suspend fun syncContacts(@Body contacts: List<ContactRequest>): MixinResponse<Map<String, String?>?>
 
     @GET("friends")
     fun friends(): Call<MixinResponse<List<User>>>
