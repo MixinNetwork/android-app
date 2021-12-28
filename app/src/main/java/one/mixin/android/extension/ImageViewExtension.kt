@@ -365,6 +365,7 @@ fun ImageView.loadVideo(uri: String?) {
     ).into(this)
 }
 
+@SuppressLint("CheckResult")
 fun ImageView.loadVideo(uri: String?, holder: String?, width: Int, height: Int) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply {
@@ -393,16 +394,18 @@ fun RLottieImageView.loadLottie(uri: String) {
         uri,
         layoutParams.width,
         layoutParams.height
-    )
-        .addListener(
-            object : ImageListener<RLottieDrawable> {
-                override fun onResult(result: RLottieDrawable) {
+    ).addListener(
+        object : ImageListener<RLottieDrawable> {
+            override fun onResult(result: RLottieDrawable) {
+                if (tag != uri) {
+                    tag = uri
                     setAnimation(result)
                     playAnimation()
                     setAutoRepeat(true)
                 }
             }
-        )
+        }
+    )
 }
 
 fun ImageView.loadBase64(uri: ByteArray?, width: Int, height: Int, mark: Int) {
