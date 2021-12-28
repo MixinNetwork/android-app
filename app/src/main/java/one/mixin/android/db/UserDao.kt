@@ -93,7 +93,7 @@ interface UserDao : BaseDao<User> {
         u.relationship OR u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC 
         """
     )
-    suspend fun fuzzySearchBotGroupUser(conversationId: String, username: String, identityNumber: String, id: String, createdAt:String): List<User>
+    suspend fun fuzzySearchBotGroupUser(conversationId: String, username: String, identityNumber: String, id: String, createdAt: String): List<User>
 
     @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.user_id != :id")
     suspend fun suspendGetGroupParticipants(conversationId: String, id: String): List<User>
