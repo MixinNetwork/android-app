@@ -55,7 +55,6 @@ import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.KeyLivePagedListBuilder
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
