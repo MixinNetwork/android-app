@@ -19,6 +19,9 @@ import one.mixin.android.util.BiometricUtil.CRASHLYTICS_BIOMETRIC
 import one.mixin.android.util.reportException
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
+import javax.crypto.AEADBadTagException
+import javax.crypto.BadPaddingException
+import javax.crypto.IllegalBlockSizeException
 
 class BiometricInfo(
     val title: String,
@@ -83,6 +86,14 @@ class BiometricDialog(
                     val pin = decryptByteArray.toString(Charset.defaultCharset())
                     callback?.onPinComplete(pin)
                 } catch (e: Exception) {
+                    if (e is IllegalStateException ||
+                        e is IllegalBlockSizeException ||
+                        e is BadPaddingException ||
+                        e is AEADBadTagException
+                    ) {
+                        BiometricUtil.deleteKey(context)
+                        toast(R.string.wallet_biometric_invalid)
+                    }
                     reportException("$CRASHLYTICS_BIOMETRIC-onAuthenticationSucceeded", e)
                 }
             }
