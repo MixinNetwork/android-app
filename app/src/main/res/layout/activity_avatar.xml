@@ -7,6 +7,11 @@
     android:id="@+id/root_view"
     android:background="?attr/bg_translucence">
 
+    <View
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <ImageView
         android:id="@+id/avatar"
         android:layout_width="match_parent"
@@ -14,4 +19,5 @@
         android:layout_gravity="center"
         android:transitionName="@string/avatar_transition_name"
         tools:ignore="ContentDescription"/>
+
 </FrameLayout>
