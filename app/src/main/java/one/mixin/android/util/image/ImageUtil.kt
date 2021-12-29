@@ -46,7 +46,7 @@ internal object ImageUtil {
     fun decodeSampledBitmapFromFile(imageStream: InputStream, reqWidth: Int, reqHeight: Int): Bitmap {
         val options = BitmapFactory.Options()
         var bitmap = requireNotNull(BitmapFactory.decodeStream(imageStream, null, options))
-        val scale = calculateInScale(bitmap.width,bitmap.height, reqWidth, reqHeight)
+        val scale = calculateInScale(bitmap.width, bitmap.height, reqWidth, reqHeight)
         val exif = ExifInterface(imageStream)
         val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0)
         val matrix = Matrix()
@@ -60,7 +60,7 @@ internal object ImageUtil {
         return bitmap
     }
 
-    private fun calculateInScale(width:Int, height:Int, reqWidth: Int, reqHeight: Int): Float {
+    private fun calculateInScale(width: Int, height: Int, reqWidth: Int, reqHeight: Int): Float {
 
         if (width == 0 || height == 0 || height / width >= 3 || width / height >= 3) {
             return 1f

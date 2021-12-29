@@ -54,7 +54,7 @@ class ShareHelper {
                 }
             } else {
                 val dataUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                dataUri?.systemMediaToMessage(ForwardCategory.Data,dataUri.getFileName())?.addTo(result)
+                dataUri?.systemMediaToMessage(ForwardCategory.Data, dataUri.getFileName())?.addTo(result)
             }
         } else if (Intent.ACTION_SEND_MULTIPLE == action) {
             when {
@@ -71,7 +71,7 @@ class ShareHelper {
                 else -> {
                     intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.let { list ->
                         list.forEach { item ->
-                            item.systemMediaToMessage(ForwardCategory.Data,item.getFileName()).addTo(result)
+                            item.systemMediaToMessage(ForwardCategory.Data, item.getFileName()).addTo(result)
                         }
                     }
                 }

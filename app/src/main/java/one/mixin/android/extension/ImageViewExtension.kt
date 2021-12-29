@@ -17,8 +17,6 @@ import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
-import one.mixin.android.util.image.ImageListener
-import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.runOnUiThread
@@ -372,12 +370,12 @@ fun ImageView.loadVideo(uri: String?, holder: String?, width: Int, height: Int) 
     }.into(this)
 }
 
-fun RLottieImageView.loadSticker(uri: String?, type: String?) {
+fun RLottieImageView.loadSticker(uri: String?, type: String?, cacheKey: String) {
     if (!isActivityNotDestroyed()) return
     uri?.let {
         when (type?.uppercase()) {
             "JSON" ->
-                loadLottie(it)
+                loadLottie(it, cacheKey)
             "GIF" -> {
                 loadGif(uri)
             }
@@ -386,23 +384,14 @@ fun RLottieImageView.loadSticker(uri: String?, type: String?) {
     }
 }
 
-fun RLottieImageView.loadLottie(uri: String) {
-    LottieLoader.fromUrl(
-        context,
-        uri,
-        uri,
-        layoutParams.width,
-        layoutParams.height
-    )
-        .addListener(
-            object : ImageListener<RLottieDrawable> {
-                override fun onResult(result: RLottieDrawable) {
-                    setAnimation(result)
-                    playAnimation()
-                    setAutoRepeat(true)
-                }
-            }
+fun RLottieImageView.loadLottie(uri: String, cacheKey: String) {
+    Glide.with(this)
+        .`as`(RLottieDrawable::class.java)
+        .load(uri).apply(
+            RequestOptions().dontAnimate()
+                .signature(StringSignature(cacheKey))
         )
+        .into(this)
 }
 
 fun ImageView.loadBase64(uri: ByteArray?, width: Int, height: Int, mark: Int) {
