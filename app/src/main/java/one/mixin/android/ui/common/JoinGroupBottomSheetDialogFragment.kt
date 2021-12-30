@@ -8,6 +8,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -138,6 +139,12 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
 
         contentView.doOnPreDraw {
             behavior?.peekHeight = binding.title.height + binding.scrollContent.height
+        }
+    }
+
+    override fun onStateChanged(bottomSheet: View, newState: Int) {
+        when (newState) {
+            BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
         }
     }
 }
