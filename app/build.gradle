@@ -220,10 +220,10 @@ dependencies {
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
-    implementation 'com.github.MixinNetwork.jjwt:jjwt-api:102e61bc08'
+    implementation 'com.github.MixinNetwork.jjwt:jjwt-api:6ec4e61c24'
 
-    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:102e61bc08'
-    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:102e61bc08') {
+    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:6ec4e61c24'
+    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:6ec4e61c24') {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
