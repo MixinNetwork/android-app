@@ -13,7 +13,6 @@ import android.widget.CheckBox
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -125,18 +124,16 @@ class StickerManagementFragment : BaseFragment() {
 
         if (albumId == null) { // not add any personal sticker yet
             stickerViewModel.observePersonalStickers().observe(
-                viewLifecycleOwner,
-                Observer {
-                    it?.let { updateStickers(it) }
-                }
-            )
+                viewLifecycleOwner
+            ) {
+                it?.let { updateStickers(it) }
+            }
         } else {
             stickerViewModel.observeStickers(albumId!!).observe(
-                viewLifecycleOwner,
-                Observer {
-                    it?.let { updateStickers(it) }
-                }
-            )
+                viewLifecycleOwner
+            ) {
+                it?.let { updateStickers(it) }
+            }
         }
     }
 
@@ -224,7 +221,7 @@ class StickerManagementFragment : BaseFragment() {
                     height = size
                 }
                 if (s != null) {
-                    imageView.loadSticker(s.assetUrl, s.assetType)
+                    imageView.loadSticker(s.assetUrl, s.assetType, "${s.assetUrl}${s.stickerId}")
                     imageView.setOnClickListener {
                         handleChecked(cb, cover, s.stickerId)
                     }
