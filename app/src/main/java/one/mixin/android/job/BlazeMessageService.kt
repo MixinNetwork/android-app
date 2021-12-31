@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
@@ -173,7 +174,13 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val exitIntent = Intent(this, ExitBroadcastReceiver::class.java).apply {
             action = ACTION_TO_BACKGROUND
         }
-        val exitPendingIntent = PendingIntent.getBroadcast(this, 0, exitIntent, 0)
+        val exitPendingIntent = PendingIntent.getBroadcast(
+            this, 0, exitIntent, if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PendingIntent.FLAG_IMMUTABLE
+            } else {
+                0
+            }
+        )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
             .setContentTitle(getString(R.string.app_name))
@@ -187,8 +194,15 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .setColor(ContextCompat.getColor(this, R.color.colorLightBlue))
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black, getString(R.string.exit), exitPendingIntent)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, MainActivity.getWakeUpIntent(this),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PendingIntent.FLAG_IMMUTABLE
+            } else {
+                0
+            }
+        )
 
-        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getWakeUpIntent(this), 0)
         builder.setContentIntent(pendingIntent)
 
         supportsOreo {

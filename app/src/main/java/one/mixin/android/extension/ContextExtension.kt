@@ -961,7 +961,11 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
         this,
         0,
         Intent(this, targetActivity),
-        PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.FLAG_IMMUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
     )
     val builder = NotificationCompat.Builder(this, CallActivity.CHANNEL_PIP_PERMISSION)
         .setSmallIcon(R.drawable.ic_msg_default)

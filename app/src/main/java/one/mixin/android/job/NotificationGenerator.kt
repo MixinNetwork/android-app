@@ -113,7 +113,11 @@ object NotificationGenerator : Injector() {
                 context,
                 message.id.hashCode(),
                 arrayOf(mainIntent, conversationIntent),
-                PendingIntent.FLAG_UPDATE_CURRENT
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_MUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
             )
         )
         supportsNougat {
@@ -127,7 +131,11 @@ object NotificationGenerator : Injector() {
                 context,
                 message.conversationId.hashCode(),
                 sendIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_MUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
             )
             val action = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
@@ -402,7 +410,12 @@ object NotificationGenerator : Injector() {
                 else -> message.userId
             }
             val target = BubbleActivity.putIntent(context, conversation.conversationId, userId)
-            val bubbleIntent = PendingIntent.getActivity(context, conversation.conversationId.hashCode(), target, PendingIntent.FLAG_UPDATE_CURRENT)
+            val bubbleIntent = PendingIntent.getActivity(context, conversation.conversationId.hashCode(), target,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                })
             val bubbleMetadata = NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
                 .setDesiredHeight(640.dp)
                 .setSuppressNotification(MixinApplication.conversationId == conversation.conversationId)
