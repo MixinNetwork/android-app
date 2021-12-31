@@ -55,26 +55,7 @@ import one.mixin.android.util.generateDynamicShortcut
 import one.mixin.android.util.maxDynamicShortcutCount
 import one.mixin.android.util.updateShortcuts
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.AttachmentExtra
-import one.mixin.android.vo.ConversationMinimal
-import one.mixin.android.vo.EncryptCategory
-import one.mixin.android.vo.ForwardAction
-import one.mixin.android.vo.ForwardCategory
-import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.MediaStatus
-import one.mixin.android.vo.Message
-import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.ShareImageData
-import one.mixin.android.vo.TranscriptMessage
-import one.mixin.android.vo.User
-import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.generateConversationId
-import one.mixin.android.vo.isContactConversation
-import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.vo.toCategory
-import one.mixin.android.vo.toUser
+import one.mixin.android.vo.*
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.AudioMessagePayload
@@ -313,8 +294,14 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         if (sender == null) return@launch
         selectItems.forEach { item ->
             chatViewModel.checkData(item) { conversationId: String, encryptCategory: EncryptCategory ->
-                val transcripts = chatViewModel.processTranscript(combineMessages)
-                val messageId = transcripts[0].transcriptId
+                var transcripts = chatViewModel.processTranscript(combineMessages)
+                val messageId = if (selectItems.size > 1) {
+                    val id = UUID.randomUUID().toString()
+                    transcripts = transcripts.map { it.copy(id) }
+                    id
+                } else {
+                    transcripts[0].transcriptId
+                }
                 chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
             }
         }
