@@ -26,26 +26,27 @@
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
 
     <application
-        android:name=".MixinApp"
         android:allowBackup="false"
+        android:extractNativeLibs="true"
         android:hardwareAccelerated="true"
+        android:hasFragileUserData="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:name=".MixinApp"
         android:networkSecurityConfig="@xml/network_security_config"
+        android:preserveLegacyExternalStorage="true"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:hasFragileUserData="true"
-        android:requestLegacyExternalStorage="true"
-        android:preserveLegacyExternalStorage="true"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
-        android:extractNativeLibs="true"
         tools:replace="allowBackup">
         <activity
-            android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTop"
+            android:name=".ui.home.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateUnchanged|stateAlwaysHidden">
@@ -54,14 +55,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <meta-data android:name="android.app.shortcuts"
+            <meta-data
+                android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
         <activity
-            android:name=".ui.url.UrlInterpreterActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:launchMode="singleInstance"
             android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:name=".ui.url.UrlInterpreterActivity"
             android:noHistory="true"
             android:theme="@style/AppTheme.Transparent">
             <intent-filter>
@@ -106,73 +109,72 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.landing.LandingActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
+            android:name=".ui.landing.LandingActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoAnim"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:name=".ui.landing.InitializeActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.landing.InitializeActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.landing.RestoreActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
-        </activity>
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"></activity>
 
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.conversation.markdown.MarkdownActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"/>
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.conversation.chathistory.ChatHistoryActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"/>
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:launchMode="singleTask"
             android:name=".ui.conversation.ConversationActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize|stateHidden"/>
+            android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <activity
-            android:name=".ui.conversation.BubbleActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:documentLaunchMode="always"
             android:allowEmbedded="true"
-            android:resizeableActivity="true"/>
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:documentLaunchMode="always"
+            android:name=".ui.conversation.BubbleActivity"
+            android:resizeableActivity="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <activity
-            android:name=".ui.forward.ForwardActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
             android:launchMode="singleTask"
+            android:name=".ui.forward.ForwardActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity-alias
-            android:name="one.mixin.messenger.ShareActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:exported="true"
-            android:screenOrientation="portrait"
             android:excludeFromRecents="true"
+            android:exported="true"
+            android:name="one.mixin.messenger.ShareActivity"
+            android:screenOrientation="portrait"
             android:targetActivity=".ui.forward.ForwardActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -199,180 +201,183 @@
         </activity-alias>
 
         <activity
-            android:name=".ui.sticker.StickerActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.sticker.StickerActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
         <activity
             android:name=".ui.sticker.StickerStoreActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.group.InviteActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.contacts.ContactsActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.wallet.WalletActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.media.pager.MediaPagerActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Photo"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.media.pager.transcript.TranscriptMediaPagerActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Photo"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
-            android:name=".ui.group.GroupActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.group.GroupActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
-            android:name=".ui.qr.CaptureActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.qr.CaptureActivity"
             android:theme="@style/AppTheme.Capture"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.setting.SettingActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".ui.setting.diagnosis.DiagnosisActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
-            android:name="com.yalantis.ucrop.UCropActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:name=".widget.gallery.ui.GalleryActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
-           />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".ui.common.AvatarActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.common.AvatarActivity"
             android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:name=".ui.call.CallActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:documentLaunchMode="intoExisting"
-            android:launchMode="singleTop"
             android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:name=".ui.call.CallActivity"
             android:theme="@style/AppTheme.Call"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:name=".ui.media.SharedMediaActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.media.SharedMediaActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
-            android:name=".ui.conversation.location.LocationActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.conversation.location.LocationActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
 
         <activity
-            android:name=".ui.web.WebActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.web.WebActivity"
             android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
 
         <activity
-            android:name=".ui.player.MusicActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:theme="@style/AppTheme.Music"
             android:launchMode="singleTask"
+            android:name=".ui.player.MusicActivity"
+            android:theme="@style/AppTheme.Music"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
 
         <activity
-            android:name=".ui.preview.TextPreviewActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.preview.TextPreviewActivity"
             android:theme="@style/AppTheme.Photo"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
+            android:launchMode="singleTop"
             android:name=".ui.auth.AppAuthActivity"
-            android:theme="@style/AppTheme.Blur"
-            android:launchMode="singleTop" />
-
-        <activity android:name=".ui.common.BatteryOptimizationDialogActivity"
-            android:theme="@style/AppTheme.Music"
-            android:launchMode="singleTop" />
+            android:theme="@style/AppTheme.Blur" />
 
         <activity
-            android:name=".ui.imageeditor.ImageEditorActivity"
+            android:launchMode="singleTop"
+            android:name=".ui.common.BatteryOptimizationDialogActivity"
+            android:theme="@style/AppTheme.Music" />
+
+        <activity
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:name=".ui.imageeditor.ImageEditorActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
 
         <provider
-            android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
             android:exported="false"
-            android:grantUriPermissions="true">
+            android:grantUriPermissions="true"
+            android:name="androidx.core.content.FileProvider">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
 
         <provider
-            android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
+            android:name="androidx.startup.InitializationProvider"
             tools:node="remove" />
 
         <service
-            android:name=".job.SendService"
-            android:exported="false" />
+            android:exported="false"
+            android:name=".job.SendService" />
         <service
-            android:name=".fcm.FcmService"
-            android:exported="false">
+            android:exported="false"
+            android:name=".fcm.FcmService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <service
-            android:name=".job.MyJobService"
             android:exported="true"
+            android:name=".job.MyJobService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".webrtc.VoiceCallService" />
         <service android:name=".webrtc.GroupCallService" />
         <service
-            android:name=".job.BlazeMessageService"
-            android:enabled="true" />
+            android:enabled="true"
+            android:name=".job.BlazeMessageService" />
 
         <service
-            android:name=".ui.player.MusicService"
             android:exported="true"
+            android:name=".ui.player.MusicService"
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
@@ -381,16 +386,16 @@
 
 
         <receiver
-            android:name=".receiver.ShareBroadcastReceiver"
-            android:enabled="true" />
+            android:enabled="true"
+            android:name=".receiver.ShareBroadcastReceiver" />
         <receiver
-            android:name=".receiver.ExitBroadcastReceiver"
-            android:enabled="true" />
+            android:enabled="true"
+            android:name=".receiver.ExitBroadcastReceiver" />
 
         <provider
-            android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
+            android:name="androidx.startup.InitializationProvider"
             tools:node="merge">
             <meta-data
                 android:name="one.mixin.android.startup.FirebaseAppInitializer"
@@ -415,8 +420,17 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+
+        <service
+            android:exported="true"
+            android:name="androidx.sharetarget.ChooserTargetServiceCompat"
+            android:permission="android.permission.BIND_CHOOSER_TARGET_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.chooser.ChooserTargetService" />
+            </intent-filter>
+        </service>
     </application>
-    
+
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
