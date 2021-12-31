@@ -292,10 +292,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
     private fun sendCombineMessage(selectItems: List<SelectItem>) = lifecycleScope.launch {
         if (sender == null) return@launch
+        val hasMultiple = selectItems.size > 1
         selectItems.forEach { item ->
             chatViewModel.checkData(item) { conversationId: String, encryptCategory: EncryptCategory ->
                 var transcripts = chatViewModel.processTranscript(combineMessages)
-                val messageId = if (selectItems.size > 1) {
+                val messageId = if (hasMultiple) {
                     val id = UUID.randomUUID().toString()
                     transcripts = transcripts.map { it.copy(id) }
                     id
