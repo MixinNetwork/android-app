@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
@@ -31,7 +32,7 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId LIMIT 1")
     fun getParticipantSessionKeyBySessionId(conversationId: String, userId: String, sessionId: String): ParticipantSessionKey?
 
-    @Insert(entity = ParticipantSession::class)
+    @Insert(entity = ParticipantSession::class, onConflict = OnConflictStrategy.REPLACE)
     fun insertParticipantSessionSent(obj: ParticipantSessionSent)
 
     @Update(entity = ParticipantSession::class)

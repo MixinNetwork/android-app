@@ -214,9 +214,19 @@ class FloatingPlayer(private var isNightMode: Boolean) {
 
         musicView?.setAutoRepeat(true)
         rLottieDrawable = if (isNightMode) {
-            RLottieDrawable(R.raw.anim_music_night, "music_night", 30.dp, 30.dp)
+            RLottieDrawable(
+                R.raw.anim_music_night,
+                "music_night",
+                30.dp,
+                30.dp
+            )
         } else {
-            RLottieDrawable(R.raw.anim_music, "music", 30.dp, 30.dp)
+            RLottieDrawable(
+                R.raw.anim_music,
+                "music",
+                30.dp,
+                30.dp
+            )
         }
         musicView?.setAnimation(rLottieDrawable)
         if (MusicPlayer.get().exoPlayer.isPlaying) {

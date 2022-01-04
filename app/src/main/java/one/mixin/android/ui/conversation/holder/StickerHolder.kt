@@ -99,7 +99,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
             binding.chatTime.visibility = VISIBLE
         }
         messageItem.assetUrl?.let { url ->
-            binding.chatSticker.loadSticker(url, messageItem.assetType)
+            binding.chatSticker.loadSticker(url, messageItem.assetType, "$url${messageItem.messageId}")
         }
 
         if (isFirst && !isMe) {

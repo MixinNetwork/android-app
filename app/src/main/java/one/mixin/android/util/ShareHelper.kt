@@ -2,9 +2,7 @@ package one.mixin.android.util
 
 import android.content.Intent
 import android.net.Uri
-import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getFileName
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
@@ -35,11 +33,7 @@ class ShareHelper {
             if ("text/plain" == type) {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
                 if (text.isNullOrEmpty()) {
-                    intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
-                        it.getFilePath(MixinApplication.appContext)?.let { url ->
-                            url.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
-                        }
-                    }
+                    intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
                 } else {
                     ForwardMessage(ShareCategory.Text, text).addTo(result)
                 }
@@ -47,37 +41,37 @@ class ShareHelper {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                 ForwardMessage(ShareCategory.Image, GsonHelper.customGson.toJson(ShareImageData(imageUri.toString()))).addTo(result)
             } else if (type.startsWith("video/")) {
-                val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                imageUri?.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
+                val videoUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                videoUri?.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
             } else if (type.startsWith("application/") || type.startsWith("audio/")) {
                 intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
                     val fileName = it.getFileName()
-                    it.getFilePath(MixinApplication.appContext)?.systemMediaToMessage(
+                    it.systemMediaToMessage(
                         ForwardCategory.Data,
                         fileName,
                         type
-                    )?.addTo(result)
+                    ).addTo(result)
                 }
             } else {
                 val dataUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                dataUri?.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+                dataUri?.systemMediaToMessage(ForwardCategory.Data, dataUri.getFileName())?.addTo(result)
             }
         } else if (Intent.ACTION_SEND_MULTIPLE == action) {
             when {
                 type.startsWith("image/") -> {
                     intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
-                        item.systemMediaToMessage(ShareCategory.Image)?.addTo(result)
+                        item.systemMediaToMessage(ShareCategory.Image).addTo(result)
                     }
                 }
                 type.startsWith("video/") -> {
                     intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.forEach { item ->
-                        item.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
+                        item.systemMediaToMessage(ForwardCategory.Video).addTo(result)
                     }
                 }
                 else -> {
                     intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)?.let { list ->
                         list.forEach { item ->
-                            item.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+                            item.systemMediaToMessage(ForwardCategory.Data, item.getFileName()).addTo(result)
                         }
                     }
                 }

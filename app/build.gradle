@@ -1,6 +1,6 @@
 def versionMajor = 0
 def versionMinor = 33
-def versionPatch = 12
+def versionPatch = 13
 def versionBuild = 0
 
 apply plugin: 'com.android.application'
@@ -169,7 +169,7 @@ android {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-    implementation platform("com.google.firebase:firebase-bom:29.0.2")
+    implementation platform("com.google.firebase:firebase-bom:29.0.3")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
@@ -220,10 +220,10 @@ dependencies {
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
-    implementation 'com.github.MixinNetwork.jjwt:jjwt-api:102e61bc08'
+    implementation 'com.github.MixinNetwork.jjwt:jjwt-api:6ec4e61c24'
 
-    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:102e61bc08'
-    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:102e61bc08') {
+    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:6ec4e61c24'
+    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:6ec4e61c24') {
         exclude group: 'org.json', module: 'json' //provided by Android natively
     }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
@@ -301,7 +301,7 @@ dependencies {
     implementation "dnsjava:dnsjava:${dnsVersion}"
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
-    implementation "com.twilio:audioswitch:$audioSwitchVersion"
+    implementation "com.github.SeniorZhai:audioswitch:${audioSwitchVersion}"
     implementation "com.github.skydoves:balloon:$balloonVersion"
     implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}"
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"

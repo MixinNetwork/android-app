@@ -69,7 +69,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
 
     private val stickers = mutableListOf<Sticker>()
     private val stickerAdapter: StickerAdapter by lazy {
-        StickerAdapter(stickers, type == TYPE_LIKE)
+        StickerAdapter(stickers, type == TYPE_LIKE, type)
     }
 
     private val padding: Int by lazy {
@@ -90,19 +90,17 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         }
         if (type == TYPE_NORMAL && albumId != null) {
             stickerViewModel.observeStickers(albumId!!).observe(
-                viewLifecycleOwner,
-                { list ->
-                    list?.let { updateStickers(it) }
-                }
-            )
+                viewLifecycleOwner
+            ) { list ->
+                list?.let { updateStickers(it) }
+            }
         } else {
             if (type == TYPE_RECENT) {
                 stickerViewModel.recentStickers().observe(
-                    viewLifecycleOwner,
-                    { r ->
-                        r?.let { updateStickers(r) }
-                    }
-                )
+                    viewLifecycleOwner
+                ) { r ->
+                    r?.let { updateStickers(r) }
+                }
             } else {
                 lifecycleScope.launch {
                     if (viewDestroyed()) return@launch
@@ -111,19 +109,17 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                     if (personalAlbumId == null) { // not add any personal sticker yet
                         stickerViewModel.observePersonalStickers()
                             .observe(
-                                viewLifecycleOwner,
-                                { list ->
-                                    list?.let { updateStickers(it) }
-                                }
-                            )
+                                viewLifecycleOwner
+                            ) { list ->
+                                list?.let { updateStickers(it) }
+                            }
                     } else {
                         stickerViewModel.observeStickers(personalAlbumId!!)
                             .observe(
-                                viewLifecycleOwner,
-                                { list ->
-                                    list?.let { updateStickers(it) }
-                                }
-                            )
+                                viewLifecycleOwner
+                            ) { list ->
+                                list?.let { updateStickers(it) }
+                            }
                     }
                 }
             }
@@ -180,7 +176,8 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
 
     private class StickerAdapter(
         private val stickers: List<Sticker>,
-        private val needAdd: Boolean
+        private val needAdd: Boolean,
+        private val type: Int,
     ) : RecyclerView.Adapter<StickerViewHolder>() {
         private var listener: StickerListener? = null
         var size: Int = 0
@@ -206,7 +203,8 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                     width = size
                     height = size
                 }
-                item.loadSticker(s.assetUrl, s.assetType)
+                item.setImageDrawable(null)
+                item.loadSticker(s.assetUrl, s.assetType, "${s.assetUrl}${s.stickerId}-type$type")
                 item.setOnClickListener { listener?.onItemClick(position, s.stickerId) }
             }
         }

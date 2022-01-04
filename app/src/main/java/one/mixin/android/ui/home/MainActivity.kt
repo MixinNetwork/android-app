@@ -266,7 +266,10 @@ class MainActivity : BlazeBaseActivity() {
 
     override fun onStart() {
         super.onStart()
-        getSystemService<NotificationManager>()?.cancelAll()
+        val notificationManager = getSystemService<NotificationManager>() ?: return
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()).not()) {
+            notificationManager.cancelAll()
+        }
     }
 
     override fun onDestroy() {

@@ -51,6 +51,18 @@ fun generateDynamicShortcut(context: Context, shortcutInfo: ShortcutInfo): Short
         .build()
 }
 
+fun updateShortcuts(shortcuts: MutableList<ShortcutInfoCompat>) {
+    val exists = ShortcutManagerCompat.getDynamicShortcuts(MixinApplication.appContext)
+    val keepSize = maxDynamicShortcutCount - shortcuts.size
+    if (keepSize >= 0 && exists.size > keepSize) {
+        val removeIds = mutableListOf<String>()
+        exists.take(exists.size - keepSize)
+            .mapTo(removeIds) { it.id }
+        ShortcutManagerCompat.removeDynamicShortcuts(MixinApplication.appContext, removeIds)
+    }
+    ShortcutManagerCompat.addDynamicShortcuts(MixinApplication.appContext, shortcuts)
+}
+
 data class ShortcutInfo(
     var conversationId: String,
     var name: String,

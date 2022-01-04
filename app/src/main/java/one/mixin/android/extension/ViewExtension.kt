@@ -125,15 +125,15 @@ fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = n
     ViewCompat.animate(this).setDuration(duration).translationY(value)
         .setListener(
             object : ViewPropertyAnimatorListener {
-                override fun onAnimationEnd(view: View?) {
+                override fun onAnimationEnd(view: View) {
                     endAction?.let { it() }
                 }
 
-                override fun onAnimationCancel(view: View?) {
+                override fun onAnimationCancel(view: View) {
                     endAction?.let { it() }
                 }
 
-                override fun onAnimationStart(view: View?) {}
+                override fun onAnimationStart(view: View) {}
             }
         )
         .start()
