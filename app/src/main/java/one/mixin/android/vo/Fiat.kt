@@ -36,7 +36,7 @@ object Fiats {
             codeRateMap = if (codeRateMapString == null) {
                 ConcurrentHashMap()
             } else {
-                jsonAdapter.fromJson(codeRateMapString)!!.toMutableMap()
+                ConcurrentHashMap(jsonAdapter.fromJson(codeRateMapString)!!)
             }
         }
     }

@@ -1,4 +1,4 @@
-package one.mixin.android.moshi.adaptrer
+package one.mixin.android.moshi.adapter
 
 import android.graphics.Bitmap
 import com.squareup.moshi.FromJson

@@ -9,6 +9,8 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.View
@@ -24,6 +26,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityAvatarBinding
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.supportsS
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.widget.AvatarTransform
@@ -66,7 +69,12 @@ class AvatarActivity : BaseActivity() {
         binding = ActivityAvatarBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {
-            binding.rootView.background = BitmapDrawable(resources, it.blurBitmap(25))
+            supportsS({
+                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.setRenderEffect(RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR))
+            }, {
+                binding.rootView.background = BitmapDrawable(resources, it.blurBitmap(25))
+            })
         }
         Glide.with(this).asBitmap().load(url).listener(
             object : RequestListener<Bitmap> {

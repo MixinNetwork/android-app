@@ -1,7 +1,6 @@
 #include <jni.h>
-#include <jni.h>
 #include <android/bitmap.h>
-#include <string>
+#include <cstring>
 #include <rlottie.h>
 #include <lz4.h>
 #include <unistd.h>
@@ -44,19 +43,19 @@ typedef struct LottieInfo {
     char *compressBuffer = nullptr;
     const char *buffer = nullptr;
     bool firstFrame = false;
-    int bufferSize{};
-    int compressBound{};
-    int firstFrameSize{};
+    int bufferSize = 0;
+    int compressBound = 0;
+    int firstFrameSize = 0;
     volatile uint32_t framesAvailableInCache = 0;
 };
 
-jlong Java_one_mixin_android_widget_RLottieDrawable_create(JNIEnv *env, jclass clazz, jstring src, jint w, jint h, jintArray data, jboolean precache, jintArray colorReplacement, jboolean limitFps) {
-    LottieInfo *info = new LottieInfo();
+JNIEXPORT jlong Java_one_mixin_android_widget_RLottieDrawable_create(JNIEnv *env, jclass clazz, jstring src, jstring json, jint w, jint h, jintArray data, jboolean precache, jintArray colorReplacement, jboolean limitFps) {
+    auto info = new LottieInfo();
 
     std::map<int32_t, int32_t> *colors = nullptr;
     int color = 0;
     if (colorReplacement != nullptr) {
-        jint *arr = env->GetIntArrayElements(colorReplacement, 0);
+        jint *arr = env->GetIntArrayElements(colorReplacement, nullptr);
         if (arr != nullptr) {
             jsize len = env->GetArrayLength(colorReplacement);
             colors = new std::map<int32_t, int32_t>();
@@ -70,10 +69,18 @@ jlong Java_one_mixin_android_widget_RLottieDrawable_create(JNIEnv *env, jclass c
         }
     }
 
-    char const *srcString = env->GetStringUTFChars(src, 0);
+    char const *srcString = env->GetStringUTFChars(src, nullptr);
     info->path = srcString;
-    info->animation = rlottie::Animation::loadFromFile(info->path, colors);
-    if (srcString != 0) {
+    if (json != nullptr) {
+        char const *jsonString = env->GetStringUTFChars(json, nullptr);
+        if (jsonString) {
+            info->animation = rlottie::Animation::loadFromData(jsonString, info->path, colors);
+            env->ReleaseStringUTFChars(json, jsonString);
+        }
+    } else {
+        info->animation = rlottie::Animation::loadFromFile(info->path, colors);
+    }
+    if (srcString) {
         env->ReleaseStringUTFChars(src, srcString);
     }
     if (info->animation == nullptr) {
@@ -124,7 +131,7 @@ jlong Java_one_mixin_android_widget_RLottieDrawable_create(JNIEnv *env, jclass c
         }
     }
 
-    jint *dataArr = env->GetIntArrayElements(data, 0);
+    jint *dataArr = env->GetIntArrayElements(data, nullptr);
     if (dataArr != nullptr) {
         dataArr[0] = (jint) info->frameCount;
         dataArr[1] = (jint) info->animation->frameRate();
@@ -134,10 +141,10 @@ jlong Java_one_mixin_android_widget_RLottieDrawable_create(JNIEnv *env, jclass c
     return (jlong) (intptr_t) info;
 }
 
-jlong Java_one_mixin_android_widget_RLottieDrawable_createWithJson(JNIEnv *env, jclass clazz, jstring json, jstring name, jintArray data, jintArray colorReplacement) {
+JNIEXPORT jlong Java_one_mixin_android_widget_RLottieDrawable_createWithJson(JNIEnv *env, jclass clazz, jstring json, jstring name, jintArray data, jintArray colorReplacement) {
     std::map<int32_t, int32_t> *colors = nullptr;
     if (colorReplacement != nullptr) {
-        jint *arr = env->GetIntArrayElements(colorReplacement, 0);
+        jint *arr = env->GetIntArrayElements(colorReplacement, nullptr);
         if (arr != nullptr) {
             jsize len = env->GetArrayLength(colorReplacement);
             colors = new std::map<int32_t, int32_t>();
@@ -148,15 +155,15 @@ jlong Java_one_mixin_android_widget_RLottieDrawable_createWithJson(JNIEnv *env, 
         }
     }
 
-    LottieInfo *info = new LottieInfo();
+    auto info = new LottieInfo();
 
-    char const *jsonString = env->GetStringUTFChars(json, 0);
-    char const *nameString = env->GetStringUTFChars(name, 0);
+    char const *jsonString = env->GetStringUTFChars(json, nullptr);
+    char const *nameString = env->GetStringUTFChars(name, nullptr);
     info->animation = rlottie::Animation::loadFromData(jsonString, nameString, colors);
-    if (jsonString != 0) {
+    if (jsonString) {
         env->ReleaseStringUTFChars(json, jsonString);
     }
-    if (nameString != 0) {
+    if (nameString) {
         env->ReleaseStringUTFChars(name, nameString);
     }
     if (info->animation == nullptr) {
@@ -166,7 +173,7 @@ jlong Java_one_mixin_android_widget_RLottieDrawable_createWithJson(JNIEnv *env, 
     info->frameCount = info->animation->totalFrame();
     info->fps = (int) info->animation->frameRate();
 
-    jint *dataArr = env->GetIntArrayElements(data, 0);
+    jint *dataArr = env->GetIntArrayElements(data, nullptr);
     if (dataArr != nullptr) {
         dataArr[0] = (int) info->frameCount;
         dataArr[1] = (int) info->animation->frameRate();
@@ -176,33 +183,33 @@ jlong Java_one_mixin_android_widget_RLottieDrawable_createWithJson(JNIEnv *env, 
     return (jlong) (intptr_t) info;
 }
 
-void Java_one_mixin_android_widget_RLottieDrawable_destroy(JNIEnv *env, jclass clazz, jlong ptr) {
-    if (ptr == NULL) {
+JNIEXPORT void Java_one_mixin_android_widget_RLottieDrawable_destroy(JNIEnv *env, jclass clazz, jlong ptr) {
+    if (!ptr) {
         return;
     }
-    LottieInfo *info = (LottieInfo *) (intptr_t) ptr;
+    auto info = (LottieInfo *) (intptr_t) ptr;
     delete info;
 }
 
-void Java_one_mixin_android_widget_RLottieDrawable_setLayerColor(JNIEnv *env, jclass clazz, jlong ptr, jstring layer, jint color) {
-    if (ptr == NULL || layer == nullptr) {
+JNIEXPORT void Java_one_mixin_android_widget_RLottieDrawable_setLayerColor(JNIEnv *env, jclass clazz, jlong ptr, jstring layer, jint color) {
+    if (!ptr || layer == nullptr) {
         return;
     }
-    LottieInfo *info = (LottieInfo *) (intptr_t) ptr;
-    char const *layerString = env->GetStringUTFChars(layer, 0);
+    auto info = (LottieInfo *) (intptr_t) ptr;
+    char const *layerString = env->GetStringUTFChars(layer, nullptr);
     info->animation->setValue<Property::Color>(layerString, Color(((color) & 0xff) / 255.0f, ((color >> 8) & 0xff) / 255.0f, ((color >> 16) & 0xff) / 255.0f));
-    if (layerString != 0) {
+    if (layerString) {
         env->ReleaseStringUTFChars(layer, layerString);
     }
 }
 
-void Java_one_mixin_android_widget_RLottieDrawable_replaceColors(JNIEnv *env, jclass clazz, jlong ptr, jintArray colorReplacement) {
-    if (ptr == 0 || colorReplacement == nullptr) {
+JNIEXPORT void Java_one_mixin_android_widget_RLottieDrawable_replaceColors(JNIEnv *env, jclass clazz, jlong ptr, jintArray colorReplacement) {
+    if (!ptr || colorReplacement == nullptr) {
         return;
     }
-    LottieInfo *info = (LottieInfo *) (intptr_t) ptr;
+    auto info = (LottieInfo *) (intptr_t) ptr;
 
-    jint *arr = env->GetIntArrayElements(colorReplacement, 0);
+    jint *arr = env->GetIntArrayElements(colorReplacement, nullptr);
     if (arr != nullptr) {
         jsize len = env->GetArrayLength(colorReplacement);
         for (int32_t a = 0; a < len / 2; a++) {
@@ -239,7 +246,7 @@ void CacheWriteThreadProc() {
         lk.unlock();
 
         if (task != nullptr) {
-            uint32_t size = (uint32_t) LZ4_compress_default(task->buffer, task->compressBuffer, task->bufferSize, task->compressBound);
+            auto size = (uint32_t) LZ4_compress_default(task->buffer, task->compressBuffer, task->bufferSize, task->compressBound);
             if (task->firstFrame) {
                 task->firstFrameSize = size;
                 task->fileOffset = 9 + sizeof(uint32_t) + task->firstFrameSize;
@@ -257,11 +264,11 @@ void CacheWriteThreadProc() {
     }
 }
 
-void Java_one_mixin_android_widget_RLottieDrawable_createCache(JNIEnv *env, jclass clazz, jlong ptr, jint w, jint h) {
+JNIEXPORT void Java_one_mixin_android_widget_RLottieDrawable_createCache(JNIEnv *env, jclass clazz, jlong ptr, jint w, jint h) {
     if (ptr == NULL) {
         return;
     }
-    LottieInfo *info = (LottieInfo *) (intptr_t) ptr;
+    auto info = (LottieInfo *) (intptr_t) ptr;
 
     FILE *cacheFile = fopen(info->cacheFile.c_str(), "r+");
     if (cacheFile != nullptr) {
@@ -287,8 +294,8 @@ void Java_one_mixin_android_widget_RLottieDrawable_createCache(JNIEnv *env, jcla
             info->imageSize = (uint32_t) w * h * 4;
             info->compressBound = LZ4_compressBound(info->bufferSize);
             info->compressBuffer = new char[info->compressBound];
-            uint8_t *firstBuffer = new uint8_t[info->bufferSize];
-            uint8_t *secondBuffer = new uint8_t[info->bufferSize];
+            auto firstBuffer = new uint8_t[info->bufferSize];
+            auto secondBuffer = new uint8_t[info->bufferSize];
             //long time = ConnectionsManager::getInstance(0).getCurrentTimeMonotonicMillis();
 
             Surface surface1((uint32_t *) firstBuffer, (size_t) w, (size_t) h, (size_t) w * 4);
@@ -316,6 +323,7 @@ void Java_one_mixin_android_widget_RLottieDrawable_createCache(JNIEnv *env, jcla
 
             //DEBUG_D("sticker time = %d", (int) (ConnectionsManager::getInstance(0).getCurrentTimeMonotonicMillis() - time));
             delete[] info->compressBuffer;
+            delete[] firstBuffer;
             delete[] secondBuffer;
             fseek(info->precacheFile, 0, SEEK_SET);
             uint8_t byte = 1;
@@ -331,11 +339,11 @@ void Java_one_mixin_android_widget_RLottieDrawable_createCache(JNIEnv *env, jcla
     }
 }
 
-jint Java_one_mixin_android_widget_RLottieDrawable_getFrame(JNIEnv *env, jclass clazz, jlong ptr, jint frame, jobject bitmap, jint w, jint h, jint stride) {
-    if (ptr == NULL || bitmap == nullptr) {
+JNIEXPORT jint Java_one_mixin_android_widget_RLottieDrawable_getFrame(JNIEnv *env, jclass clazz, jlong ptr, jint frame, jobject bitmap, jint w, jint h, jint stride, jboolean clear) {
+    if (!ptr || bitmap == nullptr) {
         return 0;
     }
-    LottieInfo *info = (LottieInfo *) (intptr_t) ptr;
+    auto info = (LottieInfo *) (intptr_t) ptr;
 
     int framesPerUpdate = !info->limitFps || info->fps < 60 ? 1 : 2;
     int framesAvailableInCache = info->framesAvailableInCache;

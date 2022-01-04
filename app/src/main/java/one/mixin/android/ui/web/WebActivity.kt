@@ -3,6 +3,8 @@ package one.mixin.android.ui.web
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.View
@@ -14,6 +16,7 @@ import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.SystemUIManager
@@ -83,7 +86,12 @@ class WebActivity : BaseActivity() {
         binding = ActivityWebBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {
-            binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+            supportsS({
+                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.setRenderEffect(RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR))
+            }, {
+                binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+            })
         }
         binding.container.setOnClickListener {
             onBackPressed()

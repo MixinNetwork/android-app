@@ -11,10 +11,10 @@ class GestureFrameLayout(context: Context, attrs: AttributeSet?) : FrameLayout(c
     var listener: GestureDetector.SimpleOnGestureListener? = null
 
     private val gestureDetector by lazy {
-        GestureDetectorCompat(context, listener)
+        GestureDetectorCompat(context, requireNotNull(listener))
     }
 
-    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         gestureDetector.onTouchEvent(ev)
         return super.dispatchTouchEvent(ev)
     }

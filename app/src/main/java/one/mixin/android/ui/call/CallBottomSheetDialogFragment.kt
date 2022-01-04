@@ -24,10 +24,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,6 +65,7 @@ import one.mixin.android.widget.PipCallView
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.properties.Delegates
 
@@ -200,14 +203,22 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     binding.nameTv.text = callee.fullName
                     binding.avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
                     binding.avatar.setTextSize(48f)
-                    binding.avatar.setOnClickListener {
-                        UserBottomSheetDialogFragment.newInstance(callee)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                    }
-                    binding.nameTv.setOnClickListener {
-                        UserBottomSheetDialogFragment.newInstance(callee)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                    }
+                    binding.avatar.clicks()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .throttleFirst(500, TimeUnit.MILLISECONDS)
+                        .autoDispose(stopScope)
+                        .subscribe {
+                            UserBottomSheetDialogFragment.newInstance(callee)
+                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        }
+                    binding.nameTv.clicks()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .throttleFirst(500, TimeUnit.MILLISECONDS)
+                        .autoDispose(stopScope)
+                        .subscribe {
+                            UserBottomSheetDialogFragment.newInstance(callee)
+                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        }
                 }
             }
 

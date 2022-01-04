@@ -1,4 +1,4 @@
-package one.mixin.android.moshi.adaptrer
+package one.mixin.android.moshi.adapter
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonReader
