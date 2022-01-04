@@ -81,7 +81,7 @@ class StickerAdapter : ListAdapter<Sticker, StickerViewHolder>(Sticker.DIFF_CALL
             height = size
         }
         getItem(position)?.let { s ->
-            item.loadSticker(s.assetUrl, s.assetType)
+            item.loadSticker(s.assetUrl, s.assetType, "${s.assetUrl}${s.stickerId}")
             item.setOnClickListener {
                 stickerListener?.onItemClick(s)
             }
