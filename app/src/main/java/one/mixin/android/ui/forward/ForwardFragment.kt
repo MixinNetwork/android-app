@@ -70,6 +70,7 @@ import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.copy
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
 import one.mixin.android.vo.isGroupConversation
@@ -311,10 +312,17 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
     private fun sendCombineMessage(selectItems: List<SelectItem>) = lifecycleScope.launch {
         if (sender == null) return@launch
+        val hasMultiple = selectItems.size > 1
         selectItems.forEach { item ->
             chatViewModel.checkData(item) { conversationId: String, encryptCategory: EncryptCategory ->
-                val transcripts = chatViewModel.processTranscript(combineMessages)
-                val messageId = transcripts[0].transcriptId
+                var transcripts = chatViewModel.processTranscript(combineMessages)
+                val messageId = if (hasMultiple) {
+                    val id = UUID.randomUUID().toString()
+                    transcripts = transcripts.map { it.copy(id) }
+                    id
+                } else {
+                    transcripts[0].transcriptId
+                }
                 chatViewModel.sendTranscriptMessage(conversationId, messageId, sender, transcripts, encryptCategory)
             }
         }
