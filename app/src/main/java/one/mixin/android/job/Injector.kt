@@ -185,12 +185,15 @@ open class Injector {
         Timber.d("@@@ findMessageIdById cost: ${measureTime { 
             id = messageDao.findMessageIdById(messageId)
         }}")
+        if (id != null) {
+            return true
+        }
         var messageHistory: MessageHistory?
         Timber.d("@@@ find message history cost: ${measureTime { 
             messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
         }}")
         Timber.d("@@@ id: $id, messageHistory: $messageHistory")
-        return id != null || messageHistory != null
+        return messageHistory != null
     }
 
     private fun refreshConversation(conversationId: String): Int {
