@@ -546,7 +546,7 @@ class WebFragment : BaseFragment() {
                     PermissionBottomSheetDialogFragment.request(
                         binding.titleTv.text.toString(),
                         app?.name,
-                        app?.iconUrl,
+                        app?.appNumber,
                         *permission.map {
                             if (it == Manifest.permission.RECORD_AUDIO) {
                                 PERMISSION_AUDIO
@@ -594,7 +594,7 @@ class WebFragment : BaseFragment() {
                         PermissionBottomSheetDialogFragment.requestVideo(
                             binding.titleTv.text.toString(),
                             app?.name,
-                            app?.iconUrl
+                            app?.appNumber
                         )
                             .setCancelAction {
                                 uploadMessage?.onReceiveValue(null)
@@ -623,7 +623,7 @@ class WebFragment : BaseFragment() {
                     } else if (intent?.type == "image/*") {
                         PermissionBottomSheetDialogFragment.requestCamera(
                             binding.titleTv.text.toString(),
-                            app?.name,
+                            app?.appNumber,
                             app?.iconUrl
                         )
                             .setCancelAction {

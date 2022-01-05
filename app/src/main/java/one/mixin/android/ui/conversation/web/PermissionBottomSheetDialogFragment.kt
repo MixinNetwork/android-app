@@ -6,8 +6,6 @@ import android.content.DialogInterface
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPermissionBinding
-import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -23,29 +21,29 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_PERMISSION = "args_permission"
         private const val ARGS_TITLE = "args_title"
         private const val ARGS_NAME = "args_name"
-        private const val ARGS_AVATAR = "args_avatar"
+        private const val ARGS_NUMBER = "args_number"
 
         private const val PERMISSION_CAMERA = 0
         const val PERMISSION_VIDEO = 1
         const val PERMISSION_AUDIO = 2
-        private fun newInstance(title: String, appName: String? = null, appAvatar: String? = null, vararg permissions: Int) =
+        private fun newInstance(title: String, appName: String? = null, number: String? = null, vararg permissions: Int) =
             PermissionBottomSheetDialogFragment().withArgs {
                 putIntArray(ARGS_PERMISSION, permissions)
                 putString(ARGS_TITLE, title)
                 putString(ARGS_NAME, appName)
-                putString(ARGS_AVATAR, appAvatar)
+                putString(ARGS_NUMBER, number)
             }
 
-        fun requestCamera(title: String, appName: String? = null, appAvatar: String? = null): PermissionBottomSheetDialogFragment {
-            return newInstance(title, appName, appAvatar, PERMISSION_CAMERA)
+        fun requestCamera(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
+            return newInstance(title, appName, number, PERMISSION_CAMERA)
         }
 
-        fun requestVideo(title: String, appName: String? = null, appAvatar: String? = null): PermissionBottomSheetDialogFragment {
-            return newInstance(title, appName, appAvatar, PERMISSION_VIDEO)
+        fun requestVideo(title: String, appName: String? = null, number: String? = null): PermissionBottomSheetDialogFragment {
+            return newInstance(title, appName, number, PERMISSION_VIDEO)
         }
 
-        fun request(title: String, appName: String? = null, appAvatar: String? = null, vararg permissions: Int): PermissionBottomSheetDialogFragment {
-            return newInstance(title, appName, appAvatar, *permissions)
+        fun request(title: String, appName: String? = null, number: String? = null, vararg permissions: Int): PermissionBottomSheetDialogFragment {
+            return newInstance(title, appName, number, *permissions)
         }
     }
 
@@ -60,8 +58,9 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val appName: String? by lazy {
         requireArguments().getString(ARGS_NAME)
     }
-    private val appAvatar: String? by lazy {
-        requireArguments().getString(ARGS_AVATAR)
+
+    private val appNumber: String? by lazy {
+        requireArguments().getString(ARGS_NAME)
     }
 
     private val miniHeight by lazy {
@@ -81,6 +80,22 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         dialog.setCustomViewHeight(miniHeight)
 
         isHandle = false
+
+        binding.authorization.setOnClickListener {
+            grantedAction?.invoke()
+            isHandle = true
+            dismiss()
+        }
+        binding.refuse.setOnClickListener {
+            dismiss()
+        }
+
+        binding.name.text =
+            if (!appName.isNullOrBlank() && !appNumber.isNullOrBlank()) {
+                "$appName($appNumber)"
+            } else {
+                "$title"
+            }
         val content = StringBuffer()
         permissions?.forEachIndexed { index, it ->
             when (it) {
@@ -99,25 +114,11 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         binding.info.text = content
-        binding.authorization.setOnClickListener {
-            grantedAction?.invoke()
-            isHandle = true
-            dismiss()
-        }
-        binding.refuse.setOnClickListener {
-            dismiss()
-        }
-        if (!appAvatar.isNullOrBlank()) {
-            binding.avatar.layoutParams.width = requireContext().dpToPx(36f)
-            binding.avatar.loadCircleImage(appAvatar)
+        binding.logo.setImageResource(if (permissions?.any { it == PERMISSION_AUDIO } == true) {
+            R.drawable.ic_permission_audio
         } else {
-            binding.avatar.layoutParams.width = requireContext().dpToPx(0f)
-        }
-        if (!appName.isNullOrBlank()) {
-            binding.name.text = appName
-        } else {
-            binding.name.text = title
-        }
+            R.drawable.ic_permission_camera
+        })
     }
 
     override fun onDismiss(dialog: DialogInterface) {

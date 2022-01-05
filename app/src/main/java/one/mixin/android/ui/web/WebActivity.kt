@@ -89,7 +89,7 @@ class WebActivity : BaseActivity() {
             supportsS({
                 binding.background.background = BitmapDrawable(resources, it)
                 binding.background.setRenderEffect(RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR))
-            },{
+            }, {
                 binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
             })
         }
