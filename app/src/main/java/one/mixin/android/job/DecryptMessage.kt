@@ -138,7 +138,10 @@ import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.util.UUID
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
+@ExperimentalTime
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     companion object {
@@ -152,10 +155,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private val accountId = Session.getAccountId()
 
     fun onRun(data: BlazeMessageData) {
-        if (isExistMessage(data.messageId)) {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
-            return
-        }
+        Timber.d("@@@ isExists message cost: ${measureTime {
+            if (isExistMessage(data.messageId)) {
+                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+                return
+            }
+        }}")
         processMessage(data)
     }
 
@@ -179,10 +184,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 return
             }
 
-            if (data.category != MessageCategory.SYSTEM_CONVERSATION.name) {
-                syncConversation(data)
-            }
-            checkSession(data)
+            Timber.d("@@@ syncConversation cost: ${measureTime {
+                if (data.category != MessageCategory.SYSTEM_CONVERSATION.name) {
+                    syncConversation(data)
+                }
+            }}")
+            Timber.d("@@@ checkSession cost: ${measureTime { 
+                checkSession(data)
+            }}")
             if (data.category.startsWith("SYSTEM_")) {
                 processSystemMessage(data)
             } else if (data.category.startsWith("PLAIN_")) {
@@ -469,11 +478,15 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 data.userId = data.representativeId
             }
             try {
-                processDecryptSuccess(data, data.data)
+                Timber.d("@@@ process plain cost: ${measureTime {
+                    processDecryptSuccess(data, data.data)
+                }}")
             } catch (e: Exception) {
                 insertInvalidMessage(data)
             }
-            updateRemoteMessageStatus(data.messageId)
+            Timber.d("@@@ update remote status cost: ${measureTime { 
+                updateRemoteMessageStatus(data.messageId)
+            }}")
         }
     }
 
@@ -527,10 +540,16 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     }
 
     private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
-        syncUser(data.userId)
+        Timber.d("@@@ syncUser cost: ${measureTime { 
+            syncUser(data.userId)
+        }}")
         when {
             data.category.endsWith("_TEXT") -> {
+                var start = System.currentTimeMillis()
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_TEXT.name, plainText)
+                var cur = System.currentTimeMillis()
+                Timber.d("@@@ decode plain cost: ${cur - start}ms")
+                start = cur
                 var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
@@ -560,11 +579,21 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         )
                     }
                 }
+                cur = System.currentTimeMillis()
+                Timber.d("@@@ generateMessage cost: ${cur - start}ms")
+                start = cur
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                Timber.d("@@@ parse mention cost: ${System.currentTimeMillis() - start}ms")
+                Timber.d("@@@ insert notify cost: ${measureTime { 
+                    messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                }}")
+                Timber.d("@@@ insert fts cost: ${measureTime {
+                    MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                }}")
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
-                generateNotification(message, data, userMap, quoteMe || mentionMe)
+                Timber.d("@@@ generate notification cost: ${measureTime {
+                    generateNotification(message, data, userMap, quoteMe || mentionMe)
+                }}")
             }
             data.category.endsWith("_POST") -> {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_POST.name, plainText)
@@ -1051,6 +1080,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         val deviceId = data.sessionId.getDeviceId()
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
         try {
+            val start = System.currentTimeMillis()
             signalProtocol.decrypt(
                 data.conversationId,
                 data.userId,
@@ -1059,6 +1089,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 data.category,
                 data.sessionId
             ) {
+                Timber.d("@@@ signal decrypt cost: ${System.currentTimeMillis() - start} ms")
                 if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
                     RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
                 }
@@ -1070,7 +1101,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         messageHistoryDao.insert(MessageHistory(data.messageId))
                     } else {
                         try {
-                            processDecryptSuccess(data, plaintext)
+                            Timber.d("@@@ process plain cost: ${measureTime { 
+                                processDecryptSuccess(data, plaintext)
+                            }}")
                         } catch (e: Exception) {
                             insertInvalidMessage(data)
                         }
