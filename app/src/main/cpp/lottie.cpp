@@ -90,7 +90,7 @@ JNIEXPORT jlong Java_one_mixin_android_widget_RLottieDrawable_create(JNIEnv *env
     info->frameCount = info->animation->totalFrame();
     info->fps = (int) info->animation->frameRate();
     info->limitFps = limitFps;
-    if (info->fps > 60 || info->frameCount > 600) {
+    if (info->fps > 60 || info->frameCount > 2000) {
         delete info;
         return 0;
     }
