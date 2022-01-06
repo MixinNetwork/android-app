@@ -20,7 +20,6 @@ import com.birbit.android.jobqueue.network.NetworkUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -309,26 +308,28 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @ExperimentalTime
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
-        val jobs = mutableListOf<Job>()
         return if (!messages.isNullOrEmpty()) {
-            Timber.d("@@@ message size: ${messages.size}, cost: ${measureTime {
-                messages.forEach { message ->
-                    jobs.add(lifecycleScope.launch(Dispatchers.IO) {
+            Timber.d(
+                "@@@ message size: ${messages.size}, cost: ${measureTime {
+                    messages.forEach { message ->
                         val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                        Timber.d("@@@ single message ${data.category} cost: ${measureTime {
-                            if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
-                                callMessageDecrypt.onRun(data)
-                            } else {
-                                messageDecrypt.onRun(data)
-                            }
-                        }}")
-                    })
-                }
-                Timber.d("@@@ flood delete list cost: ${measureTime {
-                    floodMessageDao.deleteList(messages)
-                }}")
-                jobs.joinAll()
-            }}")
+                        Timber.d(
+                            "@@@ single message ${data.category} cost: ${measureTime {
+                                if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
+                                    callMessageDecrypt.onRun(data)
+                                } else {
+                                    messageDecrypt.onRun(data)
+                                }
+                            }}"
+                        )
+                    }
+                    Timber.d(
+                        "@@@ flood delete list cost: ${measureTime {
+                            floodMessageDao.deleteList(messages)
+                        }}"
+                    )
+                }}"
+            )
             processFloodMessage()
         } else {
             false

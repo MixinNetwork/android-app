@@ -1,6 +1,11 @@
 package one.mixin.android.db
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.DB_DELETE_LIMIT
+import one.mixin.android.MixinApplication
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -9,6 +14,9 @@ import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
+import timber.log.Timber
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 fun UserDao.insertUpdate(
     user: User,
@@ -206,12 +214,41 @@ fun MixinDatabase.deleteMessage(id: String) {
     }
 }
 
-fun MixinDatabase.insertAndNotifyConversation(message: Message) {
-    runInTransaction {
-        messageDao().insert(message)
+private val unseenMap = mutableMapOf<String, UnseenCountRunnable>()
+
+@OptIn(ExperimentalTime::class)
+fun MixinDatabase.insertAndNotifyConversation(message: Message, coroutineScope: CoroutineScope?) {
+    Timber.d(
+        "@@@ insert message cost: ${measureTime {
+            messageDao().insert(message)
+        }}"
+    )
+
+    if (unseenMap[message.conversationId] != null) {
+        unseenMap[message.conversationId] = UnseenCountRunnable(this, message)
+    } else {
+        unseenMap[message.conversationId] = UnseenCountRunnable(this, message)
+        val scope = coroutineScope ?: MixinApplication.appScope
+        scope.launch(Dispatchers.IO) {
+            delay(500)
+            unseenMap.remove(message.conversationId)?.run()
+        }
+    }
+}
+
+private class UnseenCountRunnable(private val database: MixinDatabase, private val message: Message) : Runnable {
+    @OptIn(ExperimentalTime::class)
+    override fun run() {
         val userId = Session.getAccountId()
         if (userId != message.userId) {
-            conversationDao().unseenMessageCount(message.conversationId, userId)
+            Timber.d(
+                "@@@ unseen ${message.conversationId} cost: ${
+                measureTime {
+                    database.conversationDao()
+                        .unseenMessageCount(message.conversationId, userId)
+                }
+                }"
+            )
         }
     }
 }

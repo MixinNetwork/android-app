@@ -14,7 +14,6 @@ import one.mixin.android.widget.MentionEditText
 import java.lang.Integer.max
 import java.util.Stack
 import java.util.regex.Pattern
-import kotlin.time.measureTime
 
 fun mentionDisplay(string: CharSequence): Boolean {
     val matcher = mentionEndPattern.matcher(string)
