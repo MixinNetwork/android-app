@@ -322,11 +322,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                                 messageDecrypt.onRun(data)
                             }
                         }}")
-                        Timber.d("@@@ flood delete cost: ${measureTime {
-                            floodMessageDao.delete(message)
-                        }}")
                     })
                 }
+                Timber.d("@@@ flood delete list cost: ${measureTime {
+                    floodMessageDao.deleteList(messages)
+                }}")
                 jobs.joinAll()
             }}")
             processFloodMessage()
