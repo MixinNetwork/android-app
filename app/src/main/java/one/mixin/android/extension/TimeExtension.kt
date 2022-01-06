@@ -63,7 +63,9 @@ fun String.timeAgo(context: Context): String {
         val todayMilli = today.toInstant().toEpochMilli()
         val offset = todayMilli - date.toInstant().toEpochMilli()
         timeAgo = when {
-            (todayMilli <= date.toInstant().toEpochMilli()) -> date.format(DateTimeFormatter.ofPattern("HH:mm").withZone(LocaleZone))
+            (todayMilli <= date.toInstant().toEpochMilli()) -> date.format(
+                DateTimeFormatter.ofPattern("HH:mm").withZone(LocaleZone)
+            )
             (offset < 7 * DAY_DURATION) -> {
                 when (date.dayOfWeek) {
                     DayOfWeek.MONDAY -> context.getString(R.string.week_monday)
@@ -158,35 +160,46 @@ fun String.toUtcTime(): String {
 }
 
 fun String.lateOneHours(): Boolean {
-    val offset = ZonedDateTime.now().toInstant().toEpochMilli() - ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone).toInstant().toEpochMilli()
+    val offset = ZonedDateTime.now().toInstant().toEpochMilli() - ZonedDateTime.parse(this)
+        .withZoneSameInstant(LocaleZone).toInstant().toEpochMilli()
     return offset > 3600000L
 }
 
 fun String.hashForDate(): Long {
     var hashForDate = TimeCache.singleton.getHashForDate(this)
     if (hashForDate == null) {
-        val date = ZonedDateTime.parse(this).toOffsetDateTime()
-        val time = date.format(DateTimeFormatter.ofPattern("yyyMMdd").withZone(LocaleZone))
-        hashForDate = time.hashCode().toLong()
-        TimeCache.singleton.putHashForDate(this, hashForDate)
+        try {
+            val date = ZonedDateTime.parse(this).toOffsetDateTime()
+            val time = date.format(DateTimeFormatter.ofPattern("yyyMMdd").withZone(LocaleZone))
+            hashForDate = time.hashCode().toLong()
+            TimeCache.singleton.putHashForDate(this, hashForDate)
+        } catch (e: Exception) {
+            return 0
+        }
     }
 
     return hashForDate as Long
 }
 
 fun String.timeAgoClock(): String {
-    var timeAgoClock = TimeCache.singleton.getTimeAgoClock(this)
-    if (timeAgoClock == null) {
-        val date = ZonedDateTime.parse(this).toOffsetDateTime()
-        val time = date.format(DateTimeFormatter.ofPattern("HH:mm").withZone(LocaleZone))
-        timeAgoClock = if (time.startsWith("0")) {
-            time.substring(1)
-        } else {
-            time
+    try {
+        var timeAgoClock = TimeCache.singleton.getTimeAgoClock(this)
+        if (timeAgoClock == null) {
+            val date = ZonedDateTime.parse(this).toOffsetDateTime()
+            val time = date.format(DateTimeFormatter.ofPattern("HH:mm").withZone(LocaleZone))
+            timeAgoClock = if (time.startsWith("0")) {
+                time.substring(1)
+            } else {
+                time
+            }
+            TimeCache.singleton.putTimeAgoClock(this, timeAgoClock)
         }
-        TimeCache.singleton.putTimeAgoClock(this, timeAgoClock)
+        Timber.d(this)
+        return timeAgoClock as String
+    } catch (e: Exception) {
+        Timber.e(this)
+        return ""
     }
-    return timeAgoClock as String
 }
 
 fun isSameDay(time: String?, otherTime: String?): Boolean {
@@ -200,12 +213,16 @@ fun isSameDay(time: String?, otherTime: String?): Boolean {
 
 fun String.fullDate(): String {
     val date = ZonedDateTime.parse(this).toOffsetDateTime()
-    return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(LocaleZone)) as String
+    return date.format(
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(LocaleZone)
+    ) as String
 }
 
 fun String.localTime(): String {
     val date = ZonedDateTime.parse(this).toOffsetDateTime()
-    return date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd, hh:mm a").withZone(LocaleZone)) as String
+    return date.format(
+        DateTimeFormatter.ofPattern("yyyy/MM/dd, hh:mm a").withZone(LocaleZone)
+    ) as String
 }
 
 fun String.dayTime(): String {
@@ -220,7 +237,9 @@ fun String.createAtToLong(): Long {
 
 fun String.getRFC3339Nano(): String {
     val date = ZonedDateTime.parse(this).toOffsetDateTime()
-    return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'").withZone(LocaleZone))
+    return date.format(
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'").withZone(LocaleZone)
+    )
 }
 
 fun Long.getRelativeTimeSpan(): String {

@@ -342,6 +342,8 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
+    testImplementation "org.threeten:threetenbp:1.4.0"
+
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVerison"
 }
 

@@ -36,8 +36,18 @@ fun TextView.highlightLinkText(
         val link = links[i]
         val start = source.indexOf(text)
         require(start != -1) { "start index can not be -1" }
-        sp.setSpan(NoUnderLineSpan(link, onItemListener), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        sp.setSpan(ForegroundColorSpan(color), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        sp.setSpan(
+            NoUnderLineSpan(link, onItemListener),
+            start,
+            start + text.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        sp.setSpan(
+            ForegroundColorSpan(color),
+            start,
+            start + text.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
     }
     text = sp
     movementMethod = LinkMovementMethod.getInstance()
@@ -114,7 +124,10 @@ fun TextView.timeAgoClock(str: String) {
 }
 
 fun TextView.timeAgoDate(str: String) {
-    text = str.timeAgoDate(context)
+    try {
+        text = str.timeAgoDate(context)
+    } catch (e: Exception) {
+    }
 }
 
 fun TextView.timeAgoDay(str: String, pattern: String = "dd/MM/yyyy") {
