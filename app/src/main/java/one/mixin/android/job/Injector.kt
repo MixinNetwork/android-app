@@ -182,16 +182,20 @@ open class Injector {
     @OptIn(ExperimentalTime::class)
     protected fun isExistMessage(messageId: String): Boolean {
         var id: String?
-        Timber.d("@@@ findMessageIdById cost: ${measureTime { 
-            id = messageDao.findMessageIdById(messageId)
-        }}")
+        Timber.d(
+            "@@@ findMessageIdById cost: ${measureTime {
+                id = messageDao.findMessageIdById(messageId)
+            }}"
+        )
         if (id != null) {
             return true
         }
         var messageHistory: MessageHistory?
-        Timber.d("@@@ find message history cost: ${measureTime { 
-            messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
-        }}")
+        Timber.d(
+            "@@@ find message history cost: ${measureTime {
+                messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
+            }}"
+        )
         Timber.d("@@@ id: $id, messageHistory: $messageHistory")
         return messageHistory != null
     }

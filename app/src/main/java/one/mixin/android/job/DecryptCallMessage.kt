@@ -102,7 +102,7 @@ class DecryptCallMessage(
                         data.createdAt,
                         data.status
                     )
-                    database.insertAndNotifyConversation(message)
+                    database.insertAndNotifyConversation(message, lifecycleScope)
                 } else if (data.category == MessageCategory.KRAKEN_PUBLISH.name || data.category == MessageCategory.KRAKEN_END.name) {
                     // ignore KRAKEN_PUBLISH, KRAKEN_END from listPending 1 hour away
                     if (!isIgnored(data)) {
@@ -132,7 +132,7 @@ class DecryptCallMessage(
                                     MessageStatus.SENDING.name,
                                     null
                                 )
-                                database.insertAndNotifyConversation(savedMessage)
+                                database.insertAndNotifyConversation(savedMessage, lifecycleScope)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
                             }
                         }
@@ -208,7 +208,7 @@ class DecryptCallMessage(
                                     curData.status,
                                     m.quoteMessageId
                                 )
-                                database.insertAndNotifyConversation(savedMessage)
+                                database.insertAndNotifyConversation(savedMessage, lifecycleScope)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
                             }
                         }
@@ -227,7 +227,7 @@ class DecryptCallMessage(
                     data.createdAt,
                     data.status
                 )
-                database.insertAndNotifyConversation(message)
+                database.insertAndNotifyConversation(message, lifecycleScope)
             }
         } else {
             processCall(data)
@@ -295,7 +295,7 @@ class DecryptCallMessage(
                     data.createdAt,
                     data.status
                 )
-                database.insertAndNotifyConversation(message)
+                database.insertAndNotifyConversation(message, lifecycleScope)
             }
         } else {
             when (data.category) {
@@ -409,6 +409,6 @@ class DecryptCallMessage(
             messageStatus,
             mediaDuration = duration
         )
-        database.insertAndNotifyConversation(message)
+        database.insertAndNotifyConversation(message, lifecycleScope)
     }
 }
