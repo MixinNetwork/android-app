@@ -10,6 +10,8 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.util.reportException
 
+var lastInvalidate = 0L
+
 suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.IO) {
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
     if (!dbFile.exists()) {

@@ -11,6 +11,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
 import one.mixin.android.util.CrashExceptionReportKt;
+import one.mixin.android.util.database.DatabaseUtilKt;
 import timber.log.Timber;
 
 import java.util.Collections;
@@ -45,7 +46,13 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
         mObserver = new InvalidationTracker.Observer(tables) {
             @Override
             public void onInvalidated(@NonNull Set<String> tables) {
-                invalidate();
+                long cur = System.currentTimeMillis();
+                long diff = cur - DatabaseUtilKt.getLastInvalidate();
+                Timber.d("@@@@ onInvalidated diff: " + diff);
+                if (diff > 100) {
+                    DatabaseUtilKt.setLastInvalidate(cur);
+                    invalidate();
+                }
             }
         };
         db.getInvalidationTracker().addWeakObserver(mObserver);
@@ -68,10 +75,21 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
         }
     }
 
+    private long lastCheck = 0;
+
     @Override
     public boolean isInvalid() {
-        mDb.getInvalidationTracker().refreshVersionsSync();
-        return super.isInvalid();
+        long cur = System.currentTimeMillis();
+        long dif = cur - lastCheck;
+        Timber.d("@@@ isInvalid diff " + dif);
+        if (dif > 500) {
+            Timber.d("@@@ invalid");
+            lastCheck = cur;
+            mDb.getInvalidationTracker().refreshVersionsSync();
+        }
+        boolean v = super.isInvalid();
+        Timber.d("@@@ super.isInvalid: " + v);
+        return v;
     }
 
     @SuppressWarnings("WeakerAccess")

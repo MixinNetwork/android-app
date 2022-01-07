@@ -74,6 +74,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
+import timber.log.Timber
 
 @Database(
     entities = [
@@ -171,15 +172,11 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
                             MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40
                         )
-                        .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                     if (BuildConfig.DEBUG) {
-                        builder.setQueryCallback(
-                            { sqlQuery, bindArgs ->
-                                // Timber.d(sqlQuery)
-                            },
-                            ArchTaskExecutor.getIOThreadExecutor()
-                        )
+                        // builder.setQueryCallback({ sqlQuery, bindArgs ->
+                        //     Timber.d(sqlQuery)
+                        // }, ArchTaskExecutor.getIOThreadExecutor())
                     }
                     INSTANCE = builder.build()
                 }
@@ -217,23 +214,27 @@ abstract class MixinDatabase : RoomDatabase() {
         private val CALLBACK = object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                db.execSQL(
-                    "CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id, last_message_created_at = new.created_at WHERE conversation_id = new.conversation_id; END"
-                )
-                db.execSQL(
-                    "CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END"
-                )
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_delete")
+                // db.execSQL(
+                //     "CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id, last_message_created_at = new.created_at WHERE conversation_id = new.conversation_id; END"
+                // )
+                // db.execSQL(
+                //     "CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END"
+                // )
             }
 
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
                 supportSQLiteDatabase = db
-                db.execSQL(
-                    "CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id, last_message_created_at = new.created_at  WHERE conversation_id = new.conversation_id; END"
-                )
-                db.execSQL(
-                    "CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END"
-                )
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
+                db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_delete")
+                // db.execSQL(
+                //     "CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id, last_message_created_at = new.created_at  WHERE conversation_id = new.conversation_id; END"
+                // )
+                // db.execSQL(
+                //     "CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END"
+                // )
                 db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
                 db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
             }

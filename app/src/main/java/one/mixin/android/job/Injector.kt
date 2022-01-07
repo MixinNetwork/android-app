@@ -40,7 +40,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SYSTEM_USER
@@ -49,7 +48,6 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
-import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.time.ExperimentalTime
@@ -180,25 +178,8 @@ open class Injector {
     }
 
     @OptIn(ExperimentalTime::class)
-    protected fun isExistMessage(messageId: String): Boolean {
-        var id: String?
-        Timber.d(
-            "@@@ findMessageIdById cost: ${measureTime {
-                id = messageDao.findMessageIdById(messageId)
-            }}"
-        )
-        if (id != null) {
-            return true
-        }
-        var messageHistory: MessageHistory?
-        Timber.d(
-            "@@@ find message history cost: ${measureTime {
-                messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
-            }}"
-        )
-        Timber.d("@@@ id: $id, messageHistory: $messageHistory")
-        return messageHistory != null
-    }
+    protected fun isExistMessage(messageId: String): Boolean = messageDao.findMessageIdById(messageId) != null ||
+        messageHistoryDao.findMessageHistoryById(messageId) != null
 
     private fun refreshConversation(conversationId: String): Int {
         try {

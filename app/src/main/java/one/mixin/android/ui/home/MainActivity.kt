@@ -247,36 +247,36 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        // binding = ActivityMainBinding.inflate(layoutInflater)
+        // setContentView(binding.root)
+        //
+        // if (savedInstanceState == null) {
+        //     navigationController.navigateToMessage()
+        // }
+        //
+        // val account = Session.getAccount()
+        // account?.let {
+        //     FirebaseCrashlytics.getInstance().setUserId(it.userId)
+        //     AppCenter.setUserId(it.userId)
+        // }
+        //
+        // initView()
+        // handlerCode(intent)
 
-        if (savedInstanceState == null) {
-            navigationController.navigateToMessage()
-        }
-
-        val account = Session.getAccount()
-        account?.let {
-            FirebaseCrashlytics.getInstance().setUserId(it.userId)
-            AppCenter.setUserId(it.userId)
-        }
-
-        initView()
-        handlerCode(intent)
-
-        checkAsync()
+        // checkAsync()
     }
 
     override fun onStart() {
         super.onStart()
-        val notificationManager = getSystemService<NotificationManager>() ?: return
-        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()).not()) {
-            notificationManager.cancelAll()
-        }
+        // val notificationManager = getSystemService<NotificationManager>() ?: return
+        // if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()).not()) {
+        //     notificationManager.cancelAll()
+        // }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        appUpdateManager.unregisterListener(updatedListener)
+        // appUpdateManager.unregisterListener(updatedListener)
     }
 
     private fun checkAsync() = lifecycleScope.launch(Dispatchers.IO) {
@@ -805,13 +805,13 @@ class MainActivity : BlazeBaseActivity() {
     private var dotLiveData: LiveData<Boolean>? = null
 
     private fun observeOtherCircleUnread(circleId: String?) = lifecycleScope.launch {
-        dotLiveData?.removeObserver(dotObserver)
-        if (circleId == null) {
-            binding.searchBar.dot.isVisible = false
-            return@launch
-        }
-        dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
-        dotLiveData?.observe(this@MainActivity, dotObserver)
+        // dotLiveData?.removeObserver(dotObserver)
+        // if (circleId == null) {
+        //     binding.searchBar.dot.isVisible = false
+        //     return@launch
+        // }
+        // dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
+        // dotLiveData?.observe(this@MainActivity, dotObserver)
     }
 
     private fun addCircle() {

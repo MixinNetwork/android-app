@@ -205,11 +205,17 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-service:${lifecycle_version}"
     implementation "androidx.lifecycle:lifecycle-common-java8:${lifecycle_version}"
     implementation "androidx.lifecycle:lifecycle-process:$lifecycle_version"
-    implementation "androidx.room:room-runtime:${roomVersion}"
+    implementation project(':room-runtime')
     kapt "androidx.room:room-compiler:${roomVersion}"
-    implementation "androidx.room:room-rxjava2:${roomVersion}"
-    implementation "androidx.room:room-ktx:${roomVersion}"
-    testImplementation "androidx.room:room-testing:${roomVersion}"
+    implementation("androidx.room:room-rxjava2:${roomVersion}", {
+      exclude group: 'androidx.room', module: 'room-runtime'
+    })
+    implementation("androidx.room:room-ktx:${roomVersion}", {
+        exclude group: 'androidx.room', module: 'room-runtime'
+    })
+    testImplementation("androidx.room:room-testing:${roomVersion}", {
+        exclude group: 'androidx.room', module: 'room-runtime'
+    })
 
     // DI
     implementation "com.google.dagger:hilt-android:${hiltVersion}"

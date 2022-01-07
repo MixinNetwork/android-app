@@ -1,0 +1,29 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:17:1-27:12
+INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:17:1-27:12
+INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:17:1-27:12
+	package
+		ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:18:11-34
+		INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml
+		INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:17:11-69
+application
+ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:20:5-25:19
+service#androidx.room.MultiInstanceInvalidationService
+ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:21:9-24:43
+	android:exported
+		ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:24:17-41
+	android:directBootAware
+		ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:23:17-47
+	android:name
+		ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml:22:17-65
+uses-sdk
+INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml
+INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml
+		ADDED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml
+		INJECTED from /Users/touge/dev/mixin/android-app/room-runtime/src/main/AndroidManifest.xml

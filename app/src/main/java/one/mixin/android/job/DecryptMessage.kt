@@ -555,11 +555,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         )
         when {
             data.category.endsWith("_TEXT") -> {
-                var start = System.currentTimeMillis()
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_TEXT.name, plainText)
-                var cur = System.currentTimeMillis()
-                Timber.d("@@@ decode plain cost: ${cur - start}ms")
-                start = cur
                 var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
@@ -589,11 +585,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         )
                     }
                 }
-                cur = System.currentTimeMillis()
-                Timber.d("@@@ generateMessage cost: ${cur - start}ms")
-                start = cur
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                Timber.d("@@@ parse mention cost: ${System.currentTimeMillis() - start}ms")
                 Timber.d(
                     "@@@ insert notify cost: ${measureTime {
                         database.insertAndNotifyConversation(message, lifecycleScope)
@@ -605,11 +597,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }}"
                 )
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
-                Timber.d(
-                    "@@@ generate notification cost: ${measureTime {
-                        generateNotification(message, data, userMap, quoteMe || mentionMe)
-                    }}"
-                )
+                generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
             data.category.endsWith("_POST") -> {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_POST.name, plainText)

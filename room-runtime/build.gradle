@@ -1,0 +1,29 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 31
+    buildToolsVersion "31.0.0"
+
+    buildFeatures {
+        aidl = true
+    }
+    buildTypes.all {
+        consumerProguardFiles 'proguard-rules.pro'
+    }
+}
+
+dependencies {
+    def vRoom = "2.4.0"
+    api "androidx.room:room-common:${vRoom}"
+
+    def vSql = "2.2.0"
+    api "androidx.sqlite:sqlite-framework:${vSql}"
+    api "androidx.sqlite:sqlite:${vSql}"
+
+    implementation 'androidx.arch.core:core-runtime:2.0.1'
+
+    compileOnly 'androidx.lifecycle:lifecycle-livedata-core:2.0.0'
+    compileOnly 'androidx.paging:paging-common:2.0.0'
+
+    implementation("androidx.annotation:annotation-experimental:1.1.0-rc01")
+}

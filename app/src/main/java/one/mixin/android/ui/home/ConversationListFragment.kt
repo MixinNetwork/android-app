@@ -404,11 +404,11 @@ class ConversationListFragment : LinkFragment() {
 
     private var scrollTop = false
     private fun selectCircle(circleId: String?) {
-        liveData?.removeObserver(observer)
-        val liveData = messagesViewModel.observeConversations(circleId)
-        liveData.observe(viewLifecycleOwner, observer)
-        scrollTop = true
-        this.liveData = liveData
+        // liveData?.removeObserver(observer)
+        // val liveData = messagesViewModel.observeConversations(circleId)
+        // liveData.observe(viewLifecycleOwner, observer)
+        // scrollTop = true
+        // this.liveData = liveData
     }
 
     private fun animDownIcon(expand: Boolean) {
