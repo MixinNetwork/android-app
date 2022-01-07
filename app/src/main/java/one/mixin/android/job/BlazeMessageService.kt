@@ -28,6 +28,8 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.insertNoReplaceList
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
@@ -37,8 +39,13 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.isFtsMessage
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
@@ -310,19 +317,66 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val messages = floodMessageDao.findFloodMessages()
         return if (!messages.isNullOrEmpty()) {
             Timber.d(
-                "@@@ message size: ${messages.size}, cost: ${measureTime {
-                    messages.forEach { message ->
-                        val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                        Timber.d(
-                            "@@@ single message ${data.category} cost: ${measureTime {
-                                if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
-                                    callMessageDecrypt.onRun(data)
-                                } else {
-                                    messageDecrypt.onRun(data)
-                                }
-                            }}"
-                        )
-                    }
+                "@@@ messages size: ${messages.size}, cost: ${measureTime {
+                    val ids = messages.map { it.messageId }
+                    val existsMessageIds = database.messageDao().findMessageIdsByIds(ids).toSet()
+                    val existsHistories = database.messageHistoryDao().findMessageHistoryByIds(ids).toSet()
+                    val union = existsMessageIds.union(existsMessageIds)
+                    val candidates = messages.filter { union.contains(it.messageId).not() }
+
+                    Timber.d(
+                        "@@@ ack exists messages size: ${union.size}, cost: ${measureTime {
+                            val jobs = existsHistories.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it, MessageStatus.DELIVERED.name)) }
+                            database.jobDao().insertNoReplaceList(jobs)
+                        }}"
+                    )
+
+                    Timber.d(
+                        "@@@ candidates size: ${candidates.size}, cost: ${measureTime {
+                            candidates.forEach { message ->
+                                val data = gson.fromJson(message.data, BlazeMessageData::class.java)
+                                Timber.d(
+                                    "@@@ single message ${data.category} cost: ${measureTime {
+                                        if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
+                                            callMessageDecrypt.onRun(data)
+                                        } else {
+                                            messageDecrypt.onRun(data)
+                                        }
+                                    }}"
+                                )
+                            }
+                            val pendingMessages = messageDecrypt.pendingInsertMessages
+                            Timber.d(
+                                "@@@ insert message & fts, list size: ${pendingMessages.size}, cost: ${measureTime {
+                                    runInTransaction {
+                                        database.messageDao().insertList(pendingMessages)
+
+                                        val updateUnseenConversationIds = mutableSetOf<String>()
+
+                                        pendingMessages.forEach { m ->
+                                            if (m.isFtsMessage()) {
+                                                MessageFts4Helper.insertOrReplaceMessageFts4(m)
+                                            }
+                                            updateUnseenConversationIds.add(m.conversationId)
+                                        }
+
+                                        Timber.d(
+                                            "@@@ unseen size: ${updateUnseenConversationIds.size}, cost: ${
+                                            measureTime {
+                                                updateUnseenConversationIds.forEach { cid ->
+                                                    database.conversationDao()
+                                                        .unseenMessageCount(cid, Session.getAccountId())
+                                                }
+                                            }
+                                            }"
+                                        )
+                                    }
+                                    messageDecrypt.pendingInsertMessages.clear()
+                                }}"
+                            )
+                        }}"
+                    )
+
                     Timber.d(
                         "@@@ flood delete list cost: ${measureTime {
                             floodMessageDao.deleteList(messages)
@@ -330,6 +384,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     )
                 }}"
             )
+
             processFloodMessage()
         } else {
             false

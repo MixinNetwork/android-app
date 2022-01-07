@@ -20,4 +20,7 @@ interface JobDao : BaseDao<Job> {
 
     @Query("SELECT count(1) FROM jobs")
     suspend fun getJobsCount(): Int
+
+    @Query("SELECT job_id FROM jobs WHERE job_id IN (:ids)")
+    fun findJobsByIds(ids: List<String>): List<String>
 }

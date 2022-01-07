@@ -372,6 +372,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE id = :messageId")
     fun findMessageIdById(messageId: String): String?
 
+    @Query("SELECT id FROM messages WHERE id IN (:ids)")
+    fun findMessageIdsByIds(ids: List<String>): List<String>
+
     @Query("SELECT DISTINCT conversation_id FROM messages WHERE id IN (:messages)")
     fun findConversationsByMessages(messages: List<String>): List<String>
 
