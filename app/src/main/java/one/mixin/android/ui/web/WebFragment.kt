@@ -101,6 +101,8 @@ import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
+import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicViewModel
@@ -523,7 +525,13 @@ class WebFragment : BaseFragment() {
             private var lastGrantedUri: String? = null
             override fun onPermissionRequest(request: PermissionRequest?) {
                 request?.let {
+                    val permission = mutableListOf<String>()
                     for (code in request.resources) {
+                        if (code == PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                            permission.add(Manifest.permission.RECORD_AUDIO)
+                        } else if (code == PermissionRequest.RESOURCE_VIDEO_CAPTURE) {
+                            permission.add(Manifest.permission.RECORD_AUDIO)
+                        }
                         if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
                             request.deny()
                             lastGrantedUri = null
@@ -534,17 +542,25 @@ class WebFragment : BaseFragment() {
                         request.grant(request.resources)
                         return@let
                     }
-                    PermissionBottomSheetDialogFragment.requestCamera(
+
+                    PermissionBottomSheetDialogFragment.request(
                         binding.titleTv.text.toString(),
                         app?.name,
-                        app?.iconUrl
+                        app?.appNumber,
+                        *permission.map {
+                            if (it == Manifest.permission.RECORD_AUDIO) {
+                                PERMISSION_AUDIO
+                            } else {
+                                PERMISSION_VIDEO
+                            }
+                        }.toIntArray()
                     )
                         .setCancelAction {
                             lastGrantedUri = null
                             request.deny()
                         }.setGrantedAction {
                             RxPermissions(requireActivity())
-                                .request(Manifest.permission.CAMERA)
+                                .request(*permission.toTypedArray())
                                 .autoDispose(stopScope)
                                 .subscribe(
                                     { granted ->
@@ -578,7 +594,7 @@ class WebFragment : BaseFragment() {
                         PermissionBottomSheetDialogFragment.requestVideo(
                             binding.titleTv.text.toString(),
                             app?.name,
-                            app?.iconUrl
+                            app?.appNumber
                         )
                             .setCancelAction {
                                 uploadMessage?.onReceiveValue(null)
@@ -607,7 +623,7 @@ class WebFragment : BaseFragment() {
                     } else if (intent?.type == "image/*") {
                         PermissionBottomSheetDialogFragment.requestCamera(
                             binding.titleTv.text.toString(),
-                            app?.name,
+                            app?.appNumber,
                             app?.iconUrl
                         )
                             .setCancelAction {
