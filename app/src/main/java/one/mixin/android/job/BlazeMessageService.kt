@@ -279,7 +279,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
 
@@ -376,7 +375,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val existsACKJobs = existsHistories.map {
                 createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it, MessageStatus.DELIVERED.name))
             }
-            // TODO insert BlazeAckMessage list into one job?
+            // REMINDER-ME insert BlazeAckMessage list into one job?
             database.jobDao().insertNoReplaceList(pendingACKJobs + existsACKJobs)
             messageDecrypt.pendingACKs.clear()
             callMessageDecrypt.pendingACKs.clear()

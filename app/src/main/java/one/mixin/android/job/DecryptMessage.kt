@@ -911,7 +911,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             snapshotDao.deletePendingSnapshotByHash(it)
         }
         snapshotDao.insert(snapshot)
-        // database.insertAndNotifyConversation(message, lifecycleScope)
         pendingMessages.add(message)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
