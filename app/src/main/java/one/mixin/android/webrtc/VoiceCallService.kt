@@ -2,7 +2,6 @@ package one.mixin.android.webrtc
 
 import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.crypto.Base64
@@ -93,7 +92,7 @@ class VoiceCallService : CallService() {
                 bmd.messageId
             )
             if (checkConversation(m)) {
-                database.insertAndNotifyConversation(savedMessage, lifecycleScope)
+                database.insertAndNotifyConversation(savedMessage)
             }
             return
         }
@@ -276,7 +275,7 @@ class VoiceCallService : CallService() {
                 MessageStatus.READ.name,
                 mId
             )
-            database.insertAndNotifyConversation(m, lifecycleScope)
+            database.insertAndNotifyConversation(m)
         } else if (state != CallState.STATE_CONNECTED) {
             sendCallMessage(MessageCategory.WEBRTC_AUDIO_FAILED.name)
         }
@@ -431,18 +430,18 @@ class VoiceCallService : CallService() {
         when (m.category) {
             MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                 val status = if (declineTriggeredByUser) MessageStatus.READ else MessageStatus.DELIVERED
-                database.insertAndNotifyConversation(createNewReadMessage(m, uId, status), lifecycleScope)
+                database.insertAndNotifyConversation(createNewReadMessage(m, uId, status))
             }
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 val msg = createCallMessage(
                     m.id, m.conversationId, uId, m.category, m.content,
                     m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration
                 )
-                database.insertAndNotifyConversation(msg, lifecycleScope)
+                database.insertAndNotifyConversation(msg)
             }
             MessageCategory.WEBRTC_AUDIO_END.name, MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                 val msg = createNewReadMessage(m, uId, MessageStatus.READ)
-                database.insertAndNotifyConversation(msg, lifecycleScope)
+                database.insertAndNotifyConversation(msg)
             }
         }
     }

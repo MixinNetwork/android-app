@@ -42,6 +42,8 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.FloodMessage
+import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.isFtsMessage
@@ -317,77 +319,74 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val messages = floodMessageDao.findFloodMessages()
         return if (!messages.isNullOrEmpty()) {
             Timber.d(
-                "@@@ messages size: ${messages.size}, cost: ${measureTime {
+                "process flood messages size: ${messages.size}, cost: ${measureTime {
                     val ids = messages.map { it.messageId }
                     val existsMessageIds = database.messageDao().findMessageIdsByIds(ids).toSet()
                     val existsHistories = database.messageHistoryDao().findMessageHistoryByIds(ids).toSet()
-                    val union = existsMessageIds.union(existsMessageIds)
-                    val candidates = messages.filter { union.contains(it.messageId).not() }
+                    val existsUnion = existsMessageIds.union(existsHistories)
+                    val candidateMessages = messages.filter { existsUnion.contains(it.messageId).not() }
 
-                    Timber.d(
-                        "@@@ ack exists messages size: ${union.size}, cost: ${measureTime {
-                            val jobs = existsHistories.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it, MessageStatus.DELIVERED.name)) }
-                            database.jobDao().insertNoReplaceList(jobs)
-                        }}"
-                    )
-
-                    Timber.d(
-                        "@@@ candidates size: ${candidates.size}, cost: ${measureTime {
-                            candidates.forEach { message ->
-                                val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                                Timber.d(
-                                    "@@@ single message ${data.category} cost: ${measureTime {
-                                        if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
-                                            callMessageDecrypt.onRun(data)
-                                        } else {
-                                            messageDecrypt.onRun(data)
-                                        }
-                                    }}"
-                                )
-                            }
-                            val pendingMessages = messageDecrypt.pendingInsertMessages
-                            Timber.d(
-                                "@@@ insert message & fts, list size: ${pendingMessages.size}, cost: ${measureTime {
-                                    runInTransaction {
-                                        database.messageDao().insertList(pendingMessages)
-
-                                        val updateUnseenConversationIds = mutableSetOf<String>()
-
-                                        pendingMessages.forEach { m ->
-                                            if (m.isFtsMessage()) {
-                                                MessageFts4Helper.insertOrReplaceMessageFts4(m)
-                                            }
-                                            updateUnseenConversationIds.add(m.conversationId)
-                                        }
-
-                                        Timber.d(
-                                            "@@@ unseen size: ${updateUnseenConversationIds.size}, cost: ${
-                                            measureTime {
-                                                updateUnseenConversationIds.forEach { cid ->
-                                                    database.conversationDao()
-                                                        .unseenMessageCount(cid, Session.getAccountId())
-                                                }
-                                            }
-                                            }"
-                                        )
-                                    }
-                                    messageDecrypt.pendingInsertMessages.clear()
-                                }}"
-                            )
-                        }}"
-                    )
-
-                    Timber.d(
-                        "@@@ flood delete list cost: ${measureTime {
-                            floodMessageDao.deleteList(messages)
-                        }}"
-                    )
+                    processCandidateMessages(candidateMessages, messages, existsHistories)
                 }}"
             )
-
             processFloodMessage()
         } else {
             false
+        }
+    }
+
+    private fun processCandidateMessages(
+        candidateMessages: List<FloodMessage>,
+        messages: List<FloodMessage>,
+        existsHistories: Set<String>,
+    ) {
+        candidateMessages.forEach { message ->
+            val data = gson.fromJson(message.data, BlazeMessageData::class.java)
+            if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
+                callMessageDecrypt.onRun(data)
+            } else {
+                messageDecrypt.onRun(data)
+            }
+        }
+
+        runInTransaction {
+            val pendingMessages = messageDecrypt.pendingMessages + callMessageDecrypt.pendingMessages
+            val updateUnseenConversationIds = mutableSetOf<String>()
+            pendingMessages.forEach { m ->
+                if (m.isFtsMessage()) {
+                    MessageFts4Helper.insertOrReplaceMessageFts4(m)
+                }
+                updateUnseenConversationIds.add(m.conversationId)
+            }
+            database.messageDao().insertList(pendingMessages)
+            messageDecrypt.pendingMessages.clear()
+            callMessageDecrypt.pendingMessages.clear()
+
+            val messageHistories =
+                messageDecrypt.pendingMessageHistories.map { MessageHistory(it) } +
+                    callMessageDecrypt.pendingMessageHistories.map { MessageHistory(it) }
+            database.messageHistoryDao().insertList(messageHistories)
+            messageDecrypt.pendingMessageHistories.clear()
+            callMessageDecrypt.pendingMessageHistories.clear()
+
+            val pendingACKs = messageDecrypt.pendingACKs + callMessageDecrypt.pendingACKs
+            val pendingACKJobs = pendingACKs.map {
+                createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, it)
+            }
+            val existsACKJobs = existsHistories.map {
+                createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it, MessageStatus.DELIVERED.name))
+            }
+            // TODO insert BlazeAckMessage list into one job?
+            database.jobDao().insertNoReplaceList(pendingACKJobs + existsACKJobs)
+            messageDecrypt.pendingACKs.clear()
+            callMessageDecrypt.pendingACKs.clear()
+
+            updateUnseenConversationIds.forEach { cid ->
+                database.conversationDao()
+                    .unseenMessageCount(cid, Session.getAccountId())
+            }
+
+            floodMessageDao.deleteList(messages)
         }
     }
 }

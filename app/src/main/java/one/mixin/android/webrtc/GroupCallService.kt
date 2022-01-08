@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
-import androidx.lifecycle.lifecycleScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -975,7 +974,7 @@ class GroupCallService : CallService() {
             MessageStatus.READ.name,
             mediaDuration = duration
         )
-        database.insertAndNotifyConversation(message, lifecycleScope)
+        database.insertAndNotifyConversation(message)
     }
 
     private fun checkReconnectingTimeout() {
