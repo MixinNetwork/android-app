@@ -23,7 +23,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.dp
-import org.jetbrains.anko.sp
+import one.mixin.android.extension.sp
 
 class CircleProgress @JvmOverloads constructor(
     context: Context,
@@ -53,7 +53,7 @@ class CircleProgress @JvmOverloads constructor(
 
     private var mProgress = 0
     private var mMaxProgress = 100
-    private var mTextSize = context.sp(12)
+    private var mTextSize = 12.sp
     private val mSize: Int
     private val mShadowColor: Int
     private val mProgressColor: Int

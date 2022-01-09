@@ -60,6 +60,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsPie
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
@@ -85,7 +86,6 @@ import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File

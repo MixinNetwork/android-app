@@ -7,7 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
+import one.mixin.android.extension.bottomPadding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.leftPadding
+import one.mixin.android.extension.rightPadding
+import one.mixin.android.extension.topPadding
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
@@ -15,10 +19,6 @@ import one.mixin.android.util.ColorUtil
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.widget.ActionButton
-import org.jetbrains.anko.bottomPadding
-import org.jetbrains.anko.leftPadding
-import org.jetbrains.anko.rightPadding
-import org.jetbrains.anko.topPadding
 
 class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
 

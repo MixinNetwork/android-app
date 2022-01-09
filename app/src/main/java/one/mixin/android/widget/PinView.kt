@@ -19,8 +19,8 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewPinBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.textColor
 import org.jetbrains.anko.hintTextColor
-import org.jetbrains.anko.textColor
 
 class PinView : LinearLayout {
 

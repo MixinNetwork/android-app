@@ -29,6 +29,7 @@ import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
@@ -39,7 +40,6 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.RLottieImageView
-import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
 class StickerManagementFragment : BaseFragment() {

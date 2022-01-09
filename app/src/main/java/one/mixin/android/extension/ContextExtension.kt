@@ -75,10 +75,7 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
-import org.jetbrains.anko.configuration
 import org.jetbrains.anko.displayMetrics
-import org.jetbrains.anko.notificationManager
-import org.jetbrains.anko.textColorResource
 import timber.log.Timber
 import java.io.File
 import java.util.Locale
@@ -811,7 +808,7 @@ fun Context.isNightMode(): Boolean {
             Constants.Theme.THEME_AUTO_ID
         )
         return if (currentId == Constants.Theme.THEME_AUTO_ID) {
-            configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+            resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         } else {
             currentId == Constants.Theme.THEME_NIGHT_ID
         }
@@ -1020,3 +1017,6 @@ inline fun <reified T> Fragment.findListener(): T? {
 
     return requireActivity() as? T
 }
+
+val Context.notificationManager: NotificationManager
+    get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

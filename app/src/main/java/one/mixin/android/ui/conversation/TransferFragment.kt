@@ -64,6 +64,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.sp
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
@@ -90,7 +91,6 @@ import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
-import org.jetbrains.anko.textColor
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID

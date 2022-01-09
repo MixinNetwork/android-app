@@ -13,11 +13,11 @@ import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewSlidePanelBinding
+import one.mixin.android.extension.backgroundColor
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.widget.AndroidUtilities
-import org.jetbrains.anko.backgroundColor
 import kotlin.math.abs
 
 class SlidePanelView : RelativeLayout {

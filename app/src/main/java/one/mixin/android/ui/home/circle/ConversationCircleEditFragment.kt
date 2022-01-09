@@ -21,6 +21,7 @@ import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.databinding.FragmentConversationCircleEditBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
@@ -33,7 +34,6 @@ import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
-import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
 class ConversationCircleEditFragment : BaseFragment() {

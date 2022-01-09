@@ -69,7 +69,6 @@ import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.copy
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
 import one.mixin.android.vo.isGroupConversation

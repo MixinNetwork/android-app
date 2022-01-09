@@ -21,6 +21,7 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.textColor
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
@@ -29,7 +30,6 @@ import one.mixin.android.ui.group.adapter.GroupFriendAdapter
 import one.mixin.android.ui.group.adapter.GroupSelectAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
-import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
 class GroupFragment : BaseFragment() {

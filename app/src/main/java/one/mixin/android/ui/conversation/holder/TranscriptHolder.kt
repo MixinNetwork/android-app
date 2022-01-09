@@ -10,6 +10,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -29,7 +30,6 @@ import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
-import org.jetbrains.anko.textColorResource
 
 class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : BaseViewHolder(binding.root) {
     init {

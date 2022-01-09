@@ -8,6 +8,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
@@ -17,7 +18,6 @@ import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import org.jetbrains.anko.textResource
 
 class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root) {
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {

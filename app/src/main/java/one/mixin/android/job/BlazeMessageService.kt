@@ -32,6 +32,7 @@ import one.mixin.android.db.insertNoReplaceList
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
@@ -55,7 +56,6 @@ import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
-import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.ExperimentalTime
