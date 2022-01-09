@@ -18,9 +18,9 @@ import android.widget.TextView
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPinBinding
 import one.mixin.android.extension.colorFromAttribute
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.hintTextColor
-import org.jetbrains.anko.textColor
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.hintTextColor
+import one.mixin.android.extension.textColor
 
 class PinView : LinearLayout {
 
@@ -70,7 +70,7 @@ class PinView : LinearLayout {
         mid = count / 2
         for (i in 0..count) {
             if (i == mid) {
-                binding.containerLl.addView(View(context), LayoutParams(context.dip(20), MATCH_PARENT))
+                binding.containerLl.addView(View(context), LayoutParams(20.dp, MATCH_PARENT))
             } else {
                 val item = TextView(context)
                 item.textSize = starSize

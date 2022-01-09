@@ -4,8 +4,8 @@ import android.app.NotificationManager
 import androidx.core.app.NotificationCompat
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.vo.Message
-import org.jetbrains.anko.notificationManager
 
 @Deprecated(
     message = "moved to NotificationGenerator, and keep this empty class for old version deserialize",

@@ -9,9 +9,9 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.FROM_NOTIFICATION
-import org.jetbrains.anko.notificationManager
 
 class BackupNotification {
     companion object {

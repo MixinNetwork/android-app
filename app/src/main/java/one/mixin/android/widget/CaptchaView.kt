@@ -11,8 +11,8 @@ import okio.source
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.cancelRunOnUIThread
-import one.mixin.android.extension.runOnUIThread
+import one.mixin.android.extension.cancelRunOnUiThread
+import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import java.nio.charset.Charset
@@ -55,12 +55,12 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         webView.webViewClient = object : WebViewClientCompat() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                context.runOnUIThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
+                context.runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                context.cancelRunOnUIThread(stopWebViewRunnable)
+                context.cancelRunOnUiThread(stopWebViewRunnable)
                 webView.animate().translationY(0f)
             }
         }
@@ -87,14 +87,14 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     @Suppress("unused")
     @JavascriptInterface
     fun postMessage(@Suppress("UNUSED_PARAMETER") value: String) {
-        context.cancelRunOnUIThread(stopWebViewRunnable)
-        context.runOnUIThread(stopWebViewRunnable)
+        context.cancelRunOnUiThread(stopWebViewRunnable)
+        context.runOnUiThread(stopWebViewRunnable)
     }
 
     @Suppress("unused")
     @JavascriptInterface
     fun postToken(value: String) {
-        context.cancelRunOnUIThread(stopWebViewRunnable)
+        context.cancelRunOnUiThread(stopWebViewRunnable)
         webView.post {
             hide()
             webView.loadUrl("about:blank")

@@ -11,10 +11,10 @@ import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
+import one.mixin.android.extension.dp
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
-import org.jetbrains.anko.dip
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.math.ceil
@@ -104,7 +104,7 @@ class WaveformView : View {
         if (waveformBytes == null || width == 0) {
             return
         }
-        val totalBarsCount = (width / context.dip(3f)).toFloat()
+        val totalBarsCount = (width / 3.dp).toFloat()
         if (totalBarsCount <= 0.1f) {
             return
         }
@@ -144,7 +144,7 @@ class WaveformView : View {
                 value = (value.toInt() shl nextByteRest).toByte()
                 value = value or (waveformBytes!![byteNum + 1] and ((2 shl nextByteRest - 1) - 1).toByte())
             }
-            val offset = context.dip(max(1f, 14.0f * value / 31.0f)).toFloat()
+            val offset = (max(1f, 14.0f * value / 31.0f).dp).toFloat()
             val yTop = if (center) {
                 (y - offset) / 2
             } else {
@@ -156,12 +156,12 @@ class WaveformView : View {
                 y
             }
             for (b in 0 until drawBarCount) {
-                val x = barNum * context.dip(3f)
-                if (x < thumbX && x + context.dip(2f) < thumbX) {
+                val x = barNum * 3.dp
+                if (x < thumbX && x + 2.dp < thumbX) {
                     canvas.drawRect(
                         x.toFloat(),
                         yTop,
-                        (x + context.dip(2f)).toFloat(),
+                        (x + 2.dp).toFloat(),
                         yBottom,
                         paintOuter
                     )
@@ -169,7 +169,7 @@ class WaveformView : View {
                     canvas.drawRect(
                         x.toFloat(),
                         yTop,
-                        (x + context.dip(2f)).toFloat(),
+                        (x + 2.dp).toFloat(),
                         yBottom,
                         paintInner
                     )

@@ -37,6 +37,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.maxSizeScale
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toPNGBytes
@@ -48,7 +49,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
-import org.jetbrains.anko.textColor
 import java.io.File
 import java.util.concurrent.TimeUnit
 

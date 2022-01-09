@@ -20,13 +20,13 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.AvatarEvent
 import one.mixin.android.extension.CodeType
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
-import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -94,8 +94,8 @@ class GenerateAvatarJob(
         val textSizeLarge = applicationContext.resources.getDimension(R.dimen.group_avatar_text_size)
         val textSizeMedium = applicationContext.resources.getDimension(R.dimen.group_avatar_text_medium)
         val textSizeSmall = applicationContext.resources.getDimension(R.dimen.group_avatar_text_small)
-        val textOffset = applicationContext.dip(5f).toFloat()
-        val dividerOffset = applicationContext.dip(.5f).toFloat()
+        val textOffset = 5f.dp.toFloat()
+        val dividerOffset = 0.5f.dp.toFloat()
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE

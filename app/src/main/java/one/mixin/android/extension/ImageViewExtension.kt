@@ -19,7 +19,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
 import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
-import org.jetbrains.anko.runOnUiThread
 
 fun ImageView.loadImage(uri: String?) {
     if (!isActivityNotDestroyed()) return
@@ -177,9 +176,9 @@ fun ImageView.loadGifMark(uri: String?, mark: Int, useSignature: Boolean = true)
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    this@loadGifMark.context.runOnUiThread {
+                    this@loadGifMark.context.runOnUiThread({
                         setImageDrawable(resource)
-                    }
+                    })
                     return true
                 }
             }

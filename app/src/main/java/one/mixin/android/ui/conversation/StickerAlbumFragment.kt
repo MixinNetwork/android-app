@@ -22,6 +22,7 @@ import one.mixin.android.event.AlbumEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.PREF_NEW_ALBUM
+import one.mixin.android.extension.backgroundResource
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
@@ -33,7 +34,6 @@ import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.viewpager2.SwipeControlTouchListener
 import one.mixin.android.widget.viewpager2.SwipeDirection
-import org.jetbrains.anko.backgroundResource
 
 @AndroidEntryPoint
 class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {

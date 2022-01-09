@@ -4,8 +4,10 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatAudioBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.textResource
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
@@ -13,8 +15,6 @@ import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.textResource
 import kotlin.math.min
 
 class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolder(binding.root) {
@@ -44,7 +44,7 @@ class AudioHolder constructor(val binding: ItemChatAudioBinding) : BaseViewHolde
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }

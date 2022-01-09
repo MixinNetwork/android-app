@@ -13,7 +13,6 @@ import android.view.WindowInsets;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.preference.PreferenceManager;
 
-import kotlin.math.MathKt;
 import one.mixin.android.R;
 import one.mixin.android.extension.ContextExtensionKt;
 import timber.log.Timber;

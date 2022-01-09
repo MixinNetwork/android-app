@@ -15,8 +15,8 @@ class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
     }
     @SuppressLint("SetTextI18n")
     fun bind(user: User, keyword: String?, queryHighlighter: QueryHighlighter, listener: MentionAdapter.OnUserClickListener) {
-        queryHighlighter.apply(binding.name,user.fullName,keyword)
-        queryHighlighter.apply(binding.idTv,"@${user.identityNumber}","@$keyword")
+        queryHighlighter.apply(binding.name, user.fullName, keyword)
+        queryHighlighter.apply(binding.idTv, "@${user.identityNumber}", "@$keyword")
         binding.iconIv.setInfo(user.fullName, user.avatarUrl, user.userId)
         user.showVerifiedOrBot(binding.verifiedIv, binding.botIv)
         itemView.setOnClickListener {

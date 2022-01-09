@@ -9,7 +9,7 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.widget.FrameLayout
 import one.mixin.android.R
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.dp
 
 class SquareLayout : FrameLayout {
 
@@ -20,7 +20,7 @@ class SquareLayout : FrameLayout {
     private val paint: Paint by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
-            strokeWidth = context.dip(2).toFloat()
+            strokeWidth = 2.dp.toFloat()
             color = resources.getColor(R.color.text_gray, null)
             pathEffect = DashPathEffect(floatArrayOf(20f, 20f), 0f)
         }

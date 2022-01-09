@@ -29,6 +29,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.supportsR
 import one.mixin.android.ui.conversation.BubbleActivity
@@ -58,7 +59,6 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
-import org.jetbrains.anko.notificationManager
 
 const val KEY_REPLY = "key_reply"
 const val CONVERSATION_ID = "conversation_id"

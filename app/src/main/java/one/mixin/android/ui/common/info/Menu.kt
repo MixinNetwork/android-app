@@ -9,13 +9,13 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutMenuBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.vo.App
 import one.mixin.android.widget.FlowLayout
-import org.jetbrains.anko.colorAttr
 
 @DslMarker
 annotation class MenuDsl

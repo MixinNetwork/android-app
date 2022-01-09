@@ -6,11 +6,11 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.timeAgoDay
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
-import org.jetbrains.anko.textColorResource
 
 open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 

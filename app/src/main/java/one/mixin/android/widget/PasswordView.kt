@@ -10,7 +10,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import one.mixin.android.R
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.dp
 
 class PasswordView : View {
 
@@ -22,8 +22,8 @@ class PasswordView : View {
     }
 
     private var circleColor = resources.getColor(COLOR, null)
-    private var ringWidth = dip(RING_WIDTH).toFloat()
-    private var circleRadius: Float = dip(CIRCLE_RADIUS).toFloat()
+    private var ringWidth = (RING_WIDTH.dp).toFloat()
+    private var circleRadius: Float = (CIRCLE_RADIUS.dp).toFloat()
     var count = CIRCLE_COUNT
 
     private var listener: PasswordViewListener? = null

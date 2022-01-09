@@ -15,11 +15,11 @@ import one.mixin.android.databinding.ItemAlbumBinding
 import one.mixin.android.databinding.ItemStickerBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadSticker
+import one.mixin.android.extension.textColor
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.widget.RLottieImageView
 import one.mixin.android.widget.SpacesItemDecoration
-import org.jetbrains.anko.textColor
 
 class AlbumAdapter(
     private val fragmentManager: FragmentManager,

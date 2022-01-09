@@ -13,11 +13,11 @@ import androidx.annotation.RequiresApi
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.supportsQ
-import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 
 class ChannelManager {

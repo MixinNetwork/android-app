@@ -15,6 +15,7 @@ import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
@@ -25,7 +26,6 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
-import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.net.SocketTimeoutException

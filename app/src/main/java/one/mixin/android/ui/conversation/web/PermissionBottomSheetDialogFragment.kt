@@ -114,11 +114,13 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         binding.info.text = content
-        binding.logo.setImageResource(if (permissions?.any { it == PERMISSION_AUDIO } == true) {
-            R.drawable.ic_permission_audio
-        } else {
-            R.drawable.ic_permission_camera
-        })
+        binding.logo.setImageResource(
+            if (permissions?.any { it == PERMISSION_AUDIO } == true) {
+                R.drawable.ic_permission_audio
+            } else {
+                R.drawable.ic_permission_camera
+            }
+        )
     }
 
     override fun onDismiss(dialog: DialogInterface) {

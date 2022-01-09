@@ -17,7 +17,7 @@ import android.util.AttributeSet
 import android.view.View
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import org.jetbrains.anko.collections.forEachWithIndex
+import one.mixin.android.extension.forEachWithIndex
 
 class PercentView : View {
 
