@@ -37,7 +37,6 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
-import org.jetbrains.anko.dip
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -140,9 +139,9 @@ fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = n
 }
 
 fun View.shaking() {
-    val dp20 = dip(20).toFloat()
-    val dp10 = dip(10).toFloat()
-    val dp5 = dip(5).toFloat()
+    val dp20 = 20.dp.toFloat()
+    val dp10 = 10.dp.toFloat()
+    val dp5 = 5.dp.toFloat()
     ObjectAnimator.ofFloat(this, "translationX", -dp20, dp20, -dp20, dp20, -dp10, dp10, -dp5, dp5, 0f)
         .setDuration(600).start()
 }

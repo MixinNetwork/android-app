@@ -5,10 +5,10 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatRecallBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
-import org.jetbrains.anko.dip
 
 class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHolder(binding.root) {
 
@@ -27,7 +27,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -38,7 +38,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         }
         if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.compoundDrawablePadding = 3.dp
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }

@@ -28,7 +28,6 @@ import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
-import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 
 class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
@@ -178,7 +177,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -190,7 +189,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
 
         if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.compoundDrawablePadding = 3.dp
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }

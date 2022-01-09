@@ -11,6 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
@@ -20,7 +21,6 @@ import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
-import org.jetbrains.anko.dip
 
 class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
 
@@ -48,7 +48,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }

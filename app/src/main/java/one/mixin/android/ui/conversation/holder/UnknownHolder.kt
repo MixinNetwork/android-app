@@ -7,11 +7,11 @@ import android.widget.FrameLayout
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatUnknownBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
-import org.jetbrains.anko.dip
 
 class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewHolder(binding.root) {
 
@@ -96,7 +96,7 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }

@@ -36,6 +36,7 @@ import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
@@ -44,7 +45,6 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.util.SystemUIManager
-import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
 import kotlin.math.abs
 import kotlin.math.min
@@ -66,7 +66,7 @@ class BottomSheet(
     private var customView: View? = null
     private var customViewHeight: Int = 0
 
-    private val speed = context.dip(0.5f)
+    private val speed = 0.5f.dp
 
     private val backDrawable = ColorDrawable(-0x1000000)
 

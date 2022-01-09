@@ -28,7 +28,6 @@ import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
-import org.jetbrains.anko.dip
 
 class LocationHolder constructor(val binding: ItemChatLocationBinding) :
     BaseViewHolder(binding.root),
@@ -204,7 +203,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -216,7 +215,7 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
 
         if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.compoundDrawablePadding = 3.dp
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }

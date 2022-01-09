@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.exoplayer2.util.MimeTypes
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.fileSize
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
@@ -16,7 +17,6 @@ import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
-import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
 class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : MediaHolder(binding.root) {
@@ -69,7 +69,7 @@ class FileQuoteHolder constructor(val binding: ItemChatFileQuoteBinding) : Media
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }

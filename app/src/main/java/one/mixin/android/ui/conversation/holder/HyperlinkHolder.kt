@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatHyperlinkBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
@@ -15,7 +16,6 @@ import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
-import org.jetbrains.anko.dip
 
 class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseViewHolder(binding.root) {
 
@@ -154,7 +154,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -166,7 +166,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
 
         if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.compoundDrawablePadding = 3.dp
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }

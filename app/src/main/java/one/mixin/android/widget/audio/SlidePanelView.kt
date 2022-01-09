@@ -14,10 +14,10 @@ import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewSlidePanelBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.widget.AndroidUtilities
 import org.jetbrains.anko.backgroundColor
-import org.jetbrains.anko.dip
 import kotlin.math.abs
 
 class SlidePanelView : RelativeLayout {
@@ -71,7 +71,7 @@ class SlidePanelView : RelativeLayout {
     val slideWidth by lazy {
         val location = IntArray(2)
         binding.slideLl.getLocationOnScreen(location)
-        location[0] - context.dip(64)
+        location[0] - 64.dp
     }
 
     fun slideText(x: Float) {

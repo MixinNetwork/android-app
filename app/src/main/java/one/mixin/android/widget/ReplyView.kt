@@ -11,6 +11,7 @@ import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewReplyBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
@@ -32,7 +33,6 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
-import org.jetbrains.anko.dip
 
 class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
 
@@ -41,7 +41,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
     val replyCloseIv = binding.replyCloseIv
     init {
         setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
-        binding.replyViewIv.round(dip(3))
+        binding.replyViewIv.round(3.dp)
     }
 
     private val dp72 by lazy {
