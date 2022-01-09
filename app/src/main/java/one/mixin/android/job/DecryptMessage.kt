@@ -16,8 +16,6 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
-import one.mixin.android.db.insertAndNotifyConversation
-import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
@@ -58,7 +56,6 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
@@ -73,7 +70,6 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMinimal
-import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
@@ -102,7 +98,6 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.toJson
-import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -148,13 +143,11 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private var refreshKeyMap = arrayMapOf<String, Long?>()
 
-    private val accountId = Session.getAccountId()
+    val pendingMessages = mutableListOf<Message>()
+    val pendingACKs = mutableListOf<BlazeAckMessage>()
+    val pendingMessageHistories = mutableListOf<String>()
 
     fun onRun(data: BlazeMessageData) {
-        if (isExistMessage(data.messageId)) {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
-            return
-        }
         processMessage(data)
     }
 
@@ -172,9 +165,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         MessageStatus.UNKNOWN.name
                     )
                     syncConversation(data)
-                    messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                    pendingMessages.add(message)
                 }
-                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+                pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
                 return
             }
 
@@ -182,6 +175,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 syncConversation(data)
             }
             checkSession(data)
+
             if (data.category.startsWith("SYSTEM_")) {
                 processSystemMessage(data)
             } else if (data.category.startsWith("PLAIN_")) {
@@ -202,7 +196,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } catch (e: Exception) {
             Timber.e("Process error: $e")
             insertInvalidMessage(data)
-            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
         }
     }
 
@@ -230,8 +224,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         for (item in appButton) {
             ColorUtil.parseColor(item.color.trim())
         }
-        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-        updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+        pendingMessages.add(message)
+        pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
         generateNotification(message, data)
     }
 
@@ -272,8 +266,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
         }
-        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-        updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+        pendingMessages.add(message)
+        pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
         generateNotification(message, data)
     }
 
@@ -303,7 +297,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             processSystemSessionMessage(systemSession)
         }
 
-        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.READ.name))
     }
 
     private val notificationManager: NotificationManager by lazy {
@@ -371,8 +365,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } else if (transferPinData.action == PinAction.UNPIN.name) {
                 pinMessageDao.deleteByIds(transferPinData.messageIds)
             }
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            messageHistoryDao.insert(MessageHistory(data.messageId))
+            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.READ.name))
+            pendingMessageHistories.add(data.messageId)
         }
     }
 
@@ -408,8 +402,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
             }
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            messageHistoryDao.insert(MessageHistory(data.messageId))
+            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.READ.name))
+            pendingMessageHistories.add(data.messageId)
         }
     }
 
@@ -450,8 +444,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
 
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            messageHistoryDao.insert(MessageHistory(data.messageId))
+            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.READ.name))
+            pendingMessageHistories.add(data.messageId)
         } else if (data.category == MessageCategory.PLAIN_TEXT.name ||
             data.category == MessageCategory.PLAIN_IMAGE.name ||
             data.category == MessageCategory.PLAIN_VIDEO.name ||
@@ -472,7 +466,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } catch (e: Exception) {
                 insertInvalidMessage(data)
             }
-            updateRemoteMessageStatus(data.messageId)
+            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
         }
     }
 
@@ -560,8 +554,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                pendingMessages.add(message)
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
@@ -577,15 +570,14 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.createdAt,
                     data.status
                 )
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                pendingMessages.add(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_LOCATION") -> {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_LOCATION.name, plainText)
                 if (checkLocationData(plain)) {
                     val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
-                    messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                    pendingMessages.add(message)
                     generateNotification(message, data)
                 }
             }
@@ -604,7 +596,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
 
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                pendingMessages.add(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -630,7 +622,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
 
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                pendingMessages.add(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadVideo) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -650,8 +642,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
 
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                pendingMessages.add(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -669,8 +660,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
-                jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                pendingMessages.add(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_STICKER") -> {
@@ -700,7 +690,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt
                     )
                 }
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                pendingMessages.add(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_CONTACT") -> {
@@ -718,7 +708,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                pendingMessages.add(message)
                 val fullName = user?.fullName
                 if (!fullName.isNullOrBlank()) {
                     MessageFts4Helper.insertOrReplaceMessageFts4(message, fullName)
@@ -740,7 +730,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.messageId, data.conversationId, data.userId, data.category, plain,
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt
                 )
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                pendingMessages.add(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_TRANSCRIPT") -> {
@@ -748,7 +738,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     Base64.decode(plainText)
                 ) else plainText
                 val message = processTranscriptMessage(data, plain) ?: return
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                pendingMessages.add(message)
                 generateNotification(message, data)
             }
         }
@@ -908,7 +898,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             snapshotDao.deletePendingSnapshotByHash(it)
         }
         snapshotDao.insert(snapshot)
-        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+        pendingMessages.add(message)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
@@ -963,7 +953,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 return
             }
         }
-        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+        pendingMessages.add(message)
     }
 
     private fun processSystemUserMessage(systemMessage: SystemUserMessagePayload) {
@@ -1024,16 +1014,16 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } catch (e: Exception) {
             reportDecryptFailed(data, e, null)
             insertInvalidMessage(data)
-            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
         }
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            messageHistoryDao.insert(MessageHistory(data.messageId))
+            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.READ.name))
+            pendingMessageHistories.add(data.messageId)
         } else {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
         }
         val deviceId = data.sessionId.getDeviceId()
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
@@ -1053,8 +1043,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     val plaintext = String(it)
                     if (resendMessageId != null) {
                         processRedecryptMessage(data, resendMessageId, plaintext)
-                        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-                        messageHistoryDao.insert(MessageHistory(data.messageId))
+                        pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.READ.name))
+                        pendingMessageHistories.add(data.messageId)
                     } else {
                         try {
                             processDecryptSuccess(data, plaintext)
@@ -1123,7 +1113,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.SIGNAL_POST.name ||
             data.category == MessageCategory.SIGNAL_TRANSCRIPT.name
         ) {
-            database.insertAndNotifyConversation(
+            pendingMessages.add(
                 createMessage(
                     data.messageId,
                     data.conversationId,
@@ -1227,10 +1217,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, plainText.base64Encode(), sessionId))
         jobManager.addJobInBackground(SendPlaintextJob(bm))
         ratchetSenderKeyDao.delete(conversationId, SignalProtocolAddress(userId, sessionId.getDeviceId()).toString())
-    }
-
-    private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
-        jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
     private fun refreshSignalKeys(conversationId: String) {

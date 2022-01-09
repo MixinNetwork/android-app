@@ -791,6 +791,7 @@
     <string name="auth_collectibles_read_description">access your collectibles</string>
 
     <string name="permission_video">Allow to record video?</string>
+    <string name="permission_audio">Allow to record audio?</string>
     <string name="permission_camera">Allow to take pictures?</string>
 
     <string name="extensions">Extensions</string>

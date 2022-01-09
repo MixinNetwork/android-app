@@ -773,6 +773,7 @@
     <string name="auth_collectibles_read_description">访问你的 NFT 列表</string>
 
     <string name="permission_video">要允许拍摄视频吗?</string>
+    <string name="permission_audio">要允许录制声音吗?</string>
     <string name="permission_camera">要允许拍摄照片吗?</string>
 
     <string name="extensions">机器人</string>
