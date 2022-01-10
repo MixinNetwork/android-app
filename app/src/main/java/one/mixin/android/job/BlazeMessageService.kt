@@ -43,6 +43,7 @@ import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.FloodMessage
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
@@ -58,8 +59,6 @@ import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 
 @AndroidEntryPoint
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
@@ -297,7 +296,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     @Synchronized
     private fun runFloodJob() {
         if (floodJob?.isActive == true) {
@@ -313,21 +311,17 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    @ExperimentalTime
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
         return if (!messages.isNullOrEmpty()) {
-            Timber.d(
-                "process flood messages size: ${messages.size}, cost: ${measureTime {
-                    val ids = messages.map { it.messageId }
-                    val existsMessageIds = database.messageDao().findMessageIdsByIds(ids).toSet()
-                    val existsHistories = database.messageHistoryDao().findMessageHistoryByIds(ids).toSet()
-                    val existsUnion = existsMessageIds.union(existsHistories)
-                    val candidateMessages = messages.filter { existsUnion.contains(it.messageId).not() }
+            val ids = messages.map { it.messageId }
+            val existsMessageIds = database.messageDao().findMessageIdsByIds(ids).toSet()
+            val existsHistoryIds = database.messageHistoryDao().findMessageHistoryByIds(ids).toSet()
+            val existsUnion = existsMessageIds.union(existsHistoryIds)
+            val candidateMessages = messages.filter { existsUnion.contains(it.messageId).not() }
 
-                    processCandidateMessages(candidateMessages, messages, existsHistories)
-                }}"
-            )
+            processCandidateMessages(candidateMessages, messages, existsHistoryIds)
+
             processFloodMessage()
         } else {
             false
@@ -337,7 +331,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private fun processCandidateMessages(
         candidateMessages: List<FloodMessage>,
         messages: List<FloodMessage>,
-        existsHistories: Set<String>,
+        existsHistoryIds: Set<String>,
     ) {
         candidateMessages.forEach { message ->
             val data = gson.fromJson(message.data, BlazeMessageData::class.java)
@@ -348,33 +342,40 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
 
-        runInTransaction {
-            val pendingMessages = messageDecrypt.pendingMessages + callMessageDecrypt.pendingMessages
-            val updateUnseenConversationIds = mutableSetOf<String>()
-            pendingMessages.forEach { m ->
-                if (m.isFtsMessage()) {
-                    MessageFts4Helper.insertOrReplaceMessageFts4(m)
-                }
-                updateUnseenConversationIds.add(m.conversationId)
+        val pendingMessages = messageDecrypt.pendingMessages + callMessageDecrypt.pendingMessages
+        val updateUnseenConversationIds = mutableSetOf<String>()
+        val ftsMessages = mutableListOf<Message>()
+        pendingMessages.forEach { m ->
+            if (m.isFtsMessage()) {
+                ftsMessages.add(m)
             }
+            updateUnseenConversationIds.add(m.conversationId)
+        }
+
+        val messageHistories = messageDecrypt.pendingMessageHistories.map { MessageHistory(it) } +
+            callMessageDecrypt.pendingMessageHistories.map { MessageHistory(it) }
+
+        val pendingACKs = messageDecrypt.pendingACKs + callMessageDecrypt.pendingACKs
+        val pendingACKJobs = pendingACKs.map { ack ->
+            createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, ack)
+        }
+        val existsACKJobs = existsHistoryIds.map { id ->
+            createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(id, MessageStatus.DELIVERED.name))
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            database.messageFts4Dao().insertList(MessageFts4Helper.genMessageFts4s(ftsMessages))
+        }
+
+        runInTransaction {
             database.messageDao().insertList(pendingMessages)
             messageDecrypt.pendingMessages.clear()
             callMessageDecrypt.pendingMessages.clear()
 
-            val messageHistories =
-                messageDecrypt.pendingMessageHistories.map { MessageHistory(it) } +
-                    callMessageDecrypt.pendingMessageHistories.map { MessageHistory(it) }
             database.messageHistoryDao().insertList(messageHistories)
             messageDecrypt.pendingMessageHistories.clear()
             callMessageDecrypt.pendingMessageHistories.clear()
 
-            val pendingACKs = messageDecrypt.pendingACKs + callMessageDecrypt.pendingACKs
-            val pendingACKJobs = pendingACKs.map {
-                createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, it)
-            }
-            val existsACKJobs = existsHistories.map {
-                createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it, MessageStatus.DELIVERED.name))
-            }
             // REMINDER-ME insert BlazeAckMessage list into one job?
             database.jobDao().insertNoReplaceList(pendingACKJobs + existsACKJobs)
             messageDecrypt.pendingACKs.clear()

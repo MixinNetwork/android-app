@@ -674,6 +674,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
                 pendingMessages.add(message)
+                jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 generateNotification(message, data)
             }
             data.category.endsWith("_STICKER") -> {
