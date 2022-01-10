@@ -556,11 +556,13 @@ class GroupCallService : CallService() {
     override fun needInitWebRtc(action: String) = action != ACTION_CHECK_PEER
 
     override fun onConnected() {
+        val fromReconnecting = callState.reconnecting
         super.onConnected()
         callExecutor.execute {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
 
+            if (fromReconnecting) return@execute
             val cid = callState.conversationId ?: return@execute
             val needMute = callState.needMuteWhenJoin(cid)
             if (needMute) {
