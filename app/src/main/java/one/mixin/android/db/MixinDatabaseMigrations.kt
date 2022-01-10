@@ -288,5 +288,14 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))")
             }
         }
+
+        val MIGRATION_40_41: Migration = object : Migration(40, 41) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN banner TEXT")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN ordered_at INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN added INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("UPDATE sticker_albums SET added = 1")
+            }
+        }
     }
 }

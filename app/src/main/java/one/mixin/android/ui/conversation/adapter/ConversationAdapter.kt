@@ -937,6 +937,8 @@ class ConversationAdapter(
 
         open fun onImageClick(messageItem: MessageItem, view: View) {}
 
+        open fun onStickerClick(messageItem: MessageItem) {}
+
         open fun onFileClick(messageItem: MessageItem) {}
 
         open fun onAudioFileClick(messageItem: MessageItem) {}

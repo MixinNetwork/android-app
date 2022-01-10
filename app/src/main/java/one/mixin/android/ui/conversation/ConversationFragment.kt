@@ -142,6 +142,8 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshStickerAlbumJob.Companion.PREF_REFRESH_STICKER_ALBUM
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
@@ -171,6 +173,7 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.home.runIntervalTask
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.player.FloatingPlayer
@@ -183,6 +186,7 @@ import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
+import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
@@ -690,6 +694,11 @@ class ConversationFragment() :
                 }
             }
 
+            override fun onStickerClick(messageItem: MessageItem) {
+                StickerPreviewBottomSheetFragment.newInstance(requireNotNull(messageItem.stickerId))
+                    .showNow(parentFragmentManager, StickerPreviewBottomSheetFragment.TAG)
+            }
+
             @TargetApi(Build.VERSION_CODES.O)
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
@@ -1122,6 +1131,7 @@ class ConversationFragment() :
 
         checkPeerIfNeeded()
         checkTranscript()
+        refreshStickerAlbum()
     }
 
     private var paused = false
@@ -3169,6 +3179,11 @@ class ConversationFragment() :
                 }
         }
     }
+
+    private fun refreshStickerAlbum() =
+        runIntervalTask(PREF_REFRESH_STICKER_ALBUM, INTERVAL_24_HOURS) {
+            jobManager.addJobInBackground(RefreshStickerAlbumJob())
+        }
 
     private fun sendTranscript(transcriptData: TranscriptData) {
         try {

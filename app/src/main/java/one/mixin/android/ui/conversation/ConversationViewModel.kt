@@ -73,6 +73,8 @@ import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerAlbumAdded
+import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
@@ -484,11 +486,29 @@ internal constructor(
         }
     }
 
-    fun getSystemAlbums() = accountRepository.getSystemAlbums()
+    fun observeSystemAddedAlbums() = accountRepository.observeSystemAddedAlbums()
+
+    fun observeSystemAlbums() = accountRepository.observeSystemAlbums()
 
     suspend fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
 
     fun observeStickers(id: String) = accountRepository.observeStickers(id)
+
+    suspend fun findStickersByAlbumId(albumId: String) = accountRepository.findStickersByAlbumId(albumId)
+
+    suspend fun findStickerById(stickerId: String) = accountRepository.findStickerById(stickerId)
+
+    suspend fun findAlbumById(albumId: String) = accountRepository.findAlbumById(albumId)
+
+    fun observeAlbumById(albumId: String) = accountRepository.observeAlbumById(albumId)
+
+    suspend fun updateAlbumOrders(orders: List<StickerAlbumOrder>) = withContext(Dispatchers.IO) {
+        accountRepository.updateAlbumOrders(orders)
+    }
+
+    suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = accountRepository.updateAlbumAdded(stickerAlbumAdded)
+
+    suspend fun findMaxOrder() = accountRepository.findMaxOrder()
 
     fun observePersonalStickers() = accountRepository.observePersonalStickers()
 
@@ -498,6 +518,24 @@ internal constructor(
         viewModelScope.launch {
             accountRepository.updateUsedAt(stickerId, System.currentTimeMillis().toString())
         }
+    }
+
+    suspend fun findOrRefreshAlbum(albumId: String): List<Sticker>? = withContext(Dispatchers.IO) {
+        val stickers = findStickersByAlbumId(albumId)
+        if (!stickers.isNullOrEmpty()) {
+            return@withContext stickers
+        }
+        return@withContext handleMixinResponse(
+            invokeNetwork = { accountRepository.getStickersByAlbumIdSuspend(albumId) },
+            successBlock = {
+                it.data?.let { stickers ->
+                    for (s in stickers) {
+                        accountRepository.addStickerWithoutRelationship(s)
+                    }
+                    stickers
+                }
+            }
+        )
     }
 
     fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>>? {

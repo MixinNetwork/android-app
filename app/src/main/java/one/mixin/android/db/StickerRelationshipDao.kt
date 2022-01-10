@@ -12,6 +12,9 @@ interface StickerRelationshipDao : BaseDao<StickerRelationship> {
     @Query("SELECT s.* FROM sticker_relationships sr INNER JOIN stickers s ON s.sticker_id = sr.sticker_id WHERE sr.album_id = :id ORDER BY s.created_at DESC")
     fun observeStickersByAlbumId(id: String): LiveData<List<Sticker>>
 
+    @Query("SELECT s.* FROM sticker_relationships sr INNER JOIN stickers s ON s.sticker_id = sr.sticker_id WHERE sr.album_id = :id ORDER BY s.created_at DESC")
+    suspend fun findStickersByAlbumId(id: String): List<Sticker>
+
     @Query(
         """
         SELECT s.* FROM sticker_albums sa

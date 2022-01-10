@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:background="?bg_white"
+    android:foreground="?attr/selectableItemBackground">
+
+    <ImageView
+        android:id="@+id/delete_iv"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="12dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="16dp"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_delete_red"
+        android:contentDescription="@string/delete"/>
+
+    <ImageView
+        android:id="@+id/sticker_iv"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_toEndOf="@id/delete_iv"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/sticker"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toEndOf="@id/sticker_iv"
+        android:layout_toStartOf="@id/sort_iv"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
+
+        <Space
+            android:id="@+id/center"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerVertical="true"/>
+
+        <TextView
+            android:id="@+id/name_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/center"
+            android:layout_marginBottom="2dp"
+            android:textColor="?attr/text_primary"/>
+
+        <TextView
+            android:id="@+id/desc_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/center"
+            android:layout_marginTop="2dp"
+            android:textSize="12sp"
+            android:textColor="?attr/text_minor"/>
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/sort_iv"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/ic_sort"
+        android:padding="8dp"
+        android:contentDescription="@string/sort_by"/>
+</RelativeLayout>

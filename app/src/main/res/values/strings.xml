@@ -1094,4 +1094,13 @@
     <string name="network_operator">NetworkOperator</string>
     <string name="parse_dns_result">Parse DNS result: </string>
     <string name="diagnosis_complete">Diagnosis Complete</string>
+
+    <!--  sticker store  -->
+    <string name="sticker_store">Sticker Store</string>
+    <string name="sticker_store_add">Add</string>
+    <string name="sticker_store_added">Added</string>
+    <string name="sticker_store_add_stickers">Add Stickers</string>
+    <string name="sticker_store_remove_stickers">Remove Stickers</string>
+    <string name="sticker_my">My Stickers</string>
+    <string name="sticker_none">NO STICKER</string>
 </resources>
