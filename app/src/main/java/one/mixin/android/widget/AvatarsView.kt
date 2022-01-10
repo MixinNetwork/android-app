@@ -10,9 +10,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.forEachReversedWithIndex
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.User
-import org.jetbrains.anko.collections.forEachReversedWithIndex
 
 class AvatarsView : ViewGroup {
     companion object {

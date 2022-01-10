@@ -18,6 +18,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.graphics.Point
@@ -40,11 +41,15 @@ import android.provider.Browser
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.TypedValue
 import android.view.Window
 import android.view.WindowManager
+import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -75,10 +80,6 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
-import org.jetbrains.anko.configuration
-import org.jetbrains.anko.displayMetrics
-import org.jetbrains.anko.notificationManager
-import org.jetbrains.anko.textColorResource
 import timber.log.Timber
 import java.io.File
 import java.util.Locale
@@ -111,7 +112,26 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     return b
 }
 
-fun Context.runOnUIThread(runnable: Runnable, delay: Long = 0L) {
+fun Context.getString(@StringRes resId: Int, vararg formatArgs: Any): String {
+    return resources.getString(resId, formatArgs)
+}
+
+inline val Context.layoutInflater: android.view.LayoutInflater
+    get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
+
+fun Context.runOnUiThread(f: Context.() -> Unit, delay: Long = 0L) {
+    if (delay == 0L) {
+        uiHandler.post { f() }
+    } else {
+        uiHandler.postDelayed({ f() }, delay)
+    }
+}
+
+fun Context.runOnUiThread(f: Context.() -> Unit) {
+    runOnUiThread(f, 0L)
+}
+
+fun Context.runOnUiThread(runnable: Runnable, delay: Long = 0L) {
     if (delay == 0L) {
         uiHandler.post(runnable)
     } else {
@@ -119,7 +139,7 @@ fun Context.runOnUIThread(runnable: Runnable, delay: Long = 0L) {
     }
 }
 
-fun Context.cancelRunOnUIThread(runnable: Runnable) {
+fun Context.cancelRunOnUiThread(runnable: Runnable) {
     uiHandler.removeCallbacks(runnable)
 }
 
@@ -229,6 +249,33 @@ fun Context.dpToPx(dp: Float): Int {
 
 fun Context.spToPx(sp: Float): Int {
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics).toInt()
+}
+
+var Context.displayMetrics: DisplayMetrics
+    get() = resources.displayMetrics
+    @Deprecated("Property does not have a setter")
+    private set(value) = error("Property does not have a setter")
+
+@ColorInt
+fun Context.colorAttr(@AttrRes attribute: Int): Int = theme.color(attribute)
+
+fun Resources.Theme.attr(@AttrRes attribute: Int): TypedValue {
+    val typedValue = TypedValue()
+    if (!resolveAttribute(attribute, typedValue, true)) {
+        throw IllegalArgumentException("Failed to resolve attribute: $attribute")
+    }
+
+    return typedValue
+}
+
+@ColorInt
+fun Resources.Theme.color(@AttrRes attribute: Int): Int {
+    val attr = attr(attribute)
+    if (attr.type < TypedValue.TYPE_FIRST_COLOR_INT || attr.type > TypedValue.TYPE_LAST_COLOR_INT) {
+        throw IllegalArgumentException("Attribute value type is not color: $attribute")
+    }
+
+    return attr.data
 }
 
 fun Context.getPixelsInCM(cm: Float, isX: Boolean): Float =
@@ -811,7 +858,7 @@ fun Context.isNightMode(): Boolean {
             Constants.Theme.THEME_AUTO_ID
         )
         return if (currentId == Constants.Theme.THEME_AUTO_ID) {
-            configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+            resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         } else {
             currentId == Constants.Theme.THEME_NIGHT_ID
         }
@@ -1020,3 +1067,6 @@ inline fun <reified T> Fragment.findListener(): T? {
 
     return requireActivity() as? T
 }
+
+val Context.notificationManager: NotificationManager
+    get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

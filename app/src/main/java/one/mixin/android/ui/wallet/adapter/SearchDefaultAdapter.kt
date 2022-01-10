@@ -12,10 +12,10 @@ import one.mixin.android.databinding.ItemWalletSearchBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.TopAssetItem
-import org.jetbrains.anko.textColorResource
 import java.math.BigDecimal
 
 class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyclerHeadersAdapter<SearchDefaultAdapter.HeaderViewHolder> {

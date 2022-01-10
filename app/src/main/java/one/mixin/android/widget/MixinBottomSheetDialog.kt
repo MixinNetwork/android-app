@@ -13,10 +13,10 @@ import android.view.animation.DecelerateInterpolator
 import androidx.core.view.updateLayoutParams
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import one.mixin.android.extension.backgroundDrawable
+import one.mixin.android.extension.displayMetrics
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.isWideScreen
-import org.jetbrains.anko.backgroundDrawable
-import org.jetbrains.anko.displayMetrics
 import kotlin.math.abs
 
 class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {

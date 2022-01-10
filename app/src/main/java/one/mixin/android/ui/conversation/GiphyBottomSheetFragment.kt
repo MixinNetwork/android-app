@@ -15,6 +15,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGiphySearchBottomSheetBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.realSize
@@ -29,7 +30,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.dip
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -69,7 +69,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private val totalGifs = mutableListOf<Gif>()
 
     private val padding: Int by lazy {
-        requireContext().dip(PADDING)
+        PADDING.dp
     }
 
     var callback: Callback? = null

@@ -22,8 +22,8 @@ import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.sp
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.sp
 
 class CircleProgress @JvmOverloads constructor(
     context: Context,
@@ -53,7 +53,7 @@ class CircleProgress @JvmOverloads constructor(
 
     private var mProgress = 0
     private var mMaxProgress = 100
-    private var mTextSize = context.sp(12)
+    private var mTextSize = 12.sp
     private val mSize: Int
     private val mShadowColor: Int
     private val mProgressColor: Int
@@ -69,7 +69,7 @@ class CircleProgress @JvmOverloads constructor(
         get() = mProgress.toFloat()
 
     private val cornerRadius by lazy {
-        context.dip(3f).toFloat()
+        3.dp.toFloat()
     }
 
     private val drawable: PlayPauseDrawable = PlayPauseDrawable().apply {
@@ -79,10 +79,11 @@ class CircleProgress @JvmOverloads constructor(
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.CircleProgress, defStyleAttr, 0)
-        mSize = a.getDimensionPixelSize(R.styleable.CircleProgress_size, context.dip(40))
+        mSize = a.getDimensionPixelSize(R.styleable.CircleProgress_size, 40.dp)
         mBorderWidth = a.getDimensionPixelSize(
             R.styleable.CircleProgress_progressWidth,
-            context.dip(DEFAULT_BORDER_WIDTH)
+
+            DEFAULT_BORDER_WIDTH.dp
         )
         mShadowColor = a.getColor(R.styleable.CircleProgress_shadowColor, Color.WHITE)
         mProgressColor = a.getColor(R.styleable.CircleProgress_progressColor, Color.BLUE)

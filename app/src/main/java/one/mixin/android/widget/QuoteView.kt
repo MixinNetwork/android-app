@@ -13,6 +13,7 @@ import androidx.core.widget.TextViewCompat
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewQuoteBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.generateConversationPath
@@ -28,7 +29,6 @@ import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
-import org.jetbrains.anko.dip
 import java.io.File
 
 class QuoteView constructor(context: Context, attrs: AttributeSet) :
@@ -37,7 +37,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
     private val binding = ViewQuoteBinding.inflate(LayoutInflater.from(context), this)
 
     init {
-        round(dip(4))
+        round(4.dp)
     }
 
     fun bind(quoteMessageItem: QuoteMessageItem?) {
@@ -73,9 +73,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 setIcon()
             }
             quoteMessageItem.type == MessageCategory.MESSAGE_RECALL.name -> {
@@ -89,9 +89,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 setIcon(R.drawable.ic_type_recall)
             }
             quoteMessageItem.type.endsWith("_IMAGE") -> {
@@ -104,9 +104,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
             }
             quoteMessageItem.type.endsWith("_VIDEO") -> {
                 binding.replyIv.loadImageCenterCrop(
@@ -118,9 +118,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
             }
             quoteMessageItem.type.endsWith("_LIVE") -> {
                 binding.replyIv.loadImageCenterCrop(
@@ -132,9 +132,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
             }
             quoteMessageItem.type.endsWith("_DATA") -> {
                 quoteMessageItem.mediaName.notNullWithElse(
@@ -149,9 +149,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_POST") -> {
                 binding.replyContentTv.setText(R.string.post)
@@ -159,9 +159,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_TRANSCRIPT") -> {
                 binding.replyContentTv.setText(R.string.transcript)
@@ -169,9 +169,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_LOCATION") -> {
                 binding.replyContentTv.setText(R.string.location)
@@ -179,9 +179,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_AUDIO") -> {
                 quoteMessageItem.mediaDuration.notNullWithElse(
@@ -196,9 +196,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
             }
             quoteMessageItem.type.endsWith("_STICKER") -> {
                 binding.replyContentTv.setText(R.string.common_sticker)
@@ -210,9 +210,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
             }
             quoteMessageItem.type.endsWith("_CONTACT") -> {
                 binding.replyContentTv.text = quoteMessageItem.sharedUserIdentityNumber
@@ -226,9 +226,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyAvatar.visibility = View.VISIBLE
                 binding.replyIv.visibility = View.INVISIBLE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(16)
+                    16.dp
             }
             quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessageItem.type == MessageCategory.APP_CARD.name -> {
                 binding.replyContentTv.setText(R.string.extensions)
@@ -236,9 +236,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
                 (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
                 (binding.replyNameTv.layoutParams as LayoutParams).marginEnd =
-                    dip(8)
+                    8.dp
             }
             else -> {
                 binding.replyIv.visibility = View.GONE

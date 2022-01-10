@@ -44,6 +44,8 @@ import one.mixin.android.databinding.ActivityMediaPagerBinding
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
 import one.mixin.android.databinding.ViewDragImageBottomBinding
 import one.mixin.android.databinding.ViewDragVideoBottomBinding
+import one.mixin.android.extension.async
+import one.mixin.android.extension.backgroundDrawable
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
@@ -60,6 +62,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsPie
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
@@ -83,10 +86,6 @@ import one.mixin.android.vo.saveToLocal
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.gallery.MimeType
-import org.jetbrains.anko.backgroundDrawable
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.textColor
-import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -297,11 +296,11 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                 .subscribe(
                     { granted ->
                         if (granted) {
-                            doAsync {
+                            async {
                                 val path = item.mediaUrl?.toUri()?.getFilePath()
                                 if (path == null) {
                                     toast(R.string.save_failure)
-                                    return@doAsync
+                                    return@async
                                 }
                                 val file = File(path)
                                 val outFile = when {
@@ -326,7 +325,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                                         Uri.fromFile(outFile)
                                     )
                                 )
-                                uiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
+                                runOnUiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
                             }
                         } else {
                             openPermissionSetting()

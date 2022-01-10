@@ -9,6 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutRecyclerViewBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -17,7 +18,6 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MessageItem
-import org.jetbrains.anko.dip
 
 @AndroidEntryPoint
 class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
@@ -38,7 +38,7 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
     }
 
     private val padding: Int by lazy {
-        requireContext().dip(PADDING)
+        PADDING.dp
     }
 
     private val adapter = MediaAdapter(

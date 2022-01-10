@@ -12,12 +12,12 @@ import androidx.camera.core.impl.utils.futures.Futures
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentScanBinding
+import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.util.viewBinding
-import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 
 @AndroidEntryPoint

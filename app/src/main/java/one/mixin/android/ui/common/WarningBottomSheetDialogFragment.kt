@@ -5,10 +5,10 @@ import android.app.Dialog
 import android.os.CountDownTimer
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWarningBottomSheetBinding
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.textColor
 
 class WarningBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {

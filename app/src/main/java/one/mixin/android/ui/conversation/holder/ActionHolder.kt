@@ -6,6 +6,11 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.databinding.ItemChatActionBinding
+import one.mixin.android.extension.bottomPadding
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.leftPadding
+import one.mixin.android.extension.rightPadding
+import one.mixin.android.extension.topPadding
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.ColorUtil
@@ -13,11 +18,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.ActionButton
-import org.jetbrains.anko.bottomPadding
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.leftPadding
-import org.jetbrains.anko.rightPadding
-import org.jetbrains.anko.topPadding
 
 class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHolder(binding.root) {
 
@@ -55,7 +55,7 @@ class ActionHolder constructor(val binding: ItemChatActionBinding) : BaseViewHol
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }

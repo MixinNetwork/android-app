@@ -7,7 +7,7 @@ import android.widget.Checkable
 import android.widget.LinearLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewCallButtonBinding
-import org.jetbrains.anko.backgroundResource
+import one.mixin.android.extension.backgroundResource
 
 class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, attr), Checkable {
 

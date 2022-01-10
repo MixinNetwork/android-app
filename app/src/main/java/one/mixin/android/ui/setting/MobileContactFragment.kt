@@ -21,11 +21,11 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
-import org.jetbrains.anko.textColorResource
 
 @AndroidEntryPoint
 class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_contact) {

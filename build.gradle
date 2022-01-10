@@ -39,7 +39,6 @@ buildscript {
         ext.loggerVersion = '2.2.0'
         ext.kotlin_version = '1.6.10'
         ext.libphonenumberVersion = '8.12.40'
-        ext.anko_version = '0.10.8'
         ext.coroutines_version = '1.6.0'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
@@ -140,7 +139,6 @@ allprojects {
         //noinspection JcenterRepositoryObsolete
         jcenter() {
             content {
-                includeGroup("org.jetbrains.anko")
                 includeModule("jp.wasabeef", "glide-transformations")
                 includeModule("com.dmitrymalkovich.android", "progress-fab")
                 includeModule("com.github.warkiz.widget", "indicatorseekbar")

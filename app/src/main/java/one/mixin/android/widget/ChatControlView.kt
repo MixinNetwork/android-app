@@ -48,6 +48,7 @@ import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewChatControlBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
@@ -60,7 +61,6 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.KeyboardLayout
-import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -846,7 +846,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private var startTime = 0L
     private var triggeredCancel = false
     private var hasStartRecord = false
-    private var maxScrollX = context.dip(100f)
+    private var maxScrollX = 100.dp
     var calling = false
 
     @SuppressLint("ClickableViewAccessibility")

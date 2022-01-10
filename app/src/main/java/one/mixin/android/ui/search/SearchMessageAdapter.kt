@@ -8,12 +8,12 @@ import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchMessageBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SearchMessageDetailItem
-import org.jetbrains.anko.dip
 
 class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, SearchMessageHolder>(SearchMessageDetailItem.DIFF_CALLBACK) {
     var query: String = ""
@@ -37,13 +37,13 @@ class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, Searc
 class SearchMessageHolder(val binding: ItemSearchMessageBinding) : RecyclerView.ViewHolder(binding.root) {
     private val fileIcon: Drawable? by lazy {
         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file).apply {
-            this?.setBounds(0, 0, itemView.dip(12f), itemView.dip(12f))
+            this?.setBounds(0, 0, 12f.dp, 12f.dp)
         }
     }
 
     private val contactIcon: Drawable? by lazy {
         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact).apply {
-            this?.setBounds(0, 0, itemView.dip(12f), itemView.dip(12f))
+            this?.setBounds(0, 0, 12f.dp, 12f.dp)
         }
     }
 

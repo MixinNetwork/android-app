@@ -5,8 +5,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
-import org.jetbrains.anko.dip
 import kotlin.math.max
 
 open class FlowLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) :
@@ -32,8 +32,8 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
         val ta = context.obtainStyledAttributes(attrs, R.styleable.FlowLayout)
         mGravity = ta.getInt(R.styleable.FlowLayout_tag_gravity, LEFT)
         singleLine = ta.getBoolean(R.styleable.FlowLayout_singleLine, false)
-        maxWidth = ta.getDimensionPixelSize(R.styleable.FlowLayout_flow_max_width, dip(300))
-        round(dip(8f))
+        maxWidth = ta.getDimensionPixelSize(R.styleable.FlowLayout_flow_max_width, 300.dp)
+        round(8.dp)
         ta.recycle()
     }
 

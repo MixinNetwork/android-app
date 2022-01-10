@@ -16,9 +16,9 @@ import androidx.annotation.MainThread
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewVerificationCodeBinding
+import one.mixin.android.extension.backgroundColor
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
-import org.jetbrains.anko.backgroundColor
 
 class VerificationCodeView : LinearLayout {
 

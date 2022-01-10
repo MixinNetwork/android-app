@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.forEachReversedWithIndex
 import one.mixin.android.extension.loadImage
-import org.jetbrains.anko.collections.forEachReversedWithIndex
 
 class FloatingAvatarsView : ViewGroup {
     companion object {

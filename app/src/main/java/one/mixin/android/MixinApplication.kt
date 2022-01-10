@@ -30,6 +30,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.BlazeMessageService
@@ -57,7 +58,6 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.disconnect
-import org.jetbrains.anko.notificationManager
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean

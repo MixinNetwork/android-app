@@ -17,6 +17,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentStickerBinding
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.clear
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.realSize
@@ -34,7 +35,6 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
 import one.mixin.android.widget.RLottieImageView
-import org.jetbrains.anko.dip
 
 @AndroidEntryPoint
 class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
@@ -73,7 +73,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
     }
 
     private val padding: Int by lazy {
-        requireContext().dip(PADDING)
+        PADDING.dp
     }
 
     var rvCallback: DraggableRecyclerView.Callback? = null
@@ -191,8 +191,8 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
             val item = (holder.itemView as ViewGroup).getChildAt(0) as RLottieImageView
             if (position == 0 && needAdd) {
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
-                    width = size - ctx.dip(50)
-                    height = size - ctx.dip(50)
+                    width = size - 50.dp
+                    height = size - 50.dp
                 }
                 item.clear()
                 item.setImageResource(R.drawable.ic_add_stikcer)
