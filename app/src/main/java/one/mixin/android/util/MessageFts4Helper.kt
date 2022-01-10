@@ -105,4 +105,14 @@ object MessageFts4Helper {
         val content = text.joinWhiteSpace()
         messageFts4Dao.insert(MessageFts4(messageId, content))
     }
+
+    fun genMessageFts4s(messages: List<Message>): List<MessageFts4> {
+        val fts4s = mutableListOf<MessageFts4>()
+        messages.forEach { message ->
+            val name = message.name.joinWhiteSpace()
+            val content = message.content.joinWhiteSpace()
+            fts4s.add(MessageFts4(message.id, name + content))
+        }
+        return fts4s
+    }
 }

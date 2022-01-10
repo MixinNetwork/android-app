@@ -5,7 +5,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import androidx.room.Transaction
 import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
@@ -373,6 +372,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE id = :messageId")
     fun findMessageIdById(messageId: String): String?
 
+    @Query("SELECT id FROM messages WHERE id IN (:ids)")
+    fun findMessageIdsByIds(ids: List<String>): List<String>
+
     @Query("SELECT DISTINCT conversation_id FROM messages WHERE id IN (:messages)")
     fun findConversationsByMessages(messages: List<String>): List<String>
 
@@ -547,14 +549,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
-
-    @Transaction
-    fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
-        insert(message)
-        if (userId != message.userId) {
-            conversationDao.unseenMessageCount(message.conversationId, userId)
-        }
-    }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
