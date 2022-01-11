@@ -16,7 +16,7 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
     private val settingView get() = binding.headerSettings
 
     enum class Type {
-        Notification, EmergencyContact, NewWallet
+        NewWallet, Notification, EmergencyContact
     }
 
     private var type: Type = Type.NewWallet
