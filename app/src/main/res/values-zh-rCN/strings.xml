@@ -746,6 +746,8 @@
     <string name="notification_settings">设置</string>
     <string name="notification_title">打开通知</string>
     <string name="notification_content">不再遗漏好友的消息。</string>
+    <string name="notification_new_wallet_title">设置钱包</string>
+    <string name="notification_new_wallet_content">创建你的钱包，来发送或者接收资产。</string>
     <!--auth-->
     <string name="auth_request">需要访问你的</string>
     <string name="auth_public_profile">个人资料(必须)</string>
