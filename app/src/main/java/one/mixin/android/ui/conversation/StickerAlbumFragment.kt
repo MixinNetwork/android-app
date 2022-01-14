@@ -33,7 +33,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
-import timber.log.Timber
 import kotlin.math.abs
 
 @AndroidEntryPoint
@@ -206,7 +205,6 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                     val curY = event.y
                     val deltaX = curX - lastX
                     val deltaY = curY - lastY
-                    Timber.d("@@@ move curX: $curX, curY: $curY, deltaX: $deltaX, deltaY: $deltaY")
                     return if (deltaX > 0 && direction == SwipeDirection.RIGHT) {
                         false
                     } else {
@@ -221,7 +219,6 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                 }
 
                 MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                    Timber.d("@@@ ${event.action}, x: ${event.x}, y: ${event.y}, lastX: $lastX, lastY: $lastY")
                     binding.viewPager.endFakeDrag()
                 }
             }
