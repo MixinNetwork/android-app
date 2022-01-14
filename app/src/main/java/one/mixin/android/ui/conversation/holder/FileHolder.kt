@@ -21,6 +21,7 @@ import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.isSecret
 
 class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
 
@@ -102,8 +103,8 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
             messageItem.createdAt,
             MessageStatus.DELIVERED.name,
             false,
-            isRepresentative = false,
-            isSecret = false,
+            isRepresentative = isRepresentative,
+            isSecret = messageItem.isSecret(),
             isWhite = false
         )
         binding.bottomLayout.seekBar.setOnSeekBarChangeListener(
