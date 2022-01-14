@@ -91,6 +91,7 @@ import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
+import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.job.TranscriptAttachmentUpdateJob
@@ -281,6 +282,7 @@ class MainActivity : BlazeBaseActivity() {
         checkRoot()
         checkUpdate()
         checkStorage()
+        refreshStickerAlbum()
         sendSafetyNetRequest()
         checkBatteryOptimization()
 
@@ -405,6 +407,11 @@ class MainActivity : BlazeBaseActivity() {
             BiometricUtil.deleteKey(this)
         }
     }
+
+    private fun refreshStickerAlbum() =
+        runIntervalTask(RefreshStickerAlbumJob.PREF_REFRESH_STICKER_ALBUM, INTERVAL_24_HOURS) {
+            jobManager.addJobInBackground(RefreshStickerAlbumJob())
+        }
 
     private fun sendSafetyNetRequest() {
         if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
