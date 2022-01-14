@@ -5,11 +5,18 @@
     android:layout_height="match_parent"
     android:background="?attr/bg_white">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/view_pager"
+    <android.gesture.GestureOverlayView
+        android:id="@+id/touch_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/album_tl"/>
+        android:layout_above="@id/album_tl"
+        android:gestureColor="@android:color/transparent">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </android.gesture.GestureOverlayView>
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/album_tl"

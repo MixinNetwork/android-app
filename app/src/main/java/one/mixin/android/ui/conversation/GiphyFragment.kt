@@ -75,6 +75,8 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
             giphyAdapter.setOnGiphyListener(
                 object : GiphyListener {
                     override fun onItemClick(pos: Int, image: Image, previewUrl: String) {
+                        if ((parentFragment as StickerAlbumFragment).changed) return
+
                         callback?.onGiphyClick(image, previewUrl)
                     }
 
