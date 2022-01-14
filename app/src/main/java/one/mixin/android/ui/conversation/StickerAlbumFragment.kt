@@ -1,13 +1,14 @@
 package one.mixin.android.ui.conversation
 
 import android.annotation.SuppressLint
+import android.gesture.GestureOverlayView
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -32,8 +33,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
-import one.mixin.android.widget.viewpager2.SwipeControlTouchListener
-import one.mixin.android.widget.viewpager2.SwipeDirection
+import kotlin.math.abs
 
 @AndroidEntryPoint
 class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
@@ -104,7 +104,8 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                 }
             }
             viewPager.adapter = albumAdapter
-            (binding.viewPager.getChildAt(0) as? RecyclerView)?.addOnItemTouchListener(gestureListener)
+            viewPager.isUserInputEnabled = false
+            touchOverlay.addOnGestureListener(gestureOverlayListener)
             TabLayoutMediator(
                 albumTl,
                 viewPager
@@ -163,17 +164,81 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
         this.callback = callback
     }
 
-    private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageSelected(position: Int) {
-            if (position == TYPE_RECENT) {
-                gestureListener.direction = SwipeDirection.RIGHT
-            } else {
-                gestureListener.direction = SwipeDirection.ALL
+    private var direction = SwipeDirection.RIGHT
+    private var lastX = 0f
+    private var lastY = 0f
+
+    var changed = false
+
+    private val gestureOverlayListener = object : GestureOverlayView.OnGestureListener {
+        override fun onGestureStarted(overlay: GestureOverlayView?, event: MotionEvent?) {
+            handleOnTouchEvent(event)
+        }
+
+        override fun onGesture(overlay: GestureOverlayView?, event: MotionEvent?) {
+            handleOnTouchEvent(event)
+        }
+
+        override fun onGestureEnded(overlay: GestureOverlayView?, event: MotionEvent?) {
+            handleOnTouchEvent(event)
+        }
+
+        override fun onGestureCancelled(overlay: GestureOverlayView?, event: MotionEvent?) {
+            handleOnTouchEvent(event)
+        }
+
+        private fun handleOnTouchEvent(event: MotionEvent?): Boolean {
+            if (direction == SwipeDirection.NONE)
+                return false
+            when (event?.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    lastX = event.x
+                    lastY = event.y
+                    changed = false
+                    if (!binding.viewPager.isFakeDragging) {
+                        binding.viewPager.beginFakeDrag()
+                    }
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val curX = event.x
+                    val curY = event.y
+                    val deltaX = curX - lastX
+                    val deltaY = curY - lastY
+                    return if (deltaX > 0 && direction == SwipeDirection.RIGHT) {
+                        false
+                    } else {
+                        if (abs(deltaX) > abs(deltaY)) {
+                            binding.viewPager.fakeDragBy(deltaX)
+                            changed = true
+                        }
+                        lastX = curX
+                        lastY = curY
+                        true
+                    }
+                }
+
+                MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
+                    binding.viewPager.endFakeDrag()
+                }
             }
+            return true
         }
     }
 
-    private val gestureListener = SwipeControlTouchListener()
+    enum class SwipeDirection {
+        ALL, LEFT, RIGHT, NONE
+    }
+
+    private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageSelected(position: Int) {
+            direction = if (position == TYPE_RECENT) {
+                SwipeDirection.RIGHT
+            } else {
+                SwipeDirection.ALL
+            }
+        }
+    }
 
     interface Callback {
         fun onStickerClick(stickerId: String)
