@@ -764,6 +764,8 @@
     <string name="notification_settings">Settings</string>
     <string name="notification_title">Turn On Notifications</string>
     <string name="notification_content">Don\'t miss message from your friends.</string>
+    <string name="notification_new_wallet_title">Get a new wallet</string>
+    <string name="notification_new_wallet_content">Create your first digital wallet, all your digital assets in one wallet, easy send and receive cryptocurrency.</string>
     <!--auth-->
     <string name="auth_request">Requests access to your</string>
     <string name="auth_public_profile">Public profile (required)</string>

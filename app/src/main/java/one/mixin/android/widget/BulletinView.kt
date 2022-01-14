@@ -16,32 +16,39 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
     private val settingView get() = binding.headerSettings
 
     enum class Type {
-        Notification, EmergencyContact
+        NewWallet, Notification, EmergencyContact
     }
 
-    var type: Type = Type.Notification
-        set(value) {
-            if (field == value) return
+    private var type: Type = Type.NewWallet
 
-            field = value
-
-            if (value == Type.Notification) {
-                titleView.setText(R.string.notification_title)
-                contentView.setText(R.string.notification_content)
-                settingView.setText(R.string.notification)
-            } else {
-                titleView.setText(R.string.setting_emergency)
-                contentView.setText(R.string.setting_emergency_content)
-                settingView.setText(R.string.common_continue)
-            }
-        }
-
-    var callback: Callback? = null
+    private var callback: Callback? = null
 
     init {
         setBackgroundResource(R.drawable.bg_list_conversation_header)
         closeView.setOnClickListener { callback?.onClose() }
         settingView.setOnClickListener { callback?.onSetting() }
+    }
+
+    fun setTypeAndCallback(type: Type, callback: Callback) {
+        this.type = type
+        this.callback = callback
+        when (type) {
+            Type.NewWallet -> {
+                titleView.setText(R.string.notification_new_wallet_title)
+                contentView.setText(R.string.notification_new_wallet_content)
+                settingView.setText(R.string.common_continue)
+            }
+            Type.Notification -> {
+                titleView.setText(R.string.notification_title)
+                contentView.setText(R.string.notification_content)
+                settingView.setText(R.string.notification)
+            }
+            else -> {
+                titleView.setText(R.string.setting_emergency)
+                contentView.setText(R.string.setting_emergency_content)
+                settingView.setText(R.string.common_continue)
+            }
+        }
     }
 
     interface Callback {
