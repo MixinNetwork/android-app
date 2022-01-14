@@ -8,14 +8,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
+import one.mixin.android.db.insertAndNotifyConversation
+import one.mixin.android.db.insertNoReplace
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.CallStateLiveData
-import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.webrtc.DEFAULT_IGNORE_MINUTES
 import one.mixin.android.webrtc.DEFAULT_TIMEOUT_MINUTES
@@ -33,6 +36,7 @@ import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.webrtc.receivePublish
 import one.mixin.android.webrtc.remoteEnd
 import one.mixin.android.webrtc.remoteFailed
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
@@ -59,16 +63,12 @@ class DecryptCallMessage(
 
     private val listPendingCandidateMap = ArrayMap<String, ArrayList<IceCandidate>>()
 
-    val pendingMessages = mutableListOf<Message>()
-    val pendingACKs = mutableListOf<BlazeAckMessage>()
-    val pendingMessageHistories = mutableListOf<String>()
-
     fun onRun(data: BlazeMessageData) {
         try {
             syncConversation(data)
             when {
                 isExistMessage(data.messageId) -> {
-                    pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
                 }
                 data.category.startsWith("WEBRTC_") -> {
                     processWebRTC(data)
@@ -77,13 +77,13 @@ class DecryptCallMessage(
                     processKraken(data)
                 }
                 else -> {
-                    pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
                 }
             }
             notifyServer(data)
         } catch (e: Exception) {
             Timber.e("$TAG_CALL DecryptCallMessage failure, $e")
-            pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.DELIVERED.name))
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
@@ -102,7 +102,7 @@ class DecryptCallMessage(
                         data.createdAt,
                         data.status
                     )
-                    pendingMessages.add(message)
+                    database.insertAndNotifyConversation(message)
                 } else if (data.category == MessageCategory.KRAKEN_PUBLISH.name || data.category == MessageCategory.KRAKEN_END.name) {
                     // ignore KRAKEN_PUBLISH, KRAKEN_END from listPending 1 hour away
                     if (!isIgnored(data)) {
@@ -132,7 +132,7 @@ class DecryptCallMessage(
                                     MessageStatus.SENDING.name,
                                     null
                                 )
-                                pendingMessages.add(savedMessage)
+                                database.insertAndNotifyConversation(savedMessage)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
                             }
                         }
@@ -208,7 +208,7 @@ class DecryptCallMessage(
                                     curData.status,
                                     m.quoteMessageId
                                 )
-                                pendingMessages.add(savedMessage)
+                                database.insertAndNotifyConversation(savedMessage)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
                             }
                         }
@@ -227,7 +227,7 @@ class DecryptCallMessage(
                     data.createdAt,
                     data.status
                 )
-                pendingMessages.add(message)
+                database.insertAndNotifyConversation(message)
             }
         } else {
             processCall(data)
@@ -295,7 +295,7 @@ class DecryptCallMessage(
                     data.createdAt,
                     data.status
                 )
-                pendingMessages.add(message)
+                database.insertAndNotifyConversation(message)
             }
         } else {
             when (data.category) {
@@ -374,8 +374,12 @@ class DecryptCallMessage(
     }
 
     private fun notifyServer(data: BlazeMessageData) {
-        pendingACKs.add(BlazeAckMessage(data.messageId, MessageStatus.READ.name))
-        pendingMessageHistories.add(data.messageId)
+        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        messageHistoryDao.insert(MessageHistory(data.messageId))
+    }
+
+    private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
+        jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
     private fun saveCallMessage(
@@ -405,6 +409,6 @@ class DecryptCallMessage(
             messageStatus,
             mediaDuration = duration
         )
-        pendingMessages.add(message)
+        database.insertAndNotifyConversation(message)
     }
 }

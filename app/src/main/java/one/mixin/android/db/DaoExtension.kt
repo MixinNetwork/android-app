@@ -211,13 +211,6 @@ fun JobDao.insertNoReplace(job: Job) {
     }
 }
 
-fun JobDao.insertNoReplaceList(jobs: List<Job>) {
-    val ids = jobs.map { it.jobId }
-    val exists = findJobsByIds(ids).toSet()
-    val candidates = jobs.filter { !exists.contains(it.jobId) }
-    insertList(candidates)
-}
-
 fun MixinDatabase.deleteMessage(id: String) {
     runInTransaction {
         messageDao().deleteMessageById(id)
