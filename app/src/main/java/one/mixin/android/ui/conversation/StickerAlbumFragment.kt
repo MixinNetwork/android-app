@@ -19,10 +19,10 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentStickerAlbumBinding
 import one.mixin.android.databinding.TabAlbumStoreBinding
 import one.mixin.android.event.AlbumEvent
+import one.mixin.android.extension.backgroundResource
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.PREF_NEW_ALBUM
-import one.mixin.android.extension.backgroundResource
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
