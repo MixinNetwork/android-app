@@ -28,7 +28,7 @@ class EncryptedProtocol {
         val version = byteArrayOf(0x01)
 
         // TODO Should try the encryptCipherMessageKey exception
-        return if (extensionSessionId != null && extensionSessionKey != null && extensionSessionKey.isNotEmpty() && extensionSessionKey.size == 32 ) {
+        return if (extensionSessionId != null && extensionSessionKey != null && extensionSessionKey.isNotEmpty() && extensionSessionKey.size == 32) {
             version.plus(toLeByteArray(2.toUInt())).plus(senderPublicKey).let {
                 val emergencyMessageKey =
                     encryptCipherMessageKey(privateKey.seed, extensionSessionKey, aesGcmKey)
