@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
+import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
@@ -45,7 +46,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.setOnLongClickListener {
+        val longClickListener = View.OnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -53,6 +54,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
                 true
             }
         }
+        itemView.setOnLongClickListener(longClickListener)
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
@@ -61,6 +63,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         binding.chatSticker.setOnClickListener {
             onItemListener.onStickerClick(messageItem)
         }
+        binding.chatSticker.setOnLongClickListener(longClickListener)
         if (messageItem.assetWidth == null || messageItem.assetHeight == null) {
             binding.chatSticker.layoutParams.width = dp120
             binding.chatSticker.layoutParams.height = dp120
