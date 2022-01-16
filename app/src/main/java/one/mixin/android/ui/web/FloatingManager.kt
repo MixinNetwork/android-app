@@ -6,9 +6,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
+import android.webkit.WebViewClient
 import androidx.annotation.ColorInt
 import androidx.core.view.drawToBitmap
-import androidx.webkit.WebViewClientCompat
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -97,7 +97,7 @@ fun updateClip(index: Int, webClip: WebClip) {
     if (index < clips.size) {
         if (clips[index].webView != webClip.webView) {
             clips[index].webView?.destroy()
-            clips[index].webView?.webViewClient = object : WebViewClientCompat() {}
+            clips[index].webView?.webViewClient = object : WebViewClient() {}
             clips[index].webView?.webChromeClient = null
         }
         clips.removeAt(index)
@@ -147,7 +147,7 @@ fun refresh() {
 fun releaseClip(index: Int) {
     if (index < clips.size && index >= 0) {
         clips[index].webView?.destroy()
-        clips[index].webView?.webViewClient = object : WebViewClientCompat() {}
+        clips[index].webView?.webViewClient = object : WebViewClient() {}
         clips[index].webView?.webChromeClient = null
         clips.removeAt(index)
         if (clips.isEmpty()) {
@@ -193,7 +193,7 @@ fun replaceApp(app: App) {
 fun releaseAll() {
     clips.forEach { clip ->
         clip.webView?.destroy()
-        clip.webView?.webViewClient = object : WebViewClientCompat() {}
+        clip.webView?.webViewClient = object : WebViewClient() {}
         clip.webView?.webChromeClient = null
     }
     clips.clear()

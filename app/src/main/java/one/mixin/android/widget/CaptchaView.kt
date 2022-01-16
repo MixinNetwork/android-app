@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import androidx.webkit.WebViewClientCompat
+import android.webkit.WebViewClient
 import okio.buffer
 import okio.source
 import one.mixin.android.BuildConfig
@@ -41,7 +41,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         } else {
             webView.loadUrl("about:blank")
             hide()
-            webView.webViewClient = object : WebViewClientCompat() {}
+            webView.webViewClient = object : WebViewClient() {}
             toast(R.string.error_recaptcha_timeout)
             callback.onStop()
         }
@@ -52,7 +52,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     fun loadCaptcha(captchaType: CaptchaType) {
         this.captchaType = captchaType
         val isG = captchaType.isG()
-        webView.webViewClient = object : WebViewClientCompat() {
+        webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 context.runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
@@ -98,7 +98,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         webView.post {
             hide()
             webView.loadUrl("about:blank")
-            webView.webViewClient = object : WebViewClientCompat() {}
+            webView.webViewClient = object : WebViewClient() {}
             callback.onPostToken(Pair(captchaType, value))
         }
     }
