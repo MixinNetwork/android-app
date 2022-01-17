@@ -705,7 +705,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 } else {
                     val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
-                    if (sticker == null) {
+                    if (sticker == null || (mediaData.albumId != null && sticker.albumId == null)) {
                         jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                     }
                     createStickerMessage(

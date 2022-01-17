@@ -132,13 +132,13 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
             stickerRv.adapter = stickerAdapter
             stickerAdapter.setOnStickerListener(
                 object : StickerListener {
-                    override fun onItemClick(pos: Int, stickerId: String) {
+                    override fun onItemClick(pos: Int, stickerId: String, albumId: String?) {
                         if ((parentFragment as StickerAlbumFragment).changed) return
 
                         if (type != TYPE_RECENT) {
                             stickerViewModel.updateStickerUsedAt(stickerId)
                         }
-                        callback?.onStickerClick(stickerId)
+                        callback?.onStickerClick(stickerId, if (albumId != personalAlbumId) albumId else null)
                     }
 
                     override fun onAddClick() {
@@ -207,7 +207,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                 }
                 item.setImageDrawable(null)
                 item.loadSticker(s.assetUrl, s.assetType, "${s.assetUrl}${s.stickerId}-type$type")
-                item.setOnClickListener { listener?.onItemClick(position, s.stickerId) }
+                item.setOnClickListener { listener?.onItemClick(position, s.stickerId, s.albumId) }
             }
         }
 
@@ -227,7 +227,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
     private class StickerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     interface StickerListener {
-        fun onItemClick(pos: Int, stickerId: String)
+        fun onItemClick(pos: Int, stickerId: String, albumId: String?)
         fun onAddClick()
     }
 }

@@ -241,7 +241,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
     }
 
     interface Callback {
-        fun onStickerClick(stickerId: String)
+        fun onStickerClick(stickerId: String, albumId: String?)
         fun onGiphyClick(image: Image, previewUrl: String)
     }
 }
