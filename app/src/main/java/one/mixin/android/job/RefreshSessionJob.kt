@@ -18,7 +18,7 @@ class RefreshSessionJob(
         val response = userService.fetchSessionsSuspend(userIds)
         if (response.isSuccess) {
             val ps = response.data?.map { item ->
-                ParticipantSession(conversationId, item.userId, item.sessionId)
+                ParticipantSession(conversationId, item.userId, item.sessionId, publicKey = item.publicKey)
             }
             if (!ps.isNullOrEmpty()) {
                 participantSessionDao.insertList(ps)
