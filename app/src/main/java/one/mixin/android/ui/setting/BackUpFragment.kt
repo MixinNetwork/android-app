@@ -8,9 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.View.GONE
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.RequiresApi
@@ -33,7 +30,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBackupBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
@@ -73,17 +69,19 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         super.onAttach(context)
         if (!::resultRegistry.isInitialized) resultRegistry =
             requireActivity().activityResultRegistry
-        chooseFolderResult = registerForActivityResult(
-            ChooseFolderContract(),
-            resultRegistry,
-            ::callbackChooseFolder
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            chooseFolderResult = registerForActivityResult(
+                ChooseFolderContract(),
+                resultRegistry,
+                ::callbackChooseFolder
+            )
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            backupInfo.text = getString(R.string.backup_external_storage, "")
+            backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
             backupChoose.setOnClickListener {
                 chooseFolder()
             }
@@ -138,7 +136,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 findBackUp()
             }
             deleteBn.setOnClickListener {
-                deleteBn.visibility = GONE
+                deleteBn.isVisible = false
                 lifecycleScope.launch {
                     if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         deleteApi29(requireContext())
@@ -149,34 +147,37 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                         findBackUp()
                     } else {
                         withContext(Dispatchers.Main) {
-                            deleteBn.visibility = VISIBLE
+                            deleteBn.isVisible = true
                         }
                     }
                 }
             }
         }
         BackupJob.backupLiveData.observe(
-            viewLifecycleOwner,
-            {
-                if (it) {
-                    binding.backupBn.visibility = INVISIBLE
-                    binding.progressGroup.visibility = VISIBLE
-                } else {
-                    binding.backupBn.visibility = VISIBLE
-                    binding.progressGroup.visibility = GONE
-                    when (BackupJob.backupLiveData.result) {
-                        Result.SUCCESS -> findBackUp()
-                        Result.NO_AVAILABLE_MEMORY ->
-                            alertDialogBuilder()
-                                .setMessage(R.string.backup_no_available_memory)
-                                .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
-                                .show()
-                        Result.FAILURE -> toast(R.string.backup_failure_tip)
-                        else -> throw IllegalStateException("Unknown")
-                    }
+            viewLifecycleOwner
+        ) {
+            if (it) {
+                binding.backupChoose.isVisible = false
+                binding.backupBn.isInvisible = true
+                binding.progressGroup.isVisible = true
+                binding.deleteBn.isVisible = false
+            } else {
+                binding.backupChoose.isVisible = true
+                binding.backupBn.isInvisible = false
+                binding.progressGroup.isVisible = false
+                binding.deleteBn.isVisible = true
+                when (BackupJob.backupLiveData.result) {
+                    Result.SUCCESS -> findBackUp()
+                    Result.NO_AVAILABLE_MEMORY ->
+                        alertDialogBuilder()
+                            .setMessage(R.string.backup_no_available_memory)
+                            .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
+                            .show()
+                    Result.FAILURE -> toast(R.string.backup_failure_tip)
+                    else -> throw IllegalStateException("Unknown")
                 }
             }
-        )
+        }
     }
 
     private val options by lazy {
@@ -282,28 +283,18 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
         withContext(Dispatchers.Main) {
             if (viewDestroyed()) return@withContext
             binding.apply {
-                backupBn.isVisible = canUserAccessBackupDirectory(requireContext())
                 binding.backupProgress.isVisible = false
-                backupInfo.isInvisible = false
+                binding.backupInfo.isInvisible = false
                 if (info == null) {
                     backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
-                    backupSize.isVisible = false
                     backupPath.isVisible = false
-                    deleteBn.isVisible = false
                 } else {
                     val time = info.lastModified.run {
                         this.getRelativeTimeSpan()
                     }
                     backupPath.text = getString(R.string.restore_path, info.path)
-                    backupSize.text = getString(R.string.restore_size, info.length.fileSize())
-                    if (info.length <= 0L) {
-                        backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
-                    } else {
-                        backupInfo.text = getString(R.string.backup_external_storage, time)
-                    }
-                    backupSize.isVisible = true
+                    backupInfo.text = getString(R.string.backup_external_storage, time)
                     backupPath.isVisible = true
-                    deleteBn.isVisible = true
                 }
             }
         }

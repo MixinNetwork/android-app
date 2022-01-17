@@ -25,7 +25,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityRestoreBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -209,7 +208,6 @@ class RestoreActivity : BaseActivity() {
                     }
                 )
         }
-        binding.restoreSize.text = getString(R.string.restore_size, backupInfo.length.fileSize())
         binding.restoreSkip.setOnClickListener {
             InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)

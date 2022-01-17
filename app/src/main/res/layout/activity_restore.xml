@@ -41,18 +41,6 @@
         tools:text="1 mnute age" />
 
     <TextView
-        android:id="@+id/restore_size"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
-        android:text="@string/restore_found"
-        android:textColor="?attr/text_primary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/restore_time"
-        tools:text="Size: 100kB" />
-
-    <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="28dp"
@@ -63,7 +51,7 @@
         android:textColor="?attr/text_primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/restore_size" />
+        app:layout_constraintTop_toBottomOf="@id/restore_time"/>
 
     <Button
         android:id="@+id/restore_restore"

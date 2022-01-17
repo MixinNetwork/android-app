@@ -339,7 +339,7 @@ suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext
 ): BackupInfo? = internalFindBackup(context, coroutineContext)?.run {
-    BackupInfo(lastModified(), length(), absolutePath)
+    BackupInfo(lastModified(), absolutePath)
 }
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -373,27 +373,13 @@ suspend fun findBackupApi29(
     if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0) {
         return@withContext BackupInfo(
             backupChildDirectory?.lastModified() ?: System.currentTimeMillis(),
-            0L,
             context.getDisplayPath(backupDirectory.uri)
         )
     }
     return@withContext BackupInfo(
         backupDirectory.lastModified(),
-        getFolderSize(backupDirectory),
         context.getDisplayPath(backupDirectory.uri)
     )
-}
-
-private fun getFolderSize(file: DocumentFile): Long {
-    return if (file.isDirectory) {
-        var total = 0L
-        file.listFiles().forEach { f ->
-            total += getFolderSize(f)
-        }
-        total
-    } else {
-        file.length()
-    }
 }
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
