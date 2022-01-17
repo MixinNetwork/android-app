@@ -941,7 +941,7 @@ class GroupCallService : CallService() {
     private fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
         participantSessionDao.deleteByStatus(conversationId)
         val remote = data.map {
-            ParticipantSession(conversationId, it.userId, it.sessionId)
+            ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
         }
         if (remote.isEmpty()) {
             participantSessionDao.deleteByConversationId(conversationId)

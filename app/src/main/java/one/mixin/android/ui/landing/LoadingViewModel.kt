@@ -13,6 +13,7 @@ import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionSecretRequest
+import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
@@ -59,13 +60,13 @@ constructor(
             val userIds = sessions.map { it.address }
             val response = userService.fetchSessionsSuspend(userIds)
             val sessionMap = ArrayMap<String, Int>()
-            val userSessionMap = ArrayMap<String, String>()
+            val userSessionMap = ArrayMap<String, UserSession>()
             if (response.isSuccess) {
                 response.data?.asSequence()?.forEach { item ->
                     if (item.platform == "Android" || item.platform == "iOS") {
                         val deviceId = item.sessionId.getDeviceId()
                         sessionMap[item.userId] = deviceId
-                        userSessionMap[item.userId] = item.sessionId
+                        userSessionMap[item.userId] = item
                     }
                 }
             }
@@ -93,8 +94,8 @@ constructor(
             val participants = conversationRepo.getAllParticipants()
             val newParticipantSession = mutableListOf<ParticipantSession>()
             participants.forEach { p ->
-                userSessionMap[p.userId]?.let {
-                    val ps = ParticipantSession(p.conversationId, p.userId, it)
+                userSessionMap[p.userId]?.let { userSession ->
+                    val ps = ParticipantSession(p.conversationId, p.userId, sessionId = userSession.sessionId, publicKey = userSession.publicKey)
                     newParticipantSession.add(ps)
                 }
             }
