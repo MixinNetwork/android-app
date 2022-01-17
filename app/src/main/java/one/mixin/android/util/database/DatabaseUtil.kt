@@ -86,6 +86,10 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
         db.execSQL("DELETE FROM `messages_fts4`")
         db.execSQL("DELETE FROM `circles`")
         db.execSQL("DELETE FROM `circle_conversations`")
+        db.execSQL("DELETE FROM `traces`")
+        db.execSQL("DELETE FROM `transcript_messages`")
+        db.execSQL("DELETE FROM `pin_messages`")
+        db.execSQL("DELETE FROM `properties`")
         db.setTransactionSuccessful()
     } catch (e: Exception) {
         reportException(e)
