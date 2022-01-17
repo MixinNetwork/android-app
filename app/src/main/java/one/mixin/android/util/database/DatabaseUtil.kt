@@ -100,3 +100,40 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
         }
     }
 }
+
+@SuppressLint("ObsoleteSdkInt")
+suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
+    val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+    val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+    if (!dbFile.exists()) {
+        return@withContext
+    }
+    var db: SQLiteDatabase? = null
+    try {
+        db = SQLiteDatabase.openDatabase(
+            dbFile.absolutePath,
+            null,
+            SQLiteDatabase.OPEN_READWRITE
+        )
+        if (!supportsDeferForeignKeys) {
+            db.execSQL("PRAGMA foreign_keys = FALSE")
+        }
+        if (supportsDeferForeignKeys) {
+            db.execSQL("PRAGMA defer_foreign_keys = TRUE")
+        }
+        db.beginTransaction()
+        db.execSQL("DELETE FROM `jobs`")
+        db.setTransactionSuccessful()
+    } catch (e: Exception) {
+        reportException(e)
+    } finally {
+        db?.endTransaction()
+        if (!supportsDeferForeignKeys) {
+            db?.execSQL("PRAGMA foreign_keys = TRUE")
+        }
+        db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
+        if (db?.inTransaction() == false) {
+            db.execSQL("VACUUM")
+        }
+    }
+}
