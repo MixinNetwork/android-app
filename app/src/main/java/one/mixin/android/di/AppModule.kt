@@ -118,6 +118,7 @@ object AppModule {
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
         builder.retryOnConnectionFailure(false)
+        builder.followRedirects(false)
         builder.dns(DNS)
 
         builder.addInterceptor { chain ->
