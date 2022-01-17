@@ -218,7 +218,7 @@ open class Injector {
                     }
 
                     val sessionParticipants = conversationData.participantSessions?.map {
-                        ParticipantSession(conversationId, it.userId, it.sessionId)
+                        ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
                     }
                     sessionParticipants?.let {
                         participantSessionDao.replaceAll(conversationId, it)
