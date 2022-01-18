@@ -169,6 +169,8 @@ constructor(
 
     suspend fun findAlbumById(albumId: String) = stickerAlbumDao.findAlbumById(albumId)
 
+    suspend fun findStickerSystemAlbumId(stickerId: String) = stickerRelationshipDao.findStickerSystemAlbumId(stickerId)
+
     fun observeAlbumById(albumId: String) = stickerAlbumDao.observeAlbumById(albumId)
 
     suspend fun updateAlbumOrders(stickerAlbumOrders: List<StickerAlbumOrder>) {

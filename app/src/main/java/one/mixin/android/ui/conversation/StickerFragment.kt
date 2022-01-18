@@ -132,13 +132,21 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
             stickerRv.adapter = stickerAdapter
             stickerAdapter.setOnStickerListener(
                 object : StickerListener {
-                    override fun onItemClick(pos: Int, stickerId: String, albumId: String?) {
+                    override fun onItemClick(pos: Int, sticker: Sticker) {
                         if ((parentFragment as StickerAlbumFragment).changed) return
 
                         if (type != TYPE_RECENT) {
-                            stickerViewModel.updateStickerUsedAt(stickerId)
+                            stickerViewModel.updateStickerUsedAt(sticker.stickerId)
                         }
-                        callback?.onStickerClick(stickerId, if (albumId != personalAlbumId) albumId else null)
+                        if (sticker.albumId == personalAlbumId) {
+                            // check if this sticker belong to a system album
+                            lifecycleScope.launch {
+                                val systemAlbumId = stickerViewModel.findStickerSystemAlbumId(sticker.stickerId)
+                                callback?.onStickerClick(sticker.stickerId, systemAlbumId)
+                            }
+                        } else {
+                            callback?.onStickerClick(sticker.stickerId, sticker.albumId)
+                        }
                     }
 
                     override fun onAddClick() {
@@ -207,7 +215,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
                 }
                 item.setImageDrawable(null)
                 item.loadSticker(s.assetUrl, s.assetType, "${s.assetUrl}${s.stickerId}-type$type")
-                item.setOnClickListener { listener?.onItemClick(position, s.stickerId, s.albumId) }
+                item.setOnClickListener { listener?.onItemClick(position, s) }
             }
         }
 
@@ -227,7 +235,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
     private class StickerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     interface StickerListener {
-        fun onItemClick(pos: Int, stickerId: String, albumId: String?)
+        fun onItemClick(pos: Int, sticker: Sticker)
         fun onAddClick()
     }
 }

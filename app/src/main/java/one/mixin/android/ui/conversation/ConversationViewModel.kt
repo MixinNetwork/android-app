@@ -501,6 +501,8 @@ internal constructor(
 
     suspend fun findAlbumById(albumId: String) = accountRepository.findAlbumById(albumId)
 
+    suspend fun findStickerSystemAlbumId(stickerId: String) = accountRepository.findStickerSystemAlbumId(stickerId)
+
     fun observeAlbumById(albumId: String) = accountRepository.observeAlbumById(albumId)
 
     suspend fun updateAlbumOrders(orders: List<StickerAlbumOrder>) = withContext(Dispatchers.IO) {
