@@ -48,7 +48,7 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun openApp(userId: String) {
         lifecycleScope.launch {
             bottomViewModel.suspendFindUserById(userId)?.let { user ->
-                UserBottomSheetDialogFragment.newInstance(user)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                showUserBottom(parentFragmentManager, user)
                 dismiss()
             }
         }

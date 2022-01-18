@@ -11,8 +11,8 @@ import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -24,7 +24,6 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.getShareCategory
-import one.mixin.android.vo.notMessengerUser
 import timber.log.Timber
 
 fun String.openAsUrlOrWeb(
@@ -149,9 +148,7 @@ fun String.checkUserOrApp(
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
             val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
-            if (user.notMessengerUser()) {
-                return@launch
-            } else if (isOpenApp && user.appId != null) {
+            if (isOpenApp && user.appId != null) {
                 val app = appDao.findAppById(user.appId!!)
                 if (app != null) {
                     val url = try {
@@ -163,7 +160,7 @@ fun String.checkUserOrApp(
                     return@launch
                 }
             }
-            UserBottomSheetDialogFragment.newInstance(user)?.showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+            showUserBottom(supportFragmentManager, user)
         }
     }
 }

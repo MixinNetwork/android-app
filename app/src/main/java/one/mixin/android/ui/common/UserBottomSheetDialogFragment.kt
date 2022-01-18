@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -356,7 +357,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         ProfileBottomSheetDialogFragment.newInstance()
                             .showNow(parentFragmentManager, TAG)
                     } else {
-                        newInstance(it)?.showNow(parentFragmentManager, TAG)
+                        showUserBottom(parentFragmentManager, it)
                     }
                 }
                 dismiss()
@@ -991,5 +992,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             BottomSheetBehavior.STATE_COLLAPSED -> binding.moreIv.rotationX = 0f
             BottomSheetBehavior.STATE_EXPANDED -> binding.moreIv.rotationX = 180f
         }
+    }
+}
+
+fun showUserBottom(fragmentManager: FragmentManager, user: User, conversationId: String? = null) {
+    if (user.notMessengerUser()) {
+        NonMessengerUserBottomSheetDialogFragment.newInstance(user, conversationId)
+            .showNow(fragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
+    } else {
+        UserBottomSheetDialogFragment.newInstance(user, conversationId)
+            ?.showNow(fragmentManager, UserBottomSheetDialogFragment.TAG)
     }
 }

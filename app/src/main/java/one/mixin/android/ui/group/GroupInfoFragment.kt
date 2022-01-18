@@ -33,7 +33,7 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.MAX_USER
 import one.mixin.android.ui.group.adapter.GroupInfoAdapter
@@ -121,10 +121,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                                     openChat(participant.toUser())
                                 }
                                 1 -> {
-                                    UserBottomSheetDialogFragment.newInstance(participant.toUser(), conversationId)?.showNow(
-                                        parentFragmentManager,
-                                        UserBottomSheetDialogFragment.TAG
-                                    )
+                                    showUserBottom(parentFragmentManager, participant.toUser(), conversationId)
                                 }
                                 2 -> {
                                     showConfirmDialog(
@@ -178,7 +175,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                                 openChat(participant.toUser())
                             }
                             R.id.view -> {
-                                UserBottomSheetDialogFragment.newInstance(participant.toUser(), conversationId)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                showUserBottom(parentFragmentManager, participant.toUser(), conversationId)
                             }
                             R.id.remove -> {
                                 showConfirmDialog(

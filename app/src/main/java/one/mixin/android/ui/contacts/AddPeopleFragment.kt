@@ -20,6 +20,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.viewBinding
@@ -78,7 +79,7 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
                                     )
                                 } else {
                                     contactsViewModel.insertUser(user = data)
-                                    UserBottomSheetDialogFragment.newInstance(data)?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                    showUserBottom(parentFragmentManager, data)
                                 }
                             }
                             r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.error_user_not_found)
