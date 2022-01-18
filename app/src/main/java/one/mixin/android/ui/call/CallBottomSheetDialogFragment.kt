@@ -45,15 +45,12 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ParticipantRole
-import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
@@ -365,13 +362,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (userId != null) {
                     lifecycleScope.launch {
                         val user = viewModel.suspendFindUserById(userId) ?: return@launch
-                        if (user.notMessengerUser()) {
-                            NonMessengerUserBottomSheetDialogFragment.newInstance(user)
-                                .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
-                        } else {
-                            UserBottomSheetDialogFragment.newInstance(user)
-                                ?.showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                        }
+                        showUserBottom(parentFragmentManager, user)
                     }
                 } else if (callState.isGroupCall() && callState.conversationId != null) {
                     GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
