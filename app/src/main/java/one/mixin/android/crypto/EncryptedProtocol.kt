@@ -6,6 +6,7 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.extension.leByteArrayToInt
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toLeByteArray
+import timber.log.Timber
 import java.util.UUID
 
 class EncryptedProtocol {
@@ -27,11 +28,11 @@ class EncryptedProtocol {
         val senderPublicKey = publicKeyToCurve25519(pub)
         val version = byteArrayOf(0x01)
 
-        // TODO Should try the encryptCipherMessageKey exception
-        return if (extensionSessionId != null && extensionSessionKey != null && extensionSessionKey.isNotEmpty() && extensionSessionKey.size == 32) {
+        val extensionSessionPublicKey = checkPublicKey(extensionSessionKey)
+        return if (extensionSessionId != null && extensionSessionPublicKey != null) {
             version.plus(toLeByteArray(2.toUInt())).plus(senderPublicKey).let {
                 val emergencyMessageKey =
-                    encryptCipherMessageKey(privateKey.seed, extensionSessionKey, aesGcmKey)
+                    encryptCipherMessageKey(privateKey.seed, extensionSessionPublicKey, aesGcmKey)
                 it.plus(UUID.fromString(extensionSessionId).toByteArray().plus(emergencyMessageKey))
             }.plus(messageKeyWithSession).plus(encryptedMessageData)
         } else {
@@ -72,5 +73,20 @@ class EncryptedProtocol {
         val decodedMessageKey = decryptCipherMessageKey(privateKey.seed, senderPublicKey, iv, content)
 
         return aesGcmDecrypt(message, decodedMessageKey)
+    }
+
+    private fun checkPublicKey(extensionSessionKey: ByteArray?): ByteArray? {
+        extensionSessionKey ?: return null
+        return try {
+            if (extensionSessionKey.isNotEmpty()) {
+                EdDSAPublicKeySpec(extensionSessionKey, ed25519)
+                extensionSessionKey
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+            null
+        }
     }
 }
