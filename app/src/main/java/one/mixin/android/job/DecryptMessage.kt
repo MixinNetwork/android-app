@@ -705,7 +705,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 } else {
                     val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
-                    if (sticker == null || (mediaData.albumId != null && sticker.albumId == null)) {
+                    if (sticker == null || (mediaData.albumId != null && sticker.albumId.isNullOrBlank())) {
                         jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                     }
                     createStickerMessage(
@@ -1182,7 +1182,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             val stickerData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
-                if (sticker == null) {
+                if (sticker == null || (stickerData.albumId != null && sticker.albumId.isNullOrBlank())) {
                     jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
                 }
             }
