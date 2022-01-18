@@ -207,7 +207,6 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ParticipantRole
@@ -222,11 +221,13 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isData
 import one.mixin.android.vo.isEncrypt
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
@@ -513,9 +514,7 @@ class ConversationFragment() :
                     conversationAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
                     conversationAdapter.selectSet.size == 1 -> {
                         try {
-                            if (conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_TEXT.name ||
-                                conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_TEXT.name
-                            ) {
+                            if (conversationAdapter.selectSet.valueAt(0)?.isText() == true) {
                                 binding.toolView.copyIv.visibility = VISIBLE
                             } else {
                                 binding.toolView.copyIv.visibility = GONE
@@ -523,9 +522,7 @@ class ConversationFragment() :
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             binding.toolView.copyIv.visibility = GONE
                         }
-                        if (conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_DATA.name ||
-                            conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_DATA.name
-                        ) {
+                        if (conversationAdapter.selectSet.valueAt(0)?.isData() == true) {
                             binding.toolView.shareIv.visibility = VISIBLE
                         } else {
                             binding.toolView.shareIv.visibility = GONE
@@ -564,16 +561,12 @@ class ConversationFragment() :
                 val b = conversationAdapter.addSelect(messageItem)
                 binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
                 if (b) {
-                    if (messageItem.type == MessageCategory.SIGNAL_TEXT.name ||
-                        messageItem.type == MessageCategory.PLAIN_TEXT.name
-                    ) {
+                    if (messageItem.isText()) {
                         binding.toolView.copyIv.visibility = VISIBLE
                     } else {
                         binding.toolView.copyIv.visibility = GONE
                     }
-                    if (messageItem.type == MessageCategory.SIGNAL_DATA.name ||
-                        messageItem.type == MessageCategory.PLAIN_DATA.name
-                    ) {
+                    if (messageItem.isData()) {
                         binding.toolView.shareIv.visibility = VISIBLE
                     } else {
                         binding.toolView.shareIv.visibility = GONE
