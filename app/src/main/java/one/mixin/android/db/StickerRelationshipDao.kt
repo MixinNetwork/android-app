@@ -37,7 +37,7 @@ interface StickerRelationshipDao : BaseDao<StickerRelationship> {
             "                    INNER JOIN sticker_relationships sa ON sa.sticker_id = s.sticker_id " +
             "                    INNER JOIN sticker_albums a ON a.album_id = sa.album_id " +
             "                    WHERE a.album_id = messages.album_id AND s.name = messages.name " +
-            "            ) WHERE category IN ('SIGNAL_STICKER','PLAIN_STICKER') AND sticker_id IS NULL"
+            "            ) WHERE category IN ('SIGNAL_STICKER','PLAIN_STICKER','ENCRYPTED_STICKER') AND sticker_id IS NULL"
     )
     fun updateMessageStickerId()
 }

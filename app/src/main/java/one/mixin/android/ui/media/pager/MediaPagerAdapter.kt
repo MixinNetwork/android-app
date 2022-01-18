@@ -16,8 +16,8 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isImage
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -85,9 +85,7 @@ class MediaPagerAdapter(
 
     override fun getItemViewType(position: Int): Int {
         val messageItem = getItem(position) ?: return MediaItemType.Invalid.ordinal
-        return if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
-            messageItem.type == MessageCategory.PLAIN_IMAGE.name
-        ) {
+        return if (messageItem.isImage()) {
             if (!messageItem.mediaMimeType.equals(
                     MimeType.GIF.toString(),
                     true

@@ -46,7 +46,7 @@ interface MessageDao : BaseDao<Message> {
                 LEFT JOIN message_mentions mm ON m.id = mm.message_id 
                 LEFT JOIN pin_messages pm ON m.id = pm.message_id
             """
-        private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
+        private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
     }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
@@ -565,7 +565,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA' OR m.category = 'ENCRYPTED_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
         AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
     """
@@ -576,7 +576,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT id as mediaId, media_status as mediaStatus FROM messages 
         WHERE conversation_id = :conversationId
-        AND (category = 'SIGNAL_DATA' OR category = 'PLAIN_DATA') AND media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND (category = 'SIGNAL_DATA' OR category = 'PLAIN_DATA' OR category = 'ENCRYPTED_DATA') AND media_mime_type IN ("audio/mpeg", "audio/flac")
         AND media_status != 'EXPIRED'
         ORDER BY created_at ASC, rowid ASC
     """
@@ -601,7 +601,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.id = :messageId")
     fun findMessageItemByMessageId(messageId: String): LiveData<MessageItem?>
 
-    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category in ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
+    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category in ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT', 'ENCRYPTED_TRANSCRIPT')")
     suspend fun findTranscriptIdByConversationId(conversationId: String): List<String>
 
     @Query("UPDATE messages SET category = :category WHERE id = :messageId")

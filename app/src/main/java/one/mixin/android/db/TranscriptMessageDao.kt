@@ -86,7 +86,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
         WHERE t.transcript_id = :transcriptId
-        AND t.category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE')
+        AND t.category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'ENCRYPTED_IMAGE','SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO','SIGNAL_LIVE', 'PLAIN_LIVE','ENCRYPTED_LIVE')
         ORDER BY t.created_at ASC, t.rowid ASC
         """
     )
@@ -96,7 +96,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         """
             SELECT count(1) FROM transcript_messages 
             WHERE transcript_id = :transcriptId
-            AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
+            AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'ENCRYPTED_IMAGE','SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO','SIGNAL_LIVE', 'PLAIN_LIVE','ENCRYPTED_LIVE') 
             AND created_at < (SELECT created_at FROM transcript_messages WHERE message_id = :messageId AND transcript_id = :transcriptId)
             ORDER BY created_at ASC, rowid ASC
         """
@@ -112,10 +112,10 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId")
     fun getTranscriptByIdSync(transcriptId: String, messageId: String): TranscriptMessage?
 
-    @Query("SELECT sum(media_size) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
+    @Query("SELECT sum(media_size) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT', 'ENCRYPTED_TRANSCRIPT')")
     fun getMediaSizeTotalById(conversationId: String): Long?
 
-    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
+    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT', 'ENCRYPTED_TRANSCRIPT')")
     fun countTranscriptByConversationId(conversationId: String): Int
 
     @Query("SELECT count(1) FROM transcript_messages WHERE message_id = :messageId")
@@ -124,11 +124,11 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("DELETE FROM transcript_messages WHERE transcript_id = :transcriptId")
     fun deleteTranscript(transcriptId: String)
 
-    @Query("SELECT rowid FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' ORDER BY rowid DESC LIMIT 1")
+    @Query("SELECT rowid FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE','ENCRYPTED_IMAGE','SIGNAL_VIDEO', 'PLAIN_VIDEO','ENCRYPTED_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA','ENCRYPTED_DATA','SIGNAL_AUDIO', 'PLAIN_AUDIO', 'ENCRYPTED_AUDIO') AND media_status = 'DONE' ORDER BY rowid DESC LIMIT 1")
     suspend fun lastDoneAttachmentId(): Long?
 
     @Query(
-        "SELECT rowid, message_id, media_url FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND rowid <= :rowId ORDER BY rowid DESC LIMIT :limit"
+        "SELECT rowid, message_id, media_url FROM transcript_messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE','ENCRYPTED_IMAGE','SIGNAL_VIDEO', 'PLAIN_VIDEO','ENCRYPTED_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA','ENCRYPTED_DATA','SIGNAL_AUDIO', 'PLAIN_AUDIO', 'ENCRYPTED_AUDIO') AND media_status = 'DONE' AND rowid <= :rowId ORDER BY rowid DESC LIMIT :limit"
     )
     suspend fun findAttachmentMigration(rowId: Long, limit: Int): List<TranscriptAttachmentMigration>
 

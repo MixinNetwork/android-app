@@ -147,8 +147,11 @@ class SharedMediaViewModel @Inject constructor(
                     onError.invoke()
                 }
             } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
-                val category =
-                    if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                val category = when {
+                    it.isSignal() -> MessageCategory.SIGNAL_IMAGE
+                    it.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
+                    else -> MessageCategory.PLAIN_IMAGE
+                }.name
                 try {
                     jobManager.addJobInBackground(
                         SendGiphyJob(
