@@ -83,7 +83,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            backupInfo.text = getString(R.string.backup_external_storage, "")
+            backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
             backupChoose.setOnClickListener {
                 chooseFolder()
             }
