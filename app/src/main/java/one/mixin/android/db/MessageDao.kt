@@ -328,7 +328,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status 
-        WHERE id = :messageId AND category != 'SIGNAL_LIVE'
+        WHERE id = :messageId AND category != 'MESSAGE_RECALL'
         """
     )
     fun updateLiveMessage(
@@ -343,7 +343,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         UPDATE messages SET content = :content, media_size = :mediaSize, media_status = :mediaStatus, status = :status 
-        WHERE id = :messageId AND category != 'SIGNAL_TRANSCRIPT'
+        WHERE id = :messageId AND category != 'MESSAGE_RECALL'
         """
     )
     fun updateTranscriptMessage(
