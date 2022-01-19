@@ -78,7 +78,7 @@ class EncryptedProtocol {
     private fun checkPublicKey(extensionSessionKey: ByteArray?): ByteArray? {
         extensionSessionKey ?: return null
         return try {
-            if (extensionSessionKey.isNotEmpty()) {
+            if (extensionSessionKey.isNotEmpty() && extensionSessionKey.size == 32) {
                 EdDSAPublicKeySpec(extensionSessionKey, ed25519)
                 extensionSessionKey
             } else {
