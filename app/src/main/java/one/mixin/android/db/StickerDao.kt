@@ -25,4 +25,7 @@ interface StickerDao : BaseDao<Sticker> {
 
     @Query("SELECT * FROM stickers WHERE sticker_id = :stickerId")
     suspend fun findStickerById(stickerId: String): Sticker?
+
+    @Query("SELECT * FROM stickers WHERE sticker_id = :stickerId")
+    fun observeStickerById(stickerId: String): LiveData<Sticker>
 }
