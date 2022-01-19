@@ -9,7 +9,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
@@ -110,7 +109,7 @@ fun ImageView.loadImage(
 
 fun ImageView.loadGif(
     uri: String?,
-    requestListener: RequestListener<GifDrawable?>? = null,
+    requestListener: RequestListener<Drawable?>? = null,
     centerCrop: Boolean? = null,
     @DrawableRes holder: Int? = null,
     base64Holder: String? = null,
@@ -132,58 +131,23 @@ fun ImageView.loadGif(
         requestOptions = requestOptions.override(overrideWidth, overrideHeight)
     }
     if (requestListener != null) {
-        Glide.with(this).asGif().load(uri).apply(requestOptions).listener(requestListener)
+        Glide.with(this).load(uri).apply(requestOptions).listener(requestListener)
             .into(this)
     } else {
-        Glide.with(this).asGif().load(uri).apply(requestOptions).into(this)
+        Glide.with(this).load(uri).apply(requestOptions).into(this)
     }
 }
 
-fun ImageView.loadGifMark(uri: String?, holder: String?, mark: Int) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).asGif().load(uri).apply(
-        RequestOptions().dontTransform()
-            .signature(StringSignature("$uri$mark")).apply {
-                if (holder != null) {
-                    this.placeholder(holder.toDrawable(width, height))
-                }
-            }
-    ).into(this)
-}
-
-fun ImageView.loadGifMark(uri: String?, mark: Int, useSignature: Boolean = true) {
+fun ImageView.loadGifMark(uri: String?, holder: String?, mark: Int, useSignature: Boolean) {
     if (!isActivityNotDestroyed()) return
     var options = RequestOptions().dontTransform()
     if (useSignature) {
         options = options.signature(StringSignature("$uri$mark"))
     }
-    Glide.with(this).asGif().load(uri).apply(options)
-        .listener(
-            object : RequestListener<GifDrawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<GifDrawable>?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    return true
-                }
-
-                override fun onResourceReady(
-                    resource: GifDrawable?,
-                    model: Any?,
-                    target: Target<GifDrawable>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    this@loadGifMark.context.runOnUiThread({
-                        setImageDrawable(resource)
-                    })
-                    return true
-                }
-            }
-        )
-        .submit(layoutParams.width, layoutParams.height)
+    if (holder != null) {
+        options = options.placeholder(holder.toDrawable(width, height))
+    }
+    Glide.with(this).load(uri).apply(options).into(this)
 }
 
 fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {

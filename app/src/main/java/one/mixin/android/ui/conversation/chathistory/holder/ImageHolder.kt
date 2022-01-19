@@ -212,9 +212,9 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
 
     private fun handleGif(mark: Int) {
         if (dataSize == null || dataSize == 0L) { // un-downloaded giphy
-            binding.chatImage.loadGifMark(dataThumbImage, mark, false)
+            binding.chatImage.loadGifMark(dataThumbImage, null, mark, false)
         } else {
-            binding.chatImage.loadGifMark(dataUrl, dataThumbImage, mark)
+            binding.chatImage.loadGifMark(dataUrl, dataThumbImage, mark, true)
         }
     }
 }
