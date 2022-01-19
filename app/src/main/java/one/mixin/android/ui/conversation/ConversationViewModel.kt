@@ -75,6 +75,7 @@ import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
+import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
@@ -500,6 +501,8 @@ internal constructor(
 
     suspend fun findAlbumById(albumId: String) = accountRepository.findAlbumById(albumId)
 
+    suspend fun findStickerSystemAlbumId(stickerId: String) = accountRepository.findStickerSystemAlbumId(stickerId)
+
     fun observeAlbumById(albumId: String) = accountRepository.observeAlbumById(albumId)
 
     suspend fun updateAlbumOrders(orders: List<StickerAlbumOrder>) = withContext(Dispatchers.IO) {
@@ -521,6 +524,19 @@ internal constructor(
     }
 
     suspend fun findOrRefreshAlbum(albumId: String): List<Sticker>? = withContext(Dispatchers.IO) {
+        var album = findAlbumById(albumId)
+        if (album == null) {
+            album = handleMixinResponse(
+                invokeNetwork = { accountRepository.getAlbumByIdSuspend(albumId) },
+                successBlock = {
+                    it.data?.let { album ->
+                        accountRepository.insertAlbumSuspend(album)
+                        album
+                    }
+                }
+            )
+        }
+
         val stickers = findStickersByAlbumId(albumId)
         if (!stickers.isNullOrEmpty()) {
             return@withContext stickers
@@ -529,9 +545,17 @@ internal constructor(
             invokeNetwork = { accountRepository.getStickersByAlbumIdSuspend(albumId) },
             successBlock = {
                 it.data?.let { stickers ->
+                    val relationships: MutableList<StickerRelationship>? = if (album?.category == "SYSTEM") {
+                        arrayListOf()
+                    } else null
                     for (s in stickers) {
                         accountRepository.addStickerWithoutRelationship(s)
+                        relationships?.add(StickerRelationship(albumId, s.stickerId))
                     }
+                    relationships?.let { rs ->
+                        accountRepository.addRelationships(rs)
+                    }
+
                     stickers
                 }
             }

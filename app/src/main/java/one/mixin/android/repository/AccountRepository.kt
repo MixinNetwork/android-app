@@ -48,6 +48,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.StickerRelationship
@@ -168,6 +169,8 @@ constructor(
 
     suspend fun findAlbumById(albumId: String) = stickerAlbumDao.findAlbumById(albumId)
 
+    suspend fun findStickerSystemAlbumId(stickerId: String) = stickerRelationshipDao.findStickerSystemAlbumId(stickerId)
+
     fun observeAlbumById(albumId: String) = stickerAlbumDao.observeAlbumById(albumId)
 
     suspend fun updateAlbumOrders(stickerAlbumOrders: List<StickerAlbumOrder>) {
@@ -190,8 +193,16 @@ constructor(
 
     suspend fun getStickersByAlbumIdSuspend(albumId: String) = accountService.getStickersByAlbumIdSuspend(albumId)
 
+    suspend fun insertAlbumSuspend(album: StickerAlbum) = stickerAlbumDao.insertSuspend(album)
+
+    suspend fun getAlbumByIdSuspend(albumId: String) = accountService.getAlbumByIdSuspend(albumId)
+
     fun addStickerWithoutRelationship(sticker: Sticker) {
         stickerDao.insertUpdate(sticker)
+    }
+
+    fun addRelationships(relationships: List<StickerRelationship>) {
+        stickerRelationshipDao.insertList(relationships)
     }
 
     fun addStickerLocal(sticker: Sticker, albumId: String) {

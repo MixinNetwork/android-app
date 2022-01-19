@@ -11,7 +11,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -33,6 +32,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.viewpager2.TabLayoutMediator
 import kotlin.math.abs
 
 @AndroidEntryPoint
@@ -241,7 +241,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
     }
 
     interface Callback {
-        fun onStickerClick(stickerId: String)
+        fun onStickerClick(stickerId: String, albumId: String?)
         fun onGiphyClick(image: Image, previewUrl: String)
     }
 }

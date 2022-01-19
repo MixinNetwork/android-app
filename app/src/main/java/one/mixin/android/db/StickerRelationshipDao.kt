@@ -15,6 +15,9 @@ interface StickerRelationshipDao : BaseDao<StickerRelationship> {
     @Query("SELECT s.* FROM sticker_relationships sr INNER JOIN stickers s ON s.sticker_id = sr.sticker_id WHERE sr.album_id = :id ORDER BY s.created_at DESC")
     suspend fun findStickersByAlbumId(id: String): List<Sticker>
 
+    @Query("SELECT sa.album_id FROM sticker_relationships sr INNER JOIN sticker_albums sa ON sr.album_id = sa.album_id WHERE sr.sticker_id = :stickerId AND sa.category = 'SYSTEM'")
+    suspend fun findStickerSystemAlbumId(stickerId: String): String?
+
     @Query(
         """
         SELECT s.* FROM sticker_albums sa
