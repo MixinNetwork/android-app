@@ -297,5 +297,7 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("UPDATE sticker_albums SET added = 1")
             }
         }
+
+        // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
