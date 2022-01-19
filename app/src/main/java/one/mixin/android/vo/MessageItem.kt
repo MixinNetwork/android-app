@@ -110,12 +110,12 @@ data class MessageItem(
     private var appCardShareable: Boolean? = null
 
     fun isShareable(): Boolean? {
-        if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name) return null
+        if (type != MessageCategory.APP_CARD.name && type != MessageCategory.PLAIN_LIVE.name && type != MessageCategory.SIGNAL_LIVE.name && type != MessageCategory.ENCRYPTED_LIVE.name) return null
         try {
             if (type == MessageCategory.APP_CARD.name && appCardShareable == null) {
                 appCardShareable =
                     GsonHelper.customGson.fromJson(content, AppCardData::class.java).shareable
-            } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name) && appCardShareable == null) {
+            } else if ((type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) && appCardShareable == null) {
                 appCardShareable = GsonHelper.customGson.fromJson(
                     content,
                     LiveMessagePayload::class.java

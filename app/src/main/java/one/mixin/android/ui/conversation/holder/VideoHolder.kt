@@ -335,7 +335,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         }
 
         binding.chatImage.setShape(mark)
-        if (type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name) {
+        if (type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) {
             binding.chatImage.loadImageMark(dataUrl, R.drawable.image_holder, mark)
         } else {
             binding.chatImage.loadVideoMark(dataUrl, dataThumbImage, mark)

@@ -26,9 +26,12 @@ import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.reportException
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.Property
 import one.mixin.android.vo.getFile
+import one.mixin.android.vo.isAudio
+import one.mixin.android.vo.isData
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
 import java.io.IOException
@@ -58,8 +61,8 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 Timber.d("Attachment migration no exists ${fromFile.absoluteFile}")
                 return@forEach
             }
-            val toFile = when (attachment.category) {
-                MessageCategory.PLAIN_IMAGE.name, MessageCategory.SIGNAL_IMAGE.name -> {
+            val toFile = when {
+                attachment.isImage() -> {
                     when {
                         attachment.mediaMimeType?.isImageSupport() == false -> {
                             MixinApplication.get().getImagePath()
@@ -89,7 +92,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                         }
                     }
                 }
-                MessageCategory.PLAIN_DATA.name, MessageCategory.SIGNAL_DATA.name -> {
+                attachment.isData() -> {
                     val extensionName = attachment.name?.getExtensionName()
                     MixinApplication.get().getDocumentPath()
                         .createDocumentTemp(
@@ -98,7 +101,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                             extensionName
                         )
                 }
-                MessageCategory.PLAIN_VIDEO.name, MessageCategory.SIGNAL_VIDEO.name -> {
+                attachment.isVideo() -> {
                     val extensionName = attachment.name?.getExtensionName().let {
                         it ?: "mp4"
                     }
@@ -109,7 +112,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                             extensionName
                         )
                 }
-                MessageCategory.PLAIN_AUDIO.name, MessageCategory.SIGNAL_AUDIO.name -> {
+                attachment.isAudio() -> {
                     MixinApplication.get().getAudioPath()
                         .createAudioTemp(attachment.conversationId, attachment.messageId, "ogg")
                 }
