@@ -1036,7 +1036,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
         } catch (e: Exception) {
             reportDecryptFailed(data, e, null)
-            insertInvalidMessage(data)
+            insertFailedMessage(data)
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
@@ -1134,7 +1134,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             data.category == MessageCategory.SIGNAL_CONTACT.name ||
             data.category == MessageCategory.SIGNAL_LOCATION.name ||
             data.category == MessageCategory.SIGNAL_POST.name ||
-            data.category == MessageCategory.SIGNAL_TRANSCRIPT.name
+            data.category == MessageCategory.SIGNAL_TRANSCRIPT.name ||
+            data.category == MessageCategory.ENCRYPTED_TEXT.name ||
+            data.category == MessageCategory.ENCRYPTED_IMAGE.name ||
+            data.category == MessageCategory.ENCRYPTED_VIDEO.name ||
+            data.category == MessageCategory.ENCRYPTED_STICKER.name ||
+            data.category == MessageCategory.ENCRYPTED_DATA.name ||
+            data.category == MessageCategory.ENCRYPTED_CONTACT.name ||
+            data.category == MessageCategory.ENCRYPTED_AUDIO.name ||
+            data.category == MessageCategory.ENCRYPTED_LIVE.name ||
+            data.category == MessageCategory.ENCRYPTED_POST.name ||
+            data.category == MessageCategory.ENCRYPTED_LOCATION.name ||
+            data.category == MessageCategory.ENCRYPTED_TRANSCRIPT.name
         ) {
             database.insertAndNotifyConversation(
                 createMessage(
