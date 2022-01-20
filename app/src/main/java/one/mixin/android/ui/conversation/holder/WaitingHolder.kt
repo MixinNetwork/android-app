@@ -97,5 +97,6 @@ class WaitingHolder constructor(
             binding.chatName.isVisible = false
         }
         chatLayout(isMe, isLast)
+        binding.chatTime.chatStatus.isVisible = false
     }
 }

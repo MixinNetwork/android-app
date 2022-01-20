@@ -916,6 +916,7 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.senderId == Session.getAccountId() &&
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
+                conversationItem.messageStatus != MessageStatus.FAILED.name &&
                 !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
                 !conversationItem.isGroupCall() &&
                 !conversationItem.isPin()
