@@ -39,6 +39,7 @@ import android.webkit.WebViewClient.ERROR_HOST_LOOKUP
 import android.webkit.WebViewClient.ERROR_IO
 import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
@@ -64,6 +65,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.extension.REQUEST_CAMERA
@@ -76,12 +78,12 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
@@ -110,7 +112,8 @@ import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.qr.QRCodeProcessor
-import one.mixin.android.ui.setting.PermissionListFragment
+import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.App
@@ -135,7 +138,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
     companion object {
-        const val TAG = "WebBottomSheetDialogFragment"
+        const val TAG = "WebFragment"
         private const val FILE_CHOOSER = 0x01
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
         private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
@@ -189,6 +192,9 @@ class WebFragment : BaseFragment() {
     private var isFinished: Boolean = false
     private val processor = QRCodeProcessor()
     private var webAppInterface: WebAppInterface? = null
+
+    private lateinit var getPermissionResult: ActivityResultLauncher<Pair<App, AuthorizationResponse>>
+
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -261,6 +267,11 @@ class WebFragment : BaseFragment() {
             }
         }
         return super.onContextItemSelected(item)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        getPermissionResult = registerForActivityResult(SettingActivity.PermissionContract(), requireActivity().activityResultRegistry, ::callbackPermission)
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
@@ -1009,18 +1020,17 @@ class WebFragment : BaseFragment() {
                 val app = requireNotNull(app)
                 lifecycleScope.launch {
                     bottomSheet.dismiss()
+                    val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                        setCancelable(false)
+                    }
                     val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
                     if (auth == null) {
                         toast(R.string.not_auth_yet)
+                        pb.dismiss()
                         return@launch
                     }
-                    val fragment = PermissionListFragment.newInstance(app, auth)
-                    fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
-                        override fun onSuccess(url: String) {
-                            webView.loadUrl("javascript:localStorage.clear()")
-                        }
-                    }
-                    navTo(fragment, PermissionListFragment.TAG)
+                    pb.dismiss()
+                    getPermissionResult.launch(Pair(app, auth))
                 }
             }
         }
@@ -1057,6 +1067,13 @@ class WebFragment : BaseFragment() {
             }
         }
         bottomSheet.show()
+    }
+
+    private fun callbackPermission(data: Intent?) {
+        val success = data?.getBooleanExtra(ARGS_SUCCESS, false) ?: false
+        if (!success) return
+
+        webView.loadUrl("javascript:localStorage.clear()")
     }
 
     private var permissionAlert: AlertDialog? = null
