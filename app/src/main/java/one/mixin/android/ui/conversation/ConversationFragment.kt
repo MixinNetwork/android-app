@@ -200,7 +200,6 @@ import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
-import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
@@ -218,14 +217,14 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isData
-import one.mixin.android.vo.isEncrypt
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -895,7 +894,7 @@ class ConversationFragment() :
 
             override fun onTranscriptClick(messageItem: MessageItem) {
                 binding.chatControl.chatEt.hideKeyboard()
-                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, encryptCategory(), messageItem.isPlain())
+                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, encryptCategory())
             }
 
             override fun onSayHi() {
@@ -1943,7 +1942,7 @@ class ConversationFragment() :
 
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
-            binding.chatControl.showBot(encryptCategory().isEncrypt())
+            binding.chatControl.showBot(encryptCategory().isSecret())
         } else {
             binding.chatControl.hideBot()
         }
@@ -2000,15 +1999,7 @@ class ConversationFragment() :
         }
     }
 
-    private fun encryptCategory(): EncryptCategory {
-        return if (isBot && app?.capabilities?.contains(AppCap.ENCRYPTED.name) == true) {
-            EncryptCategory.ENCRYPTED
-        } else if (isBot) {
-            EncryptCategory.PLAIN
-        } else {
-            EncryptCategory.SIGNAL
-        }
-    }
+    private fun encryptCategory(): EncryptCategory = getEncryptedCategory(isBot, app)
 
     private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
         createConversation {
@@ -2314,7 +2305,7 @@ class ConversationFragment() :
         if (viewDestroyed()) return@launch
 
         app = chatViewModel.findAppById(user.appId!!)
-        binding.chatControl.hintEncrypt(encryptCategory().isEncrypt())
+        binding.chatControl.hintEncrypt(encryptCategory().isSecret())
         if (app != null && app!!.creatorId == Session.getAccountId()) {
             val menuFragment = parentFragmentManager.findFragmentByTag(MenuFragment.TAG)
             if (menuFragment == null) {

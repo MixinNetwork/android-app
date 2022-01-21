@@ -108,6 +108,7 @@ import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -649,7 +650,13 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.messageStatus == MessageStatus.FAILED.name -> {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)
-                        binding.msgTv.setText(R.string.conversation_waiting)
+                        binding.msgTv.setText(
+                            if (conversationItem.isSignal()) {
+                                R.string.conversation_waiting
+                            } else {
+                                R.string.chat_decryption_failed
+                            }
+                        )
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
                 }
@@ -909,6 +916,7 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.senderId == Session.getAccountId() &&
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
+                conversationItem.messageStatus != MessageStatus.FAILED.name &&
                 !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
                 !conversationItem.isGroupCall() &&
                 !conversationItem.isPin()

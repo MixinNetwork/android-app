@@ -15,6 +15,7 @@ import one.mixin.android.vo.MessageStatus
 class TimeBubble(context: Context, attributeSet: AttributeSet) :
     LinearLayout(context, attributeSet) {
     private val binding = BubbleTimeBinding.inflate(LayoutInflater.from(context), this)
+    val chatStatus = binding.chatStatus
 
     init {
         gravity = Gravity.CENTER

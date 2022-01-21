@@ -119,9 +119,6 @@ class ChatHistoryActivity : BaseActivity() {
     private val encryptCategory by lazy {
         EncryptCategory.values()[intent.getIntExtra(ENCRYPT_CATEGORY, EncryptCategory.PLAIN.ordinal)]
     }
-    private val isPlain by lazy {
-        intent.getBooleanExtra(IS_PLAIN, true)
-    }
     private val isGroup by lazy {
         intent.getBooleanExtra(IS_GROUP, false)
     }
@@ -360,7 +357,7 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {
-                show(this@ChatHistoryActivity, messageItem.messageId, conversationId, encryptCategory, isPlain)
+                show(this@ChatHistoryActivity, messageItem.messageId, conversationId, encryptCategory)
             }
 
             override fun onTextDoubleClick(messageItem: ChatHistoryMessageItem) {
@@ -409,7 +406,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 jobManager.addJobInBackground(
                                     SendTranscriptAttachmentMessageJob(
                                         transcript,
-                                        isPlain
+                                        encryptCategory
                                     )
                                 )
                             }
@@ -815,18 +812,16 @@ class ChatHistoryActivity : BaseActivity() {
         private const val MESSAGE_ID = "transcript_id"
         private const val CONVERSATION_ID = "conversation_id"
         private const val ENCRYPT_CATEGORY = "encryptCategory"
-        private const val IS_PLAIN = "is_plain"
         private const val IS_GROUP = "is_group"
         private const val CATEGORY = "category"
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
-        fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory, isPlain: Boolean) {
+        fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory) {
             context.startActivity(
                 Intent(context, ChatHistoryActivity::class.java).apply {
                     putExtra(MESSAGE_ID, messageId)
                     putExtra(CONVERSATION_ID, conversationId)
                     putExtra(ENCRYPT_CATEGORY, encryptCategory.ordinal)
-                    putExtra(IS_PLAIN, isPlain)
                     putExtra(CATEGORY, TRANSCRIPT)
                 }
             )
