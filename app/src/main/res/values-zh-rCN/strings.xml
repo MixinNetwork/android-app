@@ -300,7 +300,7 @@
     <string name="chat_waiting_desktop">桌面端</string>
     <string name="chat_learn">了解更多</string>
     <string name="chat_not_support">不支持此类型消息。请升级 Mixin 查看。 %1$s。</string>
-    <string name="chat_decryption_failed">此信息解密失败，请将Mixin升级到最新版本。</string>
+    <string name="chat_decryption_failed">此信息解密失败，请将 Mixin 升级到最新版本。</string>
     <string name="week_monday">星期一</string>
     <string name="week_tuesday">星期二</string>
     <string name="week_wednesday">星期三</string>
