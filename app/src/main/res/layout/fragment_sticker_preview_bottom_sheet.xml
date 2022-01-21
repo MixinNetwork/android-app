@@ -9,7 +9,7 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/square"/>
+        android:layout_above="@id/square" />
 
     <one.mixin.android.widget.gallery.internal.ui.widget.SquareFrameLayout
         android:id="@+id/square"
@@ -34,25 +34,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:measureAllChildren="false"
         android:inAnimation="@anim/fade_in"
         android:outAnimation="@anim/fade_out"
         android:id="@+id/bottom_va">
 
         <Space
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="48dp" />
 
-        <ProgressBar
-            android:id="@+id/pb"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:theme="@style/AppTheme.BlueAccent" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <ProgressBar
+                android:id="@+id/pb"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.BlueAccent" />
+        </FrameLayout>
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="132dp"
             android:orientation="vertical">
 
             <RelativeLayout
@@ -90,7 +96,9 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/sticker_rv"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="72dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="20dp" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </ViewAnimator>

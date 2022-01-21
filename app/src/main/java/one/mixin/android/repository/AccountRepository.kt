@@ -167,6 +167,8 @@ constructor(
 
     suspend fun findStickerById(stickerId: String) = stickerDao.findStickerById(stickerId)
 
+    fun observeStickerById(stickerId: String) = stickerDao.observeStickerById(stickerId)
+
     suspend fun findAlbumById(albumId: String) = stickerAlbumDao.findAlbumById(albumId)
 
     suspend fun findStickerSystemAlbumId(stickerId: String) = stickerRelationshipDao.findStickerSystemAlbumId(stickerId)

@@ -38,6 +38,7 @@ import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshStickerAndRelatedAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAttachmentMessageJob
@@ -75,7 +76,6 @@ import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
-import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.absolutePath
@@ -502,11 +502,17 @@ internal constructor(
 
     suspend fun findStickerById(stickerId: String) = accountRepository.findStickerById(stickerId)
 
+    fun observeStickerById(stickerId: String) = accountRepository.observeStickerById(stickerId)
+
     suspend fun findAlbumById(albumId: String) = accountRepository.findAlbumById(albumId)
 
     suspend fun findStickerSystemAlbumId(stickerId: String) = accountRepository.findStickerSystemAlbumId(stickerId)
 
     fun observeAlbumById(albumId: String) = accountRepository.observeAlbumById(albumId)
+
+    fun refreshStickerAndRelatedAlbum(stickerId: String) {
+        jobManager.addJobInBackground(RefreshStickerAndRelatedAlbumJob(stickerId))
+    }
 
     suspend fun updateAlbumOrders(orders: List<StickerAlbumOrder>) = withContext(Dispatchers.IO) {
         accountRepository.updateAlbumOrders(orders)
@@ -524,45 +530,6 @@ internal constructor(
         viewModelScope.launch {
             accountRepository.updateUsedAt(stickerId, System.currentTimeMillis().toString())
         }
-    }
-
-    suspend fun findOrRefreshAlbum(albumId: String): List<Sticker>? = withContext(Dispatchers.IO) {
-        var album = findAlbumById(albumId)
-        if (album == null) {
-            album = handleMixinResponse(
-                invokeNetwork = { accountRepository.getAlbumByIdSuspend(albumId) },
-                successBlock = {
-                    it.data?.let { album ->
-                        accountRepository.insertAlbumSuspend(album)
-                        album
-                    }
-                }
-            )
-        }
-
-        val stickers = findStickersByAlbumId(albumId)
-        if (!stickers.isNullOrEmpty()) {
-            return@withContext stickers
-        }
-        return@withContext handleMixinResponse(
-            invokeNetwork = { accountRepository.getStickersByAlbumIdSuspend(albumId) },
-            successBlock = {
-                it.data?.let { stickers ->
-                    val relationships: MutableList<StickerRelationship>? = if (album?.category == "SYSTEM") {
-                        arrayListOf()
-                    } else null
-                    for (s in stickers) {
-                        accountRepository.addStickerWithoutRelationship(s)
-                        relationships?.add(StickerRelationship(albumId, s.stickerId))
-                    }
-                    relationships?.let { rs ->
-                        accountRepository.addRelationships(rs)
-                    }
-
-                    stickers
-                }
-            }
-        )
     }
 
     fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>>? {
