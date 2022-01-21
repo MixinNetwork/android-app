@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -76,45 +77,56 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        viewModel.observeStickerById(stickerId).observe(this) { sticker ->
-            binding.previewIv.loadImage(sticker.assetUrl)
+        val stickerLiveData = viewModel.observeStickerById(stickerId)
+        val observer = object : Observer<Sticker> {
+            override fun onChanged(sticker: Sticker) {
+                binding.previewIv.loadImage(sticker.assetUrl)
 
-            val albumId = sticker.albumId
-            if (albumId.isNullOrBlank()) {
-                return@observe
-            }
+                val albumId = sticker.albumId
+                if (albumId.isNullOrBlank()) {
+                    return
+                }
+                stickerLiveData.removeObserver(this)
 
-            viewModel.observeAlbumById(albumId)
-                .observe(this@StickerPreviewBottomSheetFragment) albumObserve@{ album ->
-                    if (album == null) return@albumObserve
+                viewModel.observeAlbumById(albumId)
+                    .observe(this@StickerPreviewBottomSheetFragment) albumObserve@{ album ->
+                        if (album == null) return@albumObserve
 
-                    binding.tileTv.text = album.name
-                    binding.actionTv.isVisible = album.category == "SYSTEM"
-                    binding.actionTv.updateAlbumAdd(requireContext(), album.added) {
-                        lifecycleScope.launch {
-                            val maxOrder = viewModel.findMaxOrder()
-                            viewModel.updateAlbumAdded(StickerAlbumAdded(albumId, true, maxOrder + 1))
+                        binding.tileTv.text = album.name
+                        binding.actionTv.isVisible = album.category == "SYSTEM"
+                        binding.actionTv.updateAlbumAdd(requireContext(), album.added) {
+                            lifecycleScope.launch {
+                                val maxOrder = viewModel.findMaxOrder()
+                                viewModel.updateAlbumAdded(
+                                    StickerAlbumAdded(
+                                        albumId,
+                                        true,
+                                        maxOrder + 1
+                                    )
+                                )
+                            }
                         }
                     }
-                }
 
-            viewModel.observeStickers(albumId)
-                .observe(this@StickerPreviewBottomSheetFragment) { stickers ->
-                    adapter.submitList(stickers)
-                    if (stickers.isNullOrEmpty()) {
-                        if (firstLoad) {
-                            binding.bottomVa.displayedChild = 1
-                            firstLoad = false
+                viewModel.observeStickers(albumId)
+                    .observe(this@StickerPreviewBottomSheetFragment) { stickers ->
+                        adapter.submitList(stickers)
+                        if (stickers.isNullOrEmpty()) {
+                            if (firstLoad) {
+                                binding.bottomVa.displayedChild = 1
+                                firstLoad = false
+                            } else {
+                                binding.bottomVa.displayedChild = 0
+                            }
                         } else {
-                            binding.bottomVa.displayedChild = 0
-                        }
-                    } else {
-                        if (binding.bottomVa.displayedChild != 2) {
-                            binding.bottomVa.displayedChild = 2
+                            if (binding.bottomVa.displayedChild != 2) {
+                                binding.bottomVa.displayedChild = 2
+                            }
                         }
                     }
-                }
+            }
         }
+        stickerLiveData.observe(this, observer)
         viewModel.refreshStickerAndRelatedAlbum(stickerId)
     }
 }
