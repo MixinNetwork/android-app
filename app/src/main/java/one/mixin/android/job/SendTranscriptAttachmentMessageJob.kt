@@ -27,6 +27,7 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isValidAttachment
 import one.mixin.android.websocket.AttachmentMessagePayload
@@ -143,10 +144,10 @@ class SendTranscriptAttachmentMessageJob(
                 transcriptMessage.mediaMimeType,
                 inputStream,
                 file.length(),
-                if (encryptCategory.isPlain()) {
-                    null
-                } else {
+                if (encryptCategory.isSecret()) {
                     AttachmentCipherOutputStreamFactory(key, null)
+                } else {
+                    null
                 }
             ) { total, progress ->
                 val pg = try {
@@ -157,11 +158,11 @@ class SendTranscriptAttachmentMessageJob(
                 RxBus.publish(ProgressEvent.loadingEvent("${transcriptMessage.transcriptId}${transcriptMessage.messageId}", pg))
             }
         val digest = try {
-            if (encryptCategory.isPlain()) {
+            if (encryptCategory.isSecret()) {
+                uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
+            } else {
                 uploadPlainAttachment(attachResponse.upload_url!!, file.length(), attachmentData)
                 null
-            } else {
-                uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
             }
         } catch (e: Exception) {
             Timber.e(e)
