@@ -41,11 +41,13 @@ import one.mixin.android.util.ChannelManager.Companion.MESSAGES
 import one.mixin.android.util.ChannelManager.Companion.SILENCE
 import one.mixin.android.util.mention.rendMentionContent
 import one.mixin.android.util.updateShortcuts
+import one.mixin.android.vo.App
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
@@ -62,7 +64,7 @@ import one.mixin.android.vo.isVideo
 
 const val KEY_REPLY = "key_reply"
 const val CONVERSATION_ID = "conversation_id"
-const val IS_PLAIN = "is_plain"
+const val ENCRYPTED_CATEGORY = "encrypted_category"
 
 object NotificationGenerator : Injector() {
 
@@ -122,7 +124,17 @@ object NotificationGenerator : Injector() {
                 .build()
             val sendIntent = Intent(context, SendService::class.java)
             sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
-            sendIntent.putExtra(IS_PLAIN, user.isBot() || message.isRepresentativeMessage(conversation))
+            var app: App? = null
+            var isBot = user.isBot()
+            if (user.isBot()) {
+                app = appDao.findAppById(requireNotNull(user.appId))
+            } else if (message.isRepresentativeMessage(conversation)) {
+                val representativeUser = syncUser(conversation.ownerId)
+                app = appDao.findAppById(requireNotNull(representativeUser?.appId))
+                isBot = representativeUser?.isBot() ?: false
+            }
+            val encryptCategory = getEncryptedCategory(isBot, app)
+            sendIntent.putExtra(ENCRYPTED_CATEGORY, encryptCategory.ordinal)
             val pendingIntent = PendingIntent.getService(
                 context,
                 message.conversationId.hashCode(),
@@ -361,7 +373,7 @@ object NotificationGenerator : Injector() {
         val canBubble = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowed()
         if (canBubble) {
             loadBitmap(context, conversation.iconUrl()) { bitmap ->
-                val resource = bitmap ?: BitmapFactory.decodeResource(context.resources, R.drawable.ic_msg_default)
+                val resource = bitmap ?: BitmapFactory.decodeResource(context.resources, R.drawable.ic_group_place_holder)
                 notificationBuilder.setLargeIcon(resource)
                 buildBubble(context, conversation, notificationBuilder, message, resource, person)
                 notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
