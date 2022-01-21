@@ -26,8 +26,8 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
             albumId = singleSticker.albumId
         }
 
-        if (albumId == null) {
-            singleSticker?.let { stickerDao.insertUpdate(it) }
+        if (albumId.isNullOrBlank()) {
+            albumId?.let { stickerDao.updateAlbumId(stickerId, it) }
             return@runBlocking
         }
 
@@ -41,7 +41,7 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
         }
 
         if (album == null) {
-            singleSticker?.let { stickerDao.insertUpdate(it) }
+            stickerDao.updateAlbumId(stickerId, albumId)
             return@runBlocking
         }
 
