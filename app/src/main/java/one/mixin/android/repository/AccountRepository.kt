@@ -163,6 +163,8 @@ constructor(
 
     fun observeStickers(id: String) = stickerRelationshipDao.observeStickersByAlbumId(id)
 
+    fun observeSystemStickersByAlbumId(id: String) = stickerRelationshipDao.observeSystemStickersByAlbumId(id)
+
     suspend fun findStickersByAlbumId(albumId: String) = stickerRelationshipDao.findStickersByAlbumId(albumId)
 
     suspend fun findStickerById(stickerId: String) = stickerDao.findStickerById(stickerId)
@@ -174,6 +176,8 @@ constructor(
     suspend fun findStickerSystemAlbumId(stickerId: String) = stickerRelationshipDao.findStickerSystemAlbumId(stickerId)
 
     fun observeAlbumById(albumId: String) = stickerAlbumDao.observeAlbumById(albumId)
+
+    fun observeSystemAlbumById(albumId: String) = stickerAlbumDao.observeSystemAlbumById(albumId)
 
     suspend fun updateAlbumOrders(stickerAlbumOrders: List<StickerAlbumOrder>) {
         withTransaction {

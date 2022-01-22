@@ -498,6 +498,8 @@ internal constructor(
 
     fun observeStickers(id: String) = accountRepository.observeStickers(id)
 
+    fun observeSystemStickersByAlbumId(id: String) = accountRepository.observeSystemStickersByAlbumId(id)
+
     suspend fun findStickersByAlbumId(albumId: String) = accountRepository.findStickersByAlbumId(albumId)
 
     suspend fun findStickerById(stickerId: String) = accountRepository.findStickerById(stickerId)
@@ -509,6 +511,8 @@ internal constructor(
     suspend fun findStickerSystemAlbumId(stickerId: String) = accountRepository.findStickerSystemAlbumId(stickerId)
 
     fun observeAlbumById(albumId: String) = accountRepository.observeAlbumById(albumId)
+
+    fun observeSystemAlbumById(albumId: String) = accountRepository.observeSystemAlbumById(albumId)
 
     fun refreshStickerAndRelatedAlbum(stickerId: String) {
         jobManager.addJobInBackground(RefreshStickerAndRelatedAlbumJob(stickerId))

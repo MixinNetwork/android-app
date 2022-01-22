@@ -32,6 +32,9 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
     @Query("SELECT * FROM sticker_albums WHERE album_id = :albumId")
     fun observeAlbumById(albumId: String): LiveData<StickerAlbum>
 
+    @Query("SELECT * FROM sticker_albums WHERE album_id = :albumId AND category = 'SYSTEM'")
+    fun observeSystemAlbumById(albumId: String): LiveData<StickerAlbum>
+
     @Query("SELECT created_at FROM sticker_albums ORDER BY created_at DESC LIMIT 1")
     suspend fun findLatestCreatedAt(): String?
 

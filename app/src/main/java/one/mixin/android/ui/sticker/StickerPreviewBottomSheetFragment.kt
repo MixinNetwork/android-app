@@ -88,7 +88,7 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 }
                 stickerLiveData.removeObserver(this)
 
-                viewModel.observeAlbumById(albumId)
+                viewModel.observeSystemAlbumById(albumId)
                     .observe(this@StickerPreviewBottomSheetFragment) albumObserve@{ album ->
                         if (album == null) return@albumObserve
 
@@ -108,7 +108,7 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
                         }
                     }
 
-                viewModel.observeStickers(albumId)
+                viewModel.observeSystemStickersByAlbumId(albumId)
                     .observe(this@StickerPreviewBottomSheetFragment) { stickers ->
                         adapter.submitList(stickers)
                         if (stickers.isNullOrEmpty()) {
