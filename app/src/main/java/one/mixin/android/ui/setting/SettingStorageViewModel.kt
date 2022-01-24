@@ -4,10 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Flowable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,7 +30,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
 import one.mixin.android.vo.absolutePath
@@ -49,29 +44,27 @@ internal constructor(
     private val jobManager: MixinJobManager
 ) : ViewModel() {
 
-    fun getStorageUsage(conversationId: String): Single<List<StorageUsage>> =
-        Single.just(conversationId).map { cid ->
-            val result = mutableListOf<StorageUsage>()
-            val context = MixinApplication.appContext
-            context.getStorageUsageByConversationAndType(cid, IMAGE)?.apply {
-                result.add(this)
-            }
-            context.getStorageUsageByConversationAndType(cid, VIDEO)?.apply {
-                result.add(this)
-            }
-            context.getStorageUsageByConversationAndType(cid, AUDIO)?.apply {
-                result.add(this)
-            }
-            context.getStorageUsageByConversationAndType(cid, DATA)?.apply {
-                result.add(this)
-            }
-            conversationRepository.getMediaSizeTotalById(cid)?.apply {
-                result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(cid), this))
-            }
-            result.toList()
-        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    suspend fun getStorageUsage(context: Context, conversationId: String): List<StorageUsage> = withContext(Dispatchers.IO) {
+        val result = mutableListOf<StorageUsage>()
+        context.getStorageUsageByConversationAndType(conversationId, IMAGE)?.apply {
+            result.add(this)
+        }
+        context.getStorageUsageByConversationAndType(conversationId, VIDEO)?.apply {
+            result.add(this)
+        }
+        context.getStorageUsageByConversationAndType(conversationId, AUDIO)?.apply {
+            result.add(this)
+        }
+        context.getStorageUsageByConversationAndType(conversationId, DATA)?.apply {
+            result.add(this)
+        }
+        conversationRepository.getMediaSizeTotalById(conversationId)?.apply {
+            result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(conversationId), this))
+        }
+        result.toList()
+    }
 
-    suspend fun getConversationStorageUsage(context:Context) = withContext(Dispatchers.IO) {
+    suspend fun getConversationStorageUsage(context: Context) = withContext(Dispatchers.IO) {
         conversationRepository.getConversationStorageUsage().asSequence().map { item ->
             item.apply { item.mediaSize = context.getConversationMediaSize(item.conversationId) }
         }.filter { conversationStorageUsage ->

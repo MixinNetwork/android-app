@@ -85,21 +85,15 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
 
     private val selectSet: ArraySet<StorageUsage> = ArraySet()
     private fun showMenu(conversationId: String) {
-        viewModel.getStorageUsage(conversationId).autoDispose(stopScope).subscribe(
-            {
-                menuAdapter.setData(it)
-                selectSet.clear()
-                it?.let {
-                    for (item in it) {
-                        selectSet.add(item)
-                    }
-                }
-                menuDialog.show()
-            },
-            {
-                Timber.e(it)
+        lifecycleScope.launch {
+            val list = viewModel.getStorageUsage(requireContext(), conversationId)
+            menuAdapter.setData(list)
+            selectSet.clear()
+            for (item in list) {
+                selectSet.add(item)
             }
-        )
+            menuDialog.show()
+        }
     }
 
     private val menuDialog: AlertDialog by lazy {
