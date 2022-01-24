@@ -8,7 +8,9 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
@@ -69,18 +71,15 @@ internal constructor(
             result.toList()
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>> = conversationRepository.getConversationStorageUsage()
-        .map { list ->
-            list.asSequence().map { item ->
-                val context = MixinApplication.appContext
-                item.mediaSize = context.getConversationMediaSize(item.conversationId)
-                item
-            }.filter { conversationStorageUsage ->
-                conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
-            }.sortedByDescending { conversationStorageUsage ->
-                conversationStorageUsage.mediaSize
-            }.toList()
-        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    suspend fun getConversationStorageUsage(context:Context) = withContext(Dispatchers.IO) {
+        conversationRepository.getConversationStorageUsage().asSequence().map { item ->
+            item.apply { item.mediaSize = context.getConversationMediaSize(item.conversationId) }
+        }.filter { conversationStorageUsage ->
+            conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
+        }.sortedByDescending { conversationStorageUsage ->
+            conversationStorageUsage.mediaSize
+        }.toList()
+    }
 
     fun clear(conversationId: String, type: String) {
         if (MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_ATTACHMENT, false)) {

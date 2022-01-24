@@ -11,13 +11,16 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.collection.ArraySet
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
@@ -32,6 +35,7 @@ import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
@@ -61,18 +65,12 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             bRv.adapter = adapter
             menuView.adapter = menuAdapter
-            viewModel.getConversationStorageUsage().autoDispose(stopScope)
-                .subscribe(
-                    { list ->
-                        if (progress.visibility != View.GONE) {
-                            progress.visibility = View.GONE
-                        }
-                        adapter.setData(list)
-                    },
-                    { error ->
-                        Timber.e(error)
-                    }
-                )
+        }
+
+        lifecycleScope.launch {
+            val list = measureTimeMillis("Storage") { viewModel.getConversationStorageUsage(requireContext()) }
+            binding.progress.isVisible = false
+            adapter.setData(list)
         }
     }
 
