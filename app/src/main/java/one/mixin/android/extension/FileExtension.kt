@@ -35,16 +35,19 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.StorageUsage
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
+import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
+import java.util.Scanner
 
 private fun isAvailable(): Boolean {
     val state = Environment.getExternalStorageState()
@@ -662,25 +665,27 @@ fun File.blurThumbnail(size: Size): Bitmap? {
 
 fun File.dirSize(): Long? {
     return if (isDirectory) {
-        var result = 0L
-        val dirList = LinkedList<File>()
-        dirList.clear()
-        dirList.push(this)
-        while (!dirList.isEmpty()) {
-            val dirCurrent = dirList.pop()
-            val fileList = dirCurrent.listFiles()
-            for (f in fileList) {
-                if (f.isDirectory) {
-                    dirList.push(f)
-                } else {
-                    result += f.length()
-                }
-            }
-        }
-        return result
+        return getDirSize(this)
     } else {
         null
     }
+}
+
+private fun getDirSize(dir: File): Long? {
+    try {
+        val du = Runtime.getRuntime().exec(
+            "/system/bin/du -scb " + dir.canonicalPath,
+            arrayOf(),
+            Environment.getRootDirectory()
+        )
+        val br = BufferedReader(InputStreamReader(du.inputStream))
+        return Scanner(br.readLine()).nextLong().apply {
+            Timber.e("$dir: $this")
+        }
+    } catch (e: Exception) {
+        Timber.e(e.message)
+    }
+    return null
 }
 
 fun File.encodeBlurHash(): String? {
