@@ -31,7 +31,7 @@ fun String.isUUID(): Boolean {
 }
 
 fun Long.fileSize(unit: Long = 0): String {
-    var count = 0 / 1024
+    var count = (unit / 1024).toInt()
     var num = this.toFloat()
     while (count > 3 || num > 1024) {
         num /= 1024f
