@@ -70,6 +70,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     @Inject
     lateinit var callState: CallStateLiveData
     @Inject
+    lateinit var callDebugState: CallDebugLiveData
+    @Inject
     lateinit var conversationRepo: ConversationRepository
     @Inject
     lateinit var signalProtocol: SignalProtocol
@@ -92,6 +94,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 stopSelf()
             } else {
                 self = user
+            }
+        }
+
+        callDebugState.observe(this) { type ->
+            if (::peerConnectionClient.isInitialized) {
+                peerConnectionClient.callDebugState = type
             }
         }
     }
@@ -146,6 +154,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             Timber.d("$TAG_CALL real disconnect")
             stopForeground(true)
             callState.reset()
+            callDebugState.reset()
             audioManager.reset()
             pipCallView.close()
             peerConnectionClient.dispose()
