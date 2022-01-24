@@ -154,6 +154,7 @@ import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
@@ -751,8 +752,7 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(parentFragmentManager, it, conversationId)
                         }
                     },
                     {
@@ -801,8 +801,7 @@ class ConversationFragment() :
                             ProfileBottomSheetDialogFragment.newInstance()
                                 .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
                         } else {
-                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(parentFragmentManager, user, conversationId)
                         }
                     }
                 }
@@ -869,8 +868,7 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(parentFragmentManager, it, conversationId)
                         }
                     },
                     {
@@ -2269,21 +2267,19 @@ class ConversationFragment() :
         conversationAdapter.recipient = user
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(
-            viewLifecycleOwner,
-            {
-                it?.let { u ->
-                    recipient = u
-                    if (u.isBot()) {
-                        renderBot(u)
-                    }
-                    renderUserInfo(u)
+            viewLifecycleOwner
+        ) {
+            it?.let { u ->
+                recipient = u
+                if (u.isBot()) {
+                    renderBot(u)
                 }
+                renderUserInfo(u)
             }
-        )
+        }
         binding.actionBar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
-            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+            showUserBottom(parentFragmentManager, user, conversationId)
         }
         binding.bottomUnblock.setOnClickListener {
             recipient?.let { user ->

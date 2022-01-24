@@ -51,8 +51,8 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.message.SendMessageHelper
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
@@ -283,8 +283,7 @@ class ChatHistoryActivity : BaseActivity() {
                 lifecycleScope.launch {
                     userRepository.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))
                         ?.let { user ->
-                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(supportFragmentManager, user, conversationId)
                         }
                 }
             }
@@ -467,11 +466,7 @@ class ChatHistoryActivity : BaseActivity() {
                     withContext(Dispatchers.IO) {
                         userRepository.getUserById(userId)?.let { user ->
                             withContext(Dispatchers.Main) {
-                                UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                    .showNow(
-                                        supportFragmentManager,
-                                        UserBottomSheetDialogFragment.TAG
-                                    )
+                                showUserBottom(supportFragmentManager, user, conversationId)
                             }
                         }
                     }
@@ -503,11 +498,7 @@ class ChatHistoryActivity : BaseActivity() {
                         withContext(Dispatchers.IO) {
                             userRepository.getUserById(uid)?.let { user ->
                                 withContext(Dispatchers.Main) {
-                                    UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                        .showNow(
-                                            supportFragmentManager,
-                                            UserBottomSheetDialogFragment.TAG
-                                        )
+                                    showUserBottom(supportFragmentManager, user, conversationId)
                                 }
                             }
                         }

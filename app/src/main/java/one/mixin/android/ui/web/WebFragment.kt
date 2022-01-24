@@ -97,10 +97,10 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
@@ -1115,8 +1115,7 @@ class WebFragment : BaseFragment() {
         if (app?.appId != null) {
             val u = bottomViewModel.suspendFindUserById(app?.appId!!)
             if (u != null) {
-                UserBottomSheetDialogFragment.newInstance(u, conversationId)
-                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                showUserBottom(parentFragmentManager, u, conversationId)
             }
         }
     }

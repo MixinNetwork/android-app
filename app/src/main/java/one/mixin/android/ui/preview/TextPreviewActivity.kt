@@ -24,7 +24,7 @@ import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.mention.MentionRenderCache
@@ -67,8 +67,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
                     dismissWhenClickText = false
                     lifecycleScope.launch {
                         viewModel.findUserByIdentityNumberSuspend(matchedText.substring(1))?.let { user ->
-                            UserBottomSheetDialogFragment.newInstance(user, messageItem.conversationId)
-                                .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(supportFragmentManager, user, messageItem.conversationId)
                         }
                     }
                 }

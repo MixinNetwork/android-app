@@ -26,7 +26,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.AddressAddFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
@@ -214,8 +214,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         lifecycleScope.launch(Dispatchers.IO) {
             walletViewModel.getUser(userId)?.let {
                 withContext(Dispatchers.Main) {
-                    val f = UserBottomSheetDialogFragment.newInstance(it)
-                    f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    showUserBottom(parentFragmentManager, it)
                 }
             }
         }

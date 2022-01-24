@@ -45,7 +45,7 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
@@ -208,16 +208,14 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         .throttleFirst(500, TimeUnit.MILLISECONDS)
                         .autoDispose(stopScope)
                         .subscribe {
-                            UserBottomSheetDialogFragment.newInstance(callee)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(parentFragmentManager, callee)
                         }
                     binding.nameTv.clicks()
                         .observeOn(AndroidSchedulers.mainThread())
                         .throttleFirst(500, TimeUnit.MILLISECONDS)
                         .autoDispose(stopScope)
                         .subscribe {
-                            UserBottomSheetDialogFragment.newInstance(callee)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(parentFragmentManager, callee)
                         }
                 }
             }
@@ -364,8 +362,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (userId != null) {
                     lifecycleScope.launch {
                         val user = viewModel.suspendFindUserById(userId) ?: return@launch
-                        UserBottomSheetDialogFragment.newInstance(user)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        showUserBottom(parentFragmentManager, user)
                     }
                 } else if (callState.isGroupCall() && callState.conversationId != null) {
                     GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
