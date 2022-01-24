@@ -1,6 +1,5 @@
 package one.mixin.android.ui.common
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -9,7 +8,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.handleIgnoreBatteryOptimization
 
-class BatteryOptimizationDialogActivity : Activity() {
+class BatteryOptimizationDialogActivity : BaseActivity() {
     companion object {
         const val ARGS_NEW_TASK = "args_new_task"
 
