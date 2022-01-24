@@ -106,7 +106,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                 var sum = 0L
                 var size = 0L
                 selectSet.forEach { sum += it.count; size += it.mediaSize }
-                confirmDialog.setMessage(getString(R.string.setting_storage_clear, sum, size.fileSize()))
+                confirmDialog.setMessage(getString(R.string.setting_storage_clear, sum, size.fileSize(1024)))
                 confirmDialog.show()
                 dialog.dismiss()
             }.create().apply {
@@ -261,7 +261,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                     normal.text = conversationStorageUsage.name
                     avatar.setInfo(conversationStorageUsage.name, conversationStorageUsage.avatarUrl, conversationStorageUsage.ownerId)
                 }
-                storageTv.text = conversationStorageUsage.mediaSize.fileSize()
+                storageTv.text = conversationStorageUsage.mediaSize.fileSize(1024)
                 itemView.setOnClickListener { action(conversationStorageUsage.conversationId) }
             }
         }

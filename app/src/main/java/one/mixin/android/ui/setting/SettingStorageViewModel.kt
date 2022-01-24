@@ -59,7 +59,9 @@ internal constructor(
             result.add(this)
         }
         conversationRepository.getMediaSizeTotalById(conversationId)?.apply {
-            result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(conversationId), this))
+            if (this > 0) {
+                result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(conversationId), this / 1024))
+            }
         }
         result.toList()
     }

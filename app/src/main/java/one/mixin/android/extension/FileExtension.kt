@@ -673,7 +673,7 @@ fun File.dirSize(): Long? {
 private fun getDirSize(dir: File): Long? {
     try {
         val du = Runtime.getRuntime().exec(
-            "/system/bin/du -scb " + dir.canonicalPath,
+            "/system/bin/du -s " + dir.canonicalPath,
             arrayOf(),
             Environment.getRootDirectory()
         )
