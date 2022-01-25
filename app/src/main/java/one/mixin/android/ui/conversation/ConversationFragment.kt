@@ -928,6 +928,7 @@ class ConversationFragment() :
                         .subscribe(
                             { granted ->
                                 if (granted) {
+                                    initAudioSwitch()
                                     voiceCall()
                                 } else {
                                     context?.openPermissionSetting()
@@ -1059,11 +1060,7 @@ class ConversationFragment() :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!anyCallServiceRunning(requireContext())) {
-            checkBlueToothConnect {
-                audioSwitch.start { audioDevices, selectedAudioDevice ->
-                    Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
-                }
-            }
+            initAudioSwitch()
         }
         recipient = requireArguments().getParcelable(RECIPIENT)
         messageId = requireArguments().getString(MESSAGE_ID, null)
@@ -1649,6 +1646,7 @@ class ConversationFragment() :
                 return@setOnClickListener
             }
             checkBlueToothConnect {
+                initAudioSwitch()
                 receiveInvite(requireContext(), conversationId, playRing = false)
             }
         }
@@ -2531,6 +2529,7 @@ class ConversationFragment() :
                                 .subscribe(
                                     { granted ->
                                         if (granted) {
+                                            initAudioSwitch()
                                             voiceCall()
                                         } else {
                                             context?.openPermissionSetting()
@@ -3277,6 +3276,16 @@ class ConversationFragment() :
                 })
         } else {
             callback.invoke()
+        }
+    }
+
+    private var initAudioSwitch = false
+    private fun initAudioSwitch() {
+        if (!initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
+            initAudioSwitch = true
+            audioSwitch.start { audioDevices, selectedAudioDevice ->
+                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+            }
         }
     }
 }
