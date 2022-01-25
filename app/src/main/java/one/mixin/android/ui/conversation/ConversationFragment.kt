@@ -199,6 +199,7 @@ import one.mixin.android.util.import.ImportChatUtil
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -1058,8 +1059,10 @@ class ConversationFragment() :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!anyCallServiceRunning(requireContext())) {
-            audioSwitch.start { audioDevices, selectedAudioDevice ->
-                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+            checkBlueToothConnect {
+                audioSwitch.start { audioDevices, selectedAudioDevice ->
+                    Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+                }
             }
         }
         recipient = requireArguments().getParcelable(RECIPIENT)
@@ -3252,6 +3255,24 @@ class ConversationFragment() :
                 getCombineForwardResult.launch(ArrayList(messages))
             }
             closeTool()
+        }
+    }
+
+    private fun checkBlueToothConnect(callback: () -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            RxPermissions(this)
+                .request(Manifest.permission.BLUETOOTH_CONNECT)
+                .autoDispose(stopScope).subscribe({ granted ->
+                    if (granted) {
+                        callback.invoke()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                    reportException(it)
+                })
+        } else {
+            callback.invoke()
         }
     }
 }
