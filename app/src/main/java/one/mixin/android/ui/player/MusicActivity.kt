@@ -28,7 +28,8 @@ class MusicActivity : BaseActivity() {
                 putExtra(EXTRA_CONVERSATION_ID, conversationId)
             }
             val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent, if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                context, 0, intent,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     PendingIntent.FLAG_IMMUTABLE
                 } else {
                     0

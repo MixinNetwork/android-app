@@ -165,7 +165,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             action = ACTION_TO_BACKGROUND
         }
         val exitPendingIntent = PendingIntent.getBroadcast(
-            this, 0, exitIntent, if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            this, 0, exitIntent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 PendingIntent.FLAG_IMMUTABLE
             } else {
                 0

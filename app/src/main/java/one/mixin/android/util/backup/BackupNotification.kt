@@ -21,11 +21,14 @@ class BackupNotification {
             val callIntent = Intent(context, SettingActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             callIntent.putExtra(FROM_NOTIFICATION, true)
-            val pendingCallIntent = PendingIntent.getActivity(context, 0, callIntent,  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PendingIntent.FLAG_IMMUTABLE
-            } else {
-                PendingIntent.FLAG_UPDATE_CURRENT
-            })
+            val pendingCallIntent = PendingIntent.getActivity(
+                context, 0, callIntent,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
+            )
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
                 .setSmallIcon(R.drawable.ic_msg_default)

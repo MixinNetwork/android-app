@@ -38,11 +38,14 @@ class CallNotificationBuilder {
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             val user = callState.user
-            val pendingCallIntent = PendingIntent.getActivity(context, 0, callIntent,  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PendingIntent.FLAG_IMMUTABLE
-            } else {
-                PendingIntent.FLAG_UPDATE_CURRENT
-            })
+            val pendingCallIntent = PendingIntent.getActivity(
+                context, 0, callIntent,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
+            )
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
                 .setSmallIcon(R.drawable.ic_msg_default)
@@ -151,11 +154,14 @@ class CallNotificationBuilder {
             val intent = Intent(context, clazz)
             intent.action = action
             putExtra?.invoke(intent)
-            val pendingIntent = PendingIntent.getService(context, 0, intent,  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PendingIntent.FLAG_IMMUTABLE
-            } else {
-                PendingIntent.FLAG_UPDATE_CURRENT
-            })
+            val pendingIntent = PendingIntent.getService(
+                context, 0, intent,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
+            )
             return NotificationCompat.Action(iconResId, context.getString(titleResId), pendingIntent)
         }
     }
