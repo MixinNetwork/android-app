@@ -923,7 +923,7 @@ class ConversationFragment() :
                     }
                 } else {
                     RxPermissions(requireActivity())
-                        .request(Manifest.permission.RECORD_AUDIO)
+                        .request(* (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT) } else { arrayOf(Manifest.permission.RECORD_AUDIO) }))
                         .autoDispose(stopScope)
                         .subscribe(
                             { granted ->
@@ -1648,7 +1648,9 @@ class ConversationFragment() :
                     .show()
                 return@setOnClickListener
             }
-            receiveInvite(requireContext(), conversationId, playRing = false)
+            checkBlueToothConnect {
+                receiveInvite(requireContext(), conversationId, playRing = false)
+            }
         }
         callState.observe(
             viewLifecycleOwner,
@@ -2447,6 +2449,7 @@ class ConversationFragment() :
                     MenuType.File -> {
                         RxPermissions(requireActivity())
                             .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .autoDispose(stopScope)
                             .subscribe(
                                 { granted ->
                                     if (granted) {
@@ -2523,7 +2526,8 @@ class ConversationFragment() :
                             }
                         } else {
                             RxPermissions(requireActivity())
-                                .request(Manifest.permission.RECORD_AUDIO)
+                                .request(* (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT) } else { arrayOf(Manifest.permission.RECORD_AUDIO) }))
+                                .autoDispose(stopScope)
                                 .subscribe(
                                     { granted ->
                                         if (granted) {
