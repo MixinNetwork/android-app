@@ -922,21 +922,10 @@ class ConversationFragment() :
                             .show()
                     }
                 } else {
-                    RxPermissions(requireActivity())
-                        .request(* (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT) } else { arrayOf(Manifest.permission.RECORD_AUDIO) }))
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (granted) {
-                                    initAudioSwitch()
-                                    voiceCall()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            },
-                            {
-                            }
-                        )
+                    checkVoicePermissions {
+                        initAudioSwitch()
+                        voiceCall()
+                    }
                 }
             }
 
@@ -1645,7 +1634,7 @@ class ConversationFragment() :
                     .show()
                 return@setOnClickListener
             }
-            checkBlueToothConnect {
+            checkBlueToothConnectPermissions {
                 initAudioSwitch()
                 receiveInvite(requireContext(), conversationId, playRing = false)
             }
@@ -2523,21 +2512,10 @@ class ConversationFragment() :
                                     .show()
                             }
                         } else {
-                            RxPermissions(requireActivity())
-                                .request(* (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT) } else { arrayOf(Manifest.permission.RECORD_AUDIO) }))
-                                .autoDispose(stopScope)
-                                .subscribe(
-                                    { granted ->
-                                        if (granted) {
-                                            initAudioSwitch()
-                                            voiceCall()
-                                        } else {
-                                            context?.openPermissionSetting()
-                                        }
-                                    },
-                                    {
-                                    }
-                                )
+                            checkVoicePermissions {
+                                initAudioSwitch()
+                                voiceCall()
+                            }
                         }
                     }
                     MenuType.Location -> {
@@ -3261,7 +3239,7 @@ class ConversationFragment() :
         }
     }
 
-    private fun checkBlueToothConnect(callback: () -> Unit) {
+    private fun checkBlueToothConnectPermissions(callback: () -> Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             RxPermissions(this)
                 .request(Manifest.permission.BLUETOOTH_CONNECT)
@@ -3277,6 +3255,20 @@ class ConversationFragment() :
         } else {
             callback.invoke()
         }
+    }
+
+    private fun checkVoicePermissions(callback: () -> Unit) {
+        RxPermissions(this)
+            .request(* (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT) } else { arrayOf(Manifest.permission.RECORD_AUDIO) }))
+            .autoDispose(stopScope).subscribe({ granted ->
+                if (granted) {
+                    callback.invoke()
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }, {
+                reportException(it)
+            })
     }
 
     private var initAudioSwitch = false

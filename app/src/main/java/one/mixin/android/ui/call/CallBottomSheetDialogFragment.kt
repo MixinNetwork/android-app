@@ -227,7 +227,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 hangup()
             }
             binding.answerCb.setOnClickListener {
-                checkBlueToothConnect { handleAnswer() }
+                checkBlueToothConnectPermissions { handleAnswer() }
             }
             binding.closeIb.setOnClickListener {
                 hangup()
@@ -722,7 +722,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }.show()
         }
 
-    private fun checkBlueToothConnect(callback: () -> Unit) {
+    private fun checkBlueToothConnectPermissions(callback: () -> Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             RxPermissions(this)
                 .request(Manifest.permission.BLUETOOTH_CONNECT)
