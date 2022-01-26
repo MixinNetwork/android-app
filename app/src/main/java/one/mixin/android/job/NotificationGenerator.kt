@@ -424,11 +424,7 @@ object NotificationGenerator : Injector() {
             val target = BubbleActivity.putIntent(context, conversation.conversationId, userId)
             val bubbleIntent = PendingIntent.getActivity(
                 context, conversation.conversationId.hashCode(), target,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    PendingIntent.FLAG_IMMUTABLE
-                } else {
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                }
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
             val bubbleMetadata = NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
                 .setDesiredHeight(640.dp)

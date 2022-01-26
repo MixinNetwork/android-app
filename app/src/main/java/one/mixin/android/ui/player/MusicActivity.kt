@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
@@ -28,12 +27,7 @@ class MusicActivity : BaseActivity() {
                 putExtra(EXTRA_CONVERSATION_ID, conversationId)
             }
             val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    PendingIntent.FLAG_IMMUTABLE
-                } else {
-                    0
-                }
+                context, 0, intent, PendingIntent.FLAG_IMMUTABLE
             )
             try {
                 pendingIntent.send()

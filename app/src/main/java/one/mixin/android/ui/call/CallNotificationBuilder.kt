@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
 import one.mixin.android.vo.CallStateLiveData
@@ -40,12 +39,7 @@ class CallNotificationBuilder {
             val user = callState.user
             val pendingCallIntent = PendingIntent.getActivity(
                 context, 0, callIntent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    PendingIntent.FLAG_IMMUTABLE
-                } else {
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                }
-            )
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
                 .setSmallIcon(R.drawable.ic_msg_default)
@@ -156,11 +150,7 @@ class CallNotificationBuilder {
             putExtra?.invoke(intent)
             val pendingIntent = PendingIntent.getService(
                 context, 0, intent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    PendingIntent.FLAG_IMMUTABLE
-                } else {
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                }
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
             return NotificationCompat.Action(iconResId, context.getString(titleResId), pendingIntent)
         }

@@ -661,7 +661,7 @@ fun Context.openUrl(url: String) {
     }
     try {
         val actionIntent = Intent(this, ShareBroadcastReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, actionIntent, 0)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, actionIntent, PendingIntent.FLAG_IMMUTABLE)
         val customTabsIntent = CustomTabsIntent.Builder()
             .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
             .setShowTitle(true)
@@ -961,11 +961,7 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
         this,
         0,
         Intent(this, targetActivity),
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PendingIntent.FLAG_IMMUTABLE
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
-        }
+        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
     )
     val builder = NotificationCompat.Builder(this, CallActivity.CHANNEL_PIP_PERMISSION)
         .setSmallIcon(R.drawable.ic_msg_default)
