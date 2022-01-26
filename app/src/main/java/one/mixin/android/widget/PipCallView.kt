@@ -26,12 +26,12 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.TAG_CALL
-import org.jetbrains.anko.runOnUiThread
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask

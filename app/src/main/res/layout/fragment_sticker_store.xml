@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:rightIcon="@drawable/ic_settings_black_24dp"
+        app:titleText="@string/sticker_store" />
+
+    <one.mixin.android.widget.viewpager2.Banner
+        android:id="@+id/banner_pager"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/album_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="20dp"/>
+</LinearLayout>

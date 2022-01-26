@@ -15,7 +15,6 @@ import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -35,11 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.Account.PREF_EMERGENCY_CONTACT
-import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
-import one.mixin.android.Constants.INTERVAL_48_HOURS
-import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
 import one.mixin.android.Constants.Mute.MUTE_1_WEEK
 import one.mixin.android.Constants.Mute.MUTE_1_YEAR
@@ -59,17 +54,15 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.margin
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.putLong
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
@@ -87,8 +80,11 @@ import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
 import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
 import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
-import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.BulletinBoard
+import one.mixin.android.util.EmergencyContactBulletin
+import one.mixin.android.util.NewWalletBulletin
+import one.mixin.android.util.NotificationBulletin
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppButtonData
@@ -112,6 +108,7 @@ import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -122,7 +119,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
-import org.jetbrains.anko.margin
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -147,6 +143,8 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private lateinit var bulletinView: BulletinView
+
+    private val bulletinBoard = BulletinBoard()
 
     private val messageAdapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
@@ -199,7 +197,6 @@ class ConversationListFragment : LinkFragment() {
                 margin = 16.dp
             }
         }
-        bulletinView.callback = bulletinNotificationCallback
         messageAdapter.headerView = bulletinView
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
@@ -493,71 +490,24 @@ class ConversationListFragment : LinkFragment() {
 
     override fun onResume() {
         super.onResume()
-        val notificationTime =
-            requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
-        if (System.currentTimeMillis() - notificationTime > INTERVAL_48_HOURS) {
-            val notificationEnable = NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()
-            if (notificationEnable) {
-                checkEmergencyContact()
-            } else {
-                messageAdapter.setShowHeader(true, binding.messageRv)
-            }
-        } else {
-            checkEmergencyContact()
-        }
-    }
 
-    private fun checkEmergencyContact() {
-        val hasEmergencyContact = Session.getAccount()?.hasEmergencyContact == true
-        if (hasEmergencyContact) {
-            messageAdapter.setShowHeader(false, binding.messageRv)
-        } else {
-            showEmergencyContact()
-        }
-    }
-
-    private fun showEmergencyContact() = lifecycleScope.launch {
-        if (viewDestroyed()) return@launch
-
-        val emergencyContactTime = requireContext().defaultSharedPreferences.getLong(PREF_EMERGENCY_CONTACT, 0)
-        if (System.currentTimeMillis() - emergencyContactTime > INTERVAL_7_DAYS) {
+        lifecycleScope.launch {
             val totalUsd = messagesViewModel.findTotalUSDBalance()
-            if (totalUsd >= 100) {
-                bulletinView.type = BulletinView.Type.EmergencyContact
-                bulletinView.callback = bulletinEmergencyContactCallback
-                messageAdapter.setShowHeader(true, binding.messageRv)
-                return@launch
-            }
-        }
-        messageAdapter.setShowHeader(false, binding.messageRv)
-    }
 
-    private val bulletinNotificationCallback = object : BulletinView.Callback {
-        override fun onClose() {
-            requireContext().defaultSharedPreferences.putLong(
-                PREF_NOTIFICATION_ON,
-                System.currentTimeMillis()
-            )
-            checkEmergencyContact()
-        }
-
-        override fun onSetting() {
-            requireContext().openNotificationSetting()
+            val shown = bulletinBoard
+                .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
+                .addBulletin(NotificationBulletin(bulletinView, ::onClose))
+                .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))
+                .post()
+            messageAdapter.setShowHeader(shown, binding.messageRv)
         }
     }
 
-    private val bulletinEmergencyContactCallback = object : BulletinView.Callback {
-        override fun onClose() {
-            messageAdapter.setShowHeader(false, binding.messageRv)
-            requireContext().defaultSharedPreferences.putLong(
-                PREF_EMERGENCY_CONTACT,
-                System.currentTimeMillis()
-            )
-        }
-
-        override fun onSetting() {
-            SettingActivity.showEmergencyContact(requireContext())
-        }
+    private fun onClose(type: BulletinView.Type) {
+        val shown = if (type.ordinal < BulletinView.Type.values().size - 1) {
+            bulletinBoard.post()
+        } else false
+        messageAdapter.setShowHeader(shown, binding.messageRv)
     }
 
     private fun refreshBot() {
@@ -700,7 +650,13 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.messageStatus == MessageStatus.FAILED.name -> {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)
-                        binding.msgTv.setText(R.string.conversation_waiting)
+                        binding.msgTv.setText(
+                            if (conversationItem.isSignal()) {
+                                R.string.conversation_waiting
+                            } else {
+                                R.string.chat_decryption_failed
+                            }
+                        )
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_fail)
                 }
@@ -962,6 +918,7 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.senderId == Session.getAccountId() &&
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
+                conversationItem.messageStatus != MessageStatus.FAILED.name &&
                 !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
                 !conversationItem.isGroupCall() &&
                 !conversationItem.isPin()

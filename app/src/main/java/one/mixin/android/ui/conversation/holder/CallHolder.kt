@@ -23,7 +23,8 @@ class CallHolder constructor(val binding: ItemChatCallBinding) : BaseViewHolder(
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         binding.chatTime.load(
-            isMe, messageItem.createdAt, messageItem.status,
+            isMe, messageItem.createdAt,
+            null,
             isPin = false,
             isRepresentative = false,
             isSecret = false

@@ -9,6 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDepositTipBottomSheetBinding
 import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -16,7 +17,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.needShowReserve
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
 class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {

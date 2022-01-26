@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentDraggableRecyclerViewBinding
 import one.mixin.android.event.DragReleaseEvent
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
@@ -27,7 +28,6 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumMediaCollection
-import org.jetbrains.anko.dip
 
 class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view), AlbumMediaCollection.AlbumMediaCallbacks {
     companion object {
@@ -52,7 +52,7 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
     private val needCamera: Boolean by lazy { requireArguments().getBoolean(ARGS_NEED_CAMERA) }
 
     private val padding: Int by lazy {
-        requireContext().dip(PADDING)
+        PADDING.dp
     }
 
     private val adapter: GalleryItemAdapter by lazy {

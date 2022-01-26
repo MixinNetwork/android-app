@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatImageBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGifMark
 import one.mixin.android.extension.loadImageMark
@@ -19,7 +20,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.widget.gallery.MimeType
-import org.jetbrains.anko.dip
 import kotlin.math.min
 
 class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(binding.root) {
@@ -44,7 +44,7 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -212,9 +212,9 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
 
     private fun handleGif(mark: Int) {
         if (dataSize == null || dataSize == 0L) { // un-downloaded giphy
-            binding.chatImage.loadGifMark(dataThumbImage, mark, false)
+            binding.chatImage.loadGifMark(dataThumbImage, null, mark, false)
         } else {
-            binding.chatImage.loadGifMark(dataUrl, dataThumbImage, mark)
+            binding.chatImage.loadGifMark(dataUrl, dataThumbImage, mark, true)
         }
     }
 }

@@ -300,6 +300,7 @@
     <string name="chat_waiting_desktop">桌面端</string>
     <string name="chat_learn">了解更多</string>
     <string name="chat_not_support">不支持此类型消息。请升级 Mixin 查看。 %1$s。</string>
+    <string name="chat_decryption_failed">此信息解密失败，请将 Mixin 升级到最新版本。</string>
     <string name="week_monday">星期一</string>
     <string name="week_tuesday">星期二</string>
     <string name="week_wednesday">星期三</string>
@@ -746,6 +747,8 @@
     <string name="notification_settings">设置</string>
     <string name="notification_title">打开通知</string>
     <string name="notification_content">不再遗漏好友的消息。</string>
+    <string name="notification_new_wallet_title">创建钱包</string>
+    <string name="notification_new_wallet_content">创建你的第一个数字钱包，所有资产都在一个钱包，收发加密资产简单易用。</string>
     <!--auth-->
     <string name="auth_request">需要访问你的</string>
     <string name="auth_public_profile">个人资料(必须)</string>
@@ -773,6 +776,7 @@
     <string name="auth_collectibles_read_description">访问你的 NFT 列表</string>
 
     <string name="permission_video">要允许拍摄视频吗?</string>
+    <string name="permission_audio">要允许录制声音吗?</string>
     <string name="permission_camera">要允许拍摄照片吗?</string>
 
     <string name="extensions">机器人</string>
@@ -1072,4 +1076,13 @@
     <string name="network_operator">网络运营商</string>
     <string name="parse_dns_result">解析 DNS 结果</string>
     <string name="diagnosis_complete">诊断完成</string>
+
+    <!--  sticker store  -->
+    <string name="sticker_store">表情商店</string>
+    <string name="sticker_store_add">添加</string>
+    <string name="sticker_store_added">已添加</string>
+    <string name="sticker_store_add_stickers">添加所有表情</string>
+    <string name="sticker_store_remove_stickers">移除所有表情</string>
+    <string name="sticker_my">我的表情</string>
+    <string name="sticker_none">还未添加任何表情</string>
 </resources>

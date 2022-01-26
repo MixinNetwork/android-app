@@ -15,10 +15,12 @@ import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.toCategory
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
 import java.util.UUID
@@ -43,11 +45,12 @@ class SendService : IntentService("SendService") {
         val conversationId = intent.getStringExtra(CONVERSATION_ID) ?: return
         if (bundle != null) {
             val content = bundle.getCharSequence(KEY_REPLY) ?: return
-            val category = if (intent.getBooleanExtra(IS_PLAIN, false)) {
-                MessageCategory.PLAIN_TEXT.name
-            } else {
-                MessageCategory.SIGNAL_TEXT.name
-            }
+            val encryptCategory = EncryptCategory.values()[intent.getIntExtra(ENCRYPTED_CATEGORY, EncryptCategory.PLAIN.ordinal)]
+            val category = encryptCategory.toCategory(
+                MessageCategory.PLAIN_TEXT,
+                MessageCategory.SIGNAL_TEXT,
+                MessageCategory.ENCRYPTED_TEXT,
+            )
 
             val message = createMessage(
                 UUID.randomUUID().toString(),

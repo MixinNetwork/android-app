@@ -1,7 +1,9 @@
 package one.mixin.android.ui.setting
 
+import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -29,6 +31,7 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AU
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
+import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
@@ -98,6 +101,12 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                         deauthCallback?.onSuccess(app.homeUri)
 
                         pb.dismiss()
+                        activity?.setResult(
+                            Activity.RESULT_OK,
+                            Intent().apply {
+                                putExtra(ARGS_SUCCESS, true)
+                            }
+                        )
                         activity?.onBackPressed()
                     },
                     {

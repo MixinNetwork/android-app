@@ -4,6 +4,7 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatContactCardQuoteBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
@@ -13,7 +14,6 @@ import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.showVerifiedOrBot
-import org.jetbrains.anko.dip
 
 class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBinding) : MediaHolder(binding.root) {
 
@@ -80,7 +80,7 @@ class ContactCardQuoteHolder constructor(val binding: ItemChatContactCardQuoteBi
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }

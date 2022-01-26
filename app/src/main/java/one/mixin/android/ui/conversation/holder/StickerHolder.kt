@@ -1,11 +1,13 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
+import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import androidx.constraintlayout.widget.ConstraintLayout
 import one.mixin.android.databinding.ItemChatStickerBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
@@ -13,7 +15,6 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
-import org.jetbrains.anko.dip
 
 class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewHolder(binding.root) {
 
@@ -45,7 +46,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.setOnLongClickListener {
+        val longClickListener = View.OnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -53,11 +54,16 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
                 true
             }
         }
+        itemView.setOnLongClickListener(longClickListener)
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
+        binding.chatSticker.setOnClickListener {
+            onItemListener.onStickerClick(messageItem)
+        }
+        binding.chatSticker.setOnLongClickListener(longClickListener)
         if (messageItem.assetWidth == null || messageItem.assetHeight == null) {
             binding.chatSticker.layoutParams.width = dp120
             binding.chatSticker.layoutParams.height = dp120
@@ -104,7 +110,7 @@ class StickerHolder constructor(val binding: ItemChatStickerBinding) : BaseViewH
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }

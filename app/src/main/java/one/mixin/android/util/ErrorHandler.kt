@@ -8,8 +8,8 @@ import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
+import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.toast
-import org.jetbrains.anko.runOnUiThread
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException

@@ -70,15 +70,14 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.emptyIv.setImageResource(R.drawable.ic_empty_audio)
         binding.emptyTv.setText(R.string.no_audio)
         viewModel.getAudioMessages(conversationId).observe(
-            viewLifecycleOwner,
-            {
-                if (it.size <= 0) {
-                    (view as ViewAnimator).displayedChild = 1
-                } else {
-                    (view as ViewAnimator).displayedChild = 0
-                }
-                adapter.submitList(it)
+            viewLifecycleOwner
+        ) {
+            if (it.size <= 0) {
+                (view as ViewAnimator).displayedChild = 1
+            } else {
+                (view as ViewAnimator).displayedChild = 0
             }
-        )
+            adapter.submitList(it)
+        }
     }
 }

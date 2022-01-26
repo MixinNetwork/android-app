@@ -65,6 +65,7 @@ interface UserDao : BaseDao<User> {
         SELECT * FROM users 
         WHERE user_id != :id 
         AND relationship = 'FRIEND' 
+        AND identity_number != '0'
         AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY 
             full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE DESC

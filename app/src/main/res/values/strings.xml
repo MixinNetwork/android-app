@@ -320,6 +320,7 @@
     <string name="chat_waiting_desktop">desktop</string>
     <string name="chat_not_support_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
+    <string name="chat_decryption_failed">This message decryption failed, please upgrade Mixin to the latest version.</string>
     <string name="chat_learn">Learn more</string>
     <string name="week_monday">Monday</string>
     <string name="week_tuesday">Tuesday</string>
@@ -764,6 +765,8 @@
     <string name="notification_settings">Settings</string>
     <string name="notification_title">Turn On Notifications</string>
     <string name="notification_content">Don\'t miss message from your friends.</string>
+    <string name="notification_new_wallet_title">Get a new wallet</string>
+    <string name="notification_new_wallet_content">Create your first digital wallet, all your digital assets in one wallet, easy send and receive cryptocurrency.</string>
     <!--auth-->
     <string name="auth_request">Requests access to your</string>
     <string name="auth_public_profile">Public profile (required)</string>
@@ -791,6 +794,7 @@
     <string name="auth_collectibles_read_description">access your collectibles</string>
 
     <string name="permission_video">Allow to record video?</string>
+    <string name="permission_audio">Allow to record audio?</string>
     <string name="permission_camera">Allow to take pictures?</string>
 
     <string name="extensions">Extensions</string>
@@ -1093,4 +1097,13 @@
     <string name="network_operator">NetworkOperator</string>
     <string name="parse_dns_result">Parse DNS result: </string>
     <string name="diagnosis_complete">Diagnosis Complete</string>
+
+    <!--  sticker store  -->
+    <string name="sticker_store">Sticker Store</string>
+    <string name="sticker_store_add">Add</string>
+    <string name="sticker_store_added">Added</string>
+    <string name="sticker_store_add_stickers">Add Stickers</string>
+    <string name="sticker_store_remove_stickers">Remove Stickers</string>
+    <string name="sticker_my">My Stickers</string>
+    <string name="sticker_none">NO STICKER</string>
 </resources>

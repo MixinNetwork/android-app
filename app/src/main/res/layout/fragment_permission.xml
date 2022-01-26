@@ -7,36 +7,6 @@
     android:background="@drawable/bg_round_top_white"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/avatar"
-        android:layout_width="0dp"
-        android:layout_height="36dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription"/>
-
-    <TextView
-        android:id="@+id/name"
-        android:singleLine="true"
-        android:gravity="start|center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:textColor="?attr/text_primary"
-        app:layout_constraintBottom_toBottomOf="@id/avatar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toEndOf="@id/avatar"
-        app:layout_constraintTop_toTopOf="@id/avatar"
-        app:layout_goneMarginStart="16dp"
-        app:layout_goneMarginTop="16dp"
-        tools:text="Mixin"/>
-
     <LinearLayout
         android:id="@+id/bottom"
         android:layout_width="wrap_content"
@@ -59,10 +29,11 @@
             android:textSize="14sp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
             android:layout_marginEnd="16dp"
-            android:background="@drawable/selector_round_bn_gray"/>
+            android:foreground="?attr/selectableItemBackground"
+            android:background="@drawable/selector_round_bn_gray" />
 
         <TextView
             android:id="@+id/authorization"
@@ -76,12 +47,39 @@
             android:textSize="14sp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
             android:background="@drawable/selector_round_bn"
-            android:layout_marginEnd="16dp"/>
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginEnd="16dp" />
 
     </LinearLayout>
+
+    <ImageView
+        app:layout_constraintVertical_chainStyle="packed"
+        android:id="@+id/logo"
+        android:src="@drawable/ic_permission_audio"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="56dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:textStyle="bold"
+        android:layout_marginTop="48dp"
+        android:textColor="?attr/text_primary"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/logo"
+        tools:text="Name" />
 
     <TextView
         android:id="@+id/info"
@@ -91,10 +89,13 @@
         android:layout_marginEnd="24dp"
         android:textStyle="bold"
         android:textColor="?attr/text_primary"
+        android:gravity="center"
         android:textSize="18sp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintVertical_bias="0"
         app:layout_constraintBottom_toTopOf="@id/bottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/info"
-        tools:text="Request access to your Phone Number"/>
+        app:layout_constraintTop_toBottomOf="@id/name"
+        tools:text="Request access to your Phone Number" />
 </androidx.constraintlayout.widget.ConstraintLayout>

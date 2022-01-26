@@ -11,8 +11,8 @@ import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -160,8 +160,7 @@ fun String.checkUserOrApp(
                     return@launch
                 }
             }
-            UserBottomSheetDialogFragment.newInstance(user)
-                .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+            showUserBottom(supportFragmentManager, user)
         }
     }
 }

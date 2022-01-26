@@ -155,6 +155,7 @@ import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
@@ -184,6 +185,7 @@ import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
+import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
@@ -197,16 +199,15 @@ import one.mixin.android.util.import.ImportChatUtil
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
-import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ParticipantRole
@@ -218,14 +219,16 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isEncrypt
+import one.mixin.android.vo.isData
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.isSticker
+import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
@@ -512,9 +515,7 @@ class ConversationFragment() :
                     conversationAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
                     conversationAdapter.selectSet.size == 1 -> {
                         try {
-                            if (conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_TEXT.name ||
-                                conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_TEXT.name
-                            ) {
+                            if (conversationAdapter.selectSet.valueAt(0)?.isText() == true) {
                                 binding.toolView.copyIv.visibility = VISIBLE
                             } else {
                                 binding.toolView.copyIv.visibility = GONE
@@ -522,9 +523,7 @@ class ConversationFragment() :
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             binding.toolView.copyIv.visibility = GONE
                         }
-                        if (conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_DATA.name ||
-                            conversationAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_DATA.name
-                        ) {
+                        if (conversationAdapter.selectSet.valueAt(0)?.isData() == true) {
                             binding.toolView.shareIv.visibility = VISIBLE
                         } else {
                             binding.toolView.shareIv.visibility = GONE
@@ -563,16 +562,12 @@ class ConversationFragment() :
                 val b = conversationAdapter.addSelect(messageItem)
                 binding.toolView.countTv.text = conversationAdapter.selectSet.size.toString()
                 if (b) {
-                    if (messageItem.type == MessageCategory.SIGNAL_TEXT.name ||
-                        messageItem.type == MessageCategory.PLAIN_TEXT.name
-                    ) {
+                    if (messageItem.isText()) {
                         binding.toolView.copyIv.visibility = VISIBLE
                     } else {
                         binding.toolView.copyIv.visibility = GONE
                     }
-                    if (messageItem.type == MessageCategory.SIGNAL_DATA.name ||
-                        messageItem.type == MessageCategory.PLAIN_DATA.name
-                    ) {
+                    if (messageItem.isData()) {
                         binding.toolView.shareIv.visibility = VISIBLE
                     } else {
                         binding.toolView.shareIv.visibility = GONE
@@ -690,6 +685,11 @@ class ConversationFragment() :
                 }
             }
 
+            override fun onStickerClick(messageItem: MessageItem) {
+                StickerPreviewBottomSheetFragment.newInstance(requireNotNull(messageItem.stickerId))
+                    .showNow(parentFragmentManager, StickerPreviewBottomSheetFragment.TAG)
+            }
+
             @TargetApi(Build.VERSION_CODES.O)
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
@@ -753,8 +753,7 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(parentFragmentManager, it, conversationId)
                         }
                     },
                     {
@@ -803,8 +802,7 @@ class ConversationFragment() :
                             ProfileBottomSheetDialogFragment.newInstance()
                                 .showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG)
                         } else {
-                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(parentFragmentManager, user, conversationId)
                         }
                     }
                 }
@@ -871,8 +869,7 @@ class ConversationFragment() :
                 chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
                     {
                         it?.let {
-                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(parentFragmentManager, it, conversationId)
                         }
                     },
                     {
@@ -896,7 +893,7 @@ class ConversationFragment() :
 
             override fun onTranscriptClick(messageItem: MessageItem) {
                 binding.chatControl.chatEt.hideKeyboard()
-                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, encryptCategory(), messageItem.isPlain())
+                ChatHistoryActivity.show(requireActivity(), messageItem.messageId, messageItem.conversationId, encryptCategory())
             }
 
             override fun onSayHi() {
@@ -930,20 +927,10 @@ class ConversationFragment() :
                             .show()
                     }
                 } else {
-                    RxPermissions(requireActivity())
-                        .request(Manifest.permission.RECORD_AUDIO)
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (granted) {
-                                    voiceCall()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            },
-                            {
-                            }
-                        )
+                    checkVoicePermissions {
+                        initAudioSwitch()
+                        voiceCall()
+                    }
                 }
             }
 
@@ -1067,9 +1054,7 @@ class ConversationFragment() :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!anyCallServiceRunning(requireContext())) {
-            audioSwitch.start { audioDevices, selectedAudioDevice ->
-                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
-            }
+            initAudioSwitch()
         }
         recipient = requireArguments().getParcelable(RECIPIENT)
         messageId = requireArguments().getString(MESSAGE_ID, null)
@@ -1654,7 +1639,10 @@ class ConversationFragment() :
                     .show()
                 return@setOnClickListener
             }
-            receiveInvite(requireContext(), conversationId, playRing = false)
+            checkBlueToothConnectPermissions {
+                initAudioSwitch()
+                receiveInvite(requireContext(), conversationId, playRing = false)
+            }
         }
         callState.observe(
             viewLifecycleOwner,
@@ -1949,7 +1937,7 @@ class ConversationFragment() :
 
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
-            binding.chatControl.showBot(encryptCategory().isEncrypt())
+            binding.chatControl.showBot(encryptCategory().isSecret())
         } else {
             binding.chatControl.hideBot()
         }
@@ -2006,15 +1994,7 @@ class ConversationFragment() :
         }
     }
 
-    private fun encryptCategory(): EncryptCategory {
-        return if (isBot && app?.capabilities?.contains(AppCap.ENCRYPTED.name) == true) {
-            EncryptCategory.ENCRYPTED
-        } else if (isBot) {
-            EncryptCategory.PLAIN
-        } else {
-            EncryptCategory.SIGNAL
-        }
-    }
+    private fun encryptCategory(): EncryptCategory = getEncryptedCategory(isBot, app)
 
     private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
         createConversation {
@@ -2128,12 +2108,12 @@ class ConversationFragment() :
         }
     }
 
-    private fun sendStickerMessage(stickerId: String) {
+    private fun sendStickerMessage(stickerId: String, albumId: String?) {
         createConversation {
             chatViewModel.sendStickerMessage(
                 conversationId,
                 sender,
-                StickerMessagePayload(stickerId),
+                StickerMessagePayload(stickerId, albumId),
                 encryptCategory()
             )
             scrollToDown()
@@ -2284,21 +2264,19 @@ class ConversationFragment() :
         conversationAdapter.recipient = user
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(
-            viewLifecycleOwner,
-            {
-                it?.let { u ->
-                    recipient = u
-                    if (u.isBot()) {
-                        renderBot(u)
-                    }
-                    renderUserInfo(u)
+            viewLifecycleOwner
+        ) {
+            it?.let { u ->
+                recipient = u
+                if (u.isBot()) {
+                    renderBot(u)
                 }
+                renderUserInfo(u)
             }
-        )
+        }
         binding.actionBar.avatarIv.setOnClickListener {
             hideIfShowBottomSheet()
-            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+            showUserBottom(parentFragmentManager, user, conversationId)
         }
         binding.bottomUnblock.setOnClickListener {
             recipient?.let { user ->
@@ -2320,7 +2298,7 @@ class ConversationFragment() :
         if (viewDestroyed()) return@launch
 
         app = chatViewModel.findAppById(user.appId!!)
-        binding.chatControl.hintEncrypt(encryptCategory().isEncrypt())
+        binding.chatControl.hintEncrypt(encryptCategory().isSecret())
         if (app != null && app!!.creatorId == Session.getAccountId()) {
             val menuFragment = parentFragmentManager.findFragmentByTag(MenuFragment.TAG)
             if (menuFragment == null) {
@@ -2463,6 +2441,7 @@ class ConversationFragment() :
                     MenuType.File -> {
                         RxPermissions(requireActivity())
                             .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .autoDispose(stopScope)
                             .subscribe(
                                 { granted ->
                                     if (granted) {
@@ -2538,19 +2517,10 @@ class ConversationFragment() :
                                     .show()
                             }
                         } else {
-                            RxPermissions(requireActivity())
-                                .request(Manifest.permission.RECORD_AUDIO)
-                                .subscribe(
-                                    { granted ->
-                                        if (granted) {
-                                            voiceCall()
-                                        } else {
-                                            context?.openPermissionSetting()
-                                        }
-                                    },
-                                    {
-                                    }
-                                )
+                            checkVoicePermissions {
+                                initAudioSwitch()
+                                voiceCall()
+                            }
                         }
                     }
                     MenuType.Location -> {
@@ -2590,12 +2560,12 @@ class ConversationFragment() :
         )
         stickerAlbumFragment.setCallback(
             object : StickerAlbumFragment.Callback {
-                override fun onStickerClick(stickerId: String) {
+                override fun onStickerClick(stickerId: String, albumId: String?) {
                     if (isAdded) {
                         if (binding.stickerContainer.height != binding.inputLayout.keyboardHeight) {
                             binding.inputLayout.openInputArea(binding.chatControl.chatEt)
                         }
-                        sendStickerMessage(stickerId)
+                        sendStickerMessage(stickerId, albumId)
                     }
                 }
 
@@ -3271,6 +3241,48 @@ class ConversationFragment() :
                 getCombineForwardResult.launch(ArrayList(messages))
             }
             closeTool()
+        }
+    }
+
+    private fun checkBlueToothConnectPermissions(callback: () -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            RxPermissions(this)
+                .request(Manifest.permission.BLUETOOTH_CONNECT)
+                .autoDispose(stopScope).subscribe({ granted ->
+                    if (granted) {
+                        callback.invoke()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                    reportException(it)
+                })
+        } else {
+            callback.invoke()
+        }
+    }
+
+    private fun checkVoicePermissions(callback: () -> Unit) {
+        RxPermissions(this)
+            .request(* (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT) } else { arrayOf(Manifest.permission.RECORD_AUDIO) }))
+            .autoDispose(stopScope).subscribe({ granted ->
+                if (granted) {
+                    callback.invoke()
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }, {
+                reportException(it)
+            })
+    }
+
+    private var initAudioSwitch = false
+    private fun initAudioSwitch() {
+        if (!initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
+            initAudioSwitch = true
+            audioSwitch.start { audioDevices, selectedAudioDevice ->
+                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+            }
         }
     }
 }

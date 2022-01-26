@@ -52,8 +52,8 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.message.SendMessageHelper
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
@@ -117,9 +117,6 @@ class ChatHistoryActivity : BaseActivity() {
     }
     private val encryptCategory by lazy {
         EncryptCategory.values()[intent.getIntExtra(ENCRYPT_CATEGORY, EncryptCategory.PLAIN.ordinal)]
-    }
-    private val isPlain by lazy {
-        intent.getBooleanExtra(IS_PLAIN, true)
     }
     private val isGroup by lazy {
         intent.getBooleanExtra(IS_GROUP, false)
@@ -285,8 +282,7 @@ class ChatHistoryActivity : BaseActivity() {
                 lifecycleScope.launch {
                     userRepository.findUserByIdentityNumberSuspend(identityNumber.replace("@", ""))
                         ?.let { user ->
-                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            showUserBottom(supportFragmentManager, user, conversationId)
                         }
                 }
             }
@@ -359,7 +355,7 @@ class ChatHistoryActivity : BaseActivity() {
             }
 
             override fun onTranscriptClick(messageItem: ChatHistoryMessageItem) {
-                show(this@ChatHistoryActivity, messageItem.messageId, conversationId, encryptCategory, isPlain)
+                show(this@ChatHistoryActivity, messageItem.messageId, conversationId, encryptCategory)
             }
 
             override fun onTextDoubleClick(messageItem: ChatHistoryMessageItem) {
@@ -408,7 +404,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 jobManager.addJobInBackground(
                                     SendTranscriptAttachmentMessageJob(
                                         transcript,
-                                        isPlain
+                                        encryptCategory
                                     )
                                 )
                             }
@@ -469,11 +465,7 @@ class ChatHistoryActivity : BaseActivity() {
                     withContext(Dispatchers.IO) {
                         userRepository.getUserById(userId)?.let { user ->
                             withContext(Dispatchers.Main) {
-                                UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                    .showNow(
-                                        supportFragmentManager,
-                                        UserBottomSheetDialogFragment.TAG
-                                    )
+                                showUserBottom(supportFragmentManager, user, conversationId)
                             }
                         }
                     }
@@ -505,11 +497,7 @@ class ChatHistoryActivity : BaseActivity() {
                         withContext(Dispatchers.IO) {
                             userRepository.getUserById(uid)?.let { user ->
                                 withContext(Dispatchers.Main) {
-                                    UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                        .showNow(
-                                            supportFragmentManager,
-                                            UserBottomSheetDialogFragment.TAG
-                                        )
+                                    showUserBottom(supportFragmentManager, user, conversationId)
                                 }
                             }
                         }
@@ -770,8 +758,11 @@ class ChatHistoryActivity : BaseActivity() {
                         onError.invoke()
                     }
                 } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
-                    val category =
-                        if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                    val category = when {
+                        it.isSignal() -> MessageCategory.SIGNAL_IMAGE
+                        it.isEncrypted() -> MessageCategory.ENCRYPTED_IMAGE
+                        else -> MessageCategory.PLAIN_IMAGE
+                    }.name
                     try {
                         jobManager.addJobInBackground(
                             SendGiphyJob(
@@ -811,18 +802,16 @@ class ChatHistoryActivity : BaseActivity() {
         private const val MESSAGE_ID = "transcript_id"
         private const val CONVERSATION_ID = "conversation_id"
         private const val ENCRYPT_CATEGORY = "encryptCategory"
-        private const val IS_PLAIN = "is_plain"
         private const val IS_GROUP = "is_group"
         private const val CATEGORY = "category"
         private const val TRANSCRIPT = 0
         private const val CHAT_HISTORY = 1
-        fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory, isPlain: Boolean) {
+        fun show(context: Context, messageId: String, conversationId: String, encryptCategory: EncryptCategory) {
             context.startActivity(
                 Intent(context, ChatHistoryActivity::class.java).apply {
                     putExtra(MESSAGE_ID, messageId)
                     putExtra(CONVERSATION_ID, conversationId)
                     putExtra(ENCRYPT_CATEGORY, encryptCategory.ordinal)
-                    putExtra(IS_PLAIN, isPlain)
                     putExtra(CATEGORY, TRANSCRIPT)
                 }
             )

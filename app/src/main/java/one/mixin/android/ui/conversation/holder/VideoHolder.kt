@@ -8,6 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatVideoBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
@@ -24,7 +25,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSecret
-import org.jetbrains.anko.dip
 
 class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
 
@@ -75,7 +75,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -335,7 +335,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         }
 
         binding.chatImage.setShape(mark)
-        if (type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name) {
+        if (type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name || type == MessageCategory.ENCRYPTED_LIVE.name) {
             binding.chatImage.loadImageMark(dataUrl, R.drawable.image_holder, mark)
         } else {
             binding.chatImage.loadVideoMark(dataUrl, dataThumbImage, mark)

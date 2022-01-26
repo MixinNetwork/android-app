@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -83,6 +84,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.websocket.ContactMessagePayload
@@ -101,12 +103,16 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
         @SuppressLint("StaticFieldLeak")
         private var instant: UserBottomSheetDialogFragment? = null
-        fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment {
+
+        fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment? {
             try {
                 instant?.dismiss()
             } catch (ignored: IllegalStateException) {
             }
             instant = null
+            if (user.notMessengerUser()) {
+                return null
+            }
             return UserBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_USER, user)
@@ -351,7 +357,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         ProfileBottomSheetDialogFragment.newInstance()
                             .showNow(parentFragmentManager, TAG)
                     } else {
-                        newInstance(it).showNow(parentFragmentManager, TAG)
+                        showUserBottom(parentFragmentManager, it)
                     }
                 }
                 dismiss()
@@ -986,5 +992,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             BottomSheetBehavior.STATE_COLLAPSED -> binding.moreIv.rotationX = 0f
             BottomSheetBehavior.STATE_EXPANDED -> binding.moreIv.rotationX = 180f
         }
+    }
+}
+
+fun showUserBottom(fragmentManager: FragmentManager, user: User, conversationId: String? = null) {
+    if (user.notMessengerUser()) {
+        NonMessengerUserBottomSheetDialogFragment.newInstance(user, conversationId)
+            .showNow(fragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
+    } else {
+        UserBottomSheetDialogFragment.newInstance(user, conversationId)
+            ?.showNow(fragmentManager, UserBottomSheetDialogFragment.TAG)
     }
 }

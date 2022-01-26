@@ -25,6 +25,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -37,7 +38,6 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
 class DeviceFragment() : MixinBottomSheetDialogFragment() {

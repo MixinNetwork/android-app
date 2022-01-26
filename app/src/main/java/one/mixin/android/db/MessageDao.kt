@@ -6,6 +6,12 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
+import one.mixin.android.db.contants.AUDIOS
+import one.mixin.android.db.contants.DATA
+import one.mixin.android.db.contants.IMAGES
+import one.mixin.android.db.contants.LIVES
+import one.mixin.android.db.contants.TRANSCRIPTS
+import one.mixin.android.db.contants.VIDEOS
 import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
@@ -46,7 +52,7 @@ interface MessageDao : BaseDao<Message> {
                 LEFT JOIN message_mentions mm ON m.id = mm.message_id 
                 LEFT JOIN pin_messages pm ON m.id = pm.message_id
             """
-        private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
+        private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
     }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
@@ -74,7 +80,7 @@ interface MessageDao : BaseDao<Message> {
         INDEXED BY index_messages_conversation_id_category
         INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE', 'ENCRYPTED_LIVE') 
+        AND m.category IN ($IMAGES, $VIDEOS, $LIVES) 
         ORDER BY m.created_at ASC, m.rowid ASC
         """
     )
@@ -99,7 +105,7 @@ interface MessageDao : BaseDao<Message> {
             SELECT count(1) FROM messages 
             INDEXED BY index_messages_conversation_id_category
             WHERE conversation_id = :conversationId
-            AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE', 'ENCRYPTED_LIVE') 
+            AND category IN ($IMAGES, $VIDEOS, $LIVES) 
             AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
             ORDER BY created_at ASC, rowid ASC
         """
@@ -118,7 +124,7 @@ interface MessageDao : BaseDao<Message> {
         INDEXED BY index_messages_conversation_id_category
         INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO')
+        AND m.category IN ($IMAGES, $VIDEOS)
         ORDER BY m.created_at DESC, m.rowid DESC
         """
     )
@@ -128,7 +134,7 @@ interface MessageDao : BaseDao<Message> {
         """SELECT count(1) FROM messages
         INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
-        AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO')
+        AND category IN ($IMAGES, $VIDEOS)
         AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
         ORDER BY created_at DESC, rowid DESC
         """
@@ -145,7 +151,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration,  m.media_waveform AS mediaWaveform
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ('SIGNAL_AUDIO', 'PLAIN_AUDIO')
+        AND m.category IN ($AUDIOS)
         ORDER BY m.created_at DESC
         """
     )
@@ -188,7 +194,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND m.category IN ('SIGNAL_DATA', 'PLAIN_DATA', 'ENCRYPTED_DATA')
+        AND m.category IN ($DATA)
         ORDER BY m.created_at DESC
         """
     )
@@ -324,7 +330,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status 
-        WHERE id = :messageId AND category != 'SIGNAL_LIVE'
+        WHERE id = :messageId AND category != 'MESSAGE_RECALL'
         """
     )
     fun updateLiveMessage(
@@ -339,7 +345,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         UPDATE messages SET content = :content, media_size = :mediaSize, media_status = :mediaStatus, status = :status 
-        WHERE id = :messageId AND category != 'SIGNAL_TRANSCRIPT'
+        WHERE id = :messageId AND category != 'MESSAGE_RECALL'
         """
     )
     fun updateTranscriptMessage(
@@ -429,8 +435,9 @@ interface MessageDao : BaseDao<Message> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO' OR m.category = 'ENCRYPTED_AUDIO') AND m.created_at >= :createdAt AND " +
-            "m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1"
+        """$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category IN ($AUDIOS)) AND m.created_at >= :createdAt AND 
+            m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1
+            """
     )
     suspend fun findNextAudioMessageItem(
         conversationId: String,
@@ -440,7 +447,7 @@ interface MessageDao : BaseDao<Message> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        """SELECT * FROM messages WHERE conversation_id = :conversationId AND (category = 'SIGNAL_AUDIO' OR category = 'PLAIN_AUDIO' OR category = 'ENCRYPTED_AUDIO')
+        """SELECT * FROM messages WHERE conversation_id = :conversationId AND (category IN ($AUDIOS))
                 AND created_at >= :createdAt AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1
             """
     )
@@ -507,12 +514,12 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """SELECT id, conversation_id, name, category, media_url, media_mine_type 
-            FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'ENCRYPTED_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'ENCRYPTED_VIDEO','SIGNAL_DATA', 'PLAIN_DATA', 'ENCRYPTED_DATA','SIGNAL_AUDIO', 'PLAIN_AUDIO', 'ENCRYPTED_AUDIO') 
+            FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) 
             AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset"""
     )
     fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
 
-    @Query("SELECT rowid IS NOT NULL FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' LIMIT 1")
+    @Query("SELECT rowid IS NOT NULL FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND media_status = 'DONE' LIMIT 1")
     fun hasDoneAttachment(): Boolean
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
@@ -567,7 +574,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND (m.category in ($DATA)) AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
         AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
     """
@@ -578,7 +585,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT id as mediaId, media_status as mediaStatus FROM messages 
         WHERE conversation_id = :conversationId
-        AND (category = 'SIGNAL_DATA' OR category = 'PLAIN_DATA') AND media_mime_type IN ("audio/mpeg", "audio/flac")
+        AND (category in ($DATA)) AND media_mime_type IN ("audio/mpeg", "audio/flac")
         AND media_status != 'EXPIRED'
         ORDER BY created_at ASC, rowid ASC
     """
@@ -603,7 +610,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.id = :messageId")
     fun findMessageItemByMessageId(messageId: String): LiveData<MessageItem?>
 
-    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category in ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT')")
+    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category in ($TRANSCRIPTS)")
     suspend fun findTranscriptIdByConversationId(conversationId: String): List<String>
 
     @Query("UPDATE messages SET category = :category WHERE id = :messageId")

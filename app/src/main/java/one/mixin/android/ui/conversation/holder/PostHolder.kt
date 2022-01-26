@@ -16,7 +16,6 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
-import org.jetbrains.anko.dip
 
 class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root) {
     init {
@@ -150,7 +149,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -162,7 +161,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
 
         if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.compoundDrawablePadding = 3.dp
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }

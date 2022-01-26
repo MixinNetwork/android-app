@@ -19,9 +19,9 @@ import com.google.android.exoplayer2.util.Util
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerBottomControlBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.textColorResource
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
-import org.jetbrains.anko.textColorResource
 import java.util.Formatter
 import java.util.Locale
 import kotlin.math.min

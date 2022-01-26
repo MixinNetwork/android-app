@@ -28,6 +28,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -37,7 +38,6 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
-import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
 class NewGroupFragment : BaseFragment() {

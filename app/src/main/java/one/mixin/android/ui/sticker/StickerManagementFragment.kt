@@ -23,11 +23,13 @@ import one.mixin.android.databinding.FragmentStickerManagementBinding
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isWideScreen
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
@@ -38,8 +40,6 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.RLottieImageView
-import org.jetbrains.anko.dip
-import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
 class StickerManagementFragment : BaseFragment() {
@@ -54,7 +54,7 @@ class StickerManagementFragment : BaseFragment() {
 
     private val stickerViewModel by viewModels<ConversationViewModel>()
 
-    private val padding: Int by lazy { requireContext().dip(PADDING) }
+    private val padding: Int by lazy { PADDING.dp }
 
     private val albumId: String? by lazy { requireArguments().getString(ARGS_ALBUM_ID) }
 
@@ -212,8 +212,8 @@ class StickerManagementFragment : BaseFragment() {
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {
-                    width = size - ctx.dip(50)
-                    height = size - ctx.dip(50)
+                    width = size - 50.dp
+                    height = size - 50.dp
                 }
             } else {
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {

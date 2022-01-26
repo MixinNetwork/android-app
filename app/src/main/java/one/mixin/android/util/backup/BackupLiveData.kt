@@ -2,7 +2,7 @@ package one.mixin.android.util.backup
 
 import androidx.lifecycle.LiveData
 import one.mixin.android.MixinApplication
-import org.jetbrains.anko.runOnUiThread
+import one.mixin.android.extension.runOnUiThread
 
 class BackupLiveData : LiveData<Boolean>() {
     var ing: Boolean = false

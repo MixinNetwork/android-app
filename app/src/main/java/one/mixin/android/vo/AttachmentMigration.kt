@@ -26,7 +26,10 @@ class AttachmentMigration(
     val name: String?,
     @ColumnInfo(name = "media_mine_type")
     val mediaMimeType: String?
-)
+) : ICategory {
+    override val type: String
+        get() = category
+}
 
 fun AttachmentMigration.getFile(context: Context): File? {
     return when {

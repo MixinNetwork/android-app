@@ -8,6 +8,7 @@ import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.User
 
 fun UserDao.insertUpdate(
@@ -130,6 +131,19 @@ fun CircleDao.insertUpdate(
             insert(circle)
         } else {
             update(circle)
+        }
+    }
+}
+
+suspend fun StickerAlbumDao.insertUpdate(
+    album: StickerAlbum
+) {
+    withTransaction {
+        val a = findAlbumById(album.albumId)
+        if (a == null) {
+            insert(album)
+        } else {
+            update(album)
         }
     }
 }

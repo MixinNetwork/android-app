@@ -11,6 +11,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.TranscriptMessage
@@ -18,8 +19,9 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
-import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isPost
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import java.io.File
@@ -99,7 +101,12 @@ class SendTranscriptJob(
             transcripts.filter { t ->
                 t.isAttachment()
             }.forEach { t ->
-                jobManager.addJob(SendTranscriptAttachmentMessageJob(t, message.isPlain(), message.id))
+                val encryptCategory = when {
+                    message.isEncrypted() -> EncryptCategory.ENCRYPTED
+                    message.isSignal() -> EncryptCategory.SIGNAL
+                    else -> EncryptCategory.PLAIN
+                }
+                jobManager.addJob(SendTranscriptAttachmentMessageJob(t, encryptCategory, message.id))
             }
         } else {
             messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)

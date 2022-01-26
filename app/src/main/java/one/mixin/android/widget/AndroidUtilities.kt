@@ -1,8 +1,7 @@
 package one.mixin.android.widget
 
 import android.util.DisplayMetrics
-import one.mixin.android.MixinApplication
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.dp
 
 object AndroidUtilities {
     private var displayMetrics = DisplayMetrics()
@@ -13,7 +12,7 @@ object AndroidUtilities {
 
     @JvmStatic
     fun dp(value: Float): Int {
-        return MixinApplication.appContext.dip(value)
+        return value.dp
     }
 
     @JvmStatic

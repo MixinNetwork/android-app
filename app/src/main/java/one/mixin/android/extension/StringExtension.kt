@@ -11,6 +11,8 @@ import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.text.Editable
+import android.text.SpannableStringBuilder
+import android.text.style.BackgroundColorSpan
 import androidx.core.net.toUri
 import com.google.android.exoplayer2.util.Util
 import com.google.zxing.EncodeHintType
@@ -581,3 +583,6 @@ fun String?.equalsIgnoreCase(other: String?): Boolean = this?.equals(other, true
 fun String?.equalsIgnoreCase(other: CharSequence?): Boolean = equalsIgnoreCase(other.toString())
 fun String?.containsIgnoreCase(other: CharSequence?): Boolean = this?.contains(other.toString(), true) == true
 fun String?.startsWithIgnoreCase(other: CharSequence?): Boolean = this?.startsWith(other.toString(), true) == true
+
+inline fun SpannableStringBuilder.backgroundColor(color: Int): BackgroundColorSpan =
+    BackgroundColorSpan(color)

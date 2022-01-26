@@ -14,7 +14,6 @@ import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
-import org.jetbrains.anko.dip
 
 class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root) {
     init {
@@ -103,7 +102,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
             binding.chatName.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-                binding.chatName.compoundDrawablePadding = itemView.dip(3)
+                binding.chatName.compoundDrawablePadding = 3.dp
             } else {
                 binding.chatName.setCompoundDrawables(null, null, null, null)
             }
@@ -118,7 +117,7 @@ class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(
 
         if (messageItem.appId != null) {
             binding.chatName.setCompoundDrawables(null, null, botIcon, null)
-            binding.chatName.compoundDrawablePadding = itemView.dip(3)
+            binding.chatName.compoundDrawablePadding = 3.dp
         } else {
             binding.chatName.setCompoundDrawables(null, null, null, null)
         }

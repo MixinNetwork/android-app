@@ -10,9 +10,9 @@ import android.widget.RelativeLayout
 import androidx.collection.ArraySet
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPseudoNotificationBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isMixinUrl
-import org.jetbrains.anko.dip
 
 class PseudoNotificationView : RelativeLayout {
 
@@ -29,7 +29,7 @@ class PseudoNotificationView : RelativeLayout {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         val d = resources.getDrawable(R.drawable.ic_qr_code_preview, context.theme)
-        val size = context.dip(12)
+        val size = 12.dp
         d.setBounds(0, 0, size, size)
         binding.titleTv.setCompoundDrawables(d, null, null, null)
     }
@@ -56,7 +56,7 @@ class PseudoNotificationView : RelativeLayout {
 
     private fun hide() {
         animate().apply {
-            translationY(-context.dip(300).toFloat())
+            translationY(-300.dp.toFloat())
             interpolator = DecelerateInterpolator()
         }.start()
         visible = false

@@ -5,7 +5,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import io.reactivex.Flowable
 import io.reactivex.Maybe
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.ChatMinimal
@@ -176,7 +175,7 @@ interface ConversationDao : BaseDao<Conversation> {
         FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id WHERE c.category IS NOT NULL 
     """
     )
-    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>>
+    suspend fun getConversationStorageUsage(): List<ConversationStorageUsage>
 
     @Query(
         """select c.conversation_id, u.app_id, a.capabilities from conversations c

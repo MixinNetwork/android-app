@@ -16,6 +16,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
@@ -30,7 +31,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
-import org.jetbrains.anko.dip
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -42,7 +42,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
     }
 
     private val padding: Int by lazy {
-        requireContext().dip(StickerFragment.PADDING)
+        StickerFragment.PADDING.dp
     }
     private val giphyAdapter: GiphyAdapter by lazy { GiphyAdapter() }
 
@@ -75,6 +75,8 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
             giphyAdapter.setOnGiphyListener(
                 object : GiphyListener {
                     override fun onItemClick(pos: Int, image: Image, previewUrl: String) {
+                        if ((parentFragment as StickerAlbumFragment).changed) return
+
                         callback?.onGiphyClick(image, previewUrl)
                     }
 
@@ -136,7 +138,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
             val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
             if (position == 0) {
                 item.updateLayoutParams<FrameLayout.LayoutParams> {
-                    width = size - ctx.dip(20)
+                    width = size - 20.dp
                     height = (width * (3f / 4)).toInt()
                 }
                 Glide.with(item).clear(item)

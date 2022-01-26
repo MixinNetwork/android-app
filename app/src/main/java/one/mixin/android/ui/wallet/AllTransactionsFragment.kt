@@ -20,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -27,6 +28,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.notMessengerUser
 
 @AndroidEntryPoint
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
@@ -40,7 +42,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     private val adapter = SnapshotPagedAdapter()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentAllTransactionsBinding.inflate(layoutInflater, container, false)
         return binding.root
     }
@@ -109,14 +111,19 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             val user = withContext(Dispatchers.IO) {
                 walletViewModel.getUser(userId)
             } ?: return@launch
-            val f = UserBottomSheetDialogFragment.newInstance(user)
-            f.showUserTransactionAction = {
-                view?.navigate(
-                    R.id.action_all_transactions_to_user_transactions,
-                    Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
-                )
+            if (user.notMessengerUser()) {
+                NonMessengerUserBottomSheetDialogFragment.newInstance(user)
+                    .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
+            } else {
+                val f = UserBottomSheetDialogFragment.newInstance(user)
+                f?.showUserTransactionAction = {
+                    view?.navigate(
+                        R.id.action_all_transactions_to_user_transactions,
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
+                    )
+                }
+                f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
-            f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
         }
     }
 

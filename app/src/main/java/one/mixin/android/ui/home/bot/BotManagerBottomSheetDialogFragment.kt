@@ -36,7 +36,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -206,8 +206,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         if (app is App) {
             lifecycleScope.launch {
                 botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
-                    UserBottomSheetDialogFragment.newInstance(user)
-                        .show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    showUserBottom(parentFragmentManager, user)
                 }
             }
         } else if (app is Bot) {

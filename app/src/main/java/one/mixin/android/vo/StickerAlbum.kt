@@ -31,5 +31,27 @@ data class StickerAlbum(
     @ColumnInfo(name = "category")
     val category: String,
     @ColumnInfo(name = "description")
-    val description: String
+    val description: String,
+    @ColumnInfo(name = "banner")
+    val banner: String?,
+    @ColumnInfo(name = "ordered_at", defaultValue = "0")
+    var orderedAt: Int = 0,
+    @ColumnInfo(name = "added", defaultValue = "0")
+    var added: Boolean = false,
+)
+
+data class StickerAlbumOrder(
+    @ColumnInfo(name = "album_id")
+    val albumId: String,
+    @ColumnInfo(name = "ordered_at")
+    val orderedAt: Int,
+)
+
+data class StickerAlbumAdded(
+    @ColumnInfo(name = "album_id")
+    val albumId: String,
+    @ColumnInfo(name = "added")
+    val added: Boolean,
+    @ColumnInfo(name = "ordered_at")
+    var orderedAt: Int,
 )

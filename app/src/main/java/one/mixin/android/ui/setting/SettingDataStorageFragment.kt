@@ -26,11 +26,11 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getAutoDownloadMobileValue
 import one.mixin.android.extension.getAutoDownloadRoamingValue
 import one.mixin.android.extension.getAutoDownloadWifiValue
+import one.mixin.android.extension.layoutInflater
 import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
-import org.jetbrains.anko.layoutInflater
 
 @AndroidEntryPoint
 class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) {

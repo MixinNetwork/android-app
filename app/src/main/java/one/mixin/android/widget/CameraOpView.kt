@@ -15,7 +15,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import one.mixin.android.R
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.dp
 
 class CameraOpView : View, GestureDetector.OnGestureListener {
 
@@ -27,9 +27,9 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
 
     private var ringColor = Color.WHITE
     private var circleColor = context.getColor(R.color.colorDarkBlue)
-    private var ringStrokeWidth = dip(5).toFloat()
+    private var ringStrokeWidth = 5.dp.toFloat()
     @Suppress("unused")
-    private var progressStrokeWidth = dip(5f).toFloat()
+    private var progressStrokeWidth = 5f.dp.toFloat()
     private var circleWidth = -10f // initial value less than 0 for delay
     private var maxCircleWidth = 0f
     private var circleInterval = 3f

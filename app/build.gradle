@@ -1,7 +1,7 @@
 def versionMajor = 0
-def versionMinor = 33
-def versionPatch = 13
-def versionBuild = 0
+def versionMinor = 34
+def versionPatch = 4
+def versionBuild = 1
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
@@ -169,7 +169,7 @@ android {
 
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
-    implementation platform("com.google.firebase:firebase-bom:29.0.3")
+    implementation platform("com.google.firebase:firebase-bom:29.0.4")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
@@ -195,7 +195,6 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
-    implementation "androidx.webkit:webkit:${webkitVersion}"
 
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
@@ -256,9 +255,6 @@ dependencies {
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
-    implementation "org.jetbrains.anko:anko-commons:$ankoVersion"
-    implementation "org.jetbrains.anko:anko-sdk25:$ankoVersion"
-    implementation "org.jetbrains.anko:anko-appcompat-v7:$ankoVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     implementation "com.github.zjupure:webpdecoder:2.0.$glideVersion"
@@ -304,7 +300,7 @@ dependencies {
     implementation "dnsjava:dnsjava:${dnsVersion}"
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
-    implementation "com.github.SeniorZhai:audioswitch:${audioSwitchVersion}"
+    implementation "com.twilio:audioswitch:${audioSwitchVersion}"
     implementation "com.github.skydoves:balloon:$balloonVersion"
     implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}"
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"

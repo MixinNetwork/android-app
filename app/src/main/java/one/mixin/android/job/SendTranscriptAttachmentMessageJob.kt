@@ -15,21 +15,23 @@ import one.mixin.android.crypto.attachment.AttachmentCipherOutputStream
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent
+import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.moshi.MoshiHelper.getTypeListAdapter
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
+import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isValidAttachment
 import one.mixin.android.websocket.AttachmentMessagePayload
-import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
@@ -37,7 +39,7 @@ import java.net.SocketTimeoutException
 
 class SendTranscriptAttachmentMessageJob(
     val transcriptMessage: TranscriptMessage,
-    val isPlain: Boolean,
+    val encryptCategory: EncryptCategory,
     val parentId: String? = null
 ) : MixinJob(
     Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_transcript_job").requireNetwork().persist(),
@@ -63,7 +65,7 @@ class SendTranscriptAttachmentMessageJob(
     }
 
     override fun onRun() {
-        if (transcriptMessage.isPlain() == isPlain) {
+        if (transcriptMessage.isPlain() == encryptCategory.isPlain()) {
             if (transcriptMessage.mediaCreatedAt?.within24Hours() == true && transcriptMessage.isValidAttachment()) {
                 transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.DONE.name)
                 sendMessage()
@@ -159,10 +161,10 @@ class SendTranscriptAttachmentMessageJob(
                 transcriptMessage.mediaMimeType,
                 inputStream,
                 file.length(),
-                if (isPlain) {
-                    null
-                } else {
+                if (encryptCategory.isSecret()) {
                     AttachmentCipherOutputStreamFactory(key, null)
+                } else {
+                    null
                 }
             ) { total, progress ->
                 val pg = try {
@@ -173,11 +175,11 @@ class SendTranscriptAttachmentMessageJob(
                 RxBus.publish(ProgressEvent.loadingEvent("${transcriptMessage.transcriptId}${transcriptMessage.messageId}", pg))
             }
         val digest = try {
-            if (isPlain) {
+            if (encryptCategory.isSecret()) {
+                uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
+            } else {
                 uploadPlainAttachment(attachResponse.upload_url!!, file.length(), attachmentData)
                 null
-            } else {
-                uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
             }
         } catch (e: Exception) {
             Timber.e(e)

@@ -54,13 +54,13 @@ import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.NftBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
@@ -187,13 +187,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                                 WebActivity.show(requireActivity(), url, null, app)
                             } else {
-                                UserBottomSheetDialogFragment.newInstance(user!!)
-                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                showUserBottom(parentFragmentManager, requireNotNull(user))
                             }
                         }
                     } else {
-                        UserBottomSheetDialogFragment.newInstance(user)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        showUserBottom(parentFragmentManager, user)
                     }
                     dismiss()
                 }
@@ -342,8 +340,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             toast("It's your QR Code, please try another.")
                         }
                     } else {
-                        UserBottomSheetDialogFragment.newInstance(data)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        showUserBottom(parentFragmentManager, data)
                     }
                     dismiss()
                 } else if (data is MultisigsResponse) {

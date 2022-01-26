@@ -30,6 +30,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
@@ -46,7 +47,6 @@ import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
-import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -162,7 +162,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val exitIntent = Intent(this, ExitBroadcastReceiver::class.java).apply {
             action = ACTION_TO_BACKGROUND
         }
-        val exitPendingIntent = PendingIntent.getBroadcast(this, 0, exitIntent, 0)
+        val exitPendingIntent = PendingIntent.getBroadcast(
+            this, 0, exitIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
             .setContentTitle(getString(R.string.app_name))
@@ -176,8 +179,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .setColor(ContextCompat.getColor(this, R.color.colorLightBlue))
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black, getString(R.string.exit), exitPendingIntent)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, MainActivity.getWakeUpIntent(this),
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
-        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getWakeUpIntent(this), 0)
         builder.setContentIntent(pendingIntent)
 
         supportsOreo {

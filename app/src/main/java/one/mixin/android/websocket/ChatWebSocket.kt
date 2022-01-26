@@ -26,6 +26,7 @@ import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.di.isNeedSwitch
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.toBlazeMessage
 import one.mixin.android.extension.toBlazeMessageData
 import one.mixin.android.extension.toJson
@@ -44,7 +45,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
-import org.jetbrains.anko.runOnUiThread
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch

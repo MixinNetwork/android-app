@@ -12,7 +12,7 @@ import one.mixin.android.databinding.FragmentBlockedBinding
 import one.mixin.android.databinding.ItemBlockedFooterBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 
@@ -37,24 +37,22 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
         super.onViewCreated(view, savedInstanceState)
         adapter.callback = object : Callback {
             override fun onClick(user: User) {
-                UserBottomSheetDialogFragment.newInstance(user)
-                    .show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                showUserBottom(parentFragmentManager, user)
             }
         }
         binding.apply {
             blockedRv.adapter = adapter
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             viewModel.blockingUsers(stopScope).observe(
-                viewLifecycleOwner,
-                {
-                    if (it != null && it.isNotEmpty()) {
-                        blockVa.displayedChild = POS_LIST
-                        adapter.setUsers(it)
-                    } else {
-                        blockVa.displayedChild = POS_EMPTY
-                    }
+                viewLifecycleOwner
+            ) {
+                if (it != null && it.isNotEmpty()) {
+                    blockVa.displayedChild = POS_LIST
+                    adapter.setUsers(it)
+                } else {
+                    blockVa.displayedChild = POS_EMPTY
                 }
-            )
+            }
         }
     }
 

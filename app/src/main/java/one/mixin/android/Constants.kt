@@ -37,8 +37,6 @@ object Constants {
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
         const val PREF_DELETE_MOBILE_CONTACTS = "pref_delete_mobile_contacts"
         const val PREF_FIAT_MAP = "pref_fiat_map"
-        const val PREF_NOTIFICATION_ON = "pref_notification_on"
-        const val PREF_EMERGENCY_CONTACT = "pref_emergency_contact"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
         const val PREF_SYNC_CIRCLE = "pref_sync_circle"
         const val PREF_BACKUP = "pref_attachment_backup"
@@ -88,7 +86,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 40
+        const val CURRENT_VERSION = 41
     }
 
     object Storage {

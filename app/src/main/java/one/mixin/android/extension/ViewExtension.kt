@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Outline
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Property
@@ -37,7 +38,6 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
-import org.jetbrains.anko.dip
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -140,9 +140,9 @@ fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = n
 }
 
 fun View.shaking() {
-    val dp20 = dip(20).toFloat()
-    val dp10 = dip(10).toFloat()
-    val dp5 = dip(5).toFloat()
+    val dp20 = 20.dp.toFloat()
+    val dp10 = 10.dp.toFloat()
+    val dp5 = 5.dp.toFloat()
     ObjectAnimator.ofFloat(this, "translationX", -dp20, dp20, -dp20, dp20, -dp10, dp10, -dp5, dp5, 0f)
         .setDuration(600).start()
 }
@@ -347,3 +347,43 @@ fun PopupMenu.showIcon() {
     } catch (e: Exception) {
     }
 }
+
+var View.leftPadding: Int
+    inline get() = paddingLeft
+    set(value) = setPadding(value, paddingTop, paddingRight, paddingBottom)
+
+var View.topPadding: Int
+    inline get() = paddingTop
+    set(value) = setPadding(paddingLeft, value, paddingRight, paddingBottom)
+
+var View.rightPadding: Int
+    inline get() = paddingRight
+    set(value) = setPadding(paddingLeft, paddingTop, value, paddingBottom)
+
+var View.bottomPadding: Int
+    inline get() = paddingBottom
+    set(value) = setPadding(paddingLeft, paddingTop, paddingRight, value)
+
+var View.backgroundColor: Int
+    @Deprecated("Property does not have a getter")
+    get() = error("Property does not have a getter")
+    set(v) = setBackgroundColor(v)
+
+var View.backgroundDrawable: Drawable?
+    inline get() = background
+    set(value) = setBackgroundDrawable(value)
+
+var View.backgroundResource: Int
+    @Deprecated("Property does not have a getter")
+    get() = error("Property does not have a getter")
+    set(v) = setBackgroundResource(v)
+
+var ViewGroup.MarginLayoutParams.margin: Int
+    @Deprecated("Property does not have a getter")
+    get() = error("Property does not have a getter")
+    set(v) {
+        leftMargin = v
+        rightMargin = v
+        topMargin = v
+        bottomMargin = v
+    }

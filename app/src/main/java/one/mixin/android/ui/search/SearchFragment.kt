@@ -37,6 +37,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
@@ -156,7 +157,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                     )
                                 } else {
                                     searchViewModel.insertUser(user = data)
-                                    UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                    showUserBottom(parentFragmentManager, data)
                                 }
                             }
                             r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.error_user_not_found)

@@ -7,7 +7,6 @@ import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -258,7 +257,7 @@ internal constructor(
     fun observeParticipantsCount(conversationId: String) =
         participantDao.observeParticipantsCount(conversationId)
 
-    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>> = conversationDao.getConversationStorageUsage()
+    suspend fun getConversationStorageUsage(): List<ConversationStorageUsage> = conversationDao.getConversationStorageUsage()
 
     fun getMediaByConversationIdAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String) =
         messageDao.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
@@ -553,7 +552,7 @@ internal constructor(
     private fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
         participantSessionDao.deleteByStatus(conversationId)
         val remote = data.map {
-            ParticipantSession(conversationId, it.userId, it.sessionId)
+            ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
         }
         if (remote.isEmpty()) {
             participantSessionDao.deleteByConversationId(conversationId)

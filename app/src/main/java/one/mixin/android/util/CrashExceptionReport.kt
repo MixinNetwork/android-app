@@ -5,7 +5,7 @@ import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.crashes.Crashes
-import org.jetbrains.anko.getStackTraceString
+import one.mixin.android.extension.getStackTraceString
 
 fun reportException(e: Throwable) {
     FirebaseCrashlytics.getInstance().recordException(e)

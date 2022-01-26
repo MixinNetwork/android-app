@@ -33,11 +33,13 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.webkit.WebViewClient.ERROR_CONNECT
 import android.webkit.WebViewClient.ERROR_HOST_LOOKUP
 import android.webkit.WebViewClient.ERROR_IO
 import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
@@ -48,7 +50,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.webkit.WebViewClientCompat
 import com.bumptech.glide.Glide
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -64,6 +65,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.extension.REQUEST_CAMERA
@@ -76,12 +78,12 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
@@ -96,12 +98,14 @@ import one.mixin.android.moshi.MoshiHelper.getTypeAdapter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
+import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicViewModel
@@ -109,7 +113,8 @@ import one.mixin.android.ui.player.internal.MUSIC_PLAYLIST
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.ui.player.provideMusicViewModel
 import one.mixin.android.ui.qr.QRCodeProcessor
-import one.mixin.android.ui.setting.PermissionListFragment
+import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -134,7 +139,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
     companion object {
-        const val TAG = "WebBottomSheetDialogFragment"
+        const val TAG = "WebFragment"
         private const val FILE_CHOOSER = 0x01
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
         private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
@@ -188,6 +193,9 @@ class WebFragment : BaseFragment() {
     private var isFinished: Boolean = false
     private val processor = QRCodeProcessor()
     private var webAppInterface: WebAppInterface? = null
+
+    private lateinit var getPermissionResult: ActivityResultLauncher<Pair<App, AuthorizationResponse>>
+
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -260,6 +268,11 @@ class WebFragment : BaseFragment() {
             }
         }
         return super.onContextItemSelected(item)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        getPermissionResult = registerForActivityResult(SettingActivity.PermissionContract(), requireActivity().activityResultRegistry, ::callbackPermission)
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
@@ -524,7 +537,13 @@ class WebFragment : BaseFragment() {
             private var lastGrantedUri: String? = null
             override fun onPermissionRequest(request: PermissionRequest?) {
                 request?.let {
+                    val permission = mutableListOf<String>()
                     for (code in request.resources) {
+                        if (code == PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                            permission.add(Manifest.permission.RECORD_AUDIO)
+                        } else if (code == PermissionRequest.RESOURCE_VIDEO_CAPTURE) {
+                            permission.add(Manifest.permission.RECORD_AUDIO)
+                        }
                         if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
                             request.deny()
                             lastGrantedUri = null
@@ -535,17 +554,25 @@ class WebFragment : BaseFragment() {
                         request.grant(request.resources)
                         return@let
                     }
-                    PermissionBottomSheetDialogFragment.requestCamera(
+
+                    PermissionBottomSheetDialogFragment.request(
                         binding.titleTv.text.toString(),
                         app?.name,
-                        app?.iconUrl
+                        app?.appNumber,
+                        *permission.map {
+                            if (it == Manifest.permission.RECORD_AUDIO) {
+                                PERMISSION_AUDIO
+                            } else {
+                                PERMISSION_VIDEO
+                            }
+                        }.toIntArray()
                     )
                         .setCancelAction {
                             lastGrantedUri = null
                             request.deny()
                         }.setGrantedAction {
                             RxPermissions(requireActivity())
-                                .request(Manifest.permission.CAMERA)
+                                .request(*permission.toTypedArray())
                                 .autoDispose(stopScope)
                                 .subscribe(
                                     { granted ->
@@ -579,7 +606,7 @@ class WebFragment : BaseFragment() {
                         PermissionBottomSheetDialogFragment.requestVideo(
                             binding.titleTv.text.toString(),
                             app?.name,
-                            app?.iconUrl
+                            app?.appNumber
                         )
                             .setCancelAction {
                                 uploadMessage?.onReceiveValue(null)
@@ -608,7 +635,7 @@ class WebFragment : BaseFragment() {
                     } else if (intent?.type == "image/*") {
                         PermissionBottomSheetDialogFragment.requestCamera(
                             binding.titleTv.text.toString(),
-                            app?.name,
+                            app?.appNumber,
                             app?.iconUrl
                         )
                             .setCancelAction {
@@ -788,7 +815,7 @@ class WebFragment : BaseFragment() {
         webAppInterface = null
         webView.removeJavascriptInterface("MixinContext")
         webView.webChromeClient = null
-        webView.webViewClient = object : WebViewClientCompat() {}
+        webView.webViewClient = object : WebViewClient() {}
 
         return WebClip(
             currentUrl,
@@ -817,7 +844,7 @@ class WebFragment : BaseFragment() {
             }
             index < 0 -> {
                 webView.destroy()
-                webView.webViewClient = object : WebViewClientCompat() {}
+                webView.webViewClient = object : WebViewClient() {}
                 webView.webChromeClient = null
             }
             else -> {
@@ -994,18 +1021,17 @@ class WebFragment : BaseFragment() {
                 val app = requireNotNull(app)
                 lifecycleScope.launch {
                     bottomSheet.dismiss()
+                    val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                        setCancelable(false)
+                    }
                     val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
                     if (auth == null) {
                         toast(R.string.not_auth_yet)
+                        pb.dismiss()
                         return@launch
                     }
-                    val fragment = PermissionListFragment.newInstance(app, auth)
-                    fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
-                        override fun onSuccess(url: String) {
-                            webView.loadUrl("javascript:localStorage.clear()")
-                        }
-                    }
-                    navTo(fragment, PermissionListFragment.TAG)
+                    pb.dismiss()
+                    getPermissionResult.launch(Pair(app, auth))
                 }
             }
         }
@@ -1042,6 +1068,13 @@ class WebFragment : BaseFragment() {
             }
         }
         bottomSheet.show()
+    }
+
+    private fun callbackPermission(data: Intent?) {
+        val success = data?.getBooleanExtra(ARGS_SUCCESS, false) ?: false
+        if (!success) return
+
+        webView.loadUrl("javascript:localStorage.clear()")
     }
 
     private var permissionAlert: AlertDialog? = null
@@ -1083,8 +1116,7 @@ class WebFragment : BaseFragment() {
         if (app?.appId != null) {
             val u = bottomViewModel.suspendFindUserById(app?.appId!!)
             if (u != null) {
-                UserBottomSheetDialogFragment.newInstance(u, conversationId)
-                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                showUserBottom(parentFragmentManager, u, conversationId)
             }
         }
     }
@@ -1200,7 +1232,7 @@ class WebFragment : BaseFragment() {
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
-    ) : WebViewClientCompat() {
+    ) : WebViewClient() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             onPageFinishedListener.onPageFinished()
@@ -1217,7 +1249,7 @@ class WebFragment : BaseFragment() {
             onReceivedError(errorCode, description, failingUrl)
         }
 
-        override fun onPageCommitVisible(view: WebView, url: String) {
+        override fun onPageCommitVisible(view: WebView?, url: String?) {
             super.onPageCommitVisible(view, url)
             onPageFinishedListener.onPageFinished()
         }

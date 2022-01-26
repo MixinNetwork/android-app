@@ -7,7 +7,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import one.mixin.android.R
@@ -34,11 +33,11 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
             imageView.loadGif(
                 messageItem.absolutePath(),
-                object : RequestListener<GifDrawable?> {
+                object : RequestListener<Drawable?> {
                     override fun onResourceReady(
-                        resource: GifDrawable?,
+                        resource: Drawable?,
                         model: Any?,
-                        target: Target<GifDrawable?>?,
+                        target: Target<Drawable?>?,
                         dataSource: DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
@@ -53,7 +52,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
-                        target: Target<GifDrawable?>?,
+                        target: Target<Drawable?>?,
                         isFirstResource: Boolean
                     ): Boolean {
                         return false

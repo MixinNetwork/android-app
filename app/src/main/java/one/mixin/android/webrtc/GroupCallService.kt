@@ -559,11 +559,13 @@ class GroupCallService : CallService() {
     override fun needInitWebRtc(action: String) = action != ACTION_CHECK_PEER
 
     override fun onConnected() {
+        val fromReconnecting = callState.reconnecting
         super.onConnected()
         callExecutor.execute {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
 
+            if (fromReconnecting) return@execute
             val cid = callState.conversationId ?: return@execute
             val needMute = callState.needMuteWhenJoin(cid)
             if (needMute) {
@@ -940,7 +942,7 @@ class GroupCallService : CallService() {
     private fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
         participantSessionDao.deleteByStatus(conversationId)
         val remote = data.map {
-            ParticipantSession(conversationId, it.userId, it.sessionId)
+            ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
         }
         if (remote.isEmpty()) {
             participantSessionDao.deleteByConversationId(conversationId)

@@ -48,6 +48,7 @@ import one.mixin.android.extension.bounce
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.notNullWithElse
@@ -59,7 +60,6 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
-import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.CountDownLatch

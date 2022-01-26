@@ -50,7 +50,6 @@ import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSE
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
-import org.jetbrains.anko.dip
 import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.round
@@ -488,7 +487,7 @@ class PipVideoView {
         val endY = getSideCoord(false, 1, 0f, videoHeight, realX, realY)
         var animators: ArrayList<Animator>? = null
         val editor = appContext.defaultSharedPreferences.edit()
-        val maxDiff = appContext.dip(20f)
+        val maxDiff = 20f.dp
         var slideOut = false
         if (abs(startX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x < 0 && windowLayoutParams.x > -videoWidth * 2 / 5) {
             if (animators == null) {

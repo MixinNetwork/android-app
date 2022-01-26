@@ -175,11 +175,8 @@ open class Injector {
         }
     }
 
-    protected fun isExistMessage(messageId: String): Boolean {
-        val id = messageDao.findMessageIdById(messageId)
-        val messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
-        return id != null || messageHistory != null
-    }
+    protected fun isExistMessage(messageId: String): Boolean =
+        messageDao.findMessageIdById(messageId) != null || messageHistoryDao.findMessageHistoryById(messageId) != null
 
     private fun refreshConversation(conversationId: String): Int {
         try {
@@ -221,7 +218,7 @@ open class Injector {
                     }
 
                     val sessionParticipants = conversationData.participantSessions?.map {
-                        ParticipantSession(conversationId, it.userId, it.sessionId)
+                        ParticipantSession(conversationId, it.userId, it.sessionId, publicKey = it.publicKey)
                     }
                     sessionParticipants?.let {
                         participantSessionDao.replaceAll(conversationId, it)

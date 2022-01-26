@@ -29,6 +29,7 @@ import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.textColor
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
@@ -42,7 +43,6 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
-import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
 class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {

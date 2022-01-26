@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -39,6 +40,14 @@ data class Sticker(
 ) {
     companion object {
         const val STICKER_TYPE_JSON = "JSON"
+
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Sticker>() {
+            override fun areItemsTheSame(oldItem: Sticker, newItem: Sticker) =
+                oldItem.albumId == newItem.albumId
+
+            override fun areContentsTheSame(oldItem: Sticker, newItem: Sticker) =
+                oldItem == newItem
+        }
     }
 }
 
