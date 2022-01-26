@@ -7,7 +7,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
@@ -166,11 +165,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
         val exitPendingIntent = PendingIntent.getBroadcast(
             this, 0, exitIntent,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PendingIntent.FLAG_IMMUTABLE
-            } else {
-                0
-            }
+            PendingIntent.FLAG_IMMUTABLE
         )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
@@ -187,11 +182,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .addAction(R.drawable.ic_close_black, getString(R.string.exit), exitPendingIntent)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, MainActivity.getWakeUpIntent(this),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PendingIntent.FLAG_IMMUTABLE
-            } else {
-                0
-            }
+            PendingIntent.FLAG_IMMUTABLE
         )
 
         builder.setContentIntent(pendingIntent)
