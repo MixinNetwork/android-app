@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
@@ -297,7 +297,7 @@ dependencies {
     implementation "dnsjava:dnsjava:${dnsVersion}"
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
-    implementation "com.github.SeniorZhai:audioswitch:${audioSwitchVersion}"
+    implementation "com.twilio:audioswitch:${audioSwitchVersion}"
     implementation "com.github.skydoves:balloon:$balloonVersion"
     implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:${mapboxSdkVersion}"
     implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:${mapboxLocationVersion}"

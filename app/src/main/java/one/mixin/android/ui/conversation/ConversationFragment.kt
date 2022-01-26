@@ -199,6 +199,7 @@ import one.mixin.android.util.import.ImportChatUtil
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -921,20 +922,10 @@ class ConversationFragment() :
                             .show()
                     }
                 } else {
-                    RxPermissions(requireActivity())
-                        .request(Manifest.permission.RECORD_AUDIO)
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (granted) {
-                                    voiceCall()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            },
-                            {
-                            }
-                        )
+                    checkVoicePermissions {
+                        initAudioSwitch()
+                        voiceCall()
+                    }
                 }
             }
 
@@ -1058,9 +1049,7 @@ class ConversationFragment() :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!anyCallServiceRunning(requireContext())) {
-            audioSwitch.start { audioDevices, selectedAudioDevice ->
-                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
-            }
+            initAudioSwitch()
         }
         recipient = requireArguments().getParcelable(RECIPIENT)
         messageId = requireArguments().getString(MESSAGE_ID, null)
@@ -1645,7 +1634,10 @@ class ConversationFragment() :
                     .show()
                 return@setOnClickListener
             }
-            receiveInvite(requireContext(), conversationId, playRing = false)
+            checkBlueToothConnectPermissions {
+                initAudioSwitch()
+                receiveInvite(requireContext(), conversationId, playRing = false)
+            }
         }
         callState.observe(
             viewLifecycleOwner,
@@ -2444,6 +2436,7 @@ class ConversationFragment() :
                     MenuType.File -> {
                         RxPermissions(requireActivity())
                             .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            .autoDispose(stopScope)
                             .subscribe(
                                 { granted ->
                                     if (granted) {
@@ -2519,19 +2512,10 @@ class ConversationFragment() :
                                     .show()
                             }
                         } else {
-                            RxPermissions(requireActivity())
-                                .request(Manifest.permission.RECORD_AUDIO)
-                                .subscribe(
-                                    { granted ->
-                                        if (granted) {
-                                            voiceCall()
-                                        } else {
-                                            context?.openPermissionSetting()
-                                        }
-                                    },
-                                    {
-                                    }
-                                )
+                            checkVoicePermissions {
+                                initAudioSwitch()
+                                voiceCall()
+                            }
                         }
                     }
                     MenuType.Location -> {
@@ -3252,6 +3236,48 @@ class ConversationFragment() :
                 getCombineForwardResult.launch(ArrayList(messages))
             }
             closeTool()
+        }
+    }
+
+    private fun checkBlueToothConnectPermissions(callback: () -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            RxPermissions(this)
+                .request(Manifest.permission.BLUETOOTH_CONNECT)
+                .autoDispose(stopScope).subscribe({ granted ->
+                    if (granted) {
+                        callback.invoke()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                    reportException(it)
+                })
+        } else {
+            callback.invoke()
+        }
+    }
+
+    private fun checkVoicePermissions(callback: () -> Unit) {
+        RxPermissions(this)
+            .request(* (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT) } else { arrayOf(Manifest.permission.RECORD_AUDIO) }))
+            .autoDispose(stopScope).subscribe({ granted ->
+                if (granted) {
+                    callback.invoke()
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }, {
+                reportException(it)
+            })
+    }
+
+    private var initAudioSwitch = false
+    private fun initAudioSwitch() {
+        if (!initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
+            initAudioSwitch = true
+            audioSwitch.start { audioDevices, selectedAudioDevice ->
+                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+            }
         }
     }
 }

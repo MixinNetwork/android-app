@@ -3,9 +3,9 @@ package one.mixin.android.util.backup
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -21,7 +21,14 @@ class BackupNotification {
             val callIntent = Intent(context, SettingActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             callIntent.putExtra(FROM_NOTIFICATION, true)
-            val pendingCallIntent = PendingIntent.getActivity(context, 0, callIntent, FLAG_UPDATE_CURRENT)
+            val pendingCallIntent = PendingIntent.getActivity(
+                context, 0, callIntent,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                }
+            )
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
                 .setSmallIcon(R.drawable.ic_msg_default)
