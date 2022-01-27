@@ -30,35 +30,32 @@ fun String.isUUID(): Boolean {
     }
 }
 
-fun Long.fileSize(unit: Long = 0): String {
-    var count = (unit / 1024).toInt()
-    var num = this.toFloat()
-    while (count > 3 || num > 1024) {
-        num /= 1024f
-        count++
+enum class FileSizeUnit(val value: Int) {
+    BYTE(3), KB(2), MB(1), GB(0);
+
+    companion object {
+        fun fromValue(value: Int): FileSizeUnit = FileSizeUnit.values().first { value == it.value }
     }
-    val unit = when (count) {
-        1 -> "KB"
-        2 -> "MB"
-        3 -> "GB"
-        else -> "Byte"
-    }
-    return String.format("%.2f %s", num, unit)
 }
 
-fun Long.fileUnit(): String {
+fun Long.fileSize(unit: FileSizeUnit = FileSizeUnit.BYTE): String {
     var count = 0
     var num = this.toFloat()
-    while (count > 3 || num > 1024) {
+    while (count > unit.value || num >= 1024) {
         num /= 1024f
         count++
     }
-    return when (count) {
-        1 -> "KB"
-        2 -> "MB"
-        3 -> "GB"
-        else -> "Byte"
+    return String.format("%.2f %s", num, FileSizeUnit.fromValue(unit.value - count).name)
+}
+
+fun Long.fileUnit(unit: FileSizeUnit = FileSizeUnit.BYTE): String {
+    var count = 0
+    var num = this.toFloat()
+    while (count > unit.value || num >= 1024) {
+        num /= 1024f
+        count++
     }
+    return FileSizeUnit.fromValue(unit.value - count).name
 }
 
 fun String.findLastUrl(): String? {

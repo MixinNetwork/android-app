@@ -163,7 +163,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val exitIntent = Intent(this, ExitBroadcastReceiver::class.java).apply {
             action = ACTION_TO_BACKGROUND
         }
-        val exitPendingIntent = PendingIntent.getBroadcast(this, 0, exitIntent, 0)
+        val exitPendingIntent = PendingIntent.getBroadcast(
+            this, 0, exitIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
             .setContentTitle(getString(R.string.app_name))
@@ -177,8 +180,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .setColor(ContextCompat.getColor(this, R.color.colorLightBlue))
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black, getString(R.string.exit), exitPendingIntent)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, MainActivity.getWakeUpIntent(this),
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
-        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getWakeUpIntent(this), 0)
         builder.setContentIntent(pendingIntent)
 
         supportsOreo {

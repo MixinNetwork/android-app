@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
@@ -42,12 +43,14 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ParticipantRole
@@ -224,7 +227,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 hangup()
             }
             binding.answerCb.setOnClickListener {
-                handleAnswer()
+                checkBlueToothConnectPermissions { handleAnswer() }
             }
             binding.closeIb.setOnClickListener {
                 hangup()
@@ -718,4 +721,22 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     setClicked = true
                 }.show()
         }
+
+    private fun checkBlueToothConnectPermissions(callback: () -> Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            RxPermissions(this)
+                .request(Manifest.permission.BLUETOOTH_CONNECT)
+                .autoDispose(stopScope).subscribe({ granted ->
+                    if (granted) {
+                        callback.invoke()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                    reportException(it)
+                })
+        } else {
+            callback.invoke()
+        }
+    }
 }

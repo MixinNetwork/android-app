@@ -26,7 +26,9 @@ class MusicActivity : BaseActivity() {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 putExtra(EXTRA_CONVERSATION_ID, conversationId)
             }
-            val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+            val pendingIntent = PendingIntent.getActivity(
+                context, 0, intent, PendingIntent.FLAG_IMMUTABLE
+            )
             try {
                 pendingIntent.send()
             } catch (e: PendingIntent.CanceledException) {

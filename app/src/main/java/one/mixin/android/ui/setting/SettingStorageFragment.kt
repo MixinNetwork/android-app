@@ -30,6 +30,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStorageBinding
 import one.mixin.android.databinding.ItemContactStorageBinding
 import one.mixin.android.databinding.ItemStorageCheckBinding
+import one.mixin.android.extension.FileSizeUnit
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -106,7 +107,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                 var sum = 0L
                 var size = 0L
                 selectSet.forEach { sum += it.count; size += it.mediaSize }
-                confirmDialog.setMessage(getString(R.string.setting_storage_clear, sum, size.fileSize(1024)))
+                confirmDialog.setMessage(getString(R.string.setting_storage_clear, sum, size.fileSize(FileSizeUnit.KB)))
                 confirmDialog.show()
                 dialog.dismiss()
             }.create().apply {
@@ -261,7 +262,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                     normal.text = conversationStorageUsage.name
                     avatar.setInfo(conversationStorageUsage.name, conversationStorageUsage.avatarUrl, conversationStorageUsage.ownerId)
                 }
-                storageTv.text = conversationStorageUsage.mediaSize.fileSize(1024)
+                storageTv.text = conversationStorageUsage.mediaSize.fileSize(FileSizeUnit.KB)
                 itemView.setOnClickListener { action(conversationStorageUsage.conversationId) }
             }
         }
