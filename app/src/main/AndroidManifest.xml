@@ -352,8 +352,12 @@
             android:name=".job.MyJobService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
-        <service android:name=".webrtc.VoiceCallService" />
-        <service android:name=".webrtc.GroupCallService" />
+        <service
+            android:name=".webrtc.VoiceCallService"
+            android:foregroundServiceType="microphone"/>
+        <service
+            android:name=".webrtc.GroupCallService"
+            android:foregroundServiceType="microphone"/>
         <service
             android:name=".job.BlazeMessageService"
             android:enabled="true" />

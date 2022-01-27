@@ -61,7 +61,6 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
 import timber.log.Timber
-import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
@@ -79,8 +78,6 @@ abstract class BaseCameraxFragment : VisionFragment() {
     }
 
     protected var forScanResult: Boolean = false
-
-    protected var videoFile: File? = null
 
     protected var lensFacing = CameraSelector.LENS_FACING_BACK
 

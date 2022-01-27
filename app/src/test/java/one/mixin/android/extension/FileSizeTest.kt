@@ -9,7 +9,7 @@ class FileSizeTest {
     fun fileSizeTest() {
         assertEquals(1024L.fileSize(), "1.00 KB")
         assertEquals(1024L.fileSize(FileSizeUnit.KB), "1.00 MB")
-        assertEquals(1126L.fileSize(FileSizeUnit.MB),"1.10 GB")
+        assertEquals(1126L.fileSize(FileSizeUnit.MB), "1.10 GB")
         assertEquals(2147483648L.fileSize(), "2.00 GB")
         assertEquals(2621440L.fileSize(FileSizeUnit.KB), "2.50 GB")
         assertEquals(2048L.fileSize(FileSizeUnit.MB), "2.00 GB")
