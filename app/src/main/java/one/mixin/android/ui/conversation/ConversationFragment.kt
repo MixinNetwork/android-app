@@ -1624,7 +1624,7 @@ class ConversationFragment() :
                 toast(R.string.error_network)
                 return@setOnClickListener
             }
-            val isBusy = callState.isBusy(requireContext())
+            val isBusy = callState.isBusy()
             if (isBusy) {
                 alertDialogBuilder()
                     .setMessage(getString(R.string.chat_call_warning_call))

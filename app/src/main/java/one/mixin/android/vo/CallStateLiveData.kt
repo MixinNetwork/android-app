@@ -224,10 +224,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun isVoiceCall() = callType == CallType.Voice
     fun isNoneCallType() = callType == CallType.None
 
-    fun isBusy(ctx: Context): Boolean {
-        val tm = ctx.getSystemService<TelephonyManager>()
-        return isNotIdle() || tm?.callState != TelephonyManager.CALL_STATE_IDLE
-    }
+    fun isBusy(): Boolean = isNotIdle()
 
     fun getGroupCallStateOrNull(conversationId: String): GroupCallState? {
         return groupCallStates.find {
