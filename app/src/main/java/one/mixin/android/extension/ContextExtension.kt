@@ -112,10 +112,6 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     return b
 }
 
-fun Context.getString(@StringRes resId: Int, vararg formatArgs: Any): String {
-    return resources.getString(resId, formatArgs)
-}
-
 inline val Context.layoutInflater: android.view.LayoutInflater
     get() = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as android.view.LayoutInflater
 
