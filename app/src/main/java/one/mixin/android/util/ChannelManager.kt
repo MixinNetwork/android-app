@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.Context
@@ -25,10 +26,12 @@ class ChannelManager {
     companion object {
         private const val CHANNEL_GROUP = "channel_group"
         const val CHANNEL_MESSAGE = "channel_message"
-        const val CHANNEL_SILENCE_MESSAGE = "channel_silence_message"
+        private const val CHANNEL_SILENCE_MESSAGE = "channel_silence_message"
         private const val CHANNEL_CURRENT_VERSION = "channel_current_version"
         private const val CHANNEL_CURRENT_USER_VERSION = "channel_current_user_version"
-        private const val CHANNEL_VERSION = 1
+        private const val CHANNEL_VERSION = 2
+
+        private const val CHANNEL_MESSAGE_GROUP = "channel_message_group"
 
         const val MESSAGES = 0
         const val GROUP = 1
@@ -38,8 +41,22 @@ class ChannelManager {
         @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
         annotation class ChannelCategory
 
+        @RequiresApi(Build.VERSION_CODES.O)
+        private fun initChannelGroup(context: Context) {
+            val notificationManager = context.notificationManager
+            val notificationChannelGroups = notificationManager.notificationChannelGroups
+            if (notificationChannelGroups.isEmpty() || !notificationChannelGroups.any { channelGroup -> channelGroup.id == CHANNEL_MESSAGE_GROUP })
+                notificationManager.createNotificationChannelGroup(
+                    NotificationChannelGroup(
+                        CHANNEL_MESSAGE_GROUP,
+                        context.getString(R.string.notification_channel_group)
+                    )
+                )
+        }
+
         fun create(context: Context) {
             supportsOreo {
+                initChannelGroup(context)
                 val messageChannel =
                     NotificationChannel(
                         getChannelId(MESSAGES),
@@ -47,12 +64,12 @@ class ChannelManager {
                         NotificationManager.IMPORTANCE_HIGH
                     )
 
-                val uri =
-                    Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/raw/mixin").toString()
+                val uri = Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/raw/mixin")
+                messageChannel.group = CHANNEL_MESSAGE_GROUP
                 messageChannel.setSound(
-                    Uri.parse(uri),
-                    AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
-                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT)
+                    uri,
+                    AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                         .build()
                 )
                 messageChannel.enableVibration(true)
@@ -107,6 +124,9 @@ class ChannelManager {
             val existingChannels =
                 context.notificationManager.notificationChannels ?: return
             try {
+                context.notificationManager.notificationChannelGroups.forEach {
+                    context.notificationManager.deleteNotificationChannelGroup(it.id)
+                }
                 existingChannels.forEach {
                     if (it.id.startsWith(CHANNEL_GROUP) || it.id.startsWith(CHANNEL_MESSAGE) || it.id.startsWith(CHANNEL_SILENCE_MESSAGE)) {
                         context.notificationManager.deleteNotificationChannel(it.id)

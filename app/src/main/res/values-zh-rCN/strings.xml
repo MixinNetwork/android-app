@@ -738,6 +738,8 @@
     <string name="bot_interact_info">点击下列按钮与机器人互动</string>
     <string name="bot_interact_open">打开主页</string>
     <string name="bot_interact_hi">打招呼</string>
+    <string name="notification_channel_group">消息</string>
+    <string name="notification_node_group">节点</string>
     <string name="notification_group">群组通知</string>
     <string name="notification_message">消息通知</string>
     <string name="notification_silence">静音通知</string>
