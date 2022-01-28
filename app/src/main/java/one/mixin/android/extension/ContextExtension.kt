@@ -70,6 +70,7 @@ import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.XiaomiUtilities
+import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.AssetItem
@@ -610,7 +611,7 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
         val mediaWith = image.width
         val mediaHeight = image.height
         val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
-        val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
+        val thumbnail = BlurHashEncoder.encode(image)
         val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
         val resultWidth = ((mediaWith * scale / 2).toDouble().roundToInt() * 2)
         val resultHeight = ((mediaHeight * scale / 2).toDouble().roundToInt() * 2)
