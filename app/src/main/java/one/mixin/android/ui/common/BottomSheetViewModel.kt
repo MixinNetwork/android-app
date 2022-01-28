@@ -221,8 +221,6 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun getAppAndCheckUser(userId: String, updatedAt: String?) =
         userRepository.getAppAndCheckUser(userId, updatedAt)
 
-    fun getUser(id: String) = userRepository.getUser(id)
-
     suspend fun refreshUser(id: String) = userRepository.refreshUser(id)
 
     suspend fun getAndSyncConversation(id: String) = conversationRepo.getAndSyncConversation(id)

@@ -23,9 +23,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -157,30 +155,16 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             } else {
                 lifecycleScope.launch {
-                    var user = linkViewModel.suspendFindUserById(userId)
+                    val user = linkViewModel.refreshUser(userId)
                     if (user == null) {
-                        val response = try {
-                            withContext(Dispatchers.IO) {
-                                linkViewModel.getUser(userId).execute()
-                            }
-                        } catch (t: Throwable) {
-                            toast(getUserOrAppNotFoundTip(isAppScheme))
-                            dismiss()
-                            return@launch
-                        }
-                        if (response.isSuccessful) {
-                            user = response.body()?.data
-                        }
-                        if (user == null) {
-                            toast(getUserOrAppNotFoundTip(isAppScheme))
-                            dismiss()
-                            return@launch
-                        }
+                        toast(getUserOrAppNotFoundTip(isAppScheme))
+                        dismiss()
+                        return@launch
                     }
                     val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
                         lifecycleScope.launch {
-                            val app = linkViewModel.findAppById(user!!.appId!!)
+                            val app = linkViewModel.findAppById(user.appId!!)
                             if (app != null) {
                                 val url = try {
                                     app.homeUri.appendQueryParamsFromOtherUri(uri)
@@ -189,7 +173,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                                 WebActivity.show(requireActivity(), url, null, app)
                             } else {
-                                showUserBottom(parentFragmentManager, requireNotNull(user))
+                                showUserBottom(parentFragmentManager, user)
                             }
                         }
                     } else {
@@ -216,25 +200,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 dismiss()
             } else {
                 lifecycleScope.launch {
-                    var user = linkViewModel.suspendFindUserById(userId)
+                    val user = linkViewModel.refreshUser(userId)
                     if (user == null) {
-                        val response = try {
-                            withContext(Dispatchers.IO) {
-                                linkViewModel.getUser(userId).execute()
-                            }
-                        } catch (t: Throwable) {
-                            toast(R.string.error_user_not_found)
-                            dismiss()
-                            return@launch
-                        }
-                        if (response.isSuccessful) {
-                            user = response.body()?.data
-                        }
-                        if (user == null) {
-                            toast(R.string.error_user_not_found)
-                            dismiss()
-                            return@launch
-                        }
+                        toast(R.string.error_user_not_found)
+                        dismiss()
+                        return@launch
                     }
                     TransferFragment.newInstance(userId, supportSwitchAsset = true)
                         .showNow(parentFragmentManager, TransferFragment.TAG)
