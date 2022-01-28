@@ -683,8 +683,8 @@
     <string name="setting_delete_account">Delete My Account</string>
     <string name="setting_delete_account_change">Change Number Instead</string>
     <string name="setting_delete_view_wallet">View Wallet</string>
-    <string name="setting_delete_account_content_1">Delete your account into and profile photo</string>
-    <string name="setting_delete_account_content_2">Local messages and iCloud Backups will not be Deleted automatically</string>
+    <string name="setting_delete_account_content_1">Delete your account info and profile photo</string>
+    <string name="setting_delete_account_content_2">Local messages and Backups will not be Deleted automatically</string>
     <string name="setting_delete_account_content_3">Transactions CANNOT be deleted</string>
     <string name="setting_delete_account_tip">Your Mixin wallet still has some assets that can be withdrawn to other wallets or exchanges. Once the account is cancelled, these assets will be \n abandoned along with the wallet and cannot be recovered.</string>
     <string name="setting_delete_account_continue">Continue</string>
@@ -692,6 +692,7 @@
     <string name="setting_delete_account_pin_content">If you continue, your profile and account details will be delete on %1$s. read our document to Learn more.</string>
     <string name="setting_delete_account_pin_content_more">Learn more</string>
     <string name="setting_delete_account_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
+    <string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
     <string-array name="setting_night_array">
         <item>Light</item>
         <item>Dark</item>

@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -21,6 +22,10 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     private val binding by viewBinding(FragmentVerifyBottomSheetBinding::inflate)
 
+    init {
+        autoDismiss = false
+    }
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -32,8 +37,7 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.biometricLayout.measureAllChildren = false
         callback = object : BiometricBottomSheetDialogFragment.Callback() {
             override fun onSuccess() {
-                dismiss()
-                continueCallback?.invoke()
+                continueCallback?.invoke(this@VerifyBottomSheetDialogFragment)
             }
         }
     }
@@ -53,10 +57,10 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         getString(R.string.verify_by_PIN)
     )
 
-    fun setContinueCallback(callback: () -> Unit): VerifyBottomSheetDialogFragment {
+    fun setContinueCallback(callback: (DialogFragment) -> Unit): VerifyBottomSheetDialogFragment {
         continueCallback = callback
         return this
     }
 
-    private var continueCallback: (() -> Unit)? = null
+    private var continueCallback: ((DialogFragment) -> Unit)? = null
 }

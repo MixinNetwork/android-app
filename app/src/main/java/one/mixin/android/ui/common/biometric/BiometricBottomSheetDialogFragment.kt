@@ -28,6 +28,7 @@ import one.mixin.android.widget.RoundTitleView
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
     private var dismissRunnable: Runnable? = null
+    protected var autoDismiss: Boolean = true
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -151,7 +152,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             context?.updatePinCheck()
 
             if (doWhenInvokeNetworkSuccess(response, pin)) {
-                dismiss()
+                if (autoDismiss) {
+                    dismiss()
+                }
                 callback?.onSuccess() ?: toast(R.string.successful)
             }
         } else {

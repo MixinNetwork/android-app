@@ -35,10 +35,10 @@ constructor(
 ) : ViewModel() {
 
     fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
-        accountRepository.verification(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        accountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
-        accountRepository.verification(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        accountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> = withContext(Dispatchers.IO) {
         accountRepository.create(id, request)

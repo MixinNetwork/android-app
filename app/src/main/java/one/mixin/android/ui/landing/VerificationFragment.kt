@@ -261,7 +261,11 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         showLoading()
         val verificationRequest = VerificationRequest(
             requireArguments().getString(ARGS_PHONE_NUM),
-            if (isPhoneModification()) VerificationPurpose.PHONE.name else VerificationPurpose.SESSION.name
+            when {
+                from == FROM_DELETE_ACCOUNT -> VerificationPurpose.DEACTIVATED.name
+                isPhoneModification() -> VerificationPurpose.PHONE.name
+                else -> VerificationPurpose.SESSION.name
+            }
         )
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {

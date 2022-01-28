@@ -672,6 +672,7 @@
     <string name="setting_delete_account_pin_title">输入你的密码以注销你的账户</string>
     <string name="setting_delete_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。阅读我们的文件以了解更多。</string>
     <string name="setting_delete_account_pin_content_more">了解更多</string>
+    <string name="setting_delete_account_send">我们将发送4位验证码到手机 %1$s</string>
     <string-array name="setting_night_array">
         <item>浅色</item>
         <item>暗黑</item>

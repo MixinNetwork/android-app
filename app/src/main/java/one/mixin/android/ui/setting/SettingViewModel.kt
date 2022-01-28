@@ -10,6 +10,8 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.ContactRequest
 import one.mixin.android.api.request.DeauthorRequest
+import one.mixin.android.api.request.VerificationRequest
+import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.AccountRepository
@@ -29,6 +31,9 @@ internal constructor(
     private val contactService: ContactService,
     private val assetRepository: AssetRepository
 ) : ViewModel() {
+
+    suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
+        accountRepository.verification(request)
 
     fun countBlockingUsers() =
         accountRepository.findUsersByType(UserRelationship.BLOCKING.name)

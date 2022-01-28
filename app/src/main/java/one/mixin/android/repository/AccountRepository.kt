@@ -76,7 +76,10 @@ constructor(
     private val emergencyService: EmergencyService
 ) {
 
-    fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
+    fun verificationObserver(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
+        accountService.verificationObserver(request)
+
+    suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
         accountService.verification(request)
 
     suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> =

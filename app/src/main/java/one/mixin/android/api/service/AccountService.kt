@@ -36,7 +36,10 @@ import retrofit2.http.Query
 interface AccountService {
 
     @POST("verifications")
-    fun verification(@Body request: VerificationRequest): Observable<MixinResponse<VerificationResponse>>
+    fun verificationObserver(@Body request: VerificationRequest): Observable<MixinResponse<VerificationResponse>>
+
+    @POST("verifications")
+    suspend fun verification(@Body request: VerificationRequest): MixinResponse<VerificationResponse>
 
     @POST("verifications/{id}")
     suspend fun create(@Path("id") id: String, @Body request: AccountRequest): MixinResponse<Account>

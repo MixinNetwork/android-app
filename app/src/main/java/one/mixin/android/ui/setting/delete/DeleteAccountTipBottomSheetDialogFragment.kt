@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -48,8 +49,7 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
                 dismiss()
             }
             continueTv.setOnClickListener {
-                continueCallback?.invoke()
-                dismiss()
+                continueCallback?.invoke(this@DeleteAccountTipBottomSheetDialogFragment)
             }
             viewWalletTv.setOnClickListener {
                 dismiss()
@@ -69,12 +69,12 @@ class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment
 
     private var assets = listOf<AssetItem>()
 
-    fun setContinueCallback(callback: () -> Unit): DeleteAccountTipBottomSheetDialogFragment {
+    fun setContinueCallback(callback: (DialogFragment) -> Unit): DeleteAccountTipBottomSheetDialogFragment {
         continueCallback = callback
         return this
     }
 
-    private var continueCallback: (() -> Unit)? = null
+    private var continueCallback: ((DialogFragment) -> Unit)? = null
 
     class TypeAdapter : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {
         private var typeListener: TransferFragment.OnTypeClickListener? = null
