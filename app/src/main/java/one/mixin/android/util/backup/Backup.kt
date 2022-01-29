@@ -19,6 +19,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.deleteOnExists
 import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
@@ -175,7 +176,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
                 )
             } catch (e: Exception) {
                 db?.close()
-                tmpFile.deleteOnExit()
+                tmpFile.deleteOnExists()
                 withContext(Dispatchers.Main) {
                     callback(Result.FAILURE)
                 }
@@ -190,8 +191,9 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             } finally {
                 db.close()
             }
-            tmpFile.deleteOnExit()
             backupDbFile.uri.copyFromInputStream(tmpFile.inputStream())
+            tmpFile.deleteOnExists()
+            File(context.getMediaPath(), "$DB_NAME-journal").deleteOnExists()
             if (backupMedia) {
                 context.getMediaPath()?.let {
                     copyFileToDirectory(it, backupChildDirectory)

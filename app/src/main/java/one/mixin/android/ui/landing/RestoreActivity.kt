@@ -166,7 +166,6 @@ class RestoreActivity : BaseActivity() {
                                 }
                             },
                             {
-
                             }
                         )
                 }
