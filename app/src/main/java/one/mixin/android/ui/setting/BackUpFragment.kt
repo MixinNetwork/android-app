@@ -162,7 +162,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 binding.progressGroup.isVisible = true
                 binding.deleteBn.isVisible = false
             } else {
-                binding.backupChoose.isVisible = true
+                binding.backupChoose.isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                 binding.backupBn.isInvisible = false
                 binding.progressGroup.isVisible = false
                 binding.deleteBn.isVisible = true

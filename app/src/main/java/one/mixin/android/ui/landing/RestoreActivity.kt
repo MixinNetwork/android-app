@@ -95,12 +95,16 @@ class RestoreActivity : BaseActivity() {
     }
 
     private fun findBackupInfo() = lifecycleScope.launch(Dispatchers.IO) {
-        val backupInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            findBackupApi29(this@RestoreActivity, coroutineContext)
-        } else if (ActivityCompat.checkSelfPermission(this@RestoreActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            findBackup(this@RestoreActivity, coroutineContext)
-        } else {
-            null
+        val backupInfo = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                findBackupApi29(this@RestoreActivity, coroutineContext)
+            }
+            ActivityCompat.checkSelfPermission(this@RestoreActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED -> {
+                findBackup(this@RestoreActivity, coroutineContext)
+            }
+            else -> {
+                null
+            }
         }
         withContext(Dispatchers.Main) {
             if (backupInfo == null) {
@@ -150,7 +154,21 @@ class RestoreActivity : BaseActivity() {
                         )
                     )
                 } else {
-                    findBackupInfo()
+                    RxPermissions(this)
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (!granted) {
+                                    openPermissionSetting()
+                                } else {
+                                    findBackupInfo()
+                                }
+                            },
+                            {
+
+                            }
+                        )
                 }
                 dialog.dismiss()
             }

@@ -942,7 +942,7 @@
     <string name="restore_path">Path: %1$s</string>
     <string name="restore_failure">Failure</string>
     <string name="restore_not_found">Not found, please copy the backup file into %1$s</string>
-    <string name="restore_choose_backup_folder">Choose backup folder</string>
+    <string name="restore_choose_backup_folder">Not found, choose backup folder</string>
     <string name="restore_not_support">Not support</string>
     <string name="restore_notification_title">Restore in progress</string>
     <string name="restore_notification_content">Preparing restore&#8230;</string>

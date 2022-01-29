@@ -370,11 +370,9 @@ suspend fun findBackupApi29(
         return@withContext null
     }
     val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME)
-    if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0) {
-        return@withContext BackupInfo(
-            backupChildDirectory?.lastModified() ?: System.currentTimeMillis(),
-            context.getDisplayPath(backupDirectory.uri)
-        )
+    val dbFile = backupChildDirectory?.findFile("mixin.db")
+    if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0 || dbFile == null || !dbFile.exists() || dbFile.length() <= 0) {
+        return@withContext null
     }
     return@withContext BackupInfo(
         backupDirectory.lastModified(),
