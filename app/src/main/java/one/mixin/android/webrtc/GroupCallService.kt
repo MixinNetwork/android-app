@@ -563,14 +563,15 @@ class GroupCallService : CallService() {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
 
-            if (subscribeFuture == null) {
-                subscribeFuture = scheduledExecutors.scheduleAtFixedRate(
-                    SubscribeRunnable(),
-                    SUBSCRIBE_INTERVAL,
-                    SUBSCRIBE_INTERVAL,
-                    TimeUnit.SECONDS
-                )
+            if (subscribeFuture != null) {
+                subscribeFuture?.cancel(true)
             }
+            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(
+                SubscribeRunnable(),
+                SUBSCRIBE_INTERVAL,
+                SUBSCRIBE_INTERVAL,
+                TimeUnit.SECONDS
+            )
 
             if (fromReconnecting) return@execute
             val cid = callState.conversationId ?: return@execute
@@ -723,7 +724,7 @@ class GroupCallService : CallService() {
 
     inner class SubscribeRunnable : Runnable {
         override fun run() {
-            if (callState.isIdle()) return
+            if (callState.isIdle() || callState.reconnecting) return
 
             val cid = callState.conversationId
             val trackId = callState.trackId
