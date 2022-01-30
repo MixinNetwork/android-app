@@ -19,6 +19,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.deleteOnExists
 import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
@@ -175,7 +176,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
                 )
             } catch (e: Exception) {
                 db?.close()
-                tmpFile.deleteOnExit()
+                tmpFile.deleteOnExists()
                 withContext(Dispatchers.Main) {
                     callback(Result.FAILURE)
                 }
@@ -190,8 +191,9 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             } finally {
                 db.close()
             }
-            tmpFile.deleteOnExit()
             backupDbFile.uri.copyFromInputStream(tmpFile.inputStream())
+            tmpFile.deleteOnExists()
+            File(context.getMediaPath(), "$DB_NAME-journal").deleteOnExists()
             if (backupMedia) {
                 context.getMediaPath()?.let {
                     copyFileToDirectory(it, backupChildDirectory)
@@ -339,7 +341,7 @@ suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext
 ): BackupInfo? = internalFindBackup(context, coroutineContext)?.run {
-    BackupInfo(lastModified(), length(), absolutePath)
+    BackupInfo(lastModified(), absolutePath)
 }
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -370,30 +372,14 @@ suspend fun findBackupApi29(
         return@withContext null
     }
     val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME)
-    if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0) {
-        return@withContext BackupInfo(
-            backupChildDirectory?.lastModified() ?: System.currentTimeMillis(),
-            0L,
-            context.getDisplayPath(backupDirectory.uri)
-        )
+    val dbFile = backupChildDirectory?.findFile("mixin.db")
+    if (backupChildDirectory == null || !backupChildDirectory.exists() || backupChildDirectory.length() <= 0 || dbFile == null || !dbFile.exists() || dbFile.length() <= 0) {
+        return@withContext null
     }
     return@withContext BackupInfo(
         backupDirectory.lastModified(),
-        getFolderSize(backupDirectory),
         context.getDisplayPath(backupDirectory.uri)
     )
-}
-
-private fun getFolderSize(file: DocumentFile): Long {
-    return if (file.isDirectory) {
-        var total = 0L
-        file.listFiles().forEach { f ->
-            total += getFolderSize(f)
-        }
-        total
-    } else {
-        file.length()
-    }
 }
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
