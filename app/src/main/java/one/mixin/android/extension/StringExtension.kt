@@ -22,7 +22,6 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.google.zxing.qrcode.encoder.ByteMatrix
 import com.google.zxing.qrcode.encoder.Encoder
-import okhttp3.internal.and
 import okio.Buffer
 import okio.ByteString
 import okio.GzipSink
