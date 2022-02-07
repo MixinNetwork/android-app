@@ -38,7 +38,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.setOnLongClickListener {
+        val longClickListener = View.OnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
@@ -46,6 +46,8 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
                 true
             }
         }
+        itemView.setOnLongClickListener(longClickListener)
+        binding.chatLayout.setOnLongClickListener(longClickListener)
 
         binding.chatTime.load(
             isMe,
@@ -75,7 +77,7 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
         binding.chatIcon.loadRoundImage(actionCard.iconUrl, radius, R.drawable.holder_bot)
         binding.chatTitle.text = actionCard.title
         binding.chatDescription.text = actionCard.description
-        itemView.setOnClickListener {
+        binding.chatLayout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
