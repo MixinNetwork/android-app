@@ -595,10 +595,9 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             }
             temp
         } else {
-            val fileInputStream = MixinApplication.get().contentResolver.openInputStream(uri) ?: return -1
             Compressor()
                 .setCompressFormat(Bitmap.CompressFormat.JPEG)
-                .compressToFile(fileInputStream, temp.absolutePath)
+                .compressToFile(uri, temp.absolutePath)
         }
         val length = imageFile.length()
         if (length <= 0) {
