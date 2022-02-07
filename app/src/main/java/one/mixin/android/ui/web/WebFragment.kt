@@ -427,7 +427,9 @@ class WebFragment : BaseFragment() {
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.userAgentString =
             webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
-
+        webView.settings.setAppCachePath(requireContext().cacheDir.absolutePath)
+        webView.settings.setAppCacheMaxSize(10 * 1024 * 1024)
+        webView.settings.setAppCacheEnabled(true)
         webView.webViewClient =
             WebViewClientImpl(
                 object : WebViewClientImpl.OnPageFinishedListener {
