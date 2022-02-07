@@ -1,9 +1,9 @@
 package one.mixin.android.util.image
 
 import android.graphics.Bitmap
+import android.net.Uri
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
 
 class Compressor {
     private var maxWidth = 1920
@@ -32,9 +32,9 @@ class Compressor {
     }
 
     @Throws(IOException::class)
-    fun compressToFile(imageFile: InputStream, compressedFilePath: String): File {
+    fun compressToFile(imageUri: Uri, compressedFilePath: String): File {
         return ImageUtil.compressImage(
-            imageFile,
+            imageUri,
             maxWidth,
             maxHeight,
             compressFormat,
