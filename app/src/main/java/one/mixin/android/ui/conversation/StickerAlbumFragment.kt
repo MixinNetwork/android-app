@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.widget.ViewPager2
@@ -49,7 +48,7 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
     private val albums = mutableListOf<StickerAlbum>()
 
     private val albumAdapter: StickerAlbumAdapter by lazy {
-        StickerAlbumAdapter(this, albums).apply {
+        StickerAlbumAdapter(requireActivity(), albums).apply {
             callback = this@StickerAlbumFragment.callback
         }
     }
@@ -69,23 +68,12 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                 viewLifecycleOwner
             ) { r ->
                 r?.let {
-                    albums.clear()
-                    albums.addAll(r)
-                    albumAdapter.notifyDataSetChanged()
-                    context?.let { c ->
-                        for (i in 1 until albumAdapter.itemCount) {
-                            val tabView = albumAdapter.getTabView(i, c) as FrameLayout
-                            albumTl.getTabAt(i)?.customView = tabView
-                            if (albumTl.selectedTabPosition == i) {
-                                tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
-                            }
-                        }
+                    albumAdapter.setItems(r)
 
-                        val slidingTabStrip = albumTl.getChildAt(0) as ViewGroup
-                        for (i in 1 until slidingTabStrip.childCount) {
-                            val v = slidingTabStrip.getChildAt(i)
-                            v.backgroundResource = 0
-                        }
+                    val slidingTabStrip = albumTl.getChildAt(0) as ViewGroup
+                    for (i in 1 until slidingTabStrip.childCount) {
+                        val v = slidingTabStrip.getChildAt(i)
+                        v.backgroundResource = 0
                     }
 
                     if (first) {
@@ -119,6 +107,12 @@ class StickerAlbumFragment : BaseFragment(R.layout.fragment_sticker_album) {
                             StickerStoreActivity.show(requireContext())
                         }
                         dotIv.isVisible = defaultSharedPreferences.getBoolean(PREF_NEW_ALBUM, false)
+                    }
+                } else {
+                    val tabView = albumAdapter.getTabView(pos, requireContext())
+                    tab.customView = tabView
+                    if (albumTl.selectedTabPosition == pos) {
+                        tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
                     }
                 }
             }.attach()
