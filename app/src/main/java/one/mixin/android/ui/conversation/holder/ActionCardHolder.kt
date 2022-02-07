@@ -84,6 +84,11 @@ class ActionCardHolder constructor(val binding: ItemChatActionCardBinding) :
                 onItemListener.onAppCardClick(actionCard, messageItem.userId)
             }
         }
+        itemView.setOnClickListener {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
+        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
