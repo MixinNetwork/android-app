@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
-import androidx.recyclerview.widget.DiffUtil
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +16,7 @@ import one.mixin.android.databinding.ItemStickerBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.textColor
+import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.widget.RLottieImageView
@@ -23,10 +24,12 @@ import one.mixin.android.widget.SpacesItemDecoration
 
 class AlbumAdapter(
     private val fragmentManager: FragmentManager,
+    private val viewModel: ConversationViewModel,
+    private val lifecycleOwner: LifecycleOwner,
     private val addAction: (String) -> Unit,
-) : ListAdapter<StoreAlbum, AlbumHolder>(StoreAlbum.DIFF_CALLBACK) {
+) : ListAdapter<StickerAlbum, AlbumHolder>(StickerAlbum.DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        AlbumHolder(ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false), fragmentManager, addAction)
+        AlbumHolder(ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false), fragmentManager, viewModel, lifecycleOwner, addAction)
 
     override fun onBindViewHolder(holder: AlbumHolder, position: Int) {
         getItem(position)?.let { album -> holder.bind(album) }
@@ -36,21 +39,25 @@ class AlbumAdapter(
 class AlbumHolder(
     val binding: ItemAlbumBinding,
     private val fragmentManager: FragmentManager,
+    private val viewModel: ConversationViewModel,
+    private val lifecycleOwner: LifecycleOwner,
     private val addAction: (String) -> Unit,
 ) : RecyclerView.ViewHolder(binding.root) {
     private val padding: Int = 4.dp
 
-    fun bind(album: StoreAlbum) {
+    fun bind(album: StickerAlbum) {
         val ctx = binding.root.context
         binding.apply {
-            tileTv.text = album.album.name
-            actionTv.updateAlbumAdd(ctx, album.album.added) {
-                addAction.invoke(album.album.albumId)
+            tileTv.text = album.name
+            actionTv.updateAlbumAdd(ctx, album.added) {
+                addAction.invoke(album.albumId)
             }
             val adapter = StickerAdapter()
             stickerRv.apply {
                 setHasFixedSize(true)
-                addItemDecoration(SpacesItemDecoration(padding))
+                if (itemDecorationCount == 0) {
+                    addItemDecoration(SpacesItemDecoration(padding))
+                }
                 layoutManager = LinearLayoutManager(ctx, RecyclerView.HORIZONTAL, false)
                 this.adapter = adapter
                 adapter.stickerListener = object : StickerListener {
@@ -60,7 +67,9 @@ class AlbumHolder(
                             .showNow(fragmentManager, StickerAlbumBottomSheetFragment.TAG)
                     }
                 }
-                adapter.submitList(album.stickers)
+                viewModel.observeSystemStickersByAlbumId(album.albumId).observe(lifecycleOwner) { stickers ->
+                    adapter.submitList(stickers)
+                }
             }
         }
     }
@@ -96,21 +105,6 @@ class StickerViewHolder(val binding: ItemStickerBinding) : RecyclerView.ViewHold
 
 interface StickerListener {
     fun onItemClick(sticker: Sticker)
-}
-
-data class StoreAlbum(
-    val album: StickerAlbum,
-    val stickers: List<Sticker>,
-) {
-    companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StoreAlbum>() {
-            override fun areItemsTheSame(oldItem: StoreAlbum, newItem: StoreAlbum) =
-                oldItem.album.albumId == newItem.album.albumId
-
-            override fun areContentsTheSame(oldItem: StoreAlbum, newItem: StoreAlbum) =
-                oldItem.album == newItem.album
-        }
-    }
 }
 
 fun TextView.updateAlbumAdd(ctx: Context, added: Boolean, action: (() -> Unit)? = null) {
