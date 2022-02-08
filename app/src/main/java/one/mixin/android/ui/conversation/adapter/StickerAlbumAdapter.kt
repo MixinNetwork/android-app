@@ -16,6 +16,7 @@ import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.recyclerview.OffsetListUpdateCallback
 
 class StickerAlbumAdapter(
     activity: FragmentActivity,
@@ -113,7 +114,7 @@ class StickerAlbumAdapter(
         albums.clear()
         albums.addAll(newItems)
 
-        diff.dispatchUpdatesTo(this)
+        diff.dispatchUpdatesTo(OffsetListUpdateCallback(this, UN_NORMAL_COUNT))
     }
 
     interface Callback {
