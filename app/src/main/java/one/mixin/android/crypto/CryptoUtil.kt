@@ -116,9 +116,7 @@ fun aesDecrypt(key: ByteArray, iv: ByteArray, ciphertext: ByteArray): ByteArray 
     return cipher.doFinal(ciphertext)
 }
 
-inline fun KeyPair.getPublicKey(): ByteArray {
-    return public.encoded
-}
+inline fun KeyPair.getPublicKey(): ByteArray = (public as EdDSAPublicKey).abyte
 
 inline fun KeyPair.getPrivateKeyPem(): String {
     val heldCertificate = HeldCertificate.Builder().keyPair(this).build()
