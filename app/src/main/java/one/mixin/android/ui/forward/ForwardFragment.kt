@@ -3,6 +3,7 @@ package one.mixin.android.ui.forward
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -12,6 +13,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
 import androidx.collection.ArraySet
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.net.toFile
@@ -49,6 +51,7 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_ACTION
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_COMBINE_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.ShortcutInfo
 import one.mixin.android.util.generateDynamicShortcut
@@ -144,6 +147,20 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
     private val binding by viewBinding(FragmentForwardBinding::bind)
 
+    lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
+
+    internal class EditorPreserver(
+        val forwardMessage: ForwardMessage,
+        val selectItems: List<SelectItem>,
+    )
+
+    private var editorPreserver: EditorPreserver? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), requireActivity().activityResultRegistry, ::callbackEditor)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_forward, container, false)
 
@@ -206,7 +223,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             checkPermission {
                 updateDynamicShortcuts(adapter.selectItem)
 
-                val selectItem = adapter.selectItem.mapNotNull {
+                val selectItems = adapter.selectItem.mapNotNull {
                     when (it) {
                         is ConversationMinimal -> {
                             SelectItem(it.conversationId, null)
@@ -220,9 +237,16 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     }
                 }
                 if (action is ForwardAction.Combine) {
-                    sendCombineMessage(selectItem)
+                    sendCombineMessage(selectItems)
                 } else {
-                    sendMessage(selectItem)
+                    if (needOpenEditor()) {
+                        lifecycleScope.launch {
+                            editorPreserver = EditorPreserver(messages[0], selectItems)
+                            editAndSend(requireNotNull(editorPreserver?.forwardMessage))
+                        }
+                    } else {
+                        sendMessage(selectItems)
+                    }
                 }
             }
         }
@@ -291,14 +315,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             toast(R.string.message_sent)
         }
         if (action is ForwardAction.System) {
-            MainActivity.reopen(requireContext())
-            requireActivity().finish()
-            val firstItem = selectItems[0]
-            if (firstItem.conversationId != null) {
-                ConversationActivity.show(requireContext(), conversationId = firstItem.conversationId)
-            } else {
-                ConversationActivity.show(requireContext(), recipientId = firstItem.userId)
-            }
+            finishAndOpenChat(selectItems[0])
         } else {
             if (action is ForwardAction.App.Resultful) {
                 val result = Intent().apply {
@@ -610,6 +627,12 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     }
 
     private fun sendDirectMessages(cid: String) = lifecycleScope.launch {
+        if (needOpenEditor()) {
+            editorPreserver = EditorPreserver(messages[0], listOf(SelectItem(cid, null)))
+            editAndSend(requireNotNull(editorPreserver?.forwardMessage))
+            return@launch
+        }
+
         val err = sendMessageInternal(SelectItem(cid, null))
         if (err.isNullOrEmpty()) {
             toast(R.string.message_sent)
@@ -667,6 +690,60 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
         } catch (t: Throwable) {
             null
+        }
+    }
+
+    private fun needOpenEditor() = action is ForwardAction.System && messages.size == 1 && messages[0].category is ShareCategory.Image
+
+    private fun editAndSend(forwardMessage: ForwardMessage) {
+        val content = forwardMessage.content
+        val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
+        val uri = if (shareImageData.url.startsWith("http", true)) {
+            val file: File? = try {
+                Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
+            } catch (t: Throwable) {
+                null
+            }
+            file?.toUri() ?: shareImageData.url.toUri()
+        } else {
+            shareImageData.url.toUri()
+        }
+        getEditorResult.launch(Pair(uri, getString(R.string.share)))
+    }
+
+    private suspend fun sendImageByUri(uri: Uri) {
+        val preserver = editorPreserver
+        if (sender == null || preserver == null || preserver.selectItems.isEmpty()) return
+
+        preserver.selectItems.forEach { selectItem ->
+            chatViewModel.checkData(selectItem) { conversationId: String, encryptCategory: EncryptCategory ->
+                val code = chatViewModel.sendImageMessage(conversationId, sender, uri, encryptCategory)
+                val errorRes = ShareCategory.Image.getErrorStringOrNull(code)
+                if (errorRes != null) {
+                    val errorString = requireContext().getString(errorRes)
+                    toast(errorString)
+                }
+            }
+        }
+        finishAndOpenChat(preserver.selectItems[0])
+    }
+
+    private fun finishAndOpenChat(firstItem: SelectItem) {
+        MainActivity.reopen(requireContext())
+        requireActivity().finish()
+        if (firstItem.conversationId != null) {
+            ConversationActivity.show(requireContext(), conversationId = firstItem.conversationId)
+        } else {
+            ConversationActivity.show(requireContext(), recipientId = firstItem.userId)
+        }
+    }
+
+    private fun callbackEditor(data: Intent?) {
+        val uri = data?.getParcelableExtra<Uri>(ImageEditorActivity.ARGS_EDITOR_RESULT)
+        if (uri != null) {
+            lifecycleScope.launch {
+                sendImageByUri(uri)
+            }
         }
     }
 
