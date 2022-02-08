@@ -3,6 +3,7 @@ package one.mixin.android.util
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.crypto.ed25519
+import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
 import kotlin.test.Test
@@ -22,5 +23,13 @@ class CryptoUtilTest {
         assert(curve25519PrivateKey.contentEquals(targetPrivate))
         val curve25519PublicKey = publicKeyToCurve25519(publicKey)
         assert(curve25519PublicKey.contentEquals(targetPublic))
+    }
+
+    @Test
+    fun `test curve25519`() {
+        val keyPair = generateEd25519KeyPair()
+        val publicKey = keyPair.public as EdDSAPublicKey
+        val bytes = publicKeyToCurve25519(publicKey)
+        assert(verifyPubkey(bytes))
     }
 }
