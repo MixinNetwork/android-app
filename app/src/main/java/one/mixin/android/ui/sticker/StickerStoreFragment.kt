@@ -30,7 +30,7 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
 
     private val bannerAdapter = BannerAdapter()
     private val albumAdapter: AlbumAdapter by lazy {
-        AlbumAdapter(parentFragmentManager, viewModel, viewLifecycleOwner) { albumId ->
+        AlbumAdapter(parentFragmentManager) { albumId ->
             lifecycleScope.launch {
                 val maxOrder = viewModel.findMaxOrder()
                 viewModel.updateAlbumAdded(StickerAlbumAdded(albumId, true, maxOrder + 1))
@@ -66,11 +66,11 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = albumAdapter
             }
-            viewModel.observeSystemAlbums().observe(viewLifecycleOwner) { albums ->
+            viewModel.observeSystemAlbumsAndStickers().observe(viewLifecycleOwner) { albums ->
                 val banners = albums
-                    .filter { !it.banner.isNullOrEmpty() }
+                    .filter { !it.album.banner.isNullOrEmpty() }
                     .take(3)
-                    .map { Banner(it.albumId, requireNotNull(it.banner)) }
+                    .map { Banner(it.album.albumId, requireNotNull(it.album.banner)) }
                 bannerAdapter.data = banners
 
                 albumAdapter.submitList(albums)

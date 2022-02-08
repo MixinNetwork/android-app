@@ -494,6 +494,8 @@ internal constructor(
 
     fun observeSystemAlbums() = accountRepository.observeSystemAlbums()
 
+    fun observeSystemAlbumsAndStickers() = accountRepository.observeSystemAlbumsAndStickers()
+
     suspend fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
 
     fun observeStickers(id: String) = accountRepository.observeStickers(id)

@@ -6,17 +6,18 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Embedded
+import androidx.room.Relation
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemAlbumBinding
 import one.mixin.android.databinding.ItemStickerBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.textColor
-import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.widget.RLottieImageView
@@ -24,12 +25,10 @@ import one.mixin.android.widget.SpacesItemDecoration
 
 class AlbumAdapter(
     private val fragmentManager: FragmentManager,
-    private val viewModel: ConversationViewModel,
-    private val lifecycleOwner: LifecycleOwner,
     private val addAction: (String) -> Unit,
-) : ListAdapter<StickerAlbum, AlbumHolder>(StickerAlbum.DIFF_CALLBACK) {
+) : ListAdapter<StoreAlbum, AlbumHolder>(StoreAlbum.DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        AlbumHolder(ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false), fragmentManager, viewModel, lifecycleOwner, addAction)
+        AlbumHolder(ItemAlbumBinding.inflate(LayoutInflater.from(parent.context), parent, false), fragmentManager, addAction)
 
     override fun onBindViewHolder(holder: AlbumHolder, position: Int) {
         getItem(position)?.let { album -> holder.bind(album) }
@@ -39,18 +38,16 @@ class AlbumAdapter(
 class AlbumHolder(
     val binding: ItemAlbumBinding,
     private val fragmentManager: FragmentManager,
-    private val viewModel: ConversationViewModel,
-    private val lifecycleOwner: LifecycleOwner,
     private val addAction: (String) -> Unit,
 ) : RecyclerView.ViewHolder(binding.root) {
     private val padding: Int = 4.dp
 
-    fun bind(album: StickerAlbum) {
+    fun bind(album: StoreAlbum) {
         val ctx = binding.root.context
         binding.apply {
-            tileTv.text = album.name
-            actionTv.updateAlbumAdd(ctx, album.added) {
-                addAction.invoke(album.albumId)
+            tileTv.text = album.album.name
+            actionTv.updateAlbumAdd(ctx, album.album.added) {
+                addAction.invoke(album.album.albumId)
             }
             val adapter = StickerAdapter()
             stickerRv.apply {
@@ -67,9 +64,7 @@ class AlbumHolder(
                             .showNow(fragmentManager, StickerAlbumBottomSheetFragment.TAG)
                     }
                 }
-                viewModel.observeSystemStickersByAlbumId(album.albumId).observe(lifecycleOwner) { stickers ->
-                    adapter.submitList(stickers)
-                }
+                adapter.submitList(album.stickers)
             }
         }
     }
@@ -99,6 +94,22 @@ class StickerAdapter : ListAdapter<Sticker, StickerViewHolder>(Sticker.DIFF_CALL
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         StickerViewHolder(ItemStickerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+}
+
+data class StoreAlbum(
+    @Embedded val album: StickerAlbum,
+    @Relation(parentColumn = "album_id", entityColumn = "album_id")
+    val stickers: List<Sticker>,
+) {
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<StoreAlbum>() {
+            override fun areItemsTheSame(oldItem: StoreAlbum, newItem: StoreAlbum) =
+                oldItem.album.albumId == newItem.album.albumId
+
+            override fun areContentsTheSame(oldItem: StoreAlbum, newItem: StoreAlbum) =
+                oldItem.album == newItem.album && oldItem.stickers.size == newItem.stickers.size
+        }
+    }
 }
 
 class StickerViewHolder(val binding: ItemStickerBinding) : RecyclerView.ViewHolder(binding.root)
