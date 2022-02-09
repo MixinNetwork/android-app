@@ -9,6 +9,9 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationCompat.Action.SEMANTIC_ACTION_MARK_AS_READ
+import androidx.core.app.NotificationCompat.Action.SEMANTIC_ACTION_REPLY
+import androidx.core.app.NotificationCompat.CATEGORY_MESSAGE
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat
@@ -121,7 +124,7 @@ object NotificationGenerator : Injector() {
                     PendingIntent.FLAG_UPDATE_CURRENT
                 }
             )
-        )
+        ).setCategory(CATEGORY_MESSAGE)
         supportsNougat {
             val remoteInput = RemoteInput.Builder(KEY_REPLY)
                 .setLabel(context.getString(R.string.notification_reply))
@@ -156,13 +159,16 @@ object NotificationGenerator : Injector() {
             )
                 .addRemoteInput(remoteInput)
                 .setAllowGeneratedReplies(true)
+                .setSemanticAction(SEMANTIC_ACTION_REPLY)
+                .setShowsUserInterface(false)
                 .build()
             notificationBuilder.addAction(action)
             val readAction = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
                 context.getString(R.string.notification_mark),
                 pendingIntent
-            )
+            ).setSemanticAction(SEMANTIC_ACTION_MARK_AS_READ)
+                .setShowsUserInterface(false)
                 .build()
             notificationBuilder.addAction(readAction)
         }
