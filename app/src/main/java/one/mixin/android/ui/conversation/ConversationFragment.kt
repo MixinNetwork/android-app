@@ -3270,9 +3270,7 @@ class ConversationFragment() :
     private fun initAudioSwitch() {
         if (!initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
             initAudioSwitch = true
-            audioSwitch.start { audioDevices, selectedAudioDevice ->
-                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
-            }
+            audioSwitch.start()
         }
     }
 }
