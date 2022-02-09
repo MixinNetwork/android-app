@@ -68,7 +68,7 @@ class CallAudioManager(
                 }
                 val wiredHeadset = audioDevices.find { it is AudioDevice.WiredHeadset }
                 if (wiredHeadset != null) {
-                    audioSwitch.selectDevice(bluetoothHeadset)
+                    audioSwitch.selectDevice(wiredHeadset)
                     callback.customAudioDeviceAvailable(true)
                 } else if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
                     audioSwitch.selectEarpiece()
