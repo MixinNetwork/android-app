@@ -60,24 +60,20 @@ class CallAudioManager(
             initAudioSwitch = true
             audioSwitch.start { audioDevices, selectedAudioDevice ->
                 Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
-                if (selectedAudioDevice !is AudioDevice.BluetoothHeadset) {
-                    val bluetoothHeadset = audioDevices.find { it is AudioDevice.BluetoothHeadset }
-                    if (bluetoothHeadset != null) {
-                        audioSwitch.selectDevice(bluetoothHeadset)
-                    } else {
-                        if (selectedAudioDevice !is AudioDevice.WiredHeadset) {
-                            val wiredHeadset = audioDevices.find { it is AudioDevice.WiredHeadset }
-                            if (wiredHeadset != null) {
-                                audioSwitch.selectDevice(wiredHeadset)
-                            } else {
-                                if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
-                                    audioSwitch.selectEarpiece()
-                                }
-                            }
-                        }
-                    }
+                val bluetoothHeadset = audioDevices.find { it is AudioDevice.BluetoothHeadset }
+                if (bluetoothHeadset != null) {
+                    audioSwitch.selectDevice(bluetoothHeadset)
+                    callback.customAudioDeviceAvailable(true)
+                    return@start
                 }
-                callback.customAudioDeviceAvailable(selectedAudioDevice.isBluetoothHeadsetOrWiredHeadset())
+                val wiredHeadset = audioDevices.find { it is AudioDevice.WiredHeadset }
+                if (wiredHeadset != null) {
+                    audioSwitch.selectDevice(bluetoothHeadset)
+                    callback.customAudioDeviceAvailable(true)
+                } else if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
+                    audioSwitch.selectEarpiece()
+                    callback.customAudioDeviceAvailable(false)
+                }
             }
         }
     }
