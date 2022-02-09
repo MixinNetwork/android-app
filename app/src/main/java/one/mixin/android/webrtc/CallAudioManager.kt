@@ -70,8 +70,10 @@ class CallAudioManager(
                 if (wiredHeadset != null) {
                     audioSwitch.selectDevice(wiredHeadset)
                     callback.customAudioDeviceAvailable(true)
-                } else if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
-                    audioSwitch.selectEarpiece()
+                } else {
+                    if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
+                        audioSwitch.selectEarpiece()
+                    }
                     callback.customAudioDeviceAvailable(false)
                 }
             }
