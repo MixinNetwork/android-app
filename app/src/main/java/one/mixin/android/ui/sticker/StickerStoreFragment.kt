@@ -66,21 +66,16 @@ class StickerStoreFragment : BaseFragment(R.layout.fragment_sticker_store) {
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = albumAdapter
             }
-            viewModel.observeSystemAlbums().observe(viewLifecycleOwner) { albums ->
+            viewModel.observeSystemAlbumsAndStickers().observe(viewLifecycleOwner) { albums ->
                 val banners = albums
-                    .filter { !it.banner.isNullOrEmpty() }
+                    .filter { !it.album.banner.isNullOrEmpty() }
                     .take(3)
-                    .map { Banner(it.albumId, requireNotNull(it.banner)) }
+                    .map { Banner(it.album.albumId, requireNotNull(it.album.banner)) }
                 bannerAdapter.data = banners
 
-                lifecycleScope.launch {
-                    val storeAlbums = mutableListOf<StoreAlbum>()
-                    albums.mapTo(storeAlbums) { album ->
-                        StoreAlbum(album, viewModel.findStickersByAlbumId(album.albumId))
-                    }
-                    albumAdapter.submitList(storeAlbums)
-                }
+                albumAdapter.submitList(albums)
             }
         }
+        viewModel.refreshStickerAlbums()
     }
 }

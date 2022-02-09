@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Update
+import one.mixin.android.ui.sticker.StoreAlbum
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.vo.StickerAlbumOrder
@@ -16,6 +17,9 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
 
     @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY created_at DESC")
     fun observeSystemAlbums(): LiveData<List<StickerAlbum>>
+
+    @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY created_at DESC")
+    fun observeSystemAlbumsAndStickers(): LiveData<List<StoreAlbum>>
 
     @Query("SELECT * FROM sticker_albums WHERE category = 'PERSONAL' ORDER BY created_at ASC")
     suspend fun getPersonalAlbums(): StickerAlbum?

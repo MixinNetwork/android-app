@@ -133,7 +133,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
             stickerAdapter.setOnStickerListener(
                 object : StickerListener {
                     override fun onItemClick(pos: Int, sticker: Sticker) {
-                        if ((parentFragment as StickerAlbumFragment).changed) return
+                        if ((parentFragment as? StickerAlbumFragment)?.changed == true) return
 
                         if (type != TYPE_RECENT) {
                             stickerViewModel.updateStickerUsedAt(sticker.stickerId)

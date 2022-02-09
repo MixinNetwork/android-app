@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Embedded
+import androidx.room.Relation
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemAlbumBinding
 import one.mixin.android.databinding.ItemStickerBinding
@@ -50,7 +52,9 @@ class AlbumHolder(
             val adapter = StickerAdapter()
             stickerRv.apply {
                 setHasFixedSize(true)
-                addItemDecoration(SpacesItemDecoration(padding))
+                if (itemDecorationCount == 0) {
+                    addItemDecoration(SpacesItemDecoration(padding))
+                }
                 layoutManager = LinearLayoutManager(ctx, RecyclerView.HORIZONTAL, false)
                 this.adapter = adapter
                 adapter.stickerListener = object : StickerListener {
@@ -92,14 +96,9 @@ class StickerAdapter : ListAdapter<Sticker, StickerViewHolder>(Sticker.DIFF_CALL
         StickerViewHolder(ItemStickerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 }
 
-class StickerViewHolder(val binding: ItemStickerBinding) : RecyclerView.ViewHolder(binding.root)
-
-interface StickerListener {
-    fun onItemClick(sticker: Sticker)
-}
-
 data class StoreAlbum(
-    val album: StickerAlbum,
+    @Embedded val album: StickerAlbum,
+    @Relation(parentColumn = "album_id", entityColumn = "album_id")
     val stickers: List<Sticker>,
 ) {
     companion object {
@@ -108,9 +107,15 @@ data class StoreAlbum(
                 oldItem.album.albumId == newItem.album.albumId
 
             override fun areContentsTheSame(oldItem: StoreAlbum, newItem: StoreAlbum) =
-                oldItem.album == newItem.album
+                oldItem.album == newItem.album && oldItem.stickers.size == newItem.stickers.size
         }
     }
+}
+
+class StickerViewHolder(val binding: ItemStickerBinding) : RecyclerView.ViewHolder(binding.root)
+
+interface StickerListener {
+    fun onItemClick(sticker: Sticker)
 }
 
 fun TextView.updateAlbumAdd(ctx: Context, added: Boolean, action: (() -> Unit)? = null) {
