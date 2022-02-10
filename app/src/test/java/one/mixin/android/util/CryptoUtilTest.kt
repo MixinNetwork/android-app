@@ -1,10 +1,14 @@
 package one.mixin.android.util
 
 import cafe.cryptography.ed25519.Ed25519PrivateKey
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.ed25519
+import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.publicKeyToCurve25519
 import java.security.SecureRandom
@@ -27,6 +31,23 @@ class CryptoUtilTest {
         assert(curve25519PublicKey.contentEquals(targetPublic))
     }
 
+    @Test
+    fun `test curve25519 keys versatility`() {
+        val keyPair = generateEd25519KeyPair()
+        val seed = (keyPair.private as EdDSAPrivateKey).seed
+        val privateKey = Ed25519PrivateKey.fromByteArray(seed)
+        assert(privateKey.derivePublic().toByteArray().contentEquals(keyPair.getPublicKey()))
+    }
+
+    @Test
+    fun `test Ed25519 keys versatility`() {
+        val privateKey = Ed25519PrivateKey.generate(SecureRandom())
+        val privateSpec = EdDSAPrivateKeySpec(privateKey.toByteArray(), ed25519)
+        val edPublicKey = EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+        val publicKeyBytes = publicKeyToCurve25519(edPublicKey)
+        assert(privateKey.derivePublic().toByteArray().contentEquals(publicKeyBytes))
+    }
+
     private fun testCurve25519(bytes: ByteArray) {
         assert(verifyPubkey(bytes))
     }
@@ -34,7 +55,7 @@ class CryptoUtilTest {
     @Test
     fun `test curve25519`() {
         repeat(10000) {
-            val privateKey =  Ed25519PrivateKey.generate(SecureRandom())
+            val privateKey = Ed25519PrivateKey.generate(SecureRandom())
             val publicKey = privateKey.derivePublic()
             testCurve25519(publicKey.toByteArray())
         }
