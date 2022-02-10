@@ -305,6 +305,7 @@ dependencies {
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
     implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
     implementation 'cafe.cryptography:curve25519-elisabeth:0.1.0'
+    implementation 'cafe.cryptography:ed25519-elisabeth:0.1.0'
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
