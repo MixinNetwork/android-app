@@ -1639,20 +1639,17 @@ class ConversationFragment() :
                 receiveInvite(requireContext(), conversationId, playRing = false)
             }
         }
-        callState.observe(
-            viewLifecycleOwner,
-            { state ->
-                if (!inGroup) {
-                    return@observe
-                }
-                binding.chatControl.calling = state != CallService.CallState.STATE_IDLE
-                if (isGroup) {
-                    binding.tapJoinView.root.isVisible = callState.isPendingGroupCall(conversationId)
-                } else {
-                    binding.tapJoinView.root.isVisible = false
-                }
+        callState.observe(viewLifecycleOwner) { state ->
+            if (!inGroup) {
+                return@observe
             }
-        )
+            binding.chatControl.calling = state != CallService.CallState.STATE_IDLE
+            if (isGroup) {
+                binding.tapJoinView.root.isVisible = callState.isPendingGroupCall(conversationId)
+            } else {
+                binding.tapJoinView.root.isVisible = false
+            }
+        }
         debugLongClick(
             binding.actionBar.titleContainer,
             {
@@ -1911,24 +1908,23 @@ class ConversationFragment() :
         liveDataMessage(unreadCount, initialPositionMessageId, !keyword.isNullOrEmpty())
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
-            viewLifecycleOwner,
-            { mentionMessages ->
-                binding.flagLayout.mentionCount = mentionMessages.size
-                binding.flagLayout.mentionFlagLayout.setOnClickListener {
-                    lifecycleScope.launch {
-                        if (mentionMessages.isEmpty()) {
-                            return@launch
-                        }
-                        val messageId = mentionMessages.first().messageId
-                        scrollToMessage(messageId) {
-                            lifecycleScope.launch {
-                                chatViewModel.markMentionRead(messageId, conversationId)
-                            }
+            viewLifecycleOwner
+        ) { mentionMessages ->
+            binding.flagLayout.mentionCount = mentionMessages.size
+            binding.flagLayout.mentionFlagLayout.setOnClickListener {
+                lifecycleScope.launch {
+                    if (mentionMessages.isEmpty()) {
+                        return@launch
+                    }
+                    val messageId = mentionMessages.first().messageId
+                    scrollToMessage(messageId) {
+                        lifecycleScope.launch {
+                            chatViewModel.markMentionRead(messageId, conversationId)
                         }
                     }
                 }
             }
-        )
+        }
 
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
@@ -1942,7 +1938,7 @@ class ConversationFragment() :
     private fun bindPinMessage() {
         binding.pinMessageLayout.conversationId = conversationId
         chatViewModel.getLastPinMessages(conversationId)
-            .observe(viewLifecycleOwner, { messageItem ->
+            .observe(viewLifecycleOwner) { messageItem ->
                 if (messageItem != null) {
                     binding.pinMessageLayout.bind(messageItem) { messageId ->
                         scrollToMessage(messageId)
@@ -1951,23 +1947,24 @@ class ConversationFragment() :
                         getChatHistoryResult.launch(Pair(conversationId, isGroup))
                     }
                 }
-            })
+            }
         chatViewModel.countPinMessages(conversationId)
-            .observe(viewLifecycleOwner, { count ->
+            .observe(viewLifecycleOwner) { count ->
                 binding.pinMessageLayout.isVisible = count > 0
-            })
+            }
     }
 
     private fun liveDataAppList() {
         chatViewModel.getBottomApps(conversationId, recipient?.userId)?.observe(
-            viewLifecycleOwner,
-            { list ->
-                appList = list
-                appList?.let {
-                    (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
-                }
+            viewLifecycleOwner
+        ) { list ->
+            appList = list
+            appList?.let {
+                (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(
+                    it
+                )
             }
-        )
+        }
     }
 
     private var appList: List<AppItem>? = null
@@ -2187,49 +2184,47 @@ class ConversationFragment() :
             showGroupBottomSheet(false)
         }
         chatViewModel.getConversationById(conversationId).observe(
-            viewLifecycleOwner,
-            {
-                it?.let {
-                    groupName = it.name
-                    binding.actionBar.setSubTitle(
-                        groupName
-                            ?: "",
-                        getString(R.string.title_participants, groupNumber)
-                    )
-                    binding.actionBar.avatarIv.setGroup(it.iconUrl)
-                }
+            viewLifecycleOwner
+        ) {
+            it?.let {
+                groupName = it.name
+                binding.actionBar.setSubTitle(
+                    groupName
+                        ?: "",
+                    getString(R.string.title_participants, groupNumber)
+                )
+                binding.actionBar.avatarIv.setGroup(it.iconUrl)
             }
-        )
+        }
         chatViewModel.observeParticipantsCount(conversationId)
             .observe(
-                viewLifecycleOwner,
-                { count ->
-                    groupNumber = count
-                    binding.actionBar.setSubTitle(
-                        groupName ?: "",
-                        getString(R.string.title_participants, groupNumber)
-                    )
+                viewLifecycleOwner
+            ) { count ->
+                groupNumber = count
+                binding.actionBar.setSubTitle(
+                    groupName ?: "",
+                    getString(R.string.title_participants, groupNumber)
+                )
 
-                    lifecycleScope.launch {
-                        val p = withContext(Dispatchers.IO) {
-                            chatViewModel.findParticipantById(conversationId, Session.getAccountId()!!)
-                        }
-                        if (p != null) {
-                            binding.chatControl.visibility = VISIBLE
-                            binding.bottomCantSend.visibility = GONE
-                        } else {
-                            binding.chatControl.visibility = INVISIBLE
-                            binding.bottomCantSend.visibility = VISIBLE
-                            binding.chatControl.chatEt.hideKeyboard()
-                        }
+                lifecycleScope.launch {
+                    val p = withContext(Dispatchers.IO) {
+                        chatViewModel.findParticipantById(conversationId, Session.getAccountId()!!)
+                    }
+                    if (p != null) {
+                        binding.chatControl.visibility = VISIBLE
+                        binding.bottomCantSend.visibility = GONE
+                    } else {
+                        binding.chatControl.visibility = INVISIBLE
+                        binding.bottomCantSend.visibility = VISIBLE
+                        binding.chatControl.chatEt.hideKeyboard()
+                    }
 
-                        inGroup = p != null
-                        if (!inGroup && callState.conversationId == conversationId && callState.isNotIdle()) {
-                            callState.handleHangup(requireContext())
-                        }
+                    inGroup = p != null
+                    if (!inGroup && callState.conversationId == conversationId && callState.isNotIdle()) {
+                        callState.handleHangup(requireContext())
                     }
                 }
-            )
+            }
     }
 
     @Suppress("SameParameterValue")
@@ -3275,9 +3270,7 @@ class ConversationFragment() :
     private fun initAudioSwitch() {
         if (!initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
             initAudioSwitch = true
-            audioSwitch.start { audioDevices, selectedAudioDevice ->
-                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
-            }
+            audioSwitch.start()
         }
     }
 }
