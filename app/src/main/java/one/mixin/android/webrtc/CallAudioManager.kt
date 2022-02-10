@@ -64,17 +64,20 @@ class CallAudioManager(
                 if (bluetoothHeadset != null) {
                     audioSwitch.selectDevice(bluetoothHeadset)
                     callback.customAudioDeviceAvailable(true)
+                    Timber.d("$TAG_AUDIO bluetoothHeadset")
                     return@start
                 }
                 val wiredHeadset = audioDevices.find { it is AudioDevice.WiredHeadset }
                 if (wiredHeadset != null) {
                     audioSwitch.selectDevice(wiredHeadset)
                     callback.customAudioDeviceAvailable(true)
+                    Timber.d("$TAG_AUDIO wiredHeadset")
                 } else {
                     if (mediaPlayerStopped && !isSpeakerOn && selectedAudioDevice !is AudioDevice.Earpiece) {
                         audioSwitch.selectEarpiece()
                     }
                     callback.customAudioDeviceAvailable(false)
+                    Timber.d("$TAG_AUDIO earpiece")
                 }
             }
         }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import one.mixin.android.session.Session
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.TAG_AUDIO
 import one.mixin.android.webrtc.cancelCall
 import one.mixin.android.webrtc.declineCall
 import one.mixin.android.webrtc.krakenCancel
@@ -11,6 +12,7 @@ import one.mixin.android.webrtc.krakenCancelSilently
 import one.mixin.android.webrtc.krakenDecline
 import one.mixin.android.webrtc.krakenEnd
 import one.mixin.android.webrtc.localEnd
+import timber.log.Timber
 
 data class GroupCallUser(
     val id: String,
@@ -191,6 +193,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             if (field == value) return
 
             field = value
+            Timber.w("$TAG_AUDIO customAudioDeviceAvailable $value")
             postValue(state)
         }
 

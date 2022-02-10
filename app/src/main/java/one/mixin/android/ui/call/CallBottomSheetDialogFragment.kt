@@ -56,6 +56,7 @@ import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
+import one.mixin.android.webrtc.TAG_AUDIO
 import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.acceptInvite
 import one.mixin.android.webrtc.answerCall
@@ -410,6 +411,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.muteCb.isChecked = !callState.audioEnable
         binding.voiceCb.isChecked = callState.speakerEnable
         binding.voiceCb.isEnabled = !callState.customAudioDeviceAvailable
+        Timber.w("$TAG_AUDIO updateUI ${callState.customAudioDeviceAvailable}")
     }
 
     private fun hangup() {
