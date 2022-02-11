@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import one.mixin.android.ui.sticker.StoreAlbum
 import one.mixin.android.vo.StickerAlbum
@@ -18,6 +19,7 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
     @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY created_at DESC")
     fun observeSystemAlbums(): LiveData<List<StickerAlbum>>
 
+    @Transaction
     @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY created_at DESC")
     fun observeSystemAlbumsAndStickers(): LiveData<List<StoreAlbum>>
 
