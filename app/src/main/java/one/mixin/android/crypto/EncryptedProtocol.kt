@@ -7,7 +7,6 @@ import one.mixin.android.extension.leByteArrayToInt
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.util.verifyPubkey
-import timber.log.Timber
 import java.util.UUID
 
 class EncryptedProtocol {
@@ -74,5 +73,4 @@ class EncryptedProtocol {
 
         return aesGcmDecrypt(message, decodedMessageKey)
     }
-
 }
