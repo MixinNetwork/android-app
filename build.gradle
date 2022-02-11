@@ -101,6 +101,7 @@ buildscript {
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20211205'
 
+        ext.ed25519Version = '0.1.0'
     }
 
     repositories {
