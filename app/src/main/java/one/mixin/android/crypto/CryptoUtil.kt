@@ -2,9 +2,12 @@
 package one.mixin.android.crypto
 
 import android.os.Build
+import cafe.cryptography.ed25519.Ed25519PrivateKey
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.math.FieldElement
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
@@ -36,7 +39,10 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 }
 
 fun generateEd25519KeyPair(): KeyPair {
-    return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
+    val ed25519PrivateKey = Ed25519PrivateKey.generate(secureRandom)
+    val edDSAPrivateKeySpec = EdDSAPrivateKeySpec(ed25519PrivateKey.toByteArray(), ed25519)
+    val edDSAPublicKeySpec = EdDSAPublicKeySpec(edDSAPrivateKeySpec.a, ed25519)
+    return KeyPair(EdDSAPublicKey(edDSAPublicKeySpec), EdDSAPrivateKey(edDSAPrivateKeySpec))
 }
 
 fun calculateAgreement(publicKey: ByteArray, privateKey: ByteArray): ByteArray {
