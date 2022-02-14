@@ -203,10 +203,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 }
                 else -> {
                     sendMessage(listOf(SelectItem(cid, null)))
+                    requireActivity().finish()
+                    return
                 }
             }
-            requireActivity().finish()
-            return
         }
 
         if (!action.name.isNullOrBlank()) {
