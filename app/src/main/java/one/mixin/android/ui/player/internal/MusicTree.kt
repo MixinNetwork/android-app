@@ -14,24 +14,24 @@ class MusicTree {
     }
 
     fun setItems(mediaItems: List<MediaMetadataCompat>, clear: Boolean = false) {
-        if (clear) {
-            mediaIdToChildren[mediaItems[0].album]?.clear()
-        }
-        mediaItems.forEach { mediaItem ->
-            setItem(mediaItem)
+        synchronized(lock) {
+            if (clear) {
+                mediaIdToChildren[mediaItems[0].album]?.clear()
+            }
+            mediaItems.forEach { mediaItem ->
+                setItem(mediaItem)
+            }
         }
     }
 
-    fun setItem(mediaItem: MediaMetadataCompat) {
-        synchronized(lock) {
-            val albumMediaId = mediaItem.album ?: MUSIC_UNKNOWN_ROOT
-            val albumChildren = mediaIdToChildren[albumMediaId] ?: buildAlbumRoot(mediaItem)
-            val index = albumChildren.indexOfFirst { it.description.mediaId == mediaItem.id }
-            if (index == -1) {
-                albumChildren += mediaItem
-            } else {
-                albumChildren[index] = mediaItem
-            }
+    private fun setItem(mediaItem: MediaMetadataCompat) {
+        val albumMediaId = mediaItem.album ?: MUSIC_UNKNOWN_ROOT
+        val albumChildren = mediaIdToChildren[albumMediaId] ?: buildAlbumRoot(mediaItem)
+        val index = albumChildren.indexOfFirst { it.description.mediaId == mediaItem.id }
+        if (index == -1) {
+            albumChildren += mediaItem
+        } else {
+            albumChildren[index] = mediaItem
         }
     }
 
