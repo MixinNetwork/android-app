@@ -76,6 +76,7 @@ class GroupCallService : CallService() {
     private val scheduledExecutors = Executors.newScheduledThreadPool(1)
     private val scheduledFutures = mutableMapOf<String, ScheduledFuture<*>>()
     private var reconnectingTimeoutFuture: ScheduledFuture<*>? = null
+    private var subscribeFuture: ScheduledFuture<*>? = null
 
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
@@ -160,6 +161,8 @@ class GroupCallService : CallService() {
     }
 
     private fun reconnect(conversationId: String) {
+        Timber.d("$TAG_CALL reconnect cid: $conversationId, reconnecting: ${callState.reconnecting}")
+
         reconnectingTimeoutFuture?.cancel(true)
         reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), RECONNECTING_TIMEOUT, TimeUnit.SECONDS)
 
@@ -169,6 +172,7 @@ class GroupCallService : CallService() {
             if (pc != null && pc.connectionState() != PeerConnection.PeerConnectionState.CLOSED) {
                 Timber.d("$TAG_CALL reconnect pc.close()")
                 pc.close()
+                Timber.d("$TAG_CALL reconnect pc.close() done")
             }
             publish(conversationId)
         }
@@ -562,6 +566,16 @@ class GroupCallService : CallService() {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
 
+            if (subscribeFuture != null) {
+                subscribeFuture?.cancel(true)
+            }
+            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(
+                SubscribeRunnable(),
+                SUBSCRIBE_INTERVAL,
+                SUBSCRIBE_INTERVAL,
+                TimeUnit.SECONDS
+            )
+
             if (fromReconnecting) return@execute
             val cid = callState.conversationId ?: return@execute
             val needMute = callState.needMuteWhenJoin(cid)
@@ -573,7 +587,7 @@ class GroupCallService : CallService() {
 
     override fun onClosed() {
         Timber.d("$TAG_CALL onClosed callState.reconnecting: ${callState.reconnecting}")
-        if (!callState.reconnecting) {
+        if (callState.reconnecting) {
             return
         }
 
@@ -603,6 +617,7 @@ class GroupCallService : CallService() {
     }
 
     override fun onTurnServerError() {
+        Timber.d("$TAG_CALL onTurnServerError")
         if (callState.reconnecting) {
             SystemClock.sleep(SLEEP_MILLIS)
             val conversationId = callState.conversationId
@@ -673,6 +688,8 @@ class GroupCallService : CallService() {
     }
 
     override fun onCallDisconnected() {
+        subscribeFuture?.cancel(true)
+        subscribeFuture = null
         disposable?.dispose()
         reconnectTimeoutCount = 0
     }
@@ -709,6 +726,19 @@ class GroupCallService : CallService() {
         }
     }
 
+    inner class SubscribeRunnable : Runnable {
+        override fun run() {
+            if (callState.isIdle() || callState.reconnecting || callState.disconnected) return
+
+            val cid = callState.conversationId
+            val trackId = callState.trackId
+            if (cid == null || trackId == null) return
+
+            Timber.d("$TAG_CALL sendSubscribe by SubscribeRunnable")
+            sendSubscribe(cid, trackId)
+        }
+    }
+
     private fun getBlazeMessageData(blazeMessage: BlazeMessage): BlazeMessageData? {
         val bm = webSocketChannel(blazeMessage)
         return if (bm != null) {
@@ -723,6 +753,8 @@ class GroupCallService : CallService() {
         if (!networkConnected()) {
             Timber.d("$TAG_CALL network not connected, action: ${blazeMessage.action}")
             if (blazeMessage.action == LIST_KRAKEN_PEERS) return null
+
+            callState.reconnecting = false
 
             SystemClock.sleep(SLEEP_MILLIS)
             return webSocketChannel(blazeMessage)
@@ -784,7 +816,10 @@ class GroupCallService : CallService() {
                         }
                         disconnect()
                     } else {
-                        reconnect(cid)
+                        if (!callState.reconnecting) {
+                            Timber.d("$TAG_CALL reconnecting from bm error: ${bm.error.code}")
+                            reconnect(cid)
+                        }
                     }
                     null
                 }
@@ -1034,6 +1069,7 @@ class GroupCallService : CallService() {
     companion object {
         private const val KRAKEN_LIST_INTERVAL = 30L
         private const val RECONNECTING_TIMEOUT = 60L
+        private const val SUBSCRIBE_INTERVAL = 3L
     }
 }
 
