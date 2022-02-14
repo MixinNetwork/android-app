@@ -25,7 +25,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityRestoreBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -96,12 +95,16 @@ class RestoreActivity : BaseActivity() {
     }
 
     private fun findBackupInfo() = lifecycleScope.launch(Dispatchers.IO) {
-        val backupInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            findBackupApi29(this@RestoreActivity, coroutineContext)
-        } else if (ActivityCompat.checkSelfPermission(this@RestoreActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            findBackup(this@RestoreActivity, coroutineContext)
-        } else {
-            null
+        val backupInfo = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                findBackupApi29(this@RestoreActivity, coroutineContext)
+            }
+            ActivityCompat.checkSelfPermission(this@RestoreActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED -> {
+                findBackup(this@RestoreActivity, coroutineContext)
+            }
+            else -> {
+                null
+            }
         }
         withContext(Dispatchers.Main) {
             if (backupInfo == null) {
@@ -151,7 +154,20 @@ class RestoreActivity : BaseActivity() {
                         )
                     )
                 } else {
-                    findBackupInfo()
+                    RxPermissions(this)
+                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (!granted) {
+                                    openPermissionSetting()
+                                } else {
+                                    findBackupInfo()
+                                }
+                            },
+                            {
+                            }
+                        )
                 }
                 dialog.dismiss()
             }
@@ -209,7 +225,6 @@ class RestoreActivity : BaseActivity() {
                     }
                 )
         }
-        binding.restoreSize.text = getString(R.string.restore_size, backupInfo.length.fileSize())
         binding.restoreSkip.setOnClickListener {
             InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)

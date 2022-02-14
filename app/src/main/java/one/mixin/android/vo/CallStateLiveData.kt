@@ -1,8 +1,6 @@
 package one.mixin.android.vo
 
 import android.content.Context
-import android.telephony.TelephonyManager
-import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
 import one.mixin.android.session.Session
 import one.mixin.android.webrtc.CallService
@@ -224,10 +222,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun isVoiceCall() = callType == CallType.Voice
     fun isNoneCallType() = callType == CallType.None
 
-    fun isBusy(ctx: Context): Boolean {
-        val tm = ctx.getSystemService<TelephonyManager>()
-        return isNotIdle() || tm?.callState != TelephonyManager.CALL_STATE_IDLE
-    }
+    fun isBusy(): Boolean = isNotIdle()
 
     fun getGroupCallStateOrNull(conversationId: String): GroupCallState? {
         return groupCallStates.find {

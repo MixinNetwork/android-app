@@ -41,11 +41,11 @@ class WalletActivity : BlazeBaseActivity() {
         val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
         asset.notNullWithElse(
             {
-                navGraph.startDestination = R.id.transactions_fragment
+                navGraph.setStartDestination(R.id.transactions_fragment)
                 navGraph.addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
             },
             {
-                navGraph.startDestination = R.id.wallet_fragment
+                navGraph.setStartDestination(R.id.wallet_fragment)
             }
         )
         navController.graph = navGraph

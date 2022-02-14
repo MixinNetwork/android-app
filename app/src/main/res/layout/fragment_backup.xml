@@ -49,17 +49,6 @@
             app:layout_constraintTop_toBottomOf="@id/backup_title"
             tools:text="@string/backup_never"/>
 
-        <TextView
-            android:id="@+id/backup_size"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="?attr/text_primary"
-            android:textSize="12sp"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="@id/backup_info"
-            app:layout_constraintTop_toBottomOf="@id/backup_info" />
-
         <ProgressBar
             android:id="@+id/backup_progress"
             style="?android:attr/progressBarStyleSmall"
@@ -84,8 +73,8 @@
             android:visibility="gone"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/backup_size"
-            app:layout_constraintTop_toBottomOf="@id/backup_size" />
+            app:layout_constraintStart_toStartOf="@id/backup_info"
+            app:layout_constraintTop_toBottomOf="@id/backup_info" />
 
         <Button
             android:id="@+id/backup_choose"
@@ -167,6 +156,7 @@
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
             android:layout_marginTop="80dp"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="@id/backup_title"
             app:layout_constraintTop_toBottomOf="@id/backup_auto"/>
 

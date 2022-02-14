@@ -7,7 +7,11 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.Constants.Account.PREF_STRANGER_TRANSFER
@@ -28,6 +32,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.util.PropertyHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.UserRelationship
@@ -74,15 +79,17 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val t = this.t
         binding.assetBalance.setInfo(t)
         if (t.state == PaymentStatus.pending.name) {
-            if (t is TransferBiometricItem) {
-                if (shouldShowStrangerTransferTip(t)) {
-                    binding.assetBalance.setInfoWithUser(t)
-                    showStrangerTip(t)
-                } else {
-                    checkTransferTrace(t)
+            lifecycleScope.launch {
+                if (t is TransferBiometricItem) {
+                    if (shouldShowStrangerTransferTip(t)) {
+                        binding.assetBalance.setInfoWithUser(t)
+                        showStrangerTip(t)
+                    } else {
+                        checkTransferTrace(t)
+                    }
+                } else if (t is WithdrawBiometricItem) {
+                    checkWithdrawTrace(t)
                 }
-            } else if (t is WithdrawBiometricItem) {
-                checkWithdrawTrace(t)
             }
         } else if (t.state == PaymentStatus.paid.name) {
             callback?.onSuccess()
@@ -95,7 +102,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.dismiss()
     }
 
-    private fun checkTransferTrace(t: TransferBiometricItem) {
+    private suspend fun checkTransferTrace(t: TransferBiometricItem) {
         val trace = t.trace
         if (trace == null || isDuplicateTransferDisable()) {
             if (shouldShowTransferTip(t)) {
@@ -122,7 +129,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         startCountDown()
     }
 
-    private fun checkWithdrawTrace(t: WithdrawBiometricItem) {
+    private suspend fun checkWithdrawTrace(t: WithdrawBiometricItem) {
         val trace = t.trace
         if (trace == null || isDuplicateTransferDisable()) {
             if (shouldShowWithdrawalTip(t)) {
@@ -164,7 +171,9 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.warningTv.isVisible = true
             binding.warningBottomTv.isVisible = false
             binding.assetBalance.setInfo(t)
-            checkTransferTrace(t)
+            lifecycleScope.launch {
+                checkTransferTrace(t)
+            }
         }
         startCountDown()
     }
@@ -225,14 +234,18 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return amount >= (Session.getAccount()!!.transferConfirmationThreshold)
     }
 
-    private fun shouldShowStrangerTransferTip(t: TransferBiometricItem): Boolean {
+    private suspend fun shouldShowStrangerTransferTip(t: TransferBiometricItem): Boolean {
         return from == FROM_TRANSFER &&
             !isStrangerTransferDisable() && t.user.relationship != UserRelationship.FRIEND.name
     }
 
-    private fun isDuplicateTransferDisable() = !defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
+    private suspend fun isDuplicateTransferDisable() = withContext(Dispatchers.IO) {
+        !(PropertyHelper.findValueByKey(PREF_DUPLICATE_TRANSFER)?.toBoolean() ?: true)
+    }
 
-    private fun isStrangerTransferDisable() = !defaultSharedPreferences.getBoolean(PREF_STRANGER_TRANSFER, true)
+    private suspend fun isStrangerTransferDisable() = withContext(Dispatchers.IO) {
+        !(PropertyHelper.findValueByKey(PREF_STRANGER_TRANSFER)?.toBoolean() ?: true)
+    }
 
     private fun startCountDown() {
         binding.continueTv.isEnabled = false

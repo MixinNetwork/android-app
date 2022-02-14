@@ -78,8 +78,6 @@ constructor(
 
     suspend fun findUserExist(userIds: List<String>): List<String> = userDao.findUserExist(userIds)
 
-    fun getUser(id: String) = userService.getUserById(id)
-
     suspend fun refreshUser(id: String): User? {
         val user = userDao.suspendFindUserById(id)
         if (user != null) return user

@@ -631,6 +631,12 @@ fun File.copyFromInputStream(inputStream: InputStream) {
     }
 }
 
+fun File.deleteOnExists() {
+    if (exists()) {
+        delete()
+    }
+}
+
 fun Uri.copyFromInputStream(inputStream: InputStream) {
     inputStream.use { input ->
         MixinApplication.appContext.contentResolver.openOutputStream(this, "w")?.use { output ->

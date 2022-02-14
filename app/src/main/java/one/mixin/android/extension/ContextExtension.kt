@@ -49,7 +49,6 @@ import android.view.WindowManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -71,6 +70,7 @@ import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.XiaomiUtilities
+import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.AssetItem
@@ -110,10 +110,6 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     val b = attributes.getBoolean(0, false)
     attributes.recycle()
     return b
-}
-
-fun Context.getString(@StringRes resId: Int, vararg formatArgs: Any): String {
-    return resources.getString(resId, formatArgs)
 }
 
 inline val Context.layoutInflater: android.view.LayoutInflater
@@ -615,7 +611,7 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
         val mediaWith = image.width
         val mediaHeight = image.height
         val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
-        val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
+        val thumbnail = BlurHashEncoder.encode(image)
         val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
         val resultWidth = ((mediaWith * scale / 2).toDouble().roundToInt() * 2)
         val resultHeight = ((mediaHeight * scale / 2).toDouble().roundToInt() * 2)

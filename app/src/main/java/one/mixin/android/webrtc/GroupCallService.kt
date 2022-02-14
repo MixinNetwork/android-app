@@ -341,7 +341,7 @@ class GroupCallService : CallService() {
         requireNotNull(cid)
         val userId = intent.getStringExtra(EXTRA_USER_ID)
 
-        if (callState.isBusy(this)) {
+        if (callState.isBusy()) {
             Timber.d("$TAG_CALL receive a invite from $userId in $cid")
             userId?.let {
                 saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)

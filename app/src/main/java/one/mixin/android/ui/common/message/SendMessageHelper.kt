@@ -10,11 +10,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.event.PinMessageEvent
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.bitmap2String
-import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.encodeBlurHash
 import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
@@ -559,7 +558,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             val path = uri.getFilePath(MixinApplication.get()) ?: return -1
             gifFile.copyFromInputStream(FileInputStream(path))
             val size = getImageSize(gifFile)
-            val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
+            val thumbnail = gifFile.encodeBlurHash()
 
             val message = createMediaMessage(
                 messageId,
@@ -594,17 +593,16 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             }
             temp
         } else {
-            val fileInputStream = MixinApplication.get().contentResolver.openInputStream(uri) ?: return -1
             Compressor()
                 .setCompressFormat(Bitmap.CompressFormat.JPEG)
-                .compressToFile(fileInputStream, temp.absolutePath)
+                .compressToFile(uri, temp.absolutePath)
         }
         val length = imageFile.length()
         if (length <= 0) {
             return -1
         }
         val size = getImageSize(imageFile)
-        val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
+        val thumbnail = imageFile.encodeBlurHash()
         val message = createMediaMessage(
             messageId,
             conversationId,

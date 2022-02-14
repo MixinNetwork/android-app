@@ -72,7 +72,7 @@ class VoiceCallService : CallService() {
             return
         }
 
-        if (callState.isBusy(this)) {
+        if (callState.isBusy()) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
             val m = createCallMessage(

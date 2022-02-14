@@ -111,6 +111,8 @@ constructor(
 
     fun observeSystemAlbums() = stickerAlbumDao.observeSystemAlbums()
 
+    fun observeSystemAlbumsAndStickers() = stickerAlbumDao.observeSystemAlbumsAndStickers()
+
     suspend fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
 
     fun observeStickers(id: String) = stickerRelationshipDao.observeStickersByAlbumId(id)

@@ -4,6 +4,8 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutStickerTabBinding
@@ -14,8 +16,12 @@ import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.recyclerview.OffsetListUpdateCallback
 
-class StickerAlbumAdapter(fragment: Fragment, private val albums: List<StickerAlbum>) : FragmentStateAdapter(fragment) {
+class StickerAlbumAdapter(
+    activity: FragmentActivity,
+    private val albums: MutableList<StickerAlbum>
+) : FragmentStateAdapter(activity) {
     companion object {
         const val TYPE_STORE = 0
         const val TYPE_RECENT = 1
@@ -30,6 +36,20 @@ class StickerAlbumAdapter(fragment: Fragment, private val albums: List<StickerAl
     var rvCallback: DraggableRecyclerView.Callback? = null
 
     override fun getItemCount() = albums.size + UN_NORMAL_COUNT
+
+    override fun getItemId(position: Int): Long {
+        return when (position) {
+            TYPE_STORE -> 0L
+            TYPE_RECENT -> 1L
+            TYPE_LIKE -> 2L
+            TYPE_GIPHY -> 3L
+            else -> albums[position - UN_NORMAL_COUNT].albumId.hashCode().toLong()
+        }
+    }
+
+    override fun containsItem(itemId: Long): Boolean {
+        return itemId == 0L || itemId == 1L || itemId == 2L || itemId == 3L || albums.any { it.albumId.hashCode().toLong() == itemId }
+    }
 
     override fun createFragment(position: Int): Fragment {
         val fragment = when (position) {
@@ -87,8 +107,35 @@ class StickerAlbumAdapter(fragment: Fragment, private val albums: List<StickerAl
         return binding.root
     }
 
+    fun setItems(newItems: List<StickerAlbum>) {
+        val callback = StickerAlbumDiffUtil(albums, newItems)
+        val diff = DiffUtil.calculateDiff(callback)
+
+        albums.clear()
+        albums.addAll(newItems)
+
+        diff.dispatchUpdatesTo(OffsetListUpdateCallback(this, UN_NORMAL_COUNT))
+    }
+
     interface Callback {
         fun onStickerClick(stickerId: String, albumId: String?)
         fun onGiphyClick(image: Image, previewUrl: String)
+    }
+}
+
+class StickerAlbumDiffUtil(
+    private val oldList: List<StickerAlbum>,
+    private val newList: List<StickerAlbum>
+) : DiffUtil.Callback() {
+    override fun getOldListSize() = oldList.size
+
+    override fun getNewListSize() = newList.size
+
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].albumId == newList[newItemPosition].albumId
+    }
+
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition] == newList[newItemPosition]
     }
 }
