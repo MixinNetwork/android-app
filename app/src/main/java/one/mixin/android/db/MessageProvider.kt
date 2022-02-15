@@ -51,7 +51,7 @@ class MessageProvider {
                     val argIndex = 1
                     statement.bindString(argIndex, conversationId)
                     return if (countable) {
-                        val countSql = "SELECT COUNT(1) FROM messages WHERE conversation_id = ?"
+                        val countSql = "SELECT COUNT(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?"
                         val countStatement = RoomSQLiteQuery.acquire(countSql, 1)
                         countStatement.bindString(argIndex, conversationId)
                         MixinMessageItemLimitOffsetDataSource(database, statement, countStatement)
