@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAppAuthSettingBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.auth.showAppAuthPrompt
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.BiometricUtil
@@ -67,6 +68,8 @@ class AppAuthSettingFragment : BaseFragment(R.layout.fragment_app_auth_setting) 
 
     private fun refresh(appAuth: Int) {
         defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, appAuth)
+        if (viewDestroyed()) return
+
         binding.apply {
             if (appAuth == -1) {
                 unlockSwitch.isChecked = false
