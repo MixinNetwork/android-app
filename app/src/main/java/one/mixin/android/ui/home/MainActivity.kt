@@ -535,13 +535,16 @@ class MainActivity : BlazeBaseActivity() {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
             showScanBottom(scan)
+            clearCodeAfterConsume(intent, SCAN)
         } else if (intent.hasExtra(URL)) {
             val url = intent.getStringExtra(URL)!!
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            clearCodeAfterConsume(intent, URL)
         } else if (intent.hasExtra(WALLET)) {
             navigationController.pushWallet()
+            clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
             if (Session.getAccount()?.hasPin == true) {
@@ -550,10 +553,12 @@ class MainActivity : BlazeBaseActivity() {
             } else {
                 toast(R.string.transfer_without_pin)
             }
+            clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)).show()
             val conversationId = intent.extras!!.getString("conversation_id")!!
+            clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {
                 val innerIntent: Intent?
                 var conversation = conversationDao.findConversationById(conversationId)
@@ -660,6 +665,10 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 )
         }
+    }
+
+    private fun clearCodeAfterConsume(intent: Intent, code: String) {
+        intent.removeExtra(code)
     }
 
     private fun showScanBottom(scan: String) {
