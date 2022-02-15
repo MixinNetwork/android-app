@@ -214,6 +214,7 @@ class MessageProvider {
                         SELECT COUNT(1) FROM circle_conversations cc
 	                    INNER JOIN circles ci ON ci.circle_id = cc.circle_id
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
+                        INNER JOIN users ou ON ou.user_id = c.owner_id
 	                    WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
                     """
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
