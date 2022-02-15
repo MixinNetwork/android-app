@@ -1,6 +1,7 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
@@ -9,7 +10,6 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import kotlin.contracts.contract
 
 interface BotInterface {
     fun getBotId(): String
@@ -79,9 +79,6 @@ data class App(
 
 enum class AppCap { GROUP, CONTACT, IMMERSIVE, ENCRYPTED }
 
-fun App?.matchResourcePattern(url: String): Boolean {
-    contract {
-        returns(true) implies (this@matchResourcePattern != null)
-    }
-    return this?.resourcePatterns?.find { "$url/".startsWith(it, ignoreCase = true) } != null
+fun matchResourcePattern(app: App?, url: String): Boolean {
+    return app?.resourcePatterns?.map { Uri.parse(it).run { "${scheme}://${host}" } }?.find { url.startsWith(it, ignoreCase = true) } != null
 }
