@@ -88,7 +88,7 @@ class MessageProvider {
                     ORDER BY c.pin_time DESC, c.last_message_created_at DESC
                 """
                     val statement = RoomSQLiteQuery.acquire(sql, 0)
-                    val countSql = "SELECT COUNT(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE category IS NOT NULL"
+                    val countSql = "SELECT COUNT(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE category IN ('CONTACT', 'GROUP')"
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
                     return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "conversations", "users", "messages", "snapshots") {
                         override fun convertRows(cursor: Cursor): List<ConversationItem> {
