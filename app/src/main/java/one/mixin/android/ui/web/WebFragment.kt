@@ -347,7 +347,7 @@ class WebFragment : BaseFragment() {
 
         if (appCard.appId != null) {
             app = bottomViewModel.getAppAndCheckUser(appCard.appId, appCard.updatedAt)
-            if (matchResourcePattern(app, url)) {
+            if (url.matchResourcePattern(app?.resourcePatterns)) {
                 controlSuspiciousView(false)
                 loadWebView()
             } else {
@@ -919,7 +919,7 @@ class WebFragment : BaseFragment() {
                         app?.appId?.let { id ->
                             lifecycleScope.launch {
                                 val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
-                                if (app !== null && matchResourcePattern(app, currentUrl)) {
+                                if (app !== null && currentUrl.matchResourcePattern(app.resourcePatterns)) {
                                     var webTitle = webView.title
                                     if (webTitle.isNullOrBlank()) {
                                         webTitle = app.name

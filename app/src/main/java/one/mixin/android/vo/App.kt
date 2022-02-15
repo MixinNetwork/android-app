@@ -79,6 +79,8 @@ data class App(
 
 enum class AppCap { GROUP, CONTACT, IMMERSIVE, ENCRYPTED }
 
-fun matchResourcePattern(app: App?, url: String): Boolean {
-    return app?.resourcePatterns?.map { Uri.parse(it).run { "${scheme}://${host}" } }?.find { url.startsWith(it, ignoreCase = true) } != null
+fun String.matchResourcePattern(resourcePatterns: List<String>?): Boolean {
+    val uri  = Uri.parse(this).run { "$scheme://$host" }
+    return resourcePatterns?.map { pattern -> Uri.parse(pattern).run { "$scheme://$host" } }
+        ?.find { pattern -> uri.equals(pattern, true) } != null
 }
