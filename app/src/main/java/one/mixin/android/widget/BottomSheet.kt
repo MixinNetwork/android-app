@@ -11,7 +11,6 @@ import android.content.Context
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
@@ -33,12 +32,13 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnPreDraw
 import one.mixin.android.R
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.displayMetrics
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.isWideScreen
@@ -182,17 +182,15 @@ class BottomSheet(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window?.setWindowAnimations(R.style.DialogNoAnimation)
-        if (Build.VERSION.SDK_INT >= 26) {
-            window?.decorView?.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-
         sheetContainer.fitsSystemWindows = true
         sheetContainer.visibility = INVISIBLE
         container.addView(sheetContainer, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.BOTTOM))
-
+        window?.let { window ->
+            container.doOnPreDraw {
+                SystemUIManager.lightUI(window, !context.isNightMode())
+            }
+        }
         if (customView != null) {
             if (customView!!.parent != null) {
                 (customView!!.parent as ViewGroup).removeView(customView)
@@ -218,16 +216,6 @@ class BottomSheet(
                 params.flags = params.flags or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
             }
             window.attributes = params
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        window?.let { window ->
-            SystemUIManager.lightUI(
-                window,
-                !context.booleanFromAttribute(R.attr.flag_night)
-            )
         }
     }
 
