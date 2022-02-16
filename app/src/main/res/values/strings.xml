@@ -756,6 +756,8 @@
     <string name="bot_interact_info">Click the button to interact with the bot</string>
     <string name="bot_interact_open">Open Home page</string>
     <string name="bot_interact_hi">Say Hi</string>
+    <string name="notification_channel_group">Messages</string>
+    <string name="notification_node_group">Nodes</string>
     <string name="notification_group">Group Notification</string>
     <string name="notification_message">Message Notification</string>
     <string name="notification_silence">Silence Notification</string>
