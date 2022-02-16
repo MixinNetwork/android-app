@@ -22,7 +22,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.jakewharton.rxbinding3.view.clicks
@@ -149,11 +148,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    try {
-                        super@CallBottomSheetDialogFragment.dismissAllowingStateLoss()
-                    } catch (e: IllegalStateException) {
-                        Timber.i(e)
-                    }
+                    safeDismiss()
                 }
             }
 
@@ -651,17 +646,6 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onDetach() {
         super.onDetach()
-        if (activity is CallActivity) {
-            var realFragmentCount = 0
-            parentFragmentManager.fragments.forEach { f ->
-                if (f !is SupportRequestManagerFragment) {
-                    realFragmentCount++
-                }
-            }
-            if (realFragmentCount <= 0) {
-                activity?.finish()
-            }
-        }
         instant = null
     }
 

@@ -1,9 +1,6 @@
 package one.mixin.android.job
 
 import android.annotation.SuppressLint
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -37,6 +34,7 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -188,15 +186,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         builder.setContentIntent(pendingIntent)
 
         supportsOreo {
-            val channel = NotificationChannel(
-                CHANNEL_NODE,
-                MixinApplication.get().getString(R.string.notification_node),
-                NotificationManager.IMPORTANCE_LOW
-            )
-            channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
-            channel.setSound(null, null)
-            channel.setShowBadge(false)
-            notificationManager.createNotificationChannel(channel)
+            createNodeChannel(notificationManager)
         }
         startForeground(FOREGROUND_ID, builder.build())
     }
