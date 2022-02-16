@@ -19,6 +19,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.supportsQ
+import one.mixin.android.job.BlazeMessageService
 import timber.log.Timber
 
 class ChannelManager {
@@ -40,6 +41,19 @@ class ChannelManager {
         @IntDef(GROUP, MESSAGES, SILENCE)
         @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
         annotation class ChannelCategory
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        fun createNodeChannel(notificationManager: NotificationManager) {
+            val channel = NotificationChannel(
+                BlazeMessageService.CHANNEL_NODE,
+                MixinApplication.get().getString(R.string.notification_node),
+                NotificationManager.IMPORTANCE_LOW
+            )
+            channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
+            channel.setSound(null, null)
+            channel.setShowBadge(false)
+            notificationManager.createNotificationChannel(channel)
+        }
 
         @RequiresApi(Build.VERSION_CODES.O)
         private fun initChannelGroup(context: Context) {

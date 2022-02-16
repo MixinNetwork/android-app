@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
+import one.mixin.android.job.BlazeMessageService.Companion.CHANNEL_NODE
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallType
 import one.mixin.android.webrtc.ACTION_CALL_ANSWER
@@ -24,7 +25,6 @@ import timber.log.Timber
 class CallNotificationBuilder {
 
     companion object {
-        private const val CHANNEL_NODE = "channel_node"
         const val WEBRTC_NOTIFICATION = 313388
 
         fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {

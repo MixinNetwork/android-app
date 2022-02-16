@@ -1,5 +1,8 @@
 package one.mixin.android.webrtc
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -11,17 +14,21 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isServiceRunning
+import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
+import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallNotificationBuilder
+import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Message
@@ -274,6 +281,17 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         if (isDisconnected.get() || isDestroyed.get()) return
 
         supportsOreo {
+            val channel = NotificationChannel(
+                BlazeMessageService.CHANNEL_NODE,
+                MixinApplication.get().getString(R.string.notification_node),
+                NotificationManager.IMPORTANCE_LOW
+            )
+            channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
+            channel.setSound(null, null)
+            channel.setShowBadge(false)
+            supportsOreo {
+                ChannelManager.createNodeChannel(notificationManager)
+            }
             CallNotificationBuilder.getCallNotification(this, callState)?.let {
                 startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
             }
