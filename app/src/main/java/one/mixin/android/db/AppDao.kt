@@ -17,7 +17,7 @@ interface AppDao : BaseDao<App> {
             a.name as name, a.icon_url as iconUrl, a.category as category, a.description as description, a.app_secret as appSecret,
             a.capabilities as capabilities, a.creator_id as creatorId, a.resource_patterns as resourcePatterns, 
             a.updated_at as updatedAt, u.user_id as userId, u.avatar_url as avatarUrl
-        """
+            """
     }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
@@ -26,7 +26,7 @@ interface AppDao : BaseDao<App> {
             $PREFIX_APP_ITEM
             FROM apps a, participants p, users u WHERE p.conversation_id = :conversationId
             AND p.user_id = u.user_id AND a.app_id = u.app_id
-            """
+        """
     )
     fun getGroupAppsByConversationId(conversationId: String): LiveData<List<AppItem>>
 
@@ -58,7 +58,7 @@ interface AppDao : BaseDao<App> {
     @Query(
         """
         SELECT a.* FROM apps a INNER JOIN users u ON u.user_id = a.app_id WHERE u.relationship = 'FRIEND' AND a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa WHERE fa.user_id = :userId)
-    """
+        """
     )
     suspend fun getUnfavoriteApps(userId: String): List<App>
 

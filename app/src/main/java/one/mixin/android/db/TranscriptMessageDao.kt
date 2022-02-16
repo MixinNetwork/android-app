@@ -71,7 +71,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
         WHERE t.transcript_id = :transcriptId
         ORDER BY t.created_at ASC, t.rowid ASC
-    """
+        """
     )
     fun getTranscriptMessages(transcriptId: String): LiveData<List<ChatHistoryMessageItem>>
 

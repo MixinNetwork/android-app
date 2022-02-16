@@ -1113,7 +1113,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 Decrypt failed
                 BlazeMessageData: $data,
                 resend_message: $resendMessageId
-            """,
+                """,
                 e
             )
         }

@@ -173,7 +173,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """
         SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
         FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id WHERE c.category IS NOT NULL 
-    """
+        """
     )
     suspend fun getConversationStorageUsage(): List<ConversationStorageUsage>
 
@@ -182,7 +182,8 @@ interface ConversationDao : BaseDao<Conversation> {
         inner join users u on c.owner_id = u.user_id
         left join participants p on p.conversation_id = c.conversation_id
         left join apps a on a.app_id = u.app_id
-        where p.user_id = :userId"""
+        where p.user_id = :userId
+        """
     )
     fun getConversationsByUserId(userId: String): List<ParticipantSessionMinimal>
 
@@ -194,21 +195,21 @@ interface ConversationDao : BaseDao<Conversation> {
         UPDATE conversations SET unseen_message_count = (
         SELECT count(1) FROM messages
         WHERE conversation_id = :conversationId AND status IN ('SENT', 'DELIVERED')  AND user_id != :userId) WHERE conversation_id = :conversationId
-    """
+        """
     )
     fun unseenMessageCount(conversationId: String, userId: String?)
 
     @Query(
         """
         UPDATE conversations SET unseen_message_count = (SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId) WHERE conversation_id = :conversationId
-    """
+        """
     )
     fun refreshConversationById(conversationId: String)
 
     @Query(
         """
         SELECT sum(unseen_message_count) FROM conversations
-    """
+        """
     )
     fun observeAllConversationUnread(): LiveData<Int?>
 
@@ -216,7 +217,7 @@ interface ConversationDao : BaseDao<Conversation> {
         """
         SELECT unseen_message_count FROM conversations WHERE conversation_id NOT IN (SELECT conversation_id FROM circle_conversations WHERE circle_id = :circleId)
         AND unseen_message_count > 0 LIMIT 1
-    """
+        """
     )
     fun hasUnreadMessage(circleId: String): LiveData<Int?>
 

@@ -281,7 +281,8 @@ class MusicPlayer private constructor() {
                     concatenatingMediaSource.removeMediaSourceRange(1, remain)
                 } catch (e: Exception) {
                     val msg = """remove mediaSource from concatenatingMediaSource meet exception, 
-                        |index: $index, remain: $remain, concatenatingMediaSource size: ${concatenatingMediaSource.size}"""
+                        |index: $index, remain: $remain, concatenatingMediaSource size: ${concatenatingMediaSource.size}
+                    """
                     Timber.w(e, msg)
                     reportException(msg, e)
                 }

@@ -46,7 +46,7 @@ class MessageProvider {
                         LEFT JOIN pin_messages pm ON m.id = pm.message_id
                         WHERE m.conversation_id = ? 
                         ORDER BY m.created_at DESC 
-                    """
+                        """
                     val statement = RoomSQLiteQuery.acquire(sql, 1)
                     val argIndex = 1
                     statement.bindString(argIndex, conversationId)
@@ -86,7 +86,7 @@ class MessageProvider {
                     LEFT JOIN users pu ON pu.user_id = m.participant_id 
                     WHERE c.category IN ('CONTACT', 'GROUP')
                     ORDER BY c.pin_time DESC, c.last_message_created_at DESC
-                """
+                        """
                     val statement = RoomSQLiteQuery.acquire(sql, 0)
                     val countSql = "SELECT COUNT(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE category IN ('CONTACT', 'GROUP')"
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)

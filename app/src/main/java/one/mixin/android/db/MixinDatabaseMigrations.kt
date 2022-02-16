@@ -138,33 +138,33 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `new_snapshots` (`snapshot_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `opponent_id` TEXT, `trace_id` TEXT, `transaction_hash` TEXT, `sender` TEXT, `receiver` TEXT, `memo` TEXT, `confirmations` INTEGER, PRIMARY KEY(`snapshot_id`))
-                """
+                    """
                 )
                 database.execSQL(
                     """
                     INSERT INTO new_snapshots (`snapshot_id`, `type`, `asset_id`, `amount`, `created_at`, `opponent_id`  , `transaction_hash`, `sender`, `receiver`, `memo`, `confirmations`) 
                     SELECT `snapshot_id`, `type`, `asset_id`, `amount`, `created_at`, `opponent_id`  , `transaction_hash`, `sender`, `receiver`, `memo`, `confirmations` FROM snapshots 
-                """
+                    """
                 )
                 database.execSQL(" DROP TABLE IF EXISTS snapshots")
                 database.execSQL("ALTER TABLE new_snapshots RENAME TO snapshots")
                 database.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `new_apps` (`app_id` TEXT NOT NULL, `app_number` TEXT NOT NULL, `home_uri` TEXT NOT NULL, `redirect_uri` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `description` TEXT NOT NULL, `app_secret` TEXT NOT NULL, `capabilities` TEXT, `creator_id` TEXT NOT NULL, PRIMARY KEY(`app_id`))
-                """
+                    """
                 )
                 database.execSQL(
                     """
                     INSERT INTO new_apps (`app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `description`, `app_secret`, `capabilities`, `creator_id`) 
                     SELECT `app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `description`, `app_secret`, `capabilites`, `creator_id` FROM apps 
-                """
+                    """
                 )
                 database.execSQL("DROP TABLE IF EXISTS apps")
                 database.execSQL("ALTER TABLE new_apps RENAME TO apps")
                 database.execSQL(
                     """
                     CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, content=`messages`)
-                """
+                    """
                 )
             }
         }
@@ -189,7 +189,7 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL(
                     """
                     CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts4` USING FTS4(`message_id` TEXT NOT NULL, `content` TEXT, tokenize=unicode61, notindexed=`message_id`)
-                """
+                    """
                 )
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
             }
@@ -226,7 +226,7 @@ class MixinDatabaseMigrations private constructor() {
                         CREATE TABLE IF NOT EXISTS `traces` (`trace_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, 
                         `opponent_id` TEXT, `destination` TEXT, `tag` TEXT, `snapshot_id` TEXT, `created_at` TEXT NOT NULL, 
                         PRIMARY KEY(`trace_id`))
-                """
+                    """
                 )
             }
         }

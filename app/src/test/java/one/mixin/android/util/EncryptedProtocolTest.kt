@@ -74,7 +74,8 @@ class EncryptedProtocolTest {
                 vB2NXoVn8vSxANwOSkzp0FDh4NS3h1UB6lZMpPPckS3XYQt5uVt+pmtB9f2mvjH3rGxnqJOR5obJVFruTkCl1IDETvQiq1Mxp96H7CsefaWo7w3N7D1XV+qvKjm4DC
                 8/GqWBmd4SpqLWfhhwD/tPhJeFeXG6s9pp+JLYZAN47pio+JzS0fk/XysjN1o51R7/38or/ADt8IHrPT5Q5e8IfBnqbm6EHBKXqnUUjHO9RRiekfKDyKWbpbJGhxw
                 UxxsO7jR0fql/hEb/tBazUUrskOKpupJXPI5q7DYHzR5IWKFEsFrKwfJqmWNhG4pbu+oZKgn1FH7tp18TTyStVWh4kxhCoU7PTl8jaNFWC4yCTOSrc1zkf0X2Gzu
-                B9qsstbt3RH6Q+mmpraIAcgJZu8LTuGAoojTDfBd8g0y5wEWpYWsYBhRRaKKV2p2SM6JPrbe3xeiiixnHyGhbu6BdPIgSHkFFEs4//2Q==""".trimMargin()
+                B9qsstbt3RH6Q+mmpraIAcgJZu8LTuGAoojTDfBd8g0y5wEWpYWsYBhRRaKKV2p2SM6JPrbe3xeiiixnHyGhbu6BdPIgSHkFFEs4//2Q==
+            """.trimMargin()
         )
         val content = GsonHelper.customGson.toJson(mockAttachmentMessagePayload).toByteArray()
         testEncryptAndDecrypt(content)

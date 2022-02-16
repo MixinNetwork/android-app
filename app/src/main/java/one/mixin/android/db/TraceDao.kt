@@ -20,7 +20,7 @@ interface TraceDao : BaseDao<Trace> {
         AND amount = CAST(:amount AS REAL) AND asset_id = :assetId
         ORDER BY created_at DESC
         LIMIT 1
-    """
+        """
     )
     suspend fun suspendFindTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace?
 

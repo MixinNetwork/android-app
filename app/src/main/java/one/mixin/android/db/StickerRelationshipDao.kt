@@ -28,7 +28,7 @@ interface StickerRelationshipDao : BaseDao<StickerRelationship> {
         INNER JOIN sticker_relationships sr ON sr.album_id = sa.album_id
         INNER JOIN stickers s ON sr.sticker_id = s.sticker_id
         WHERE sa.category = 'PERSONAL' ORDER BY s.created_at
-    """
+        """
     )
     fun observePersonalStickers(): LiveData<List<Sticker>>
 

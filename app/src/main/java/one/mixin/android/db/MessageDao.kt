@@ -65,7 +65,8 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """SELECT count(1) FROM messages WHERE conversation_id = :conversationId
-            AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)"""
+            AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)
+        """
     )
     suspend fun findMessageIndex(conversationId: String, messageId: String): Int
 
@@ -291,7 +292,7 @@ interface MessageDao : BaseDao<Message> {
             AND user_id != :userId 
             ORDER BY rowid ASC
             LIMIT :limit
-            """
+        """
     )
     fun getUnreadMessage(conversationId: String, userId: String, limit: Int): List<MessageMinimal>
 
@@ -396,7 +397,8 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND
-            status = 'FAILED' ORDER BY created_at DESC LIMIT 1000"""
+            status = 'FAILED' ORDER BY created_at DESC LIMIT 1000
+        """
     )
     fun findFailedMessages(conversationId: String, userId: String): List<String>
 
@@ -415,19 +417,22 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId 
-        AND status IN ('SENT', 'DELIVERED') AND rowid <= :rowid AND user_id != :userId"""
+        AND status IN ('SENT', 'DELIVERED') AND rowid <= :rowid AND user_id != :userId
+        """
     )
     suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
 
     @Query(
         """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
-        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId"""
+        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId
+        """
     )
     suspend fun updateConversationUnseen(userId: String, conversationId: String)
 
     @Query(
         """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId
-            AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId"""
+            AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId
+        """
     )
     fun takeUnseen(userId: String, conversationId: String)
 
@@ -435,7 +440,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category IN ($AUDIOS)) AND m.created_at >= :createdAt AND 
             m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1
-            """
+        """
     )
     suspend fun findNextAudioMessageItem(
         conversationId: String,
@@ -447,7 +452,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """SELECT * FROM messages WHERE conversation_id = :conversationId AND (category IN ($AUDIOS))
                 AND created_at >= :createdAt AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1
-            """
+        """
     )
     suspend fun findNextAudioMessage(
         conversationId: String,
@@ -487,7 +492,7 @@ interface MessageDao : BaseDao<Message> {
         AND status IN ('SENDING', 'SENT', 'DELIVERED', 'READ')  /* Make use of `index_messages_conversation_id_status_user_id_created_at` */
         AND user_id =:userId
         LIMIT 1
-    """
+        """
     )
     suspend fun isSilence(conversationId: String, userId: String): Int?
 
@@ -513,7 +518,8 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """SELECT id, conversation_id, name, category, media_url, media_mine_type 
             FROM messages WHERE category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) 
-            AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset"""
+            AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset
+        """
     )
     fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
 
@@ -527,7 +533,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """SELECT count(id) FROM messages 
         WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory, :encryptedCategory)
-    """
+        """
     )
     fun countDeleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String): Int
 
@@ -542,7 +548,7 @@ interface MessageDao : BaseDao<Message> {
         """DELETE FROM messages WHERE id IN (
         SELECT id FROM messages WHERE  conversation_id = :conversationId AND  media_status = 'DONE'
         AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit)
-    """
+        """
     )
     fun deleteMediaMessageByConversationAndCategory(
         conversationId: String,
@@ -575,7 +581,7 @@ interface MessageDao : BaseDao<Message> {
         AND (m.category in ($DATA)) AND m.media_mime_type IN ("audio/mpeg", "audio/flac")
         AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
-    """
+        """
     )
     suspend fun findAudiosByConversationId(conversationId: String): List<MessageItem>
 
@@ -586,7 +592,7 @@ interface MessageDao : BaseDao<Message> {
         AND (category in ($DATA)) AND media_mime_type IN ("audio/mpeg", "audio/flac")
         AND media_status != 'EXPIRED'
         ORDER BY created_at ASC, rowid ASC
-    """
+        """
     )
     fun observeMediaStatus(conversationId: String): LiveData<List<MessageIdIdAndMediaStatus>>
 
@@ -600,7 +606,7 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
         AND m.id in (:ids)
-    """
+        """
     )
     suspend fun suspendFindMessagesByIds(conversationId: String, ids: List<String>): List<MessageItem>
 
