@@ -28,6 +28,7 @@ class BatteryOptimizationDialogActivity : BaseActivity() {
         val newTask = intent.getBooleanExtra(ARGS_NEW_TASK, false)
         alertDialogBuilder()
             .setMessage(getString(R.string.setting_battery_optimize_title))
+            .setCancelable(false)
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
                 finish()
