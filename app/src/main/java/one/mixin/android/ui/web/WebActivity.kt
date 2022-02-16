@@ -7,7 +7,6 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityWebBinding
@@ -146,13 +145,7 @@ class WebActivity : BaseActivity() {
                     if (it is WebFragment) {
                         val dark = isDarkColor(it.titleColor)
                         window.statusBarColor = it.titleColor
-                        if (dark) {
-                            window.decorView.systemUiVisibility =
-                                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                        } else {
-                            window.decorView.systemUiVisibility =
-                                window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                        }
+                        SystemUIManager.lightUI(window, !dark)
                     }
                 },
                 {
@@ -193,13 +186,7 @@ class WebActivity : BaseActivity() {
 
         window.statusBarColor = clip.titleColor.apply {
             val dark = isDarkColor(this)
-            if (dark) {
-                window.decorView.systemUiVisibility =
-                    window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            } else {
-                window.decorView.systemUiVisibility =
-                    window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
+            SystemUIManager.lightUI(window, !dark)
         }
         releaseWeb()
         supportFragmentManager.beginTransaction().add(
@@ -224,13 +211,7 @@ class WebActivity : BaseActivity() {
             {
                 isExpand = false
                 FloatingWebClip.getInstance(this.isNightMode()).hide()
-                window.decorView.systemUiVisibility =
-                    window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                if (isNightMode()) {
-                    SystemUIManager.lightUI(window, false)
-                } else {
-                    SystemUIManager.lightUI(window, true)
-                }
+                SystemUIManager.lightUI(window, !isNightMode())
                 hideWeb()
             }
         )

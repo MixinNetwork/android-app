@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.link
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.net.Uri
-import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
@@ -40,6 +39,7 @@ import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isExternalScheme
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -127,10 +127,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        if (Build.VERSION.SDK_INT >= 26) {
-            dialog.window?.decorView?.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        dialog.window?.let { window ->
+            SystemUIManager.lightUI(window, requireContext().isNightMode())
         }
         contentView = binding.root
         dialog.setContentView(contentView)
