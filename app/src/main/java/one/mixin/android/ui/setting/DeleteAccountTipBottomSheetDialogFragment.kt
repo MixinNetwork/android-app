@@ -12,7 +12,7 @@ import one.mixin.android.widget.BottomSheet
 @AndroidEntryPoint
 class DeleteAccountTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "DepositTipBottomSheetDialogFragment"
+        const val TAG = "DeleteAccountTipBottomSheetDialogFragment"
 
         fun newInstance() = DeleteAccountTipBottomSheetDialogFragment()
     }

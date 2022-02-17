@@ -14,7 +14,7 @@ import one.mixin.android.util.viewBinding
 @AndroidEntryPoint
 class SecurityFragment : BaseFragment(R.layout.fragment_security) {
     companion object {
-        const val TAG = "PrivacyFragment"
+        const val TAG = "SecurityFragment"
 
         fun newInstance() = SecurityFragment()
     }

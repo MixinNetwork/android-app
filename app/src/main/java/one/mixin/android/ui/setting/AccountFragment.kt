@@ -18,7 +18,7 @@ import one.mixin.android.util.viewBinding
 @AndroidEntryPoint
 class AccountFragment : BaseFragment(R.layout.fragment_account) {
     companion object {
-        const val TAG = "PrivacyFragment"
+        const val TAG = "AccountFragment"
 
         fun newInstance() = AccountFragment()
     }
