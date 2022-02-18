@@ -218,12 +218,12 @@ class MessageProvider {
                     statement.bindString(1, circleId)
                     val countSql =
                         """
-                        SELECT COUNT(1) FROM circle_conversations cc
-	                    INNER JOIN circles ci ON ci.circle_id = cc.circle_id
-                        INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
-                        INNER JOIN users ou ON ou.user_id = c.owner_id
-	                    WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
-                    """
+                    SELECT COUNT(1) FROM circle_conversations cc
+                    INNER JOIN circles ci ON ci.circle_id = cc.circle_id
+                    INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
+                    INNER JOIN users ou ON ou.user_id = c.owner_id
+                    WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
+                        """
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
                     return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "circle_conversations", "conversations", "circles", "users", "messages", "snapshots") {
                         override fun convertRows(cursor: Cursor): List<ConversationItem> {
@@ -886,18 +886,19 @@ class MessageProvider {
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> {
-            val _sql = """
-            SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
-            c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
-            u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-            FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) fts
-			INNER JOIN users u ON c.owner_id = u.user_id
-            INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-            WHERE m.id = fts.message_id
-            GROUP BY m.conversation_id
-            ORDER BY max(m.created_at) DESC
-            LIMIT ?
-        """
+            val _sql =
+                """
+                SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
+                c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
+                u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
+                FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) fts
+                INNER JOIN users u ON c.owner_id = u.user_id
+                INNER JOIN conversations c ON c.conversation_id = m.conversation_id
+                WHERE m.id = fts.message_id
+                GROUP BY m.conversation_id
+                ORDER BY max(m.created_at) DESC
+                LIMIT ?
+                """
             val _statement = RoomSQLiteQuery.acquire(_sql, 2)
             var _argIndex = 1
             if (query == null) {
