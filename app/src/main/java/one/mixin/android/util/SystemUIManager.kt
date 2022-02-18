@@ -1,8 +1,8 @@
 package one.mixin.android.util
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.view.Window
+import androidx.annotation.ColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -11,12 +11,12 @@ import one.mixin.android.extension.supportsPie
 
 @SuppressLint("InlinedApi")
 object SystemUIManager {
-    fun fitsSystem(window: Window) {
+    fun fitsSystem(window: Window, @ColorInt color: Int = 0x33000000) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
-        window.navigationBarDividerColor = Color.TRANSPARENT
+        window.statusBarColor = color
+        window.navigationBarColor = color
+        window.navigationBarDividerColor = color
     }
 
     fun clearStyle(window: Window) {
