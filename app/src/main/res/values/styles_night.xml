@@ -81,8 +81,6 @@
 
     <style name="AppTheme.Night.Photo" parent="AppTheme.Night.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
     </style>
 
     <style name="AppTheme.Night.Call" parent="AppTheme.Night.NoActionBar">
