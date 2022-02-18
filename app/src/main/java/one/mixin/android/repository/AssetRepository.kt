@@ -1,5 +1,6 @@
 package one.mixin.android.repository
 
+import android.os.CancellationSignal
 import androidx.paging.DataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,6 +14,8 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
+import one.mixin.android.db.MessageProvider
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
@@ -35,6 +38,7 @@ import javax.inject.Singleton
 class AssetRepository
 @Inject
 constructor(
+    private val appDatabase: MixinDatabase,
     private val assetService: AssetService,
     private val assetDao: AssetDao,
     private val assetsExtraDao: AssetsExtraDao,
@@ -144,7 +148,8 @@ constructor(
 
     fun assetItems() = assetDao.assetItemsNotHidden()
 
-    suspend fun fuzzySearchAsset(query: String) = assetDao.fuzzySearchAsset(query, query)
+    suspend fun fuzzySearchAsset(query: String, cancellationSignal: CancellationSignal) =
+        MessageProvider.fuzzySearchAsset(query, query, appDatabase, cancellationSignal)
 
     suspend fun fuzzySearchAssetIgnoreAmount(query: String) = assetDao.fuzzySearchAssetIgnoreAmount(query, query)
 

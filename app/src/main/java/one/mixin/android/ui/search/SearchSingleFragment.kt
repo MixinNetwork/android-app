@@ -1,6 +1,7 @@
 package one.mixin.android.ui.search
 
 import android.os.Bundle
+import android.os.CancellationSignal
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
@@ -75,6 +76,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
     private val binding by viewBinding(FragmentSearchSingleBinding::bind)
 
     private var searchJob: Job? = null
+    private var cancellationSignal: CancellationSignal? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -136,10 +138,16 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
                     adapter.query = it.toString()
                     searchJob?.cancel()
+                    cancellationSignal?.cancel()
                     searchJob = onTextChanged(it.toString())
                 },
                 {}
             )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancellationSignal?.cancel()
     }
 
     private fun onTextChanged(s: String) = lifecycleScope.launch {
@@ -147,11 +155,13 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
         binding.pb.isVisible = true
 
+        val cancellationSignal = CancellationSignal()
+        this@SearchSingleFragment.cancellationSignal = cancellationSignal
         val list: List<Parcelable>? = when (type) {
-            TypeAsset -> searchViewModel.fuzzySearch<AssetItem>(s)
-            TypeUser -> searchViewModel.fuzzySearch<User>(s)
-            TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(s)
-            TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(s, -1)
+            TypeAsset -> searchViewModel.fuzzySearch<AssetItem>(cancellationSignal, s)
+            TypeUser -> searchViewModel.fuzzySearch<User>(cancellationSignal, s)
+            TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, s)
+            TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, s, -1)
         }
 
         binding.pb.isInvisible = true

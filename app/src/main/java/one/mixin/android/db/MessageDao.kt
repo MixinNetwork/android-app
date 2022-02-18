@@ -229,16 +229,16 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-            SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
-            c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
-            u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-            FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) fts
-			INNER JOIN users u ON c.owner_id = u.user_id
-            INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-            WHERE m.id = fts.message_id
-            GROUP BY m.conversation_id
-            ORDER BY max(m.created_at) DESC
-            LIMIT :limit
+        SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
+        c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
+        u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
+        FROM messages m, (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) fts
+        INNER JOIN users u ON c.owner_id = u.user_id
+        INNER JOIN conversations c ON c.conversation_id = m.conversation_id
+        WHERE m.id = fts.message_id
+        GROUP BY m.conversation_id
+        ORDER BY max(m.created_at) DESC
+        LIMIT :limit
         """
     )
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>

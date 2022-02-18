@@ -46,17 +46,17 @@ internal constructor(
         conversationRepository.findConversationById(conversationId)
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    suspend inline fun <reified T> fuzzySearch(query: String?, limit: Int = -1): List<Parcelable>? =
+    suspend inline fun <reified T> fuzzySearch(cancellationSignal: CancellationSignal, query: String?, limit: Int = -1): List<Parcelable>? =
         if (query.isNullOrBlank()) {
             null
         } else {
             val escapedQuery = query.trim().escapeSql()
             when (T::class) {
-                AssetItem::class -> assetRepository.fuzzySearchAsset(escapedQuery)
-                User::class -> userRepository.fuzzySearchUser(escapedQuery)
-                ChatMinimal::class -> conversationRepository.fuzzySearchChat(escapedQuery)
+                AssetItem::class -> assetRepository.fuzzySearchAsset(escapedQuery, cancellationSignal)
+                User::class -> userRepository.fuzzySearchUser(escapedQuery, cancellationSignal)
+                ChatMinimal::class -> conversationRepository.fuzzySearchChat(escapedQuery, cancellationSignal)
                 else -> messageControlledRunner.cancelPreviousThenRun {
-                    conversationRepository.fuzzySearchMessage(escapedQuery, limit)
+                    conversationRepository.fuzzySearchMessage(escapedQuery, limit, cancellationSignal)
                 }
             }
         }

@@ -80,7 +80,7 @@ data class App(
 enum class AppCap { GROUP, CONTACT, IMMERSIVE, ENCRYPTED }
 
 fun String.matchResourcePattern(resourcePatterns: List<String>?): Boolean {
-    val uri  = Uri.parse(this).run { "$scheme://$host" }
+    val uri = Uri.parse(this).run { "$scheme://$host" }
     return resourcePatterns?.map { pattern -> Uri.parse(pattern).run { "$scheme://$host" } }
         ?.find { pattern -> uri.equals(pattern, true) } != null
 }
