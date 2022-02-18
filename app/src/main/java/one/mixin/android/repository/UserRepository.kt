@@ -1,5 +1,6 @@
 package one.mixin.android.repository
 
+import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
@@ -14,6 +15,8 @@ import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.MessageProvider
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
@@ -39,6 +42,7 @@ import javax.inject.Singleton
 class UserRepository
 @Inject
 constructor(
+    private val appDatabase: MixinDatabase,
     private val userDao: UserDao,
     private val appDao: AppDao,
     private val circleDao: CircleDao,
@@ -55,7 +59,8 @@ constructor(
 
     suspend fun getFriends(): List<User> = userDao.getFriends()
 
-    suspend fun fuzzySearchUser(query: String): List<User> = userDao.fuzzySearchUser(query, query, Session.getAccountId() ?: "")
+    suspend fun fuzzySearchUser(query: String, cancellationSignal: CancellationSignal): List<User> =
+        MessageProvider.fuzzySearchUser(query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
     suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)
 

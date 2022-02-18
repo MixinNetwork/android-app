@@ -151,14 +151,14 @@ internal constructor(
     fun getConversation(conversationId: String) =
         conversationDao.findConversationById(conversationId)
 
-    suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem> =
-        messageDao.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit)
+    suspend fun fuzzySearchMessage(query: String, limit: Int, cancellationSignal: CancellationSignal): List<SearchMessageItem> =
+        MessageProvider.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit, appDatabase, cancellationSignal)
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String, cancellationSignal: CancellationSignal) =
         MessageProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, appDatabase, cancellationSignal)
 
-    suspend fun fuzzySearchChat(query: String): List<ChatMinimal> =
-        conversationDao.fuzzySearchChat(query)
+    suspend fun fuzzySearchChat(query: String, cancellationSignal: CancellationSignal): List<ChatMinimal> =
+        MessageProvider.fuzzySearchChat(query, appDatabase, cancellationSignal)
 
     suspend fun indexUnread(conversationId: String) =
         conversationDao.indexUnread(conversationId)

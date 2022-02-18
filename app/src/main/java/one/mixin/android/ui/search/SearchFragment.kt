@@ -1,6 +1,7 @@
 package one.mixin.android.ui.search
 
 import android.os.Bundle
+import android.os.CancellationSignal
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
@@ -88,11 +89,13 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     private var searchJob: Job? = null
     private var messageSearchJob: Job? = null
+    private var cancellationSignal: CancellationSignal? = null
 
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
         searchJob?.cancel()
         messageSearchJob?.cancel()
+        cancellationSignal?.cancel()
         searchJob = fuzzySearch(keyword)
     }
 
@@ -253,14 +256,16 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         (requireActivity() as MainActivity).showSearchLoading()
         searchAdapter.clear()
 
+        val cancellationSignal = CancellationSignal()
+        this@SearchFragment.cancellationSignal = cancellationSignal
         messageSearchJob = launch {
-            (searchViewModel.fuzzySearch<SearchMessageItem>(keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
+            (searchViewModel.fuzzySearch<SearchMessageItem>(cancellationSignal, keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
                 searchAdapter.setMessageData(searchMessageItems)
             }
         }
-        val assetItems = searchViewModel.fuzzySearch<AssetItem>(keyword) as List<AssetItem>?
-        val users = searchViewModel.fuzzySearch<User>(keyword) as List<User>?
-        val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(keyword) as List<ChatMinimal>?
+        val assetItems = searchViewModel.fuzzySearch<AssetItem>(cancellationSignal, keyword) as List<AssetItem>?
+        val users = searchViewModel.fuzzySearch<User>(cancellationSignal, keyword) as List<User>?
+        val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
         decoration.invalidateHeaders()
         searchAdapter.setData(assetItems, users, chatMinimals)
 
