@@ -155,6 +155,11 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cancellationSignal?.cancel()
+    }
+
     override fun onBackPressed(): Boolean {
         if (requireActivity() is ConversationActivity) {
             val conversationFragment = requireActivity().supportFragmentManager.findFragmentByTag(ConversationFragment.TAG) as? ConversationFragment

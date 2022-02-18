@@ -145,6 +145,11 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
             )
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cancellationSignal?.cancel()
+    }
+
     private fun onTextChanged(s: String) = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 

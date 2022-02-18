@@ -202,6 +202,11 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         loadRecentUsedApps()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        cancellationSignal?.cancel()
+    }
+
     private fun loadRecentUsedApps() = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 
