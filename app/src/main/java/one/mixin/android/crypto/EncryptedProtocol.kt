@@ -6,7 +6,6 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import one.mixin.android.extension.leByteArrayToInt
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toLeByteArray
-import one.mixin.android.util.verifyPubkey
 import java.util.UUID
 
 class EncryptedProtocol {
@@ -28,7 +27,8 @@ class EncryptedProtocol {
         val senderPublicKey = publicKeyToCurve25519(pub)
         val version = byteArrayOf(0x01)
 
-        return if (extensionSessionId != null && extensionSessionKey != null && verifyPubkey(extensionSessionKey)) {
+        // TODO Should try the encryptCipherMessageKey exception
+        return if (extensionSessionId != null && extensionSessionKey != null && extensionSessionKey.isNotEmpty() && extensionSessionKey.size == 32) {
             version.plus(toLeByteArray(2.toUInt())).plus(senderPublicKey).let {
                 val emergencyMessageKey =
                     encryptCipherMessageKey(privateKey.seed, extensionSessionKey, aesGcmKey)

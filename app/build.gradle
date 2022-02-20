@@ -304,7 +304,6 @@ dependencies {
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
     implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
-    implementation "cafe.cryptography:curve25519-elisabeth:${ed25519Version}"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
