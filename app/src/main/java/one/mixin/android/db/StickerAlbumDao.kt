@@ -20,7 +20,7 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
     fun observeSystemAlbums(): LiveData<List<StickerAlbum>>
 
     @Transaction
-    @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY created_at DESC")
+    @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' AND is_verified = 1 ORDER BY created_at DESC")
     fun observeSystemAlbumsAndStickers(): LiveData<List<StoreAlbum>>
 
     @Query("SELECT * FROM sticker_albums WHERE category = 'PERSONAL' ORDER BY created_at ASC")

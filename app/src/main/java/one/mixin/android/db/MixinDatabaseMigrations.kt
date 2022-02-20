@@ -298,6 +298,13 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_41_42: Migration = object : Migration(41, 42) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN is_verified INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("UPDATE sticker_albums SET is_verified = 1 WHERE category = 'SYSTEM'")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
