@@ -12,6 +12,7 @@ import org.threeten.bp.LocalTime
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
+import org.threeten.bp.format.FormatStyle
 import timber.log.Timber
 import java.util.Date
 
@@ -40,6 +41,8 @@ fun String.date(): String {
     }
     return date as String
 }
+
+fun localDateString(time: Long): String = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withZone(LocaleZone).format(Instant.ofEpochMilli(time))
 
 fun String.within24Hours() = withinTime((60 * 60 * 1000 * 24).toLong())
 

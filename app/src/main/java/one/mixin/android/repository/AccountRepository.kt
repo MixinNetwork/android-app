@@ -11,6 +11,8 @@ import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.CollectibleRequest
+import one.mixin.android.api.request.DeactivateRequest
+import one.mixin.android.api.request.DeactivateVerificationRequest
 import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.LogoutRequest
@@ -74,7 +76,10 @@ constructor(
     private val emergencyService: EmergencyService
 ) {
 
-    fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
+    fun verificationObserver(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
+        accountService.verificationObserver(request)
+
+    suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
         accountService.verification(request)
 
     suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> =
@@ -82,6 +87,9 @@ constructor(
 
     fun changePhone(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
         accountService.changePhone(id, request)
+
+    fun deactiveVerification(id: String, request: DeactivateVerificationRequest): Observable<MixinResponse<VerificationResponse>> =
+        accountService.deactiveVerification(id, request)
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountService.update(request)
@@ -147,6 +155,10 @@ constructor(
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
         accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
+    }
+
+    suspend fun deactivate(pin: String, verificationId: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
+        accountService.deactivate(DeactivateRequest(encryptPin(Session.getPinToken()!!, pin)!!, verificationId))
     }
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)

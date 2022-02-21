@@ -589,7 +589,9 @@
     <string name="setting_desktop_logout_failed">Log keluar desktop gagal.</string>
     <string name="setting_desktop_confirm"> Sahkan log masuk ke&#13;\nDesktop Mixin Messenger</string>
     <string name="setting_desktop_login">Log masuk</string>
-    <string name="setting_privacy_security">Privasi dan Keselamatan</string>
+    <string name="setting_account">Akaun</string>
+    <string name="setting_privacy">Privasi</string>
+    <string name="setting_security">Keselamatan</string>
     <string name="setting_mobile_contact">Kenalan Telefon</string>
     <string name="setting_mobile_contact_desc">Mixin selaraskan buku alamat anda ke pelayan Mixin untuk membantu anda berhubung dengan pengguna Mixin yang lain.</string>
     <string name="setting_mobile_contact_warning">Ini akan mengalih keluar kenalan anda dari pelayan Mixin.</string>

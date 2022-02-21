@@ -15,5 +15,6 @@ data class VerificationRequest(
 
 enum class VerificationPurpose {
     SESSION,
-    PHONE
+    PHONE,
+    DEACTIVATED
 }

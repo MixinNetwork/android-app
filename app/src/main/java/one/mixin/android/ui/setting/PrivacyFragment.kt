@@ -6,14 +6,12 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_INCOGNITO_KEYBOARD
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPrivacyBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.supportsOreo
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
 
@@ -42,13 +40,7 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                     }
                 }
             )
-            pinRl.setOnClickListener {
-                if (Session.getAccount()?.hasPin == true) {
-                    navTo(PinSettingFragment.newInstance(), PinSettingFragment.TAG)
-                } else {
-                    navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
-                }
-            }
+
             blockedRl.setOnClickListener {
                 navTo(SettingBlockedFragment.newInstance(), SettingBlockedFragment.TAG)
             }
@@ -58,18 +50,20 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
             conversationRl.setOnClickListener {
                 navTo(SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
             }
-            authRl.setOnClickListener {
-                navTo(AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
+
+            contactRl.setOnClickListener {
+                navTo(MobileContactFragment.newInstance(), MobileContactFragment.TAG)
             }
+
             supportsOreo(
                 {
                     incognito.isVisible = true
                     incognitoFollower.isVisible = true
                     incognito.setContent(R.string.setting_incognito)
                     incognito.isChecked =
-                        defaultSharedPreferences.getBoolean(PREF_INCOGNITO_KEYBOARD, false)
+                        defaultSharedPreferences.getBoolean(Constants.Account.PREF_INCOGNITO_KEYBOARD, false)
                     incognito.setOnCheckedChangeListener { _, isChecked ->
-                        defaultSharedPreferences.putBoolean(PREF_INCOGNITO_KEYBOARD, isChecked)
+                        defaultSharedPreferences.putBoolean(Constants.Account.PREF_INCOGNITO_KEYBOARD, isChecked)
                     }
                 },
                 {
@@ -78,12 +72,6 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 }
             )
 
-            emergencyRl.setOnClickListener {
-                navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
-            }
-            contactRl.setOnClickListener {
-                navTo(MobileContactFragment.newInstance(), MobileContactFragment.TAG)
-            }
             setLockDesc()
             lockRl.setOnClickListener {
                 navTo(AppAuthSettingFragment.newInstance(), AppAuthSettingFragment.TAG)

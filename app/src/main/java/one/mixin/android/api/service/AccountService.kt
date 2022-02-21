@@ -7,6 +7,8 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.CollectibleRequest
+import one.mixin.android.api.request.DeactivateRequest
+import one.mixin.android.api.request.DeactivateVerificationRequest
 import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.NonFungibleToken
 import one.mixin.android.api.request.PinRequest
@@ -34,13 +36,19 @@ import retrofit2.http.Query
 interface AccountService {
 
     @POST("verifications")
-    fun verification(@Body request: VerificationRequest): Observable<MixinResponse<VerificationResponse>>
+    fun verificationObserver(@Body request: VerificationRequest): Observable<MixinResponse<VerificationResponse>>
+
+    @POST("verifications")
+    suspend fun verification(@Body request: VerificationRequest): MixinResponse<VerificationResponse>
 
     @POST("verifications/{id}")
     suspend fun create(@Path("id") id: String, @Body request: AccountRequest): MixinResponse<Account>
 
     @POST("verifications/{id}")
     fun changePhone(@Path("id") id: String, @Body request: AccountRequest): Observable<MixinResponse<Account>>
+
+    @POST("verifications/{id}")
+    fun deactiveVerification(@Path("id") id: String, @Body request: DeactivateVerificationRequest): Observable<MixinResponse<VerificationResponse>>
 
     @POST("me")
     fun update(@Body request: AccountUpdateRequest): Observable<MixinResponse<Account>>
@@ -53,6 +61,9 @@ interface AccountService {
 
     @GET("me")
     fun getMe(): Call<MixinResponse<Account>>
+
+    @POST("me/deactivate")
+    suspend fun deactivate(@Body request: DeactivateRequest): MixinResponse<Account>
 
     @POST("logout")
     suspend fun logout(@Body request: LogoutRequest): MixinResponse<Unit>
