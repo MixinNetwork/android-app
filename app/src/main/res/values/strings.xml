@@ -566,6 +566,7 @@
     <string name="group_already_in">You already in the group</string>
     <string name="group_participants_count">%1$d Participants</string>
     <string name="group_click_create_tip">Couldn\'t create. Tap to retry.</string>
+    <string name="groups_in_common">Groups In Common</string>
     <!--setting-->
     <string name="setting_title">Settings</string>
     <string name="setting_blocked">Blocked</string>

@@ -12,6 +12,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.GroupMinimal
 import one.mixin.android.vo.ParticipantSessionMinimal
 
 @Dao
@@ -227,4 +228,19 @@ interface ConversationDao : BaseDao<Conversation> {
     // DELETE
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)
+
+    @Query(
+        """
+        SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.name AS groupName, (SELECT count(user_id) from participants where conversation_id = c.conversation_id) AS memberCount
+        FROM participants p
+        INNER JOIN conversations c ON c.conversation_id = p.conversation_id
+        WHERE p.user_id IN (:selfId, :userId)
+        AND c.status = 2
+        AND c.category = 'GROUP'
+        group by c.conversation_id
+        HAVING count(p.user_id) = 2
+        ORDER BY c.last_message_created_at DESC
+        """
+    )
+    suspend fun findSameConversations(selfId: String, userId: String): List<GroupMinimal>
 }

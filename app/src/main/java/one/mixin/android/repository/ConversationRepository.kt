@@ -610,4 +610,6 @@ internal constructor(
             )
         }
     }
+
+    suspend fun findSameConversations(selfId: String, userId: String) = conversationDao.findSameConversations(selfId, userId)
 }

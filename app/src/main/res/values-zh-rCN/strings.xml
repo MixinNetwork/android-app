@@ -546,6 +546,7 @@
     <string name="group_already_in">你已经在该群组里</string>
     <string name="group_participants_count">%1$d 位群组成员</string>
     <string name="group_click_create_tip">不能创建，请点击重试</string>
+    <string name="groups_in_common">共同群组</string>
     <!--setting-->
     <string name="setting_title">设置</string>
     <string name="setting_blocked">已屏蔽</string>

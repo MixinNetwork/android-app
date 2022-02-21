@@ -460,6 +460,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         list.groups.add(
             menuGroup {
                 menu {
+                    title = getString(R.string.groups_in_common)
+                    action = {
+                        openGroupsInCommon()
+                        RxBus.publish(BotCloseEvent())
+                        dismiss()
+                    }
+                }
+            }
+        )
+
+        list.groups.add(
+            menuGroup {
+                menu {
                     title = getString(R.string.circle)
                     action = {
                         startCircleManager()
@@ -631,6 +644,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 SearchMessageFragment.TAG
             )
         }
+    }
+
+    private fun openGroupsInCommon() {
+        activity?.addFragment(
+            this@UserBottomSheetDialogFragment,
+            GroupsInCommonFragment.newInstance(user.userId),
+            GroupsInCommonFragment.TAG
+        )
     }
 
     private fun startCircleManager() {

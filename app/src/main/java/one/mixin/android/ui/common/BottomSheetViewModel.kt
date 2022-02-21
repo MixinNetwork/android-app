@@ -584,4 +584,6 @@ class BottomSheetViewModel @Inject internal constructor(
             }
         )
     }
+
+    suspend fun findSameConversations(selfId: String, userId: String) = conversationRepo.findSameConversations(selfId, userId)
 }
