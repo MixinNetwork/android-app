@@ -70,6 +70,7 @@ import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
+import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
@@ -365,6 +366,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCallState() = CallStateLiveData()
+
+    @Provides
+    @Singleton
+    fun provideCallDebugState() = CallDebugLiveData()
 
     @Provides
     @Singleton

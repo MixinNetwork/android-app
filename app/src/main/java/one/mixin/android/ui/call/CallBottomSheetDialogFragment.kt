@@ -33,6 +33,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCallBottomSheetBinding
 import one.mixin.android.extension.alertDialogBuilder
@@ -53,6 +54,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
@@ -60,6 +62,7 @@ import one.mixin.android.webrtc.acceptInvite
 import one.mixin.android.webrtc.answerCall
 import one.mixin.android.webrtc.logCallState
 import one.mixin.android.webrtc.muteAudio
+import one.mixin.android.webrtc.next
 import one.mixin.android.webrtc.speakerPhone
 import one.mixin.android.widget.CallButton
 import one.mixin.android.widget.MixinBottomSheetDialog
@@ -102,6 +105,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     @Inject
     lateinit var callState: CallStateLiveData
+    @Inject
+    lateinit var callDebugState: CallDebugLiveData
     lateinit var self: CallUser
     private var uiState: CallService.CallState = CallService.CallState.STATE_IDLE
     private val viewModel by viewModels<CallViewModel>()
@@ -239,6 +244,14 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             binding.declineTv.setOnClickListener {
                 hangup()
             }
+            if (BuildConfig.DEBUG) {
+                binding.title.setOnClickListener {
+                    var curState = callDebugState.debugState
+                    curState = curState.next()
+                    callDebugState.debugState = curState
+                    toast("CallDebugState $curState")
+                }
+            }
             binding.subTitle.setOnClickListener {
                 showE2EETip()
             }
@@ -264,7 +277,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                 }
             )
-            binding.voiceCb.setOnLongClickListener {
+            binding.title.setOnLongClickListener {
                 if (callState.isGroupCall()) {
                     logCallState<GroupCallService>(requireContext())
                 } else {

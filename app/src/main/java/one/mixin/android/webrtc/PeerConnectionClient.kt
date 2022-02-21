@@ -3,7 +3,6 @@ package one.mixin.android.webrtc
 import android.content.Context
 import androidx.collection.arrayMapOf
 import kotlinx.coroutines.delay
-import one.mixin.android.BuildConfig
 import one.mixin.android.RxBus
 import one.mixin.android.event.FrameKeyEvent
 import one.mixin.android.event.VoiceEvent
@@ -27,10 +26,24 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class PeerConnectionClient(context: Context, private val events: PeerConnectionEvents) {
     private var factory: PeerConnectionFactory? = null
     private var isError = false
+
+    var callDebugState = CallDebugLiveData.Type.None
+        set(value) {
+            if (value == field) return
+
+            field = value
+            if (value.logEnable()) {
+                Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+            } else {
+                Logging.enableLogToDebugOutput(Logging.Severity.LS_NONE)
+            }
+        }
 
     init {
         PeerConnectionFactory.initialize(
@@ -62,7 +75,9 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                             val trackIdentifier = v.members["trackIdentifier"]
                             val audioLevel = v.members["audioLevel"] as? Double?
                             var userId = receiverIdUserIdMap[trackIdentifier]
-                            // Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
+                            if (callDebugState.reportEnable()) {
+                                Timber.d("$TAG_CALL userId: $userId, trackIdentifier: $trackIdentifier, audioLevel: $audioLevel")
+                            }
                             if (userId != null) {
                                 RxBus.publish(VoiceEvent(userId, audioLevel ?: 0.0))
                             } else {
@@ -380,8 +395,14 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription?.description}, type: ${pc.remoteDescription?.type} }"
             msgBuilder.append(localSdp).appendLine().append(remoteSdp).appendLine()
 
+            val latch = CountDownLatch(1)
             pc.getStats { report ->
                 msgBuilder.append("{ stats: $report }").appendLine()
+                latch.countDown()
+            }
+            try {
+                latch.await(5, TimeUnit.SECONDS)
+            } catch (ignored: Exception) {
             }
         }
         return msgBuilder.toString()
@@ -413,7 +434,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             reportError("PeerConnection is not created")
             return null
         }
-        if (BuildConfig.DEBUG) {
+        if (callDebugState.logEnable()) {
             Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
         }
         peerConnection.setAudioPlayout(false)
