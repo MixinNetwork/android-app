@@ -69,7 +69,6 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMentionStatus
-import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
@@ -200,10 +199,6 @@ internal constructor(
 
     suspend fun getConversationIdIfExistsSync(recipientId: String) =
         conversationDao.getConversationIdIfExistsSync(recipientId)
-
-    fun getUnreadMessage(conversationId: String, accountId: String, limit: Int): List<MessageMinimal> {
-        return messageDao.getUnreadMessage(conversationId, accountId, limit)
-    }
 
     suspend fun updateCodeUrl(conversationId: String, codeUrl: String) =
         conversationDao.updateCodeUrl(conversationId, codeUrl)

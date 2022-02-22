@@ -287,14 +287,15 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
             SELECT rowid, id FROM messages
-            WHERE conversation_id = :conversationId 
+            WHERE conversation_id = :conversationId
+            AND rowid <= :lastRowId
             AND status IN ('SENT', 'DELIVERED') 
             AND user_id != :userId 
             ORDER BY rowid ASC
             LIMIT :limit
         """
     )
-    fun getUnreadMessage(conversationId: String, userId: String, limit: Int): List<MessageMinimal>
+    fun getUnreadMessage(conversationId: String, userId: String, lastRowId: String, limit: Int): List<MessageMinimal>
 
     @Query(
         "UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
