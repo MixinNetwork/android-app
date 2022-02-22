@@ -3,6 +3,7 @@ package one.mixin.android.ui.forward
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -38,6 +39,7 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
@@ -436,6 +438,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     }
                     ForwardCategory.Video -> {
                         val videoData = GsonHelper.customGson.fromJson(content, VideoMessagePayload::class.java)
+                        showPb()
                         sendAttachmentMessage(
                             conversationId, sender, videoData.url, videoData.attachmentExtra,
                             {
@@ -452,6 +455,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     }
                     ForwardCategory.Data -> {
                         val dataMessagePayload = GsonHelper.customGson.fromJson(content, DataMessagePayload::class.java)
+                        showPb()
                         sendAttachmentMessage(
                             conversationId, sender, dataMessagePayload.url, dataMessagePayload.attachmentExtra,
                             {
@@ -758,5 +762,15 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             adapter.keyword = s
             adapter.changeData()
         }
+    }
+
+    private var dialog: Dialog? = null
+    private fun showPb() {
+        if (dialog == null) {
+            dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message)).apply {
+                setCancelable(false)
+            }
+        }
+        dialog?.show()
     }
 }
