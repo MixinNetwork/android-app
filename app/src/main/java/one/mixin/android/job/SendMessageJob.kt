@@ -5,6 +5,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawUrlDecode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.notNullWithElse
@@ -211,7 +212,7 @@ open class SendMessageJob(
 
         val privateKey = Session.getEd25519PrivateKey() ?: return
         val plaintext = if (message.isAttachment() || message.isSticker() || message.isContact()) {
-            message.content!!.base64RawUrlDecode()
+            message.content!!.decodeBase64()
         } else {
             message.content!!.toByteArray()
         }
