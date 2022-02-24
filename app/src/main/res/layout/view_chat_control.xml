@@ -56,15 +56,14 @@
                 android:gravity="center_vertical"
                 android:inputType="textMultiLine"
                 android:maxLines="5"
-                android:minHeight="36dp"
+                android:minHeight="38dp"
                 android:paddingStart="12dp"
                 android:paddingTop="2dp"
-                android:paddingEnd="12dp"
                 android:paddingBottom="2dp"
                 android:importantForAutofill="no"
                 android:textColor="?attr/text_primary"
                 android:textColorHint="?attr/text_minor"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 tools:ignore="LabelFor" />
 
             <ImageView

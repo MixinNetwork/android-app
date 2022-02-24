@@ -110,6 +110,7 @@
     <string name="add_shortcut">添加到桌面</string>
     <string name="waiting">等待中</string>
     <string name="end_to_end_encryption">端到端加密</string>
+    <string name="end_to_end_encryption_short">端到端加密</string>
     <string name="end_to_end_encryption_tip">此通话已由端对端加密进行保护。除了参与通话的人，其他人包含 Mixin 在内都无法听取或查看。</string>
     <string name="common_pic">照片</string>
     <string name="common_video">视频</string>

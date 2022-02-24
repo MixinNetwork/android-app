@@ -226,7 +226,6 @@ import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
-import one.mixin.android.vo.isSecret
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -1928,7 +1927,7 @@ class ConversationFragment() :
 
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
-            binding.chatControl.showBot(encryptCategory().isSecret())
+            binding.chatControl.showBot(encryptCategory())
         } else {
             binding.chatControl.hideBot()
         }
@@ -2288,7 +2287,7 @@ class ConversationFragment() :
         if (viewDestroyed()) return@launch
 
         app = chatViewModel.findAppById(user.appId!!)
-        binding.chatControl.hintEncrypt(encryptCategory().isSecret())
+        binding.chatControl.hintEncrypt(encryptCategory())
         if (app != null && app!!.creatorId == Session.getAccountId()) {
             val menuFragment = parentFragmentManager.findFragmentByTag(MenuFragment.TAG)
             if (menuFragment == null) {
