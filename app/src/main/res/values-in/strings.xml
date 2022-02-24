@@ -108,7 +108,7 @@
     <string name="scam_warning">Peringatan: Banyak pengguna yang melaporkan akun ini sebagai scam. Harap berhati-hati, terutama jika meminta uang Anda</string>
     <string name="add_shortcut">Tambahkan ke layar Beranda</string>
     <string name="waiting">Menunggu</string>
-    <string name="end_to_end_encryption">Terenkripsi end-to-end</string>
+    <string name="end_to_end_encryption">Terenkripsi</string>
     <string name="end_to_end_encryption_tip">Panggilan ini diamankan dengan enkripsi end-to-end. Tak seorangpun di luar panggilan ini yang dapat melihat atau mendengarkannya. Bahkan Mixin sekalipun.</string>
     <string name="common_pic">Foto</string>
     <string name="common_video">Video</string>

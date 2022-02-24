@@ -116,7 +116,7 @@
     <string name="scam_warning">Warning: Many users reported this account as a scam. Please be careful, especially if it asks you for money</string>
     <string name="add_shortcut">Add to Home screen</string>
     <string name="waiting">Waiting</string>
-    <string name="end_to_end_encryption">End-to-end Encrypted</string>
+    <string name="end_to_end_encryption">Encrypted</string>
     <string name="end_to_end_encryption_tip">This call is secured with end-to-end encryption. No one outside of this call can view or listen to it. Not even Mixin.</string>
     <string name="common_pic">Photo</string>
     <string name="common_video">Video</string>
