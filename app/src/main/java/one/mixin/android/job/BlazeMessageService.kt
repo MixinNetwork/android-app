@@ -168,7 +168,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun updateIgnoringBatteryOptimizations() {
-        isIgnoringBatteryOptimizations = powerManager?.isIgnoringBatteryOptimizations(packageName) ?: false
+        isIgnoringBatteryOptimizations =
+            powerManager?.isIgnoringBatteryOptimizations(packageName) ?: false
     }
 
     @SuppressLint("NewApi")
@@ -252,7 +253,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
         try {
-            messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
+            messageService.acknowledgements(ackMessages.map {
+                gson.fromJson(
+                    it.blazeMessage,
+                    BlazeAckMessage::class.java
+                )
+            })
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
@@ -273,7 +279,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 )
             )
             val encoded = plainText.toByteArray().base64Encode()
-            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
+            val bm = createParamBlazeMessage(
+                createPlainJsonParam(
+                    participantDao.joinedConversationId(accountId), accountId, encoded, sessionId
+                )
+            )
             jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
             jobDao.deleteList(jobs)
         }
@@ -353,7 +363,13 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 ftsMessages.add(m)
             }
             if (m.userId != Session.getAccountId()) {
-                RemoteMessageStatus(m.id, m.conversationId, MessageStatus.DELIVERED.name)
+                remoteMessageStatus.add(
+                    RemoteMessageStatus(
+                        m.id,
+                        m.conversationId,
+                        MessageStatus.DELIVERED.name
+                    )
+                )
             }
             updateUnseenConversationIds.add(m.conversationId)
         }
@@ -366,7 +382,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, ack)
         }
         val existsACKJobs = existsHistoryIds.map { id ->
-            createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(id, MessageStatus.DELIVERED.name))
+            createAckJob(
+                ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                BlazeAckMessage(id, MessageStatus.DELIVERED.name)
+            )
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -431,7 +450,22 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (list.isEmpty()) {
             return false
         }
-        // Todo
-        return processStatus()
+        list.map { msg ->
+            createAckJob(
+                ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                BlazeAckMessage(msg.messageId, MessageStatus.READ.name)
+            )
+        }.apply {
+            database.jobDao().insertList(this)
+        }
+        list.distinctBy { it.conversationId }.forEach { status ->
+            remoteMessageStatusDao.updateConversationUnseen(status.conversationId)
+        }
+        remoteMessageStatusDao.deleteList(list)
+        return if (list.size >= 100) {
+            processStatus()
+        } else {
+            true
+        }
     }
 }

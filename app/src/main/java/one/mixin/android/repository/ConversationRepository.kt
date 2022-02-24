@@ -34,6 +34,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
@@ -96,6 +97,7 @@ internal constructor(
     private val jobDao: JobDao,
     private val transcriptMessageDao: TranscriptMessageDao,
     private val pinMessageDao: PinMessageDao,
+    private val remoteMessageStatusDao: RemoteMessageStatusDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager
@@ -612,4 +614,7 @@ internal constructor(
     }
 
     suspend fun findSameConversations(selfId: String, userId: String) = conversationDao.findSameConversations(selfId, userId)
+
+    suspend fun markRead(conversationId: String) =
+        remoteMessageStatusDao.markReadByConversationId(conversationId)
 }
