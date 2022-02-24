@@ -145,6 +145,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun traceDao(): TraceDao
     abstract fun transcriptDao(): TranscriptMessageDao
     abstract fun pinMessageDao(): PinMessageDao
+    abstract fun remoteMessageStatusDao(): RemoteMessageStatusDao
     abstract fun propertyDao(): PropertyDao
 
     companion object {

@@ -307,7 +307,7 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_42_43: Migration = object : Migration(42, 43) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL( "CREATE TABLE IF NOT EXISTS `remote_messages_status` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `remote_messages_status` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
                 // todo migrate unread message status to remote message status
             }
         }

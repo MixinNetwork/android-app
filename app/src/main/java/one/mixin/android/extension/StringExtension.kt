@@ -258,7 +258,6 @@ inline fun Long.toLeByteArray(): ByteArray {
     return result
 }
 
-@ExperimentalUnsignedTypes
 fun toLeByteArray(v: UInt): ByteArray {
     val b = ByteArray(2)
     b[0] = v.toByte()
@@ -266,7 +265,6 @@ fun toLeByteArray(v: UInt): ByteArray {
     return b
 }
 
-@ExperimentalUnsignedTypes
 fun leByteArrayToInt(bytes: ByteArray): UInt {
     return bytes[0].toUInt() + (bytes[1].toUInt() shl 8)
 }

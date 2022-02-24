@@ -25,6 +25,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.insertNoReplaceList
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.base64Encode
@@ -45,6 +46,7 @@ import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.isFtsMessage
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -62,7 +64,6 @@ import javax.inject.Inject
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
     companion object {
-        val TAG = BlazeMessageService::class.java.simpleName
         const val CHANNEL_NODE = "channel_node"
         const val FOREGROUND_ID = 666666
         const val ACTION_TO_BACKGROUND = "action_to_background"
@@ -91,6 +92,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
     @Inject
+    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+    @Inject
     lateinit var participantDao: ParticipantDao
     @Inject
     lateinit var jobDao: JobDao
@@ -118,6 +121,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         webSocket.connect()
         startFloodJob()
         startAckJob()
+        startStatusJob()
         networkUtil.setListener(this)
     }
 
@@ -145,6 +149,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onDestroy()
         stopAckJob()
         stopFloodJob()
+        stopStatusJob()
         webSocket.disconnect()
     }
 
@@ -310,6 +315,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
         return if (!messages.isNullOrEmpty()) {
+            Timber.e("${System.currentTimeMillis()}")
             val ids = messages.map { it.messageId }
             val existsMessageIds = database.messageDao().findMessageIdsByIds(ids).toSet()
             val existsHistoryIds = database.messageHistoryDao().findMessageHistoryByIds(ids).toSet()
@@ -341,9 +347,13 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val pendingMessages = messageDecrypt.pendingMessages + callMessageDecrypt.pendingMessages
         val updateUnseenConversationIds = mutableSetOf<String>()
         val ftsMessages = mutableListOf<Message>()
+        val remoteMessageStatus = arrayListOf<RemoteMessageStatus>()
         pendingMessages.forEach { m ->
             if (m.isFtsMessage()) {
                 ftsMessages.add(m)
+            }
+            if (m.userId != Session.getAccountId()) {
+                RemoteMessageStatus(m.id, m.conversationId, MessageStatus.DELIVERED.name)
             }
             updateUnseenConversationIds.add(m.conversationId)
         }
@@ -365,6 +375,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
         runInTransaction {
             database.messageDao().insertList(pendingMessages)
+            database.remoteMessageStatusDao().insertList(remoteMessageStatus)
             messageDecrypt.pendingMessages.clear()
             callMessageDecrypt.pendingMessages.clear()
 
@@ -384,5 +395,43 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
             floodMessageDao.deleteList(messages)
         }
+    }
+
+    private fun startStatusJob() {
+        database.invalidationTracker.addObserver(statusObserver)
+    }
+
+    private fun stopStatusJob() {
+        database.invalidationTracker.removeObserver(statusObserver)
+    }
+
+    private var statusJob: Job? = null
+    private val statusObserver = object : InvalidationTracker.Observer("remote_messages_status") {
+        override fun onInvalidated(tables: MutableSet<String>) {
+            runStatusJob()
+        }
+    }
+
+    @Synchronized
+    private fun runStatusJob() {
+        try {
+            if (statusJob?.isActive == true) {
+                return
+            }
+            statusJob = lifecycleScope.launch(Dispatchers.IO) {
+                processStatus()
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+
+    private fun processStatus(): Boolean {
+        val list = remoteMessageStatusDao.findRemoteMessageStatus()
+        if (list.isEmpty()) {
+            return false
+        }
+        // Todo
+        return processStatus()
     }
 }

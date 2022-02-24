@@ -10,7 +10,6 @@ import java.util.UUID
 
 class EncryptedProtocol {
 
-    @ExperimentalUnsignedTypes
     fun encryptMessage(
         privateKey: EdDSAPrivateKey,
         plaintext: ByteArray,
@@ -53,7 +52,6 @@ class EncryptedProtocol {
         return aesDecrypt(sharedSecret, iv, ciphertext)
     }
 
-    @ExperimentalUnsignedTypes
     fun decryptMessage(privateKey: EdDSAPrivateKey, sessionId: ByteArray, ciphertext: ByteArray): ByteArray {
         val sessionSize = leByteArrayToInt(ciphertext.slice(IntRange(1, 2)).toByteArray()).toInt()
         val senderPublicKey = ciphertext.slice(IntRange(3, 34)).toByteArray()
