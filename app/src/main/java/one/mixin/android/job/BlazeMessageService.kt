@@ -18,6 +18,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ACK_LIMIT
+import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.MessageService
@@ -246,7 +248,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val ackMessages = jobDao.findAckJobs()
         if (ackMessages.isEmpty()) {
             return false
-        } else if (ackMessages.size == 100) {
+        } else if (ackMessages.size == ACK_LIMIT) {
             jobDao.getJobsCount().apply {
                 if (this >= 10000 && this - lastAckPendingCount >= 10000) {
                     lastAckPendingCount = this
@@ -468,7 +470,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
         remoteMessageStatusDao.deleteList(list)
-        return if (list.size >= 1000) {
+        return if (list.size >= MARK_REMOTE_LIMIT) {
             processStatus()
         } else {
             true

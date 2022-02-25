@@ -2,11 +2,12 @@ package one.mixin.android.db
 
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.vo.RemoteMessageStatus
 
 @Dao
 interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
-    @Query("SELECT * FROM remote_messages_status WHERE status = 'READ' LIMIT 1000")
+    @Query("SELECT * FROM remote_messages_status WHERE status = 'READ' LIMIT $MARK_REMOTE_LIMIT")
     fun findRemoteMessageStatus(): List<RemoteMessageStatus>
 
     @Query("UPDATE remote_messages_status SET status = 'READ' WHERE conversation_id = :conversationId")
