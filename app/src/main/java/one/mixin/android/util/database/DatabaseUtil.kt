@@ -136,8 +136,5 @@ suspend fun clearJobs(context: Context) = withContext(Dispatchers.IO) {
             db?.execSQL("PRAGMA foreign_keys = TRUE")
         }
         db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
-        if (db?.inTransaction() == false) {
-            db.execSQL("VACUUM")
-        }
     }
 }
