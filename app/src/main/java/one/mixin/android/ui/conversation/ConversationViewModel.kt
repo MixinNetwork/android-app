@@ -35,6 +35,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
+import one.mixin.android.job.MarkReadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAndRelatedAlbumJob
@@ -433,9 +434,7 @@ internal constructor(
         if (isBubbled.not()) {
             notificationManager.cancel(conversationId.hashCode())
         }
-        viewModelScope.launch(SINGLE_DB_THREAD) {
-            conversationRepository.markRead(conversationId)
-        }
+        jobManager.addJobInBackground(MarkReadJob(conversationId))
     }
 
     suspend fun getFriends(): List<User> = userRepository.getFriends()

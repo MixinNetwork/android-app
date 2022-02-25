@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.MINI_VERSION
+import one.mixin.android.session.Session
 
 class MixinDatabaseMigrations private constructor() {
 
@@ -308,7 +309,9 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_42_43: Migration = object : Migration(42, 43) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `remote_messages_status` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
-                database.execSQL("INSERT OR REPLACE INTO remote_messages_status(message_id, conversation_id, status)  SELECT id, conversation_id, status FROM messages WHERE status = 'DELIVERED'")
+                Session.getAccountId()?.let { selfId ->
+                    database.execSQL("INSERT OR REPLACE INTO remote_messages_status(message_id, conversation_id, status) SELECT id, conversation_id, status FROM messages WHERE status = 'DELIVERED' AND user_id != '$selfId'")
+                }
                 database.execSQL("UPDATE messages SET status ='READ' WHERE status = 'DELIVERED'")
             }
         }

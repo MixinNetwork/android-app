@@ -40,6 +40,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.FloodMessage
@@ -327,15 +328,15 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
         return if (!messages.isNullOrEmpty()) {
-            Timber.e("${System.currentTimeMillis()}")
             val ids = messages.map { it.messageId }
             val existsMessageIds = database.messageDao().findMessageIdsByIds(ids).toSet()
             val existsHistoryIds = database.messageHistoryDao().findMessageHistoryByIds(ids).toSet()
             val existsUnion = existsMessageIds.union(existsHistoryIds)
             val candidateMessages = messages.filter { existsUnion.contains(it.messageId).not() }
-
-            processCandidateMessages(candidateMessages, messages, existsHistoryIds)
-
+            // Todo delete debug logs
+            measureTimeMillis("processFloodMessage") {
+                processCandidateMessages(candidateMessages, messages, existsHistoryIds)
+            }
             processFloodMessage()
         } else {
             false
@@ -459,12 +460,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }.apply {
             database.jobDao().insertList(this)
         }
-        list.distinctBy { it.conversationId }.forEach { status ->
-            // Maybe process with it elsewhere
-            remoteMessageStatusDao.updateConversationUnseen(status.conversationId)
-        }
         remoteMessageStatusDao.deleteList(list)
-        return if (list.size >= 100) {
+        return if (list.size >= 1000) {
             processStatus()
         } else {
             true

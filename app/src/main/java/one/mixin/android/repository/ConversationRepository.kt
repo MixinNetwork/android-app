@@ -40,6 +40,7 @@ import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.deleteMessageByConversationId
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
@@ -612,7 +613,4 @@ internal constructor(
     }
 
     suspend fun findSameConversations(selfId: String, userId: String) = conversationDao.findSameConversations(selfId, userId)
-
-    suspend fun markRead(conversationId: String) =
-        remoteMessageStatusDao.markReadByConversationId(conversationId)
 }
