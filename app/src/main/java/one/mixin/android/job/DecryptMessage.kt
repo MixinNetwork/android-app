@@ -385,7 +385,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private fun processRecallMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
-            val accountId = Session.getAccountId() ?: return
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
@@ -447,8 +446,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                     if (updateMessageList.isNotEmpty()) {
                         messageDao.markMessageRead(updateMessageList)
-                        val updateConversationList = messageDao.findConversationsByMessages(updateMessageList)
-                        updateConversationList.forEach { cId ->
+                        remoteMessageStatusDao.deleteByMessageIds(updateMessageList)
+                        messageDao.findConversationsByMessages(updateMessageList).forEach { cId ->
                             remoteMessageStatusDao.updateConversationUnseen(cId)
                             notificationManager.cancel(cId.hashCode())
                         }
