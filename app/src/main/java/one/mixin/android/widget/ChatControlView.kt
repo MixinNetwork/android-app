@@ -13,7 +13,6 @@ import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.ActionMode
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -56,6 +55,9 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.EncryptCategory
+import one.mixin.android.vo.isEncrypt
+import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
@@ -312,16 +314,18 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         initTransitions()
     }
 
-    fun showBot(isEncrypt: Boolean) {
+    fun showBot(category: EncryptCategory) {
         botHide = false
         binding.chatBotIv.visibility = View.VISIBLE
-        hintEncrypt(isEncrypt)
+        hintEncrypt(category)
         initTransitions()
     }
 
-    fun hintEncrypt(isEncrypt: Boolean) {
+    fun hintEncrypt(category: EncryptCategory) {
         binding.chatEt.hint = context.getString(
-            if (isEncrypt) {
+            if (category.isEncrypt()) {
+                R.string.end_to_end_encryption_short
+            } else if (category.isSignal()) {
                 R.string.end_to_end_encryption
             } else {
                 R.string.type_a_message
@@ -726,11 +730,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private val editTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             setSend()
-
-            binding.chatEt.setTextSize(
-                TypedValue.COMPLEX_UNIT_SP,
-                if (s.isNullOrBlank()) 12f else 14f
-            )
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

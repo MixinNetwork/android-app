@@ -28,11 +28,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:foreground="@drawable/mixin_ripple"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="14dp"
             android:src="@drawable/ic_chat_more"
             tools:ignore="ContentDescription" />
 
@@ -45,7 +44,6 @@
             android:layout_marginBottom="8dp"
             android:layout_toStartOf="@id/chat_bot_iv"
             android:layout_toEndOf="@id/chat_menu_iv"
-            android:layout_marginEnd="8dp"
             android:background="@drawable/bg_input">
 
             <one.mixin.android.widget.MentionEditText
@@ -58,15 +56,14 @@
                 android:gravity="center_vertical"
                 android:inputType="textMultiLine"
                 android:maxLines="5"
-                android:minHeight="36dp"
+                android:minHeight="38dp"
                 android:paddingStart="12dp"
                 android:paddingTop="2dp"
-                android:paddingEnd="12dp"
                 android:paddingBottom="2dp"
                 android:importantForAutofill="no"
                 android:textColor="?attr/text_primary"
                 android:textColorHint="?attr/text_minor"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 tools:ignore="LabelFor" />
 
             <ImageView
@@ -75,12 +72,11 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:foreground="@drawable/mixin_ripple"
                 android:background="@null"
-                android:paddingStart="8dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="8dp"
+                android:paddingStart="12dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="6dp"
                 android:src="@drawable/ic_chat_sticker"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
@@ -91,11 +87,10 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@id/chat_img_iv"
-            android:foreground="@drawable/mixin_ripple"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
+            android:paddingStart="18dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="14dp"
             android:src="@drawable/ic_chat_bot"
             tools:ignore="ContentDescription" />
 
@@ -105,11 +100,10 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@id/chat_send_ib"
-            android:foreground="@drawable/mixin_ripple"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
+            android:paddingStart="18dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="14dp"
             android:src="@drawable/selector_chat_img"
             tools:ignore="ContentDescription" />
 
@@ -119,13 +113,11 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:foreground="@drawable/mixin_ripple"
             android:background="@null"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
-            android:layout_marginEnd="8dp"
+            android:paddingStart="12dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="14dp"
             android:src="@drawable/ic_chat_mic"
             tools:ignore="ContentDescription" />
 
@@ -153,12 +145,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@null"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="4dp"
-                android:paddingStart="8dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="8dp"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="12dp"
                 android:src="@drawable/ic_msg_delete"
                 tools:ignore="ContentDescription" />
 
@@ -205,12 +195,10 @@
                 android:layout_height="wrap_content"
                 android:foreground="@drawable/mixin_ripple"
                 android:background="@null"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="4dp"
-                android:paddingStart="8dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="8dp"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="12dp"
                 android:src="@drawable/ic_chat_send_checked"
                 tools:ignore="ContentDescription" />
 

@@ -17,7 +17,7 @@
     <string name="fee">Fee</string>
     <string name="memo">Memo</string>
     <string name="date">Date</string>
-    <string name="trace">Trace</string>
+    <string name="trace" translatable="false">Trace</string>
     <string name="label">Label</string>
     <string name="address">Address</string>
     <string name="amount">Amount</string>
@@ -117,6 +117,7 @@
     <string name="add_shortcut">Add to Home screen</string>
     <string name="waiting">Waiting</string>
     <string name="end_to_end_encryption">End-to-end Encrypted</string>
+    <string name="end_to_end_encryption_short">Encrypted</string>
     <string name="end_to_end_encryption_tip">This call is secured with end-to-end encryption. No one outside of this call can view or listen to it. Not even Mixin.</string>
     <string name="common_pic">Photo</string>
     <string name="common_video">Video</string>
