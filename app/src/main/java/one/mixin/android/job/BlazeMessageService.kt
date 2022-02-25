@@ -357,6 +357,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
 
         val pendingMessages = messageDecrypt.pendingMessages + callMessageDecrypt.pendingMessages
+        val updateUnseenConversationIds = mutableSetOf<String>()
         val ftsMessages = mutableListOf<Message>()
         val remoteMessageStatus = arrayListOf<RemoteMessageStatus>()
         pendingMessages.forEach { m ->
@@ -372,6 +373,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     )
                 )
             }
+            updateUnseenConversationIds.add(m.conversationId)
         }
 
         val messageHistories = messageDecrypt.pendingMessageHistories.map { MessageHistory(it) } +
@@ -406,6 +408,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             database.jobDao().insertNoReplaceList(pendingACKJobs + existsACKJobs)
             messageDecrypt.pendingACKs.clear()
             callMessageDecrypt.pendingACKs.clear()
+
+            updateUnseenConversationIds.forEach { cid ->
+                remoteMessageStatusDao.updateConversationUnseen(cid)
+            }
 
             floodMessageDao.deleteList(messages)
         }
