@@ -104,7 +104,7 @@ open class SendMessageJob(
         messageDao.findMessageById(recallMessageId)?.let { msg ->
             RxBus.publish(RecallEvent(msg.id))
             messageDao.recallFailedMessage(msg.id)
-            messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
+            // Todo refresh unseen
             msg.mediaUrl?.getFilePath()?.let {
                 File(it).let { file ->
                     if (file.exists() && file.isFile) {

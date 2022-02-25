@@ -253,12 +253,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
         try {
-            messageService.acknowledgements(ackMessages.map {
-                gson.fromJson(
-                    it.blazeMessage,
-                    BlazeAckMessage::class.java
-                )
-            })
+            messageService.acknowledgements(
+                ackMessages.map {
+                    gson.fromJson(
+                        it.blazeMessage,
+                        BlazeAckMessage::class.java
+                    )
+                }
+            )
             jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
@@ -355,7 +357,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
 
         val pendingMessages = messageDecrypt.pendingMessages + callMessageDecrypt.pendingMessages
-        val updateUnseenConversationIds = mutableSetOf<String>()
         val ftsMessages = mutableListOf<Message>()
         val remoteMessageStatus = arrayListOf<RemoteMessageStatus>()
         pendingMessages.forEach { m ->
@@ -371,7 +372,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     )
                 )
             }
-            updateUnseenConversationIds.add(m.conversationId)
         }
 
         val messageHistories = messageDecrypt.pendingMessageHistories.map { MessageHistory(it) } +
@@ -406,11 +406,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             database.jobDao().insertNoReplaceList(pendingACKJobs + existsACKJobs)
             messageDecrypt.pendingACKs.clear()
             callMessageDecrypt.pendingACKs.clear()
-
-            updateUnseenConversationIds.forEach { cid ->
-                database.conversationDao()
-                    .unseenMessageCount(cid, Session.getAccountId())
-            }
 
             floodMessageDao.deleteList(messages)
         }
@@ -459,6 +454,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             database.jobDao().insertList(this)
         }
         list.distinctBy { it.conversationId }.forEach { status ->
+            // Maybe process with it elsewhere
             remoteMessageStatusDao.updateConversationUnseen(status.conversationId)
         }
         remoteMessageStatusDao.deleteList(list)

@@ -344,7 +344,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                     }
                                 ),
                                 nowInUtc(),
-
                                 MessageStatus.READ.name
                             )
                         )
@@ -397,7 +396,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 pinMessageDao.deleteByMessageId(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
                 messagesFts4Dao.deleteByMessageId(msg.id)
-                messageDao.takeUnseen(accountId, msg.conversationId)
+                // Todo
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
@@ -450,7 +449,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         messageDao.markMessageRead(updateMessageList)
                         val updateConversationList = messageDao.findConversationsByMessages(updateMessageList)
                         updateConversationList.forEach { cId ->
-                            messageDao.takeUnseen(accountId, cId)
+                            // Todo
                             notificationManager.cancel(cId.hashCode())
                         }
                     }

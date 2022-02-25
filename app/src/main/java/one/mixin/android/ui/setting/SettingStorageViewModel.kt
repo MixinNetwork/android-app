@@ -133,7 +133,7 @@ internal constructor(
                 TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name, MessageCategory.ENCRYPTED_TRANSCRIPT.name)
             }
         }
-        conversationRepository.refreshConversationById(conversationId)
+        // Todo refresh unseen
     }
 
     private fun clear(conversationId: String, signalCategory: String, plainCategory: String, encryptedCategory: String) {

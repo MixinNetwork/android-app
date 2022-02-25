@@ -424,20 +424,6 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
 
-    @Query(
-        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
-        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId
-        """
-    )
-    suspend fun updateConversationUnseen(userId: String, conversationId: String)
-
-    @Query(
-        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId
-            AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId
-        """
-    )
-    fun takeUnseen(userId: String, conversationId: String)
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category IN ($AUDIOS)) AND m.created_at >= :createdAt AND 

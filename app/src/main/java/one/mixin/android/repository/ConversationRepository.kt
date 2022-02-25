@@ -501,8 +501,6 @@ internal constructor(
 
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String) = transcriptMessageDao.hasUploadedAttachmentSuspend(transcriptId)
 
-    fun refreshConversationById(conversationId: String) = conversationDao.refreshConversationById(conversationId)
-
     suspend fun getAndSyncConversation(conversationId: String): Conversation? = withContext(Dispatchers.IO) {
         val conversation = conversationDao.getConversationByIdSuspend(conversationId)
         val localData = participantDao.getRealParticipants(conversationId)
