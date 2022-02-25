@@ -104,7 +104,7 @@ open class SendMessageJob(
         messageDao.findMessageById(recallMessageId)?.let { msg ->
             RxBus.publish(RecallEvent(msg.id))
             messageDao.recallFailedMessage(msg.id)
-            // Todo refresh unseen
+            remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
             msg.mediaUrl?.getFilePath()?.let {
                 File(it).let { file ->
                     if (file.exists() && file.isFile) {
@@ -124,6 +124,7 @@ open class SendMessageJob(
         }
         pinMessageDao.deleteByMessageId(recallMessageId)
         messageDao.recallMessage(recallMessageId)
+        remoteMessageStatusDao.deleteByMessageId(recallMessageId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

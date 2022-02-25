@@ -53,6 +53,7 @@ import one.mixin.android.vo.isFtsMessage
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
+import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
@@ -459,6 +460,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             )
         }.apply {
             database.jobDao().insertList(this)
+        }
+        Session.getExtensionSessionId()?.let { _ ->
+            val conversationId = list.first().conversationId
+            list.map { msg -> createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId) }.let {
+                database.jobDao().insertList(it)
+            }
         }
         remoteMessageStatusDao.deleteList(list)
         return if (list.size >= 1000) {

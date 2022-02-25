@@ -36,7 +36,6 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.deleteMessageByConversationId
 import one.mixin.android.db.insertNoReplace
@@ -271,10 +270,6 @@ internal constructor(
     fun findUnreadMessagesSync(conversationId: String, accountId: String) =
         messageDao.findUnreadMessagesSync(conversationId, accountId)
 
-    suspend fun batchMarkReadAndTake(conversationId: String, userId: String, rowId: String) {
-        messageDao.batchMarkReadAndTake(conversationId, userId, rowId)
-    }
-
     fun findContactConversationByOwnerId(ownerId: String): Conversation? {
         return conversationDao.findContactConversationByOwnerId(ownerId)
     }
@@ -501,6 +496,8 @@ internal constructor(
     fun countTranscriptById(conversationId: String) = transcriptMessageDao.countTranscriptByConversationId(conversationId)
 
     suspend fun hasUploadedAttachmentSuspend(transcriptId: String) = transcriptMessageDao.hasUploadedAttachmentSuspend(transcriptId)
+
+    fun refreshConversationById(conversationId: String) = conversationDao.refreshConversationById(conversationId)
 
     suspend fun getAndSyncConversation(conversationId: String): Conversation? = withContext(Dispatchers.IO) {
         val conversation = conversationDao.getConversationByIdSuspend(conversationId)

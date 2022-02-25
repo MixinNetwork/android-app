@@ -164,6 +164,7 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
         mentionMessageDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
         messageFts4Dao().deleteByMessageId(messageId)
+        remoteMessageStatusDao().deleteByMessageId(messageId)
     }
 }
 
@@ -193,17 +194,6 @@ suspend fun MixinDatabase.deleteMessageByConversationId(conversationId: String, 
     mentionMessageDao().deleteMessageByConversationId(conversationId, limit)
 }
 
-suspend fun MessageDao.batchMarkReadAndTake(
-    conversationId: String,
-    userId: String,
-    rowid: String
-) {
-    withTransaction {
-        batchMarkRead(conversationId, userId, rowid)
-        // Todo refresh unseen
-    }
-}
-
 fun JobDao.insertNoReplace(job: Job) {
     if (findJobById(job.jobId) == null) {
         insert(job)
@@ -223,13 +213,14 @@ fun MixinDatabase.deleteMessage(id: String) {
         pinMessageDao().deleteByMessageId(id)
         mentionMessageDao().deleteMessage(id)
         messageFts4Dao().deleteByMessageId(id)
+        remoteMessageStatusDao().deleteByMessageId(id)
     }
 }
 
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
-        // Todo refresh unseen
+        remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
     }
 }
 

@@ -396,7 +396,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 pinMessageDao.deleteByMessageId(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
                 messagesFts4Dao.deleteByMessageId(msg.id)
-                // Todo
+                remoteMessageStatusDao.deleteByMessageId(msg.id)
+                remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
@@ -432,7 +433,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
-                val accountId = Session.getAccountId() ?: return
                 plainData.ackMessages?.let {
                     val updateMessageList = arrayListOf<String>()
                     for (m in it) {
@@ -449,7 +449,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         messageDao.markMessageRead(updateMessageList)
                         val updateConversationList = messageDao.findConversationsByMessages(updateMessageList)
                         updateConversationList.forEach { cId ->
-                            // Todo
+                            remoteMessageStatusDao.updateConversationUnseen(cId)
                             notificationManager.cancel(cId.hashCode())
                         }
                     }
