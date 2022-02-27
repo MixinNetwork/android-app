@@ -697,7 +697,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
     }
 
-    private fun needOpenEditor() = action is ForwardAction.System && messages.size == 1 && messages[0].category is ShareCategory.Image
+    private fun needOpenEditor() = action is ForwardAction.System && (action as ForwardAction.System).needEdit && messages.size == 1 && messages[0].category is ShareCategory.Image
 
     private fun editAndSend(forwardMessage: ForwardMessage) {
         val content = forwardMessage.content

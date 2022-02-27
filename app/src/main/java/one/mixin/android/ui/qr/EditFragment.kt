@@ -13,6 +13,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.load.DataSource
@@ -159,10 +160,10 @@ class EditFragment : VisionFragment() {
                     arrayListOf(
                         ForwardMessage(
                             ForwardCategory.Video,
-                            GsonHelper.customGson.toJson(VideoMessagePayload(path))
+                            GsonHelper.customGson.toJson(VideoMessagePayload(File(path).toUri().toString()))
                         )
                     ),
-                    ForwardAction.System(name = getString(R.string.send))
+                    ForwardAction.System(name = getString(R.string.send), needEdit = false)
                 )
             } else {
                 ForwardActivity.show(
@@ -170,10 +171,10 @@ class EditFragment : VisionFragment() {
                     arrayListOf(
                         ForwardMessage(
                             ShareCategory.Image,
-                            GsonHelper.customGson.toJson(ShareImageData(path))
+                            GsonHelper.customGson.toJson(ShareImageData(File(path).toUri().toString())),
                         )
                     ),
-                    ForwardAction.System(name = getString(R.string.send))
+                    ForwardAction.System(name = getString(R.string.send), needEdit = false)
                 )
             }
         }
