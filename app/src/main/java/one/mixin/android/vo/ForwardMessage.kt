@@ -110,7 +110,8 @@ sealed class ForwardAction(
     @Parcelize
     data class System(
         override val conversationId: String? = null,
-        override val name: String? = null
+        override val name: String? = null,
+        val needEdit: Boolean = true
     ) : ForwardAction()
 
     @Parcelize
