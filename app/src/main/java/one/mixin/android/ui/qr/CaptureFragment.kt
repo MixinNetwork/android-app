@@ -30,7 +30,6 @@ import androidx.core.view.updateLayoutParams
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCaptureBinding
 import one.mixin.android.extension.bounce
@@ -39,7 +38,6 @@ import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasNavigationBar
@@ -48,10 +46,16 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.imageeditor.ImageEditorActivity.Companion.ARGS_EDITOR_RESULT
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.ForwardAction
+import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.ShareImageData
 import one.mixin.android.widget.CameraOpView
 import java.io.File
 import kotlin.math.max
@@ -205,7 +209,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
             imageCaptureFile?.let { uri ->
-                getEditResult.launch(Pair(uri.toUri(), getString(R.string.next)))
+                getEditResult.launch(Pair(uri.toUri(), getString(R.string.send)))
             }
         }
 
@@ -345,12 +349,18 @@ class CaptureFragment() : BaseCameraxFragment() {
     private fun callbackEdit(data: Intent?) {
         val uri = data?.getParcelableExtra<Uri>(ARGS_EDITOR_RESULT)
         if (uri != null) {
-            val path = uri.getFilePath(MixinApplication.get())
-            if (path == null) {
-                toast(R.string.error_image)
-            } else {
-                openEdit(path, false)
-            }
+            ForwardActivity.show(
+                requireContext(),
+                arrayListOf(
+                    ForwardMessage(
+                        ShareCategory.Image,
+                        GsonHelper.customGson.toJson(ShareImageData(uri.toString())),
+                    )
+                ),
+                ForwardAction.System(name = getString(R.string.send), needEdit = false)
+            )
+        } else {
+            toast(R.string.error_image)
         }
     }
 }
