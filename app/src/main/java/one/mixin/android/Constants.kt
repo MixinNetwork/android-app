@@ -189,6 +189,7 @@ object Constants {
     const val MARK_REMOTE_LIMIT = 1000
     const val ACK_LIMIT = 100
     const val MARK_LIMIT = 10000
+    const val LOGS_LIMIT = 10000
 
     const val PAGE_SIZE = 15
     const val CONVERSATION_PAGE_SIZE = 15

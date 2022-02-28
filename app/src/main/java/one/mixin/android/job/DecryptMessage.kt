@@ -133,7 +133,12 @@ import java.io.File
 import java.io.IOException
 import java.util.UUID
 
-class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
+class DecryptMessage(
+    private val lifecycleScope: CoroutineScope,
+    private val pendingMessages: MutableList<Message>,
+    private val pendingACKs: MutableList<BlazeAckMessage>,
+    private val pendingMessageHistories: MutableList<String>
+) : Injector() {
 
     companion object {
         const val GROUP = "DecryptMessage"
@@ -141,10 +146,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     private var refreshKeyMap = arrayMapOf<String, Long?>()
     private val gson = GsonHelper.customGson
-
-    val pendingMessages = mutableListOf<Message>()
-    val pendingACKs = mutableListOf<BlazeAckMessage>()
-    val pendingMessageHistories = mutableListOf<String>()
 
     fun onRun(data: BlazeMessageData) {
         processMessage(data)

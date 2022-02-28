@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
+import androidx.collection.arraySetOf
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ACK_LIMIT
+import one.mixin.android.Constants.LOGS_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -250,7 +252,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             return false
         } else if (ackMessages.size == ACK_LIMIT) {
             jobDao.getJobsCount().apply {
-                if (this >= 10000 && this - lastAckPendingCount >= 10000) {
+                if (this >= LOGS_LIMIT && this - lastAckPendingCount >= LOGS_LIMIT) {
                     lastAckPendingCount = this
                     reportException("ack job count: $this", Exception())
                 }
@@ -295,8 +297,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
-    private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
+    private val messageDecrypt by lazy { DecryptMessage(lifecycleScope, pendingMessages, pendingACKs, pendingMessageHistories) }
+    private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope, pendingMessages, pendingACKs, pendingMessageHistories) }
 
     private fun startFloodJob() {
         database.invalidationTracker.addObserver(floodObserver)
@@ -346,6 +348,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
+    private val pendingMessages: MutableList<Message> = arrayListOf()
+    private val pendingACKs: MutableList<BlazeAckMessage> = arrayListOf()
+    private val pendingMessageHistories: MutableList<String> = arrayListOf()
     private fun processCandidateMessages(
         candidateMessages: List<FloodMessage>,
         messages: List<FloodMessage>,
@@ -360,8 +365,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
         }
 
-        val pendingMessages = messageDecrypt.pendingMessages + callMessageDecrypt.pendingMessages
-        val updateUnseenConversationIds = mutableSetOf<String>()
+        val updateUnseenConversationIds = arraySetOf<String>()
         val ftsMessages = mutableListOf<Message>()
         val remoteMessageStatus = arrayListOf<RemoteMessageStatus>()
         pendingMessages.forEach { m ->
@@ -380,10 +384,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             updateUnseenConversationIds.add(m.conversationId)
         }
 
-        val messageHistories = messageDecrypt.pendingMessageHistories.map { MessageHistory(it) } +
-            callMessageDecrypt.pendingMessageHistories.map { MessageHistory(it) }
-
-        val pendingACKs = messageDecrypt.pendingACKs + callMessageDecrypt.pendingACKs
         val pendingACKJobs = pendingACKs.map { ack ->
             createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, ack)
         }
@@ -401,17 +401,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         runInTransaction {
             database.messageDao().insertList(pendingMessages)
             database.remoteMessageStatusDao().insertList(remoteMessageStatus)
-            messageDecrypt.pendingMessages.clear()
-            callMessageDecrypt.pendingMessages.clear()
+            pendingMessages.clear()
 
-            database.messageHistoryDao().insertList(messageHistories)
-            messageDecrypt.pendingMessageHistories.clear()
-            callMessageDecrypt.pendingMessageHistories.clear()
+            database.messageHistoryDao().insertList(pendingMessageHistories.map { MessageHistory(it) })
+            pendingMessageHistories.clear()
 
             // REMINDER-ME insert BlazeAckMessage list into one job?
             database.jobDao().insertNoReplaceList(pendingACKJobs + existsACKJobs)
-            messageDecrypt.pendingACKs.clear()
-            callMessageDecrypt.pendingACKs.clear()
+            pendingACKs.clear()
 
             updateUnseenConversationIds.forEach { cid ->
                 remoteMessageStatusDao.updateConversationUnseen(cid)
@@ -465,8 +462,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
         Session.getExtensionSessionId()?.let { _ ->
             val conversationId = list.first().conversationId
-            list.map { msg -> createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId) }.let {
-                database.jobDao().insertList(it)
+            list.map { msg ->
+                createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
+            }.let { jobs ->
+                database.jobDao().insertList(jobs)
             }
         }
         remoteMessageStatusDao.deleteList(list)

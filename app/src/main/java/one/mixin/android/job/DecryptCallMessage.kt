@@ -43,7 +43,10 @@ import java.util.concurrent.Executors
 
 class DecryptCallMessage(
     private val callState: CallStateLiveData,
-    private val lifecycleScope: CoroutineScope
+    private val lifecycleScope: CoroutineScope,
+    private val pendingMessages: MutableList<Message>,
+    private val pendingACKs: MutableList<BlazeAckMessage>,
+    private val pendingMessageHistories: MutableList<String>
 ) : Injector() {
     companion object {
         const val LIST_PENDING_CALL_DELAY = 2000L
@@ -58,10 +61,6 @@ class DecryptCallMessage(
     private val listPendingJobMap = ArrayMap<String, Pair<Job, BlazeMessageData>>()
 
     private val listPendingCandidateMap = ArrayMap<String, ArrayList<IceCandidate>>()
-
-    val pendingMessages = mutableListOf<Message>()
-    val pendingACKs = mutableListOf<BlazeAckMessage>()
-    val pendingMessageHistories = mutableListOf<String>()
 
     fun onRun(data: BlazeMessageData) {
         try {
