@@ -247,29 +247,33 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private var lastAckPendingCount = 0
     private tailrec suspend fun processAck(): Boolean {
-        val ackMessages = jobDao.findAckJobs()
-        if (ackMessages.isEmpty()) {
-            return false
-        } else if (ackMessages.size == ACK_LIMIT) {
-            jobDao.getJobsCount().apply {
-                if (this >= LOGS_LIMIT && this - lastAckPendingCount >= LOGS_LIMIT) {
-                    lastAckPendingCount = this
-                    reportException("ack job count: $this", Exception())
+        // Todo delete debug logs
+        measureTimeMillis("process ack") {
+            val ackMessages = jobDao.findAckJobs()
+            if (ackMessages.isEmpty()) {
+                return false
+            } else if (ackMessages.size == ACK_LIMIT) {
+                jobDao.getJobsCount().apply {
+                    Timber.e("ack job count: $this")
+                    if (this >= LOGS_LIMIT && this - lastAckPendingCount >= LOGS_LIMIT) {
+                        lastAckPendingCount = this
+                        reportException("ack job count: $this", Exception())
+                    }
                 }
             }
-        }
-        try {
-            messageService.acknowledgements(
-                ackMessages.map {
-                    gson.fromJson(
-                        it.blazeMessage,
-                        BlazeAckMessage::class.java
-                    )
-                }
-            )
-            jobDao.deleteList(ackMessages)
-        } catch (e: Exception) {
-            Timber.e(e, "Send ack exception")
+            try {
+                messageService.acknowledgements(
+                    ackMessages.map {
+                        gson.fromJson(
+                            it.blazeMessage,
+                            BlazeAckMessage::class.java
+                        )
+                    }
+                )
+                jobDao.deleteList(ackMessages)
+            } catch (e: Exception) {
+                Timber.e(e, "Send ack exception")
+            }
         }
         return processAck()
     }
