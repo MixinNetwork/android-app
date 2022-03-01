@@ -2001,11 +2001,13 @@ class ConversationFragment() :
                             getRelyMessage()
                         )
                     } catch (e: Exception) {
+                        Timber.e(e)
                         reportException(e)
                         -1
                     }
                 }
                 reportException("Image code: $code", Exception())
+                Timber.e("Image code: $code")
                 when (code) {
                     0 -> {
                         scrollToDown()

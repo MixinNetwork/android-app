@@ -80,6 +80,7 @@ import one.mixin.android.websocket.PinMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.gallery.MimeType
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.util.UUID
@@ -550,6 +551,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         var mimeType = mime
         if (mimeType == null) {
             mimeType = getMimeType(uri, true)
+            Timber.e("mime:$mimeType")
             if (mimeType?.isImageSupport() != true) {
                 return -2
             }
@@ -599,7 +601,9 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
                 .setCompressFormat(Bitmap.CompressFormat.JPEG)
                 .compressToFile(uri, temp.absolutePath)
         }
+
         val length = imageFile.length()
+        Timber.e("length:$length")
         if (length <= 0) {
             return -1
         }
