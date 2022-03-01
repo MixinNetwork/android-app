@@ -1991,15 +1991,21 @@ class ConversationFragment() :
         createConversation {
             lifecycleScope.launch {
                 val code = withContext(Dispatchers.IO) {
-                    chatViewModel.sendImageMessage(
-                        conversationId,
-                        sender,
-                        uri,
-                        encryptCategory(),
-                        mimeType,
-                        getRelyMessage()
-                    )
+                    try {
+                        chatViewModel.sendImageMessage(
+                            conversationId,
+                            sender,
+                            uri,
+                            encryptCategory(),
+                            mimeType,
+                            getRelyMessage()
+                        )
+                    } catch (e: Exception) {
+                        reportException(e)
+                        -1
+                    }
                 }
+                reportException("Image code: $code", Exception())
                 when (code) {
                     0 -> {
                         scrollToDown()
