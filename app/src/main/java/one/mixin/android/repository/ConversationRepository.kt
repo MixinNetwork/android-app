@@ -8,6 +8,7 @@ import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Observable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_DELETE_LIMIT
@@ -102,8 +103,7 @@ internal constructor(
 ) {
 
     @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String, unreadCount: Int, countable: Boolean) =
-        MessageProvider.getMessages(conversationId, appDatabase, unreadCount, countable)
+    fun getMessages(conversationId: String, scope: CoroutineScope) = MessageProvider.getMessages(conversationId, appDatabase, scope)
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
