@@ -328,13 +328,8 @@ fun Context.getUriForFile(file: File): Uri {
     }
 }
 
-private var maxItemWidth: Int? = null
-
 fun Context.maxItemWidth(): Int {
-    if (maxItemWidth == null) {
-        maxItemWidth = realSize().x * 4 / 5
-    }
-    return maxItemWidth!!
+    return realSize().x * 4 / 5
 }
 
 // fragment
