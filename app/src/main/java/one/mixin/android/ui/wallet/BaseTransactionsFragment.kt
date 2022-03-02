@@ -8,11 +8,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentTransactionFiltersBinding
+import one.mixin.android.databinding.FragmentTranscationExportBinding
 import one.mixin.android.event.RefreshSnapshotEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
@@ -52,6 +54,22 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         val builder = BottomSheet.Builder(requireActivity())
         val bottomSheet = builder.create()
         builder.setCustomView(filterBinding.root)
+        bottomSheet
+    }
+
+    private var _exportBinding: FragmentTranscationExportBinding? = null
+    private val exportBinding get() = requireNotNull(_exportBinding)
+
+    protected fun showExportSheet() {
+        exportBinding.apply {
+            exportSheet.show()
+        }
+    }
+
+    protected val exportSheet: BottomSheet by lazy {
+        val builder = BottomSheet.Builder(requireActivity())
+        val bottomSheet = builder.create()
+        builder.setCustomView(exportBinding.root)
         bottomSheet
     }
 
@@ -96,6 +114,19 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                 }
             }
         )
+
+        _exportBinding = FragmentTranscationExportBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transcation_export, null))
+        exportBinding.apply {
+            exportTitle.rightIv.setOnClickListener { filtersSheet.dismiss() }
+            exportStart.setOnClickListener {
+                val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker().setTheme(R.style.ThemeOverlay_Material3_MaterialCalendar).build()
+                dateRangePicker.show(parentFragmentManager,"date")
+            }
+            exportEnd.setOnClickListener {
+                val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker().setTheme(R.style.ThemeOverlay_Material3_MaterialCalendar).build()
+                dateRangePicker.show(parentFragmentManager,"date")
+            }
+        }
 
         _filterBinding = FragmentTransactionFiltersBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null))
         filterBinding.apply {

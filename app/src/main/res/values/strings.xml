@@ -435,6 +435,10 @@
     <string name="wallet_transactions_title">Transactions</string>
     <string name="wallet_transactions_show">Show</string>
     <string name="wallet_transactions_hide">Hide</string>
+    <string name="wallet_transactions_export_title">Export Transactions</string>
+    <string name="wallet_transactions_export">Export</string>
+    <string name="wallet_transactions_export_start">Start Date</string>
+    <string name="wallet_transactions_export_end">End Date</string>
     <string name="wallet_transaction_title">Transaction</string>
     <string name="wallet_transaction_continue">Continue</string>
     <string name="wallet_transaction_continue_count">Continue (%1$d)</string>

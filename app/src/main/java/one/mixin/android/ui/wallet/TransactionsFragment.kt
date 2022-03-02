@@ -259,6 +259,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 bottomSheet.dismiss()
                 activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
             }
+            export.setOnClickListener {
+                showExportSheet()
+                bottomSheet.dismiss()
+            }
             cancel.setOnClickListener { bottomSheet.dismiss() }
         }
 
