@@ -72,6 +72,9 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     private val adapter = TransactionsAdapter()
     lateinit var asset: AssetItem
+    override fun getCurrentAsset(): AssetItem {
+        return asset
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTransactionsBinding.inflate(layoutInflater, container, false)

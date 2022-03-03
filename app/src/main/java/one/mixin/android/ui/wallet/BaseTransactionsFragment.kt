@@ -12,14 +12,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import io.reactivex.android.schedulers.AndroidSchedulers
+import one.mixin.android.Constants.ARGS_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentTransactionFiltersBinding
 import one.mixin.android.databinding.FragmentTranscationExportBinding
 import one.mixin.android.event.RefreshSnapshotEvent
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navigate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CheckedFlowLayout
 import timber.log.Timber
@@ -45,6 +48,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
 
     private var _filterBinding: FragmentTransactionFiltersBinding? = null
     private val filterBinding get() = requireNotNull(_filterBinding)
+
+    open fun getCurrentAsset() : AssetItem? = null
 
     protected fun showFiltersSheet() {
         filterBinding.apply {
@@ -154,6 +159,13 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                     maxDate = Calendar.getInstance()
                 }.show(parentFragmentManager, "date")
             }
+            exportBn.setOnClickListener {
+                getView()?.navigate(R.id.action_transactions_to_limit_transactions,
+                    Bundle().apply {
+                        putString(ARGS_ASSET_ID, getCurrentAsset()!!.assetId)
+                    })
+                exportSheet.dismiss()
+            }
         }
 
         _filterBinding = FragmentTransactionFiltersBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null))
@@ -175,7 +187,6 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                 }
             )
         }
-        filterBinding.root
     }
 
     private val isNightMode by lazy {

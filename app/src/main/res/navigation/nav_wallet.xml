@@ -78,6 +78,12 @@
             app:destination="@id/address_management_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_transactions_to_limit_transactions"
+            app:destination="@id/limit_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
 
     <fragment
@@ -224,5 +230,16 @@
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/limit_transactions_fragment"
+        android:name="one.mixin.android.ui.wallet.LimitTransactionsFragment"
+        tools:layout="@layout/fragment_address_add">
+
+        <argument
+            android:name="args_asset_id"
+            app:argType="string"/>
+
     </fragment>
 </navigation>
