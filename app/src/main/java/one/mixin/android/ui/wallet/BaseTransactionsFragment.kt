@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
@@ -8,18 +9,21 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.datepicker.MaterialDatePicker
 import com.uber.autodispose.autoDispose
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog
 import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentTransactionFiltersBinding
 import one.mixin.android.databinding.FragmentTranscationExportBinding
 import one.mixin.android.event.RefreshSnapshotEvent
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CheckedFlowLayout
+import timber.log.Timber
+import java.util.Calendar
 import javax.inject.Inject
 
 abstract class BaseTransactionsFragment<C> : BaseFragment() {
@@ -97,6 +101,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
             }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         transactionsRv = view.findViewById(R.id.transactions_rv)
@@ -117,14 +122,37 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
 
         _exportBinding = FragmentTranscationExportBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transcation_export, null))
         exportBinding.apply {
-            exportTitle.rightIv.setOnClickListener { filtersSheet.dismiss() }
+            exportTitle.rightIv.setOnClickListener { exportSheet.dismiss() }
             exportStart.setOnClickListener {
-                val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker().setTheme(R.style.ThemeOverlay_Material3_MaterialCalendar).build()
-                dateRangePicker.show(parentFragmentManager,"date")
+                DatePickerDialog.newInstance { _, year, monthOfYear, dayOfMonth ->
+                    exportStartTv.text = "$year-$monthOfYear-$dayOfMonth"
+                    Timber.e("$year $monthOfYear $dayOfMonth")
+                    startDate = Calendar.getInstance().apply {
+                        set(year,monthOfYear,dayOfMonth)
+                    }
+                }.apply {
+                    isThemeDark = isNightMode
+                    maxDate = if (this@BaseTransactionsFragment.endDate != null) {
+                        this@BaseTransactionsFragment.endDate
+                    } else {
+                        Calendar.getInstance()
+                    }
+                }.show(parentFragmentManager, "date")
             }
             exportEnd.setOnClickListener {
-                val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker().setTheme(R.style.ThemeOverlay_Material3_MaterialCalendar).build()
-                dateRangePicker.show(parentFragmentManager,"date")
+                DatePickerDialog.newInstance { _, year, monthOfYear, dayOfMonth ->
+                    exportEndTv.text = "$year-$monthOfYear-$dayOfMonth"
+                    Timber.e("$year $monthOfYear $dayOfMonth")
+                    endDate = Calendar.getInstance().apply {
+                        set(year,monthOfYear,dayOfMonth)
+                    }
+                }.apply {
+                    isThemeDark = isNightMode
+                    if (this@BaseTransactionsFragment.startDate != null) {
+                        minDate = this@BaseTransactionsFragment.startDate
+                    }
+                    maxDate = Calendar.getInstance()
+                }.show(parentFragmentManager, "date")
             }
         }
 
@@ -149,6 +177,13 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         }
         filterBinding.root
     }
+
+    private val isNightMode by lazy {
+        requireContext().isNightMode()
+    }
+
+    private var startDate:Calendar? =null
+    private var endDate:Calendar? =null
 
     override fun onStop() {
         super.onStop()
