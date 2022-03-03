@@ -30,7 +30,7 @@
         <LinearLayout
             android:id="@+id/export_start"
             android:padding="8dp"
-            android:foreground="?attr/selectableItemBackground"
+            android:background="@drawable/ripple_upper_round"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -46,7 +46,7 @@
         <LinearLayout
             android:id="@+id/export_end"
             android:padding="8dp"
-            android:foreground="?attr/selectableItemBackground"
+            android:background="@drawable/ripple_lower_round"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -71,6 +71,7 @@
         android:text="@string/wallet_transactions_export"
         android:textColor="@color/white"
         android:textSize="14sp"
+        android:enabled="false"
         app:layout_constraintTop_toBottomOf="@id/export_layout"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

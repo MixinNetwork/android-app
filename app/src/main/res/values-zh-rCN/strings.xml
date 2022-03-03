@@ -419,6 +419,7 @@
     <string name="wallet_transactions_export">导出</string>
     <string name="wallet_transactions_export_start">起始时间</string>
     <string name="wallet_transactions_export_end">结束时间</string>
+    <string name="wallet_transactions_export_error">起始时间必须早于终止时间</string>
     <string name="wallet_transaction_title">交易详情</string>
     <string name="wallet_transaction_continue">继续</string>
     <string name="wallet_transaction_continue_count">继续 （%1$d）</string>

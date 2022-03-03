@@ -439,6 +439,7 @@
     <string name="wallet_transactions_export">Export</string>
     <string name="wallet_transactions_export_start">Start Date</string>
     <string name="wallet_transactions_export_end">End Date</string>
+    <string name="wallet_transactions_export_error">The start date must be earlier than the end date</string>
     <string name="wallet_transaction_title">Transaction</string>
     <string name="wallet_transaction_continue">Continue</string>
     <string name="wallet_transaction_continue_count">Continue (%1$d)</string>

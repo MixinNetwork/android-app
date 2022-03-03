@@ -27,8 +27,13 @@ class LimitTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotIte
     companion object {
         const val TAG = "LimitTransactionsFragment"
 
-        fun newInstance(assetId: String) = LimitTransactionsFragment().withArgs {
+        const val ARGS_START_DATE = "args_start_date"
+        const val ARGS_END_DATE = "args_end_date"
+
+        fun newInstance(assetId: String, startDate: String? = null, endDate: String? = null) = LimitTransactionsFragment().withArgs {
             putString(ARGS_ASSET_ID, assetId)
+            putString(ARGS_START_DATE, startDate)
+            putString(ARGS_END_DATE, endDate)
         }
     }
 
@@ -49,6 +54,14 @@ class LimitTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotIte
         requireArguments().getString(ARGS_ASSET_ID)!!
     }
 
+    private val startDate by lazy {
+        requireArguments().getString(ARGS_START_DATE)
+    }
+
+    private val endDate by lazy {
+        requireArguments().getString(ARGS_END_DATE)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
@@ -64,7 +77,7 @@ class LimitTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotIte
             }
             adapter.submitList(it)
         }
-        bindLiveData(walletViewModel.snapshotsFromDb(assetId))
+        bindLiveData(walletViewModel.snapshotsFromDb(assetId, startDate = startDate, endDate = endDate))
     }
 
     override fun <T> onNormalItemClick(item: T) {
