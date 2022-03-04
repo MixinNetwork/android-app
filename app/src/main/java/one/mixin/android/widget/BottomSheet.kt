@@ -149,6 +149,8 @@ class BottomSheet(
 
         fun onOpenAnimationEnd()
 
+        fun onDismiss()
+
         fun canDismiss(): Boolean
     }
 
@@ -158,6 +160,8 @@ class BottomSheet(
 
         override fun onOpenAnimationEnd() {
         }
+
+        override fun onDismiss() {}
 
         override fun canDismiss() = false
     }
@@ -310,6 +314,7 @@ class BottomSheet(
         fake: Boolean = true,
         doOnEnd: (() -> Unit)? = null
     ) {
+        bottomSheetListener?.onDismiss()
         cancelSheetAnimation()
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(

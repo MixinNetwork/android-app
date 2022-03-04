@@ -78,18 +78,19 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         }
     }
 
-    protected val exportSheet: BottomSheet by lazy {
+    private val exportSheet: BottomSheet by lazy {
         val builder = BottomSheet.Builder(requireActivity())
         val bottomSheet = builder.create()
         builder.setCustomView(exportBinding.root)
-        bottomSheet.apply {
-            setOnDismissListener {
-               resetExportSheet()
+        bottomSheet.setListener(object : BottomSheet.BottomSheetListenerAdapter() {
+            override fun onDismiss() {
+                resetExportSheet()
             }
-        }
+        })
+        bottomSheet
     }
 
-    private fun resetExportSheet(){
+    private fun resetExportSheet() {
         startDate = null
         endDate = null
         exportBinding.exportStartTv.setText(R.string.wallet_transactions_export_start)
@@ -142,10 +143,12 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
 
         _exportBinding = FragmentTranscationExportBinding.bind(View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transcation_export, null))
         exportBinding.apply {
-            exportTitle.rightIv.setOnClickListener { exportSheet.dismiss() }
+            exportTitle.rightIv.setOnClickListener {
+                exportSheet.dismiss()
+                resetExportSheet()
+            }
             exportStart.setOnClickListener {
                 DatePickerDialog.newInstance { _, year, monthOfYear, dayOfMonth ->
-                    exportStartTv.text = "$year-${monthOfYear + 1}-$dayOfMonth"
                     val selectTime = Calendar.getInstance().apply {
                         set(year, monthOfYear, dayOfMonth, 0, 0, 0)
                     }
@@ -154,6 +157,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                     } else {
                         startDate = selectTime
                         exportBn.isEnabled = true
+                        exportStartTv.text = "$year-${monthOfYear + 1}-$dayOfMonth"
                     }
                 }.apply {
                     maxDate = Calendar.getInstance()
@@ -162,7 +166,6 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
             }
             exportEnd.setOnClickListener {
                 DatePickerDialog.newInstance { _, year, monthOfYear, dayOfMonth ->
-                    exportEndTv.text = "$year-${monthOfYear + 1}-$dayOfMonth"
                     val selectTime = Calendar.getInstance().apply {
                         set(year, monthOfYear, dayOfMonth, 24, 0, 0)
                     }
@@ -171,6 +174,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                     } else {
                         endDate = selectTime
                         exportBn.isEnabled = true
+                        exportEndTv.text = "$year-${monthOfYear + 1}-$dayOfMonth"
                     }
                 }.apply {
                     maxDate = Calendar.getInstance()

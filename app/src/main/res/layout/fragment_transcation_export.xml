@@ -69,7 +69,6 @@
         android:layout_marginTop="72dp"
         android:layout_marginBottom="50dp"
         android:text="@string/wallet_transactions_export"
-        android:textColor="@color/white"
         android:textSize="14sp"
         android:enabled="false"
         app:layout_constraintTop_toBottomOf="@id/export_layout"
