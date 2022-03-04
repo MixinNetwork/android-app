@@ -22,8 +22,13 @@ import androidx.camera.core.ImageCapture.FLASH_MODE_OFF
 import androidx.camera.core.ImageCapture.FLASH_MODE_ON
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.UseCase
-import androidx.camera.core.VideoCapture
+import androidx.camera.video.FileOutputOptions
+import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
+import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.core.net.toUri
+import androidx.core.util.Consumer
 import androidx.core.view.isVisible
 import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
@@ -74,7 +79,8 @@ class CaptureFragment() : BaseCameraxFragment() {
     private var imageCaptureFile: File? = null
 
     private var imageCapture: ImageCapture? = null
-    private var videoCapture: VideoCapture? = null
+    private var videoCapture: VideoCapture<Recorder>? = null
+    private var currentRecording: Recording? = null
 
     // for testing
     private lateinit var resultRegistry: ActivityResultRegistry
@@ -163,7 +169,7 @@ class CaptureFragment() : BaseCameraxFragment() {
     @SuppressLint("RestrictedApi")
     override fun onDisplayChanged(rotation: Int) {
         imageCapture?.targetRotation = rotation
-        videoCapture?.setTargetRotation(rotation)
+        videoCapture?.targetRotation = rotation
     }
 
     override fun fromScan() = false
@@ -197,13 +203,13 @@ class CaptureFragment() : BaseCameraxFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    private fun getVideoCapture(): VideoCapture {
+    private fun getVideoCapture(): VideoCapture<Recorder> {
         if (videoCapture != null) return videoCapture!!
 
-        videoCapture = VideoCapture.Builder()
-            .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+        val recorder = Recorder.Builder()
             .build()
-        return videoCapture!!
+        videoCapture = VideoCapture.withOutput(recorder)
+        return requireNotNull(videoCapture)
     }
 
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
@@ -279,7 +285,11 @@ class CaptureFragment() : BaseCameraxFragment() {
             binding.chronometerLayout.fadeOut()
             binding.chronometer.stop()
 
-            videoCapture?.stopRecording()
+            val recording: Recording? = currentRecording
+            if (recording != null) {
+                recording.stop()
+                currentRecording = null
+            }
             unbindUseCases(getVideoCapture())
 
             if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
@@ -306,36 +316,10 @@ class CaptureFragment() : BaseCameraxFragment() {
         val videoCapture = getVideoCapture()
         bindUseCases(videoCapture)
         val videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
-        val outputOptions = VideoCapture.OutputFileOptions.Builder(videoFile).build()
-
-        videoCapture.startRecording(
-            outputOptions, mainExecutor,
-            object : VideoCapture.OnVideoSavedCallback {
-                override fun onVideoSaved(outputFileResults: VideoCapture.OutputFileResults) {
-                    if (binding.op.time < CaptureActivity.MIN_DURATION) {
-                        toast(R.string.error_duration_short)
-                        outputFileResults.savedUri?.path?.apply {
-                            File(this).delete()
-                        }
-                        startImageAnalysis()
-                    } else {
-                        openEdit(outputFileResults.savedUri?.path ?: "", true, fromGallery = false)
-                    }
-                    binding.op.time = 0f
-                }
-
-                override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-                    toast("Video capture failed: $message")
-                    reportException(
-                        IllegalStateException(
-                            "$CRASHLYTICS_CAMERAX-Video capture failed, " +
-                                "message: videoCaptureError: $videoCaptureError, $message, cause: $cause"
-                        )
-                    )
-                    startImageAnalysis()
-                }
-            }
-        )
+        val outputOptions = FileOutputOptions.Builder(videoFile).build()
+        currentRecording = videoCapture.output
+            .prepareRecording(requireContext(), outputOptions)
+            .start(mainExecutor, videoListener)
 
         binding.close.fadeOut()
         binding.flash.fadeOut()
@@ -344,6 +328,32 @@ class CaptureFragment() : BaseCameraxFragment() {
         binding.chronometer.base = SystemClock.elapsedRealtime()
         binding.chronometer.start()
         binding.op.startProgress()
+    }
+
+    private val videoListener = Consumer<VideoRecordEvent> { event ->
+        if (event !is VideoRecordEvent.Finalize) return@Consumer
+
+        if (event.hasError()) {
+            toast("Video capture failed: ${event.cause?.message}")
+            reportException(
+                IllegalStateException(
+                    "$CRASHLYTICS_CAMERAX-Video capture failed, " +
+                        "message: videoCaptureError: ${event.error}, cause: ${event.cause}"
+                )
+            )
+            startImageAnalysis()
+        } else {
+            if (binding.op.time < CaptureActivity.MIN_DURATION) {
+                toast(R.string.error_duration_short)
+                event.outputResults.outputUri.path?.apply {
+                    File(this).delete()
+                }
+                startImageAnalysis()
+            } else {
+                openEdit(event.outputResults.outputUri.path ?: "", true, fromGallery = false)
+            }
+            binding.op.time = 0f
+        }
     }
 
     private fun callbackEdit(data: Intent?) {
