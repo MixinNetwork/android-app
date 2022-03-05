@@ -369,8 +369,6 @@ class CaptureFragment() : BaseCameraxFragment() {
                 ),
                 ForwardAction.System(name = getString(R.string.send), needEdit = false)
             )
-        } else {
-            toast(R.string.error_image)
         }
     }
 }
