@@ -33,14 +33,16 @@ class ConversationActivity : BlazeBaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
-            replaceFragment(
-                ConversationFragment.newInstance(intent.extras!!),
-                R.id.container,
-                ConversationFragment.TAG
-            )
-        } else {
-            showConversation(intent)
+        if (savedInstanceState == null) {
+            if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
+                replaceFragment(
+                    ConversationFragment.newInstance(intent.extras!!),
+                    R.id.container,
+                    ConversationFragment.TAG
+                )
+            } else {
+                showConversation(intent)
+            }
         }
     }
 
