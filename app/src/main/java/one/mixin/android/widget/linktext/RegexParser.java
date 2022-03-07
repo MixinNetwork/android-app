@@ -157,7 +157,7 @@ class RegexParser {
     private static final String STRICT_TLD = "(?:" + IANA_TOP_LEVEL_DOMAINS + "|" + PUNYCODE_TLD + ")";
     private static final String STRICT_HOST_NAME = "(?:(?:" + IRI_LABEL + "\\.)+" + STRICT_TLD + ")";
     private static final String STRICT_DOMAIN_NAME = "(?:" + STRICT_HOST_NAME + "|" + IP_ADDRESS_STRING + ")";
-    private static final String PROTOCOL = "(?i:http|https|ton|tg)://";
+    private static final String PROTOCOL = "(?i:http|https|mixin)://";
     private static final String WORD_BOUNDARY = "(?:\\b|$|^)";
     private static final String USER_INFO = "(?:[a-zA-Z0-9\\$\\-\\_\\.\\+\\!\\*\\'\\(\\)"
             + "\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,64}(?:\\:(?:[a-zA-Z0-9\\$\\-\\_"
