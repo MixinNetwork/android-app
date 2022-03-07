@@ -100,6 +100,10 @@ class WebActivity : BaseActivity() {
         binding.six.setOnCloseListener(object : SixLayout.OnCloseListener {
             override fun onClose(index: Int) {
                 releaseClip(index)
+                supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.run {
+                    val fragment = (this as WebFragment)
+                    fragment.resetIndex(index)
+                }
                 binding.six.loadData(clips, loadViewAction)
             }
         })
