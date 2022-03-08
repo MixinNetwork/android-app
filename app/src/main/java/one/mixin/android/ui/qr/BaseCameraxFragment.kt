@@ -32,6 +32,7 @@ import androidx.camera.core.impl.utils.futures.Futures
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.common.InputImage
@@ -49,6 +50,7 @@ import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getStackTraceString
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.notNullWithElse
@@ -57,7 +59,9 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.RefreshExternalSchemeJob.Companion.PREF_EXTERNAL_SCHEMES
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
 import timber.log.Timber
@@ -459,6 +463,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     private fun handleAnalysis(analysisResult: String) {
         if (viewDestroyed()) return
 
+        requireContext().heavyClickVibrate()
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
         if (forScanResult) {
             val scanResult = if (analysisResult.isDonateUrl()) {
@@ -479,6 +484,26 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 activity?.finish()
             }
         } else {
+            val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
+            fun toUrlOrNull(text: String): String? =
+                try {
+                    text.toUri().run { "$scheme://$host" }
+                } catch (ignored: Exception) {
+                    null
+                }
+            val scanUrl = toUrlOrNull(analysisResult)
+            if (!externalSchemes.isNullOrEmpty() && scanUrl != null) {
+                externalSchemes.mapNotNull { s ->
+                    toUrlOrNull(s)
+                }.find { url ->
+                    scanUrl.equals(url, true)
+                }?.apply {
+                    WebActivity.show(requireContext(), this, null)
+                    activity?.finish()
+                    return
+                }
+            }
+
             if (fromScan()) {
                 handleResult(analysisResult)
             } else {

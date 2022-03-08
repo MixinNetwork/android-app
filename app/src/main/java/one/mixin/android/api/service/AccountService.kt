@@ -139,4 +139,7 @@ interface AccountService {
 
     @POST("session/secret")
     suspend fun modifySessionSecret(@Body request: SessionSecretRequest): MixinResponse<SessionSecretResponse>
+
+    @GET("external/schemes")
+    suspend fun getExternalSchemes(): MixinResponse<Set<String>>
 }
