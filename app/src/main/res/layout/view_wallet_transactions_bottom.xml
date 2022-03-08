@@ -26,5 +26,5 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/cancel" />
+        android:text="@string/action_cancel" />
 </LinearLayout>

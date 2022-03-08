@@ -60,6 +60,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"
-        android:text="@string/send"
+        android:text="@string/action_send"
         android:textColor="@color/white"/>
 </FrameLayout>

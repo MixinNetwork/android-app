@@ -61,7 +61,7 @@ class WaitingHolder constructor(
     ) {
         val isMe = meId == messageItem.userId
         if (messageItem.isSignal()) {
-            val learn: String = MixinApplication.get().getString(R.string.chat_learn)
+            val learn: String = MixinApplication.get().getString(R.string.action_learn_more)
             val info =
                 MixinApplication.get().getString(
                     R.string.chat_waiting,

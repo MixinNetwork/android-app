@@ -172,7 +172,7 @@
                 android:layout_marginTop="@dimen/margin16"
                 android:layout_marginBottom="20dp"
                 android:enabled="false"
-                android:text="@string/save"
+                android:text="@string/action_save"
                 android:textColor="?attr/text_minor"
                 android:textSize="14sp" />
         </LinearLayout>

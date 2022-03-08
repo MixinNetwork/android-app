@@ -63,7 +63,7 @@ class RestoreActivity : BaseActivity() {
         )
         alertDialogBuilder()
             .setMessage(R.string.restore_message)
-            .setNegativeButton(R.string.restore_skip) { dialog, _ ->
+            .setNegativeButton(R.string.restore_action_capital_skip) { dialog, _ ->
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)
                 dialog.dismiss()
@@ -140,9 +140,9 @@ class RestoreActivity : BaseActivity() {
             }
             .setNegativeButton(
                 if (userBackup) {
-                    R.string.restore_choose
+                    R.string.restore_action_capital_choose
                 } else {
-                    R.string.restore_retry
+                    R.string.restore_action_capital_retry
                 }
             ) { dialog, _ ->
                 if (userBackup) {
@@ -170,7 +170,7 @@ class RestoreActivity : BaseActivity() {
                 }
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.restore_skip) { dialog, _ ->
+            .setPositiveButton(R.string.restore_action_capital_skip) { dialog, _ ->
                 dialog.dismiss()
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)

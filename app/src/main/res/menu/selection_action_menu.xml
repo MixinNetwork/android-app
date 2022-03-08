@@ -16,6 +16,6 @@
     <item
         android:id="@+id/code"
         android:icon="@drawable/ic_menu_select_code"
-        android:title="@string/quote" />
+        android:title="@string/action_quote" />
 
 </menu>

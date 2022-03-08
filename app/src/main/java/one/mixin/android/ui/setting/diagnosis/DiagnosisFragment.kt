@@ -43,7 +43,7 @@ class DiagnosisFragment : BaseFragment() {
         binding.titleView.rightIb.setOnClickListener {
             context?.getClipboardManager()
                 ?.setPrimaryClip(ClipData.newPlainText(null, binding.resultTv.text))
-            toast(R.string.copy_success)
+            toast(R.string.copied_to_clipboard)
         }
         binding.titleView.rightAnimator.displayedChild = 2
 

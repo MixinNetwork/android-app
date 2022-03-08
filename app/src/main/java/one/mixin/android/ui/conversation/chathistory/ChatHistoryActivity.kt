@@ -144,7 +144,7 @@ class ChatHistoryActivity : BaseActivity() {
         binding.titleView.setSubTitle(
             getString(
                 if (isTranscript) {
-                    R.string.common_transcript
+                    R.string.transcript
                 } else {
                     R.string.pinned_message
                 }
@@ -273,7 +273,7 @@ class ChatHistoryActivity : BaseActivity() {
                 viewBinding.copyTv.setOnClickListener {
                     this@ChatHistoryActivity.getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
-                    toast(R.string.copy_success)
+                    toast(R.string.copied_to_clipboard)
                     bottomSheet.dismiss()
                 }
                 bottomSheet.show()
@@ -539,7 +539,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     this@ChatHistoryActivity.getClipboardManager().setPrimaryClip(
                                         ClipData.newPlainText(null, messageItem.content)
                                     )
-                                    toast(R.string.copy_success)
+                                    toast(R.string.copied_to_clipboard)
                                 } catch (e: ArrayIndexOutOfBoundsException) {
                                 }
                             }
@@ -634,7 +634,7 @@ class ChatHistoryActivity : BaseActivity() {
         if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_music),
+                    getString(R.string.action_save_to_music),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -646,7 +646,7 @@ class ChatHistoryActivity : BaseActivity() {
         ) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_gallery),
+                    getString(R.string.action_save_to_gallery),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -656,7 +656,7 @@ class ChatHistoryActivity : BaseActivity() {
         } else {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_downloads),
+                    getString(R.string.action_save_to_downloads),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -666,7 +666,7 @@ class ChatHistoryActivity : BaseActivity() {
         }
         items.add(
             BottomSheetItem(
-                getString(R.string.open),
+                getString(R.string.action_open),
                 {
                     openMedia(messageItem)
                     bottomSheet?.dismiss()
@@ -713,7 +713,7 @@ class ChatHistoryActivity : BaseActivity() {
             lifecycleScope.launch {
                 if (conversationRepository.hasUploadedAttachmentSuspend(transcriptId) > 0) {
                     alert(getString(R.string.error_transcript_forward))
-                        .setPositiveButton(R.string.ok) { dialog, _ ->
+                        .setPositiveButton(R.string.capital_ok) { dialog, _ ->
                             dialog.dismiss()
                         }.show()
                     bottomSheet.dismiss()

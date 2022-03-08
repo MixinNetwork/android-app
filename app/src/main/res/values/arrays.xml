@@ -57,4 +57,14 @@
         <item>Bahasa Indonesia</item>
         <item>Bahasa Melayu</item>
     </string-array>
+
+    <string-array name="setting_night_array">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="setting_night_array_oreo">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Follow system</item>
+    </string-array>
 </resources>

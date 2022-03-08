@@ -350,11 +350,11 @@ interface TransactionInterface {
 
     fun getSnapshotType(fragment: Fragment, type: String): String {
         val s = when (type) {
-            SnapshotType.transfer.name -> R.string.transfer
+            SnapshotType.transfer.name -> R.string.action_transfer
             SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.wallet_bottom_deposit
             SnapshotType.withdrawal.name -> R.string.withdrawal
             SnapshotType.fee.name -> R.string.fee
-            SnapshotType.rebate.name -> R.string.rebate
+            SnapshotType.rebate.name -> R.string.action_rebate
             SnapshotType.raw.name -> R.string.filters_raw
             else -> R.string.not_any
         }

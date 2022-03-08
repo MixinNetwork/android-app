@@ -110,7 +110,7 @@ class GroupFragment : BaseFragment() {
             activity?.onBackPressed()
         }
         if (from == TYPE_ADD || from == TYPE_REMOVE) {
-            binding.titleView.rightTv.text = getString(R.string.done)
+            binding.titleView.rightTv.text = getString(R.string.action_done)
             updateTitle(alreadyUsers?.size ?: 0)
         } else if (from == TYPE_CREATE) {
             updateTitle(0)
@@ -205,7 +205,7 @@ class GroupFragment : BaseFragment() {
         binding.titleView.setSubTitle(
             when (from) {
                 TYPE_REMOVE -> getString(R.string.group_info_remove_member)
-                else -> getString(R.string.group_add)
+                else -> getString(R.string.group_add_participants)
             },
             "$size/$MAX_USER"
         )

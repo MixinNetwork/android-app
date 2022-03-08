@@ -87,7 +87,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
                         deleteContacts()
                         dialog.dismiss()
                     }
-                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
                     .show()
             }
         }

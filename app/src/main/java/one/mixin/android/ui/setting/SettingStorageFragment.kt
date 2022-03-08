@@ -101,7 +101,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     private val menuDialog: AlertDialog by lazy {
         alertDialogBuilder()
             .setView(menuView)
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.setting_storage_bn_clear) { dialog, _ ->
@@ -126,7 +126,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
 
     private val confirmDialog: AlertDialog by lazy {
         alertDialogBuilder()
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
@@ -238,11 +238,11 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             itemBinding.apply {
                 checkView.setName(
                     when (storageUsage.type) {
-                        IMAGE -> R.string.common_pic
-                        DATA -> R.string.common_file
-                        VIDEO -> R.string.common_video
-                        AUDIO -> R.string.common_audio
-                        TRANSCRIPT -> R.string.common_transcript
+                        IMAGE -> R.string.photo
+                        DATA -> R.string.files
+                        VIDEO -> R.string.video
+                        AUDIO -> R.string.audio
+                        TRANSCRIPT -> R.string.transcript
                         else -> R.string.unknown
                     }
                 )

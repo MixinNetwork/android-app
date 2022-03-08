@@ -712,7 +712,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         } else {
             shareImageData.url.toUri()
         }
-        getEditorResult.launch(Pair(uri, getString(R.string.share)))
+        getEditorResult.launch(Pair(uri, getString(R.string.action_share)))
     }
 
     private suspend fun sendImageByUri(uri: Uri) {

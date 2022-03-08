@@ -381,7 +381,7 @@ class MainActivity : BlazeBaseActivity() {
         delay(2000)
         MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.setting_emergency_change_mobile))
-            .setPositiveButton(R.string.change) { dialog, _ ->
+            .setPositiveButton(R.string.action_change) { dialog, _ ->
                 supportFragmentManager.inTransaction {
                     setCustomAnimations(
                         R.anim.slide_in_bottom,
@@ -394,7 +394,7 @@ class MainActivity : BlazeBaseActivity() {
                     dialog.dismiss()
                 }
             }
-            .setNegativeButton(R.string.later) { dialog, _ ->
+            .setNegativeButton(R.string.action_later) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()
@@ -507,7 +507,7 @@ class MainActivity : BlazeBaseActivity() {
             getString(R.string.update_downloaded),
             Snackbar.LENGTH_INDEFINITE
         ).apply {
-            setAction(getString(R.string.restart)) { appUpdateManager.completeUpdate() }
+            setAction(getString(R.string.action_restart)) { appUpdateManager.completeUpdate() }
             setActionTextColor(getColor(R.color.colorAccent))
             show()
         }
@@ -817,7 +817,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun addCircle() {
         editDialog {
-            titleText = this@MainActivity.getString(R.string.circle_add_title)
+            titleText = this@MainActivity.getString(R.string.circle_action_add)
             maxTextCount = 64
             defaultEditEnable = false
             editMaxLines = EditDialog.MAX_LINE.toInt()

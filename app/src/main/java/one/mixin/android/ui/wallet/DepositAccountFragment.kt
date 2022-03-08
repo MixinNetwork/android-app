@@ -84,11 +84,11 @@ class DepositAccountFragment : DepositFragment() {
             accountNameCopyIv.setOnClickListener {
                 context?.getClipboardManager()
                     ?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
-                toast(R.string.copy_success)
+                toast(R.string.copied_to_clipboard)
             }
             accountMemoCopyIv.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.tag))
-                toast(R.string.copy_success)
+                toast(R.string.copied_to_clipboard)
             }
 
             showQR(accountNameQr, accountNameQrAvatar, asset.destination)
@@ -97,10 +97,10 @@ class DepositAccountFragment : DepositFragment() {
             }
         }
         alertDialogBuilder()
-            .setTitle(R.string.notice)
+            .setTitle(R.string.action_notice)
             .setCancelable(false)
             .setMessage(getString(R.string.deposit_notice, asset.symbol))
-            .setPositiveButton(R.string.ok) { dialog, _ ->
+            .setPositiveButton(R.string.capital_ok) { dialog, _ ->
                 dialog.dismiss()
             }.show()
     }

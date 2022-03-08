@@ -73,7 +73,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                             getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
                         subTitle.text = "Mixin ID: ${it.user.identityNumber}"
                     }
-                    biometricLayout.payTv.setText(R.string.wallet_pay_with_pwd)
+                    biometricLayout.payTv.setText(R.string.wallet_pay_with_pin)
                     biometricLayout.biometricTv.setText(R.string.wallet_pay_with_biometric)
                 }
                 is WithdrawBiometricItem -> {
@@ -114,7 +114,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                         t.user.identityNumber
                     ),
                     getDescription(),
-                    getString(R.string.wallet_pay_with_pwd)
+                    getString(R.string.wallet_pay_with_pin)
                 )
             }
             else -> {
@@ -123,7 +123,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                     getString(R.string.withdrawal_to, t.label),
                     t.displayAddress().formatPublicKey(),
                     getDescription(),
-                    getString(R.string.wallet_pay_with_pwd)
+                    getString(R.string.wallet_pay_with_pin)
                 )
             }
         }

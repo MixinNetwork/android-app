@@ -61,7 +61,7 @@ class DepositPublicKeyFragment : DepositFragment() {
             qrAvatar.setBorder()
             copyIv.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
-                toast(R.string.copy_success)
+                toast(R.string.copied_to_clipboard)
             }
             keyCode.text = asset.destination
             val confirmation = requireContext().resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations)

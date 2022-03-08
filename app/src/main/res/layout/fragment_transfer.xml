@@ -18,7 +18,7 @@
         android:layout_below="@+id/ph"
         app:left_icon="@drawable/ic_close_black"
         app:need_divider="false"
-        app:titleText="@string/transfer"/>
+        app:titleText="@string/action_transfer"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -250,7 +250,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="@string/common_continue"
+                    android:text="@string/action_continue"
                     android:textColor="?attr/text_minor"
                     android:textSize="14sp" />
 

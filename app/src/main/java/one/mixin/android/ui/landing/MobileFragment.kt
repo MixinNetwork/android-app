@@ -142,8 +142,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     mCountry.dialCode + " " + binding.mobileEt.text.toString()
                 )
             )
-            .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
+            .setNegativeButton(R.string.action_change) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
                 requestSend()
                 dialog.dismiss()
             }

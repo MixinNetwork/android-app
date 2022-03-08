@@ -61,7 +61,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             qrTv.text = text
             copy.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, text))
-                toast(R.string.copy_success)
+                toast(R.string.copied_to_clipboard)
                 dismiss()
             }
             if (text.isWebUrl()) {

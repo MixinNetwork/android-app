@@ -172,7 +172,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     Result.NO_AVAILABLE_MEMORY ->
                         alertDialogBuilder()
                             .setMessage(R.string.backup_no_available_memory)
-                            .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
+                            .setNegativeButton(R.string.capital_ok) { dialog, _ -> dialog.dismiss() }
                             .show()
                     Result.FAILURE -> toast(R.string.backup_failure_tip)
                     else -> reportException(IllegalStateException("Backup result $result"))

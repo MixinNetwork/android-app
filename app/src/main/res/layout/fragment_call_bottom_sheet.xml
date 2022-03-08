@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:contentDescription="@null"
-            android:text="@string/call_decline"
+            android:text="@string/call_action_decline"
             android:textColor="@color/call_red"
             android:textSize="16sp"
             android:visibility="gone"

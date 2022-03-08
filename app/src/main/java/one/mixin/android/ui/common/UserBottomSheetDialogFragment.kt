@@ -298,13 +298,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             )
         ) {
             menu {
-                title = getString(R.string.un_mute)
+                title = getString(R.string.action_un_mute)
                 subtitle = getString(R.string.mute_until, u.muteUntil?.localTime())
                 action = { unMute() }
             }
         } else {
             menu {
-                title = getString(R.string.mute)
+                title = getString(R.string.action_mute)
                 action = { mute() }
             }
         }
@@ -474,7 +474,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.circle)
+                    title = getString(R.string.circles)
                     action = {
                         startCircleManager()
                         RxBus.publish(BotCloseEvent())
@@ -744,7 +744,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         binding.idTv.setOnLongClickListener {
             context?.getClipboardManager()
                 ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
-            toast(R.string.copy_success)
+            toast(R.string.copied_to_clipboard)
             true
         }
         if (user.biography.isNotEmpty()) {
@@ -870,10 +870,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
+            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     lifecycleScope.launch {
@@ -920,7 +920,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     },
                     successBlock = { response ->
                         bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
-                        toast(getString(R.string.un_mute) + " ${user.fullName}")
+                        toast(getString(R.string.action_un_mute) + " ${user.fullName}")
                     }
                 )
             }

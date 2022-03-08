@@ -60,7 +60,7 @@ class AppAuthActivity : BaseActivity() {
         showAppAuthPrompt(
             this,
             getString(R.string.fingerprint_confirm),
-            getString(R.string.cancel),
+            getString(R.string.action_cancel),
             authCallback
         )
     }

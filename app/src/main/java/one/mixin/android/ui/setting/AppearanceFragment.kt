@@ -139,7 +139,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             .setSingleChoiceItems(choice, selectItem) { _, which ->
                 newSelectItem = which
             }
-            .setPositiveButton(R.string.group_ok) { dialog, _ ->
+            .setPositiveButton(R.string.capital_ok) { dialog, _ ->
                 if (newSelectItem != selectItem) {
                     if (newSelectItem == POS_FOLLOW_SYSTEM) {
                         Lingver.getInstance().setFollowSystemLocale(requireContext())
@@ -165,7 +165,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 }
                 dialog.dismiss()
             }
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()

@@ -50,10 +50,10 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), Frie
         alertDialogBuilder()
             .setTitle(getString(R.string.setting_emergency_set))
             .setMessage(getString(R.string.setting_emergency_set_message, user.identityNumber))
-            .setNegativeButton(R.string.change) { dialog, _ ->
+            .setNegativeButton(R.string.action_change) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
+            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
                 binding.searchEt.hideKeyboard()
                 requestCreateEmergency(user)
                 dialog.dismiss()

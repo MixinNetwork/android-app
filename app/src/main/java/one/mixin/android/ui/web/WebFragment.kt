@@ -260,11 +260,11 @@ class WebFragment : BaseFragment() {
                                 )
                             },
                             onFailure = {
-                                if (isAdded) toast(R.string.can_not_recognize)
+                                if (isAdded) toast(R.string.can_not_recognize_qr_code)
                             }
                         )
                     } catch (e: Exception) {
-                        if (isAdded) toast(R.string.can_not_recognize)
+                        if (isAdded) toast(R.string.can_not_recognize_qr_code)
                     }
                 }
                 return true
@@ -894,7 +894,7 @@ class WebFragment : BaseFragment() {
         val bottomSheet = builder.create()
         viewBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
         val shareMenu = menu {
-            title = getString(if (isBot()) R.string.about else R.string.share)
+            title = getString(if (isBot()) R.string.about else R.string.action_share)
             icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
             action = {
                 if (isBot()) {
@@ -914,7 +914,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val forwardMenu = menu {
-            title = getString(R.string.forward)
+            title = getString(R.string.action_forward)
             icon = R.drawable.ic_web_forward
             action = {
                 if (appCard?.shareable == false || !shareable) {
@@ -970,7 +970,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val openMenu = menu {
-            title = getString(R.string.action_open)
+            title = getString(R.string.action_open_in_browser)
             icon = R.drawable.ic_web_browser
             action = {
                 (webView.url ?: currentUrl)?.let {
@@ -985,16 +985,16 @@ class WebFragment : BaseFragment() {
             action = {
                 requireContext().getClipboardManager()
                     .setPrimaryClip(ClipData.newPlainText(null, url))
-                toast(R.string.copy_success)
+                toast(R.string.copied_to_clipboard)
                 bottomSheet.dismiss()
             }
         }
         val isHold = isHold()
         val floatingMenu = menu {
             title = if (isHold) {
-                getString(R.string.cancel_floating)
+                getString(R.string.action_cancel_floating)
             } else {
-                getString(R.string.open_floating)
+                getString(R.string.action_floating)
             }
             icon = if (isHold) {
                 R.drawable.ic_web_floating_cancel
@@ -1031,7 +1031,7 @@ class WebFragment : BaseFragment() {
                     }
                     val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
                     if (auth == null) {
-                        toast(R.string.not_auth_yet)
+                        toast(R.string.bot_not_auth_yet)
                         pb.dismiss()
                         return@launch
                     }
