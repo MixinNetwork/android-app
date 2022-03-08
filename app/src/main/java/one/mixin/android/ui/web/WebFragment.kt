@@ -187,11 +187,17 @@ class WebFragment : BaseFragment() {
     private val shareable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
     }
-    private var index: Int = -1
+
     private var currentUrl: String? = null
     private var isFinished: Boolean = false
     private val processor = QRCodeProcessor()
     private var webAppInterface: WebAppInterface? = null
+    private var index: Int = -1
+    fun resetIndex(index: Int) {
+        if (this.index == index) {
+            this.index = -1
+        }
+    }
 
     private lateinit var getPermissionResult: ActivityResultLauncher<Pair<App, AuthorizationResponse>>
 
