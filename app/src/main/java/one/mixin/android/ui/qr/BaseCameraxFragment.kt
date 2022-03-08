@@ -485,22 +485,24 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
         } else {
             val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
-            fun toUrlOrNull(text: String): String? =
-                try {
-                    text.toUri().run { "$scheme://$host" }
-                } catch (ignored: Exception) {
-                    null
-                }
-            val scanUrl = toUrlOrNull(analysisResult)
-            if (!externalSchemes.isNullOrEmpty() && scanUrl != null) {
-                externalSchemes.mapNotNull { s ->
-                    toUrlOrNull(s)
-                }.find { url ->
-                    scanUrl.equals(url, true)
-                }?.apply {
-                    WebActivity.show(requireContext(), analysisResult, null)
-                    activity?.finish()
-                    return
+            if (!externalSchemes.isNullOrEmpty()) {
+                fun toUrlOrNull(text: String): String? =
+                    try {
+                        text.toUri().run { "$scheme://$host" }
+                    } catch (ignored: Exception) {
+                        null
+                    }
+                val scanUrl = toUrlOrNull(analysisResult)
+                if (scanUrl != null) {
+                    externalSchemes.mapNotNull { s ->
+                        toUrlOrNull(s)
+                    }.find { url ->
+                        scanUrl.equals(url, true)
+                    }?.apply {
+                        WebActivity.show(requireContext(), analysisResult, null)
+                        activity?.finish()
+                        return
+                    }
                 }
             }
 
