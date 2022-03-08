@@ -101,10 +101,24 @@ constructor(
         id: String,
         type: String? = null,
         otherType: String? = null,
-        orderByAmount: Boolean = false
+        orderByAmount: Boolean = false,
+        startDate: String? = null,
+        endDate: String? = null
     ): DataSource.Factory<Int, SnapshotItem> {
         return if (type == null) {
-            if (orderByAmount) {
+            if (startDate != null || endDate != null) {
+                when {
+                    startDate == null -> {
+                        snapshotDao.snapshotsAfter(id, endDate!!)
+                    }
+                    endDate == null -> {
+                        snapshotDao.snapshotsBefore(id, startDate)
+                    }
+                    else -> {
+                        snapshotDao.snapshots(id, startDate, endDate)
+                    }
+                }
+            } else if (orderByAmount) {
                 snapshotDao.snapshotsOrderByAmount(id)
             } else {
                 snapshotDao.snapshots(id)

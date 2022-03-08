@@ -23,6 +23,18 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun snapshots(assetId: String): DataSource.Factory<Int, SnapshotItem>
 
     @RewriteQueriesToDropUnusedColumns
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.created_at >= :start ORDER BY s.created_at DESC, s.snapshot_id DESC")
+    fun snapshotsBefore(assetId: String, start: String): DataSource.Factory<Int, SnapshotItem>
+
+    @RewriteQueriesToDropUnusedColumns
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.created_at <= :end ORDER BY s.created_at DESC, s.snapshot_id DESC")
+    fun snapshotsAfter(assetId: String, end: String): DataSource.Factory<Int, SnapshotItem>
+
+    @RewriteQueriesToDropUnusedColumns
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.created_at >= :start AND s.created_at <= :end ORDER BY s.created_at DESC, s.snapshot_id DESC")
+    fun snapshots(assetId: String, start: String, end: String): DataSource.Factory<Int, SnapshotItem>
+
+    @RewriteQueriesToDropUnusedColumns
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsOrderByAmount(assetId: String): DataSource.Factory<Int, SnapshotItem>
 

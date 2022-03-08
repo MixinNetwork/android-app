@@ -66,10 +66,12 @@ internal constructor(
         type: String? = null,
         otherType: String? = null,
         initialLoadKey: Int? = 0,
-        orderByAmount: Boolean = false
+        orderByAmount: Boolean = false,
+        startDate: String? = null,
+        endDate: String? = null
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
-            assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount),
+            assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount, startDate, endDate),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE)
                 .setPageSize(PAGE_SIZE)

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?attr/bg_white">
+
+    <one.mixin.android.widget.RoundTitleView
+        android:id="@+id/export_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title_text="@string/wallet_all_transactions" />
+
+
+    <LinearLayout
+        android:id="@+id/export_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_gray"
+        android:layout_marginTop="42dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@id/export_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/export_start"
+            android:padding="8dp"
+            android:background="@drawable/ripple_upper_round"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/export_start_tv"
+                android:text="@string/wallet_transactions_export_start"
+                android:padding="8dp"
+                android:textColor="?attr/text_primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/export_end"
+            android:padding="8dp"
+            android:background="@drawable/ripple_lower_round"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/export_end_tv"
+                android:text="@string/wallet_transactions_export_end"
+                android:padding="8dp"
+                android:textColor="?attr/text_primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        style="@style/AppTheme.MaterialButton"
+        android:id="@+id/export_bn"
+        android:layout_width="116dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="72dp"
+        android:layout_marginBottom="50dp"
+        android:text="@string/wallet_transactions_export"
+        android:textSize="14sp"
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@id/export_layout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

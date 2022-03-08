@@ -92,17 +92,16 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
             })
 
             walletViewModel.hiddenAssets().observe(
-                viewLifecycleOwner,
-                {
-                    if (it != null && it.isNotEmpty()) {
-                        assetsVa.displayedChild = POS_ASSET
-                        assets = it
-                        assetsAdapter.setAssetList(it)
-                    } else {
-                        assetsVa.displayedChild = POS_EMPTY
-                    }
+                viewLifecycleOwner
+            ) {
+                if (it != null && it.isNotEmpty()) {
+                    assetsVa.displayedChild = POS_ASSET
+                    assets = it
+                    assetsAdapter.setAssetList(it)
+                } else {
+                    assetsVa.displayedChild = POS_EMPTY
                 }
-            )
+            }
         }
     }
 
