@@ -498,7 +498,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 }.find { url ->
                     scanUrl.equals(url, true)
                 }?.apply {
-                    WebActivity.show(requireContext(), this, null)
+                    WebActivity.show(requireContext(), analysisResult, null)
                     activity?.finish()
                     return
                 }
