@@ -89,6 +89,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.ReduceFts4Job
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
+import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -283,6 +284,7 @@ class MainActivity : BlazeBaseActivity() {
         checkUpdate()
         checkStorage()
         refreshStickerAlbum()
+        refreshExternalSchemes()
         sendSafetyNetRequest()
         checkBatteryOptimization()
 
@@ -411,6 +413,11 @@ class MainActivity : BlazeBaseActivity() {
     private fun refreshStickerAlbum() =
         runIntervalTask(RefreshStickerAlbumJob.PREF_REFRESH_STICKER_ALBUM, INTERVAL_24_HOURS) {
             jobManager.addJobInBackground(RefreshStickerAlbumJob())
+        }
+
+    private fun refreshExternalSchemes() =
+        runIntervalTask(RefreshExternalSchemeJob.PREF_REFRESH_EXTERNAL_SCHEMES, INTERVAL_24_HOURS) {
+            jobManager.addJobInBackground(RefreshExternalSchemeJob())
         }
 
     private fun sendSafetyNetRequest() {

@@ -84,6 +84,7 @@ import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.openAsUrlOrQrScan
@@ -122,7 +123,6 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView

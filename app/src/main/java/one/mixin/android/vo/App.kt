@@ -1,7 +1,6 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
@@ -78,9 +77,3 @@ data class App(
 }
 
 enum class AppCap { GROUP, CONTACT, IMMERSIVE, ENCRYPTED }
-
-fun String.matchResourcePattern(resourcePatterns: List<String>?): Boolean {
-    val uri = Uri.parse(this).run { "$scheme://$host" }
-    return resourcePatterns?.map { pattern -> Uri.parse(pattern).run { "$scheme://$host" } }
-        ?.find { pattern -> uri.equals(pattern, true) } != null
-}
