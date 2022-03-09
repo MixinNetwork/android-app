@@ -11,12 +11,12 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
+import one.mixin.android.widget.theme.ThemeActivity
 
 @AndroidEntryPoint
-class SettingActivity : BlazeBaseActivity() {
+class SettingActivity : ThemeActivity() {
     companion object {
         const val FROM_NOTIFICATION = "notification"
         const val EXTRA_SHOW_PIN_SETTING = "extra_show_pin_setting"
@@ -57,21 +57,23 @@ class SettingActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        if (intent.getBooleanExtra(EXTRA_SHOW_PIN_SETTING, false)) {
-            replaceFragment(PinSettingFragment.newInstance(), R.id.container, PinSettingFragment.TAG)
-        } else if (intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false)) {
-            replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
-        } else if (intent.getBooleanExtra(EXTRA_SHOW_PERMISSION_LIST, false)) {
-            val app = requireNotNull(intent.getParcelableExtra<App>(EXTRA_APP))
-            val auth = requireNotNull(intent.getParcelableExtra<AuthorizationResponse>(EXTRA_AUTH))
-            replaceFragment(PermissionListFragment.newInstance(app, auth), R.id.container, PermissionListFragment.TAG)
-        } else if (intent.getBooleanExtra(EXTRA_SHOW_COMPOSE, false)) {
-            replaceFragment(SettingComposeFragment.newInstance(), R.id.container, SettingComposeFragment.TAG)
-        } else {
-            val fragment = SettingFragment.newInstance()
-            replaceFragment(fragment, R.id.container, SettingFragment.TAG)
-            if (intent.getBooleanExtra(FROM_NOTIFICATION, false)) {
-                addFragment(fragment, BackUpFragment.newInstance(), BackUpFragment.TAG)
+        if (savedInstanceState == null) {
+            if (intent.getBooleanExtra(EXTRA_SHOW_PIN_SETTING, false)) {
+                replaceFragment(PinSettingFragment.newInstance(), R.id.container, PinSettingFragment.TAG)
+            } else if (intent.getBooleanExtra(EXTRA_EMERGENCY_CONTACT, false)) {
+                replaceFragment(EmergencyContactFragment.newInstance(), R.id.container, EmergencyContactFragment.TAG)
+            } else if (intent.getBooleanExtra(EXTRA_SHOW_PERMISSION_LIST, false)) {
+                val app = requireNotNull(intent.getParcelableExtra<App>(EXTRA_APP))
+                val auth = requireNotNull(intent.getParcelableExtra<AuthorizationResponse>(EXTRA_AUTH))
+                replaceFragment(PermissionListFragment.newInstance(app, auth), R.id.container, PermissionListFragment.TAG)
+            } else if (intent.getBooleanExtra(EXTRA_SHOW_COMPOSE, false)) {
+                replaceFragment(SettingComposeFragment.newInstance(), R.id.container, SettingComposeFragment.TAG)
+            } else {
+                val fragment = SettingFragment.newInstance()
+                replaceFragment(fragment, R.id.container, SettingFragment.TAG)
+                if (intent.getBooleanExtra(FROM_NOTIFICATION, false)) {
+                    addFragment(fragment, BackUpFragment.newInstance(), BackUpFragment.TAG)
+                }
             }
         }
     }
