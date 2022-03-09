@@ -592,3 +592,14 @@ fun String?.startsWithIgnoreCase(other: CharSequence?): Boolean = this?.startsWi
 
 inline fun SpannableStringBuilder.backgroundColor(color: Int): BackgroundColorSpan =
     BackgroundColorSpan(color)
+
+fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean {
+    fun toSchemeHostOrNull(url: String) = try {
+        url.toUri().run { "$scheme://$host" }
+    } catch (ignored: Exception) {
+        null
+    }
+    val uri = toSchemeHostOrNull(this)
+    return resourcePatterns?.mapNotNull { pattern -> toSchemeHostOrNull(pattern) }
+        ?.find { pattern -> uri.equals(pattern, true) } != null
+}

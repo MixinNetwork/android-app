@@ -32,7 +32,6 @@ import androidx.camera.core.impl.utils.futures.Futures
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.common.InputImage
@@ -53,6 +52,7 @@ import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isDonateUrl
+import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
@@ -485,25 +485,10 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
         } else {
             val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
-            if (!externalSchemes.isNullOrEmpty()) {
-                fun toUrlOrNull(text: String): String? =
-                    try {
-                        text.toUri().run { "$scheme://$host" }
-                    } catch (ignored: Exception) {
-                        null
-                    }
-                val scanUrl = toUrlOrNull(analysisResult)
-                if (scanUrl != null) {
-                    externalSchemes.mapNotNull { s ->
-                        toUrlOrNull(s)
-                    }.find { url ->
-                        scanUrl.equals(url, true)
-                    }?.apply {
-                        WebActivity.show(requireContext(), analysisResult, null)
-                        activity?.finish()
-                        return
-                    }
-                }
+            if (!externalSchemes.isNullOrEmpty() && analysisResult.matchResourcePattern(externalSchemes)) {
+                WebActivity.show(requireContext(), analysisResult, null)
+                activity?.finish()
+                return
             }
 
             if (fromScan()) {
