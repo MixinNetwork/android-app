@@ -484,14 +484,13 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 activity?.finish()
             }
         } else {
-            val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
-            if (!externalSchemes.isNullOrEmpty() && analysisResult.matchResourcePattern(externalSchemes)) {
-                WebActivity.show(requireContext(), analysisResult, null)
-                activity?.finish()
-                return
-            }
-
             if (fromScan()) {
+                val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
+                if (!externalSchemes.isNullOrEmpty() && analysisResult.matchResourcePattern(externalSchemes)) {
+                    WebActivity.show(requireContext(), analysisResult, null)
+                    activity?.finish()
+                    return
+                }
                 handleResult(analysisResult)
             } else {
                 pseudoNotificationView?.addContent(analysisResult)
