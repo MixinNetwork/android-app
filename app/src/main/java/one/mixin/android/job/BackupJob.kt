@@ -26,6 +26,7 @@ import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.backup
 import one.mixin.android.util.backup.backupApi29
 import one.mixin.android.util.backup.findOldBackupSync
+import timber.log.Timber
 
 class BackupJob(private val force: Boolean = false, private val delete: Boolean = false, private val backupMedia: Boolean = true) : BaseJob(
     Params(
@@ -93,6 +94,10 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                                 )
                             }
                             toast(R.string.backup_success_tip)
+                        } else {
+                            backupLiveData.setResult(false, null)
+                            BackupNotification.cancel()
+                            toast(R.string.backup_failure_tip)
                         }
                     }
                 } else {
@@ -107,6 +112,10 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                                 )
                             }
                             toast(R.string.backup_success_tip)
+                        } else {
+                            backupLiveData.setResult(false, null)
+                            BackupNotification.cancel()
+                            toast(R.string.backup_failure_tip)
                         }
                     }
                 }
@@ -114,6 +123,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         } catch (e: Exception) {
             backupLiveData.setResult(false, null)
             BackupNotification.cancel()
+            Timber.e(e)
             throw e
         }
     }
