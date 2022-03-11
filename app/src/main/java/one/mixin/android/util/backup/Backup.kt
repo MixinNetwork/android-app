@@ -40,6 +40,7 @@ suspend fun backup(
     val dbFile = context.getDatabasePath(DB_NAME)
     if (dbFile == null) {
         withContext(Dispatchers.Main) {
+            Timber.e("No database files found")
             callback(Result.NOT_FOUND)
         }
         return@coroutineScope
@@ -49,6 +50,7 @@ suspend fun backup(
     val availableSize = StatFs(backupDir.path).availableBytes
     if (availableSize < dbFile.length()) {
         withContext(Dispatchers.Main) {
+            Timber.e("No available memory")
             callback(Result.NO_AVAILABLE_MEMORY)
         }
         return@coroutineScope
@@ -71,6 +73,7 @@ suspend fun backup(
         context.getOldBackupPath(false)?.deleteRecursively()
     } catch (e: Exception) {
         result?.delete()
+        Timber.e(e)
         withContext(Dispatchers.Main) {
             callback(Result.FAILURE)
         }
@@ -87,6 +90,7 @@ suspend fun backup(
     } catch (e: Exception) {
         result?.delete()
         db?.close()
+        Timber.e(e)
         withContext(Dispatchers.Main) {
             callback(Result.FAILURE)
         }
@@ -98,6 +102,7 @@ suspend fun backup(
         db.execSQL("DELETE FROM flood_messages")
         db.execSQL("DELETE FROM offsets")
     } catch (ignored: Exception) {
+        Timber.e(ignored)
     } finally {
         db.close()
     }
@@ -113,6 +118,7 @@ suspend fun backup(
         }
     } catch (e: Exception) {
         result?.delete()
+        Timber.e(e)
         withContext(Dispatchers.Main) {
             callback(Result.FAILURE)
         }
@@ -155,6 +161,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
         val backupDbFile = backupChildDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext
         val dbFile = context.getDatabasePath(DB_NAME)
         if (dbFile == null) {
+            Timber.e("No database files found")
             withContext(Dispatchers.Main) {
                 callback(Result.NOT_FOUND)
             }
@@ -177,6 +184,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             } catch (e: Exception) {
                 db?.close()
                 tmpFile.deleteOnExists()
+                Timber.e(e)
                 withContext(Dispatchers.Main) {
                     callback(Result.FAILURE)
                 }
@@ -236,6 +244,7 @@ suspend fun restore(
             callback(Result.SUCCESS)
         }
     } catch (e: Exception) {
+        Timber.e(e)
         callback(Result.FAILURE)
     }
 }
