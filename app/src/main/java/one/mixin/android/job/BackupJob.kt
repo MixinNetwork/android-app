@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -99,6 +98,10 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                             backupLiveData.setResult(false, null)
                             BackupNotification.cancel()
                             toast(R.string.backup_failure_tip)
+                        }
+                    }.apply {
+                        if (!this) {
+                            BackupNotification.cancel()
                         }
                     }
                 } else {

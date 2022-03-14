@@ -130,7 +130,7 @@ suspend fun backup(
     }
 }
 
-suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Result) -> Unit) =
+suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Result) -> Unit): Boolean =
     withContext(Dispatchers.IO) {
         val backupDirectoryUri =
             context.defaultSharedPreferences.getString(
@@ -138,11 +138,11 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
                 null
             )
                 ?.toUri()
-                ?: return@withContext
+                ?: return@withContext false
         val backupDirectory =
-            DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext
+            DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext false
         if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
-            return@withContext
+            return@withContext false
         }
         val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME).run {
             if (this?.isDirectory == true && this.exists()) {
@@ -151,24 +151,24 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
                 this?.delete()
                 backupDirectory.createDirectory(BACKUP_DIR_NAME)
             }
-        } ?: return@withContext
+        } ?: return@withContext false
         backupChildDirectory.findFile(".nomedia").run {
             if (this?.exists() != true) {
                 backupChildDirectory.createFile("application/octet-stream", ".nomedia")
             }
         }
         backupChildDirectory.findFile("mixin.db")?.delete()
-        val backupDbFile = backupChildDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext
+        val backupDbFile = backupChildDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext false
         val dbFile = context.getDatabasePath(DB_NAME)
         if (dbFile == null) {
             Timber.e("No database files found")
             withContext(Dispatchers.Main) {
                 callback(Result.NOT_FOUND)
             }
-            return@withContext
+            return@withContext false
         }
         val tmpFile = File(context.getMediaPath(), DB_NAME)
-        try {
+        return@withContext try {
             val inputStream = dbFile.inputStream()
             runInTransaction {
                 MixinDatabase.checkPoint()
@@ -188,7 +188,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
                 withContext(Dispatchers.Main) {
                     callback(Result.FAILURE)
                 }
-                return@withContext
+                return@withContext false
             }
             try {
                 db.execSQL("UPDATE participant_session SET sent_to_server = NULL")
@@ -210,11 +210,13 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             withContext(Dispatchers.Main) {
                 callback.invoke(Result.SUCCESS)
             }
+            true
         } catch (e: Exception) {
             Timber.e(e)
             withContext(Dispatchers.Main) {
                 callback.invoke(Result.FAILURE)
             }
+            false
         }
     }
 
