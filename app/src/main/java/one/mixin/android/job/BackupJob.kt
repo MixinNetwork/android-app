@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -35,7 +36,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         } else {
             PRIORITY_BACKGROUND
         }
-    ).addTags(GROUP).persist()
+    ).addTags(GROUP).setSingleId(GROUP).persist()
 ) {
 
     companion object {

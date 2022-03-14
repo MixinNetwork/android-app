@@ -491,6 +491,7 @@ private fun copyFileToDirectory(file: File, dir: DocumentFile) {
             }
         } ?: return
         val inputStream = FileInputStream(file)
+        Timber.e("copy ${file.absolutePath} to ${documentFile.name}")
         documentFile.uri.copyFromInputStream(inputStream)
     }
 }
