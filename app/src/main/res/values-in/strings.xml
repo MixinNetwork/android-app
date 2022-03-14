@@ -824,7 +824,7 @@
     <string name="restore_not_found">Tidak ditemukan, %1$s</string>
     <string name="restore_not_support">Tidak didukung</string>
     <string name="restore_notification_title">Pemulihan sedang berlangsung</string>
-    <string name="restore_notification_content">Menyiapkan pemulihan…</string>
+    <string name="restore_notification_content">Memulihkan&#8230;</string>
     <string name="backup_title">Pencadangan Terakhir</string>
     <string name="backup_des">Cadangkan pesan Anda ke penyimpanan eksternal. Anda dapat memulihkannya saat memasang ulang Mixin. Pesan yang Anda cadangkan tidak dilindungi saat berada di penyimpanan eksternal.</string>
     <string name="backup_external_storage">Penyimpanan eksternal: %1$s</string>
@@ -832,9 +832,9 @@
     <string name="backup">Cadangan</string>
     <string name="backup_delete">Hapus cadangan</string>
     <string name="backup_dialog_title">Cadangkan otomatis ke penyimpanan eksternal</string>
-    <string name="backup_ing">Cadangan penyimpanan eksternal...</string>
+    <string name="backup_ing">Cadangan penyimpanan eksternal&#8230;</string>
     <string name="backup_notification_title">Pencadangan sedang berlangsung</string>
-    <string name="backup_notification_content">Menyiapkan pencadangan…</string>
+    <string name="backup_notification_content">Mencadangkan&#8230;</string>
     <string name="backup_no_available_memory">Memori yang tersedia tidak cukup untuk pencadangan.</string>
     <string name="backup_failure_tip">Pencadangan gagal, silakan coba lagi.</string>
     <string name="backup_success_tip">Pencadangan berhasil</string>

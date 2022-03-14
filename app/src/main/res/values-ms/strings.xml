@@ -866,7 +866,7 @@
     <string name="restore_not_found">Tidak dijumpai, salin fail sandaran ke dalam %1$s</string>
     <string name="restore_not_support">Tidak sokong</string>
     <string name="restore_notification_title">Pulihkan sedang dijalankan</string>
-    <string name="restore_notification_content">Menyiapkan pemulihan ...</string>
+    <string name="restore_notification_content">Memulihkan&#8230;</string>
     <string name="backup_title">Sandaran Terakhir</string>
     <string name="backup_des">Sandarkan mesej anda ke storan luaran. Anda boleh memulihkannya semasa memasang semula Mixin. Mesej yang anda sandarkan tidak dilindungi semasa berada di storan luaran.</string>
     <string name="backup_external_storage">Storan luaran: %1$s</string>
@@ -876,7 +876,7 @@
     <string name="backup_dialog_title">Sandarkan automatik ke storan luaran</string>
     <string name="backup_ing">Sandaran storan luaran…</string>
     <string name="backup_notification_title">Sandaran sedang dijalankan</string>
-    <string name="backup_notification_content">Menyiapkan sandaran ...</string>
+    <string name="backup_notification_content">Membuat sandaran&#8230;</string>
     <string name="backup_no_available_memory">Tidak ada memori yang tersedia untuk sandaran.</string>
     <string name="backup_failure_tip">Kegagalan sandaran, sila cuba lagi.</string>
     <string name="backup_success_tip">Kejayaan sandaran</string>
