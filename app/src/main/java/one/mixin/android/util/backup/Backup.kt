@@ -32,6 +32,7 @@ import kotlin.coroutines.CoroutineContext
 
 private const val BACKUP_POSTFIX = ".backup"
 private const val BACKUP_DIR_NAME = "Backup"
+
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun backup(
     context: Context,
@@ -130,19 +131,35 @@ suspend fun backup(
     }
 }
 
-suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Result) -> Unit): Boolean =
+suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Result) -> Unit) =
     withContext(Dispatchers.IO) {
         val backupDirectoryUri =
             context.defaultSharedPreferences.getString(
                 Constants.Account.PREF_BACKUP_DIRECTORY,
                 null
-            )
-                ?.toUri()
-                ?: return@withContext false
+            )?.toUri()
+        if (backupDirectoryUri == null) {
+            Timber.e("Backup directory uri is null")
+            withContext(Dispatchers.Main) {
+                callback.invoke(Result.FAILURE)
+            }
+            return@withContext
+        }
         val backupDirectory =
-            DocumentFile.fromTreeUri(context, backupDirectoryUri) ?: return@withContext false
+            DocumentFile.fromTreeUri(context, backupDirectoryUri)
+        if (backupDirectory == null) {
+            Timber.e("Backup directory is null")
+            withContext(Dispatchers.Main) {
+                callback.invoke(Result.FAILURE)
+            }
+            return@withContext
+        }
         if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
-            return@withContext false
+            Timber.e("Backup directory no permission")
+            withContext(Dispatchers.Main) {
+                callback.invoke(Result.FAILURE)
+            }
+            return@withContext
         }
         val backupChildDirectory = backupDirectory.findFile(BACKUP_DIR_NAME).run {
             if (this?.isDirectory == true && this.exists()) {
@@ -151,24 +168,38 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
                 this?.delete()
                 backupDirectory.createDirectory(BACKUP_DIR_NAME)
             }
-        } ?: return@withContext false
+        }
+        if (backupChildDirectory == null) {
+            withContext(Dispatchers.Main) {
+                Timber.e("Backup child directory is null")
+                callback.invoke(Result.FAILURE)
+            }
+            return@withContext
+        }
         backupChildDirectory.findFile(".nomedia").run {
             if (this?.exists() != true) {
                 backupChildDirectory.createFile("application/octet-stream", ".nomedia")
             }
         }
         backupChildDirectory.findFile("mixin.db")?.delete()
-        val backupDbFile = backupChildDirectory.createFile("application/octet-stream", DB_NAME) ?: return@withContext false
+        val backupDbFile = backupChildDirectory.createFile("application/octet-stream", DB_NAME)
+        if (backupDbFile == null) {
+            withContext(Dispatchers.Main) {
+                Timber.e("Backup file is null")
+                callback.invoke(Result.FAILURE)
+            }
+            return@withContext
+        }
         val dbFile = context.getDatabasePath(DB_NAME)
         if (dbFile == null) {
             Timber.e("No database files found")
             withContext(Dispatchers.Main) {
                 callback(Result.NOT_FOUND)
             }
-            return@withContext false
+            return@withContext
         }
         val tmpFile = File(context.getMediaPath(), DB_NAME)
-        return@withContext try {
+        try {
             val inputStream = dbFile.inputStream()
             runInTransaction {
                 MixinDatabase.checkPoint()
@@ -188,7 +219,7 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
                 withContext(Dispatchers.Main) {
                     callback(Result.FAILURE)
                 }
-                return@withContext false
+                return@withContext
             }
             try {
                 db.execSQL("UPDATE participant_session SET sent_to_server = NULL")
@@ -203,20 +234,18 @@ suspend fun backupApi29(context: Context, backupMedia: Boolean, callback: (Resul
             tmpFile.deleteOnExists()
             File(context.getMediaPath(), "$DB_NAME-journal").deleteOnExists()
             if (backupMedia) {
-                context.getMediaPath()?.let {
-                    copyFileToDirectory(it, backupChildDirectory)
+                context.getMediaPath()?.let { file ->
+                    copyDirectoryToDirectory(file, backupChildDirectory)
                 }
             }
             withContext(Dispatchers.Main) {
                 callback.invoke(Result.SUCCESS)
             }
-            true
         } catch (e: Exception) {
             Timber.e(e)
             withContext(Dispatchers.Main) {
                 callback.invoke(Result.FAILURE)
             }
-            false
         }
     }
 
@@ -302,7 +331,7 @@ suspend fun restoreApi29(
         val mediaPath = context.getMediaPath()
         if (mediaPath != null && backupMediaDirectory != null && backupMediaDirectory.exists() && backupMediaDirectory.isDirectory) {
             backupMediaDirectory.listFiles().forEach {
-                copyFileToDirectory(context, it, mediaPath)
+                copyDirectoryToDirectory(context, it, mediaPath)
             }
         }
 
@@ -340,7 +369,8 @@ suspend fun deleteApi29(
             null
         )?.toUri() ?: return@withContext false
     val backupDirectory =
-        DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME) ?: return@withContext false
+        DocumentFile.fromTreeUri(context, backupDirectoryUri)?.findFile(BACKUP_DIR_NAME)
+            ?: return@withContext false
     if (!internalCheckAccessBackupDirectory(context, backupDirectoryUri)) {
         return@withContext false
     }
@@ -473,53 +503,71 @@ private fun internalCheckAccessBackupDirectory(context: Context, uri: Uri): Bool
 }
 
 private fun copyFileToDirectory(file: File, dir: DocumentFile) {
-    if (file.isDirectory) {
-        val childDir = dir.findFile(file.name).run {
-            if (this?.exists() == true) {
-                this
-            } else {
-                dir.createDirectory(file.name)
-            }
-        } ?: return
-        file.listFiles()?.forEach { f ->
-            copyFileToDirectory(f, childDir)
+    if (file.isFile && file.length() > 0) {
+        val documentFile =
+            dir.createFile("application/octet-stream", file.name)
+                ?: return
+        if (documentFile.name != file.name) {
+            documentFile.delete()
+            return
         }
-    } else {
-        val documentFile = dir.findFile(file.name).run {
-            if (this?.exists() == true) {
-                this
-            } else {
-                dir.createFile("application/octet-stream", file.name)
-            }
-        } ?: return
-        val inputStream = FileInputStream(file)
-        Timber.e("copy ${file.absolutePath} to ${documentFile.name}")
+        if (file.length() == documentFile.length()) {
+            return
+        }
+        val inputStream =
+            FileInputStream(file)
+
         documentFile.uri.copyFromInputStream(inputStream)
     }
 }
 
-private fun copyFileToDirectory(context: Context, sourceFile: DocumentFile, parentDir: File) {
-    try {
-        val fileName = sourceFile.name ?: return
-        if (!sourceFile.exists()) {
+private fun copyDirectoryToDirectory(file: File, dir: DocumentFile) {
+    if (file.isDirectory) {
+        val childDir = dir.createDirectory(file.name) ?: return
+        if (childDir.name != file.name) {
+            childDir.delete()
             return
         }
-        val targetFile = File(parentDir, fileName)
-        if (sourceFile.isDirectory) {
-            if (!targetFile.exists()) {
-                targetFile.mkdirs()
-            }
-            sourceFile.listFiles().forEach {
-                copyFileToDirectory(context, it, targetFile)
-            }
-        } else if (sourceFile.isFile) {
-            if (!targetFile.exists()) {
-                Timber.e("copy ${sourceFile.name} to ${targetFile.absolutePath}")
-                val inputStream = context.contentResolver.openInputStream(sourceFile.uri) ?: return
-                targetFile.toUri().copyFromInputStream(inputStream)
+        file.listFiles()?.forEach { f ->
+            if (f.isFile) {
+                copyFileToDirectory(f, childDir)
+            } else {
+                copyDirectoryToDirectory(f, childDir)
             }
         }
-    } catch (e: Exception) {
-        Timber.e(e)
+    }
+}
+
+private fun copyFileToDirectory(context: Context, sourceFile: DocumentFile, parentDir: File) {
+    val fileName = sourceFile.name ?: return
+    if (!sourceFile.exists()) {
+        return
+    }
+    val targetFile = File(parentDir, fileName)
+    if (sourceFile.isFile) {
+        if (!targetFile.exists()) {
+            val inputStream = context.contentResolver.openInputStream(sourceFile.uri) ?: return
+            targetFile.toUri().copyFromInputStream(inputStream)
+        }
+    }
+}
+
+private fun copyDirectoryToDirectory(context: Context, sourceFile: DocumentFile, parentDir: File) {
+    val fileName = sourceFile.name ?: return
+    if (!sourceFile.exists()) {
+        return
+    }
+    val targetFile = File(parentDir, fileName)
+    if (sourceFile.isDirectory) {
+        if (!targetFile.exists()) {
+            targetFile.mkdirs()
+        }
+        sourceFile.listFiles().forEach {
+            if (it.isFile) {
+                copyFileToDirectory(context, it, targetFile)
+            } else {
+                copyDirectoryToDirectory(context, it, targetFile)
+            }
+        }
     }
 }

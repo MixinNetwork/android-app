@@ -29,7 +29,7 @@
     <string name="forward_success">Berhasil meneruskan</string>
     <string name="message_sent">Berhasil dikirim</string>
     <string name="save">Simpan</string>
-    <string name="saving">Menyimpan...</string>
+    <string name="saving">Menyimpan &#8230;</string>
     <string name="pb_dialog_message">Mohon tunggu sebentar…</string>
     <string name="other">LAINNYA</string>
     <string name="welcome" translatable="false">Welcome to Mixin</string>
@@ -626,7 +626,7 @@
     <string name="conversation_pin">Sematkan ke ke atas</string>
     <string name="conversation_pin_clear">Hapus Semat</string>
     <string name="group_role">Anda sekarang adalah admin</string>
-    <string name="loading_init">Memulai...</string>
+    <string name="loading_init">Memulai &#8230;</string>
     <string name="loading_wait">Harap tunggu sebentar</string>
     <string name="loading_time">Waktu sistem tidak normal, silakan gunakan lagi setelah perbaikan dilakukan</string>
     <string name="database_upgrade">Tingkatkan Database</string>

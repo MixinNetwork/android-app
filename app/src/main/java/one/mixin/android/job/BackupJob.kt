@@ -99,10 +99,6 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
                             BackupNotification.cancel()
                             toast(R.string.backup_failure_tip)
                         }
-                    }.apply {
-                        if (!this) {
-                            BackupNotification.cancel()
-                        }
                     }
                 } else {
                     backup(context) { result ->

@@ -30,8 +30,8 @@
     <string name="forward_success">kejayaan hadapan</string>
     <string name="message_sent">Pesanan dihantar</string>
     <string name="save">Jimat</string>
-    <string name="saving">Menyimpan ...</string>
-    <string name="pb_dialog_message">Sila tunggu sebentar ...</string>
+    <string name="saving">Menyimpan &#8230;</string>
+    <string name="pb_dialog_message">Sila tunggu sebentar &#8230;</string>
     <string name="other">LAIN</string>
     <string name="welcome" translatable="false">Welcome to Mixin</string>
     <string name="not_logged_in">Tidak log masuk</string>
@@ -498,8 +498,8 @@
     <string name="group_pop_menu_dismiss_admin">Ketepikan pentadbir</string>
     <string name="group_info_remove_tip">Alih keluar %1$s dari kumpulan \"%2$s\"?</string>
     <string name="group_adding">Menambah…</string>
-    <string name="group_removing">Mengalih keluar ...</string>
-    <string name="group_creating">Membuat…</string>
+    <string name="group_removing">Mengalih keluar &#8230;</string>
+    <string name="group_creating">Membuat &#8230;</string>
     <string name="state_connecting">Menyambung</string>
     <string name="state_syncing">Menyelaraskan mesej</string>
     <string name="state_calling">Ketuk untuk kembali ke panggilan</string>
