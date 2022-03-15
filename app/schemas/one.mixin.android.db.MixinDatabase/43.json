@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 43,
-    "identityHash": "faf7cc365ab6c79ed9743d20bb92e405",
+    "identityHash": "851f5fd04a63539f8ffb1ae9bd965ad0",
     "entities": [
       {
         "tableName": "users",
@@ -2137,13 +2137,14 @@
         },
         "indices": [
           {
-            "name": "index_remote_messages_status_conversation_id",
+            "name": "index_remote_messages_status_conversation_id_status",
             "unique": false,
             "columnNames": [
-              "conversation_id"
+              "conversation_id",
+              "status"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_remote_messages_status_conversation_id` ON `${TABLE_NAME}` (`conversation_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_remote_messages_status_conversation_id_status` ON `${TABLE_NAME}` (`conversation_id`, `status`)"
           }
         ],
         "foreignKeys": []
@@ -2152,7 +2153,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'faf7cc365ab6c79ed9743d20bb92e405')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '851f5fd04a63539f8ffb1ae9bd965ad0')"
     ]
   }
 }
