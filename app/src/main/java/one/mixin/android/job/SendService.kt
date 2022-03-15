@@ -10,6 +10,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.RemoteMessageStatusDao
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.vo.EncryptCategory
@@ -17,7 +18,6 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.toCategory
-import one.mixin.android.websocket.BlazeAckMessage
 import java.util.UUID
 import javax.inject.Inject
 
@@ -63,17 +63,9 @@ class SendService : IntentService("SendService") {
         val manager = getSystemService<NotificationManager>()
         manager?.cancel(conversationId.hashCode())
         messageMentionDao.markMentionReadByConversationId(conversationId)
-        val accountId = Session.getAccountId() ?: return
-        messageDao.findUnreadMessagesSync(conversationId, accountId)?.let { list ->
-            if (list.isNotEmpty()) {
-                remoteMessageStatusDao.updateConversationUnseen(conversationId)
-                list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
-                    val chunkList = messages.chunked(100)
-                    for (item in chunkList) {
-                        jobManager.addJobInBackground(SendAckMessageJob(item))
-                    }
-                }
-            }
+        runInTransaction {
+            remoteMessageStatusDao.markReadByConversationId(conversationId)
+            remoteMessageStatusDao.updateConversationUnseen(conversationId)
         }
     }
 }
