@@ -528,13 +528,22 @@ private fun copyDirectoryToDirectory(file: File, dir: DocumentFile) {
             childDir.delete()
             return
         }
-        file.listFiles()?.forEach { f ->
+        file.forEachFile { f ->
             if (f.isFile) {
                 copyFileToDirectory(f, childDir)
             } else {
                 copyDirectoryToDirectory(f, childDir)
             }
         }
+    }
+}
+
+private fun File.forEachFile(callback: (File) -> Unit) {
+    val ss = list() ?: return
+    val n = ss.size
+    for (i in 0 until n) {
+        val file = File(this, ss[i])
+        callback(file)
     }
 }
 
