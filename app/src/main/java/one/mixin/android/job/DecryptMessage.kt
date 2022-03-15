@@ -446,7 +446,6 @@ class DecryptMessage(
                         }
                     }
                     if (updateMessageList.isNotEmpty()) {
-                        messageDao.markMessageRead(updateMessageList)
                         remoteMessageStatusDao.deleteByMessageIds(updateMessageList)
                         messageDao.findConversationsByMessages(updateMessageList).forEach { cId ->
                             remoteMessageStatusDao.updateConversationUnseen(cId)
