@@ -35,6 +35,10 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     var keyboardHeight = 0
     private var keyboard: Keyboard? = null
 
+    init {
+        measureAllChildren = false
+    }
+
     override fun onFinishInflate() {
         super.onFinishInflate()
         binding.apply {

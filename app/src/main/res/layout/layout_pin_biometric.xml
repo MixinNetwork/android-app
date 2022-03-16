@@ -8,7 +8,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
@@ -24,14 +24,13 @@
             android:id="@+id/pay_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="32dp"
             android:textColor="?attr/text_minor" />
 
         <TextView
             android:id="@+id/biometric_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin20"
             android:layout_marginBottom="32dp"
             android:drawablePadding="@dimen/padding8"
             android:text="@string/multisig_pay_biometric"
@@ -43,7 +42,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="100dp"
         android:layout_gravity="center_horizontal">
 
         <ProgressBar
@@ -92,7 +91,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         tools:ignore="UseCompoundDrawables">
 
@@ -109,6 +108,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin12"
             android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20dp"
             android:textColor="@color/textRemarks"
             android:text="@string/done" />
 
@@ -117,7 +117,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp"
+            android:layout_marginBottom="32dp"
             android:textColor="@color/colorBlue"
             android:text="@string/setting_enable_biometric_pay"
             android:drawablePadding="@dimen/margin10"
