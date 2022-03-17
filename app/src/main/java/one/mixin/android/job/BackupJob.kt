@@ -35,7 +35,7 @@ class BackupJob(private val force: Boolean = false, private val delete: Boolean 
         } else {
             PRIORITY_BACKGROUND
         }
-    ).addTags(GROUP).persist()
+    ).addTags(GROUP).setSingleId(GROUP).persist()
 ) {
 
     companion object {

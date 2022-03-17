@@ -945,7 +945,7 @@
     <string name="restore_choose_backup_folder">未找到备份文件，选择备份文件夹</string>
     <string name="restore_not_support">不支持备份</string>
     <string name="restore_notification_title">还原正在进行中</string>
-    <string name="restore_notification_content">正在准备还原&#8230;</string>
+    <string name="restore_notification_content">正在还原&#8230;</string>
     <string name="backup_title">上次备份</string>
     <string name="backup_des">备份对话记录到外部存储以便在重新安装 Mixin 时还原对话记录，备份到外部存储的对话不会进行加密处理。</string>
     <string name="backup_external_storage">外部存储: %1$s</string>
@@ -959,7 +959,7 @@
     <string name="backup_dialog_title">自动备份到外部存储</string>
     <string name="backup_ing">正在备份到外部存储&#8230;</string>
     <string name="backup_notification_title">备份正在进行中</string>
-    <string name="backup_notification_content">正在准备备份&#8230;</string>
+    <string name="backup_notification_content">正在备份&#8230;</string>
     <string name="backup_no_available_memory">没有足够的空间来备份。</string>
     <string name="backup_failure_tip">备份异常，请重试。</string>
     <string name="backup_success_tip">备份成功</string>

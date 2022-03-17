@@ -967,7 +967,7 @@
     <string name="restore_choose_backup_folder">Not found, choose backup folder</string>
     <string name="restore_not_support">Not support</string>
     <string name="restore_notification_title">Restore in progress</string>
-    <string name="restore_notification_content">Preparing restore&#8230;</string>
+    <string name="restore_notification_content">Restoring&#8230;</string>
     <string name="backup_title">Last Backup</string>
     <string name="backup_des">Back up your messages to external storage. You can restore them when you reinstall Mixin. Messages you back up are not protected while in external storage.</string>
     <string name="backup_external_storage">External storage: %1$s</string>
@@ -981,7 +981,7 @@
     <string name="backup_dialog_title">Auto back up to external storage</string>
     <string name="backup_ing">External storage backup&#8230;</string>
     <string name="backup_notification_title">Backup in progress</string>
-    <string name="backup_notification_content">Preparing backup&#8230;</string>
+    <string name="backup_notification_content">Backing up&#8230;</string>
     <string name="backup_no_available_memory">There are no available memory for backup.</string>
     <string name="backup_failure_tip">Backup failure, please try again.</string>
     <string name="backup_success_tip">Backup success</string>
