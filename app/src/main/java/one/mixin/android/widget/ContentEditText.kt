@@ -6,21 +6,23 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.text.Spanned
+import android.text.method.KeyListener
 import android.util.AttributeSet
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
 import android.view.inputmethod.InputConnection
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.core.view.inputmethod.InputContentInfoCompat
-import androidx.emoji2.widget.EmojiEditText
+import androidx.emoji2.viewsintegration.EmojiEditTextHelper
 import one.mixin.android.Constants
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.widget.gallery.MimeType
 
-open class ContentEditText : EmojiEditText {
+open class ContentEditText : AppCompatEditText {
 
     constructor(context: Context) : super(context)
 
@@ -31,6 +33,8 @@ open class ContentEditText : EmojiEditText {
         attrs,
         defStyleAttr
     )
+
+    private val emojiEditTextHelper = EmojiEditTextHelper(this)
 
     init {
         supportsOreo {
@@ -44,6 +48,11 @@ open class ContentEditText : EmojiEditText {
                 imeOptions and IME_FLAG_NO_PERSONALIZED_LEARNING.inv()
             }
         }
+        super.setKeyListener(emojiEditTextHelper.getKeyListener(keyListener))
+    }
+
+    override fun setKeyListener(keyListener: KeyListener?) {
+        super.setKeyListener(emojiEditTextHelper.getKeyListener(keyListener))
     }
 
     var listener: OnCommitContentListener? = null
@@ -86,7 +95,10 @@ open class ContentEditText : EmojiEditText {
     }
 
     override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection? {
-        val ic = super.onCreateInputConnection(editorInfo)
+        val ic = emojiEditTextHelper.onCreateInputConnection(
+            super.onCreateInputConnection(editorInfo),
+            editorInfo
+        )
         if (listener == null || ic == null) {
             return ic
         }
@@ -118,6 +130,7 @@ open class ContentEditText : EmojiEditText {
                 }
                 return@OnCommitContentListener false
             }
+
         return InputConnectionCompat.createWrapper(ic, editorInfo, callback)
     }
 
