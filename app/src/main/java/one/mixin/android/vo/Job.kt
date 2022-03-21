@@ -53,7 +53,7 @@ data class Job(
 
 fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =
     Job(
-        UUID.nameUUIDFromBytes("${ackMessage.message_id}${ackMessage.status}$action".toByteArray()).toString(),
+        UUID.nameUUIDFromBytes("${ackMessage.messageId}${ackMessage.status}$action".toByteArray()).toString(),
         action,
         nowInUtc(),
         null,

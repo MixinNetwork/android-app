@@ -63,9 +63,19 @@
         <item>Light</item>
         <item>Dark</item>
     </string-array>
+
     <string-array name="setting_night_array_oreo">
         <item>Light</item>
         <item>Dark</item>
         <item>Follow system</item>
     </string-array>
+
+    <string-array name="time_interval_units">
+        <item>second</item>
+        <item>minutes</item>
+        <item>hours</item>
+        <item>day</item>
+        <item>week</item>
+    </string-array>
+
 </resources>

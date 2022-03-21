@@ -87,6 +87,7 @@ import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
@@ -789,10 +790,13 @@ class ConversationAdapter(
         }
 
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
-        getItem(holder.layoutPosition)?.let {
-            (holder as BaseViewHolder).listen(it.messageId)
+        getItem(holder.layoutPosition)?.let { messageItem ->
+            (holder as BaseViewHolder).listen(messageItem.messageId)
             if (holder is BaseMentionHolder) {
                 holder.onViewAttachedToWindow()
+            }
+            if (holder is Terminable) {
+                holder.onRead(messageItem)
             }
         }
     }

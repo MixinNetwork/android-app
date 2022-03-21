@@ -6,13 +6,23 @@
         <item>每周</item>
         <item>每月</item>
     </string-array>
+
     <string-array name="setting_night_array">
         <item>浅色</item>
         <item>暗黑</item>
     </string-array>
+
     <string-array name="setting_night_array_oreo">
         <item>浅色</item>
         <item>暗黑</item>
         <item>跟随系统</item>
+    </string-array>
+
+    <string-array name="time_interval_units">
+        <item>秒</item>
+        <item>分</item>
+        <item>小时</item>
+        <item>天</item>
+        <item>周</item>
     </string-array>
 </resources>

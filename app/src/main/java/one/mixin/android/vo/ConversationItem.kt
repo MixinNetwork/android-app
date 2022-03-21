@@ -4,6 +4,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
+import one.mixin.android.websocket.SystemConversationAction
 import org.threeten.bp.Instant
 
 @Entity
@@ -36,7 +37,8 @@ data class ConversationItem(
     val snapshotType: String?,
     val appId: String?,
     val mentions: String?,
-    val mentionCount: Int?
+    val mentionCount: Int?,
+    val expireIn: Long?
 ) : ICategory, IConversationCategory {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationItem>() {
@@ -79,6 +81,8 @@ data class ConversationItem(
         }
         return false
     }
+
+    fun isExpire() = actionName == SystemConversationAction.EXPIRE.name
 
     fun isBot(): Boolean {
         return category == ConversationCategory.CONTACT.name && appId != null

@@ -24,6 +24,9 @@ import one.mixin.android.Constants.FIXED_LOAD_SIZE
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.DisappearRequest
+import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.copyFromInputStream
@@ -149,6 +152,14 @@ internal constructor(
     suspend fun getConversationDraftById(id: String) = conversationRepository.getConversationDraftById(id)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
+
+    suspend fun getConversation(id: String) = withContext(Dispatchers.IO) {
+        conversationRepository.getConversation(id)
+    }
+
+    fun saveDraft(conversationId: String, text: String) = MixinApplication.appScope.launch {
+        conversationRepository.saveDraft(conversationId, text)
+    }
 
     fun findUserById(conversationId: String): LiveData<User> =
         userRepository.findUserById(conversationId)
@@ -797,4 +808,30 @@ internal constructor(
     suspend fun findPinMessageById(messageId: String) = withContext(Dispatchers.IO) {
         conversationRepository.findPinMessageById(messageId)
     }
+
+    suspend fun createConversation(conversationId: String, userId: String) = withContext(Dispatchers.IO) {
+        val conversation = conversationRepository.getConversation(conversationId)
+        if (conversation == null) {
+            val request = ConversationRequest(
+                conversationId = conversationId,
+                category = ConversationCategory.CONTACT.name,
+                participants = listOf(ParticipantRequest(userId, ""))
+            )
+            val response = conversationRepository.createSuspend(request)
+            if (response.isSuccess) {
+                val data = response.data
+                if (data != null) {
+                    conversationRepository.insertOrUpdateConversation(data)
+                    return@withContext true
+                }
+            }
+        }
+        return@withContext false
+    }
+
+    suspend fun disappear(conversationId: String, duration: Long) =
+        conversationRepository.disappear(conversationId, DisappearRequest(duration))
+
+    suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?) =
+        conversationRepository.updateConversationExpireIn(conversationId, expireIn)
 }

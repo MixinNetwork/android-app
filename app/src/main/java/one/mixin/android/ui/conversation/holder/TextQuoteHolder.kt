@@ -10,6 +10,7 @@ import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
@@ -18,6 +19,7 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseMentionHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
@@ -25,7 +27,10 @@ import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.linktext.AutoLinkMode
 
-class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseMentionHolder(binding.root) {
+class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) :
+    BaseMentionHolder(binding.root),
+    Terminable {
+
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
@@ -230,6 +235,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
         chatLayout(isMe, isLast)
         attachAction = if (messageItem.mentionRead == false) {
             {
@@ -250,6 +256,12 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
         override fun onDoubleTap(e: MotionEvent?): Boolean {
             onItemListener.onTextDoubleClick(messageItem)
             return true
+        }
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

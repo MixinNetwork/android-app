@@ -616,6 +616,7 @@ class MainActivity : BlazeBaseActivity() {
                                     data.announcement,
                                     data.muteUntil,
                                     data.createdAt,
+                                    data.expireIn,
                                     ConversationStatus.SUCCESS.ordinal
                                 )
                             }

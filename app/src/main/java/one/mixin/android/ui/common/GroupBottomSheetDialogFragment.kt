@@ -54,6 +54,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.widget.picker.getTimeInterval
 import org.threeten.bp.Instant
 import java.io.File
 
@@ -260,6 +261,18 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                         }
                     }
                 )
+
+                list.groups.add(
+                    menuGroup {
+                        menu {
+                            title = getString(R.string.disappearing_messages)
+                            subtitle = conversation.expireIn.getTimeInterval()
+                            action = {
+                                showDisappearing()
+                            }
+                        }
+                    }
+                )
             }
             val muteMenu = if (conversation.muteUntil.notNullWithElse(
                     {
@@ -385,6 +398,15 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             this,
             CircleManagerFragment.newInstance(conversation.name, conversationId = conversation.conversationId),
             CircleManagerFragment.TAG
+        )
+    }
+
+    private fun showDisappearing() {
+        dismiss()
+        activity?.addFragment(
+            this,
+            DisappearingFragment.newInstance(conversation.conversationId),
+            DisappearingFragment.TAG
         )
     }
 

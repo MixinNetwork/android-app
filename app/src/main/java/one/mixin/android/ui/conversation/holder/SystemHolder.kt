@@ -11,6 +11,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.SystemConversationAction
+import one.mixin.android.widget.picker.toTimeInterval
 
 class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHolder(binding.root) {
 
@@ -111,6 +112,34 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
             }
             SystemConversationAction.ROLE.name -> {
                 binding.chatInfo.text = getText(R.string.group_role)
+            }
+            SystemConversationAction.EXPIRE.name -> {
+                val timeInterval = messageItem.content?.toLongOrNull()
+                val name = if (id == messageItem.userId) {
+                    getText(R.string.chat_you_start)
+                } else {
+                    messageItem.userFullName
+                }
+                binding.chatInfo.text =
+                    when {
+                        timeInterval == null -> { // Messages received in the old version
+                            String.format(
+                                getText(R.string.chat_expired_changed), name
+                            )
+                        }
+                        timeInterval <= 0 -> {
+                            String.format(
+                                getText(R.string.chat_expired_disabled), name
+                            )
+                        }
+                        else -> {
+                            String.format(
+                                getText(R.string.chat_expired_set),
+                                name,
+                                toTimeInterval(timeInterval)
+                            )
+                        }
+                    }
             }
             else -> {
                 val learn: String = MixinApplication.get().getString(R.string.Learn_More)

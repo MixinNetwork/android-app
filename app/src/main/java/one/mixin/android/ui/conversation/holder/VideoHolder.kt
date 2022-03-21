@@ -8,7 +8,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatVideoBinding
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
@@ -20,6 +22,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
+import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -27,7 +30,9 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSecret
 
-class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
+class VideoHolder constructor(val binding: ItemChatVideoBinding) :
+    MediaHolder(binding.root),
+    Terminable {
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
@@ -277,6 +282,7 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
         }
         type = messageItem.type
         dataThumbImage = messageItem.thumbImage
+        chatJumpLayout(binding.chatJump, isMe, messageItem.expireIn, R.id.chat_layout)
         chatLayout(isMe, isLast)
     }
 
@@ -340,6 +346,12 @@ class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(b
             binding.chatImage.loadImageMark(dataUrl, R.drawable.image_holder, mark)
         } else {
             binding.chatImage.loadVideoMark(dataUrl, dataThumbImage, mark)
+        }
+    }
+
+    override fun onRead(messageItem: MessageItem) {
+        if (messageItem.expireIn != null) {
+            RxBus.publish(ExpiredEvent(messageItem.messageId, messageItem.expireIn))
         }
     }
 }

@@ -5,7 +5,9 @@ import java.io.Serializable
 
 data class BlazeAckMessage(
     @SerializedName("message_id")
-    val message_id: String,
+    val messageId: String,
     @SerializedName("status")
-    val status: String
+    val status: String,
+    @SerializedName("expire_at")
+    val expireAt: Long? = null
 ) : Serializable

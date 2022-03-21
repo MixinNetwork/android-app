@@ -104,7 +104,8 @@ data class MessageItem(
     val groupName: String? = null,
     val mentions: String? = null,
     val mentionRead: Boolean? = null,
-    val isPin: Boolean? = null
+    val isPin: Boolean? = null,
+    val expireIn: Long? = null
 ) : Parcelable, ICategory {
 
     @IgnoredOnParcel

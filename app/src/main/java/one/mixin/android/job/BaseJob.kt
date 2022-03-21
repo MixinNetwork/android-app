@@ -30,6 +30,7 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
@@ -192,6 +193,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+    @Inject
+    @Transient
+    lateinit var expiredMessageDao: ExpiredMessageDao
     @Inject
     @Transient
     lateinit var signalProtocol: SignalProtocol

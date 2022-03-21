@@ -29,7 +29,7 @@ interface ConversationDao : BaseDao<Conversation> {
             mu.full_name AS senderFullName, s.type AS SnapshotType,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
             (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-            mm.mentions AS mentions 
+            mm.mentions AS mentions, em.expire_at AS expireAt 
             FROM conversations c
             INNER JOIN users ou ON ou.user_id = c.owner_id
             LEFT JOIN messages m ON c.last_message_id = m.id
@@ -37,6 +37,7 @@ interface ConversationDao : BaseDao<Conversation> {
             LEFT JOIN users mu ON mu.user_id = m.user_id
             LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
             LEFT JOIN users pu ON pu.user_id = m.participant_id 
+            LEFT JOIN expired_messages em ON c.last_message_id = em.message_id
             """
     }
 
@@ -137,12 +138,15 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET status = :status WHERE conversation_id = :conversationId")
     fun updateConversationStatusById(conversationId: String, status: Int)
 
+    @Query("UPDATE conversations SET expire_in = :expireIn WHERE conversation_id = :conversationId")
+    fun updateConversationExpireInById(conversationId: String, expireIn: Long?)
+
     @Query("UPDATE conversations SET pin_time = :pinTime WHERE conversation_id = :conversationId")
     fun updateConversationPinTimeById(conversationId: String, pinTime: String?)
 
     @Query(
         "UPDATE conversations SET owner_id = :ownerId, category = :category, name = :name, announcement = :announcement, " +
-            "mute_until = :muteUntil, created_at = :createdAt, status = :status WHERE conversation_id = :conversationId"
+            "mute_until = :muteUntil, created_at = :createdAt, expire_in = :expireIn, status = :status WHERE conversation_id = :conversationId"
     )
     fun updateConversation(
         conversationId: String,
@@ -152,11 +156,15 @@ interface ConversationDao : BaseDao<Conversation> {
         announcement: String?,
         muteUntil: String?,
         createdAt: String,
+        expireIn: Long?,
         status: Int
     )
 
     @Query("UPDATE conversations SET announcement = :announcement WHERE conversation_id = :conversationId")
     suspend fun updateConversationAnnouncement(conversationId: String, announcement: String)
+
+    @Query("UPDATE conversations SET expire_in = :expireIn WHERE conversation_id = :conversationId")
+    suspend fun updateConversationExpireIn(conversationId: String, expireIn: Long?)
 
     @Query("UPDATE conversations SET mute_until = :muteUntil WHERE conversation_id = :conversationId")
     fun updateGroupMuteUntil(conversationId: String, muteUntil: String)
