@@ -63,6 +63,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
@@ -942,7 +943,11 @@ class DecryptMessage(
             ),
             mediaSize,
             data.createdAt,
-            data.status
+            if (data.userId != Session.getAccountId()) {
+                MessageStatus.READ.name
+            } else {
+                data.status
+            }
         )
         transcriptMessageDao.insertList(
             transcripts.filter { t ->
@@ -1227,14 +1232,19 @@ class DecryptMessage(
     }
 
     private fun processRedecryptMessage(data: BlazeMessageData, messageId: String, plainText: String) {
+        val status = if (data.userId != Session.getAccountId()) {
+            MessageStatus.READ.name
+        } else {
+            data.status
+        }
         if (data.category == MessageCategory.SIGNAL_TEXT.name) {
             parseMentionData(plainText, messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+            messageDao.updateMessageContentAndStatus(plainText, status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
-            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+            messageDao.updateMessageContentAndStatus(plainText, status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_LOCATION.name) {
             if (checkLocationData(plainText)) {
-                messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+                messageDao.updateMessageContentAndStatus(plainText, status, messageId)
             }
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
@@ -1247,7 +1257,7 @@ class DecryptMessage(
             messageDao.updateAttachmentMessage(
                 messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
-                mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status
+                mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, status
             )
             if (data.category == MessageCategory.SIGNAL_IMAGE.name || data.category == MessageCategory.SIGNAL_AUDIO.name) {
                 val message = messageDao.findMessageById(messageId)!!
@@ -1262,16 +1272,16 @@ class DecryptMessage(
                     jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
                 }
             }
-            stickerData.stickerId?.let { messageDao.updateStickerMessage(it, data.status, messageId) }
+            stickerData.stickerId?.let { messageDao.updateStickerMessage(it, status, messageId) }
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
             val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
-            messageDao.updateContactMessage(contactData.userId, data.status, messageId)
+            messageDao.updateContactMessage(contactData.userId, status, messageId)
             syncUser(contactData.userId)
         } else if (data.category == MessageCategory.SIGNAL_LIVE.name) {
             val decoded = Base64.decode(plainText)
             val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
-            messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
+            messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_TRANSCRIPT.name) {
             val decoded = Base64.decode(plainText)
             processTranscriptMessage(data, String(decoded))?.let { message ->
@@ -1283,6 +1293,9 @@ class DecryptMessage(
                     messageId
                 )
             }
+        }
+        if (data.userId != Session.getAccountId()) {
+            remoteMessageStatusDao.insert(RemoteMessageStatus(messageId, data.conversationId, data.status))
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId)?.let {
