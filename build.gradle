@@ -100,7 +100,7 @@ buildscript {
         ext.balloonVersion = '1.4.1'
 
         ext.bcVersion = '1.70'
-        ext.jsonVersion = '20211205'
+        ext.jsonVersion = '20220320'
 
     }
 
