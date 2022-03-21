@@ -312,8 +312,8 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_remote_messages_status_conversation_id_status` ON `remote_messages_status` (`conversation_id`, `status`)")
                 Session.getAccountId()?.let { selfId ->
                     database.execSQL("INSERT OR REPLACE INTO remote_messages_status(message_id, conversation_id, status) SELECT id, conversation_id, status FROM messages WHERE status = 'DELIVERED' AND user_id != '$selfId'")
+                    database.execSQL("UPDATE messages SET status ='READ' WHERE status = 'DELIVERED' AND user_id != '$selfId'")
                 }
-                database.execSQL("UPDATE messages SET status ='READ' WHERE status = 'DELIVERED'")
             }
         }
 
