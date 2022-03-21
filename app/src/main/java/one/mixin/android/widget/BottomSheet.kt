@@ -46,7 +46,9 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.AndroidUtilities.dp
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 class BottomSheet(
@@ -105,19 +107,15 @@ class BottomSheet(
         }
 
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            val width = MeasureSpec.getSize(widthMeasureSpec)
+            var width = MeasureSpec.getSize(widthMeasureSpec)
             var height = MeasureSpec.getSize(heightMeasureSpec)
             if (lastInsets != null) {
                 height -= lastInsets!!.systemWindowInsetBottom
+                width -= lastInsets!!.systemWindowInsetLeft + lastInsets!!.systemWindowInsetRight
             }
             setMeasuredDimension(width, height)
+            val isPortrait = width < height
             val widthSpec = when {
-                context.isWideScreen() -> {
-                    MeasureSpec.makeMeasureSpec(
-                        (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.5f).toInt(),
-                        MeasureSpec.EXACTLY
-                    )
-                }
                 context.isTablet() -> {
                     MeasureSpec.makeMeasureSpec(
                         (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
@@ -126,8 +124,7 @@ class BottomSheet(
                 }
                 else -> {
                     MeasureSpec.makeMeasureSpec(
-                        width,
-                        MeasureSpec.EXACTLY
+                        if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)), MeasureSpec.EXACTLY
                     )
                 }
             }

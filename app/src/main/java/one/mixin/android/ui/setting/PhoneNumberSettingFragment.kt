@@ -35,9 +35,7 @@ class PhoneNumberSettingFragment : BaseFragment(R.layout.fragment_setting_phone_
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
         viewModel.initSearchPreference(requireContext())
-            .observe(
-                viewLifecycleOwner
-            ) {
+            .observe(viewLifecycleOwner) {
                 it?.let {
                     render(it)
                 }
