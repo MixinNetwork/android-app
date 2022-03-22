@@ -54,7 +54,7 @@ buildscript {
         ext.glideTransformationsVersion = '3.2.0'
         ext.jobqueueVersion = '3.1.0'
         ext.stickyheadersrecyclerviewVersion = '0.7'
-        ext.threetenabpVersion = '1.3.1'
+        ext.threetenabpVersion = '1.4.0'
         ext.signalVersion = '2.8.1'
         ext.fabVersion = '1.6'
         ext.playVersion = '1.10.3'
