@@ -34,11 +34,12 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
-import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.deleteMessageByConversationId
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
@@ -96,6 +97,7 @@ internal constructor(
     private val jobDao: JobDao,
     private val transcriptMessageDao: TranscriptMessageDao,
     private val pinMessageDao: PinMessageDao,
+    private val remoteMessageStatusDao: RemoteMessageStatusDao,
     private val conversationService: ConversationService,
     private val userService: UserService,
     private val jobManager: MixinJobManager
@@ -267,10 +269,6 @@ internal constructor(
 
     fun findUnreadMessagesSync(conversationId: String, accountId: String) =
         messageDao.findUnreadMessagesSync(conversationId, accountId)
-
-    suspend fun batchMarkReadAndTake(conversationId: String, userId: String, rowId: String) {
-        messageDao.batchMarkReadAndTake(conversationId, userId, rowId)
-    }
 
     fun findContactConversationByOwnerId(ownerId: String): Conversation? {
         return conversationDao.findContactConversationByOwnerId(ownerId)

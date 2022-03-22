@@ -21,7 +21,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.MARK_LIMIT
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
@@ -36,6 +35,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
+import one.mixin.android.job.MarkReadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAndRelatedAlbumJob
@@ -93,7 +93,6 @@ import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
-import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
@@ -435,30 +434,7 @@ internal constructor(
         if (isBubbled.not()) {
             notificationManager.cancel(conversationId.hashCode())
         }
-        MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
-            while (true) {
-                val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)
-                if (list.isEmpty()) return@launch
-                conversationRepository.batchMarkReadAndTake(
-                    conversationId,
-                    accountId,
-                    list.last().rowId
-                )
-
-                list.map {
-                    createAckJob(
-                        ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                        BlazeAckMessage(it.id, MessageStatus.READ.name)
-                    )
-                }.let {
-                    conversationRepository.insertList(it)
-                }
-                createReadSessionMessage(list, conversationId)
-                if (list.size < MARK_LIMIT) {
-                    return@launch
-                }
-            }
-        }
+        jobManager.addJobInBackground(MarkReadJob(conversationId))
     }
 
     suspend fun getFriends(): List<User> = userRepository.getFriends()

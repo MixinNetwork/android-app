@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
+import androidx.collection.arraySetOf
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
@@ -18,6 +19,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ACK_LIMIT
+import one.mixin.android.Constants.LOGS_LIMIT
+import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.MessageService
@@ -25,6 +29,9 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.RemoteMessageStatusDao
+import one.mixin.android.db.insertNoReplaceList
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notificationManager
@@ -36,10 +43,21 @@ import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.FloodMessage
+import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageHistory
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.RemoteMessageStatus
+import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.isFtsMessage
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
+import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
@@ -52,7 +70,6 @@ import javax.inject.Inject
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
     companion object {
-        val TAG = BlazeMessageService::class.java.simpleName
         const val CHANNEL_NODE = "channel_node"
         const val FOREGROUND_ID = 666666
         const val ACTION_TO_BACKGROUND = "action_to_background"
@@ -81,6 +98,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
     @Inject
+    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+    @Inject
     lateinit var participantDao: ParticipantDao
     @Inject
     lateinit var jobDao: JobDao
@@ -108,6 +127,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         webSocket.connect()
         startFloodJob()
         startAckJob()
+        startStatusJob()
         networkUtil.setListener(this)
     }
 
@@ -135,6 +155,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onDestroy()
         stopAckJob()
         stopFloodJob()
+        stopStatusJob()
         webSocket.disconnect()
     }
 
@@ -153,7 +174,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun updateIgnoringBatteryOptimizations() {
-        isIgnoringBatteryOptimizations = powerManager?.isIgnoringBatteryOptimizations(packageName) ?: false
+        isIgnoringBatteryOptimizations =
+            powerManager?.isIgnoringBatteryOptimizations(packageName) ?: false
     }
 
     @SuppressLint("NewApi")
@@ -225,22 +247,33 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private var lastAckPendingCount = 0
     private tailrec suspend fun processAck(): Boolean {
-        val ackMessages = jobDao.findAckJobs()
-        if (ackMessages.isEmpty()) {
-            return false
-        } else if (ackMessages.size == 100) {
-            jobDao.getJobsCount().apply {
-                if (this >= 10000 && this - lastAckPendingCount >= 10000) {
-                    lastAckPendingCount = this
-                    reportException("ack job count: $this", Exception())
+        // Todo delete debug logs
+        measureTimeMillis("process ack") {
+            val ackMessages = jobDao.findAckJobs()
+            if (ackMessages.isEmpty()) {
+                return false
+            } else if (ackMessages.size == ACK_LIMIT) {
+                jobDao.getJobsCount().apply {
+                    Timber.e("ack job count: $this")
+                    if (this >= LOGS_LIMIT && this - lastAckPendingCount >= LOGS_LIMIT) {
+                        lastAckPendingCount = this
+                        reportException("ack job count: $this", Exception())
+                    }
                 }
             }
-        }
-        try {
-            messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
-            jobDao.deleteList(ackMessages)
-        } catch (e: Exception) {
-            Timber.e(e, "Send ack exception")
+            try {
+                messageService.acknowledgements(
+                    ackMessages.map {
+                        gson.fromJson(
+                            it.blazeMessage,
+                            BlazeAckMessage::class.java
+                        )
+                    }
+                )
+                jobDao.deleteList(ackMessages)
+            } catch (e: Exception) {
+                Timber.e(e, "Send ack exception")
+            }
         }
         return processAck()
     }
@@ -258,14 +291,18 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 )
             )
             val encoded = plainText.toByteArray().base64Encode()
-            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
+            val bm = createParamBlazeMessage(
+                createPlainJsonParam(
+                    participantDao.joinedConversationId(accountId), accountId, encoded, sessionId
+                )
+            )
             jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
             jobDao.deleteList(jobs)
         }
     }
 
-    private val messageDecrypt by lazy { DecryptMessage(lifecycleScope) }
-    private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
+    private val messageDecrypt by lazy { DecryptMessage(lifecycleScope, pendingMessages, pendingACKs, pendingMessageHistories) }
+    private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope, pendingMessages, pendingACKs, pendingMessageHistories) }
 
     private fun startFloodJob() {
         database.invalidationTracker.addObserver(floodObserver)
@@ -300,18 +337,146 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
         return if (!messages.isNullOrEmpty()) {
-            messages.forEach { message ->
-                val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
-                    callMessageDecrypt.onRun(data)
-                } else {
-                    messageDecrypt.onRun(data)
-                }
-                floodMessageDao.delete(message)
+            val ids = messages.map { it.messageId }
+            val existsMessageIds = database.messageDao().findMessageIdsByIds(ids).toSet()
+            val existsHistoryIds = database.messageHistoryDao().findMessageHistoryByIds(ids).toSet()
+            val existsUnion = existsMessageIds.union(existsHistoryIds)
+            val candidateMessages = messages.filter { existsUnion.contains(it.messageId).not() }
+            // Todo delete debug logs
+            measureTimeMillis("processFloodMessage") {
+                processCandidateMessages(candidateMessages, messages, existsHistoryIds)
             }
             processFloodMessage()
         } else {
             false
+        }
+    }
+
+    private val pendingMessages: MutableList<Message> = arrayListOf()
+    private val pendingACKs: MutableList<BlazeAckMessage> = arrayListOf()
+    private val pendingMessageHistories: MutableList<String> = arrayListOf()
+    private fun processCandidateMessages(
+        candidateMessages: List<FloodMessage>,
+        messages: List<FloodMessage>,
+        existsHistoryIds: Set<String>,
+    ) {
+        candidateMessages.forEach { message ->
+            val data = gson.fromJson(message.data, BlazeMessageData::class.java)
+            if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
+                callMessageDecrypt.onRun(data)
+            } else {
+                messageDecrypt.onRun(data)
+            }
+        }
+
+        val updateUnseenConversationIds = arraySetOf<String>()
+        val ftsMessages = mutableListOf<Message>()
+        val remoteMessageStatus = arrayListOf<RemoteMessageStatus>()
+        pendingMessages.forEach { m ->
+            if (m.isFtsMessage()) {
+                ftsMessages.add(m)
+            }
+            if (m.userId != Session.getAccountId()) {
+                remoteMessageStatus.add(
+                    RemoteMessageStatus(
+                        m.id,
+                        m.conversationId,
+                        MessageStatus.DELIVERED.name
+                    )
+                )
+            }
+            updateUnseenConversationIds.add(m.conversationId)
+        }
+
+        val pendingACKJobs = pendingACKs.map { ack ->
+            createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, ack)
+        }
+        val existsACKJobs = existsHistoryIds.map { id ->
+            createAckJob(
+                ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                BlazeAckMessage(id, MessageStatus.DELIVERED.name)
+            )
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            database.messageFts4Dao().insertList(MessageFts4Helper.genMessageFts4s(ftsMessages))
+        }
+
+        runInTransaction {
+            database.messageDao().insertList(pendingMessages)
+            database.remoteMessageStatusDao().insertList(remoteMessageStatus)
+            pendingMessages.clear()
+
+            database.messageHistoryDao().insertList(pendingMessageHistories.map { MessageHistory(it) })
+            pendingMessageHistories.clear()
+
+            // REMINDER-ME insert BlazeAckMessage list into one job?
+            database.jobDao().insertNoReplaceList(pendingACKJobs + existsACKJobs)
+            pendingACKs.clear()
+
+            updateUnseenConversationIds.forEach { cid ->
+                remoteMessageStatusDao.updateConversationUnseen(cid)
+            }
+
+            floodMessageDao.deleteList(messages)
+        }
+    }
+
+    private fun startStatusJob() {
+        database.invalidationTracker.addObserver(statusObserver)
+    }
+
+    private fun stopStatusJob() {
+        database.invalidationTracker.removeObserver(statusObserver)
+    }
+
+    private var statusJob: Job? = null
+    private val statusObserver = object : InvalidationTracker.Observer("remote_messages_status") {
+        override fun onInvalidated(tables: MutableSet<String>) {
+            runStatusJob()
+        }
+    }
+
+    @Synchronized
+    private fun runStatusJob() {
+        try {
+            if (statusJob?.isActive == true) {
+                return
+            }
+            statusJob = lifecycleScope.launch(Dispatchers.IO) {
+                processStatus()
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+
+    private fun processStatus(): Boolean {
+        val list = remoteMessageStatusDao.findRemoteMessageStatus()
+        if (list.isEmpty()) {
+            return false
+        }
+        list.map { msg ->
+            createAckJob(
+                ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                BlazeAckMessage(msg.messageId, MessageStatus.READ.name)
+            )
+        }.apply {
+            database.jobDao().insertList(this)
+        }
+        Session.getExtensionSessionId()?.let { _ ->
+            val conversationId = list.first().conversationId
+            list.map { msg ->
+                createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
+            }.let { jobs ->
+                database.jobDao().insertList(jobs)
+            }
+        }
+        remoteMessageStatusDao.deleteList(list)
+        return if (list.size >= MARK_REMOTE_LIMIT) {
+            processStatus()
+        } else {
+            true
         }
     }
 }

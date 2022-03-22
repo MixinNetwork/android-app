@@ -5,7 +5,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import androidx.room.Transaction
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
 import one.mixin.android.db.contants.IMAGES
@@ -380,6 +379,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE id = :messageId")
     fun findMessageIdById(messageId: String): String?
 
+    @Query("SELECT id FROM messages WHERE id IN (:ids)")
+    fun findMessageIdsByIds(ids: List<String>): List<String>
+
     @Query("SELECT DISTINCT conversation_id FROM messages WHERE id IN (:messages)")
     fun findConversationsByMessages(messages: List<String>): List<String>
 
@@ -421,20 +423,6 @@ interface MessageDao : BaseDao<Message> {
         """
     )
     suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
-
-    @Query(
-        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
-        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId
-        """
-    )
-    suspend fun updateConversationUnseen(userId: String, conversationId: String)
-
-    @Query(
-        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId
-            AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId
-        """
-    )
-    fun takeUnseen(userId: String, conversationId: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -560,14 +548,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
-
-    @Transaction
-    fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
-        insert(message)
-        if (userId != message.userId) {
-            conversationDao.unseenMessageCount(message.conversationId, userId)
-        }
-    }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
