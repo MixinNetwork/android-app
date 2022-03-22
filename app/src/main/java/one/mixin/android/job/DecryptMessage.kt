@@ -326,11 +326,11 @@ class DecryptMessage(
             val transferPinData = gson.fromJson(String(decoded), PinMessagePayload::class.java)
             if (transferPinData.action == PinAction.PIN.name) {
                 transferPinData.messageIds.forEachIndexed { index, messageId ->
-                    val message = messageDao.findMessageById(messageId)
+                    val message = messageDao.findMessageById(messageId) ?: pendingMessages.find { m -> m.id == messageId }
                     if (message != null) {
                         pinMessageDao.insert(PinMessage(messageId, message.conversationId, data.createdAt))
                         val mid = UUID.randomUUID().toString()
-                        messageDao.insert(
+                        pendingMessages.add(
                             createPinMessage(
                                 mid,
                                 data.conversationId,
@@ -362,7 +362,7 @@ class DecryptMessage(
                             }
                         }
                     } else {
-                        messageDao.insert(
+                        pendingMessages.add(
                             createPinMessage(
                                 UUID.randomUUID().toString(),
                                 data.conversationId,
@@ -389,18 +389,26 @@ class DecryptMessage(
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
-            messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
-                RxBus.publish(RecallEvent(msg.id))
-                messageDao.recallFailedMessage(msg.id)
-                messageDao.recallMessage(msg.id)
-                messageDao.recallPinMessage(msg.id, msg.conversationId)
-                pinMessageDao.deleteByMessageId(msg.id)
-                messageMentionDao.deleteMessage(msg.id)
-                messagesFts4Dao.deleteByMessageId(msg.id)
-                remoteMessageStatusDao.deleteByMessageId(msg.id)
-                remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
-                if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
-                    msg.mediaUrl.getFilePath()?.let {
+            var msg = messageDao.findMessageById(transferRecallData.messageId)
+            if (msg == null) {
+                msg = pendingMessages.find { m -> m.id == transferRecallData.messageId }
+                if (msg != null) {
+                    pendingMessages.remove(msg)
+                    messageDao.insert(msg)
+                }
+            }
+            msg?.let { m ->
+                RxBus.publish(RecallEvent(m.id))
+                messageDao.recallFailedMessage(m.id)
+                messageDao.recallMessage(m.id)
+                messageDao.recallPinMessage(m.id, m.conversationId)
+                pinMessageDao.deleteByMessageId(m.id)
+                messageMentionDao.deleteMessage(m.id)
+                messagesFts4Dao.deleteByMessageId(m.id)
+                remoteMessageStatusDao.deleteByMessageId(m.id)
+                remoteMessageStatusDao.updateConversationUnseen(m.conversationId)
+                if (m.mediaUrl != null && mediaDownloaded(m.mediaStatus)) {
+                    m.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
                             if (file.exists() && file.isFile) {
                                 file.delete()
@@ -408,13 +416,13 @@ class DecryptMessage(
                         }
                     }
                 }
-                messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
-                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
+                messageDao.findMessageItemById(data.conversationId, m.id)?.let { quoteMsg ->
+                    messageDao.updateQuoteContentByQuoteId(data.conversationId, m.id, gson.toJson(quoteMsg))
                 }
 
-                jobManager.cancelJobByMixinJobId(msg.id)
-                if (messageDao.findLastMessageId(msg.conversationId) == msg.id) {
-                    notificationManager.cancel(msg.conversationId.hashCode())
+                jobManager.cancelJobByMixinJobId(m.id)
+                if (messageDao.findLastMessageId(m.conversationId) == m.id) {
+                    notificationManager.cancel(m.conversationId.hashCode())
                 }
             }
             pendingAck(data.messageId, MessageStatus.READ)
