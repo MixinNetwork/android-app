@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.MessageService
@@ -25,6 +26,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notificationManager
@@ -38,8 +40,12 @@ import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.createAckJob
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
+import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
@@ -52,7 +58,6 @@ import javax.inject.Inject
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
     companion object {
-        val TAG = BlazeMessageService::class.java.simpleName
         const val CHANNEL_NODE = "channel_node"
         const val FOREGROUND_ID = 666666
         const val ACTION_TO_BACKGROUND = "action_to_background"
@@ -81,6 +86,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
     @Inject
+    lateinit var remoteMessageStatusDao: RemoteMessageStatusDao
+    @Inject
     lateinit var participantDao: ParticipantDao
     @Inject
     lateinit var jobDao: JobDao
@@ -108,6 +115,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         webSocket.connect()
         startFloodJob()
         startAckJob()
+        startStatusJob()
         networkUtil.setListener(this)
     }
 
@@ -135,6 +143,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onDestroy()
         stopAckJob()
         stopFloodJob()
+        stopStatusJob()
         webSocket.disconnect()
     }
 
@@ -312,6 +321,64 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             processFloodMessage()
         } else {
             false
+        }
+    }
+
+    private fun startStatusJob() {
+        database.invalidationTracker.addObserver(statusObserver)
+    }
+
+    private fun stopStatusJob() {
+        database.invalidationTracker.removeObserver(statusObserver)
+    }
+
+    private var statusJob: Job? = null
+    private val statusObserver = object : InvalidationTracker.Observer("remote_messages_status") {
+        override fun onInvalidated(tables: MutableSet<String>) {
+            runStatusJob()
+        }
+    }
+
+    @Synchronized
+    private fun runStatusJob() {
+        try {
+            if (statusJob?.isActive == true) {
+                return
+            }
+            statusJob = lifecycleScope.launch(Dispatchers.IO) {
+                processStatus()
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+
+    private fun processStatus(): Boolean {
+        val list = remoteMessageStatusDao.findRemoteMessageStatus()
+        if (list.isEmpty()) {
+            return false
+        }
+        list.map { msg ->
+            createAckJob(
+                ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                BlazeAckMessage(msg.messageId, MessageStatus.READ.name)
+            )
+        }.apply {
+            database.jobDao().insertList(this)
+        }
+        Session.getExtensionSessionId()?.let { _ ->
+            val conversationId = list.first().conversationId
+            list.map { msg ->
+                createAckJob(CREATE_MESSAGE, BlazeAckMessage(msg.messageId, MessageStatus.READ.name), conversationId)
+            }.let { jobs ->
+                database.jobDao().insertList(jobs)
+            }
+        }
+        remoteMessageStatusDao.deleteList(list)
+        return if (list.size >= MARK_REMOTE_LIMIT) {
+            processStatus()
+        } else {
+            true
         }
     }
 }

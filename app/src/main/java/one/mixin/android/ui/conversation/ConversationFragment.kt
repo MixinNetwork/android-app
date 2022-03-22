@@ -1888,7 +1888,7 @@ class ConversationFragment() :
                     }
                 }
                 conversationAdapter.submitList(list)
-                chatViewModel.markMessageRead(conversationId, sender.userId, (activity as? BubbleActivity)?.isBubbled == true)
+                chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
             }
     }
 

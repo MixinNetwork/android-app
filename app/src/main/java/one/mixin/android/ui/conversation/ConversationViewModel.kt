@@ -94,7 +94,6 @@ import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.webrtc.SelectItem
-import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
@@ -426,33 +425,12 @@ internal constructor(
         }
     }
 
-    fun markMessageRead(conversationId: String, accountId: String, isBubbled: Boolean) {
+    fun markMessageRead(conversationId: String, isBubbled: Boolean) {
         if (isBubbled.not()) {
             notificationManager.cancel(conversationId.hashCode())
         }
-        MixinApplication.appScope.launch(SINGLE_DB_THREAD) {
-            while (true) {
-                val list = conversationRepository.getUnreadMessage(conversationId, accountId, MARK_LIMIT)
-                if (list.isEmpty()) return@launch
-                conversationRepository.batchMarkReadAndTake(
-                    conversationId,
-                    accountId,
-                    list.last().rowId
-                )
-
-                list.map {
-                    createAckJob(
-                        ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                        BlazeAckMessage(it.id, MessageStatus.READ.name)
-                    )
-                }.let {
-                    conversationRepository.insertList(it)
-                }
-                createReadSessionMessage(list, conversationId)
-                if (list.size < MARK_LIMIT) {
-                    return@launch
-                }
-            }
+        MixinApplication.appScope.launch {
+            conversationRepository.markMessageRead(conversationId)
         }
     }
 
@@ -730,9 +708,6 @@ internal constructor(
     suspend fun markMentionRead(messageId: String, conversationId: String) {
         conversationRepository.markMentionRead(messageId, conversationId)
     }
-
-    suspend fun conversationZeroClear(conversationId: String) =
-        conversationRepository.conversationZeroClear(conversationId)
 
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
         assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)

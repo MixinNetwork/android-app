@@ -12,6 +12,7 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
+import one.mixin.android.session.Session
 import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.util.chat.InvalidateFlow
@@ -22,7 +23,9 @@ import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.SearchMessageItem
 
 @Dao
@@ -523,22 +526,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId 
-        AND status IN ('SENT', 'DELIVERED') AND rowid <= :rowid AND user_id != :userId
-        """
-    )
-    suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
-
-    @Query(
-        """
-        UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
-        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId
-        """
-    )
-    suspend fun updateConversationUnseen(userId: String, conversationId: String)
-
-    @Query(
-        """
         UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId
         AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId
         """
@@ -564,13 +551,4 @@ interface MessageDao : BaseDao<Message> {
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
 
-    // Insert SQL
-    @Transaction
-    fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
-        insert(message)
-        if (userId != message.userId) {
-            conversationDao.unseenMessageCount(message.conversationId, userId)
-        }
-        InvalidateFlow.emit(message.conversationId)
-    }
 }
