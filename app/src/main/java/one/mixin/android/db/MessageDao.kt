@@ -5,7 +5,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import androidx.room.Transaction
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
 import one.mixin.android.db.contants.IMAGES
@@ -14,7 +13,6 @@ import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
 import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.HyperlinkItem
@@ -439,9 +437,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages) AND status != 'FAILED' AND status != 'UNKNOWN'")
-    fun markMessageRead(messages: List<String>)
-
     @Query("UPDATE messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
     fun recallFailedMessage(id: String)
 
@@ -521,30 +516,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET media_url = :mediaUrl, media_size = :mediaSize, thumb_image = :thumbImage WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateGiphyMessage(id: String, mediaUrl: String, mediaSize: Long, thumbImage: String?)
 
-    @Query(
-        """
-        UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId 
-        AND status IN ('SENT', 'DELIVERED') AND rowid <= :rowid AND user_id != :userId
-        """
-    )
-    suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
-
-    @Query(
-        """
-        UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
-        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId
-        """
-    )
-    suspend fun updateConversationUnseen(userId: String, conversationId: String)
-
-    @Query(
-        """
-        UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId
-        AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId
-        """
-    )
-    fun takeUnseen(userId: String, conversationId: String)
-
     @Query("UPDATE messages SET category = :category WHERE id = :messageId")
     fun updateCategoryById(messageId: String, category: String)
 
@@ -563,14 +534,4 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
-
-    // Insert SQL
-    @Transaction
-    fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
-        insert(message)
-        if (userId != message.userId) {
-            conversationDao.unseenMessageCount(message.conversationId, userId)
-        }
-        InvalidateFlow.emit(message.conversationId)
-    }
 }

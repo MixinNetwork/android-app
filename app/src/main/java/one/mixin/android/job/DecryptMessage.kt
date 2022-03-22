@@ -173,7 +173,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         MessageStatus.UNKNOWN.name
                     )
                     syncConversation(data)
-                    messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                    database.insertAndNotifyConversation(message)
                 }
                 updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
                 return
@@ -231,7 +231,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         for (item in appButton) {
             ColorUtil.parseColor(item.color.trim())
         }
-        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+        database.insertAndNotifyConversation(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         generateNotification(message, data)
     }
@@ -273,7 +273,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 }
             }
         }
-        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+        database.insertAndNotifyConversation(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         generateNotification(message, data)
     }
@@ -391,7 +391,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.recallPinMessage(msg.id, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
-                messageDao.takeUnseen(accountId, msg.conversationId)
+                remoteMessageStatusDao.deleteByMessageId(msg.id)
+                remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
@@ -444,10 +445,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         }
                     }
                     if (updateMessageList.isNotEmpty()) {
-                        messageDao.markMessageRead(updateMessageList)
+                        remoteMessageStatusDao.deleteByMessageIds(updateMessageList)
                         val updateConversationList = messageDao.findConversationsByMessages(updateMessageList)
                         updateConversationList.forEach { cId ->
-                            messageDao.takeUnseen(accountId, cId)
+                            remoteMessageStatusDao.updateConversationUnseen(cId)
                             InvalidateFlow.emit(cId)
                             notificationManager.cancel(cId.hashCode())
                         }
@@ -565,7 +566,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     }
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
@@ -582,7 +583,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.createdAt,
                     data.status
                 )
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 generateNotification(message, data)
             }
@@ -590,7 +591,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_LOCATION.name, plainText)
                 if (checkLocationData(plain)) {
                     val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
-                    messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                    database.insertAndNotifyConversation(message)
                     generateNotification(message, data)
                 }
             }
@@ -612,7 +613,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
 
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -641,7 +642,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
 
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadVideo) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -664,7 +665,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     )
                 }
 
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadDocument) {
@@ -686,7 +687,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 generateNotification(message, data)
             }
@@ -717,7 +718,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt
                     )
                 }
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_CONTACT") -> {
@@ -735,7 +736,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 val fullName = user?.fullName
                 if (!fullName.isNullOrBlank()) {
                     MessageFts4Helper.insertOrReplaceMessageFts4(message, fullName)
@@ -757,7 +758,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     data.messageId, data.conversationId, data.userId, data.category, plain,
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt
                 )
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_TRANSCRIPT") -> {
@@ -765,7 +766,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     Base64.decode(plainText)
                 ) else plainText
                 val message = processTranscriptMessage(data, plain) ?: return
-                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                database.insertAndNotifyConversation(message)
                 generateNotification(message, data)
             }
         }
@@ -929,7 +930,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             snapshotDao.deletePendingSnapshotByHash(it)
         }
         snapshotDao.insert(snapshot)
-        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+        database.insertAndNotifyConversation(message)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
@@ -984,7 +985,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 return
             }
         }
-        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+        database.insertAndNotifyConversation(message)
     }
 
     private fun processSystemUserMessage(systemMessage: SystemUserMessagePayload) {
