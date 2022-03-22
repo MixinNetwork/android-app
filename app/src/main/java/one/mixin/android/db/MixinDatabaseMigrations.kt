@@ -316,6 +316,23 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
+        val MIGRATION_44_43: Migration = object : Migration(44, 43) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("PRAGMA foreign_keys=`OFF`")
+
+                database.execSQL("CREATE TABLE IF NOT EXISTS `conversations_temp` (`conversation_id` TEXT NOT NULL, `owner_id` TEXT, `category` TEXT, `name` TEXT, `icon_url` TEXT, `announcement` TEXT, `code_url` TEXT, `pay_type` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, `last_message_id` TEXT, `last_read_message_id` TEXT, `unseen_message_count` INTEGER, `status` INTEGER NOT NULL, `draft` TEXT, `mute_until` TEXT, `last_message_created_at` TEXT, PRIMARY KEY(`conversation_id`))")
+                database.execSQL("INSERT OR REPLACE INTO `conversations_temp` (`conversation_id`, `owner_id`, `category`, `name`, `icon_url`, `announcement`, `code_url`, `pay_type`, `created_at`, `pin_time`, `last_message_id`, `last_read_message_id`, `unseen_message_count` , `status` , `draft` , `mute_until` , `last_message_created_at`) SELECT `conversation_id`, `owner_id`, `category`, `name`, `icon_url`, `announcement`, `code_url`, `pay_type`, `created_at`, `pin_time`, `last_message_id`, `last_read_message_id`, `unseen_message_count` , `status` , `draft` , `mute_until` , `last_message_created_at` FROM conversations")
+
+                database.execSQL("ALTER TABLE `conversations` RENAME TO `conversations_old`")
+                database.execSQL("ALTER TABLE `conversations_temp` RENAME TO `conversations`")
+                database.execSQL("DROP TABLE IF EXISTS `conversations_old`")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_conversations_pin_time_last_message_created_at` ON `conversations` (`pin_time`, `last_message_created_at`)")
+
+                database.execSQL("DROP TABLE IF EXISTS `expired_messages`")
+                database.execSQL("PRAGMA foreign_keys=`ON`")
+            }
+        }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
