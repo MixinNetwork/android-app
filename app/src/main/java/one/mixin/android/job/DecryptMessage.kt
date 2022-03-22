@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import android.app.Activity
 import android.app.NotificationManager
+import android.util.Log
 import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonSyntaxException
@@ -17,6 +18,8 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.insertAndNotifyConversation
+import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
@@ -55,6 +58,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
@@ -63,13 +67,13 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.TranscriptMinimal
+import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
@@ -98,6 +102,7 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.toJson
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -134,21 +139,23 @@ import java.io.File
 import java.io.IOException
 import java.util.UUID
 
-class DecryptMessage(
-    private val lifecycleScope: CoroutineScope,
-    private val pendingMessages: MutableList<Message>,
-    private val pendingACKs: MutableList<BlazeAckMessage>,
-    private val pendingMessageHistories: MutableList<String>
-) : Injector() {
+class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
     companion object {
+        val TAG = DecryptMessage::class.java.simpleName
         const val GROUP = "DecryptMessage"
     }
 
     private var refreshKeyMap = arrayMapOf<String, Long?>()
     private val gson = GsonHelper.customGson
 
+    private val accountId = Session.getAccountId()
+
     fun onRun(data: BlazeMessageData) {
+        if (isExistMessage(data.messageId)) {
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            return
+        }
         processMessage(data)
     }
 
@@ -166,9 +173,9 @@ class DecryptMessage(
                         MessageStatus.UNKNOWN.name
                     )
                     syncConversation(data)
-                    pendingMessage(message)
+                    messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 }
-                pendingAck(data.messageId)
+                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
                 return
             }
 
@@ -176,37 +183,27 @@ class DecryptMessage(
                 syncConversation(data)
             }
             checkSession(data)
-
-            when {
-                data.category.startsWith("SYSTEM_") -> {
-                    processSystemMessage(data)
-                }
-                data.category.startsWith("PLAIN_") -> {
-                    processPlainMessage(data)
-                }
-                data.category.startsWith("SIGNAL_") -> {
-                    processSignalMessage(data)
-                }
-                data.category.startsWith("ENCRYPTED_") -> {
-                    processEncryptedMessage(data)
-                }
-                data.category == MessageCategory.APP_BUTTON_GROUP.name -> {
-                    processAppButton(data)
-                }
-                data.category == MessageCategory.APP_CARD.name -> {
-                    processAppCard(data)
-                }
-                data.category == MessageCategory.MESSAGE_PIN.name -> {
-                    processPinMessage(data)
-                }
-                data.category == MessageCategory.MESSAGE_RECALL.name -> {
-                    processRecallMessage(data)
-                }
+            if (data.category.startsWith("SYSTEM_")) {
+                processSystemMessage(data)
+            } else if (data.category.startsWith("PLAIN_")) {
+                processPlainMessage(data)
+            } else if (data.category.startsWith("SIGNAL_")) {
+                processSignalMessage(data)
+            } else if (data.category.startsWith("ENCRYPTED_")) {
+                processEncryptedMessage(data)
+            } else if (data.category == MessageCategory.APP_BUTTON_GROUP.name) {
+                processAppButton(data)
+            } else if (data.category == MessageCategory.APP_CARD.name) {
+                processAppCard(data)
+            } else if (data.category == MessageCategory.MESSAGE_PIN.name) {
+                processPinMessage(data)
+            } else if (data.category == MessageCategory.MESSAGE_RECALL.name) {
+                processRecallMessage(data)
             }
         } catch (e: Exception) {
             Timber.e("Process error: $e")
             insertInvalidMessage(data)
-            pendingAck(data.messageId)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
@@ -234,8 +231,8 @@ class DecryptMessage(
         for (item in appButton) {
             ColorUtil.parseColor(item.color.trim())
         }
-        pendingMessage(message)
-        pendingAck(data.messageId)
+        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+        updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         generateNotification(message, data)
     }
 
@@ -276,44 +273,38 @@ class DecryptMessage(
                 }
             }
         }
-        pendingMessage(message)
-        pendingAck(data.messageId)
+        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+        updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         generateNotification(message, data)
     }
 
     private fun processSystemMessage(data: BlazeMessageData) {
-        when (data.category) {
-            MessageCategory.SYSTEM_CONVERSATION.name -> {
-                val json = Base64.decode(data.data)
-                val systemMessage = gson.fromJson(String(json), SystemConversationMessagePayload::class.java)
-                if (systemMessage.action != SystemConversationAction.UPDATE.name) {
-                    syncConversation(data)
-                }
-                processSystemConversationMessage(data, systemMessage)
+        if (data.category == MessageCategory.SYSTEM_CONVERSATION.name) {
+            val json = Base64.decode(data.data)
+            val systemMessage = gson.fromJson(String(json), SystemConversationMessagePayload::class.java)
+            if (systemMessage.action != SystemConversationAction.UPDATE.name) {
+                syncConversation(data)
             }
-            MessageCategory.SYSTEM_USER.name -> {
-                val json = Base64.decode(data.data)
-                val systemMessage = gson.fromJson(String(json), SystemUserMessagePayload::class.java)
-                processSystemUserMessage(systemMessage)
-            }
-            MessageCategory.SYSTEM_CIRCLE.name -> {
-                val json = Base64.decode(data.data)
-                val systemMessage = gson.fromJson(String(json), SystemCircleMessagePayload::class.java)
-                processSystemCircleMessage(data, systemMessage)
-            }
-            MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
-                val json = Base64.decode(data.data)
-                val systemSnapshot = gson.fromJson(String(json), Snapshot::class.java)
-                processSystemSnapshotMessage(data, systemSnapshot)
-            }
-            MessageCategory.SYSTEM_SESSION.name -> {
-                val json = Base64.decode(data.data)
-                val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
-                processSystemSessionMessage(systemSession)
-            }
+            processSystemConversationMessage(data, systemMessage)
+        } else if (data.category == MessageCategory.SYSTEM_USER.name) {
+            val json = Base64.decode(data.data)
+            val systemMessage = gson.fromJson(String(json), SystemUserMessagePayload::class.java)
+            processSystemUserMessage(systemMessage)
+        } else if (data.category == MessageCategory.SYSTEM_CIRCLE.name) {
+            val json = Base64.decode(data.data)
+            val systemMessage = gson.fromJson(String(json), SystemCircleMessagePayload::class.java)
+            processSystemCircleMessage(data, systemMessage)
+        } else if (data.category == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name) {
+            val json = Base64.decode(data.data)
+            val systemSnapshot = gson.fromJson(String(json), Snapshot::class.java)
+            processSystemSnapshotMessage(data, systemSnapshot)
+        } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
+            val json = Base64.decode(data.data)
+            val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
+            processSystemSessionMessage(systemSession)
         }
 
-        pendingAck(data.messageId, MessageStatus.READ)
+        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
     private val notificationManager: NotificationManager by lazy {
@@ -381,12 +372,14 @@ class DecryptMessage(
             } else if (transferPinData.action == PinAction.UNPIN.name) {
                 pinMessageDao.deleteByIds(transferPinData.messageIds)
             }
-            pendingAck(data.messageId, MessageStatus.READ)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            messageHistoryDao.insert(MessageHistory(data.messageId))
         }
     }
 
     private fun processRecallMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
+            val accountId = Session.getAccountId() ?: return
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
@@ -397,8 +390,7 @@ class DecryptMessage(
                 pinMessageDao.deleteByMessageId(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
                 messagesFts4Dao.deleteByMessageId(msg.id)
-                remoteMessageStatusDao.deleteByMessageId(msg.id)
-                remoteMessageStatusDao.updateConversationUnseen(msg.conversationId)
+                messageDao.takeUnseen(accountId, msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
@@ -417,7 +409,8 @@ class DecryptMessage(
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
             }
-            pendingAck(data.messageId, MessageStatus.READ)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            messageHistoryDao.insert(MessageHistory(data.messageId))
         }
     }
 
@@ -434,6 +427,7 @@ class DecryptMessage(
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
+                val accountId = Session.getAccountId() ?: return
                 plainData.ackMessages?.let {
                     val updateMessageList = arrayListOf<String>()
                     for (m in it) {
@@ -447,16 +441,18 @@ class DecryptMessage(
                         }
                     }
                     if (updateMessageList.isNotEmpty()) {
-                        remoteMessageStatusDao.deleteByMessageIds(updateMessageList)
-                        messageDao.findConversationsByMessages(updateMessageList).forEach { cId ->
-                            remoteMessageStatusDao.updateConversationUnseen(cId)
+                        messageDao.markMessageRead(updateMessageList)
+                        val updateConversationList = messageDao.findConversationsByMessages(updateMessageList)
+                        updateConversationList.forEach { cId ->
+                            messageDao.takeUnseen(accountId, cId)
                             notificationManager.cancel(cId.hashCode())
                         }
                     }
                 }
             }
 
-            pendingAck(data.messageId, MessageStatus.READ)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            messageHistoryDao.insert(MessageHistory(data.messageId))
         } else if (data.category == MessageCategory.PLAIN_TEXT.name ||
             data.category == MessageCategory.PLAIN_IMAGE.name ||
             data.category == MessageCategory.PLAIN_VIDEO.name ||
@@ -477,7 +473,7 @@ class DecryptMessage(
             } catch (e: Exception) {
                 insertInvalidMessage(data)
             }
-            pendingAck(data.messageId)
+            updateRemoteMessageStatus(data.messageId)
         }
     }
 
@@ -545,11 +541,7 @@ class DecryptMessage(
                             data.category,
                             plain,
                             data.createdAt,
-                            if (data.userId != Session.getAccountId()) {
-                                MessageStatus.READ.name
-                            } else {
-                                data.status
-                            },
+                            data.status,
                             quoteMessageId = data.quoteMessageId
                         ).apply {
                             this.content?.findLastUrl()?.let {
@@ -564,19 +556,14 @@ class DecryptMessage(
                         }
                         createReplyTextMessage(
                             data.messageId, data.conversationId, data.userId, data.category,
-                            plain, data.createdAt,
-                            if (data.userId != Session.getAccountId()) {
-                                MessageStatus.READ.name
-                            } else {
-                                data.status
-                            },
-                            quoteMessageItem.messageId, quoteMessageItem.toJson()
+                            plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson()
                         )
                     }
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                pendingMessage(message)
-                val userMap = mentions?.associate { it.identityNumber to it.fullName }
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 generateNotification(message, data, userMap, quoteMe || mentionMe)
             }
             data.category.endsWith("_POST") -> {
@@ -589,28 +576,17 @@ class DecryptMessage(
                     plain,
                     plain.postOptimize(),
                     data.createdAt,
-                    if (data.userId != Session.getAccountId()) {
-                        MessageStatus.READ.name
-                    } else {
-                        data.status
-                    },
+                    data.status
                 )
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 generateNotification(message, data)
             }
             data.category.endsWith("_LOCATION") -> {
                 val plain = tryDecodePlain(data.category == MessageCategory.PLAIN_LOCATION.name, plainText)
                 if (checkLocationData(plain)) {
-                    val message = createLocationMessage(
-                        data.messageId, data.conversationId, data.userId, data.category, plain,
-                        if (data.userId != Session.getAccountId()) {
-                            MessageStatus.READ.name
-                        } else {
-                            data.status
-                        },
-                        data.createdAt
-                    )
-                    pendingMessage(message)
+                    val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
+                    messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                     generateNotification(message, data)
                 }
             }
@@ -628,16 +604,11 @@ class DecryptMessage(
                     createMediaMessage(
                         data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
-                        if (data.userId != Session.getAccountId()) {
-                            MessageStatus.READ.name
-                        } else {
-                            data.status
-                        },
-                        quoteMessageItem?.messageId, quoteMessageItem.toJson()
+                        data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
 
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -661,17 +632,12 @@ class DecryptMessage(
                         data.messageId, data.conversationId, data.userId,
                         data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mimeType,
-                        mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED,
-                        if (data.userId != Session.getAccountId()) {
-                            MessageStatus.READ.name
-                        } else {
-                            data.status
-                        },
+                        mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
 
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadVideo) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -689,17 +655,13 @@ class DecryptMessage(
                         data.messageId, data.conversationId, data.userId,
                         data.category, mediaData.attachmentId, mediaData.name, null,
                         mediaData.mimeType, mediaData.size, data.createdAt,
-                        mediaData.key, mediaData.digest, MediaStatus.CANCELED,
-                        if (data.userId != Session.getAccountId()) {
-                            MessageStatus.READ.name
-                        } else {
-                            data.status
-                        },
+                        mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
 
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 lifecycleScope.launch {
                     MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                         jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -716,16 +678,11 @@ class DecryptMessage(
                     createAudioMessage(
                         data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                         data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
-                        mediaData.key, mediaData.digest, MediaStatus.PENDING,
-                        if (data.userId != Session.getAccountId()) {
-                            MessageStatus.READ.name
-                        } else {
-                            data.status
-                        },
+                        mediaData.key, mediaData.digest, MediaStatus.PENDING, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 generateNotification(message, data)
             }
@@ -741,13 +698,7 @@ class DecryptMessage(
                     if (sticker != null) {
                         createStickerMessage(
                             data.messageId, data.conversationId, data.userId, data.category, null,
-                            mediaData.albumId, sticker.stickerId, mediaData.name,
-                            if (data.userId != Session.getAccountId()) {
-                                MessageStatus.READ.name
-                            } else {
-                                data.status
-                            },
-                            data.createdAt
+                            mediaData.albumId, sticker.stickerId, mediaData.name, data.status, data.createdAt
                         )
                     } else {
                         return
@@ -759,16 +710,10 @@ class DecryptMessage(
                     }
                     createStickerMessage(
                         data.messageId, data.conversationId, data.userId, data.category, null,
-                        mediaData.albumId, mediaData.stickerId, mediaData.name,
-                        if (data.userId != Session.getAccountId()) {
-                            MessageStatus.READ.name
-                        } else {
-                            data.status
-                        },
-                        data.createdAt
+                        mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt
                     )
                 }
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 generateNotification(message, data)
             }
             data.category.endsWith("_CONTACT") -> {
@@ -782,17 +727,11 @@ class DecryptMessage(
                 val message = generateMessage(data) { quoteMessageItem ->
                     createContactMessage(
                         data.messageId, data.conversationId, data.userId, data.category,
-                        plainText, contactData.userId,
-                        if (data.userId != Session.getAccountId()) {
-                            MessageStatus.READ.name
-                        } else {
-                            data.status
-                        },
-                        data.createdAt, user?.fullName,
+                        plainText, contactData.userId, data.status, data.createdAt, user?.fullName,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
                 }
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 val fullName = user?.fullName
                 if (!fullName.isNullOrBlank()) {
                     MessageFts4Helper.insertOrReplaceMessageFts4(message, fullName)
@@ -812,15 +751,9 @@ class DecryptMessage(
                 }
                 val message = createLiveMessage(
                     data.messageId, data.conversationId, data.userId, data.category, plain,
-                    liveData.width, liveData.height, liveData.url, liveData.thumbUrl,
-                    if (data.userId != Session.getAccountId()) {
-                        MessageStatus.READ.name
-                    } else {
-                        data.status
-                    },
-                    data.createdAt
+                    liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt
                 )
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 generateNotification(message, data)
             }
             data.category.endsWith("_TRANSCRIPT") -> {
@@ -828,7 +761,7 @@ class DecryptMessage(
                     Base64.decode(plainText)
                 ) else plainText
                 val message = processTranscriptMessage(data, plain) ?: return
-                pendingMessage(message)
+                messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
                 generateNotification(message, data)
             }
         }
@@ -943,11 +876,7 @@ class DecryptMessage(
             ),
             mediaSize,
             data.createdAt,
-            if (data.userId != Session.getAccountId()) {
-                MessageStatus.READ.name
-            } else {
-                data.status
-            }
+            data.status
         )
         transcriptMessageDao.insertList(
             transcripts.filter { t ->
@@ -992,7 +921,7 @@ class DecryptMessage(
             snapshotDao.deletePendingSnapshotByHash(it)
         }
         snapshotDao.insert(snapshot)
-        pendingMessage(message)
+        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
@@ -1034,7 +963,6 @@ class DecryptMessage(
             jobManager.addJobInBackground(GenerateAvatarJob(data.conversationId))
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
-            // Do nothing
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
             if (!systemMessage.participantId.isNullOrBlank()) {
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), forceRefresh = true))
@@ -1048,7 +976,7 @@ class DecryptMessage(
                 return
             }
         }
-        pendingMessage(message)
+        messageDao.insertAndNotifyConversation(message, conversationDao, accountId)
     }
 
     private fun processSystemUserMessage(systemMessage: SystemUserMessagePayload) {
@@ -1109,15 +1037,16 @@ class DecryptMessage(
         } catch (e: Exception) {
             reportDecryptFailed(data, e, null)
             insertFailedMessage(data)
-            pendingAck(data.messageId)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
-            pendingAck(data.messageId, MessageStatus.READ)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            messageHistoryDao.insert(MessageHistory(data.messageId))
         } else {
-            pendingAck(data.messageId)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
         val deviceId = data.sessionId.getDeviceId()
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
@@ -1137,7 +1066,8 @@ class DecryptMessage(
                     val plaintext = String(it)
                     if (resendMessageId != null) {
                         processRedecryptMessage(data, resendMessageId, plaintext)
-                        pendingAck(data.messageId, MessageStatus.READ)
+                        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                        messageHistoryDao.insert(MessageHistory(data.messageId))
                     } else {
                         try {
                             processDecryptSuccess(data, plaintext)
@@ -1154,7 +1084,7 @@ class DecryptMessage(
                 requestResendMessage(data.conversationId, data.userId, data.sessionId)
             }
         } catch (e: Exception) {
-            Timber.w("decrypt failed ${data.messageId} ${e.message}")
+            Log.e(TAG, "decrypt failed " + data.messageId, e)
             reportDecryptFailed(data, e, resendMessageId)
 
             if (resendMessageId != null) {
@@ -1217,7 +1147,7 @@ class DecryptMessage(
             data.category == MessageCategory.ENCRYPTED_LOCATION.name ||
             data.category == MessageCategory.ENCRYPTED_TRANSCRIPT.name
         ) {
-            pendingMessages.add(
+            database.insertAndNotifyConversation(
                 createMessage(
                     data.messageId,
                     data.conversationId,
@@ -1232,19 +1162,14 @@ class DecryptMessage(
     }
 
     private fun processRedecryptMessage(data: BlazeMessageData, messageId: String, plainText: String) {
-        val status = if (data.userId != Session.getAccountId()) {
-            MessageStatus.READ.name
-        } else {
-            data.status
-        }
         if (data.category == MessageCategory.SIGNAL_TEXT.name) {
             parseMentionData(plainText, messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-            messageDao.updateMessageContentAndStatus(plainText, status, messageId)
+            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
-            messageDao.updateMessageContentAndStatus(plainText, status, messageId)
+            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_LOCATION.name) {
             if (checkLocationData(plainText)) {
-                messageDao.updateMessageContentAndStatus(plainText, status, messageId)
+                messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
             }
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
@@ -1257,7 +1182,7 @@ class DecryptMessage(
             messageDao.updateAttachmentMessage(
                 messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
-                mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, status
+                mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status
             )
             if (data.category == MessageCategory.SIGNAL_IMAGE.name || data.category == MessageCategory.SIGNAL_AUDIO.name) {
                 val message = messageDao.findMessageById(messageId)!!
@@ -1272,16 +1197,16 @@ class DecryptMessage(
                     jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
                 }
             }
-            stickerData.stickerId?.let { messageDao.updateStickerMessage(it, status, messageId) }
+            stickerData.stickerId?.let { messageDao.updateStickerMessage(it, data.status, messageId) }
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
             val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
-            messageDao.updateContactMessage(contactData.userId, status, messageId)
+            messageDao.updateContactMessage(contactData.userId, data.status, messageId)
             syncUser(contactData.userId)
         } else if (data.category == MessageCategory.SIGNAL_LIVE.name) {
             val decoded = Base64.decode(plainText)
             val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
-            messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, status, messageId)
+            messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_TRANSCRIPT.name) {
             val decoded = Base64.decode(plainText)
             processTranscriptMessage(data, String(decoded))?.let { message ->
@@ -1293,9 +1218,6 @@ class DecryptMessage(
                     messageId
                 )
             }
-        }
-        if (data.userId != Session.getAccountId()) {
-            remoteMessageStatusDao.insert(RemoteMessageStatus(messageId, data.conversationId, data.status))
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId)?.let {
@@ -1331,6 +1253,10 @@ class DecryptMessage(
         ratchetSenderKeyDao.delete(conversationId, SignalProtocolAddress(userId, sessionId.getDeviceId()).toString())
     }
 
+    private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
+        jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
+    }
+
     private fun refreshSignalKeys(conversationId: String) {
         val start = refreshKeyMap[conversationId] ?: 0.toLong()
         val current = System.currentTimeMillis()
@@ -1351,7 +1277,7 @@ class DecryptMessage(
         val bm = createSyncSignalKeys(createSyncSignalKeysParam(RefreshOneTimePreKeysJob.generateKeys()))
         val result = signalKeysChannel(bm)
         if (result == null) {
-            Timber.w("Registering new pre keys...")
+            Log.w(TAG, "Registering new pre keys...")
         }
     }
 
@@ -1386,16 +1312,5 @@ class DecryptMessage(
             return
         }
         NotificationGenerator.generate(lifecycleScope, message, userMap, force, data.silent ?: false)
-    }
-
-    private fun pendingAck(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
-        pendingACKs.add(BlazeAckMessage(messageId, status.name))
-        if (status == MessageStatus.READ) {
-            pendingMessageHistories.add(messageId)
-        }
-    }
-
-    private fun pendingMessage(message: Message) {
-        pendingMessages.add(message)
     }
 }
