@@ -12,6 +12,7 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
+import one.mixin.android.session.Session
 import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
@@ -20,7 +21,9 @@ import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.SearchMessageItem
 
 @Dao
@@ -249,9 +252,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages) AND status != 'FAILED' AND status != 'UNKNOWN'")
-    fun markMessageRead(messages: List<String>)
-
     @Query("UPDATE messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
     fun recallFailedMessage(id: String)
 
@@ -422,20 +422,6 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun batchMarkRead(conversationId: String, userId: String, rowid: String)
 
-    @Query(
-        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId 
-        AND m.status IN ('SENT', 'DELIVERED') AND m.user_id != :userId) WHERE conversation_id = :conversationId
-        """
-    )
-    suspend fun updateConversationUnseen(userId: String, conversationId: String)
-
-    @Query(
-        """UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId
-            AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId
-        """
-    )
-    fun takeUnseen(userId: String, conversationId: String)
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND (m.category IN ($AUDIOS)) AND m.created_at >= :createdAt AND 
@@ -562,11 +548,12 @@ interface MessageDao : BaseDao<Message> {
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
 
     @Transaction
-    fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
+    fun insertAndNotifyConversation(message: Message, remoteMessageStatusDao: RemoteMessageStatusDao) {
         insert(message)
-        if (userId != message.userId) {
-            conversationDao.unseenMessageCount(message.conversationId, userId)
+        if (Session.getSessionId() != message.userId) {
+            remoteMessageStatusDao.insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
         }
+        remoteMessageStatusDao.updateConversationUnseen(message.conversationId)
     }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)

@@ -1,7 +1,6 @@
 package one.mixin.android.db
 
 import one.mixin.android.Constants.DB_DELETE_LIMIT
-import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -165,6 +164,7 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
         mentionMessageDao().deleteMessage(messageId)
         messageDao().deleteMessageById(messageId)
         messageFts4Dao().deleteByMessageId(messageId)
+        remoteMessageStatusDao().deleteByMessageId(messageId)
     }
 }
 
@@ -194,17 +194,6 @@ suspend fun MixinDatabase.deleteMessageByConversationId(conversationId: String, 
     mentionMessageDao().deleteMessageByConversationId(conversationId, limit)
 }
 
-suspend fun MessageDao.batchMarkReadAndTake(
-    conversationId: String,
-    userId: String,
-    rowid: String
-) {
-    withTransaction {
-        batchMarkRead(conversationId, userId, rowid)
-        updateConversationUnseen(userId, conversationId)
-    }
-}
-
 fun JobDao.insertNoReplace(job: Job) {
     if (findJobById(job.jobId) == null) {
         insert(job)
@@ -217,16 +206,14 @@ fun MixinDatabase.deleteMessage(id: String) {
         pinMessageDao().deleteByMessageId(id)
         mentionMessageDao().deleteMessage(id)
         messageFts4Dao().deleteByMessageId(id)
+        remoteMessageStatusDao().deleteByMessageId(id)
     }
 }
 
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
-        val userId = Session.getAccountId()
-        if (userId != message.userId) {
-            conversationDao().unseenMessageCount(message.conversationId, userId)
-        }
+        remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
     }
 }
 
