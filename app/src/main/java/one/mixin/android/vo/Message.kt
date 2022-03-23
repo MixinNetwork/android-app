@@ -9,6 +9,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.MixinApplication
+import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import java.io.Serializable
 
@@ -598,3 +599,5 @@ fun createPinMessage(
 fun Message.absolutePath(context: Context = MixinApplication.appContext): String? {
     return absolutePath(context, conversationId, mediaUrl)
 }
+
+fun Message.isMine() = userId == Session.getAccountId()

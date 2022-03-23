@@ -12,7 +12,6 @@ import one.mixin.android.db.contants.IMAGES
 import one.mixin.android.db.contants.LIVES
 import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
-import one.mixin.android.session.Session
 import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.vo.AttachmentMigration
@@ -25,6 +24,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.isMine
 
 @Dao
 interface MessageDao : BaseDao<Message> {
@@ -550,7 +550,7 @@ interface MessageDao : BaseDao<Message> {
     @Transaction
     fun insertAndNotifyConversation(message: Message, remoteMessageStatusDao: RemoteMessageStatusDao) {
         insert(message)
-        if (Session.getSessionId() != message.userId) {
+        if (!message.isMine()) {
             remoteMessageStatusDao.insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
         }
         remoteMessageStatusDao.updateConversationUnseen(message.conversationId)
