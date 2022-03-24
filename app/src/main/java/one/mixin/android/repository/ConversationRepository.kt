@@ -610,10 +610,11 @@ internal constructor(
     suspend fun findSameConversations(selfId: String, userId: String) = conversationDao.findSameConversations(selfId, userId)
 
     suspend fun markMessageRead(conversationId: String) = withContext(SINGLE_DB_THREAD) {
-        if (remoteMessageStatusDao.countUnread(conversationId) <= 0) return@withContext
         runInTransaction {
-            remoteMessageStatusDao.markReadByConversationId(conversationId)
-            remoteMessageStatusDao.updateConversationUnseen(conversationId)
+            conversationDao.conversationZeroClear(conversationId)
+            if (remoteMessageStatusDao.countUnread(conversationId) > 0) {
+                remoteMessageStatusDao.markReadByConversationId(conversationId)
+            }
         }
     }
 }

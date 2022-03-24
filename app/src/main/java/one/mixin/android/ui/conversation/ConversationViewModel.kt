@@ -433,7 +433,7 @@ internal constructor(
         if (isBubbled.not()) {
             notificationManager.cancel(conversationId.hashCode())
         }
-        viewModelScope.launch {
+        MixinApplication.appScope.launch {
             conversationRepository.markMessageRead(conversationId)
         }
     }
