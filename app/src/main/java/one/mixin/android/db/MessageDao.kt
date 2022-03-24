@@ -552,8 +552,8 @@ interface MessageDao : BaseDao<Message> {
         insert(message)
         if (!message.isMine()) {
             remoteMessageStatusDao.insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
+            remoteMessageStatusDao.updateConversationUnseen(message.conversationId)
         }
-        remoteMessageStatusDao.updateConversationUnseen(message.conversationId)
     }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
