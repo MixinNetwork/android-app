@@ -18,6 +18,8 @@ import io.noties.markwon.recycler.MarkwonAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okio.buffer
+import okio.source
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMarkdownBinding
 import one.mixin.android.databinding.ViewMarkdownBinding
@@ -44,11 +46,12 @@ import one.mixin.android.widget.WebControlView
 import org.commonmark.ext.gfm.tables.TableBlock
 import org.commonmark.node.FencedCodeBlock
 import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.html.AttributesCustomizer
 import org.intellij.markdown.html.DUMMY_ATTRIBUTES_CUSTOMIZER
 import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
+import java.nio.charset.Charset
 
 @AndroidEntryPoint
 class MarkdownActivity : BaseActivity() {
@@ -185,6 +188,7 @@ class MarkdownActivity : BaseActivity() {
         }
     }
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     private fun savePdf(dismissAction: () -> Unit) = lifecycleScope.launch {
         val src = intent.getStringExtra(CONTENT) ?: return@launch
 
@@ -200,12 +204,23 @@ class MarkdownActivity : BaseActivity() {
 
         val pdfFile = this@MarkdownActivity.getPublicDocumentPath()
             .createPdfTemp()
-        val flavour = CommonMarkFlavourDescriptor()
+        val flavour = GFMFlavourDescriptor()
         val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
-        val html = HtmlGenerator(src, parsedTree, flavour, true)
+        val body = HtmlGenerator(src, parsedTree, flavour, true)
             .generateHtml(HtmlTagRenderer(DUMMY_ATTRIBUTES_CUSTOMIZER, true))
+
+        var pdfHtml = assets.open("pdf.html")
+            .source()
+            .buffer()
+            .readByteString()
+            .string(Charset.forName("utf-8"))
+            .replace("#body-placeholder", body)
+        if (isNightMode()) {
+            pdfHtml = pdfHtml.replace("pdf-light.css", "pdf-dark.css")
+        }
+
         printPdf(
-            this@MarkdownActivity, html, pdfFile,
+            this@MarkdownActivity, pdfHtml, pdfFile,
             object : PrintPdfCallback {
                 override fun onSuccess() {
                     toast(getString(R.string.save_to, pdfFile.absoluteFile))

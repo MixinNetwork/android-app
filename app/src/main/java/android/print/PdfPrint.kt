@@ -48,7 +48,7 @@ fun printPdf(context: Context, html: String, outputFile: File, callback: PrintPd
             )
         }
     }
-    webView.loadDataWithBaseURL("", html, "text/html", "utf-8", null)
+    webView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null)
 }
 
 interface PrintPdfCallback {
