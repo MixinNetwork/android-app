@@ -311,6 +311,7 @@ dependencies {
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
     implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
+    implementation "org.jetbrains:markdown:${markdownVersion}"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 

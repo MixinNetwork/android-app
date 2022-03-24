@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.print.PrintPdfCallback
+import android.print.printPdf
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.lifecycleScope
@@ -16,6 +18,8 @@ import io.noties.markwon.recycler.MarkwonAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okio.buffer
+import okio.source
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityMarkdownBinding
 import one.mixin.android.databinding.ViewMarkdownBinding
@@ -28,8 +32,6 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.markdown.pdf.PDFGenerateListener
-import one.mixin.android.ui.conversation.markdown.pdf.generatePDF
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.markdown.DefaultEntry
@@ -43,6 +45,13 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.commonmark.ext.gfm.tables.TableBlock
 import org.commonmark.node.FencedCodeBlock
+import org.intellij.markdown.ast.ASTNode
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
+import org.intellij.markdown.html.AttributesCustomizer
+import org.intellij.markdown.html.DUMMY_ATTRIBUTES_CUSTOMIZER
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.MarkdownParser
+import java.nio.charset.Charset
 
 @AndroidEntryPoint
 class MarkdownActivity : BaseActivity() {
@@ -122,10 +131,8 @@ class MarkdownActivity : BaseActivity() {
                 .subscribe(
                     { granted ->
                         if (granted) {
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                savePdf {
-                                    bottomSheet.dismiss()
-                                }
+                            savePdf {
+                                bottomSheet.dismiss()
                             }
                         } else {
                             this@MarkdownActivity.openPermissionSetting()
@@ -181,41 +188,89 @@ class MarkdownActivity : BaseActivity() {
         }
     }
 
-    private fun savePdf(dismissAction: () -> Unit) {
-        lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
-                setCancelable(false)
-            }
-            dialog.show()
-            binding.recyclerView.layoutManager?.smoothScrollToPosition(
-                binding.recyclerView,
-                null,
-                binding.recyclerView.adapter?.itemCount ?: 0
-            )
-            val pdfFile = this@MarkdownActivity.getPublicDocumentPath()
-                .createPdfTemp()
-            generatePDF(
-                binding.recyclerView,
-                pdfFile.absolutePath,
-                object :
-                    PDFGenerateListener {
-                    override fun pdfGenerationSuccess() {
-                        toast(
-                            getString(
-                                R.string.save_to,
-                                pdfFile.absoluteFile
-                            )
-                        )
-                        dismissAction.invoke()
-                        dialog.dismiss()
-                    }
+    @Suppress("BlockingMethodInNonBlockingContext")
+    private fun savePdf(dismissAction: () -> Unit) = lifecycleScope.launch {
+        val src = intent.getStringExtra(CONTENT) ?: return@launch
 
-                    override fun pdfGenerationFailure(exception: Exception) {
-                        dialog.dismiss()
-                        toast(R.string.save_failure)
+        val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            setCancelable(false)
+        }
+        dialog.show()
+        binding.recyclerView.layoutManager?.smoothScrollToPosition(
+            binding.recyclerView,
+            null,
+            binding.recyclerView.adapter?.itemCount ?: 0
+        )
+
+        val pdfFile = this@MarkdownActivity.getPublicDocumentPath()
+            .createPdfTemp()
+        val flavour = GFMFlavourDescriptor()
+        val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
+        val body = HtmlGenerator(src, parsedTree, flavour, true)
+            .generateHtml(HtmlTagRenderer(DUMMY_ATTRIBUTES_CUSTOMIZER, true))
+
+        var pdfHtml = assets.open("pdf.html")
+            .source()
+            .buffer()
+            .readByteString()
+            .string(Charset.forName("utf-8"))
+            .replace("#body-placeholder", body)
+        if (isNightMode()) {
+            pdfHtml = pdfHtml.replace("pdf-light.css", "pdf-dark.css")
+        }
+
+        printPdf(
+            this@MarkdownActivity, pdfHtml, pdfFile,
+            object : PrintPdfCallback {
+                override fun onSuccess() {
+                    toast(getString(R.string.save_to, pdfFile.absoluteFile))
+                    dismissAction.invoke()
+                    dialog.dismiss()
+                }
+
+                override fun onFailure(error: CharSequence?) {
+                    dialog.dismiss()
+                    toast(R.string.save_failure)
+                }
+            }
+        )
+    }
+
+    inner class HtmlTagRenderer(
+        private val customizer: AttributesCustomizer,
+        private val includeSrcPositions: Boolean
+    ) : HtmlGenerator.TagRenderer {
+        override fun openTag(
+            node: ASTNode,
+            tagName: CharSequence,
+            vararg attributes: CharSequence?,
+            autoClose: Boolean
+        ): CharSequence {
+            return buildString {
+                append("<$tagName")
+                for (attribute in customizer.invoke(node, tagName, attributes.asIterable())) {
+                    if (attribute != null) {
+                        append(" $attribute")
                     }
                 }
-            )
+                if (includeSrcPositions) {
+                    append(" ${HtmlGenerator.getSrcPosAttribute(node)}")
+                }
+
+                if (autoClose) {
+                    append(" />")
+                } else {
+                    append(">")
+                }
+            }
+        }
+
+        override fun closeTag(tagName: CharSequence): CharSequence = "</$tagName>"
+
+        override fun printHtml(html: CharSequence): CharSequence {
+            return if (html == "<details>") {
+                "<details open>"
+            } else html
         }
     }
 
