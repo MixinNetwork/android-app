@@ -2,6 +2,8 @@ package one.mixin.android.ui.setting.delete
 
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -27,7 +29,9 @@ import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.CaptchaView
 
 @AndroidEntryPoint
 class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
@@ -39,6 +43,8 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
 
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentDeleteAccountBinding::bind)
+
+    private var captchaView: CaptchaView? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -54,6 +60,14 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                 changeNumber()
             }
         }
+    }
+
+    override fun onBackPressed(): Boolean {
+        if (captchaView?.isVisible() == true) {
+            captchaView?.hide()
+            return true
+        }
+        return false
     }
 
     private fun verifyDeleteAccount() {
@@ -109,7 +123,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                 callback.invoke()
             }
             .setPositiveButton(R.string.common_continue) { dialog, _ ->
-                viewLifecycleOwner.lifecycleScope.launch {
+                lifecycleScope.launch {
                     verify(phone)
                     dialog.dismiss()
                     callback.invoke()
@@ -118,17 +132,28 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             .show()
     }
 
-    private suspend fun verify(phone: String) {
+    private suspend fun verify(
+        phone: String = requireNotNull(Session.getAccount()).phone,
+        captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null,
+    ) {
+        val verificationRequest = VerificationRequest(
+            phone,
+            VerificationPurpose.DEACTIVATED.name
+        )
+        if (captchaResponse != null) {
+            if (captchaResponse.first.isG()) {
+                verificationRequest.gRecaptchaResponse = captchaResponse.second
+            } else {
+                verificationRequest.hCaptchaResponse = captchaResponse.second
+            }
+        }
+        binding.deleteCover.isVisible = true
         handleMixinResponse(
             invokeNetwork = {
-                viewModel.verification(
-                    VerificationRequest(
-                        phone,
-                        VerificationPurpose.DEACTIVATED.name
-                    )
-                )
+                viewModel.verification(verificationRequest)
             },
             successBlock = { response ->
+                binding.deleteCover.isVisible = false
                 val verificationResponse = response.data!!
                 activity?.addFragment(
                     this@DeleteAccountFragment,
@@ -141,8 +166,45 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                     ),
                     VerificationFragment.TAG
                 )
+            },
+            failureBlock = { r ->
+                if (r.errorCode == ErrorHandler.NEED_CAPTCHA) {
+                    initAndLoadCaptcha()
+                    return@handleMixinResponse true
+                }
+                binding.deleteCover.isVisible = false
+                return@handleMixinResponse false
+            },
+            exceptionBlock = {
+                binding.deleteCover.isVisible = false
+                return@handleMixinResponse false
             }
         )
+    }
+
+    private fun initAndLoadCaptcha() {
+        if (captchaView == null) {
+            captchaView = CaptchaView(
+                requireContext(),
+                object : CaptchaView.Callback {
+                    override fun onStop() {
+                        binding.deleteCover.isVisible = false
+                    }
+
+                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
+                        lifecycleScope.launch {
+                            verify(captchaResponse = value)
+                        }
+                    }
+                }
+            )
+            (view as ViewGroup).addView(
+                captchaView?.webView,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+        captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
     }
 
     private fun changeNumber() {

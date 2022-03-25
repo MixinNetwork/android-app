@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
-    android:orientation="vertical">
+    android:background="?attr/bg_window">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -16,9 +15,11 @@
         app:titleText="@string/setting_delete_account" />
 
     <LinearLayout
+        android:id="@+id/top_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
+        android:layout_below="@id/title_view"
         android:background="?attr/bg_white"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
@@ -114,6 +115,7 @@
         android:id="@+id/delete_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
+        android:layout_below="@id/top_ll"
         android:background="?attr/bg_white"
         android:layout_marginBottom="24dp"
         android:foreground="?attr/selectableItemBackground">
@@ -134,6 +136,7 @@
         android:id="@+id/change_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
+        android:layout_below="@id/delete_rl"
         android:layout_marginBottom="24dp"
         android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
@@ -149,4 +152,12 @@
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
-</LinearLayout>
+    <View
+        android:id="@+id/delete_cover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="invisible" />
+</RelativeLayout>
