@@ -211,12 +211,6 @@ dependencies {
     implementation "androidx.room:room-ktx:${roomVersion}"
     testImplementation "androidx.room:room-testing:${roomVersion}"
 
-    // emoji
-    implementation "androidx.emoji2:emoji2:${emojiVerison}"
-    implementation "androidx.emoji2:emoji2-views:${emojiVerison}"
-    implementation "androidx.emoji2:emoji2-bundled:${emojiVerison}"
-    implementation "androidx.emoji2:emoji2-views-helper:${emojiVerison}"
-
     // DI
     implementation "com.google.dagger:hilt-android:${hiltVersion}"
     kapt "com.google.dagger:hilt-android-compiler:${hiltVersion}"
