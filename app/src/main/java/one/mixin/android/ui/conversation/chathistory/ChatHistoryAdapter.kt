@@ -393,6 +393,16 @@ class ChatHistoryAdapter(
         }
     }
 
+    override fun onViewAttachedToWindow(holder: BaseViewHolder) {
+        getItem(holder.layoutPosition).let {
+            holder.listen(it.messageId)
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: BaseViewHolder) {
+        holder.stopListen()
+    }
+
     private fun getItem(position: Int): ChatHistoryMessageItem {
         return transcripts[position]
     }
