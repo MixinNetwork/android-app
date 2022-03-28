@@ -115,33 +115,15 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
                     binding.fileExpired.visibility = View.GONE
                     binding.fileProgress.visibility = View.VISIBLE
-                    if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                        binding.fileProgress.setBindOnly("${messageItem.transcriptId ?: ""}${messageItem.messageId}")
-                        binding.bottomLayout.bindId = "${messageItem.transcriptId ?: ""}${messageItem.messageId}"
-                        if (MusicPlayer.isPlay(messageItem.messageId)) {
-                            binding.fileProgress.setPause()
-                            binding.bottomLayout.showSeekBar()
-                        } else {
-                            binding.fileProgress.setPlay()
-                            binding.bottomLayout.showText()
-                        }
-                        binding.fileProgress.setOnClickListener {
-                            onItemListener.onAudioFileClick(messageItem)
-                        }
-                    } else {
-                        binding.fileProgress.setDone()
-                        binding.fileProgress.setBindId(null)
-                        binding.bottomLayout.bindId = null
-                        binding.fileProgress.setOnClickListener {
-                            handleClick(messageItem, onItemListener)
-                        }
+                    binding.fileProgress.setDone()
+                    binding.fileProgress.setBindId(null)
+                    binding.bottomLayout.bindId = null
+                    binding.fileProgress.setOnClickListener {
+                        handleClick(messageItem, onItemListener)
                     }
                     binding.chatLayout.setOnClickListener {
-                        if (MusicPlayer.isPlay(messageItem.messageId)) {
-                            onItemListener.onAudioFileClick(messageItem)
-                        } else {
-                            handleClick(messageItem, onItemListener)
-                        }
+
+                        handleClick(messageItem, onItemListener)
                     }
                 }
                 MediaStatus.CANCELED.name -> {
