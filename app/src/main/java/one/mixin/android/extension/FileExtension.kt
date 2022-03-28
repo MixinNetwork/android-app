@@ -776,6 +776,18 @@ fun String.toDrawable(width: Int, height: Int): Drawable? {
     }
 }
 
+fun String.toBitmap(width: Int, height: Int): Bitmap? {
+    return try {
+        if (!Base83.isValid(this)) {
+            this.decodeBase64().encodeBitmap()
+        } else {
+            BlurHashDecoder.decode(this, minOf(width, MAX_BLUR_HASH_DIMEN), minOf(height, MAX_BLUR_HASH_DIMEN), 1.0)
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
 fun String.getFileNameNoEx(): String {
     val dot = this.lastIndexOf('.')
     if (dot > -1 && dot < this.length) {

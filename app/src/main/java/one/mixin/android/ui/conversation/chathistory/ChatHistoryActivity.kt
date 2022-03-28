@@ -24,12 +24,15 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityChatHistoryBinding
 import one.mixin.android.databinding.ViewTranscriptBinding
 import one.mixin.android.databinding.ViewUrlBottomBinding
+import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getClipboardManager
@@ -302,7 +305,9 @@ class ChatHistoryActivity : BaseActivity() {
                                 msgId
                             )
                         }
-                        scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4)
+                        scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4) {
+                            RxBus.publish(BlinkEvent(quoteMessageId))
+                        }
                     }
                 }
             }
@@ -321,7 +326,7 @@ class ChatHistoryActivity : BaseActivity() {
                         view,
                         messageItem.conversationId!!,
                         messageItem.messageId,
-                        messageItem.toMessageItem(messageItem.conversationId),
+                        messageItem.toMessageItem(),
                         MediaPagerActivity.MediaSource.ChatHistory,
                     )
                 }
@@ -333,7 +338,7 @@ class ChatHistoryActivity : BaseActivity() {
                 ) {
                     AudioPlayer.pause()
                 } else {
-                    AudioPlayer.play(messageItem.toMessageItem(null))
+                    AudioPlayer.play(messageItem.toMessageItem())
                 }
             }
 

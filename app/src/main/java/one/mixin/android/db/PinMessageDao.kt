@@ -62,7 +62,7 @@ interface PinMessageDao : BaseDao<PinMessage> {
     )
     fun getPinMessages(conversationId: String): LiveData<List<ChatHistoryMessageItem>>
 
-    @Query("SELECT count(1) FROM pin_messages WHERE created_at < (SELECT created_at FROM pin_messages WHERE conversation_id = :conversationId AND message_id = :messageId)")
+    @Query("SELECT count(1) FROM pin_messages pm INNER JOIN messages m ON m.id = pm.message_id WHERE m.created_at < (SELECT created_at FROM messages WHERE conversation_id = :conversationId AND id = :messageId) AND pm.conversation_id = :conversationId")
     suspend fun findPinMessageIndex(conversationId: String, messageId: String): Int
 
     @Query(

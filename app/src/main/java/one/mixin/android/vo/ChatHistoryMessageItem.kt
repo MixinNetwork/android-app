@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.view.View
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.util.MimeTypes
@@ -14,7 +15,6 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.generateConversationPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getTranscriptDirPath
@@ -86,13 +86,17 @@ fun ChatHistoryMessageItem.showVerifiedOrBot(verifiedView: View, botView: View) 
 fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     if (!hasWritePermission()) return
 
-    val filePath = mediaUrl?.toUri()?.getFilePath()
+    val filePath = absolutePath()
     if (filePath == null) {
         toast(R.string.save_failure)
         return
     }
 
-    val file = File(filePath)
+    val file = filePath.toUri().toFile()
+    if (!file.exists()) {
+        toast(R.string.error_file_exists)
+        return
+    }
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
         File(context.getPublicPicturePath(), mediaName ?: file.name)
     } else {
@@ -120,10 +124,10 @@ fun ChatHistoryMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null
     }
 }
 
-fun ChatHistoryMessageItem.toMessageItem(conversationId: String?): MessageItem {
+fun ChatHistoryMessageItem.toMessageItem(conversationId: String? = null): MessageItem {
     return MessageItem(
         messageId,
-        conversationId ?: "",
+        conversationId ?: this.conversationId ?: "",
         userId ?: "", userFullName ?: "",
         userIdentityNumber ?: "",
         type,

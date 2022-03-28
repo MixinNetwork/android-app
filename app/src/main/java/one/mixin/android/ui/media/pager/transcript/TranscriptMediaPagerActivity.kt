@@ -30,7 +30,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.core.net.toUri
+import androidx.core.net.toFile
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -297,12 +297,16 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                     { granted ->
                         if (granted) {
                             async {
-                                val path = item.mediaUrl?.toUri()?.getFilePath()
+                                val path = item.absolutePath()
                                 if (path == null) {
                                     toast(R.string.save_failure)
                                     return@async
                                 }
-                                val file = File(path)
+                                val file = Uri.parse(path).toFile()
+                                if (!file.exists()) {
+                                    toast(R.string.error_file_exists)
+                                    return@async
+                                }
                                 val outFile = when {
                                     item.mediaMimeType.equals(
                                         MimeType.GIF.toString(),

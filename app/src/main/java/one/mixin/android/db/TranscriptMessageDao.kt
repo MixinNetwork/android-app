@@ -75,7 +75,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     )
     fun getTranscriptMessages(transcriptId: String): LiveData<List<ChatHistoryMessageItem>>
 
-    @Query("SELECT count(1) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId)")
+    @Query("SELECT count(1) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId) AND transcript_id = :transcriptId")
     suspend fun findTranscriptMessageIndex(transcriptId: String, messageId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
