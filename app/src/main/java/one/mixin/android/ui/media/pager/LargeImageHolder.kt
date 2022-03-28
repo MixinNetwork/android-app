@@ -1,7 +1,6 @@
 package one.mixin.android.ui.media.pager
 
 import android.graphics.BitmapFactory
-import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
@@ -11,6 +10,8 @@ import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import one.mixin.android.R
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.toBitmap
+import one.mixin.android.extension.toBytes
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.vo.MediaStatus
@@ -33,8 +34,13 @@ class LargeImageHolder(itemView: View) : MediaPagerHolder(itemView) {
             circleProgress.setBindId(messageItem.messageId)
             messageItem.absolutePath()?.getFilePath()?.let { imageView.setImage(FileBitmapDecoderFactory(File(it))) }
         } else {
-            val imageData = Base64.decode(messageItem.thumbImage, Base64.DEFAULT)
-            imageView.setImage(BitmapFactory.decodeByteArray(imageData, 0, imageData.size))
+            messageItem.thumbImage?.toBitmap(
+                messageItem.mediaWidth ?: 0,
+                messageItem.mediaHeight ?: 0
+            )?.let { image ->
+                val imageData = image.toBytes()
+                imageView.setImage(BitmapFactory.decodeByteArray(imageData, 0, imageData.size))
+            }
             circleProgress.isVisible = true
             circleProgress.setBindId(messageItem.messageId)
             @Suppress("ControlFlowWithEmptyBody")

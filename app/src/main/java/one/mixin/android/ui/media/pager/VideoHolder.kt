@@ -11,12 +11,12 @@ import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.Glide
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.toBitmap
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity.Companion.PREFIX
@@ -107,7 +107,10 @@ class VideoHolder(
             if (messageItem.absolutePath() != null) {
                 binding.previewIv.loadVideo(messageItem.absolutePath())
             } else {
-                val imageData = messageItem.thumbImage?.decodeBase64()
+                val imageData = messageItem.thumbImage?.toBitmap(
+                    messageItem.mediaWidth?:0,
+                    messageItem.mediaHeight?:0
+                )
                 Glide.with(itemView).load(imageData).into(binding.previewIv)
             }
             if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
