@@ -333,7 +333,7 @@ class ChatHistoryActivity : BaseActivity() {
                 ) {
                     AudioPlayer.pause()
                 } else {
-                    AudioPlayer.play(messageItem.toMessageItem(this@ChatHistoryActivity.conversationId))
+                    AudioPlayer.play(messageItem.toMessageItem(null))
                 }
             }
 
