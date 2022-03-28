@@ -321,7 +321,7 @@ class ChatHistoryActivity : BaseActivity() {
                         view,
                         messageItem.conversationId!!,
                         messageItem.messageId,
-                        messageItem.toMessageItem(messageItem.conversationId),
+                        messageItem.toMessageItem(),
                         MediaPagerActivity.MediaSource.ChatHistory,
                     )
                 }
@@ -333,7 +333,7 @@ class ChatHistoryActivity : BaseActivity() {
                 ) {
                     AudioPlayer.pause()
                 } else {
-                    AudioPlayer.play(messageItem.toMessageItem(null))
+                    AudioPlayer.play(messageItem.toMessageItem())
                 }
             }
 

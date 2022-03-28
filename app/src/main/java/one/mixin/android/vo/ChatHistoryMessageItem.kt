@@ -120,10 +120,10 @@ fun ChatHistoryMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null
     }
 }
 
-fun ChatHistoryMessageItem.toMessageItem(conversationId: String?): MessageItem {
+fun ChatHistoryMessageItem.toMessageItem(conversationId:String? = null): MessageItem {
     return MessageItem(
         messageId,
-        conversationId ?: "",
+        conversationId ?: this.conversationId ?: "",
         userId ?: "", userFullName ?: "",
         userIdentityNumber ?: "",
         type,
