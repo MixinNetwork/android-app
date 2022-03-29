@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +15,7 @@ class SearchAdapter : RecyclerView.Adapter<ItemViewHolder>() {
     }
 
     var localAssets: List<AssetItem>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (value == field) return
 
@@ -22,6 +24,7 @@ class SearchAdapter : RecyclerView.Adapter<ItemViewHolder>() {
         }
 
     var remoteAssets: List<TopAssetItem>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (value == field) return
 
@@ -31,6 +34,7 @@ class SearchAdapter : RecyclerView.Adapter<ItemViewHolder>() {
 
     var callback: WalletSearchCallback? = null
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clear() {
         localAssets = null
         remoteAssets = null

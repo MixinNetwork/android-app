@@ -9,7 +9,7 @@
     <RelativeLayout
         android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="?attr/bg_white"
         android:elevation="4dp">
 
@@ -41,7 +41,8 @@
             android:layout_marginEnd="8dp"
             android:text="@string/next"
             android:textColor="@color/colorAccent"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
     <one.mixin.android.widget.imageeditor.ImageEditorView
@@ -72,7 +73,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:foreground="?attr/selectableItemBackground"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:orientation="vertical" >
 
                 <ImageView
@@ -81,7 +82,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/ic_crop"/>
+                    android:src="@drawable/ic_crop"
+                    android:contentDescription="@string/copy"
+                    tools:ignore="PrivateResource" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -98,7 +101,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:foreground="?attr/selectableItemBackground"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:orientation="vertical" >
 
                 <ImageView
@@ -107,7 +110,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/ic_text"/>
+                    android:src="@drawable/ic_text"
+                    android:contentDescription="@string/text" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -124,7 +128,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:foreground="?attr/selectableItemBackground"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:orientation="vertical" >
 
                 <ImageView
@@ -133,7 +137,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/ic_baseline_brush_24"/>
+                    android:src="@drawable/ic_baseline_brush_24"
+                    android:contentDescription="@string/draw" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -156,7 +161,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/color_rv"
                 android:layout_width="match_parent"
-                android:layout_height="?actionBarSize"/>
+                android:layout_height="?android:attr/actionBarSize"/>
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/seekbar_ll"
@@ -195,7 +200,7 @@
             <RelativeLayout
                 android:id="@+id/editor_rl"
                 android:layout_width="match_parent"
-                android:layout_height="?actionBarSize"
+                android:layout_height="?android:attr/actionBarSize"
                 android:elevation="4dp">
 
                 <ImageView
@@ -219,7 +224,8 @@
                     android:layout_marginEnd="8dp"
                     android:text="@string/crop"
                     android:textColor="?attr/text_primary"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="RelativeOverlap" />
 
                 <one.mixin.android.widget.PrevNextView
                     android:id="@+id/undo_redo_view"

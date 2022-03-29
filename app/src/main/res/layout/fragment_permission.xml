@@ -32,7 +32,7 @@
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:layout_marginEnd="16dp"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:background="@drawable/selector_round_bn_gray" />
 
         <TextView
@@ -50,7 +50,7 @@
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:background="@drawable/selector_round_bn"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:layout_marginEnd="16dp" />
 
     </LinearLayout>
@@ -64,7 +64,8 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="56dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/name"

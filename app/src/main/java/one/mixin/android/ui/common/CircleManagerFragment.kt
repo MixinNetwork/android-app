@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -236,6 +237,7 @@ class CircleManagerFragment : BaseFragment() {
         private var includeCircleItem: List<ConversationCircleManagerItem>? = null
         private var otherCircleItem: List<ConversationCircleManagerItem>? = null
 
+        @SuppressLint("NotifyDataSetChanged")
         fun setData(includeCircleItem: List<ConversationCircleManagerItem>, otherCircleItem: List<ConversationCircleManagerItem>) {
             this.includeCircleItem = includeCircleItem
             this.otherCircleItem = otherCircleItem

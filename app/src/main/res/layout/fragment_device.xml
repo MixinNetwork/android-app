@@ -44,7 +44,7 @@
             android:layout_height="@dimen/item_contact_height"
             android:gravity="center_vertical"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:textColor="?attr/text_primary"

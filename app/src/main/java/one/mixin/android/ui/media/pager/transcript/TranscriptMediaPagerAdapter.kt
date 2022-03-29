@@ -1,5 +1,6 @@
 package one.mixin.android.ui.media.pager.transcript
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.LruCache
 import android.view.Gravity
@@ -121,6 +122,7 @@ class TranscriptMediaPagerAdapter(
     }
 
     var list: List<ChatHistoryMessageItem> = emptyList()
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()

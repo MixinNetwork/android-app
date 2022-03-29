@@ -37,7 +37,8 @@
                 android:gravity="center"
                 android:textColor="?attr/text_primary"
                 android:textSize="40sp"
-                tools:text="12345.8" />
+                tools:text="12345.8"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <RelativeLayout

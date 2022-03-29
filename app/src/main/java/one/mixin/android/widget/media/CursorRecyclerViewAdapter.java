@@ -1,5 +1,6 @@
 package one.mixin.android.widget.media;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DataSetObserver;
@@ -74,6 +75,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private Cursor swapCursor(Cursor newCursor) {
         if (newCursor == cursor) {
             return null;

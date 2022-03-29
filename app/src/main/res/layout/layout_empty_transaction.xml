@@ -22,7 +22,8 @@
         android:layout_height="125dp"
         android:layout_above="@+id/center"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/ic_transactions_empty" />
+        android:src="@drawable/ic_transactions_empty"
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/wallet_transactions_empty"

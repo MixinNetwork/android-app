@@ -21,6 +21,7 @@ class MySharedAppsAdapter(
     private var favoriteApps: List<App>? = null
     private var unFavoriteApps: List<App>? = null
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(favoriteApps: List<App>, unFavoriteApps: List<App>) {
         this.favoriteApps = favoriteApps
         this.unFavoriteApps = unFavoriteApps

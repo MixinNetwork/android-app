@@ -27,7 +27,8 @@
         android:paddingStart="@dimen/margin_start"
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_minor"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        tools:ignore="Autofill" />
 
     <View
         android:id="@+id/line"
@@ -71,7 +72,8 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/forward_rv"
-            app:layout_constraintVertical_bias="1.0"/>
+            app:layout_constraintVertical_bias="1.0"
+            android:focusable="true" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/forward_bn"
@@ -89,7 +91,8 @@
             app:layout_constraintHorizontal_bias="1"
             app:layout_constraintStart_toStartOf="parent"
             app:pressedTranslationZ="1dp"
-            app:rippleColor="#a6a6a6"/>
+            app:rippleColor="#a6a6a6"
+            android:contentDescription="@string/forward" />
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/forward_group"

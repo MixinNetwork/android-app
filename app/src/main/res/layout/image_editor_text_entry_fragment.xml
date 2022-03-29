@@ -28,6 +28,6 @@
             android:id="@+id/color_rv"
             android:layout_width="match_parent"
             android:layout_alignParentBottom="true"
-            android:layout_height="?actionBarSize" />
+            android:layout_height="?android:attr/actionBarSize" />
     </RelativeLayout>
 </one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout>

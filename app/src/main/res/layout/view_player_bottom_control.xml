@@ -40,12 +40,13 @@
             android:layout_marginEnd="20dp"
             android:fontFamily="monospace"
             android:text="@string/default_time"
-            android:textColor="?attr/music_text"/>
+            android:textColor="?attr/music_text" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
+        android:baselineAligned="false"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -61,8 +62,8 @@
                 android:padding="10dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_player_repeat_all"
-
-          android:background="@drawable/mixin_ripple" />
+                android:background="@drawable/mixin_ripple"
+                android:contentDescription="@null" />
         </FrameLayout>
 
         <FrameLayout
@@ -77,7 +78,8 @@
                 android:padding="10dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_player_skip_previous"
-                android:background="@drawable/mixin_ripple" />
+                android:background="@drawable/mixin_ripple"
+                android:contentDescription="@null" />
         </FrameLayout>
 
         <FrameLayout
@@ -105,7 +107,8 @@
                 android:padding="10dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_player_skip_next"
-                android:background="@drawable/mixin_ripple" />
+                android:background="@drawable/mixin_ripple"
+                android:contentDescription="@null" />
         </FrameLayout>
 
         <FrameLayout

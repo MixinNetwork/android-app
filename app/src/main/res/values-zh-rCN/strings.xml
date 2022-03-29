@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!--common-->
     <string name="confirm">确认</string>
@@ -44,7 +44,7 @@
     <string name="sender">来自</string>
     <string name="transaction_hash">交易哈希</string>
     <string name="participants">成员</string>
-    <string name="copy">复制</string>
+    <string name="copy" tools:override="true">复制</string>
     <string name="open">打开</string>
     <string name="rebate">退款</string>
     <string name="select">选择</string>
@@ -725,7 +725,7 @@
     <string name="loading_time">检测到系统时间异常，请校正后再继续使用</string>
     <string name="database_upgrade">数据库升级</string>
     <string name="database_upgrade_tips">正在进行数据库升级，可能需要几分钟，请不要强制关闭应用。</string>
-    <string name="database_upgrade_progress">升级中...</string>
+    <string name="database_upgrade_progress">升级中…</string>
     <!-- notification -->
     <string name="alert_key_group_text_message">%1$s 发送一条消息</string>
     <string name="alert_key_group_image_message">%1$s 发送一张照片</string>

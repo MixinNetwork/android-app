@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:padding="8dp"
     android:layout_height="wrap_content">
@@ -26,6 +27,6 @@
         android:layout_alignParentEnd="true"
         android:textColor="?attr/text_minor"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
+        android:layout_height="wrap_content"
+        tools:ignore="RelativeOverlap" />
 </RelativeLayout>

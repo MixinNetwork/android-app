@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
@@ -24,6 +25,7 @@ class GalleryItemAdapter(
     private val needCamera: Boolean
 ) : RecyclerView.Adapter<GalleryItemAdapter.ItemViewHolder>() {
     var items: List<Item>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()

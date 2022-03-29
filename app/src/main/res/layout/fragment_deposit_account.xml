@@ -79,7 +79,9 @@
                     android:foreground="@drawable/mixin_ripple"
                     android:src="@drawable/ic_copy_gray"
                     app:layout_constraintTop_toTopOf="@id/account_memo_key_code"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:contentDescription="@string/copy"
+                    tools:ignore="PrivateResource" />
 
                 <FrameLayout
                     android:id="@+id/account_memo_qr_fl"
@@ -161,7 +163,9 @@
                     android:foreground="@drawable/mixin_ripple"
                     android:src="@drawable/ic_copy_gray"
                     app:layout_constraintTop_toTopOf="@id/account_name_key_code"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:contentDescription="@string/copy"
+                    tools:ignore="PrivateResource" />
 
                 <FrameLayout
                     android:id="@+id/account_name_qr_fl"

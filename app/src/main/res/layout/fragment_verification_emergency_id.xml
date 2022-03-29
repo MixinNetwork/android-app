@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white">
@@ -13,7 +14,7 @@
         android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
         android:contentDescription="@string/landing_back_content_desc"
-        app:srcCompat="@drawable/ic_arrow_back"/>
+        app:srcCompat="@drawable/ic_arrow_back" />
 
     <TextView
         android:id="@+id/id_title_tv"
@@ -30,7 +31,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/id_til"
@@ -48,7 +49,8 @@
             android:hint="@string/mixin_id"
             android:inputType="number"
             android:lines="1"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            tools:ignore="Autofill" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.github.jorgecastilloprz.FABProgressCircle
@@ -65,19 +67,20 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue"/>
+            app:backgroundTint="@color/colorBlue"
+            android:contentDescription="@string/next" />
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/verification_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentBottom="true" />
 
     <View
         android:id="@+id/verification_cover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 </RelativeLayout>

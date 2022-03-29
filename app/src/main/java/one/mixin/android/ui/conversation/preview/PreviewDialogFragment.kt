@@ -129,9 +129,9 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         if (isVideo) {
-            _videoBinding = FragmentPreviewVideoBinding.inflate(LayoutInflater.from(context), null, false)
+            _videoBinding = FragmentPreviewVideoBinding.inflate(layoutInflater, null, false)
         } else {
-            _binding = FragmentPreviewBinding.inflate(LayoutInflater.from(context), null, false)
+            _binding = FragmentPreviewBinding.inflate(layoutInflater, null, false)
         }
         mediaDialogView = if (isVideo) {
             videoBinding.root

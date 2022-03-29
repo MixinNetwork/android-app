@@ -23,7 +23,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription,NotSibling" />
 
-     <ImageView
+    <ImageView
         android:id="@+id/chat_jump"
         android:padding="4dp"
         android:layout_width="wrap_content"
@@ -132,7 +132,7 @@
             app:layout_constraintStart_toStartOf="@id/chat_layout"
             app:layout_constraintTop_toBottomOf="@id/chat_name"
             app:layout_goneMarginTop="4dp"
-            tools:ignore="HardcodedText" />
+            tools:ignore="HardcodedText,SmallSp" />
 
         <one.mixin.android.widget.CircleProgress
             android:id="@+id/progress"
@@ -160,7 +160,8 @@
             app:layout_constraintBottom_toBottomOf="@id/chat_image_layout"
             app:layout_constraintEnd_toEndOf="@id/chat_image_layout"
             app:layout_constraintStart_toStartOf="@id/chat_image_layout"
-            app:layout_constraintTop_toTopOf="@id/chat_image_layout" />
+            app:layout_constraintTop_toTopOf="@id/chat_image_layout"
+            android:contentDescription="@null" />
 
         <LinearLayout
             android:id="@+id/chat_warning"
@@ -172,12 +173,14 @@
             app:layout_constraintBottom_toBottomOf="@id/chat_image_layout"
             app:layout_constraintEnd_toEndOf="@id/chat_image_layout"
             app:layout_constraintStart_toStartOf="@id/chat_image_layout"
-            app:layout_constraintTop_toTopOf="@id/chat_image_layout">
+            app:layout_constraintTop_toTopOf="@id/chat_image_layout"
+            tools:ignore="UseCompoundDrawables">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_expired" />
+                android:src="@drawable/ic_expired"
+                android:contentDescription="@string/chat_expired" />
 
             <TextView
                 android:layout_width="wrap_content"

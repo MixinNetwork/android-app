@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -51,7 +52,8 @@
             android:lines="1"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:ignore="Autofill,TextFields" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.github.jorgecastilloprz.FABProgressCircle
@@ -67,7 +69,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue" />
+            app:backgroundTint="@color/colorBlue"
+            android:contentDescription="@string/next" />
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <View

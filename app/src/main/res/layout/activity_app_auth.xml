@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -11,10 +12,10 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginTop="32dp"
-        android:tint="@color/colorAccent"
         android:layout_centerHorizontal="true"
         android:src="@drawable/ic_call_secret"
-        android:contentDescription="@null" />
+        android:contentDescription="@null"
+        app:tint="@color/colorAccent" />
 
     <TextView
         android:id="@+id/title"

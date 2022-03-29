@@ -122,6 +122,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
     ) :
         RecyclerView.Adapter<ConversationCircleHolder>(), ItemTouchHelperAdapter {
         var conversationCircles: MutableList<ConversationCircleItem>? = null
+            @SuppressLint("NotifyDataSetChanged")
             set(value) {
                 if (sorting) return
                 field = value
@@ -130,6 +131,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
 
         var currentCircleId: String? = null
         var allUnread: Int? = null
+            @SuppressLint("NotifyDataSetChanged")
             set(value) {
                 field = value
                 if (currentCircleId != null) notifyDataSetChanged()
@@ -149,6 +151,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         }
 
         var sorting = false
+            @SuppressLint("NotifyDataSetChanged")
             set(value) {
                 if (field != value) {
                     field = value
@@ -183,7 +186,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             }
         }
 
-        @SuppressLint("ClickableViewAccessibility")
+        @SuppressLint("ClickableViewAccessibility", "NotifyDataSetChanged")
         override fun onBindViewHolder(holder: ConversationCircleHolder, position: Int) {
             if (getItemViewType(position) == 1) {
                 val conversationCircleItem = getItem(position)

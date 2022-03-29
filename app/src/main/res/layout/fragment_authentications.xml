@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_window"
@@ -27,7 +28,8 @@
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_assist"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        tools:ignore="Autofill" />
 
     <ViewAnimator
         android:id="@+id/auth_va"

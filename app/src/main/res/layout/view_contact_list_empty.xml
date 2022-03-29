@@ -9,7 +9,7 @@
         android:id="@+id/count_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:background="?attr/bg_white">
 
         <TextView
@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/item_contact_header_height"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:background="?attr/bg_white">
 
         <TextView

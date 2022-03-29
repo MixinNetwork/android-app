@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_upper_round"
@@ -8,7 +9,8 @@
     <ScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        tools:ignore="UselessParent">
 
         <LinearLayout
             android:id="@+id/scroll_content"
@@ -35,7 +37,7 @@
                 android:layout_width="70dp"
                 android:layout_height="70dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_margin="@dimen/activity_vertical_margin"/>
+                android:layout_margin="@dimen/activity_vertical_margin" />
 
             <TextView
                 android:id="@+id/tips_tv"
@@ -45,7 +47,7 @@
                 android:layout_gravity="center_horizontal"
                 android:gravity="center_horizontal"
                 android:textColor="?attr/text_primary"
-                android:text="@string/bottom_deposit_tip_common"/>
+                android:text="@string/bottom_deposit_tip_common" />
 
             <TextView
                 android:id="@+id/warning_tv"
@@ -55,7 +57,7 @@
                 android:layout_gravity="center_horizontal"
                 android:gravity="center_horizontal"
                 android:textColor="@color/colorRed"
-                android:text="@string/deposit_account_attention"/>
+                android:text="@string/deposit_account_attention" />
 
             <Button
                 style="@style/AppTheme.MaterialButton"
@@ -67,7 +69,7 @@
                 android:layout_marginBottom="50dp"
                 android:text="@string/got_it"
                 android:textColor="@color/white"
-                android:textSize="14sp"/>
+                android:textSize="14sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

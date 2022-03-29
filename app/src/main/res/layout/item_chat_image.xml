@@ -23,7 +23,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_layout"
         tools:ignore="ContentDescription" />
 
-     <ImageView
+    <ImageView
         android:id="@+id/chat_jump"
         android:padding="4dp"
         android:layout_width="wrap_content"
@@ -120,12 +120,14 @@
             app:layout_constraintBottom_toBottomOf="@id/chat_image_layout"
             app:layout_constraintEnd_toEndOf="@id/chat_image_layout"
             app:layout_constraintStart_toStartOf="@id/chat_image_layout"
-            app:layout_constraintTop_toTopOf="@id/chat_image_layout">
+            app:layout_constraintTop_toTopOf="@id/chat_image_layout"
+            tools:ignore="UseCompoundDrawables">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_expired" />
+                android:src="@drawable/ic_expired"
+                android:contentDescription="@string/chat_expired" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -146,6 +148,7 @@
             app:layout_constraintTop_toTopOf="@id/chat_image_layout"
             android:visibility="gone"
             android:src="@drawable/ic_post"
-            tools:ignore="HardcodedText" />
+            tools:ignore="HardcodedText"
+            android:contentDescription="@null" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

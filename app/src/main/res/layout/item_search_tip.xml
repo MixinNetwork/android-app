@@ -21,7 +21,7 @@
         android:layout_height="64dp"
         android:layout_below="@id/top_divider"
         android:gravity="center_vertical"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:paddingStart="@dimen/margin12"
         android:paddingEnd="32dp"
         android:maxLines="2"

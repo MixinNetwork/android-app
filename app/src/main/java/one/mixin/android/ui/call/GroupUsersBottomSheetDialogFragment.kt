@@ -34,6 +34,7 @@ import one.mixin.android.widget.SearchView
 import java.util.UUID
 import javax.inject.Inject
 
+@SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {

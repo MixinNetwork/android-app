@@ -1,6 +1,7 @@
 package one.mixin.android.ui.contacts
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -63,6 +64,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
     private val binding by viewBinding(FragmentContactsBinding::bind)
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -91,42 +93,41 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
         }
 
         contactsViewModel.findContacts().observe(
-            viewLifecycleOwner,
-            { users ->
-                if (users != null && users.isNotEmpty()) {
-                    if (!hasContactPermission()) {
-                        contactAdapter.friendSize = users.size
-                        contactAdapter.users = users
-                    } else {
-                        val newList = arrayListOf<User>().apply {
-                            addAll(users)
-                            addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
-                        }
-                        contactAdapter.friendSize = users.size
-                        contactAdapter.users = newList
-                    }
+            viewLifecycleOwner
+        ) { users ->
+            if (users != null && users.isNotEmpty()) {
+                if (!hasContactPermission()) {
+                    contactAdapter.friendSize = users.size
+                    contactAdapter.users = users
                 } else {
-                    if (!hasContactPermission()) {
-                        contactAdapter.users = Collections.emptyList()
+                    val newList = arrayListOf<User>().apply {
+                        addAll(users)
+                        addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
                     }
+                    contactAdapter.friendSize = users.size
+                    contactAdapter.users = newList
                 }
+            } else {
+                if (!hasContactPermission()) {
+                    contactAdapter.users = Collections.emptyList()
+                }
+            }
+            contactAdapter.notifyDataSetChanged()
+        }
+        contactsViewModel.findSelf().observe(
+            viewLifecycleOwner
+        ) { self ->
+            if (self != null) {
+                contactAdapter.me = self
                 contactAdapter.notifyDataSetChanged()
             }
-        )
-        contactsViewModel.findSelf().observe(
-            viewLifecycleOwner,
-            { self ->
-                if (self != null) {
-                    contactAdapter.me = self
-                    contactAdapter.notifyDataSetChanged()
-                }
-            }
-        )
+        }
     }
 
     private fun hasContactPermission() =
         requireContext().checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun fetchContacts() {
         RxContacts.fetch(requireContext())
             .toSortedList(Contact::compareTo)

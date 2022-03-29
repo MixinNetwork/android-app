@@ -1,5 +1,6 @@
 package one.mixin.android.ui.address.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,7 @@ import one.mixin.android.vo.displayAddress
 
 class AddressAdapter : RecyclerView.Adapter<AddressAdapter.ItemHolder>() {
     var addresses: MutableList<Address>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()

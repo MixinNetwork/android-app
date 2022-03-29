@@ -64,7 +64,7 @@
                 android:textColor="?attr/text_primary"
                 android:textColorHint="?attr/text_minor"
                 android:textSize="15sp"
-                tools:ignore="LabelFor" />
+                tools:ignore="LabelFor,RtlSymmetry" />
 
             <ImageView
                 android:id="@+id/chat_sticker_ib"

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="84dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -27,14 +28,15 @@
             android:layout_marginEnd="@dimen/margin16"
             android:text="@string/hidden"
             android:layout_alignParentEnd="true"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white"
+            tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
     <one.mixin.android.widget.ConfirmationBgView
         android:id="@+id/foreground_rl"
         android:layout_width="match_parent"
         android:layout_height="84dp"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <one.mixin.android.widget.BadgeCircleImageView
             android:id="@+id/avatar"

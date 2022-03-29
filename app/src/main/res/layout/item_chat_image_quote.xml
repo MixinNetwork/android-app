@@ -23,7 +23,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
         tools:ignore="ContentDescription" />
 
-     <ImageView
+    <ImageView
         android:id="@+id/chat_jump"
         android:padding="4dp"
         android:layout_width="wrap_content"
@@ -111,12 +111,14 @@
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
                         android:gravity="center_horizontal"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        tools:ignore="UseCompoundDrawables">
 
                         <ImageView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:src="@drawable/ic_expired" />
+                            android:src="@drawable/ic_expired"
+                            android:contentDescription="@string/chat_expired" />
 
                         <TextView
                             android:layout_width="wrap_content"

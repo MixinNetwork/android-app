@@ -1,5 +1,6 @@
 package one.mixin.android.ui.forward
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,6 +40,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
     var showHeader: Boolean = true
     var keyword: CharSequence? = null
 
+    @SuppressLint("NotifyDataSetChanged")
     fun changeData() {
         if (!keyword.isNullOrBlank()) {
             conversations = sourceConversations?.filter {

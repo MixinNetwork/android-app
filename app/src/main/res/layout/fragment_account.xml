@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/privacy_tv"
@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/security_tv"
@@ -63,7 +63,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/change_tv"
@@ -86,7 +86,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/delete_tv"

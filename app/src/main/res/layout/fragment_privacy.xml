@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/blocked_tv"
@@ -47,7 +47,8 @@
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:text="@string/none"
-                    android:textColor="?attr/text_minor" />
+                    android:textColor="?attr/text_minor"
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -55,7 +56,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/conversation_tv"
@@ -95,7 +96,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/phone_number_tv"
@@ -113,7 +114,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/contact_tv"
@@ -165,7 +166,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/lock_tv"
@@ -185,7 +186,8 @@
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:text="@string/auto_immediately"
-                    android:textColor="?attr/text_minor" />
+                    android:textColor="?attr/text_minor"
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
         </LinearLayout>

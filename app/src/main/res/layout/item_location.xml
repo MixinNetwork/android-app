@@ -12,7 +12,8 @@
         android:layout_height="42dp"
         android:background="@drawable/bg_menu"
         android:padding="4dp"
-        app:tint="?attr/icon_default" />
+        app:tint="?attr/icon_default"
+        android:contentDescription="@string/location" />
 
     <TextView
         android:id="@+id/title"

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -53,6 +54,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
 
     private val binding by viewBinding(FragmentStickerBinding::bind)
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {

@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -39,7 +39,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_minor"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <TextView
@@ -59,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -76,7 +77,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor" />
+                android:textColor="?attr/text_minor"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <TextView
@@ -96,7 +98,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -104,7 +106,8 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/transfer_duplicate_title" />
+                android:text="@string/transfer_duplicate_title"
+                tools:ignore="RelativeOverlap" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/duplicate_transfer_sc"
@@ -133,7 +136,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -141,7 +144,8 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/transfer_stranger_title" />
+                android:text="@string/transfer_stranger_title"
+                tools:ignore="RelativeOverlap" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/stranger_transfer_sc"
@@ -171,7 +175,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 style="@style/NormalTextStyle"
@@ -187,7 +191,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:visibility="gone">
 
             <TextView

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.search
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.Parcelable
@@ -150,6 +151,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         cancellationSignal?.cancel()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun onTextChanged(s: String) = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 

@@ -13,7 +13,8 @@
         android:layout_margin="12dp"
         android:src="@drawable/ic_close_grey"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/common_close" />
 
     <TextView
         android:id="@+id/header_title"

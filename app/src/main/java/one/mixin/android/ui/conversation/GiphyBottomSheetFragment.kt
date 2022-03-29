@@ -125,6 +125,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         adapter.submitList(totalGifs)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun performSearch() {
         fetching = true
         if (offset == 0) {

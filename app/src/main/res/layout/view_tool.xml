@@ -27,7 +27,8 @@
         android:layout_marginStart="4dp"
         android:textColor="?text_primary"
         android:textStyle="bold"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        tools:ignore="RelativeOverlap" />
 
     <ImageView
         android:id="@+id/delete_iv"

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -66,6 +67,7 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
 
         var callback: Callback? = null
 
+        @SuppressLint("NotifyDataSetChanged")
         fun setUsers(users: List<User>) {
             this.users = users
             notifyDataSetChanged()

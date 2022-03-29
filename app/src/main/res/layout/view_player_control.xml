@@ -60,7 +60,7 @@
             android:textColor="@color/white"
             android:textSize="10sp"
             android:visibility="gone"
-            tools:ignore="HardcodedText" />
+            tools:ignore="HardcodedText,SmallSp" />
     </FrameLayout>
 
     <one.mixin.android.widget.PlayView2

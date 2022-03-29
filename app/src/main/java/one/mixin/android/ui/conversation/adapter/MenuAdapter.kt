@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -45,6 +46,7 @@ class MenuAdapter(
     var onMenuListener: OnMenuListener? = null
 
     var appList = listOf<AppItem>()
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (field == value) return
             field = value

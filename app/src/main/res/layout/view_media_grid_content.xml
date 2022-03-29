@@ -4,7 +4,7 @@
     <one.mixin.android.widget.gallery.internal.ui.widget.SquareImageView
         android:id="@+id/media_thumbnail"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
     <ImageView
         android:id="@+id/gif"
@@ -14,7 +14,8 @@
         android:layout_marginBottom="3dp"
         android:layout_marginEnd="3dp"
         android:src="@drawable/ic_gif"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:contentDescription="@string/gif" />
 
     <TextView
         android:id="@+id/video_duration"
@@ -25,5 +26,5 @@
         android:layout_marginEnd="3dp"
         android:textColor="?attr/bg_white"
         android:textSize="12sp"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 </merge>

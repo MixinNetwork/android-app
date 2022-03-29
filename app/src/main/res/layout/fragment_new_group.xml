@@ -21,7 +21,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/photo_tv"
@@ -87,7 +87,8 @@
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
             android:ellipsize="end"
-            android:singleLine="true" />
+            android:singleLine="true"
+            tools:ignore="Autofill,TextFields" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -120,7 +121,8 @@
             android:gravity="center_vertical|end"
             android:hint="@string/group_new_notice_tip"
             android:textColor="?attr/text_minor"
-            android:textColorHint="?attr/text_remarks" />
+            android:textColorHint="?attr/text_remarks"
+            tools:ignore="Autofill,TextFields" />
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView

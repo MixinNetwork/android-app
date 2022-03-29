@@ -1,5 +1,6 @@
 package one.mixin.android.ui.search
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -72,6 +73,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             else -> if (data.messageShowMore()) data.messageList else null
         }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clear() {
         data.assetList = null
         data.userList = null
@@ -81,6 +83,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         notifyDataSetChanged()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(assetItems: List<AssetItem>?, users: List<User>?, chatMinimals: List<ChatMinimal>?) {
         data.assetList = assetItems
         data.userList = users

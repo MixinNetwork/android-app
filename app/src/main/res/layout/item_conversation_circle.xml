@@ -25,7 +25,8 @@
         android:src="@drawable/ic_check_blue_24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/circle_title"
@@ -57,7 +58,6 @@
         app:layout_constraintStart_toEndOf="@id/circle_icon"
         app:layout_constraintTop_toBottomOf="@id/circle_title" />
 
-
     <TextView
         android:id="@+id/circle_unread_tv"
         android:layout_width="wrap_content"
@@ -71,5 +71,4 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

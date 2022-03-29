@@ -225,6 +225,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         onDestroyListener?.onDestroy()
     }
 
+    @SuppressLint("MutatingSharedPrefs")
     private fun updateFirstWithdrawalSet(item: WithdrawBiometricItem) {
         var firsSet = defaultSharedPreferences.getStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)
         if (firsSet == null) {
