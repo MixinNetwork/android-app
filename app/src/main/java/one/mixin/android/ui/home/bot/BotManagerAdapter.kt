@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.bot
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Build
 import android.view.DragEvent
@@ -26,6 +27,7 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
     }
 
     var list: List<BotInterface> = listOf()
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()

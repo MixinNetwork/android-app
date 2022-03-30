@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -10,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="96dp"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <one.mixin.android.widget.AvatarView
             android:id="@+id/contact_header_avatar"
@@ -42,7 +43,8 @@
             android:maxLines="1"
             android:text="@string/contact_mixin_id"
             android:textColor="?attr/text_minor"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            tools:ignore="RelativeOverlap" />
 
         <TextView
             android:id="@+id/contact_header_mobile_tv"
@@ -64,7 +66,8 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/margin16"
-            android:src="@drawable/ic_keyboard_arrow_down" />
+            android:src="@drawable/ic_keyboard_arrow_down"
+            android:contentDescription="@null" />
 
         <ImageView
             android:layout_width="wrap_content"
@@ -72,11 +75,13 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/margin10"
             android:layout_toStartOf="@id/arrow_iv"
-            android:src="@drawable/ic_contacts_qr" />
+            android:src="@drawable/ic_contacts_qr"
+            android:contentDescription="@null" />
     </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:baselineAligned="false"
         android:layout_height="56dp"
         android:background="?attr/bg_white">
 
@@ -85,17 +90,17 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 android:id="@+id/receive_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:drawableStart="@drawable/ic_contacts_receive"
                 android:drawablePadding="8dp"
                 android:text="@string/contact_receive_money"
-                android:textColor="?attr/text_primary" />
+                android:textColor="?attr/text_primary"
+                app:drawableStartCompat="@drawable/ic_contacts_receive" />
         </FrameLayout>
 
         <FrameLayout
@@ -103,17 +108,17 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 android:id="@+id/my_qr_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:drawableStart="@drawable/ic_contacts_qr"
                 android:drawablePadding="8dp"
                 android:text="@string/contact_my_qr_title"
-                android:textColor="?attr/text_primary" />
+                android:textColor="?attr/text_primary"
+                app:drawableStartCompat="@drawable/ic_contacts_qr" />
         </FrameLayout>
     </LinearLayout>
 
@@ -124,7 +129,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <androidx.legacy.widget.Space
             android:id="@+id/center_new_group"
@@ -166,7 +171,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <androidx.legacy.widget.Space
             android:id="@+id/center_add_contact"
@@ -208,7 +213,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:visibility="gone">
 
         <androidx.legacy.widget.Space
@@ -252,7 +257,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:visibility="gone">
 
         <androidx.legacy.widget.Space

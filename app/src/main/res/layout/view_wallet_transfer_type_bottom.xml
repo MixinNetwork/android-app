@@ -17,12 +17,13 @@
             android:layout_margin="8dp"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
-            android:src="@drawable/ic_close_black"/>
+            android:src="@drawable/ic_close_black"
+            android:contentDescription="@string/common_close" />
 
         <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             android:layout_marginEnd="@dimen/margin20"
             android:layout_toEndOf="@id/close_iv"
             android:background="@null"

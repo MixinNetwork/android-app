@@ -71,7 +71,8 @@
         <FrameLayout
             android:id="@+id/chat_content_layout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            tools:ignore="UselessParent">
 
             <one.mixin.android.widget.InterceptLinearLayout
                 android:id="@+id/location_layout"
@@ -151,10 +152,7 @@
                         android:layout_alignParentBottom="true"
                         android:layout_gravity="bottom|end" />
                 </RelativeLayout>
-
             </one.mixin.android.widget.InterceptLinearLayout>
-
-
         </FrameLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

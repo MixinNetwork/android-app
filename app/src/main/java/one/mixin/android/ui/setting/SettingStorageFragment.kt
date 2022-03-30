@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.res.ColorStateList
@@ -189,6 +190,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     class MenuAdapter(private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.Adapter<CheckHolder>() {
         private var storageUsageList: List<StorageUsage>? = null
 
+        @SuppressLint("NotifyDataSetChanged")
         fun setData(users: List<StorageUsage>?) {
             this.storageUsageList = users
             notifyDataSetChanged()
@@ -211,6 +213,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
 
         private var conversationStorageUsageList: List<ConversationStorageUsage>? = null
 
+        @SuppressLint("NotifyDataSetChanged")
         fun setData(users: List<ConversationStorageUsage>?) {
             this.conversationStorageUsageList = users
             notifyDataSetChanged()

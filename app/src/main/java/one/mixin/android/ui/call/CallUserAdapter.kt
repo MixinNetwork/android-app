@@ -1,5 +1,6 @@
 package one.mixin.android.ui.call
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -62,6 +63,7 @@ class CallUserAdapter(private val self: CallUser, private val callClicker: (Stri
         return super.getItemCount() + 1
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCurrentListChanged(
         previousList: MutableList<CallUser>,
         currentList: MutableList<CallUser>

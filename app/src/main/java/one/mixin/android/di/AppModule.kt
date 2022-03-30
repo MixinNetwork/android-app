@@ -1,5 +1,6 @@
 package one.mixin.android.di
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ComponentName
 import android.content.ContentResolver
@@ -85,10 +86,11 @@ import kotlin.math.abs
 @Module(includes = [(BaseDbModule::class)])
 object AppModule {
 
-    private val xServerTime = "X-Server-Time"
-    private val xRequestId = "X-Request-Id"
-    private val authorization = "Authorization"
+    private const val xServerTime = "X-Server-Time"
+    private const val xRequestId = "X-Request-Id"
+    private const val authorization = "Authorization"
 
+    @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
     private val API_UA = (
         "Mixin/" + BuildConfig.VERSION_NAME +

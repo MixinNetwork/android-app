@@ -14,86 +14,88 @@
         app:titleText="@string/setting_appearance" />
 
     <RelativeLayout
-            android:id="@+id/night_mode_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+        android:id="@+id/night_mode_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
-                android:id="@+id/night_mode_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_theme"
-                tools:ignore="RelativeOverlap" />
+            android:id="@+id/night_mode_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_theme"
+            tools:ignore="RelativeOverlap" />
 
         <TextView
-                android:id="@+id/night_mode_desc_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor" />
-
+            android:id="@+id/night_mode_desc_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:textColor="?attr/text_minor"
+            tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
     <RelativeLayout
-            android:id="@+id/language_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop="@dimen/margin20"
-            android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+        android:id="@+id/language_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:layout_marginTop="@dimen/margin20"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
-                android:id="@+id/language_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/language"
-                tools:ignore="RelativeOverlap" />
+            android:id="@+id/language_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/language"
+            tools:ignore="RelativeOverlap" />
 
         <TextView
-                android:id="@+id/language_desc_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor" />
+            android:id="@+id/language_desc_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:textColor="?attr/text_minor"
+            tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
     <RelativeLayout
-            android:id="@+id/currency_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop="@dimen/margin20"
-            android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+        android:id="@+id/currency_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:layout_marginTop="@dimen/margin20"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
-                android:id="@+id/currency_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/currency"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/currency_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/currency"
+            tools:ignore="RelativeOverlap" />
 
         <TextView
-                android:id="@+id/current_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="?attr/text_minor"/>
+            android:id="@+id/current_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:textColor="?attr/text_minor"
+            tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 </LinearLayout>

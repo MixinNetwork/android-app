@@ -1,6 +1,7 @@
 package one.mixin.android.ui.sticker
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -68,6 +69,7 @@ class StickerManagementFragment : BaseFragment() {
 
     private val binding by viewBinding(FragmentStickerManagementBinding::bind)
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         COLUMN = if (requireContext().isWideScreen()) {
@@ -137,6 +139,7 @@ class StickerManagementFragment : BaseFragment() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onBackPressed(): Boolean {
         if (stickerAdapter.editing) {
             stickerAdapter.editing = !stickerAdapter.editing
@@ -162,6 +165,7 @@ class StickerManagementFragment : BaseFragment() {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Synchronized
     private fun updateStickers(list: List<Sticker>) {
         if (viewDestroyed()) return
@@ -176,6 +180,7 @@ class StickerManagementFragment : BaseFragment() {
         var editing = false
         val checkedList = arrayListOf<String>()
 
+        @SuppressLint("NotifyDataSetChanged")
         override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
             val s = if (editing) {
                 stickers[position]

@@ -20,7 +20,7 @@
             android:layout_height="44dp"
             android:orientation="horizontal"
             android:background="?attr/bg_white"
-            tools:ignore="UseCompoundDrawables">
+            tools:ignore="UseCompoundDrawables,UselessParent">
 
             <ImageView
                 android:id="@+id/icon_iv"
@@ -44,7 +44,6 @@
                 android:textSize="18sp"
                 android:textColor="?attr/text_primary" />
         </LinearLayout>
-
     </LinearLayout>
 
     <FrameLayout

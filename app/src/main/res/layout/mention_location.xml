@@ -41,7 +41,8 @@
             android:layout_gravity="center"
             android:layout_marginBottom="20dp"
             android:src="@drawable/ic_map_pin"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:contentDescription="@null" />
 
         <ImageView
             android:id="@+id/my_location"
@@ -51,7 +52,8 @@
             android:layout_margin="6dp"
             android:foreground="@drawable/mixin_ripple"
             android:src="@drawable/ic_my_location"
-            android:visibility="visible" />
+            android:visibility="visible"
+            android:contentDescription="@null" />
 
     </FrameLayout>
 

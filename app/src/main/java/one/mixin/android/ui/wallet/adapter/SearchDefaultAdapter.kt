@@ -25,6 +25,7 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
     }
 
     var recentAssets: List<AssetItem>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (value == field) return
 
@@ -33,6 +34,7 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
         }
 
     var topAssets: List<TopAssetItem>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (value == field) return
 

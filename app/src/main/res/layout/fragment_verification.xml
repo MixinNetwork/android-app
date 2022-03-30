@@ -17,7 +17,7 @@
         app:layout_constraintHorizontal_bias="0.023"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_arrow_back"/>
+        app:srcCompat="@drawable/ic_arrow_back" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -40,7 +40,7 @@
                 android:gravity="center_horizontal"
                 android:text="@string/landing_validation_title"
                 android:textColor="?attr/text_primary"
-                android:textSize="18sp"/>
+                android:textSize="18sp" />
 
             <one.mixin.android.widget.VerificationCodeView
                 android:id="@+id/pin_verification_view"
@@ -53,7 +53,7 @@
                 android:gravity="center_horizontal"
                 app:vcv_inputWidth="30dp"
                 app:vcv_spacing="10dp"
-                app:vcv_textColor="?attr/text_primary"/>
+                app:vcv_textColor="?attr/text_primary" />
 
             <TextView
                 android:id="@+id/pin_verification_tip_tv"
@@ -63,7 +63,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
-                android:textColor="@color/colorRed"/>
+                android:textColor="@color/colorRed" />
 
             <TextView
                 android:id="@+id/verification_resend_tv"
@@ -72,7 +72,7 @@
                 android:layout_gravity="center_horizontal"
                 android:padding="@dimen/margin12"
                 android:text="@string/landing_resend_code_enable"
-                android:textColor="?attr/text_minor"/>
+                android:textColor="?attr/text_minor" />
 
             <TextView
                 android:id="@+id/verification_need_help_tv"
@@ -84,7 +84,7 @@
                 android:padding="@dimen/margin12"
                 android:text="@string/landing_verification_need_help"
                 android:visibility="gone"
-                android:textColor="@color/colorRed"/>
+                android:textColor="@color/colorRed" />
         </LinearLayout>
     </ScrollView>
 
@@ -104,14 +104,15 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue"/>
+            app:backgroundTint="@color/colorBlue"
+            android:contentDescription="@string/next" />
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/verification_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentBottom="true" />
 
     <View
         android:id="@+id/verification_cover"
@@ -120,5 +121,5 @@
         android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 </RelativeLayout>

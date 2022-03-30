@@ -46,7 +46,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="10dp"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/op_tv"

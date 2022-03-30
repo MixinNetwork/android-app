@@ -23,7 +23,7 @@
         app:layout_constraintBottom_toBottomOf="@id/chat_msg_layout"
         tools:ignore="ContentDescription,NotSibling" />
 
-     <ImageView
+    <ImageView
         android:id="@+id/chat_jump"
         android:padding="4dp"
         android:layout_width="wrap_content"
@@ -121,7 +121,8 @@
                         android:src="@drawable/ic_expired"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:contentDescription="@string/chat_expired" />
 
                     <TextView
                         android:id="@+id/file_name_tv"

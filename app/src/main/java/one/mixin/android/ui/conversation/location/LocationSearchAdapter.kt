@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.location
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -15,12 +16,14 @@ import one.mixin.android.websocket.LocationPayload
 
 class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
     var venues: List<Venue>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
     var keyword: String? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -35,6 +38,7 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
     }
 
     private var currentVenues: Venue? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()

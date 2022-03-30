@@ -1,5 +1,6 @@
 package one.mixin.android.widget.gallery.internal.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.provider.MediaStore;
 import androidx.recyclerview.widget.RecyclerView;
@@ -63,6 +64,7 @@ public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHold
         return mCursor.getLong(mRowIDColumn);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void swapCursor(Cursor newCursor) {
         if (newCursor == mCursor) {
             return;

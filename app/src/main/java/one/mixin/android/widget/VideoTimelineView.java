@@ -1,5 +1,6 @@
 package one.mixin.android.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -19,14 +20,14 @@ import timber.log.Timber;
 public class VideoTimelineView extends View {
 
     private Long videoLength;
-    private Paint paint;
-    private Paint paint2;
+    private final Paint paint;
+    private final Paint paint2;
     private boolean pressedPlay;
     private float playProgress = 0f;
     private float pressDx;
     private MediaMetadataRetriever mediaMetadataRetriever;
     private VideoTimelineViewDelegate delegate;
-    private ArrayList<Bitmap> frames = new ArrayList<>();
+    private final ArrayList<Bitmap> frames = new ArrayList<>();
     private AsyncTask<Integer, Integer, Bitmap> currentTask;
     private static final Object sync = new Object();
     private long frameTimeOffset;
@@ -36,7 +37,7 @@ public class VideoTimelineView extends View {
     private boolean isRoundFrames;
     private Rect rect1;
     private Rect rect2;
-    private RectF rect3 = new RectF();
+    private final RectF rect3 = new RectF();
     private int lastWidth;
 
     public interface VideoTimelineViewDelegate {
@@ -64,6 +65,7 @@ public class VideoTimelineView extends View {
         return playProgress;
     }
 
+    @SuppressWarnings("unused")
     public void setRoundFrames(boolean value) {
         isRoundFrames = value;
         if (isRoundFrames) {
@@ -72,6 +74,7 @@ public class VideoTimelineView extends View {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event == null) {
@@ -129,7 +132,7 @@ public class VideoTimelineView extends View {
     }
 
 
-    private long start = 0;
+    private final long start = 0;
 
     public void setVideoPath(String path) {
         destroy();
@@ -143,6 +146,7 @@ public class VideoTimelineView extends View {
         this.delegate = delegate;
     }
 
+    @SuppressLint("StaticFieldLeak")
     private void reloadFrames(int frameNum) {
         if (mediaMetadataRetriever == null) {
             return;
@@ -158,7 +162,8 @@ public class VideoTimelineView extends View {
             }
             frameTimeOffset = videoLength / framesToLoad;
         }
-        currentTask = new AsyncTask<Integer, Integer, Bitmap>() {
+        //noinspection deprecation
+        currentTask = new AsyncTask<>() {
             private int frameNum = 0;
 
             @Override
@@ -178,7 +183,7 @@ public class VideoTimelineView extends View {
                         Canvas canvas = new Canvas(result);
                         float scaleX = (float) frameWidth / (float) bitmap.getWidth();
                         float scaleY = (float) frameHeight / (float) bitmap.getHeight();
-                        float scale = scaleX > scaleY ? scaleX : scaleY;
+                        float scale = Math.max(scaleX, scaleY);
                         int w = (int) (bitmap.getWidth() * scale);
                         int h = (int) (bitmap.getHeight() * scale);
                         Rect srcRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
@@ -231,6 +236,7 @@ public class VideoTimelineView extends View {
         }
     }
 
+    @SuppressWarnings("unused")
     public boolean isDragging() {
         return pressedPlay;
     }

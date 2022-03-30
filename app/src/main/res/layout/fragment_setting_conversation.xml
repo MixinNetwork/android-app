@@ -31,7 +31,7 @@
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/everybody_tv"
@@ -72,7 +72,7 @@
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/my_contacts_tv"
@@ -124,7 +124,7 @@
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/everybody_group_tv"
@@ -165,7 +165,7 @@
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/my_contacts_group_tv"

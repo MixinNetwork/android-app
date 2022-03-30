@@ -8,7 +8,8 @@
         android:id="@+id/dialog_iv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:contentDescription="@null" />
 
     <ImageView
         android:id="@+id/dialog_close_iv"
@@ -17,7 +18,8 @@
         android:layout_gravity="top|start"
         android:layout_margin="8dp"
         android:background="@null"
-        android:src="@drawable/ic_close_shadow" />
+        android:src="@drawable/ic_close_shadow"
+        android:contentDescription="@null" />
 
     <ImageView
         android:id="@+id/dialog_send_ib"
@@ -28,6 +30,6 @@
         android:background="@drawable/selector_round_bn"
         android:padding="8dp"
         android:scaleType="center"
-        android:src="@drawable/ic_send_white" />
-
+        android:src="@drawable/ic_send_white"
+        android:contentDescription="@string/send" />
 </FrameLayout>

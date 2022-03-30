@@ -9,7 +9,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="?attr/bg_white">
 
         <ImageButton
@@ -53,7 +53,7 @@
         <EditText
             android:id="@+id/search_et"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             android:layout_marginEnd="8dp"
             android:layout_toStartOf="@id/pb"
             android:layout_toEndOf="@id/back_ib"
@@ -64,7 +64,8 @@
             android:maxLines="1"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_minor"
-            android:textSize="14sp"/>
+            android:textSize="14sp"
+            tools:ignore="Autofill,LabelFor" />
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView

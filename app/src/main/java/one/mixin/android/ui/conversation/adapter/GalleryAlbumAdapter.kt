@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.annotation.SuppressLint
 import androidx.collection.ArrayMap
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -17,6 +18,7 @@ class GalleryAlbumAdapter(
     var rvCallback: DraggableRecyclerView.Callback? = null
 
     var albums: List<Album>? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             field = value
             notifyDataSetChanged()

@@ -32,6 +32,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
         fun newInstance() = PinLogsFragment()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -74,6 +75,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
 
     private var hasMore = false
     private var isLoading = false
+    @SuppressLint("NotifyDataSetChanged")
     private fun loadMore() {
         if (isLoading || !hasMore) {
             return

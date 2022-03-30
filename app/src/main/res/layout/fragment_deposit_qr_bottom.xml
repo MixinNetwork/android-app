@@ -65,8 +65,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="?attr/selectableItemBackground"
+            android:background="?android:attr/selectableItemBackground"
             android:padding="@dimen/margin16"
-            android:src="@drawable/ic_bottom_album"/>
+            android:src="@drawable/ic_bottom_album"
+            android:contentDescription="@string/save" />
     </FrameLayout>
 </LinearLayout>

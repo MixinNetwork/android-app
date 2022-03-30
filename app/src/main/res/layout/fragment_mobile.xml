@@ -55,7 +55,6 @@
             android:paddingEnd="0dp"
             android:paddingBottom="8dp"
             android:scaleType="centerInside"
-            android:src="@drawable/flag_cn"
             app:layout_constraintBottom_toBottomOf="@+id/mobile_et"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/mobile_et"
@@ -123,7 +122,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue" />
+            app:backgroundTint="@color/colorBlue"
+            android:contentDescription="@string/next" />
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <one.mixin.android.widget.Keyboard

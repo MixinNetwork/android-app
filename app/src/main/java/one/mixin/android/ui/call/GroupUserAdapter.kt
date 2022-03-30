@@ -1,5 +1,6 @@
 package one.mixin.android.ui.call
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
@@ -24,6 +25,7 @@ class GroupUserAdapter : ListAdapter<User, GroupUserViewHolder>(User.DIFF_CALLBA
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun removeUser(user: User) {
         mCheckedMap[user.identityNumber] = false
         notifyDataSetChanged()

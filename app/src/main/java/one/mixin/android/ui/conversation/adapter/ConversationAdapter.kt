@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.view.LayoutInflater
 import android.view.View
@@ -124,6 +125,7 @@ class ConversationAdapter(
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
     var unreadMsgId: String? = null
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (field != value) {
                 field = value
@@ -135,6 +137,7 @@ class ConversationAdapter(
         MarkwonUtil.getMiniMarkwon(context)
     }
     var hasBottomView = false
+        @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (field != value) {
                 field = value
@@ -589,6 +592,7 @@ class ConversationAdapter(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCurrentListChanged(
         previousList: PagedList<MessageItem>?,
         currentList: PagedList<MessageItem>?

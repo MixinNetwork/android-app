@@ -70,7 +70,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp">
+            android:layout_marginEnd="4dp"
+            tools:ignore="UselessParent">
 
             <one.mixin.android.widget.QuoteLayout
                 android:id="@+id/chat_quote_layout"
@@ -110,7 +111,8 @@
                         android:layout_gravity="center"
                         android:background="@drawable/bg_round_shadow"
                         android:src="@drawable/ic_play_arrow"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        android:contentDescription="@null" />
 
                     <one.mixin.android.widget.ProgressTextView
                         android:id="@+id/duration_tv"
@@ -125,7 +127,8 @@
                         android:paddingEnd="3dp"
                         android:paddingBottom="1dp"
                         android:textColor="@color/white"
-                        android:textSize="10sp" />
+                        android:textSize="10sp"
+                        tools:ignore="SmallSp" />
 
                     <LinearLayout
                         android:id="@+id/chat_warning"
@@ -133,12 +136,14 @@
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
                         android:gravity="center_horizontal"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        tools:ignore="UseCompoundDrawables">
 
                         <ImageView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:src="@drawable/ic_expired" />
+                            android:src="@drawable/ic_expired"
+                            android:contentDescription="@string/chat_expired" />
 
                         <TextView
                             android:layout_width="wrap_content"

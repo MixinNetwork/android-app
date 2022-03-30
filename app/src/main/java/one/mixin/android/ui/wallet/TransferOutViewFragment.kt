@@ -101,6 +101,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
 
     private var hasMore = true
     private var isLoading = false
+    @SuppressLint("NotifyDataSetChanged")
     private fun loadMore() {
         if (isLoading || !hasMore) {
             return

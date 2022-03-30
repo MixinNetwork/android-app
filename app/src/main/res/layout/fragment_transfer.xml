@@ -206,7 +206,8 @@
                     android:maxLength="140"
                     android:singleLine="true"
                     android:textColor="?attr/text_primary"
-                    android:textColorHint="?attr/text_assist" />
+                    android:textColorHint="?attr/text_assist"
+                    tools:ignore="Autofill" />
 
                 <ImageView
                     android:id="@+id/memo_iv"

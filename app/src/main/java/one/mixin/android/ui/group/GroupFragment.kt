@@ -1,5 +1,6 @@
 package one.mixin.android.ui.group
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.text.Editable
@@ -31,6 +32,7 @@ import one.mixin.android.ui.group.adapter.GroupSelectAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 
+@SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class GroupFragment : BaseFragment() {
 
@@ -211,6 +213,7 @@ class GroupFragment : BaseFragment() {
     }
 
     private val mGroupFriendListener = object : GroupFriendAdapter.GroupFriendListener {
+        @SuppressLint("NotifyDataSetChanged")
         override fun onItemClick(user: User, checked: Boolean) {
             if (checked) {
                 checkedUsers.add(user)

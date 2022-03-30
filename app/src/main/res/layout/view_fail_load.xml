@@ -11,7 +11,8 @@
         android:layout_above="@id/web_fail_title"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="@dimen/margin20"
-        android:src="@drawable/ic_web_load_fail" />
+        android:src="@drawable/ic_web_load_fail"
+        android:contentDescription="@null" />
 
     <TextView
         android:id="@+id/web_fail_title"

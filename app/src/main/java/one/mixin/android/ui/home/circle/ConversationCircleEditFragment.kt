@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.circle
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -35,6 +36,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isContactConversation
 
+@SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class ConversationCircleEditFragment : BaseFragment() {
     companion object {
@@ -93,6 +95,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         binding.conversationRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.setForwardListener(
             object : ForwardAdapter.ForwardListener {
+                @SuppressLint("NotifyDataSetChanged")
                 override fun onUserItemClick(user: User) {
                     lifecycleScope.launch {
                         if (adapter.selectItem.contains(user)) {
@@ -118,6 +121,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                     }
                 }
 
+                @SuppressLint("NotifyDataSetChanged")
                 override fun onConversationClick(item: ConversationMinimal) {
                     lifecycleScope.launch {
                         if (adapter.selectItem.contains(item)) {
@@ -172,6 +176,7 @@ class ConversationCircleEditFragment : BaseFragment() {
             }.sorted()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun loadData() = lifecycleScope.launch {
         val conversations = chatViewModel.successConversationList()
         adapter.sourceConversations = conversations

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Mixin</string>
     <!--common-->
     <string name="confirm">Confirm</string>
@@ -46,7 +46,7 @@
     <string name="sender">Sender</string>
     <string name="transaction_hash">Transaction Hash</string>
     <string name="participants">Participants</string>
-    <string name="copy">Copy</string>
+    <string name="copy" tools:override="true">Copy</string>
     <string name="open">Open</string>
     <string name="rebate">Rebate</string>
     <string name="select">Select</string>

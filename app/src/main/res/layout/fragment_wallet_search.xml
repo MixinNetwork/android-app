@@ -10,7 +10,7 @@
     <RelativeLayout
         android:id="@+id/search_view"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="?attr/bg_white"
         android:clickable="true"
         android:focusable="true">
@@ -83,13 +83,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="80dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            tools:ignore="UseCompoundDrawables">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_search_empty"/>
+                android:src="@drawable/ic_search_empty"
+                android:contentDescription="@null" />
 
             <TextView
                 android:layout_width="wrap_content"

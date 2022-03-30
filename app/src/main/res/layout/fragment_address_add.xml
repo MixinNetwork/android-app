@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
@@ -62,7 +63,8 @@
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill" />
 
             </RelativeLayout>
 
@@ -88,7 +90,8 @@
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill,TextFields" />
 
                 <ImageView
                     android:id="@+id/addr_iv"
@@ -123,7 +126,8 @@
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
                     android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    tools:ignore="Autofill,TextFields" />
 
                 <ImageView
                     android:id="@+id/tag_iv"

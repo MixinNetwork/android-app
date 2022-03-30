@@ -1,5 +1,6 @@
 package one.mixin.android.widget.imageeditor;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -101,6 +102,7 @@ public final class ImageEditorView extends FrameLayout {
         init();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void init() {
         setWillNotDraw(false);
         setModel(EditorModel.create());
@@ -225,6 +227,7 @@ public final class ImageEditorView extends FrameLayout {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
@@ -433,6 +436,7 @@ public final class ImageEditorView extends FrameLayout {
         this.mode = mode;
     }
 
+    @SuppressWarnings("unused")
     public void setMainImageEditorMatrixRotation(float angle, float minScaleDown) {
         model.setMainImageEditorMatrixRotation(angle, minScaleDown);
         invalidate();
@@ -476,6 +480,7 @@ public final class ImageEditorView extends FrameLayout {
         this.drawingChangedListener = drawingChangedListener;
     }
 
+    @SuppressWarnings("unused")
     public void setSizeChangedListener(@Nullable SizeChangedListener sizeChangedListener) {
         this.sizeChangedListener = sizeChangedListener;
     }

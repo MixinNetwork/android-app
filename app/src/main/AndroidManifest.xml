@@ -73,39 +73,18 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data
-                    android:host="codes"
-                    android:scheme="mixin" />
-                <data
-                    android:host="pay"
-                    android:scheme="mixin" />
-                <data
-                    android:host="users"
-                    android:scheme="mixin" />
-                <data
-                    android:host="apps"
-                    android:scheme="mixin" />
-                <data
-                    android:host="transfer"
-                    android:scheme="mixin" />
-                <data
-                    android:host="device"
-                    android:scheme="mixin" />
-                <data
-                    android:host="send"
-                    android:scheme="mixin" />
-                <data
-                    android:host="withdrawal"
-                    android:scheme="mixin" />
-                <data
-                    android:host="address"
-                    android:scheme="mixin" />
-                <data
-                    android:host="snapshots"
-                    android:scheme="mixin" />
-                <data
-                    android:host="conversations"
-                    android:scheme="mixin" />
+                <data android:scheme="mixin"/>
+                <data android:host="codes"/>
+                <data android:host="pay"/>
+                <data android:host="users"/>
+                <data android:host="apps"/>
+                <data android:host="transfer"/>
+                <data android:host="device"/>
+                <data android:host="send"/>
+                <data android:host="withdrawal"/>
+                <data android:host="address"/>
+                <data android:host="snapshots"/>
+                <data android:host="conversations"/>
             </intent-filter>
         </activity>
         <activity

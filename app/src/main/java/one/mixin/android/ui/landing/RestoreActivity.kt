@@ -115,7 +115,7 @@ class RestoreActivity : BaseActivity() {
         }
     }
 
-    private fun showErrorAlert(error: Result) {
+    private fun showErrorAlert(@Suppress("SameParameterValue") error: Result) {
         val userBackup = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         alertDialogBuilder()
             .apply {

@@ -4,7 +4,7 @@
     android:layout_height="@dimen/item_contact_height"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="?attr/bg_white"
-    android:foreground="?attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <CheckBox
         android:id="@+id/cb"

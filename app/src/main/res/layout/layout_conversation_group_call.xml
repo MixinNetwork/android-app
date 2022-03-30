@@ -19,7 +19,8 @@
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_pip_call"/>
+            android:src="@drawable/ic_pip_call"
+            android:contentDescription="@null" />
     </FrameLayout>
 
     <LinearLayout

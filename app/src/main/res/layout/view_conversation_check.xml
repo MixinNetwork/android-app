@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="70dp"
     android:background="?attr/bg_white"
-    android:foreground="?attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <FrameLayout
         android:layout_width="wrap_content"
@@ -26,7 +26,8 @@
             android:background="@drawable/bg_round_check"
             android:scaleType="center"
             android:src="@drawable/ic_check"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:contentDescription="@null" />
     </FrameLayout>
 
     <TextView

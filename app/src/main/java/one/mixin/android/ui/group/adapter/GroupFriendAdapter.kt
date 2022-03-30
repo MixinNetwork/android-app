@@ -1,5 +1,6 @@
 package one.mixin.android.ui.group.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +24,7 @@ class GroupFriendAdapter :
     var alreadyUserIds: List<String>? = null
     var isAdd: Boolean = true
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(data: List<User>?, showHeader: Boolean) {
         this.data = data
         mShowHeader = showHeader
@@ -31,6 +33,7 @@ class GroupFriendAdapter :
         notifyDataSetChanged()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clearUser(user: User) {
         mCheckedMap[user.identityNumber] = false
         notifyDataSetChanged()

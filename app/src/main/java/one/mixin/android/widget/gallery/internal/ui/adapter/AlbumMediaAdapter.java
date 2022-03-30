@@ -1,5 +1,6 @@
 package one.mixin.android.widget.gallery.internal.ui.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -106,6 +107,7 @@ public class AlbumMediaAdapter extends
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void notifyCheckStateChanged() {
         notifyDataSetChanged();
         if (mCheckStateListener != null) {

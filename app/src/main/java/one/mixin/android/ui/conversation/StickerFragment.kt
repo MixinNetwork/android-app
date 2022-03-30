@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -172,6 +173,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Synchronized
     private fun updateStickers(list: List<Sticker>) {
         if (viewDestroyed()) return

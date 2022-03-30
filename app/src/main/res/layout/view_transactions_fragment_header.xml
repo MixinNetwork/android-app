@@ -15,7 +15,7 @@
             android:id="@+id/top_rl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <one.mixin.android.widget.BadgeCircleImageView
                 android:id="@+id/avatar"
@@ -34,7 +34,8 @@
                 android:layout_marginStart="@dimen/margin12"
                 android:layout_marginEnd="42dp"
                 android:layout_toEndOf="@+id/avatar"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="RelativeOverlap" />
 
             <TextView
                 android:id="@+id/balance_as"
@@ -124,7 +125,8 @@
             android:layout_marginEnd="@dimen/margin12"
             android:background="@drawable/mixin_ripple_small"
             android:padding="8dp"
-            android:src="@drawable/ic_sort" />
+            android:src="@drawable/ic_sort"
+            android:contentDescription="@string/sort_by" />
 
         <TextView
             android:id="@+id/group_info_member_title"
@@ -158,7 +160,8 @@
             android:layout_height="125dp"
             android:layout_above="@+id/center"
             android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_transactions_empty" />
+            android:src="@drawable/ic_transactions_empty"
+            android:contentDescription="@null" />
 
         <TextView
             android:id="@+id/wallet_transactions_empty"

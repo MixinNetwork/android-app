@@ -6,14 +6,15 @@
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
     android:clickable="true"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:focusable="true">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:rightText="@string/done"
-        app:titleText="@string/sticker_add"/>
+        app:titleText="@string/sticker_add" />
 
     <one.mixin.android.widget.SquareLayout
         android:layout_width="match_parent"
@@ -27,6 +28,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
     </one.mixin.android.widget.SquareLayout>
 </FrameLayout>

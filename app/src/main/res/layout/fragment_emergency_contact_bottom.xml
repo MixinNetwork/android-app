@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_upper_round"
@@ -8,7 +9,8 @@
     <ScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        tools:ignore="UselessParent">
 
         <LinearLayout
             android:id="@+id/scroll_content"
@@ -26,7 +28,7 @@
                 android:textSize="18sp"
                 android:layout_marginTop="70dp"
                 android:textColor="?attr/text_primary"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -34,7 +36,7 @@
                 android:layout_marginTop="@dimen/margin16"
                 android:gravity="center_horizontal"
                 android:textColor="?attr/text_primary"
-                android:text="@string/setting_emergency_content"/>
+                android:text="@string/setting_emergency_content" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -42,7 +44,7 @@
                 android:layout_marginTop="@dimen/margin16"
                 android:gravity="center_horizontal"
                 android:textColor="@color/colorRed"
-                android:text="@string/setting_emergency_warning"/>
+                android:text="@string/setting_emergency_warning" />
 
             <ImageView
                 android:id="@+id/image_view"
@@ -64,7 +66,7 @@
                 android:layout_marginBottom="40dp"
                 android:text="@string/got_it"
                 android:textColor="@color/white"
-                android:textSize="14sp"/>
+                android:textSize="14sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

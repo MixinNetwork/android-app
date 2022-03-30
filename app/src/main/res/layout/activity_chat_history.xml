@@ -32,7 +32,7 @@
         android:textSize="14sp"
         android:textColor="@color/selector_tv_blue"
         android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground"
+        android:foreground="?android:attr/selectableItemBackground"
         android:translationZ="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

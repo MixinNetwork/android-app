@@ -55,7 +55,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_toStartOf="@id/delete_icon_copy"
                 android:text="@string/conversation_delete"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                tools:ignore="RelativeOverlap" />
         </RelativeLayout>
 
         <LinearLayout
@@ -63,7 +64,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?android:attr/selectableItemBackground"
             android:orientation="vertical">
 
             <RelativeLayout

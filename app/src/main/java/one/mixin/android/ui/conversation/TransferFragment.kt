@@ -342,6 +342,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                     adapter.submitList(assets)
                     adapter.setTypeListener(
                         object : OnTypeClickListener {
+                            @SuppressLint("NotifyDataSetChanged")
                             override fun onTypeClick(asset: AssetItem) {
                                 currentAsset = asset
                                 updateAssetUI(asset)

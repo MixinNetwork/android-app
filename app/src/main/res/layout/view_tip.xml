@@ -6,4 +6,4 @@
     android:gravity="center_vertical"
     android:background="@drawable/bg_tip_shadow"
     android:textColor="@color/white"
-    android:foreground="?attr/selectableItemBackground" />
+    android:foreground="?android:attr/selectableItemBackground" />

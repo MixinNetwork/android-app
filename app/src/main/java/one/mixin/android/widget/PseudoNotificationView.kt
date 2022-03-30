@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.GestureDetector
@@ -8,6 +9,7 @@ import android.view.MotionEvent
 import android.view.animation.DecelerateInterpolator
 import android.widget.RelativeLayout
 import androidx.collection.ArraySet
+import androidx.core.content.res.ResourcesCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPseudoNotificationBinding
 import one.mixin.android.extension.dp
@@ -28,9 +30,9 @@ class PseudoNotificationView : RelativeLayout {
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        val d = resources.getDrawable(R.drawable.ic_qr_code_preview, context.theme)
+        val d = ResourcesCompat.getDrawable(resources, R.drawable.ic_qr_code_preview, context.theme)
         val size = 12.dp
-        d.setBounds(0, 0, size, size)
+        d?.setBounds(0, 0, size, size)
         binding.titleTv.setCompoundDrawables(d, null, null, null)
     }
 
@@ -78,6 +80,7 @@ class PseudoNotificationView : RelativeLayout {
         }
     )
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         gestureDetector.onTouchEvent(event)
         return true

@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 android:id="@+id/storage_tv"
@@ -84,7 +84,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 android:id="@+id/storage_mobile_title"
@@ -121,7 +121,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 android:id="@+id/storage_wifi_title"
@@ -158,7 +158,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?android:attr/selectableItemBackground">
 
             <TextView
                 android:id="@+id/storage_roaming_title"
