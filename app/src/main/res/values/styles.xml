@@ -10,7 +10,7 @@
         <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">@font/roboto_regular</item>
-        <item name="android:windowBackground">?attr/colorPrimary</item>
+        <item name="android:windowBackground">?attr/bg_window</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
         <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
@@ -112,6 +112,10 @@
 
     <style name="AppTheme.NoAnim" parent="AppTheme.NoActionBar">
         <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+    <style name="AppTheme.Post" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">?attr/bg_post</item>
     </style>
 
     <style name="AppTheme.Capture" parent="AppTheme.FullScreen">

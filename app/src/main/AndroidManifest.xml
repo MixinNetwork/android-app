@@ -110,7 +110,7 @@
             android:name=".ui.conversation.markdown.MarkdownActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme.Post"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.conversation.chathistory.ChatHistoryActivity"
