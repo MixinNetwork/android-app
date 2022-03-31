@@ -47,6 +47,12 @@ android {
             exclude '**/*.kotlin_metadata'
             exclude 'META-INF/*.kotlin_module'
             exclude 'META-INF/*.version'
+
+            // https://issuetracker.google.com/issues/127691101 explains bug but the solution is deprecated
+            // https://issuetracker.google.com/issues/174695257
+            jniLibs {
+                useLegacyPackaging = true
+            }
         }
 
         kotlinOptions {
