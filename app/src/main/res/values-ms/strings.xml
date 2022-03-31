@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?><resources>
-    <string name="app_name" translatable="false">Mixin</string>
     <!--common-->
     <string name="confirm">Sahkan</string>
     <string name="change">Ubah</string>
@@ -33,7 +32,6 @@
     <string name="saving">Menyimpan &#8230;</string>
     <string name="pb_dialog_message">Sila tunggu sebentar &#8230;</string>
     <string name="other">LAIN</string>
-    <string name="welcome" translatable="false">Welcome to Mixin</string>
     <string name="not_logged_in">Tidak log masuk</string>
     <string name="got_it">Faham</string>
     <string name="got_it_count">Faham (%1$d)</string>
@@ -47,7 +45,6 @@
     <string name="rebate">Rebat</string>
     <string name="select">Pilih</string>
     <string name="changing">Menukar…</string>
-    <string name="secret_url" translatable="false">https://mixin.one/pages/1000007</string>
     <string name="transfer_to">Pindah Ke</string>
     <string name="hidden">Sembunyi</string>
     <string name="shown">Tunjukkan</string>
@@ -55,7 +52,6 @@
     <string name="searching">Mencari</string>
     <string name="add_success">Menambah kejayaan</string>
     <string name="dont_remind">Jangan ingatkan saya lagi</string>
-    <string name="gif" translatable="false">GIF</string>
     <string name="symbol">Simbol</string>
     <string name="chain">Rantai</string>
     <string name="contract">Kunci Aset</string>
@@ -67,7 +63,6 @@
     <string name="transfer_send">Hantar</string>
     <string name="receive">Terima</string>
     <string name="developer">Pemaju</string>
-    <string name="mixin_id" translatable="false">Mixin ID</string>
     <string name="later">Kemudian</string>
     <string name="save_to_music">Simpan ke Muzik</string>
     <string name="save_to_gallery">Simpan ke Galeri</string>
@@ -80,7 +75,6 @@
     <string name="share_to">Kongsi %1$s ke…</string>
     <string name="currency_switch">Menukar mata wang</string>
     <string name="unknown">Tidak diketahui</string>
-    <string name="not_any" translatable="false">N/A</string>
     <string name="media">Media</string>
     <string name="links">Pautan</string>
     <string name="files">Fail</string>
@@ -104,7 +98,6 @@
     <string name="click_lock">Klik untuk mengunci</string>
     <string name="click_unlock">Klik untuk membuka kunci</string>
     <string name="click_retry">Klik untuk mencuba semula</string>
-    <string name="pin" translatable="false">PIN</string>
     <string name="follow_system">Ikut Sistem</string>
     <string name="nobody">Tiada siapa</string>
     <string name="analyzing">Menganalisis…</string>
@@ -122,7 +115,6 @@
     <string name="know">saya tahu</string>
     <string name="storage_low_title">Storan telefon anda hampir penuh</string>
     <string name="storage_low_message">Storan telefon anda hampir penuh, yang boleh menjejaskan pengalaman Mixin anda secara serius dan boleh mengakibatkan sembang yang rosak atau hilang dan data penting lain. Oleh itu, disarankan untuk nyahpasang aplikasi yang tidak digunakan untuk memberi lebih ruang</string>
-    <string name="website" translatable="false">https://mixin.one/messenger</string>
     <string name="upload_timeout">Tamat masa muat naik</string>
     <string name="copy_link">Salin pautan</string>
     <string name="type_a_message">Taipkan mesej</string>
@@ -208,7 +200,6 @@
     <string name="search_related_message">%1$d mesej berkaitan</string>
     <string name="search_tip">Cari ID Mixin atau Nombor Telefon: %1$s</string>
     <!--landing-->
-    <string name="landing_back_content_desc" translatable="false">Landing back</string>
     <string name="landing_enter_mobile_number">Masukkan nombor telefon bimbit anda</string>
     <string name="landing_enter_new_mobile_number">Masukkan nombor telefon bimbit baharu anda</string>
     <string name="landing_enter_mobile_hint">Nombor telefon bimbit</string>
@@ -224,13 +215,9 @@
     <string name="landing_agree">Setuju &amp; Teruskan</string>
     <string name="landing_privacy_policy">Dasar Privasi</string>
     <string name="landing_terms_service">Terma Perkhidmatan</string>
-    <string name="landing_privacy_policy_url" translatable="false">https://mixin.one/pages/privacy</string>
-    <string name="landing_terms_url" translatable="false">https://mixin.one/pages/terms</string>
-    <string name="chat_delete_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="landing_verification_need_help">Perlukan bantuan?</string>
     <string name="landing_verification_cant_receive">Tidak dapat menerima kod?</string>
     <string name="landing_verification_lost_mobile">Kehilangan nombor telefon bimbit anda?</string>
-    <string name="landing_verification_tip_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="landing_check_updates">Kemas kini Versi</string>
     <string name="update_mixin">Kemas kini Mixin</string>
     <string name="update_mixin_description">Versi semasa (%1$s) tidak lagi tersedia!\nSila klik Kemas kini di bawah untuk mengemas kini ke versi terbaharu dari Google Play.</string>
@@ -244,7 +231,6 @@
     <string name="contact_qr_desc">Imbas kod QR Mixin rakan anda</string>
     <string name="contact_invite_title">Jemput Orang</string>
     <string name="contact_invite_desc">Kod jemputan saya ialah %1$s</string>
-    <string name="contact_mixin_id" translatable="false">Mixin ID: %1$s</string>
     <string name="contact_mobile">Mudah alih: %1$s</string>
     <string name="contact_empty">Kenalan Telefon</string>
     <string name="contact_empty_tip">Mixin perlu mengakses kenalan anda untuk membantu anda berhubung dengan orang lain di Mixin.</string>
@@ -283,9 +269,7 @@
     <string name="profile_join_in">Menyertai %1$s</string>
     <!-- chat -->
     <string name="chat_waiting">Menunggu %1$s untuk berada dalam talian dan tubuhkan sesi yang disulitkan. %2$s.</string>
-    <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>
     <string name="chat_waiting_desktop">desktop</string>
-    <string name="chat_not_support_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini. %1$s.</string>
     <string name="chat_learn">Ketahui lebih lanjut</string>
     <string name="week_monday">Isnin</string>
@@ -441,7 +425,6 @@
     <string name="wallet_add_asset_already">Aset sudah ditambah</string>
     <string name="wallet_add_asset_already_hidden">Aset %1$s telah disembunyikan oleh anda, mahu tunjukkan dengan segera di halaman utama dompet?</string>
     <string name="wallet_biometric_invalid">Keadaan biometrik tidak sah, sila tetapkan semula dalam tetapan dompet.</string>
-    <string name="wallet_setting_currency_desc" translatable="false">%1$s (%2$s)</string>
     <string name="wallet_transactions_asset_key_warning">Kunci aset BUKAN alamat deposit!</string>
     <string name="wallet_search_hint">Cari Nama, Simbol</string>
     <string name="wallet_trending">Sohor Kini</string>
@@ -783,7 +766,6 @@
     <string name="send">Hantar</string>
     <string name="send_file">Hantar \"%1$s\" ke %2$s?</string>
     <string name="send_file_group">Hantar \"%1$s\" ke \"%2$s\"?</string>
-    <string name="default_time" translatable="false">00:00</string>
     <string name="action_open">Buka dalam pelayar</string>
     <string name="action_refresh">Segarkan</string>
     <string name="action_update">Kemas kini</string>
@@ -820,8 +802,7 @@
     <string name="sticker_add_invalid_format">Format pelekat tidak sah</string>
     <string name="sticker_search_giphy">Cari GIPHY</string>
     <string name="sticker_no_result">Tiada keputusan</string>
-    <!--avatar-->
-    <string name="avatar_transition_name" translatable="false">avatar_transition_name</string>
+
     <!--filter-->
     <string name="filters_title">Penapis</string>
     <string name="filters_apply">Guna</string>
