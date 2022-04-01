@@ -2,7 +2,6 @@ package one.mixin.android.websocket
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
@@ -44,6 +43,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
+import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -130,7 +130,7 @@ class ChatWebSocket(
                 latch.await(5, TimeUnit.SECONDS)
             }
         } else {
-            Log.e(TAG, "WebSocket not connect")
+            Timber.tag(TAG).e("WebSocket not connect")
         }
         return bm
     }
@@ -241,7 +241,7 @@ class ChatWebSocket(
         if (t.isNeedSwitch()) {
             hostFlag = !hostFlag
         }
-        Log.e(TAG, "WebSocket onFailure $homeUrl", t)
+        Timber.e(t, "WebSocket onFailure $homeUrl")
         if (client != null) {
             if (t is ClientErrorException && t.code == AUTHENTICATION) {
                 closeInternal(quitCode)

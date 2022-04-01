@@ -1,7 +1,6 @@
 package one.mixin.android.crypto
 
 import android.content.Context
-import android.util.Log
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -35,6 +34,7 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.protocol.SignalMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
+import timber.log.Timber
 import java.lang.Exception
 
 class SignalProtocol(ctx: Context) {
@@ -219,7 +219,7 @@ class SignalProtocol(ctx: Context) {
         try {
             cipher = groupCipher.encrypt(message.content!!.toByteArray())
         } catch (e: NoSessionException) {
-            Log.e(TAG, "NoSessionException", e)
+            Timber.tag(TAG).e(e, "NoSessionException")
         }
 
         val data = encodeMessageData(ComposeMessageData(SENDERKEY_TYPE, cipher))

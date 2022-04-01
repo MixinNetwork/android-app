@@ -1,6 +1,5 @@
 package one.mixin.android.fcm
 
-import android.util.Log
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -10,6 +9,7 @@ import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.worker.RefreshFcmWorker
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -19,7 +19,7 @@ class FcmService : FirebaseMessagingService() {
     lateinit var jobManager: MixinJobManager
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        Log.d("FcmService", "From: ${remoteMessage.from}")
+        Timber.d("From: " + remoteMessage.from)
     }
 
     override fun onNewToken(token: String) {

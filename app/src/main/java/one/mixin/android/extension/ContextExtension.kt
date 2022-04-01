@@ -42,7 +42,6 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.DisplayMetrics
-import android.util.Log
 import android.util.TypedValue
 import android.view.Window
 import android.view.WindowManager
@@ -665,14 +664,14 @@ fun Context.openUrl(url: String) {
         customTabsIntent.launchUrl(this, uri)
         return
     } catch (e: Exception) {
-        Log.e("OpenUrl", "OpenUrl", e)
+        Timber.e(e, "OpenUrl")
     }
     try {
         val intent = Intent(Intent.ACTION_VIEW, uri)
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
         startActivity(intent)
     } catch (e: Exception) {
-        Log.e("OpenUrl", "OpenUrl", e)
+        Timber.e(e, "OpenUrl")
     }
 }
 
