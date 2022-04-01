@@ -245,7 +245,7 @@
             android:name=".widget.gallery.ui.GalleryActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.Gallery" />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.common.AvatarActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
