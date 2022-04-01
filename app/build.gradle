@@ -161,6 +161,7 @@ android {
 
     lintOptions {
         abortOnError false
+        ignore 'Overdraw'
     }
     configurations {
         ktlint
