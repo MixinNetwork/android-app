@@ -31,6 +31,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.internal.toImmutableList
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.extension.notNullWithElse
@@ -136,7 +137,6 @@ class MusicService : MediaBrowserServiceCompat() {
 
     override fun onLoadChildren(parentId: String, result: Result<List<MediaBrowserCompat.MediaItem>>) {
         Timber.d("$TAG onLoadChildren parentId: $parentId, needRefresh: $needRefresh")
-        val exists = musicTree[parentId]
         if (needRefresh) {
             loadConversationMusic(parentId)
             needRefresh = false
@@ -144,6 +144,7 @@ class MusicService : MediaBrowserServiceCompat() {
 
             observeConversationMusic(parentId)
         } else {
+            val exists = musicTree[parentId]?.toImmutableList()
             if (exists != null) {
                 Timber.d("$TAG exists size: ${exists.size}")
                 val children = exists.map { item ->

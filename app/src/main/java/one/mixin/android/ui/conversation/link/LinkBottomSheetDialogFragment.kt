@@ -145,6 +145,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (isUserScheme || isAppScheme) {
             val uri = url.toUri()
             val segments = uri.pathSegments
+            if (segments.isEmpty()) return
+
             val userId = if (segments.size >= 2) {
                 segments[1]
             } else {
@@ -187,6 +189,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             val uri = url.toUri()
             val segments = uri.pathSegments
+            if (segments.isEmpty()) return
+
             val userId = if (segments.size >= 2) {
                 segments[1]
             } else {
@@ -225,6 +229,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments
+            if (segments.isEmpty()) return
+
             code = if (segments.size >= 2) {
                 segments[1]
             } else {
@@ -575,7 +581,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         } else if (url.startsWith(Scheme.CONVERSATIONS, true)) {
             val uri = Uri.parse(url)
-            val conversationId = uri.pathSegments[0]
+            val segments = uri.pathSegments
+            if (segments.isEmpty()) return
+
+            val conversationId = segments[0]
             if (conversationId.isEmpty() || !conversationId.isUUID()) {
                 showError()
                 return
