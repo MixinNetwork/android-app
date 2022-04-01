@@ -99,7 +99,8 @@ public final class PhotoMetadataUtils {
                 if (cursor == null || !cursor.moveToFirst()) {
                     return null;
                 }
-                return cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                int indexData = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                return cursor.getString(indexData);
             } finally {
                 if (cursor != null) {
                     cursor.close();
