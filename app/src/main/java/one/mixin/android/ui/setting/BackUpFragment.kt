@@ -46,6 +46,7 @@ import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.deleteApi29
 import one.mixin.android.util.backup.findBackup
 import one.mixin.android.util.backup.findBackupApi29
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -166,7 +167,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 binding.backupBn.isInvisible = false
                 binding.progressGroup.isVisible = false
                 binding.deleteBn.isVisible = true
-                when (BackupJob.backupLiveData.result) {
+                when (val result = BackupJob.backupLiveData.result) {
                     Result.SUCCESS -> findBackUp()
                     Result.NO_AVAILABLE_MEMORY ->
                         alertDialogBuilder()
@@ -174,7 +175,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                             .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
                             .show()
                     Result.FAILURE -> toast(R.string.backup_failure_tip)
-                    else -> throw IllegalStateException("Unknown")
+                    else -> reportException(IllegalStateException("Backup result $result"))
                 }
             }
         }
