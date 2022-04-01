@@ -137,8 +137,12 @@ object NotificationGenerator : Injector() {
                 app = appDao.findAppById(requireNotNull(user.appId))
             } else if (message.isRepresentativeMessage(conversation)) {
                 val representativeUser = syncUser(conversation.ownerId)
-                app = appDao.findAppById(requireNotNull(representativeUser?.appId))
-                isBot = representativeUser?.isBot() ?: false
+                if (representativeUser == null) {
+                    isBot = false
+                } else {
+                    app = appDao.findAppById(requireNotNull(representativeUser.appId))
+                    isBot = representativeUser.isBot()
+                }
             }
             val encryptCategory = getEncryptedCategory(isBot, app)
             sendIntent.putExtra(ENCRYPTED_CATEGORY, encryptCategory.ordinal)
