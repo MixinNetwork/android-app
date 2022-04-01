@@ -10,6 +10,7 @@ import timber.log.Timber;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 
 import static one.mixin.android.util.CrashExceptionReportKt.reportException;
 
@@ -101,7 +102,7 @@ public class MediaCodecVideoConvertor {
 
                         int colorFormat;
                         int processorType = PROCESSOR_TYPE_OTHER;
-                        String manufacturer = Build.MANUFACTURER.toLowerCase();
+                        String manufacturer = Build.MANUFACTURER.toLowerCase(Locale.ROOT);
                         colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface;
                         Timber.d("colorFormat = %s", colorFormat);
 
@@ -115,7 +116,7 @@ public class MediaCodecVideoConvertor {
                                 bufferSize += padding * 5 / 4;
                             }
                         } else if (processorType == PROCESSOR_TYPE_QCOM) {
-                            if (!manufacturer.toLowerCase().equals("lge")) {
+                            if (!manufacturer.equalsIgnoreCase("lge")) {
                                 int uvoffset = (resultWidth * resultHeight + 2047) & ~2047;
                                 padding = uvoffset - (resultWidth * resultHeight);
                                 bufferSize += padding;
