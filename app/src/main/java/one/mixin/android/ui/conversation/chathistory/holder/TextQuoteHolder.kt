@@ -77,7 +77,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
     ) {
         super.bind(messageItem)
 
-        binding.chatTv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
+        binding.chatTv.setAutoLinkOnLongClickListener { autoLinkMode, _ ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                 }
