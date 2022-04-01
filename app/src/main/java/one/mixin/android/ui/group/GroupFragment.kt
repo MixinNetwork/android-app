@@ -142,12 +142,11 @@ class GroupFragment : BaseFragment() {
 
         if (from == TYPE_ADD || from == TYPE_CREATE) {
             groupViewModel.getFriends().observe(
-                viewLifecycleOwner,
-                {
-                    users = it
-                    filterAndSet(binding.searchEt.text.toString(), it)
-                }
-            )
+                viewLifecycleOwner
+            ) {
+                users = it
+                filterAndSet(binding.searchEt.text.toString(), it)
+            }
         } else {
             users = alreadyUsers
             filterAndSet(binding.searchEt.text.toString(), alreadyUsers)
