@@ -61,6 +61,8 @@ abstract class VisionFragment : BaseFragment() {
             content.startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
         ) {
             val segments = Uri.parse(content).pathSegments
+            if (segments.isEmpty()) return
+
             val userId = if (segments.size >= 2) {
                 segments[1]
             } else {

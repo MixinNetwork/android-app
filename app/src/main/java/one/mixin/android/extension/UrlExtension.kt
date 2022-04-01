@@ -128,6 +128,8 @@ fun String.checkUserOrApp(
     val ctx = MixinApplication.appContext
     val uri = Uri.parse(this)
     val segments = uri.pathSegments
+    if (segments.isEmpty()) return
+
     val userId = if (segments.size >= 2) {
         segments[1]
     } else {
