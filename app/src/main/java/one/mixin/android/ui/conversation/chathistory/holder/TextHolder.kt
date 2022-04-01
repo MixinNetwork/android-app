@@ -25,6 +25,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseViewHolder(
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_BOT)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
         binding.chatTv.setMentionModeColor(LINK_COLOR)
+        binding.chatTv.setBotModeColor(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
     }
