@@ -1,5 +1,6 @@
 package one.mixin.android.util.video;
 
+import android.annotation.SuppressLint;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaExtractor;
@@ -41,6 +42,7 @@ public class MediaCodecVideoConvertor {
                 resultWidth, resultHeight, framerate, bitrate, startTime, endTime, duration, needCompress, false);
     }
 
+    @SuppressLint("WrongConstant")
     private boolean convertVideoInternal(String videoPath, File cacheFile,
                                          int rotationValue, boolean isSecret,
                                          int resultWidth, int resultHeight,
@@ -480,6 +482,7 @@ public class MediaCodecVideoConvertor {
         return error;
     }
 
+    @SuppressLint("WrongConstant")
     private long readAndWriteTracks(MediaExtractor extractor, MP4Builder mediaMuxer,
                                     MediaCodec.BufferInfo info, long start, long end, long duration, File file, boolean needAudio) throws Exception {
         int videoTrackIndex = MediaController.findTrack(extractor, false);

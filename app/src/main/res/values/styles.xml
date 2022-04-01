@@ -118,6 +118,10 @@
         <item name="android:windowBackground">?attr/bg_post</item>
     </style>
 
+    <style name="AppTheme.Gallery" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">?attr/bg_white</item>
+    </style>
+
     <style name="AppTheme.Capture" parent="AppTheme.FullScreen">
         <item name="android:windowFullscreen">true</item>
         <item name="android:immersive">true</item>
