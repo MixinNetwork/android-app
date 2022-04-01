@@ -1084,7 +1084,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 requestResendMessage(data.conversationId, data.userId, data.sessionId)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "decrypt failed " + data.messageId, e)
+            Timber.e(e, "decrypt failed " + data.messageId)
             reportDecryptFailed(data, e, resendMessageId)
 
             if (resendMessageId != null) {

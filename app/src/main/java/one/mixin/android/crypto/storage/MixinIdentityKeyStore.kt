@@ -1,7 +1,6 @@
 package one.mixin.android.crypto.storage
 
 import android.content.Context
-import android.util.Log
 import one.mixin.android.crypto.SessionUtil
 import one.mixin.android.crypto.db.IdentityDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -11,6 +10,7 @@ import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.state.IdentityKeyStore
+import timber.log.Timber
 
 class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
 
@@ -62,14 +62,14 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
             val signalAddress = address.name
             val identity = dao.getIdentity(signalAddress)
             if (identity == null) {
-                Log.w(TAG, "Saving new identity...$address")
+                Timber.tag(TAG).w("Saving new identity...%s", address)
                 dao.insert(Identity(signalAddress, null, identityKey.serialize(), null, null, System.currentTimeMillis()))
                 return true
             }
 
             if (identity.getIdentityKey() != identityKey) {
-                Log.w(TAG, "Replacing existing identity...$address")
                 dao.insert(Identity(signalAddress, null, identityKey.serialize(), null, null, System.currentTimeMillis()))
+                Timber.tag(TAG).w("Replacing existing identity...%s", address)
                 SessionUtil.archiveSiblingSessions(context, address)
                 return true
             }
@@ -79,12 +79,12 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
 
     private fun isTrustedForSending(identityKey: IdentityKey, identity: Identity?): Boolean {
         if (identity == null) {
-            Log.w(TAG, "Nothing here, returning true...")
+            Timber.tag(TAG).w("Nothing here, returning true...")
             return true
         }
 
         if (identityKey != identity.getIdentityKey()) {
-            Log.w(TAG, "Identity keys don't match...")
+            Timber.tag(TAG).w("Identity keys don't match...")
             return false
         }
         return true

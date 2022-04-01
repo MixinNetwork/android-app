@@ -45,11 +45,18 @@ public class Album implements Parcelable {
     }
 
     public static Album valueOf(Cursor cursor) {
+        int indexBucket = cursor.getColumnIndex("bucket_id");
+        int indexData = cursor.getColumnIndex(MediaStore.MediaColumns.DATA);
+        int indexName = cursor.getColumnIndex("bucket_display_name");
+        int indexCount = cursor.getColumnIndex(AlbumLoader.COLUMN_COUNT);
+        if (indexBucket < 0 || indexData < 0 || indexName < 0 || indexCount < 0) {
+            throw new IllegalArgumentException("Value must be ≥ 0");
+        }
         return new Album(
-                cursor.getString(cursor.getColumnIndex("bucket_id")),
-                cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA)),
-                cursor.getString(cursor.getColumnIndex("bucket_display_name")),
-                cursor.getLong(cursor.getColumnIndex(AlbumLoader.COLUMN_COUNT)));
+                cursor.getString(indexBucket),
+                cursor.getString(indexData),
+                cursor.getString(indexName),
+                cursor.getLong(indexCount));
     }
 
     @Override

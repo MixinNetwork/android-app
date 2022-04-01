@@ -199,7 +199,6 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
             params.width = size
             params.height = size
             holder.itemView.layoutParams = params
-            val ctx = holder.itemView.context
             val item = (holder.itemView as ViewGroup).getChildAt(0) as RLottieImageView
             if (position == 0 && needAdd) {
                 item.updateLayoutParams<ViewGroup.LayoutParams> {

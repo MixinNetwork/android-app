@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import android.os.SystemClock
-import android.util.Log
 import com.birbit.android.jobqueue.Params
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -108,7 +107,7 @@ abstract class MixinJob(
                         keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
                     }
                 } else {
-                    Log.e(TAG, "No any group signal key from server: " + requestSignalKeyUsers.toString())
+                    Timber.tag(TAG).e("No any group signal key from server: %s", requestSignalKeyUsers.toString())
                 }
 
                 val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }

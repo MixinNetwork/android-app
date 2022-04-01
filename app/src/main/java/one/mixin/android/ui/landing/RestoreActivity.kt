@@ -182,10 +182,11 @@ class RestoreActivity : BaseActivity() {
             }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun callbackChooseFolder(uri: Uri?) {
         if (uri != null) {
-            Timber.d(getDisplayPath(uri))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Timber.d(getDisplayPath(uri))
+            }
             defaultSharedPreferences.putString(Constants.Account.PREF_BACKUP_DIRECTORY, uri.toString())
             val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION
@@ -202,9 +203,7 @@ class RestoreActivity : BaseActivity() {
     private fun initUI(backupInfo: BackupInfo) {
         binding = ActivityRestoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.restoreTime.text = backupInfo.lastModified.run {
-            this.getRelativeTimeSpan()
-        }
+        binding.restoreTime.text = backupInfo.lastModified.getRelativeTimeSpan()
         binding.restoreRestore.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)

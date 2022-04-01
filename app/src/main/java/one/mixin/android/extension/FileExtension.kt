@@ -539,7 +539,8 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
                 cursor = context.contentResolver.query(this, null, null, null, null)
                 val name = try {
                     if (cursor != null && cursor.moveToFirst()) {
-                        cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        cursor.getString(index)
                     } else null
                 } catch (e: Exception) {
                     null
@@ -568,7 +569,8 @@ fun Uri.getFileName(context: Context = MixinApplication.appContext): String {
                 cursor = context.contentResolver.query(this, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
                 cursor?.let { c ->
                     if (c.moveToFirst()) {
-                        result = c.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        result = c.getString(index)
                     }
                 }
             } catch (e: Exception) {

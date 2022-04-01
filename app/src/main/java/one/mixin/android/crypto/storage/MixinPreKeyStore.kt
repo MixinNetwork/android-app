@@ -1,7 +1,6 @@
 package one.mixin.android.crypto.storage
 
 import android.content.Context
-import android.util.Log
 import one.mixin.android.crypto.db.PreKeyDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.db.SignedPreKeyDao
@@ -12,9 +11,9 @@ import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.PreKeyStore
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyStore
+import timber.log.Timber
 import java.io.IOException
 import java.util.LinkedList
-import kotlin.jvm.Throws
 
 class MixinPreKeyStore(context: Context) : PreKeyStore, SignedPreKeyStore {
 
@@ -34,7 +33,7 @@ class MixinPreKeyStore(context: Context) : PreKeyStore, SignedPreKeyStore {
                 val preKey = prekeyDao.getPreKey(preKeyId) ?: throw InvalidKeyIdException("No Pre Key: $preKeyId")
                 return PreKeyRecord(preKey.record)
             } catch (e: IOException) {
-                Log.w(TAG, e)
+                Timber.tag(TAG).w(e)
                 throw InvalidKeyIdException(e)
             }
         }
@@ -71,7 +70,7 @@ class MixinPreKeyStore(context: Context) : PreKeyStore, SignedPreKeyStore {
                 }
                 throw InvalidKeyIdException("No such signed prekey: $signedPreKeyId")
             } catch (e: IOException) {
-                Log.w(TAG, e)
+                Timber.tag(TAG).w(e)
                 throw InvalidKeyIdException(e)
             }
         }

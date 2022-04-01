@@ -1,5 +1,6 @@
 package one.mixin.android.util.video;
 
+import android.annotation.SuppressLint;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaExtractor;
@@ -9,6 +10,7 @@ import timber.log.Timber;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 
 import static one.mixin.android.util.CrashExceptionReportKt.reportException;
 
@@ -41,6 +43,7 @@ public class MediaCodecVideoConvertor {
                 resultWidth, resultHeight, framerate, bitrate, startTime, endTime, duration, needCompress, false);
     }
 
+    @SuppressLint("WrongConstant")
     private boolean convertVideoInternal(String videoPath, File cacheFile,
                                          int rotationValue, boolean isSecret,
                                          int resultWidth, int resultHeight,
@@ -99,7 +102,7 @@ public class MediaCodecVideoConvertor {
 
                         int colorFormat;
                         int processorType = PROCESSOR_TYPE_OTHER;
-                        String manufacturer = Build.MANUFACTURER.toLowerCase();
+                        String manufacturer = Build.MANUFACTURER.toLowerCase(Locale.ROOT);
                         colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface;
                         Timber.d("colorFormat = %s", colorFormat);
 
@@ -113,7 +116,7 @@ public class MediaCodecVideoConvertor {
                                 bufferSize += padding * 5 / 4;
                             }
                         } else if (processorType == PROCESSOR_TYPE_QCOM) {
-                            if (!manufacturer.toLowerCase().equals("lge")) {
+                            if (!manufacturer.equalsIgnoreCase("lge")) {
                                 int uvoffset = (resultWidth * resultHeight + 2047) & ~2047;
                                 padding = uvoffset - (resultWidth * resultHeight);
                                 bufferSize += padding;
@@ -480,6 +483,7 @@ public class MediaCodecVideoConvertor {
         return error;
     }
 
+    @SuppressLint("WrongConstant")
     private long readAndWriteTracks(MediaExtractor extractor, MP4Builder mediaMuxer,
                                     MediaCodec.BufferInfo info, long start, long end, long duration, File file, boolean needAudio) throws Exception {
         int videoTrackIndex = MediaController.findTrack(extractor, false);

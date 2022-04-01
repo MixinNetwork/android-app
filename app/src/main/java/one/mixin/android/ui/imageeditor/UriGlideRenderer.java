@@ -15,17 +15,11 @@ import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
-
-import java.util.concurrent.ExecutionException;
-
 import one.mixin.android.util.glide.GlideApp;
 import one.mixin.android.util.glide.GlideRequest;
 import one.mixin.android.widget.imageeditor.Bounds;
@@ -33,7 +27,9 @@ import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
 import one.mixin.android.widget.imageeditor.model.EditorElement;
 import one.mixin.android.widget.imageeditor.model.EditorModel;
-import one.mixin.android.widget.media.BitmapUtil;
+import timber.log.Timber;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Uses Glide to load an image and implements a {@link Renderer}.
@@ -248,7 +244,7 @@ public final class UriGlideRenderer implements Renderer {
     Point  blurSize    = scaleKeepingAspectRatio(new Point(previewSize.x / 2, previewSize.y / 2 ), MAX_BLUR_DIMENSION);
     Bitmap small       = Bitmap.createScaledBitmap(bitmap, blurSize.x, blurSize.y, true);
 
-    Log.d(TAG, "Bitmap: " + bitmap.getWidth() + "x" + bitmap.getHeight() + ", Blur: " + blurSize.x + "x" + blurSize.y);
+    Timber.tag(TAG).d("Bitmap: " + bitmap.getWidth() + "x" + bitmap.getHeight() + ", Blur: " + blurSize.x + "x" + blurSize.y);
 
     RenderScript        rs     = RenderScript.create(context);
     Allocation          input  = Allocation.createFromBitmap(rs, small);

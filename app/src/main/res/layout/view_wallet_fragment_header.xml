@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="?attr/bg_white">
 
     <one.mixin.android.widget.surprise.SurpriseLinearLayout
         android:layout_width="match_parent"
