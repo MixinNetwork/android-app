@@ -60,6 +60,10 @@ android {
             freeCompilerArgs += ['-Xopt-in=kotlin.contracts.ExperimentalContracts']
         }
 
+        lintOptions{
+            disable 'MissingTranslation'
+        }
+
         vectorDrawables.useSupportLibrary = true
     }
 
