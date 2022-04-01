@@ -24,7 +24,7 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseV
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_BOT)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
         binding.chatTv.setBotModeColor(LINK_COLOR)
         binding.chatTv.setMentionModeColor(LINK_COLOR)
