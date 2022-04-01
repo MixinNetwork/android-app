@@ -62,7 +62,7 @@ class DepositPublicKeyFragmentTest : DepositFragmentTest() {
                 .check(matches(withText(tips)))
 
             val reserveTip = if (asset.needShowReserve()) {
-                ctx.getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
+                ctx.getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
             } else ""
             val warningText = when (asset.chainId) {
                 Constants.ChainId.EOS_CHAIN_ID -> {

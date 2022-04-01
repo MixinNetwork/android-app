@@ -52,7 +52,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             tipsTv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
             continueTv.setOnClickListener { dismiss() }
             val reserveTip = if (asset.needShowReserve()) {
-                getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
+                getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")
             } else ""
             warningTv.text = when (asset.chainId) {
                 EOS_CHAIN_ID -> {
