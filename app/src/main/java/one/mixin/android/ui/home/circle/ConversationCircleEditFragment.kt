@@ -156,7 +156,7 @@ class ConversationCircleEditFragment : BaseFragment() {
             binding.titleView.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
             binding.titleView.rightAnimator.isEnabled = true
         }
-        binding.titleView.setSubTitle(circle.name, getString(R.string.circle_subtitle, size))
+        binding.titleView.setSubTitle(circle.name, requireContext().resources.getQuantityString(R.plurals.circle_subtitle, size, size))
     }
 
     private fun hasChanged(): Boolean {

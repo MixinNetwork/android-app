@@ -16,7 +16,6 @@ import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.session.Session
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
-import java.lang.IndexOutOfBoundsException
 
 class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :
     RecyclerView.Adapter<ContactsAdapter.ViewHolder>(),
@@ -225,7 +224,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun bind(listener: ContactListener?, friendSize: Int) {
             if (listener != null) {
                 binding.emptyRl.setOnClickListener { listener.onEmptyRl() }
-                binding.countTv.text = itemView.context.getString(R.string.contact_count, friendSize)
+                binding.countTv.text = itemView.context.resources.getQuantityString(R.plurals.contact_count, friendSize, friendSize)
             }
         }
     }

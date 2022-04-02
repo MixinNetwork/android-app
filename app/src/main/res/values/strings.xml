@@ -175,7 +175,10 @@
     <string name="error_insufficient_balance">ERROR %1$d: Insufficient balance</string>
     <string name="error_invalid_pin_format">ERROR %1$d: Invalid PIN format</string>
     <string name="error_pin_incorrect">ERROR %1$d: PIN incorrect</string>
-    <string name="error_pin_incorrect_with_times">ERROR %1$d: PIN incorrect. You still have %2$d chances. Please wait for 24 hours to retry later.</string>
+    <plurals name="error_pin_incorrect_with_times">
+        <item quantity="one">ERROR %1$d: PIN incorrect. You still have %2$d chance. Please wait for 24 hours to retry later.</item>
+        <item quantity="other">ERROR %1$d: PIN incorrect. You still have %2$d chances. Please wait for 24 hours to retry later.</item>
+    </plurals>
     <string name="error_too_small">ERROR %1$d: The amount is too small</string>
     <string name="error_user_not_found">User not found</string>
     <string name="error_conversation_not_found">Conversation not found</string>
@@ -231,7 +234,10 @@
     <string name="search_title_contacts">CONTACTS</string>
     <string name="search_title_messages">SEARCH MESSAGES</string>
     <string name="search_title_more">More</string>
-    <string name="search_related_message">%1$d related messages</string>
+    <plurals name="search_related_message">
+        <item quantity="one">%1$d related message</item>
+        <item quantity="other">%1$d related messages</item>
+    </plurals>
     <string name="search_tip">Search Mixin ID or Phone number: %1$s</string>
     <!--landing-->
     <string name="landing_back_content_desc" translatable="false">Landing back</string>
@@ -291,7 +297,10 @@
     <string name="contact_share_apps_title">%1$s\'s Shared Apps</string>
     <string name="contact_share_apps_no_app">NO APP</string>
     <string name="contact_share_apps_tip">If you want to share apps, please add it as contact first.</string>
-    <string name="contact_count">%1$d contacts</string>
+    <plurals name="contact_count">
+        <item quantity="one">%1$d contact</item>
+        <item quantity="other">%1$d contacts</item>
+    </plurals>
     <!--profile-->
     <string name="profile_phone">Change Phone Number</string>
     <string name="profile_modify_number">Do you want to change your phone number?</string>
@@ -323,7 +332,10 @@
     <string name="chat_item_title">CHATS</string>
     <string name="copy_success">Copied to Clipboard</string>
     <string name="photo">Photo</string>
-    <string name="title_participants">%1$d participants</string>
+    <plurals name="title_participants">
+        <item quantity="one">%1$d participant</item>
+        <item quantity="other">%1$d participants</item>
+    </plurals>
     <string name="save_success">Save success</string>
     <string name="save_to">Save to %1$s</string>
     <string name="save_failure">Save failure</string>
@@ -343,7 +355,10 @@
     <string name="chat_audio_discard_warning">Are you sure you want to stop recording and discard your voice message ?</string>
     <string name="chat_audio_discard_ok">DISCARD</string>
     <string name="chat_audio_discard_cancel">CONTINUE</string>
-    <string name="chat_delete_message">Delete %1$d messages?</string>
+    <plurals name="chat_delete_message">
+        <item quantity="one">Delete %1$d message?</item>
+        <item quantity="other">Delete %1$d messages?</item>
+    </plurals>
     <string name="chat_delete_for_me">Delete for me</string>
     <string name="chat_delete_for_everyone">Delete for Everyone</string>
     <string name="chat_recall_me">You deleted this message</string>
@@ -456,8 +471,14 @@
     <string name="wallet_pay_with_biometrics">Pay with Biometrics</string>
     <string name="wallet_pin_open_biometrics">Please enter PIN to open Biometrics</string>
     <string name="wallet_pin_modify_biometrics">Please enter PIN to Modify Pay with PIN interval</string>
-    <string name="wallet_pin_pay_interval_minutes">%d Minutes</string>
-    <string name="wallet_pin_pay_interval_hours">%d Hours</string>
+    <plurals name="wallet_pin_pay_interval_minutes">
+        <item quantity="one">%d Minute</item>
+        <item quantity="other">%d Minutes</item>
+    </plurals>
+    <plurals name="wallet_pin_pay_interval_hours">
+        <item quantity="one">%d Hour</item>
+        <item quantity="other">%d Hours</item>
+    </plurals>
     <string name="wallet_pin_pay_interval">Pay with PIN interval</string>
     <string name="wallet_pin_pay_interval_tips">For the security of your assets, you need to verify your PIN for the specified interval.</string>
     <string name="wallet_biometric_screen_lock">Screen Lock</string>
@@ -543,7 +564,10 @@
     <string name="empty_start">Start Messaging</string>
     <string name="group_join">+ Join the group</string>
     <string name="group_already_in">You already in the group</string>
-    <string name="group_participants_count">%1$d Participants</string>
+    <plurals name="group_participants_count">
+        <item quantity="one">%1$d participant</item>
+        <item quantity="other">%1$d participants</item>
+    </plurals>
     <string name="group_click_create_tip">Couldn\'t create. Tap to retry.</string>
     <string name="groups_in_common">Groups In Common</string>
     <!--setting-->
@@ -613,7 +637,10 @@
     <string name="setting_data_documents">Documents</string>
     <string name="setting_data_noting">No media</string>
     <string name="setting_desktop">Mixin Messenger Desktop</string>
-    <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
+    <plurals name="setting_storage_clear">
+        <item quantity="one">Clear %1$d message (%2$s)?</item>
+        <item quantity="other">Clear %1$d messages (%2$s)?</item>
+    </plurals>
     <string name="setting_storage_bn_clear">Clear</string>
     <string name="setting_auth_cancel_msg">Revoke access %1$s?</string>
     <string name="setting_logout_desktop">Logout of desktop</string>
@@ -866,7 +893,10 @@
     <string name="deposit_notice">Both Memo and Address are required to deposit your %1$s to you account.</string>
     <string name="deposit_memo_notice">Memo is required, or you will lose your coins.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
-    <string name="deposit_confirmation">Deposit will arrive %1$d block confirmations</string>
+    <plurals name="deposit_confirmation">
+        <item quantity="one">Deposit will arrive %1$d block confirmation</item>
+        <item quantity="other">Deposit will arrive %1$d block confirmations</item>
+    </plurals>
     <string name="deposit_reserve">Deposit at least %1$s for the first time.</string>
     <string name="bottom_withdrawal_title">%1$s Withdrawal</string>
     <string name="bottom_withdrawal_change_amount">Change Amount</string>
@@ -903,7 +933,10 @@
     <string name="filters_by">FILTER BY</string>
     <string name="sort_by">SORT BY</string>
     <!--Pending-->
-    <string name="pending_confirmations">%1$d/%2$d confirmations</string>
+    <plurals name="pending_confirmations">
+        <item quantity="one">%1$d/%2$d confirmation</item>
+        <item quantity="other">%1$d/%2$d confirmations</item>
+    </plurals>
     <!-- webrtc -->
     <string name="call_notification_outgoing">Calling&#8230;</string>
     <string name="call_notification_incoming_voice">Incoming voice call</string>
@@ -914,7 +947,7 @@
     <string name="call_notification_action_hang_up">HANG UP</string>
     <string name="call_connecting">Connecting&#8230;</string>
     <string name="call_decline">Decline</string>
-    <string name="call_group_full">Support up to %1$d people group voice</string>
+    <string name="call_group_full" tools:ignore="PluralsCandidate">Support up to %1$d people group voice</string>
     <string name="call_pip_permission">You can\'t minimize a voice call as Mixin isn\'t authorized to use floating windows</string>
 
     <!-- restore&backup -->
@@ -969,7 +1002,10 @@
     <string name="desktop_login_no_pin">For your account security, please set up the PIN before logging into the desktop app.</string>
     <!-- location -->
     <string name="location_send_current_location">Send your Current Location</string>
-    <string name="location_accurate">Accurate to %1$d meters</string>
+    <plurals name="location_accurate">
+        <item quantity="one">Accurate to %1$d meter</item>
+        <item quantity="other">Accurate to %1$d meters</item>
+    </plurals>
     <string name="location_unnamed">Unnamed location</string>
     <string name="location_distance">%1$s %2$s away</string>
     <string name="location_kilometre">km</string>
@@ -979,7 +1015,10 @@
     <!--  circle  -->
     <string name="circle_bottom">Create circle for different  groups of chats \nand quickly switch between them</string>
     <string name="circle_add_title">Add Circle</string>
-    <string name="circle_subtitle">%1$d Conversations</string>
+    <plurals name="circle_subtitle">
+        <item quantity="one">%1$d Conversation</item>
+        <item quantity="other">%1$d Conversations</item>
+    </plurals>
     <string name="circle_all_conversation">All Conversations</string>
     <string name="circle_mixin">Mixin</string>
     <string name="circle_menu_edit_name">Edit Circle Name</string>
@@ -1045,7 +1084,10 @@
     <!--  Pin message  -->
     <string name="unpin_all">Cancel all pinned message</string>
     <string name="pinned_message">Pinned Messages</string>
-    <string name="pinned_message_title">%1$d Pinned Messages</string>
+    <plurals name="pinned_message_title">
+        <item quantity="one">%1$d Pinned Message</item>
+        <item quantity="other">%1$d Pinned Messages</item>
+    </plurals>
     <string name="chat_pin_message">%1$s pinned %2$s</string>
     <string name="chat_pin_empty_message">a message</string>
     <string name="chat_pin_image_message">a photo</string>

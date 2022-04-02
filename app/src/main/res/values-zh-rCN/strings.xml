@@ -164,7 +164,9 @@
     <string name="error_insufficient_balance">错误 %1$d：余额不足</string>
     <string name="error_invalid_pin_format">错误 %1$d：无效密码格式</string>
     <string name="error_pin_incorrect">错误 %1$d：密码不正确</string>
-    <string name="error_pin_incorrect_with_times">错误 %1$d：密码不正确。你还有%2$d次机会，使用完需等待24小时后再次尝试。</string>
+    <plurals name="error_pin_incorrect_with_times" tools:ignore="UnusedQuantity">
+        <item quantity="other">错误 %1$d：密码不正确。你还有%2$d次机会，使用完需等待24小时后再次尝试。</item>
+    </plurals>
     <string name="error_too_small">错误 %1$d：金额太小</string>
     <string name="error_unable_to_open_media">无法找到能打开该媒体的应用</string>
     <string name="error_open_location">无法找到地图应用</string>
@@ -217,7 +219,9 @@
     <string name="search_title_contacts">联系人</string>
     <string name="search_title_messages">搜索消息</string>
     <string name="search_title_more">更多</string>
-    <string name="search_related_message">%1$d 条相关的消息</string>
+    <plurals name="search_related_message" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d 条相关的消息</item>
+    </plurals>
     <string name="search_tip">搜索 Mixin ID 或者手机号：%1$s</string>
     <!--landing-->
     <string name="landing_enter_mobile_number">输入你的手机号码</string>
@@ -301,7 +305,9 @@
     <string name="chat_item_title">最近聊天</string>
     <string name="copy_success">已拷贝</string>
     <string name="photo">照片</string>
-    <string name="title_participants">%1$d 成员</string>
+    <plurals name="title_participants" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d 成员</item>
+    </plurals>
     <string name="save_success">保存成功</string>
     <string name="save_to">保存到 %1$s</string>
     <string name="save_failure">保存失败</string>
@@ -321,7 +327,9 @@
     <string name="chat_audio_discard_warning">你确定要停止并放弃录制的语音吗？</string>
     <string name="chat_audio_discard_ok">放弃</string>
     <string name="chat_audio_discard_cancel">继续</string>
-    <string name="chat_delete_message">删除 %1$d 条消息吗?</string>
+    <plurals name="chat_delete_message" tools:ignore="UnusedQuantity">
+        <item quantity="other">删除 %1$d 条消息吗?</item>
+    </plurals>
     <string name="chat_delete_for_me">删除</string>
     <string name="chat_delete_for_everyone">撤回</string>
     <string name="chat_recall_me">你撤回了一条消息</string>
@@ -374,7 +382,9 @@
     <string name="contact_mute_8hours">8 小时</string>
     <string name="contact_mute_1week">1 星期</string>
     <string name="contact_mute_1year">1 年</string>
-    <string name="contact_count">%1$d位联系人</string>
+    <plurals name="contact_count" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d位联系人</item>
+    </plurals>
     <!--Add people-->
     <string name="add_people_title">添加朋友</string>
     <string name="add_people_search_hint">Mixin ID 或手机号</string>
@@ -436,8 +446,12 @@
     <string name="wallet_pay_with_biometrics">用生物识别支付</string>
     <string name="wallet_pin_open_biometrics">请输入密码来启用生物识别支付</string>
     <string name="wallet_pin_modify_biometrics">请输入密码来修改支付密码使用间隔</string>
-    <string name="wallet_pin_pay_interval_minutes">%d 分钟</string>
-    <string name="wallet_pin_pay_interval_hours">%d 小时</string>
+    <plurals name="wallet_pin_pay_interval_minutes" tools:ignore="UnusedQuantity">
+        <item quantity="other">%d 分钟</item>
+    </plurals>
+    <plurals name="wallet_pin_pay_interval_hours" tools:ignore="UnusedQuantity">
+        <item quantity="other">%d 小时</item>
+    </plurals>
     <string name="wallet_pin_pay_interval">支付密码使用间隔</string>
     <string name="wallet_pin_pay_interval_tips">为了您的资产安全，距离上次输入支付密码的时间超过以上指定时间时，再次转账时已然需要支付密码</string>
     <string name="wallet_biometric_screen_lock">锁屏</string>
@@ -522,7 +536,9 @@
     <string name="empty_start">开始聊天</string>
     <string name="group_join">+ 加入群组</string>
     <string name="group_already_in">你已经在该群组里</string>
-    <string name="group_participants_count">%1$d 位群组成员</string>
+    <plurals name="group_participants_count" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d 位群组成员</item>
+    </plurals>
     <string name="group_click_create_tip">不能创建，请点击重试</string>
     <string name="groups_in_common">共同群组</string>
     <!--setting-->
@@ -592,7 +608,9 @@
     <string name="setting_data_documents">文档</string>
     <string name="setting_data_noting">没有媒体</string>
     <string name="setting_desktop">Mixin Messenger 桌面</string>
-    <string name="setting_storage_clear">清除 %1$d 条消息 (%2$s)?</string>
+    <plurals name="setting_storage_clear" tools:ignore="UnusedQuantity">
+        <item quantity="other">清除 %1$d 条消息 (%2$s)?</item>
+    </plurals>
     <string name="setting_storage_bn_clear">清理</string>
     <string name="setting_auth_cancel_msg">取消 %1$s 授权?</string>
     <string name="setting_logout_desktop">退出桌面端</string>
@@ -845,7 +863,9 @@
     <string name="deposit_notice">地址 和 Memo（备注）同时使用才能充值 %1$s 到你的账号。</string>
     <string name="deposit_memo_notice">充值时务必填写 Memo(备注)，否则您会丢失您的数字币</string>
     <string name="deposit_attention">首次充值建议小额尝试！</string>
-    <string name="deposit_confirmation">充值到账需要 %1$d 个区块确认。</string>
+    <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
+        <item quantity="other">充值到账需要 %1$d 个区块确认。</item>
+    </plurals>
     <string name="deposit_reserve">首次充值至少 %1$s ！</string>
     <string name="bottom_withdrawal_title">%1$s 提现</string>
     <string name="bottom_withdrawal_change_amount">修改金额</string>
@@ -880,7 +900,9 @@
     <string name="filters_by">筛选</string>
     <string name="sort_by">排序</string>
     <!--Pending-->
-    <string name="pending_confirmations">%1$d/%2$d 区块确认数</string>
+    <plurals name="pending_confirmations" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d/%2$d 区块确认数</item>
+    </plurals>
     <!-- webrtc -->
     <string name="call_notification_outgoing">正在呼叫&#8230;</string>
     <string name="call_notification_incoming_voice">语音通话来电</string>
@@ -946,7 +968,9 @@
     <string name="desktop_login_no_pin">为了您的安全，登录桌面前请先设置 PIN 码！</string>
     <!-- location -->
     <string name="location_send_current_location">发送您当前的位置</string>
-    <string name="location_accurate">精确到 %1$d 米</string>
+    <plurals name="location_accurate" tools:ignore="UnusedQuantity">
+        <item quantity="other">精确到 %1$d 米</item>
+    </plurals>
     <string name="location_unnamed">未命名地点</string>
     <string name="location_distance">距离您 %1$s %2$s</string>
     <string name="location_kilometre">千米</string>
@@ -956,7 +980,9 @@
     <!--  circle  -->
     <string name="circle_bottom">为不同对话创建 圈子 \n然后在它们之间快速切换</string>
     <string name="circle_add_title">添加圈子</string>
-    <string name="circle_subtitle">%1$d 会话</string>
+    <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d 会话</item>
+    </plurals>
     <string name="circle_all_conversation">所有会话</string>
     <string name="circle_mixin">Mixin</string>
     <string name="circle_menu_edit_name">编辑名称</string>
@@ -1022,7 +1048,9 @@
     <!--  Pin message  -->
     <string name="unpin_all">取消置顶所有消息</string>
     <string name="pinned_message">置顶消息</string>
-    <string name="pinned_message_title">%1$d条置顶消息</string>
+    <plurals name="pinned_message_title" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d条置顶消息</item>
+    </plurals>
     <string name="chat_pin_message">%1$s置顶了%2$s</string>
     <string name="chat_pin_empty_message">一条消息</string>
     <string name="chat_pin_image_message">一张照片</string>

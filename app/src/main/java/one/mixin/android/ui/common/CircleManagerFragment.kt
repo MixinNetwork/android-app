@@ -316,7 +316,7 @@ class CircleManagerFragment : BaseFragment() {
                 }
             }
             binding.circleTitle.text = conversationCircleItem.name
-            binding.circleSubtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
+            binding.circleSubtitle.text = itemView.context.resources.getQuantityString(R.plurals.circle_subtitle, conversationCircleItem.count, conversationCircleItem.count)
             binding.circleIcon.imageTintList = ColorStateList.valueOf(getCircleColor(conversationCircleItem.circleId))
         }
     }

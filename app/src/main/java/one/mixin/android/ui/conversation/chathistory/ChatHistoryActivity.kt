@@ -24,7 +24,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
@@ -216,9 +215,7 @@ class ChatHistoryActivity : BaseActivity() {
             conversationRepository.getPinMessages(conversationId)
                 .observe(this) { list ->
                     binding.titleView.setSubTitle(
-                        getString(
-                            R.string.pinned_message_title, list.size
-                        ),
+                        this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, list.size, list.size),
                         ""
                     )
                     chatHistoryAdapter.transcripts = list

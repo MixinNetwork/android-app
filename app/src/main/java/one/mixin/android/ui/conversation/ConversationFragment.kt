@@ -1762,7 +1762,7 @@ class ConversationFragment() :
         }
         val deleteDialogLayoutBinding = generateDeleteDialogLayout()
         deleteDialog = alertDialogBuilder()
-            .setMessage(getString(R.string.chat_delete_message, messages.size))
+            .setMessage(requireContext().resources.getQuantityString(R.plurals.chat_delete_message, messages.size, messages.size))
             .setView(deleteDialogLayoutBinding.root)
             .create()
         if (showRecall) {
@@ -2188,9 +2188,7 @@ class ConversationFragment() :
             it?.let {
                 groupName = it.name
                 binding.actionBar.setSubTitle(
-                    groupName
-                        ?: "",
-                    getString(R.string.title_participants, groupNumber)
+                    groupName ?: "", requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber)
                 )
                 binding.actionBar.avatarIv.setGroup(it.iconUrl)
             }
@@ -2201,8 +2199,7 @@ class ConversationFragment() :
             ) { count ->
                 groupNumber = count
                 binding.actionBar.setSubTitle(
-                    groupName ?: "",
-                    getString(R.string.title_participants, groupNumber)
+                    groupName ?: "", requireContext().resources.getQuantityString(R.plurals.title_participants, groupNumber, groupNumber)
                 )
 
                 lifecycleScope.launch {

@@ -133,7 +133,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
             binding.detailTv.text = c.announcement
         }
         binding.countTv.text =
-            getString(R.string.group_participants_count, c.participantsCount)
+            requireContext().resources.getQuantityString(R.plurals.group_participants_count, c.participantsCount, c.participantsCount)
         c.iconUrl?.let { binding.avatar.setGroup(it) }
         binding.joinTv.isVisible = true
 

@@ -300,9 +300,10 @@ interface TransactionInterface {
                     receiverTv.text = snapshot.transactionHash
                     transactionStatus.isVisible = true
                     transactionStatusTv.text =
-                        fragment.getString(
-                            R.string.pending_confirmations,
-                            snapshot.confirmations,
+                        fragment.requireContext().resources.getQuantityString(
+                            R.plurals.pending_confirmations,
+                            snapshot.confirmations ?: 0,
+                            snapshot.confirmations ?: 0,
                             snapshot.assetConfirmations
                         )
                 }

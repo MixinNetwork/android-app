@@ -64,8 +64,7 @@ class DepositPublicKeyFragment : DepositFragment() {
                 toast(R.string.copy_success)
             }
             keyCode.text = asset.destination
-
-            val confirmation = getString(R.string.deposit_confirmation, asset.confirmations)
+            val confirmation = requireContext().resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations)
                 .highLight(requireContext(), asset.confirmations.toString())
             val reserveTip = if (asset.needShowReserve()) {
                 getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")

@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><resources>
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!--common-->
     <string name="confirm">Sahkan</string>
     <string name="change">Ubah</string>
@@ -139,7 +140,9 @@
     <string name="error_insufficient_balance">RALAT %1$d: Baki tidak mencukupi</string>
     <string name="error_invalid_pin_format">RALAT %1$d: Format PIN tidak sah</string>
     <string name="error_pin_incorrect">RALAT %1$d: PIN tidak betul</string>
-    <string name="error_pin_incorrect_with_times">RALAT %1$d: PIN tidak betul. Anda masih mempunyai %2$d peluang. Sila tunggu selama 24 jam untuk cuba lagi kemudian.</string>
+    <plurals name="error_pin_incorrect_with_times" tools:ignore="UnusedQuantity">
+        <item quantity="other">RALAT %1$d: PIN tidak betul. Anda masih mempunyai %2$d peluang. Sila tunggu selama 24 jam untuk cuba lagi kemudian.</item>
+    </plurals>
     <string name="error_too_small">RALAT %1$d: Jumlahnya terlalu kecil</string>
     <string name="error_user_not_found">Pengguna tidak ditemui</string>
     <string name="error_app_not_found">Aplikasi tidak dijumpai</string>
@@ -188,7 +191,9 @@
     <string name="search_title_contacts">KENALAN</string>
     <string name="search_title_messages">CARI MESEJ</string>
     <string name="search_title_more">Lebih banyak lagi</string>
-    <string name="search_related_message">%1$d mesej berkaitan</string>
+    <plurals name="search_related_message" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d mesej berkaitan</item>
+    </plurals>
     <string name="search_tip">Cari ID Mixin atau Nombor Telefon: %1$s</string>
     <!--landing-->
     <string name="landing_enter_mobile_number">Masukkan nombor telefon bimbit anda</string>
@@ -240,7 +245,9 @@
     <string name="contact_share_apps_title">Aplikasi Dikongsi %1$s</string>
     <string name="contact_share_apps_no_app">TIADA APLIKASI</string>
     <string name="contact_share_apps_tip">Sekiranya anda ingin berkongsi aplikasi, sila tambahkan sebagai kenalan terlebih dahulu.</string>
-    <string name="contact_count">%1$d kenalan</string>
+    <plurals name="contact_count" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d kenalan</item>
+    </plurals>
     <!--profile-->
     <string name="profile_phone">Tukar Nombor Telefon</string>
     <string name="profile_modify_number">Adakah anda mahu menukar nombor telefon anda?</string>
@@ -269,7 +276,9 @@
     <string name="chat_item_title">SEMBANG</string>
     <string name="copy_success">Salin ke papan keratan</string>
     <string name="photo">Foto</string>
-    <string name="title_participants">%1$d peserta</string>
+    <plurals name="title_participants" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d peserta</item>
+    </plurals>
     <string name="save_success">Simpan kejayaan</string>
     <string name="save_to">Simpan ke %1$s</string>
     <string name="save_failure">Simpan kegagalan</string>
@@ -289,7 +298,9 @@
     <string name="chat_audio_discard_warning">Adakah anda pasti mahu berhenti merakam dan membuang mesej suara anda?</string>
     <string name="chat_audio_discard_ok">BUANG</string>
     <string name="chat_audio_discard_cancel">TERUSKAN</string>
-    <string name="chat_delete_message">Padamkan %1$d mesej?</string>
+    <plurals name="chat_delete_message" tools:ignore="UnusedQuantity">
+        <item quantity="other">Padamkan %1$d mesej?</item>
+    </plurals>
     <string name="chat_delete_for_me">Padamkan untuk saya</string>
     <string name="chat_delete_for_everyone">Padamkan untuk Semua Orang</string>
     <string name="chat_recall_me">Anda memadamkan mesej ini</string>
@@ -389,8 +400,12 @@
     <string name="wallet_pay_with_biometrics">Bayar dengan Biometrik</string>
     <string name="wallet_pin_open_biometrics">Sila masukkan PIN untuk membuka Biometrik</string>
     <string name="wallet_pin_modify_biometrics">Sila masukkan PIN untuk Ubahsuai Bayar dengan selang PIN</string>
-    <string name="wallet_pin_pay_interval_minutes">%d Minit</string>
-    <string name="wallet_pin_pay_interval_hours">%d Jam</string>
+    <plurals name="wallet_pin_pay_interval_minutes" tools:ignore="UnusedQuantity">
+        <item quantity="other">%d Menit</item>
+    </plurals>
+    <plurals name="wallet_pin_pay_interval_hours" tools:ignore="UnusedQuantity">
+        <item quantity="other">%d Jam</item>
+    </plurals>
     <string name="wallet_pin_pay_interval">Bayar dengan selang PIN</string>
     <string name="wallet_pin_pay_interval_tips">Untuk keselamatan aset anda, anda perlu mengesahkan PIN anda untuk selang waktu yang ditentukan.</string>
     <string name="wallet_biometric_screen_lock">Kunci skrin</string>
@@ -470,7 +485,9 @@
     <string name="empty_start">Mulakan Pemesejan</string>
     <string name="group_join">+ Sertai kumpulan</string>
     <string name="group_already_in">Anda sudah berada dalam kumpulan</string>
-    <string name="group_participants_count">%1$d Peserta</string>
+    <plurals name="group_participants_count" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d Peserta</item>
+    </plurals>
     <string name="group_click_create_tip">Tidak dapat membuat. Ketuk untuk mencuba semula.</string>
     <!--setting-->
     <string name="setting_title">Tetapan</string>
@@ -538,7 +555,9 @@
     <string name="setting_data_documents">Dokumen</string>
     <string name="setting_data_noting">Tiada media</string>
     <string name="setting_desktop">Desktop Mixin Messenger</string>
-    <string name="setting_storage_clear">Kosongkan %1$d mesej (%2$s)?</string>
+    <plurals name="setting_storage_clear" tools:ignore="UnusedQuantity">
+        <item quantity="other">Kosongkan %1$d mesej (%2$s)?</item>
+    </plurals>
     <string name="setting_storage_bn_clear">Kosong</string>
     <string name="setting_auth_cancel_msg">Batalkan akses %1$s?</string>
     <string name="setting_logout_desktop">Log keluar dari desktop</string>
@@ -752,7 +771,9 @@
     <string name="withdrawal_no_tag">Tiada Memo</string>
     <string name="deposit_account_attention">Perhatian: Cuba sebilangan kecil untuk deposit pertama. Kedua-dua Memo dan Alamat diperlukan untuk memasukkan deposit anda dengan jayanya %1$s ke Mixin Messenger.</string>
     <string name="deposit_attention">Cuba sedikit untuk deposit pertama.</string>
-    <string name="deposit_confirmation">Deposit akan tiba setelah sekurang-kurangnya %1$d pengesahan sekatan</string>
+    <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
+        <item quantity="other">Deposit akan tiba setelah sekurang-kurangnya %1$d pengesahan sekatan</item>
+    </plurals>
     <string name="deposit_reserve">Deposit sekurang-kurangnya %1$s untuk pertama kalinya.</string>
     <string name="bottom_withdrawal_title">%1$s Pengeluaran</string>
     <string name="bottom_withdrawal_change_amount">Tukar Jumlah</string>
@@ -788,7 +809,9 @@
     <string name="filters_by">DITAPIS DENGAN</string>
     <string name="sort_by">DISUSUN MENGIKUT</string>
     <!--Pending-->
-    <string name="pending_confirmations">%1$d/%2$d pengesahan</string>
+    <plurals name="pending_confirmations" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d/%2$d pengesahan</item>
+    </plurals>
     <!-- webrtc -->
     <string name="call_notification_outgoing">Memanggil…</string>
     <string name="call_notification_incoming_voice">Panggilan suara masuk</string>
@@ -846,7 +869,9 @@
     <string name="desktop_upgrade">Sila tingkatkan Mixin Messenger Desktop kepada versi terkini.</string>
     <!-- location -->
     <string name="location_send_current_location">Hantarkan Lokasi Semasa Anda</string>
-    <string name="location_accurate">Tepat hingga %1$d meter</string>
+    <plurals name="location_accurate" tools:ignore="UnusedQuantity">
+        <item quantity="other">Tepat hingga %1$d meter</item>
+    </plurals>
     <string name="location_unnamed">Lokasi tidak dinamakan</string>
     <string name="location_distance">%1$s %2$s jauh</string>
     <string name="location_kilometre">km</string>
@@ -855,7 +880,9 @@
     <!--  circle  -->
     <string name="circle_bottom">Buat lingkaran untuk kumpulan sembang yang berbeza &#13;\ndan beralih antara mereka dengan segera</string>
     <string name="circle_add_title">Tambah Lingkaran</string>
-    <string name="circle_subtitle">%1$d Perbualan</string>
+    <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
+        <item quantity="other">%1$d Perbualan</item>
+    </plurals>
     <string name="circle_all_conversation">Semua Perbualan</string>
     <string name="circle_mixin">Mixin</string>
     <string name="circle_menu_edit_name">Edit Nama Lingkaran</string>

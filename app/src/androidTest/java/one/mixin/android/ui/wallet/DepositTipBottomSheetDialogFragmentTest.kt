@@ -43,7 +43,7 @@ class DepositTipBottomSheetDialogFragmentTest : DepositFragmentTest() {
         val fragment = DepositTipBottomSheetDialogFragment.newInstance(asset)
         var tips: String? = null
         launchFragmentInHiltContainer(fragment, R.style.AppTheme_NoActionBar) {
-            tips = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
+            tips = getTipsByAsset(asset) + " " + requireContext().resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations)
         }
 
         onView(withId(R.id.continue_tv))

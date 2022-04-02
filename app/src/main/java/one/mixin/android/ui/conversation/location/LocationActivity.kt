@@ -123,7 +123,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
                     mixinMapView.moveCamera(currentPosition)
                     isInit = false
                 }
-                locationAdapter.accurate = getString(R.string.location_accurate, location.accuracy.toInt())
+                locationAdapter.accurate = resources.getQuantityString(R.plurals.location_accurate, location.accuracy.toInt(), location.accuracy.toInt())
             }
         }
 
@@ -350,7 +350,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback, com.mapbox.mapboxsd
                             mixinMapView.moveCamera(currentPosition)
                             isInit = false
                         }
-                        locationAdapter.accurate = getString(R.string.location_accurate, l.accuracy.toInt())
+                        locationAdapter.accurate = resources.getQuantityString(R.plurals.location_accurate, l.accuracy.toInt(), l.accuracy.toInt())
                     }
                 }
             }

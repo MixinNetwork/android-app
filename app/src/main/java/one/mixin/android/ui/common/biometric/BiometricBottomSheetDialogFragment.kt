@@ -166,7 +166,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             }
             val errorInfo = if (response.errorCode == ErrorHandler.PIN_INCORRECT || response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                 val errorCount = bottomViewModel.errorCount()
-                getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount)
+                requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, ErrorHandler.PIN_INCORRECT, errorCount)
             } else if (!errorString.isNullOrBlank()) {
                 errorString
             } else {
