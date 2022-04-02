@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:background="@drawable/bg_round_white_10dp"
-                android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/bg_round_white_10dp"
+    android:layout_height="wrap_content">
 
     <TextView
             android:id="@+id/title_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto_light"
-            android:drawableStart="@drawable/ic_qr_code_preview"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
             android:drawablePadding="8dp"
             android:textColor="?attr/text_primary"
             android:textSize="12sp"
-            android:text="@string/text_qr"/>
+            android:text="@string/text_qr"
+            app:drawableStartCompat="@drawable/ic_qr_code_preview"/>
 
     <TextView
             android:id="@+id/content_tv"

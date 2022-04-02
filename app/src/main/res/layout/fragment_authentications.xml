@@ -18,7 +18,6 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="?attr/bg_white"
-        android:drawableStart="@drawable/ic_search"
         android:drawablePadding="8dp"
         android:hint="@string/setting_auth_search_hint"
         android:maxLines="1"
@@ -29,6 +28,7 @@
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_assist"
         android:textSize="14sp"
+        app:drawableStartCompat="@drawable/ic_search"
         tools:ignore="Autofill" />
 
     <ViewAnimator
