@@ -13,6 +13,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -787,7 +788,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private val blockDrawable: Drawable by lazy {
-        val d = resources.getDrawable(R.drawable.ic_bottom_block, context?.theme)
+        val d = requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.ic_bottom_block, context?.theme))
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         d
     }

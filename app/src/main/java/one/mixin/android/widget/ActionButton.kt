@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.util.TypedValue
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.res.ResourcesCompat
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
@@ -19,7 +20,7 @@ class ActionButton(context: Context) : AppCompatTextView(context) {
         setBackgroundResource(R.drawable.bg_action_button)
         val outValue = TypedValue()
         context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
-        foreground = resources.getDrawable(outValue.resourceId, context.theme)
+        foreground = ResourcesCompat.getDrawable(resources, outValue.resourceId, context.theme)
         backgroundTintList = ColorStateList.valueOf(context.colorFromAttribute(R.attr.bg_bubble))
         setPaddingRelative(8.dp, 8.dp, 8.dp, 8.dp)
         round(8.dp)

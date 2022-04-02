@@ -14,6 +14,7 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import androidx.collection.ArrayMap
+import androidx.core.content.res.ResourcesCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
@@ -333,7 +334,7 @@ class GenerateAvatarWorker @AssistedInject constructor(
             -1
         }
         if (color == -1) {
-            val d = applicationContext.resources.getDrawable(R.drawable.default_avatar, applicationContext.theme)
+            val d = requireNotNull(ResourcesCompat.getDrawable(applicationContext.resources, R.drawable.default_avatar, applicationContext.theme))
             if (d is BitmapDrawable) {
                 return d.bitmap
             }
