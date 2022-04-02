@@ -139,6 +139,7 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -264,6 +265,44 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
 
         checkAsync()
+        testPlurals()
+    }
+
+    private fun testPlurals() {
+        listOf(
+            resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, 1, 24, 1),
+            resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, 2, 24, 2),
+            resources.getQuantityString(R.plurals.search_related_message, 1, 1),
+            resources.getQuantityString(R.plurals.search_related_message, 2, 2),
+            resources.getQuantityString(R.plurals.contact_count, 1, 1),
+            resources.getQuantityString(R.plurals.contact_count, 2, 2),
+            resources.getQuantityString(R.plurals.title_participants, 1, 1),
+            resources.getQuantityString(R.plurals.title_participants, 2, 2),
+            resources.getQuantityString(R.plurals.chat_delete_message, 1, 1),
+            resources.getQuantityString(R.plurals.chat_delete_message, 2, 2),
+            resources.getQuantityString(R.plurals.wallet_pin_pay_interval_minutes, 1, 1),
+            resources.getQuantityString(R.plurals.wallet_pin_pay_interval_minutes, 2, 2),
+            resources.getQuantityString(R.plurals.wallet_pin_pay_interval_hours, 1, 1),
+            resources.getQuantityString(R.plurals.wallet_pin_pay_interval_hours, 2, 2),
+            resources.getQuantityString(R.plurals.group_participants_count, 1, 1),
+            resources.getQuantityString(R.plurals.group_participants_count, 2, 2),
+            resources.getQuantityString(R.plurals.setting_storage_clear, 1, 1, 1, "1"),
+            resources.getQuantityString(R.plurals.setting_storage_clear, 2, 2, 2, "2"),
+            resources.getQuantityString(R.plurals.deposit_confirmation, 1, 1),
+            resources.getQuantityString(R.plurals.deposit_confirmation, 2, 2),
+            resources.getQuantityString(R.plurals.pending_confirmations, 1, 1, 24),
+            resources.getQuantityString(R.plurals.pending_confirmations, 2, 2, 24),
+            resources.getQuantityString(R.plurals.location_accurate, 1, 1),
+            resources.getQuantityString(R.plurals.location_accurate, 2, 2),
+            resources.getQuantityString(R.plurals.circle_subtitle, 1, 1),
+            resources.getQuantityString(R.plurals.circle_subtitle, 2, 2),
+            resources.getQuantityString(R.plurals.pinned_message_title, 1, 1),
+            resources.getQuantityString(R.plurals.pinned_message_title, 2, 2),
+        ).apply {
+            Timber.e("size: $size")
+        }.forEach {
+            Timber.e(it)
+        }
     }
 
     override fun onStart() {
