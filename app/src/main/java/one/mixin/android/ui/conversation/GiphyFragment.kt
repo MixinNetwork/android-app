@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -144,7 +145,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                     height = (width * (3f / 4)).toInt()
                 }
                 Glide.with(item).clear(item)
-                item.setImageDrawable(ctx.getDrawable(R.drawable.ic_gif_search))
+                item.setImageDrawable(AppCompatResources.getDrawable(ctx, R.drawable.ic_gif_search))
                 item.setOnClickListener { listener?.onSearchClick() }
             } else {
                 val images = data!![position - 1].images

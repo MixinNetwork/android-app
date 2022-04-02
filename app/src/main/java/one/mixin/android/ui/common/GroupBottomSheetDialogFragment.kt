@@ -172,7 +172,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
         if (!isAdded) return@launch
 
-        binding.countTv.text = getString(R.string.group_participants_count, participantCount)
+        binding.countTv.text = requireContext().resources.getQuantityString(R.plurals.group_participants_count, participantCount, participantCount)
         if (changeMenu || me != localMe) {
             lifecycleScope.launch {
                 val circleNames = bottomViewModel.findCirclesNameByConversationId(conversationId)

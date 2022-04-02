@@ -57,7 +57,7 @@ class DepositPublicKeyFragmentTest : DepositFragmentTest() {
             onView(withId(R.id.sub_title_tv))
                 .check(matches(withText(asset.symbol)))
 
-            val tips: String = fragment!!.getTipsByAsset(asset) + " " + ctx.getString(R.string.deposit_confirmation, asset.confirmations)
+            val tips: String = fragment!!.getTipsByAsset(asset) + " " + ctx.resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations)
             onView(withId(R.id.confirm_tv))
                 .check(matches(withText(tips)))
 

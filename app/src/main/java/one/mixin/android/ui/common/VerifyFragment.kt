@@ -138,11 +138,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
                     val errorCount = accountRepository.errorCount()
                     hideLoading()
                     toast(
-                        getString(
-                            R.string.error_pin_incorrect_with_times,
-                            ErrorHandler.PIN_INCORRECT,
-                            errorCount
-                        )
+                        requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, ErrorHandler.PIN_INCORRECT, errorCount)
                     )
                     return@handleMixinResponse true
                 }

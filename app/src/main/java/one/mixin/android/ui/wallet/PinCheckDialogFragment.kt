@@ -95,7 +95,7 @@ class PinCheckDialogFragment : DialogFragment() {
                     if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
                         val errorCount = pinCheckViewModel.errorCount()
                         pinVa.displayedChild = POS_PIN
-                        pin.error(getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount))
+                        pin.error(requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, ErrorHandler.PIN_INCORRECT, errorCount))
                     } else if (response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                         pinVa.displayedChild = POS_TIP
                         tipVa.showNext()

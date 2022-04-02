@@ -342,8 +342,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
                     circleCheck.isVisible = currentCircleId == null
                 } else {
                     circleTitle.text = conversationCircleItem.name
-                    circleSubtitle.text =
-                        itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
+                    circleSubtitle.text = itemView.context.resources.getQuantityString(R.plurals.circle_subtitle, conversationCircleItem.count, conversationCircleItem.count)
                     circleUnreadTv.isVisible =
                         currentCircleId != conversationCircleItem.circleId && conversationCircleItem.unseenMessageCount != 0
                     circleUnreadTv.text = "${conversationCircleItem.unseenMessageCount}"

@@ -1,48 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <TextView
-            android:id="@+id/pin_tv"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@drawable/bg_upper_round"
-            android:drawablePadding="16dp"
-            android:drawableStart="@drawable/ic_pin"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:textColor="?attr/text_primary"
-            android:text="@string/conversation_pin"/>
+        android:id="@+id/pin_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_upper_round"
+        android:drawablePadding="16dp"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/conversation_pin"
+        app:drawableStartCompat="@drawable/ic_pin" />
 
     <TextView
-            android:id="@+id/mute_tv"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="?attr/bg_white"
-            android:drawablePadding="16dp"
-            android:drawableStart="@drawable/ic_menu_mute"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:paddingEnd="16dp"
-            android:textColor="?attr/text_primary"
-            android:paddingStart="16dp" />
+        android:id="@+id/mute_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:drawablePadding="16dp"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:textColor="?attr/text_primary"
+        android:paddingStart="16dp"
+        app:drawableStartCompat="@drawable/ic_menu_mute" />
 
     <TextView
-            android:id="@+id/delete_tv"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="?attr/bg_white"
-            android:drawablePadding="16dp"
-            android:drawableStart="@drawable/ic_msg_delete"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:textColor="?attr/text_primary"
-            android:text="@string/conversation_delete"/>
+        android:id="@+id/delete_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:drawablePadding="16dp"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/conversation_delete"
+        app:drawableStartCompat="@drawable/ic_msg_delete" />
 
 </LinearLayout>

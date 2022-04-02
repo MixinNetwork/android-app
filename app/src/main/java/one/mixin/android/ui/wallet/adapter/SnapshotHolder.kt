@@ -20,7 +20,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
         val isPositive = snapshot.amount.toFloat() > 0
         when (snapshot.type) {
             SnapshotType.pending.name -> {
-                binding.name.text = itemView.context.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
+                binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmations, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
                 binding.avatar.setNet()
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }

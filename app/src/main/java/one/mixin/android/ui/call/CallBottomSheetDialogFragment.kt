@@ -543,12 +543,12 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         if (calls.isNullOrEmpty()) {
             userAdapter?.submitList(null)
-            binding.participants.text = getString(R.string.title_participants, 0)
+            binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 0, 0)
         } else {
             val last = calls.lastOrNull()
             if (calls.size == 1 && last == self.userId) {
                 userAdapter?.submitList(listOf(self))
-                binding.participants.text = getString(R.string.title_participants, 1)
+                binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, 1, 1)
                 binding.participants.translationY = binding.bottomLayout.translationY
                 return@launch
             }
@@ -580,7 +580,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     binding.participants.translationY = binding.bottomLayout.translationY
                 }
             }
-            binding.participants.text = getString(R.string.title_participants, users.size)
+            binding.participants.text = requireContext().resources.getQuantityString(R.plurals.title_participants, users.size, users.size)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
         val newGuestsNotConnected = callState.getPendingUsers(cid)

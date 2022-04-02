@@ -72,7 +72,7 @@ class DepositAccountFragment : DepositFragment() {
             val reserveTip = if (asset.needShowReserve()) {
                 getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}").highLight(requireContext(), "${asset.reserve} ${asset.symbol}")
             } else SpannableStringBuilder()
-            val confirmation = getString(R.string.deposit_confirmation, asset.confirmations).highLight(requireContext(), asset.confirmations.toString())
+            val confirmation = requireContext().resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations).highLight(requireContext(), asset.confirmations.toString())
             accountNameWarningTv.text = getString(R.string.deposit_notice, asset.symbol)
             tipTv.text = buildBulletLines(requireContext(), SpannableStringBuilder(getTipsByAsset(asset)), confirmation, reserveTip)
             accountNameQrFl.setOnClickListener {

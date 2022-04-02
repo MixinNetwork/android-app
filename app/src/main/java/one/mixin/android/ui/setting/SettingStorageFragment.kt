@@ -108,7 +108,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
                 var sum = 0L
                 var size = 0L
                 selectSet.forEach { sum += it.count; size += it.mediaSize }
-                confirmDialog.setMessage(getString(R.string.setting_storage_clear, sum, size.fileSize(FileSizeUnit.KB)))
+                confirmDialog.setMessage(requireContext().resources.getQuantityString(R.plurals.setting_storage_clear, sum.toInt(), sum, size.fileSize(FileSizeUnit.KB)))
                 confirmDialog.show()
                 dialog.dismiss()
             }.create().apply {

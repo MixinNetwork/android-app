@@ -49,7 +49,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
             }
-            tipsTv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
+            tipsTv.text = getTipsByAsset(asset) + " " + requireContext().resources.getQuantityString(R.plurals.deposit_confirmation, asset.confirmations, asset.confirmations)
             continueTv.setOnClickListener { dismiss() }
             val reserveTip = if (asset.needShowReserve()) {
                 getString(R.string.deposit_reserve, "${asset.reserve} ${asset.symbol}")

@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.collection.ArrayMap
 
 class PorterShapeImageView : PorterImageView {
@@ -34,7 +35,7 @@ class PorterShapeImageView : PorterImageView {
     fun setShape(@DrawableRes shape: Int) {
         val drawable = map[shape].let {
             if (it == null) {
-                val d = context.getDrawable(shape)
+                val d = AppCompatResources.getDrawable(context, shape)
                 map[shape] = d
                 return@let d
             } else {

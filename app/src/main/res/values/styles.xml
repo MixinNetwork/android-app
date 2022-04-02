@@ -71,7 +71,7 @@
 
         <item name="code_border">@color/codeBorder</item>
 
-        <item name="map_default">@drawable/ic_map_default_night</item>
+        <item name="map_default">@drawable/ic_map_default</item>
 
         <item name="android:colorControlHighlight">@color/highlight</item>
 
@@ -272,14 +272,6 @@
     <style name="BottomSheet.Animation">
         <item name="android:windowEnterAnimation">@anim/dock_bottom_enter</item>
         <item name="android:windowExitAnimation">@anim/dock_bottom_exit</item>
-    </style>
-
-    <style name="SeekBar">
-        <item name="android:splitTrack">false</item>
-        <item name="android:progressDrawable">@drawable/layer_progress</item>
-        <item name="android:thumb">@drawable/ic_seek_bar</item>
-        <item name="android:minHeight">2dp</item>
-        <item name="android:maxHeight">2dp</item>
     </style>
 
     <style name="TransactionTitleTextStyle">

@@ -15,7 +15,7 @@ class MessageHolder constructor(val binding: ItemSearchMessageBinding) : NormalH
         } else {
             message.conversationName
         }
-        binding.searchMsgTv.text = itemView.context.getString(R.string.search_related_message, message.messageCount)
+        binding.searchMsgTv.text = itemView.context.resources.getQuantityString(R.plurals.search_related_message, message.messageCount, message.messageCount)
         if (message.conversationCategory == ConversationCategory.CONTACT.name) {
             binding.searchAvatarIv.setInfo(message.userFullName, message.userAvatarUrl, message.userId)
         } else {

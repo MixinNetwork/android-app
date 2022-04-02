@@ -18,7 +18,6 @@
         android:layout_height="50dp"
         android:background="?attr/bg_white"
         android:drawablePadding="8dp"
-        android:drawableStart="@drawable/ic_search"
         android:inputType="text"
         android:hint="@string/search"
         android:imeOptions="actionDone"
@@ -28,6 +27,7 @@
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_minor"
         android:textSize="14sp"
+        app:drawableStartCompat="@drawable/ic_search"
         tools:ignore="Autofill" />
 
     <View

@@ -17,7 +17,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="@string/contact_count"
             android:textColor="?text_primary"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>

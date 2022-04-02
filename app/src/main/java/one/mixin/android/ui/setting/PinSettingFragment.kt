@@ -77,9 +77,9 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
         val biometricInterval = defaultSharedPreferences.getLong(BIOMETRIC_INTERVAL, BIOMETRIC_INTERVAL_DEFAULT)
         val hour = biometricInterval / X_HOUR.toFloat()
         binding.timeDescTv.text = if (hour < 1) {
-            getString(R.string.wallet_pin_pay_interval_minutes, (hour * 60).toInt())
+            requireContext().resources.getQuantityString(R.plurals.wallet_pin_pay_interval_minutes, (hour * 60).toInt(), (hour * 60).toInt())
         } else {
-            getString(R.string.wallet_pin_pay_interval_hours, hour.toInt())
+            requireContext().resources.getQuantityString(R.plurals.wallet_pin_pay_interval_hours, hour.toInt(), hour.toInt())
         }
     }
 

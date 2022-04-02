@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 
@@ -56,7 +57,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     }
 
     private val refreshDrawable: Drawable by lazy {
-        resources.getDrawable(R.drawable.ic_refresh, context.theme).apply {
+        requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.ic_refresh, context.theme)).apply {
             callback = this@PlayView
         }
     }

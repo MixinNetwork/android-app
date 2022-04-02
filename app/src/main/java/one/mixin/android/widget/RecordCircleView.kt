@@ -13,6 +13,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 
@@ -71,35 +72,41 @@ class RecordCircleView : View {
     lateinit var callback: Callback
 
     private val audioDrawable: Drawable by lazy {
-        resources.getDrawable(
-            R.drawable.ic_record_mic,
-            context.theme
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_record_mic,
+                context.theme
+            )
         )
     }
     private val sendDrawable: Drawable by lazy {
-        resources.getDrawable(
-            R.drawable.ic_send,
-            context.theme
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_send,
+                context.theme
+            )
         )
     }
 
     private val lockDrawable: Drawable by lazy {
-        resources.getDrawable(R.drawable.lock_middle, context.theme).apply {
+        requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.lock_middle, context.theme)).apply {
             colorFilter = PorterDuffColorFilter(colorLock, PorterDuff.Mode.MULTIPLY)
         }
     }
     private val lockTopDrawable: Drawable by lazy {
-        resources.getDrawable(R.drawable.lock_top, context.theme).apply {
+        requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.lock_top, context.theme)).apply {
             colorFilter = PorterDuffColorFilter(colorLock, PorterDuff.Mode.MULTIPLY)
         }
     }
     private val lockArrowDrawable: Drawable by lazy {
-        resources.getDrawable(R.drawable.lock_arrow, context.theme).apply {
+        requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.lock_arrow, context.theme)).apply {
             colorFilter = PorterDuffColorFilter(colorLock, PorterDuff.Mode.MULTIPLY)
         }
     }
     private val lockBackgroundDrawable: Drawable by lazy {
-        resources.getDrawable(R.drawable.lock_round, context.theme).apply {
+        requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.lock_round, context.theme)).apply {
             colorFilter = PorterDuffColorFilter(
                 context.colorFromAttribute(R.attr.bg_white),
                 PorterDuff.Mode.MULTIPLY
@@ -107,7 +114,7 @@ class RecordCircleView : View {
         }
     }
     private val lockShadowDrawable: Drawable by lazy {
-        resources.getDrawable(R.drawable.lock_round_shadow, context.theme).apply {
+        requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.lock_round_shadow, context.theme)).apply {
             colorFilter = PorterDuffColorFilter(colorCircle, PorterDuff.Mode.MULTIPLY)
         }
     }

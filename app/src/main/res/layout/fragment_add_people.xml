@@ -20,7 +20,6 @@
         android:layout_below="@id/title_view"
         android:background="?attr/bg_white"
         android:drawablePadding="8dp"
-        android:drawableStart="@drawable/ic_search"
         android:inputType="number|phone"
         android:maxLines="1"
         android:hint="@string/add_people_search_hint"
@@ -29,6 +28,7 @@
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_assist"
         android:textSize="14sp"
+        app:drawableStartCompat="@drawable/ic_search"
         tools:ignore="Autofill" />
 
     <TextView

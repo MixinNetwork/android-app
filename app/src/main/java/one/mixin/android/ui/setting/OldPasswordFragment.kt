@@ -106,7 +106,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
                     return@handleMixinResponse true
                 } else if (it.errorCode == ErrorHandler.PIN_INCORRECT) {
                     val errorCount = walletViewModel.errorCount()
-                    toast(getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount))
+                    toast(requireContext().resources.getQuantityString(R.plurals.error_pin_incorrect_with_times, errorCount, ErrorHandler.PIN_INCORRECT, errorCount))
                     dialog.dismiss()
                     return@handleMixinResponse true
                 }
