@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import android.app.Activity
 import android.app.NotificationManager
-import android.util.Log
 import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonSyntaxException
@@ -1277,7 +1276,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         val bm = createSyncSignalKeys(createSyncSignalKeysParam(RefreshOneTimePreKeysJob.generateKeys()))
         val result = signalKeysChannel(bm)
         if (result == null) {
-            Log.w(TAG, "Registering new pre keys...")
+            Timber.tag(TAG).w("Registering new pre keys...")
         }
     }
 
