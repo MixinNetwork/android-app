@@ -24,6 +24,7 @@ import one.mixin.android.extension.isFileUri
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.toast
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.reportException
 import java.io.File
 import java.io.FileInputStream
 
@@ -88,12 +89,14 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
 
     val filePath = absolutePath()
     if (filePath == null) {
+        reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath"))
         toast(R.string.save_failure)
         return
     }
 
     val file = filePath.toUri().toFile()
     if (!file.exists()) {
+        reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath"))
         toast(R.string.error_file_exists)
         return
     }
