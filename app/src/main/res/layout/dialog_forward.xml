@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/forward"
-        android:text="@string/forward"
+        android:text="@string/action_forward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"

@@ -145,10 +145,10 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
         if (undoAvailable) {
             alertDialogBuilder()
                 .setMessage(R.string.exit_without_save)
-                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                .setNegativeButton(R.string.action_cancel) { dialog, _ ->
                     dialog.dismiss()
                 }
-                .setPositiveButton(R.string.exit) { dialog, _ ->
+                .setPositiveButton(R.string.action_exit) { dialog, _ ->
                     dialog.dismiss()
                     activity?.finish()
                 }.show()
@@ -257,7 +257,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             title.isVisible = false
             typeTv.isVisible = true
             undoRedoView.isVisible = false
-            typeTv.text = getString(R.string.text)
+            typeTv.text = getString(R.string.action_text)
             colorRv.isVisible = showTools
             seekbarLl.isVisible = false
         }
@@ -270,7 +270,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
             title.isVisible = false
             typeTv.isVisible = true
             undoRedoView.isVisible = false
-            typeTv.text = getString(R.string.crop)
+            typeTv.text = getString(R.string.action_crop)
             colorRv.isVisible = false
             seekbarLl.isVisible = false
         }

@@ -163,7 +163,7 @@ class EditFragment : VisionFragment() {
                             GsonHelper.customGson.toJson(VideoMessagePayload(File(path).toUri().toString()))
                         )
                     ),
-                    ForwardAction.System(name = getString(R.string.send), needEdit = false)
+                    ForwardAction.System(name = getString(R.string.action_send), needEdit = false)
                 )
             } else {
                 ForwardActivity.show(
@@ -174,7 +174,7 @@ class EditFragment : VisionFragment() {
                             GsonHelper.customGson.toJson(ShareImageData(File(path).toUri().toString())),
                         )
                     ),
-                    ForwardAction.System(name = getString(R.string.send), needEdit = false)
+                    ForwardAction.System(name = getString(R.string.action_send), needEdit = false)
                 )
             }
         }

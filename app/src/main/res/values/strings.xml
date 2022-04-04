@@ -1,16 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Mixin</string>
     <!--common-->
-    <string name="confirm">Confirm</string>
-    <string name="change">Change</string>
-    <string name="common_continue">Continue</string>
-    <string name="cancel">Cancel</string>
-    <string name="search">Search</string>
-    <string name="next">Next</string>
-    <string name="create">Create</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_change">Change</string>
+    <string name="action_continue">Continue</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_search">Search</string>
+    <string name="action_next">Next</string>
+    <string name="action_create">Create</string>
     <string name="about">About</string>
-    <string name="mute">Mute</string>
-    <string name="un_mute">Unmute</string>
+    <string name="action_mute">Mute</string>
+    <string name="action_un_mute">Unmute</string>
     <string name="notification">Notifications</string>
     <string name="none">None</string>
     <string name="fee">Fee</string>
@@ -20,58 +20,58 @@
     <string name="label">Label</string>
     <string name="address">Address</string>
     <string name="amount">Amount</string>
-    <string name="transfer">Transfer</string>
+    <string name="action_transfer">Transfer</string>
     <string name="admin">admin</string>
     <string name="owner">owner</string>
-    <string name="share">Share</string>
-    <string name="done">Done</string>
-    <string name="forward">Forward</string>
+    <string name="action_share">Share</string>
+    <string name="action_done">Done</string>
+    <string name="action_forward">Forward</string>
     <string name="forward_success">Forward success</string>
     <string name="combine_forward">Combine forward</string>
     <string name="message_sent">Message sent</string>
-    <string name="delete">Delete</string>
-    <string name="unpin">Unpin</string>
-    <string name="save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_unpin">Unpin</string>
+    <string name="action_save">Save</string>
     <string name="saving">Saving…</string>
     <string name="show_in_chat">Show in chat</string>
     <string name="pb_dialog_message">Please wait a bit…</string>
-    <string name="other">OTHER</string>
+    <string name="capital_other">OTHER</string>
     <string name="welcome" translatable="false">Welcome to Mixin</string>
     <string name="not_logged_in">Not logged in</string>
     <string name="got_it">Got it</string>
     <string name="got_it_count">Got it (%1$d)</string>
-    <string name="exit">Exit</string>
+    <string name="action_exit">Exit</string>
     <string name="receiver">Receiver</string>
     <string name="sender">Sender</string>
     <string name="transaction_hash">Transaction Hash</string>
-    <string name="copy" tools:override="true">Copy</string>
-    <string name="open">Open</string>
-    <string name="rebate">Rebate</string>
-    <string name="select">Select</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_open">Open</string>
+    <string name="action_rebate">Rebate</string>
+    <string name="action_select">Select</string>
     <string name="changing">Changing…</string>
     <string name="secret_url" translatable="false">https://mixin.one/pages/1000007</string>
     <string name="transfer_to">Transfer To</string>
     <string name="hidden">Hidden</string>
     <string name="shown">Shown</string>
-    <string name="undo_capital">UNDO</string>
+    <string name="capital_undo">UNDO</string>
     <string name="add_success">Add success</string>
     <string name="gif" translatable="false">GIF</string>
     <string name="symbol">Symbol</string>
     <string name="chain">Chain</string>
-    <string name="contract">Asset Key</string>
+    <string name="asset_key">Asset Key</string>
     <string name="time">Time</string>
-    <string name="more">More</string>
+    <string name="action_more">More</string>
     <string name="successful">Successful</string>
-    <string name="no_result">NO RESULT</string>
+    <string name="capital_no_result">NO RESULT</string>
     <string name="send_to">Send to %1$s</string>
-    <string name="transfer_send">Send</string>
-    <string name="receive">Receive</string>
+    <string name="action_transfer_send">Send</string>
+    <string name="action_transfer_receive">Receive</string>
     <string name="developer">Developer</string>
     <string name="mixin_id" translatable="false">Mixin ID</string>
-    <string name="later">Later</string>
-    <string name="save_to_music">Save to Music</string>
-    <string name="save_to_gallery">Save to Gallery</string>
-    <string name="save_to_downloads">Save to Downloads</string>
+    <string name="action_later">Later</string>
+    <string name="action_save_to_music">Save to Music</string>
+    <string name="action_save_to_gallery">Save to Gallery</string>
+    <string name="action_save_to_downloads">Save to Downloads</string>
     <string name="cant_talk_self">You can\'t talk to yourself</string>
     <string name="cant_transfer_self">You can\'t transfer to yourself</string>
     <string name="need_camera_permission">Requires camera permission for continue</string>
@@ -84,17 +84,17 @@
     <string name="media">Media</string>
     <string name="links">Links</string>
     <string name="files">Files</string>
-    <string name="no_media">NO MEDIA</string>
-    <string name="no_audio">NO AUDIO</string>
-    <string name="no_post">NO POST</string>
-    <string name="no_file">NO FILE</string>
-    <string name="no_link">NO LINK</string>
+    <string name="capital_no_media">NO MEDIA</string>
+    <string name="capital_no_audio">NO AUDIO</string>
+    <string name="capital_no_post">NO POST</string>
+    <string name="capital_no_file">NO FILE</string>
+    <string name="capital_no_link">NO LINK</string>
     <string name="media_date_patten">MMM dd, yyyy</string>
-    <string name="restart">RESTART</string>
+    <string name="action_restart">RESTART</string>
     <string name="update_downloaded">An update has just been downloaded.</string>
     <string name="language">Language</string>
     <string name="try_again">Try Again</string>
-    <string name="ok">OK</string>
+    <string name="capital_ok">OK</string>
     <string name="verify_by_PIN">Verify with PIN</string>
     <string name="login_by_PIN">Login with PIN</string>
     <string name="verify_by_biometric">Verify by Biometric</string>
@@ -114,12 +114,6 @@
     <string name="end_to_end_encryption">End-to-end Encrypted</string>
     <string name="end_to_end_encryption_short">Encrypted</string>
     <string name="end_to_end_encryption_tip">This call is secured with end-to-end encryption. No one outside of this call can view or listen to it. Not even Mixin.</string>
-    <string name="common_pic">Photo</string>
-    <string name="common_video">Video</string>
-    <string name="common_file">File</string>
-    <string name="common_audio">Audio</string>
-    <string name="common_sticker">Sticker</string>
-    <string name="common_transcript">Transcript</string>
     <string name="you">You</string>
     <string name="know">I know</string>
     <string name="storage_low_title">Your phone is low on storage</string>
@@ -127,31 +121,26 @@
     <string name="website" translatable="false">https://mixin.one/messenger</string>
     <string name="upload_timeout">Upload timeout</string>
     <string name="copy_link">Copy Link</string>
-    <string name="type_a_message">Type message</string>
-    <string name="open_floating">Floating</string>
-    <string name="cancel_floating">Cancel Floating</string>
-    <string name="quote">quote</string>
+    <string name="type_message">Type message</string>
+    <string name="action_floating">Floating</string>
+    <string name="action_cancel_floating">Cancel Floating</string>
+    <string name="action_quote">quote</string>
     <string name="strikethrough">strikethrough</string>
     <string name="italic">italic</string>
     <string name="bold">bold</string>
     <string name="disabled">Disabled</string>
     <string name="not_recognized">Not recognized</string>
     <string name="eos_contract_address">EOS contract address</string>
-    <string name="save_md">Save markdown</string>
-    <string name="save_pdf">Save pdf</string>
-    <string name="notice">Notice</string>
-    <string name="common_close">Close</string>
-    <string name="common_copy">Copy</string>
-    <string name="common_delete">Delete</string>
-    <string name="common_add_sticker">Add sticker</string>
-    <string name="common_forward">Forward</string>
-    <string name="common_reply">Reply</string>
-    <string name="common_share">Share</string>
-    <string name="common_pin">Pin</string>
-    <string name="common_unpin">Unpin</string>
-    <string name="crop">Crop</string>
-    <string name="text">Text</string>
-    <string name="draw">Draw</string>
+    <string name="action_save_md">Save markdown</string>
+    <string name="action_save_pdf">Save pdf</string>
+    <string name="action_notice">Notice</string>
+    <string name="action_close">Close</string>
+    <string name="action_add_sticker">Add sticker</string>
+    <string name="action_reply">Reply</string>
+    <string name="action_pin">Pin</string>
+    <string name="action_crop">Crop</string>
+    <string name="action_text">Text</string>
+    <string name="action_draw">Draw</string>
     <string name="size">Size</string>
     <string name="exit_without_save">Exit without save?</string>
     <string name="verify_to_continue">Enter your PIN to continue</string>
@@ -167,7 +156,7 @@
     <string name="error_not_found">ERROR %1$d: Not found</string>
     <string name="error_too_many_request">ERROR %1$d: Rate limit exceeded</string>
     <string name="error_authentication">ERROR %1$d: Sign in to continue</string>
-    <string name="can_not_recognize">Can not recognize the QR code</string>
+    <string name="can_not_recognize_qr_code">Can not recognize the QR code</string>
     <string name="error_no_camera">No camera</string>
     <string name="error_image">File error</string>
     <string name="error_format">Format not supported</string>
@@ -218,26 +207,26 @@
     <string name="error_not_supported_audio_format">Not supported audio format, please open by other app.</string>
     <string name="error_transcript_forward">Please forward all attachments after they have been downloaded</string>
     <!--home-->
-    <string name="title_home">Contacts</string>
+    <string name="contacts">Contacts</string>
     <string name="search_hint">assets, contacts and messages</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="conversation_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
-    <string name="text_qr">TEXT QR CODE</string>
+    <string name="capital_text_or_qr">TEXT QR CODE</string>
     <string name="detect_qr_tip">Detected a Mixin QR code, tap to recognize</string>
     <string name="conversation_delete_tip">Once deleted, all this chat messages will be cleared</string>
     <string name="conversation_delete_title">Delete chat: %1$s</string>
     <string name="qr_not_found">Qr Code not found</string>
     <string name="no_flash_unit">Flash unit not available</string>
     <!--search-->
-    <string name="search_title_assets">ASSETS</string>
-    <string name="search_title_chat">CHATS</string>
-    <string name="search_title_contacts">CONTACTS</string>
-    <string name="search_title_messages">SEARCH MESSAGES</string>
-    <string name="search_title_more">More</string>
     <plurals name="search_related_message">
         <item quantity="one">%1$d related message</item>
         <item quantity="other">%1$d related messages</item>
     </plurals>
+    <string name="capital_search_title_assets">ASSETS</string>
+    <string name="capital_search_title_chat">CHATS</string>
+    <string name="capital_search_title_contacts">CONTACTS</string>
+    <string name="capital_search_title_messages">SEARCH MESSAGES</string>
+    <string name="search_related_message">%1$d related messages</string>
     <string name="search_tip">Search Mixin ID or Phone number: %1$s</string>
     <!--landing-->
     <string name="landing_back_content_desc" translatable="false">Landing back</string>
@@ -282,8 +271,8 @@
     <string name="contact_mobile">Mobile: %1$s</string>
     <string name="contact_empty">Phone Contacts</string>
     <string name="contact_empty_tip">Mixin needs access your contacts to help you connect with other people on Mixin.</string>
-    <string name="contact_item_title">CONTACTS</string>
-    <string name="bot_item_title">BOTS</string>
+    <string name="contact_capital_item_title">CONTACTS</string>
+    <string name="bot_capital_item_title">BOTS</string>
     <string name="contact_sq_scan_title">Extract QR Code</string>
     <string name="contact_save_image">Save Image</string>
     <string name="contact_my_qr_title">My QR Code</string>
@@ -304,7 +293,7 @@
     <!--profile-->
     <string name="profile_phone">Change Phone Number</string>
     <string name="profile_modify_number">Do you want to change your phone number?</string>
-    <string name="info">Messages to this conversation are encrypted end-to-end, tap for more info.</string>
+    <string name="message_e2ee">Messages to this conversation are encrypted end-to-end, tap for more info.</string>
     <string name="verify_pin">Verify PIN</string>
     <string name="change_phone_success">Change phone number successfully!</string>
     <string name="edit_name">Edit Name</string>
@@ -320,7 +309,7 @@
     <string name="chat_not_support_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
     <string name="chat_decryption_failed">This message decryption failed, please upgrade Mixin to the latest version.</string>
-    <string name="chat_learn">Learn more</string>
+    <string name="action_learn_more">Learn more</string>
     <string name="week_monday">Monday</string>
     <string name="week_tuesday">Tuesday</string>
     <string name="week_wednesday">Wednesday</string>
@@ -329,8 +318,8 @@
     <string name="week_saturday">Saturday</string>
     <string name="week_sunday">Sunday</string>
     <string name="today">Today</string>
-    <string name="chat_item_title">CHATS</string>
-    <string name="copy_success">Copied to Clipboard</string>
+    <string name="chat_capital_item_title">CHATS</string>
+    <string name="copied_to_clipboard">Copied to Clipboard</string>
     <string name="photo">Photo</string>
     <plurals name="title_participants">
         <item quantity="one">%1$d participant</item>
@@ -353,12 +342,13 @@
     <string name="chat_audio_warning">You cannot play audio if your\'re already on play another audio.</string>
     <string name="chat_audio_discard_warning_title">Discard Voice message</string>
     <string name="chat_audio_discard_warning">Are you sure you want to stop recording and discard your voice message ?</string>
-    <string name="chat_audio_discard_ok">DISCARD</string>
-    <string name="chat_audio_discard_cancel">CONTINUE</string>
     <plurals name="chat_delete_message">
         <item quantity="one">Delete %1$d message?</item>
         <item quantity="other">Delete %1$d messages?</item>
     </plurals>
+    <string name="chat_capital_audio_discard_ok">DISCARD</string>
+    <string name="chat_capital_audio_discard_cancel">CONTINUE</string>
+    <string name="chat_delete_message">Delete %1$d messages?</string>
     <string name="chat_delete_for_me">Delete for me</string>
     <string name="chat_delete_for_everyone">Delete for Everyone</string>
     <string name="chat_recall_me">You deleted this message</string>
@@ -415,7 +405,7 @@
     <string name="add_people_search_hint">Mixin ID or Phone number</string>
     <string name="add_people_tip">My Mixin ID: %1$s</string>
     <!--wallet-->
-    <string name="wallet_title">Wallet</string>
+    <string name="wallet">Wallet</string>
     <string name="wallet_password_set_pin">Set PIN</string>
     <string name="wallet_password_set_new_pin">Set a new PIN</string>
     <string name="wallet_password_set_new_pin_desc">Please set a new 6 digit PIN.</string>
@@ -452,7 +442,7 @@
     <string name="wallet_password_old_title">Old PIN</string>
     <string name="wallet_password_not_equal">The PIN did not match the re-typed PIN, please try again.</string>
     <string name="wallet_password_change_tip">Please enter the 6 digit PIN to verify.</string>
-    <string name="wallet_pay_with_pwd">Pay with PIN</string>
+    <string name="wallet_pay_with_pin">Pay with PIN</string>
     <string name="wallet_pay_with_biometric">Biometric Payment</string>
     <string name="wallet_transfer_amount">Transfer Amount</string>
     <string name="wallet_transfer_memo">Memo</string>
@@ -531,7 +521,7 @@
     <string name="log_login_emergency">Sign in with emergency contact</string>
     <string name="log_login_desktop">Sign in desktop app</string>
     <!--group-->
-    <string name="group_add">Add Participants</string>
+    <string name="group_add_participants">Add Participants</string>
     <string name="group_new_title">New Group</string>
     <string name="group_new_photo">Group Photo</string>
     <string name="group_new_name">Group Name</string>
@@ -698,15 +688,6 @@
     <string name="setting_delete_account_pin_content_more">Learn more</string>
     <string name="setting_delete_account_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
     <string name="setting_delete_account_send">We will send a 4-digit code to %1$s</string>
-    <string-array name="setting_night_array">
-        <item>Light</item>
-        <item>Dark</item>
-    </string-array>
-    <string-array name="setting_night_array_oreo">
-        <item>Light</item>
-        <item>Dark</item>
-        <item>Follow system</item>
-    </string-array>
     <string name="setting_battery_optimize_title">To ensure that Mixin receives messages properly, please set Mixin\'s battery optimization policy to \"Don\'t Optimize\"</string>
     <string name="go_set">Go settings</string>
     <!--about-->
@@ -724,7 +705,6 @@
     <string name="chat_you">you</string>
     <string name="chat_group_checking">Checking link</string>
     <string name="chat_expired">Expired</string>
-    <string name="group_ok">OK</string>
     <string name="link_error">This link is invalid</string>
     <string name="bottom_sheet_check_payment_info">Checking payment info</string>
     <string name="bottom_sheet_invalid_payment">Invalid payment</string>
@@ -773,7 +753,7 @@
     <string name="alert_key_contact_location_message">sent a location</string>
     <string name="alert_key_contact_audio_call_message">ask you an audio call</string>
     <string name="alert_key_contact_transcript_message">shared a transcript</string>
-    <string name="unread">New Messages</string>
+    <string name="unread_messages">New Messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
     <string name="bot_interact_info">Click the button to interact with the bot</string>
     <string name="bot_interact_open">Open Home page</string>
@@ -836,7 +816,6 @@
     <string name="transcript">Transcript</string>
     <!--pay-->
     <string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
-
     <string name="background_connection_enabled">Messaging node running</string>
 
     <!--withdrawal-->
@@ -871,21 +850,21 @@
     <string name="group_info_edit">Edit group description</string>
     <string name="group_info_show_more_omit"> show more</string>
     <string name="group_info_show_more">show more</string>
-    <string name="send">Send</string>
-    <string name="send_silence">Send Without Sound</string>
+    <string name="action_send">Send</string>
+    <string name="action_send_silence">Send Without Sound</string>
     <string name="send_file">Send \"%1$s\" to %2$s?</string>
     <string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
     <string name="default_time" translatable="false">00:00</string>
-    <string name="action_open">Open in browser</string>
+    <string name="action_open_in_browser">Open in browser</string>
     <string name="action_view_auth">View Authorization</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_update">Update</string>
     <string name="action_reload">Reload</string>
     <string name="slide_to_cancel">Slide to Cancel</string>
-    <string name="gallery_all">All Media</string>
-    <string name="gallery_empty_text">No media yet</string>
+    <string name="gallery_all_media">All Media</string>
+    <string name="gallery_no_media_yet">No media yet</string>
     <string name="account_memo">Memo</string>
-    <string name="not_auth_yet">No permission has been granted to this bot</string>
+    <string name="bot_not_auth_yet">No permission has been granted to this bot</string>
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_address">Address</string>
     <string name="withdrawal_no_tag">No Memo</string>
@@ -930,8 +909,8 @@
     <string name="filters_fee">Fee</string>
     <string name="filters_rebate">Rebate</string>
     <string name="filters_raw">Raw</string>
-    <string name="filters_by">FILTER BY</string>
-    <string name="sort_by">SORT BY</string>
+    <string name="capital_filters_by">FILTER BY</string>
+    <string name="capital_sort_by">SORT BY</string>
     <!--Pending-->
     <plurals name="pending_confirmations">
         <item quantity="one">%1$d/%2$d confirmation</item>
@@ -946,17 +925,21 @@
     <string name="call_notification_action_answer">ANSWER</string>
     <string name="call_notification_action_hang_up">HANG UP</string>
     <string name="call_connecting">Connecting&#8230;</string>
-    <string name="call_decline">Decline</string>
+    <string name="call_speaker">Speaker</string>
+    <string name="call_action_hang_up">Hang up</string>
+    <string name="call_action_decline">Decline</string>
+    <string name="call_action_accept">Accept</string>
+    <string name="call_action_mute">Mute</string>
     <string name="call_group_full" tools:ignore="PluralsCandidate">Support up to %1$d people group voice</string>
     <string name="call_pip_permission">You can\'t minimize a voice call as Mixin isn\'t authorized to use floating windows</string>
 
     <!-- restore&backup -->
     <string name="restore_info">Restore your messages from external storage.\nIf you don\'t restore new, you won\'t be able to restore later.</string>
     <string name="restore_found">Backup found</string>
-    <string name="restore_skip">SKIP</string>
-    <string name="restore_retry">RETRY</string>
-    <string name="restore_choose">CHOOSE</string>
-    <string name="restore_restore">RESTORE</string>
+    <string name="restore_action_capital_skip">SKIP</string>
+    <string name="restore_action_capital_retry">RETRY</string>
+    <string name="restore_action_capital_choose">CHOOSE</string>
+    <string name="restore_action_capital_restore">RESTORE</string>
     <string name="restore_authorization">authorization</string>
     <string name="restore_message">Back up your messages and media to external storage. You can restore them when you reinstall Mixin. Your messages and media will also back up to your phone\'s internal storage. Media and messages your back up are not protected by Mixin end-to-end encryption while in external storage.</string>
     <string name="restore_path">Path: %1$s</string>
@@ -974,7 +957,7 @@
     <string name="backup_media">Include media files</string>
     <string name="backup_choose_folder">Choose folder</string>
     <string name="backup_choose_a_folder">Choose a folder, backups will be saved to this location</string>
-    <string name="backup_delete">Backup delete</string>
+    <string name="backup_action_delete">Backup delete</string>
     <string name="backup_dialog_title">Auto back up to external storage</string>
     <string name="backup_ing">External storage backup&#8230;</string>
     <string name="backup_notification_title">Backup in progress</string>
@@ -1013,8 +996,8 @@
     <string name="location_empty">There were no results for \"%1$s\"\nTry new search</string>
     <string name="location_enable_title">Enable your GPS to access location</string>
     <!--  circle  -->
-    <string name="circle_bottom">Create circle for different  groups of chats \nand quickly switch between them</string>
-    <string name="circle_add_title">Add Circle</string>
+    <string name="circle_bottom">Create circle for different groups of chats \nand quickly switch between them</string>
+    <string name="circle_action_add">Add Circle</string>
     <plurals name="circle_subtitle">
         <item quantity="one">%1$d Conversation</item>
         <item quantity="other">%1$d Conversations</item>
@@ -1023,9 +1006,9 @@
     <string name="circle_mixin">Mixin</string>
     <string name="circle_menu_edit_name">Edit Circle Name</string>
     <string name="circle_menu_edit_conversation">Edit Conversation</string>
-    <string name="circle_menu_delete">Delete</string>
-    <string name="circle_menu_sort">Sort</string>
-    <string name="circle">Circles</string>
+    <string name="circle_action_menu_delete">Delete</string>
+    <string name="circle_action_menu_sort">Sort</string>
+    <string name="circles">Circles</string>
     <string name="circle_title">%1$s\'s Circles</string>
     <string name="circle_info">If you want to filter conversation, please\n set a circle for the conversation first.</string>
     <string name="circle_delete_tip">Delete \"%1$s\" ?</string>
@@ -1033,7 +1016,7 @@
     <string name="circle_empty_start">Add Conversations</string>
     <string name="circle_limit">The number has reached the limit</string>
     <!--  bot  -->
-    <string name="bot_title">Bots</string>
+    <string name="bots">Bots</string>
     <string name="bot_dock_empty">Long press and drag the bot to the top</string>
     <string name="bot_internal_scan">Scan QR</string>
     <string name="bot_internal_camera">Camera</string>
@@ -1046,24 +1029,24 @@
     <string name="web_cannot_reached_title">This webpage can\'t be reached</string>
     <string name="web_cannot_reached_desc">%1$s took too long to respond. Please check your network and try to switch 4G, Wi-Fi or VPN to reload the page.</string>
     <string name="web_contact_developer">Contact Developer</string>
-    <string name="web_clear">Remove All</string>
+    <string name="web_action_clear_all">Remove All</string>
     <string name="web_full">Floating limit reached. Close some before adding new ones.</string>
     <string name="web_delete_tip">Remove all floats?</string>
     <string name="web_floating_permission">You can\'t floating as Mixin isn\'t authorized to use floating windows</string>
-    <string name="web_close">close</string>
-    <string name="web_debug_enable">Enable web debug</string>
-    <string name="web_debug_disable">Disable web debug</string>
+    <string name="web_action_close">close</string>
+    <string name="web_debug_action_enable">Enable web debug</string>
+    <string name="web_debug_action_disable">Disable web debug</string>
     <!-- debug -->
-    <string name="db_debug_enable">Enable db debug</string>
-    <string name="db_debug_disable">Disable db debug</string>
+    <string name="db_debug_action_enable">Enable db debug</string>
+    <string name="db_debug_action_disable">Disable db debug</string>
     <string name="db_debug_warning">Attention: If a harmful SQL statement is executed, the result is irreversible!</string>
 
     <!--  player  -->
-    <string name="player_playlist">Playlist</string>
+    <string name="playlist">Playlist</string>
     <string name="notification_channel">Now Playing</string>
     <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>
     <string name="player_delete_all_desc">Are you sure you want to stop and close the playlist?</string>
-    <string name="player_stop_playing">Stop Playing</string>
+    <string name="player_action_stop_playing">Stop Playing</string>
     <string name="player_playback_failed">Playback failed</string>
 
     <!--  auth  -->
@@ -1120,10 +1103,10 @@
 
     <!--  sticker store  -->
     <string name="sticker_store">Sticker Store</string>
-    <string name="sticker_store_add">Add</string>
+    <string name="sticker_store_action_add">Add</string>
     <string name="sticker_store_added">Added</string>
     <string name="sticker_store_add_stickers">Add Stickers</string>
     <string name="sticker_store_remove_stickers">Remove Stickers</string>
     <string name="sticker_my">My Stickers</string>
-    <string name="sticker_none">NO STICKER</string>
+    <string name="sticker_capital_none">NO STICKER</string>
 </resources>

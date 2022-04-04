@@ -81,7 +81,7 @@ class UnknownHolder constructor(val binding: ItemChatUnknownBinding) : BaseViewH
 
         val isMe = meId == messageItem.userId
 
-        val learn: String = MixinApplication.get().getString(R.string.chat_learn)
+        val learn: String = MixinApplication.get().getString(R.string.action_learn_more)
         val info = MixinApplication.get().getString(R.string.chat_not_support, learn)
         val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
         binding.chatTv.highlightLinkText(

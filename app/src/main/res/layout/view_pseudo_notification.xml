@@ -15,7 +15,7 @@
             android:drawablePadding="8dp"
             android:textColor="?attr/text_primary"
             android:textSize="12sp"
-            android:text="@string/text_qr"
+            android:text="@string/capital_text_or_qr"
             app:drawableStartCompat="@drawable/ic_qr_code_preview"/>
 
     <TextView

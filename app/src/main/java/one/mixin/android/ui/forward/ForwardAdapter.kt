@@ -122,11 +122,11 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
         }
         ItemContactHeaderBinding.bind(holder.itemView).header.text = holder.itemView.context.getString(
             if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
-                R.string.chat_item_title
+                R.string.chat_capital_item_title
             } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {
-                R.string.contact_item_title
+                R.string.contact_capital_item_title
             } else {
-                R.string.bot_item_title
+                R.string.bot_capital_item_title
             }
         )
     }

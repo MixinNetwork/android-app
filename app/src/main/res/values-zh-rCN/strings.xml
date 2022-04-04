@@ -1,16 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!--common-->
-    <string name="confirm">确认</string>
-    <string name="change">更改</string>
-    <string name="common_continue">继续</string>
-    <string name="cancel">取消</string>
-    <string name="search">搜索</string>
-    <string name="next">下一步</string>
-    <string name="create">创建</string>
+    <string name="action_confirm">确认</string>
+    <string name="action_change">更改</string>
+    <string name="action_continue">继续</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_search">搜索</string>
+    <string name="action_next">下一步</string>
+    <string name="action_create">创建</string>
     <string name="about">关于</string>
-    <string name="mute">静音通知</string>
-    <string name="un_mute">取消静音</string>
+    <string name="action_mute">静音通知</string>
+    <string name="action_un_mute">取消静音</string>
     <string name="notification">通知</string>
     <string name="none">无</string>
     <string name="fee">手续费</string>
@@ -19,54 +19,54 @@
     <string name="label">标题</string>
     <string name="address">地址</string>
     <string name="amount">金额</string>
-    <string name="transfer">转账</string>
+    <string name="action_transfer">转账</string>
     <string name="admin">管理员</string>
     <string name="owner">群主</string>
-    <string name="share">分享</string>
-    <string name="done">完成</string>
-    <string name="forward">转发</string>
+    <string name="action_share">分享</string>
+    <string name="action_done">完成</string>
+    <string name="action_forward">转发</string>
     <string name="forward_success">转发成功</string>
     <string name="combine_forward">合并转发</string>
     <string name="message_sent">消息已发送</string>
-    <string name="delete">删除</string>
-    <string name="unpin">取消置顶</string>
-    <string name="save">保存</string>
+    <string name="action_delete">删除</string>
+    <string name="action_unpin">取消置顶</string>
+    <string name="action_save">保存</string>
     <string name="saving">保存中…</string>
     <string name="show_in_chat">在聊天中展示</string>
     <string name="pb_dialog_message">请稍等…</string>
-    <string name="other">其他</string>
+    <string name="capital_other">其他</string>
     <string name="not_logged_in">还没有登录</string>
     <string name="got_it">知道了</string>
     <string name="got_it_count">知道了（%1$d）</string>
-    <string name="exit">退出</string>
+    <string name="action_exit">退出</string>
     <string name="receiver">至</string>
     <string name="sender">来自</string>
     <string name="transaction_hash">交易哈希</string>
-    <string name="copy" tools:override="true">复制</string>
-    <string name="open">打开</string>
-    <string name="rebate">退款</string>
-    <string name="select">选择</string>
+    <string name="action_copy">复制</string>
+    <string name="action_open">打开</string>
+    <string name="action_rebate">退款</string>
+    <string name="action_select">选择</string>
     <string name="changing">正在修改…</string>
     <string name="transfer_to">转账给</string>
     <string name="hidden">隐藏</string>
     <string name="shown">显示</string>
-    <string name="undo_capital">撤销</string>
+    <string name="capital_undo">撤销</string>
     <string name="add_success">添加成功</string>
     <string name="symbol">符号</string>
     <string name="chain">所属公链</string>
-    <string name="contract">资产标识</string>
+    <string name="asset_key">资产标识</string>
     <string name="time">时间</string>
-    <string name="more">更多</string>
+    <string name="action_more">更多</string>
     <string name="successful">成功</string>
-    <string name="no_result">没有结果</string>
+    <string name="capital_no_result">没有结果</string>
     <string name="send_to">发送给 %1$s</string>
-    <string name="transfer_send">转出</string>
-    <string name="receive">转入</string>
+    <string name="action_transfer_send">转出</string>
+    <string name="action_transfer_receive">转入</string>
     <string name="developer">开发者</string>
-    <string name="later">稍后</string>
-    <string name="save_to_music">保存到音乐库</string>
-    <string name="save_to_gallery">保存到相册</string>
-    <string name="save_to_downloads">保存到下载</string>
+    <string name="action_later">稍后</string>
+    <string name="action_save_to_music">保存到音乐库</string>
+    <string name="action_save_to_gallery">保存到相册</string>
+    <string name="action_save_to_downloads">保存到下载</string>
     <string name="cant_talk_self">不能和自己对话</string>
     <string name="cant_transfer_self">不能给自己转账</string>
     <string name="need_camera_permission">继续使用此功能需要相机权限</string>
@@ -78,17 +78,17 @@
     <string name="media">媒体</string>
     <string name="links">链接</string>
     <string name="files">文档</string>
-    <string name="no_media">没有媒体</string>
-    <string name="no_audio">没有音频</string>
-    <string name="no_post">没有文章</string>
-    <string name="no_file">没有文件</string>
-    <string name="no_link">没有链接</string>
+    <string name="capital_no_media">没有媒体</string>
+    <string name="capital_no_audio">没有音频</string>
+    <string name="capital_no_post">没有文章</string>
+    <string name="capital_no_file">没有文件</string>
+    <string name="capital_no_link">没有链接</string>
     <string name="media_date_patten">yyyy年MM月dd日</string>
-    <string name="restart">重启应用</string>
+    <string name="action_restart">重启应用</string>
     <string name="update_downloaded">一个更新刚下载完成。</string>
     <string name="language">语言</string>
     <string name="try_again">请重试</string>
-    <string name="ok">好的</string>
+    <string name="capital_ok">好的</string>
     <string name="verify_by_PIN">用密码来验证</string>
     <string name="login_by_PIN">用密码来登录</string>
     <string name="verify_by_biometric">用生物识别来验证</string>
@@ -107,41 +107,31 @@
     <string name="end_to_end_encryption">端到端加密</string>
     <string name="end_to_end_encryption_short">端到端加密</string>
     <string name="end_to_end_encryption_tip">此通话已由端对端加密进行保护。除了参与通话的人，其他人包含 Mixin 在内都无法听取或查看。</string>
-    <string name="common_pic">照片</string>
-    <string name="common_video">视频</string>
-    <string name="common_file">文件</string>
-    <string name="common_audio">语音</string>
-    <string name="common_transcript">聊天记录</string>
-    <string name="common_sticker">贴纸</string>
     <string name="you">你</string>
     <string name="know">我知道了</string>
     <string name="storage_low_title">手机储存空间即将用尽</string>
     <string name="storage_low_message">手机存储空间严重不足，建议清理不重要的视频和文件、卸载不常用的软件，以免影响 Mixin 的使用体验，甚至可能造成聊天丢失或数据损坏</string>
     <string name="upload_timeout">上传超时</string>
     <string name="copy_link">复制链接</string>
-    <string name="type_a_message">输入消息</string>
-    <string name="open_floating">浮窗</string>
-    <string name="cancel_floating">取消浮窗</string>
-    <string name="quote">引用</string>
+    <string name="type_message">输入消息</string>
+    <string name="action_floating">浮窗</string>
+    <string name="action_cancel_floating">取消浮窗</string>
+    <string name="action_quote">引用</string>
     <string name="strikethrough">删除线</string>
     <string name="italic">斜体</string>
     <string name="bold">粗体</string>
     <string name="disabled">已停用</string>
     <string name="not_recognized">无法识别</string>
     <string name="eos_contract_address">EOS 合约地址</string>
-    <string name="save_md">保存为 Markdown</string>
-    <string name="save_pdf">保存为 Pdf</string>
-    <string name="notice">注意</string>
-    <string name="common_close">关闭</string>
-    <string name="common_copy">复制</string>
-    <string name="common_delete">删除</string>
-    <string name="common_forward">转发</string>
-    <string name="common_reply">回复</string>
-    <string name="common_pin">置顶</string>
-    <string name="common_unpin">取消置顶</string>
-    <string name="crop">裁剪</string>
-    <string name="text">文字</string>
-    <string name="draw">绘制</string>
+    <string name="action_save_md">保存为 Markdown</string>
+    <string name="action_save_pdf">保存为 Pdf</string>
+    <string name="action_notice">注意</string>
+    <string name="action_close">关闭</string>
+    <string name="action_reply">回复</string>
+    <string name="action_pin">置顶</string>
+    <string name="action_crop">裁剪</string>
+    <string name="action_text">文字</string>
+    <string name="action_draw">绘制</string>
     <string name="size">大小</string>
     <string name="exit_without_save">不保存就退出？</string>
     <!--error-->
@@ -156,7 +146,7 @@
     <string name="error_not_found">错误 %1$d：没有找到相应的信息</string>
     <string name="error_too_many_request">错误 %1$d：请求过于频繁</string>
     <string name="error_authentication">错误 %1$d：请重新登录</string>
-    <string name="can_not_recognize">无法识别二维码</string>
+    <string name="can_not_recognize_qr_code">无法识别二维码</string>
     <string name="error_no_camera">没有相机</string>
     <string name="error_image">文件错误</string>
     <string name="error_format">不支持该格式</string>
@@ -203,25 +193,25 @@
     <string name="error_not_supported_audio_format">不支持的音频格式，请用其他app打开。</string>
     <string name="error_transcript_forward">请在所有附件下载完成之后再转发</string>
     <!--home-->
-    <string name="title_home">联系人</string>
+    <string name="contacts">联系人</string>
     <string name="search_hint">搜索资产，联系人，消息</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="conversation_not_support">不支持此类型消息。请升级 Mixin 查看。</string>
-    <string name="text_qr">文本二维码</string>
+    <string name="capital_text_or_qr">文本二维码</string>
     <string name="detect_qr_tip">检测到一个 Mixin 二维码，点击识别</string>
     <string name="conversation_delete_tip">删除后，将同时清空该聊天的消息记录</string>
     <string name="conversation_delete_title">删除会话：%1$s</string>
     <string name="qr_not_found">未发现二维码</string>
     <string name="no_flash_unit">闪光灯/手电筒硬件不可用</string>
     <!--search-->
-    <string name="search_title_assets">资产</string>
-    <string name="search_title_chat">会话</string>
-    <string name="search_title_contacts">联系人</string>
-    <string name="search_title_messages">搜索消息</string>
-    <string name="search_title_more">更多</string>
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d 条相关的消息</item>
     </plurals>
+    <string name="capital_search_title_assets">资产</string>
+    <string name="capital_search_title_chat">会话</string>
+    <string name="capital_search_title_contacts">联系人</string>
+    <string name="capital_search_title_messages">搜索消息</string>
+    <string name="search_related_message">%1$d 条相关的消息</string>
     <string name="search_tip">搜索 Mixin ID 或者手机号：%1$s</string>
     <!--landing-->
     <string name="landing_enter_mobile_number">输入你的手机号码</string>
@@ -259,8 +249,8 @@
     <string name="contact_mobile">手机: %1$s</string>
     <string name="contact_empty">手机联系人</string>
     <string name="contact_empty_tip">Mixin 需要访问你的通讯录来帮助你更快找到你的朋友。</string>
-    <string name="contact_item_title">联系人</string>
-    <string name="bot_item_title">机器人</string>
+    <string name="contact_capital_item_title">联系人</string>
+    <string name="bot_capital_item_title">机器人</string>
     <string name="contact_sq_scan_title">识别二维码</string>
     <string name="contact_save_image">保存图片</string>
     <string name="contact_my_qr_title">我的二维码</string>
@@ -275,7 +265,7 @@
     <string name="contact_share_apps_tip">如果您希望分享应用，请先添加联系人。</string>
     <!--profile-->
     <string name="profile_phone">修改手机号</string>
-    <string name="info">此对话中的消息使用端对端加密。点击了解更多。</string>
+    <string name="message_e2ee">此对话中的消息使用端对端加密。点击了解更多。</string>
     <string name="error_user_not_found">找不到这个用户</string>
     <string name="error_conversation_not_found">找不到该会话</string>
     <string name="error_app_not_found">找不到这个机器人</string>
@@ -291,7 +281,7 @@
     <!-- chat -->
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="chat_waiting_desktop">桌面端</string>
-    <string name="chat_learn">了解更多</string>
+    <string name="action_learn_more">了解更多</string>
     <string name="chat_not_support">不支持此类型消息。请升级 Mixin 查看。 %1$s。</string>
     <string name="chat_decryption_failed">此信息解密失败，请将 Mixin 升级到最新版本。</string>
     <string name="week_monday">星期一</string>
@@ -302,8 +292,8 @@
     <string name="week_saturday">星期六</string>
     <string name="week_sunday">星期日</string>
     <string name="today">今天</string>
-    <string name="chat_item_title">最近聊天</string>
-    <string name="copy_success">已拷贝</string>
+    <string name="chat_capital_item_title">最近聊天</string>
+    <string name="copied_to_clipboard">已拷贝</string>
     <string name="photo">照片</string>
     <plurals name="title_participants" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d 成员</item>
@@ -325,11 +315,12 @@
     <string name="chat_audio_warning">无法在 Mixin 录音时播放语音</string>
     <string name="chat_audio_discard_warning_title">放弃录制语音</string>
     <string name="chat_audio_discard_warning">你确定要停止并放弃录制的语音吗？</string>
-    <string name="chat_audio_discard_ok">放弃</string>
-    <string name="chat_audio_discard_cancel">继续</string>
     <plurals name="chat_delete_message" tools:ignore="UnusedQuantity">
         <item quantity="other">删除 %1$d 条消息吗?</item>
     </plurals>
+    <string name="chat_capital_audio_discard_ok">放弃</string>
+    <string name="chat_capital_audio_discard_cancel">继续</string>
+    <string name="chat_delete_message">删除 %1$d 条消息吗?</string>
     <string name="chat_delete_for_me">删除</string>
     <string name="chat_delete_for_everyone">撤回</string>
     <string name="chat_recall_me">你撤回了一条消息</string>
@@ -390,7 +381,7 @@
     <string name="add_people_search_hint">Mixin ID 或手机号</string>
     <string name="add_people_tip">我的 Mixin ID: %1$s</string>
     <!--wallet-->
-    <string name="wallet_title">钱包</string>
+    <string name="wallet">钱包</string>
     <string name="wallet_password_set_pin">设置密码</string>
     <string name="wallet_password_set_new_pin">设置新的密码</string>
     <string name="wallet_password_set_new_pin_desc">设置新的 6 位数字密码</string>
@@ -427,7 +418,7 @@
     <string name="wallet_password_old_title">验证旧的密码</string>
     <string name="wallet_password_not_equal">密码不一致, 请重新输入</string>
     <string name="wallet_password_change_tip">请输入6位密码来验证</string>
-    <string name="wallet_pay_with_pwd">用密码支付</string>
+    <string name="wallet_pay_with_pin">用密码支付</string>
     <string name="wallet_pay_with_biometric">生物识别支付</string>
     <string name="wallet_transfer_amount">转账金额</string>
     <string name="wallet_transfer_memo">备注</string>
@@ -503,7 +494,7 @@
     <string name="log_login_emergency">通过紧急联系人登录</string>
     <string name="log_login_desktop">登录桌面端</string>
     <!--group-->
-    <string name="group_add">添加成员</string>
+    <string name="group_add_participants">添加成员</string>
     <string name="group_new_title">新建群组</string>
     <string name="group_new_photo">群组头像</string>
     <string name="group_new_name">群组名称</string>
@@ -668,15 +659,6 @@
     <string name="setting_delete_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。阅读我们的文件以了解更多。</string>
     <string name="setting_delete_account_pin_content_more">了解更多</string>
     <string name="setting_delete_account_send">我们将发送4位验证码到手机 %1$s</string>
-    <string-array name="setting_night_array">
-        <item>浅色</item>
-        <item>暗黑</item>
-    </string-array>
-    <string-array name="setting_night_array_oreo">
-        <item>浅色</item>
-        <item>暗黑</item>
-        <item>跟随系统</item>
-    </string-array>
     <string name="setting_battery_optimize_title">为了保证 Mixin 能够正常收到消息，请将 Mixin 的电池优化策略设置为“不优化”</string>
     <string name="go_set">去设置</string>
     <!--about-->
@@ -694,7 +676,6 @@
     <string name="chat_you">您</string>
     <string name="chat_group_checking">正在检查链接</string>
     <string name="chat_expired">已过期</string>
-    <string name="group_ok">好</string>
     <string name="link_error">无效链接</string>
     <string name="bottom_sheet_check_payment_info">请检查支付信息</string>
     <string name="bottom_sheet_invalid_payment">无效支付信息</string>
@@ -744,7 +725,7 @@
     <string name="alert_key_contact_audio_call_message">发起了语音通话</string>
     <string name="alert_key_contact_transcript_message">分享一个聊天记录</string>
 
-    <string name="unread">未读消息</string>
+    <string name="unread_messages">未读消息</string>
     <string name="stranger_from">他/她不是你的联系人</string>
     <string name="bot_interact_info">点击下列按钮与机器人互动</string>
     <string name="bot_interact_open">打开主页</string>
@@ -842,20 +823,20 @@
     <string name="group_info_edit">编辑群公告</string>
     <string name="group_info_show_more_omit"> 显示更多</string>
     <string name="group_info_show_more">显示更多</string>
-    <string name="send">发送</string>
-    <string name="send_silence">静音发送</string>
+    <string name="action_send">发送</string>
+    <string name="action_send_silence">静音发送</string>
     <string name="send_file">将 \"%1$s\" 发送给 %2$s?</string>
     <string name="send_file_group">将 \"%1$s\" 发送给 \"%2$s\"?</string>
-    <string name="action_open">在浏览器中打开</string>
+    <string name="action_open_in_browser">在浏览器中打开</string>
     <string name="action_view_auth">查看授权</string>
     <string name="action_refresh">刷新</string>
     <string name="action_update">升级</string>
     <string name="action_reload">重新载入</string>
     <string name="slide_to_cancel">滑动取消</string>
-    <string name="gallery_all">全部</string>
-    <string name="gallery_empty_text">还没有图片或视频</string>
+    <string name="gallery_all_media">全部</string>
+    <string name="gallery_no_media_yet">还没有图片或视频</string>
     <string name="account_memo">Memo（备注）</string>
-    <string name="not_auth_yet">还未授权此机器人任何权限</string>
+    <string name="bot_not_auth_yet">还未授权此机器人任何权限</string>
     <string name="withdrawal_label">地址名称，例如 OceanOne</string>
     <string name="withdrawal_address">提现地址</string>
     <string name="withdrawal_no_tag">没有 Memo（备注）</string>
@@ -897,8 +878,8 @@
     <string name="filters_fee">手续费</string>
     <string name="filters_rebate">退款</string>
     <string name="filters_raw">其他</string>
-    <string name="filters_by">筛选</string>
-    <string name="sort_by">排序</string>
+    <string name="capital_filters_by">筛选</string>
+    <string name="capital_sort_by">排序</string>
     <!--Pending-->
     <plurals name="pending_confirmations" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d/%2$d 区块确认数</item>
@@ -912,17 +893,21 @@
     <string name="call_notification_action_answer">接听</string>
     <string name="call_notification_action_hang_up">挂断</string>
     <string name="call_connecting">正在连接&#8230;</string>
-    <string name="call_decline">挂断</string>
+    <string name="call_speaker">扬声器</string>
+    <string name="call_action_hang_up">挂断</string>
+    <string name="call_action_decline">挂断</string>
+    <string name="call_action_accept">接听</string>
+    <string name="call_action_mute">静音</string>
     <string name="call_group_full">群组语音最多支持%1$d人</string>
     <string name="call_pip_permission">你的手机没有授权 Mixin 获得浮窗权限，语音通话最小化不能正常使用</string>
 
     <!-- restore&backup -->
     <string name="restore_info">从外部存储还原您的对话。如果您选择现在不进行还原，您稍后将无法还原资料。</string>
     <string name="restore_found">找到备份</string>
-    <string name="restore_skip">跳过</string>
-    <string name="restore_retry">重试</string>
-    <string name="restore_choose">选择</string>
-    <string name="restore_restore">还原</string>
+    <string name="restore_action_capital_skip">跳过</string>
+    <string name="restore_action_capital_retry">重试</string>
+    <string name="restore_action_capital_choose">选择</string>
+    <string name="restore_action_capital_restore">还原</string>
     <string name="restore_authorization">授权</string>
     <string name="restore_message">如果您之前曾备份到外部存储并且现在想要还原备份，请给与 Mixin 相应权限以检查您外部存储里的备份。</string>
     <string name="restore_path">备份路径: %1$s</string>
@@ -940,7 +925,7 @@
     <string name="backup_media">包含媒体文件</string>
     <string name="backup_choose_folder">选择文件夹</string>
     <string name="backup_choose_a_folder">请选择用于保存备份的文件夹</string>
-    <string name="backup_delete">删除备份</string>
+    <string name="backup_action_delete">删除备份</string>
     <string name="backup_dialog_title">自动备份到外部存储</string>
     <string name="backup_ing">正在备份到外部存储&#8230;</string>
     <string name="backup_notification_title">备份正在进行中</string>
@@ -979,7 +964,7 @@
     <string name="location_enable_title">需要开启 GPS 启用定位功能</string>
     <!--  circle  -->
     <string name="circle_bottom">为不同对话创建 圈子 \n然后在它们之间快速切换</string>
-    <string name="circle_add_title">添加圈子</string>
+    <string name="circle_action_add">添加圈子</string>
     <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d 会话</item>
     </plurals>
@@ -987,9 +972,9 @@
     <string name="circle_mixin">Mixin</string>
     <string name="circle_menu_edit_name">编辑名称</string>
     <string name="circle_menu_edit_conversation">管理圈子</string>
-    <string name="circle_menu_delete">删除</string>
-    <string name="circle_menu_sort">排序</string>
-    <string name="circle">圈子</string>
+    <string name="circle_action_menu_delete">删除</string>
+    <string name="circle_action_menu_sort">排序</string>
+    <string name="circles">圈子</string>
     <string name="circle_title">%1$s\'的圈子</string>
     <string name="circle_info">新建一个圈子可以过滤会话</string>
     <string name="circle_delete_tip">确认删除 \"%1$s\" ?</string>
@@ -997,7 +982,7 @@
     <string name="circle_empty_start">添加会话</string>
     <string name="circle_limit">已达到上限</string>
     <!--  bot  -->
-    <string name="bot_title">机器人</string>
+    <string name="bots">机器人</string>
     <string name="bot_dock_empty">长按并拖拽机器人置顶</string>
     <string name="bot_internal_scan">扫一扫</string>
     <string name="bot_internal_camera">相机</string>
@@ -1010,24 +995,24 @@
     <string name="web_cannot_reached_title">无法访问此网页</string>
     <string name="web_cannot_reached_desc">无法访问 %1$s，请检查你的网络并尝试切换 4G、Wi-Fi 或 VPN 后重新载入页面。</string>
     <string name="web_contact_developer">联系开发者</string>
-    <string name="web_clear">全部删除</string>
+    <string name="web_action_clear_all">全部删除</string>
     <string name="web_delete_tip">确定删除全部浮窗？</string>
     <string name="web_full">浮窗已满，清理后可继续新增</string>
     <string name="web_floating_permission">你的手机没有授权 Mixin 获得浮窗权限，浮窗不能正常使用</string>
-    <string name="web_close">关闭</string>
-    <string name="web_debug_enable">已开启 Web 调试</string>
-    <string name="web_debug_disable">已关闭 Web 调试</string>
+    <string name="web_action_close">关闭</string>
+    <string name="web_debug_action_enable">已开启 Web 调试</string>
+    <string name="web_debug_action_disable">已关闭 Web 调试</string>
     <!-- debug -->
-    <string name="db_debug_enable">已开启 db 调试</string>
-    <string name="db_debug_disable">已关闭 db 调试</string>
+    <string name="db_debug_action_enable">已开启 db 调试</string>
+    <string name="db_debug_action_disable">已关闭 db 调试</string>
     <string name="db_debug_warning">注意：如果执行了有侵害性的 SQL，结果不可逆！</string>
 
     <!--  player  -->
-    <string name="player_playlist">播放列表</string>
+    <string name="playlist">播放列表</string>
     <string name="notification_channel">正在播放</string>
     <string name="notification_channel_description">显示 Mixin Messenger 中正在播放的音乐</string>
     <string name="player_delete_all_desc">确定要停止并关闭播放列表？</string>
-    <string name="player_stop_playing">停止播放</string>
+    <string name="player_action_stop_playing">停止播放</string>
     <string name="player_playback_failed">播放失败</string>
 
     <!--  auth  -->
@@ -1083,10 +1068,10 @@
 
     <!--  sticker store  -->
     <string name="sticker_store">表情商店</string>
-    <string name="sticker_store_add">添加</string>
+    <string name="sticker_store_action_add">添加</string>
     <string name="sticker_store_added">已添加</string>
     <string name="sticker_store_add_stickers">添加所有表情</string>
     <string name="sticker_store_remove_stickers">移除所有表情</string>
     <string name="sticker_my">我的表情</string>
-    <string name="sticker_none">还未添加任何表情</string>
+    <string name="sticker_capital_none">还未添加任何表情</string>
 </resources>

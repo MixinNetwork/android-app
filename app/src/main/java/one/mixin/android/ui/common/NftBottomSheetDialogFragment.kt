@@ -59,7 +59,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         checkState(t)
 
         binding.apply {
-            title.text = getString(R.string.transfer)
+            title.text = getString(R.string.action_transfer)
             arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
             biometricLayout.payTv.setText(R.string.multisig_pay_pin)
             biometricLayout.biometricTv.setText(R.string.multisig_pay_biometric)
@@ -142,7 +142,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             ),
             t.memo ?: "",
             "",
-            getString(R.string.wallet_pay_with_pwd)
+            getString(R.string.wallet_pay_with_pin)
         )
     }
 

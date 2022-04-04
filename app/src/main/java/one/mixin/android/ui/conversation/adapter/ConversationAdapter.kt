@@ -187,7 +187,7 @@ class ConversationAdapter(
 
     override fun onBindAttachView(view: View) {
         unreadMsgId?.let {
-            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.unread)
+            ItemChatUnreadBinding.bind(view).unreadTv.text = view.context.getString(R.string.unread_messages)
         }
     }
 

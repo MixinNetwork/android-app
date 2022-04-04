@@ -107,7 +107,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
                 binding.text.text?.let { editable ->
                     when (item.itemId) {
                         android.R.id.copy -> {
-                            toast(R.string.copy_success)
+                            toast(R.string.copied_to_clipboard)
                         }
                         R.id.forward -> {
                             ForwardActivity.show(this@TextPreviewActivity, editable.toString())

@@ -427,7 +427,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val bitmap = if (imageView is ImageView) {
             val bitmapDrawable = imageView.drawable as? BitmapDrawable
             if (bitmapDrawable == null) {
-                toast(R.string.can_not_recognize)
+                toast(R.string.can_not_recognize_qr_code)
                 return
             } else {
                 bitmapDrawable.bitmap
@@ -444,7 +444,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 onSuccess = { result ->
                     result.openAsUrlOrQrScan(this, supportFragmentManager, lifecycleScope)
                 },
-                onFailure = { toast(R.string.can_not_recognize) },
+                onFailure = { toast(R.string.can_not_recognize_qr_code) },
                 onComplete = {
                     if (imageView !is ImageView) {
                         imageView.isDrawingCacheEnabled = false
@@ -452,7 +452,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 }
             )
         } else {
-            toast(R.string.can_not_recognize)
+            toast(R.string.can_not_recognize_qr_code)
             if (imageView !is ImageView) {
                 imageView.isDrawingCacheEnabled = false
             }
@@ -493,7 +493,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             }
             type = if (isVideo) "video/*" else "image/*"
         }
-        val name = getString(if (isVideo) R.string.common_video else R.string.common_pic)
+        val name = getString(if (isVideo) R.string.video else R.string.photo)
         val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
         val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
         resInfoList.forEach {

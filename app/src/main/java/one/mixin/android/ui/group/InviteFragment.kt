@@ -75,7 +75,7 @@ class InviteFragment : BaseFragment() {
                         }
                         binding.inviteCopy.setOnClickListener {
                             context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))
-                            toast(R.string.copy_success)
+                            toast(R.string.copied_to_clipboard)
                         }
                         binding.inviteQr.setOnClickListener {
                             InviteQrBottomFragment.newInstance(c.name, c.iconUrl, url)

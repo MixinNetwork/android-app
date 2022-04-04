@@ -126,7 +126,7 @@ fun TextView.updateAlbumAdd(ctx: Context, added: Boolean, action: (() -> Unit)? 
         isEnabled = false
         setOnClickListener(null)
     } else {
-        text = ctx.getString(R.string.sticker_store_add)
+        text = ctx.getString(R.string.sticker_store_action_add)
         textColor = ctx.getColor(R.color.white)
         setBackgroundResource(R.drawable.bg_round_blue_btn)
         isEnabled = true

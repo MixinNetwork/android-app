@@ -201,7 +201,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_STICKER") -> {
-                binding.replyContentTv.setText(R.string.common_sticker)
+                binding.replyContentTv.setText(R.string.sticker)
                 setIcon(R.drawable.ic_type_stiker)
                 binding.replyIv.loadImageCenterCrop(
                     quoteMessageItem.assetUrl,

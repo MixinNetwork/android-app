@@ -81,7 +81,7 @@ class StickerManagementFragment : BaseFragment() {
         binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         binding.titleView.rightAnimator.setOnClickListener {
             if (stickerAdapter.editing) {
-                binding.titleView.rightTv.text = getString(R.string.select)
+                binding.titleView.rightTv.text = getString(R.string.action_select)
                 if (stickerAdapter.checkedList.isNotEmpty()) {
                     stickerViewModel.removeStickers(stickerAdapter.checkedList)
                 }
@@ -145,7 +145,7 @@ class StickerManagementFragment : BaseFragment() {
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.checkedList.clear()
             stickerAdapter.notifyDataSetChanged()
-            binding.titleView.rightTv.text = getString(R.string.select)
+            binding.titleView.rightTv.text = getString(R.string.action_select)
 
             return true
         }

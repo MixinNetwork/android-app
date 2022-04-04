@@ -80,7 +80,7 @@
                     android:layout_centerVertical="true"
                     android:layout_toStartOf="@id/ic_close"
                     android:background="@null"
-                    android:hint="@string/search"
+                    android:hint="@string/action_search"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
                     android:paddingTop="8dp"

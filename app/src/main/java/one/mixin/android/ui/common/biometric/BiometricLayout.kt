@@ -159,11 +159,11 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                     errorBtn.setOnClickListener { showPin(true) }
                 }
                 ErrorAction.Close -> {
-                    errorBtn.text = getString(R.string.group_ok)
+                    errorBtn.text = getString(R.string.capital_ok)
                     errorBtn.setOnClickListener { callback?.onDismiss() }
                 }
                 ErrorAction.Continue -> {
-                    errorBtn.text = getString(R.string.common_continue)
+                    errorBtn.text = getString(R.string.action_continue)
                     errorBtn.setOnClickListener { showPin(true) }
                 }
             }

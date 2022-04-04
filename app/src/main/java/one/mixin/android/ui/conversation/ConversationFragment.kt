@@ -788,7 +788,7 @@ class ConversationFragment() :
                 viewBinding.copyTv.setOnClickListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
-                    toast(R.string.copy_success)
+                    toast(R.string.copied_to_clipboard)
                     bottomSheet.dismiss()
                 }
                 bottomSheet.show()
@@ -1297,10 +1297,10 @@ class ConversationFragment() :
                 alertDialogBuilder()
                     .setTitle(getString(R.string.chat_audio_discard_warning_title))
                     .setMessage(getString(R.string.chat_audio_discard_warning))
-                    .setNeutralButton(getString(R.string.chat_audio_discard_cancel)) { dialog, _ ->
+                    .setNeutralButton(getString(R.string.chat_capital_audio_discard_cancel)) { dialog, _ ->
                         dialog.dismiss()
                     }
-                    .setNegativeButton(getString(R.string.chat_audio_discard_ok)) { dialog, _ ->
+                    .setNegativeButton(getString(R.string.chat_capital_audio_discard_ok)) { dialog, _ ->
                         activity?.finish()
                         dialog.dismiss()
                     }
@@ -1503,7 +1503,7 @@ class ConversationFragment() :
                 context?.getClipboardManager()?.setPrimaryClip(
                     ClipData.newPlainText(null, conversationAdapter.selectSet.valueAt(0)?.content)
                 )
-                toast(R.string.copy_success)
+                toast(R.string.copied_to_clipboard)
             } catch (e: ArrayIndexOutOfBoundsException) {
             }
             closeTool()
@@ -1682,8 +1682,8 @@ class ConversationFragment() :
                             )
                         }
                     )
-                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.send) { dialog, _ ->
+                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.action_send) { dialog, _ ->
                         sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
@@ -2368,19 +2368,19 @@ class ConversationFragment() :
                     if (send) {
                         sendVideoMessage(uri)
                     } else {
-                        showPreview(uri, getString(R.string.send), true) { sendVideoMessage(uri) }
+                        showPreview(uri, getString(R.string.action_send), true) { sendVideoMessage(uri) }
                     }
                 } else if (item.isGif || item.isWebp) {
                     if (send) {
                         sendImageMessage(uri)
                     } else {
-                        showPreview(uri, getString(R.string.send), false) { sendImageMessage(uri) }
+                        showPreview(uri, getString(R.string.action_send), false) { sendImageMessage(uri) }
                     }
                 } else {
                     if (send) {
                         sendImageMessage(uri)
                     } else {
-                        getEditorResult.launch(Pair(uri, getString(R.string.send)))
+                        getEditorResult.launch(Pair(uri, getString(R.string.action_send)))
                     }
                 }
                 releaseChatControl(FLING_DOWN)
@@ -2696,12 +2696,12 @@ class ConversationFragment() :
                 if (data.hasExtra(IS_VIDEO)) {
                     sendVideoMessage(it)
                 } else {
-                    getEditorResult.launch(Pair(it, getString(R.string.send)))
+                    getEditorResult.launch(Pair(it, getString(R.string.action_send)))
                 }
             }
         } else if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
-                getEditorResult.launch(Pair(imageUri, getString(R.string.send)))
+                getEditorResult.launch(Pair(imageUri, getString(R.string.action_send)))
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
@@ -2723,8 +2723,8 @@ class ConversationFragment() :
                             )
                         }
                     )
-                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.send) { dialog, _ ->
+                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.action_send) { dialog, _ ->
                         sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
@@ -2794,7 +2794,7 @@ class ConversationFragment() :
         if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_music),
+                    getString(R.string.action_save_to_music),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -2806,7 +2806,7 @@ class ConversationFragment() :
         ) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_gallery),
+                    getString(R.string.action_save_to_gallery),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -2816,7 +2816,7 @@ class ConversationFragment() :
         } else {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.save_to_downloads),
+                    getString(R.string.action_save_to_downloads),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -2826,7 +2826,7 @@ class ConversationFragment() :
         }
         items.add(
             BottomSheetItem(
-                getString(R.string.open),
+                getString(R.string.action_open),
                 {
                     requireContext().openMedia(messageItem)
                     bottomSheet?.dismiss()

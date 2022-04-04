@@ -657,7 +657,7 @@ fun Context.openUrl(url: String) {
             .setShowTitle(true)
             .setActionButton(
                 BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
-                this.getString(R.string.share),
+                this.getString(R.string.action_share),
                 pendingIntent
             )
             .build()
@@ -829,9 +829,9 @@ fun Context.showConfirmDialog(
 ) {
     alertDialogBuilder()
         .setMessage(message)
-        .setNegativeButton(R.string.cancel) { dialog, _ ->
+        .setNegativeButton(R.string.action_cancel) { dialog, _ ->
             dialog.dismiss()
-        }.setPositiveButton(R.string.ok) { dialog, _ ->
+        }.setPositiveButton(R.string.capital_ok) { dialog, _ ->
             action.invoke()
             dialog.dismiss()
         }.create().apply {
@@ -962,7 +962,7 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
     supportsOreo {
         val channel = NotificationChannel(
             CallActivity.CHANNEL_PIP_PERMISSION,
-            getString(R.string.other),
+            getString(R.string.capital_other),
             NotificationManager.IMPORTANCE_HIGH
         )
         notificationManager.createNotificationChannel(channel)

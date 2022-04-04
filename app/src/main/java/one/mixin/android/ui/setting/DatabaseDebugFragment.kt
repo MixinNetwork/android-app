@@ -42,7 +42,7 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
         binding.logs.setOnLongClickListener {
             requireContext().getClipboardManager()
                 .setPrimaryClip(ClipData.newPlainText(null, binding.logs.text))
-            toast(R.string.copy_success)
+            toast(R.string.copied_to_clipboard)
             true
         }
         binding.titleView.leftIb.setOnClickListener {

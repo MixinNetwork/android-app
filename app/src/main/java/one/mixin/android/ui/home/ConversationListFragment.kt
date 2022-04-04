@@ -431,9 +431,9 @@ class ConversationListFragment : LinkFragment() {
         builder.setCustomView(viewBinding.root)
         viewBinding.muteTv.setText(
             if (isMute) {
-                R.string.un_mute
+                R.string.action_un_mute
             } else {
-                R.string.mute
+                R.string.action_mute
             }
         )
         val bottomSheet = builder.create()
@@ -449,11 +449,11 @@ class ConversationListFragment : LinkFragment() {
             alertDialogBuilder()
                 .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
-                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                .setNegativeButton(R.string.action_cancel) { dialog, _ ->
                     dialog.dismiss()
                     bottomSheet.dismiss()
                 }
-                .setPositiveButton(R.string.confirm) { _, _ ->
+                .setPositiveButton(R.string.action_confirm) { _, _ ->
                     val lm = binding.messageRv.layoutManager as LinearLayoutManager
                     val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
                     val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
@@ -1040,10 +1040,10 @@ class ConversationListFragment : LinkFragment() {
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
+            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
                 if (conversationItem.isGroupConversation()) {
                     lifecycleScope.launch {
                         handleMixinResponse(
@@ -1112,7 +1112,7 @@ class ConversationListFragment : LinkFragment() {
                             conversationItem.conversationId,
                             response.data!!.muteUntil
                         )
-                        toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
+                        toast(getString(R.string.action_un_mute) + " ${conversationItem.groupName}")
                     }
                 )
             }
@@ -1132,7 +1132,7 @@ class ConversationListFragment : LinkFragment() {
                                 conversationItem.ownerId,
                                 response.data!!.muteUntil
                             )
-                            toast(getString(R.string.un_mute) + " ${conversationItem.name}")
+                            toast(getString(R.string.action_un_mute) + " ${conversationItem.name}")
                         }
                     )
                 }
