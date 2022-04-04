@@ -317,7 +317,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 .subscribe(
                     { granted ->
                         if (granted) {
-                            messageItem.saveToLocal(this@MediaPagerActivity)
+                            lifecycleScope.launch {
+                                messageItem.saveToLocal(this@MediaPagerActivity)
+                            }
                         } else {
                             openPermissionSetting()
                         }
