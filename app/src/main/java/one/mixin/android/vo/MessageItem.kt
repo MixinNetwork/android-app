@@ -15,6 +15,8 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.android.exoplayer2.util.MimeTypes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
@@ -34,10 +36,10 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.util.reportException
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.toLocationData
 import java.io.File
-import java.io.FileInputStream
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -214,11 +216,14 @@ fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     }
 }
 
-fun MessageItem.saveToLocal(context: Context) {
+suspend fun MessageItem.saveToLocal(context: Context) {
     if (!hasWritePermission()) return
 
-    val filePath = absolutePath()?.toUri()?.getFilePath()
+    val filePath = withContext(Dispatchers.IO) {
+        absolutePath()?.toUri()?.getFilePath()
+    }
     if (filePath == null) {
+        reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: ${absolutePath()}"))
         toast(R.string.save_failure)
         return
     }
@@ -235,7 +240,9 @@ fun MessageItem.saveToLocal(context: Context) {
         dir.mkdir()
         File(dir, mediaName ?: file.name)
     }
-    outFile.copyFromInputStream(FileInputStream(file))
+    withContext(Dispatchers.IO) {
+        outFile.copyFromInputStream(file.inputStream())
+    }
     context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
     toast(
         MixinApplication.appContext.getString(
