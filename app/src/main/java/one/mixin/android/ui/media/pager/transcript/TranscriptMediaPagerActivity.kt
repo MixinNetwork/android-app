@@ -15,6 +15,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -323,12 +324,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                                     )
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
-                                sendBroadcast(
-                                    Intent(
-                                        Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                                        Uri.fromFile(outFile)
-                                    )
-                                )
+                                MediaScannerConnection.scanFile(this@TranscriptMediaPagerActivity, arrayOf(outFile.toString()), null, null)
                                 runOnUiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
                             }
                         } else {

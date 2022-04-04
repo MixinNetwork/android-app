@@ -2,9 +2,9 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Environment
+import android.media.MediaScannerConnection
+import android.os.Environment.DIRECTORY_DOWNLOADS
+import android.os.Environment.DIRECTORY_MUSIC
 import android.os.Parcelable
 import android.view.View
 import androidx.core.net.toFile
@@ -237,17 +237,17 @@ suspend fun MessageItem.saveToLocal(context: Context) {
         File(context.getPublicPicturePath(), mediaName ?: file.name)
     } else {
         val dir = if (MimeTypes.isAudio(mediaMimeType)) {
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+            context.getExternalFilesDir(DIRECTORY_MUSIC)
         } else {
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        }
+            context.getExternalFilesDir(DIRECTORY_DOWNLOADS)
+        } ?: return
         dir.mkdir()
         File(dir, mediaName ?: file.name)
     }
     withContext(Dispatchers.IO) {
         outFile.copyFromInputStream(file.inputStream())
     }
-    context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+    MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
     toast(
         MixinApplication.appContext.getString(
             R.string.save_to,
