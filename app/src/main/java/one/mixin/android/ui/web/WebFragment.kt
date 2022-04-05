@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -1168,12 +1169,7 @@ class WebFragment : BaseFragment() {
                                     .get(10, TimeUnit.SECONDS)
                                 outFile.copyFromInputStream(FileInputStream(file))
                             }
-                            requireContext().sendBroadcast(
-                                Intent(
-                                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                                    Uri.fromFile(outFile)
-                                )
-                            )
+                            MediaScannerConnection.scanFile(requireContext(), arrayOf(outFile.toString()), null, null)
                             withContext(Dispatchers.Main) {
                                 if (isAdded) toast(
                                     getString(

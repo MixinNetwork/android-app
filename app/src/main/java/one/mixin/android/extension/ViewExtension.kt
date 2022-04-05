@@ -4,10 +4,9 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.graphics.Outline
 import android.graphics.drawable.Drawable
-import android.net.Uri
+import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.util.Property
 import android.view.LayoutInflater
@@ -277,7 +276,7 @@ fun View.capture(context: Context): String? {
     val b = drawToBitmap()
     b.save(outFile)
     return try {
-        context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+        MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
         outFile.absolutePath
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
