@@ -1060,3 +1060,34 @@ inline fun <reified T> Fragment.findListener(): T? {
 
 val Context.notificationManager: NotificationManager
     get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+fun Context.shareMedia(isVideo: Boolean, url: String) {
+    var uri: Uri
+    val sendIntent = Intent().apply {
+        action = Intent.ACTION_SEND
+        uri = Uri.parse(url)
+        if (ContentResolver.SCHEME_FILE == uri.scheme) {
+            val path = uri.getFilePath(this@shareMedia)
+            if (path == null) {
+                toast(R.string.error_file_exists)
+                return
+            }
+            uri = getUriForFile(File(path))
+            putExtra(Intent.EXTRA_STREAM, uri)
+        } else {
+            putExtra(Intent.EXTRA_STREAM, uri)
+        }
+        type = if (isVideo) "video/*" else "image/*"
+    }
+    val name = getString(if (isVideo) R.string.video else R.string.photo)
+    val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
+    val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
+    resInfoList.forEach {
+        val packageName = it.activityInfo.packageName
+        grantUriPermission(
+            packageName, uri,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        )
+    }
+    startActivity(chooser)
+}

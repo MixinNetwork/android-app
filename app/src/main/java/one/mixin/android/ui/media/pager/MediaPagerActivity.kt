@@ -7,11 +7,9 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -60,14 +58,13 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
 import one.mixin.android.extension.fadeOut
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
-import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isAutoRotate
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.shareMedia
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsPie
 import one.mixin.android.extension.textColor
@@ -97,7 +94,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
-import java.io.File
 import java.io.FileInputStream
 import kotlin.math.min
 
@@ -469,37 +465,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
         bottomSheet.dismiss()
         dismiss()
-    }
-
-    private fun shareMedia(isVideo: Boolean, url: String) {
-        var uri: Uri
-        val sendIntent = Intent().apply {
-            action = Intent.ACTION_SEND
-            uri = Uri.parse(url)
-            if (ContentResolver.SCHEME_FILE == uri.scheme) {
-                val path = uri.getFilePath(this@MediaPagerActivity)
-                if (path == null) {
-                    toast(R.string.error_file_exists)
-                    return
-                }
-                uri = getUriForFile(File(path))
-                putExtra(Intent.EXTRA_STREAM, uri)
-            } else {
-                putExtra(Intent.EXTRA_STREAM, uri)
-            }
-            type = if (isVideo) "video/*" else "image/*"
-        }
-        val name = getString(if (isVideo) R.string.video else R.string.photo)
-        val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
-        val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
-        resInfoList.forEach {
-            val packageName = it.activityInfo.packageName
-            grantUriPermission(
-                packageName, uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            )
-        }
-        startActivity(chooser)
     }
 
     private var pipAnimationInProgress = false

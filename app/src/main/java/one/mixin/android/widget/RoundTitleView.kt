@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
@@ -90,5 +91,14 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
 
     fun roundClose() {
         binding.rightIv.setImageResource(R.drawable.ic_close)
+    }
+
+    fun centerTitle() {
+        binding.titleLl.updateLayoutParams<LayoutParams> {
+            marginStart = 0
+            addRule(CENTER_IN_PARENT, TRUE)
+            removeRule(END_OF)
+        }
+        binding.titleTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
     }
 }
