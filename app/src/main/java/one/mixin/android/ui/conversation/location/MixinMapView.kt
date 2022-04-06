@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation.location
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.core.view.isVisible
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -10,9 +11,16 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
-import com.mapbox.mapboxsdk.annotations.IconFactory
-import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.CoordinateBounds
+import com.mapbox.maps.EdgeInsets
+import com.mapbox.maps.MapboxMap
+import com.mapbox.maps.plugin.animation.flyTo
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -25,43 +33,48 @@ import one.mixin.android.vo.foursquare.Venue
 class MixinMapView(
     private val context: Context,
     private val googleMapView: MapView,
-    private val mapboxView: com.mapbox.mapboxsdk.maps.MapView?
+    mapboxView: com.mapbox.maps.MapView?
 ) {
+    private val p = 64.dp.toDouble()
+    private val mapboxBoundsEdgeInsets = EdgeInsets(p, p, p, p)
+
     private val useMapbox = useMapbox()
+    private val annotationApi = mapboxView?.annotations
+    var pointAnnotationManager: PointAnnotationManager? = null
 
     init {
         googleMapView.isVisible = !useMapbox
         mapboxView?.isVisible = useMapbox
+
+        if (useMapbox) {
+            pointAnnotationManager = annotationApi?.createPointAnnotationManager()
+        }
     }
 
     var googleMap: GoogleMap? = null
     var mapboxMap: MapboxMap? = null
 
-    @Suppress("DEPRECATION")
     fun addMarker(latLng: MixinLatLng) {
         if (useMapbox) {
-            mapboxMap?.addMarker(
-                com.mapbox.mapboxsdk.annotations.MarkerOptions().position(
-                    com.mapbox.mapboxsdk.geometry.LatLng(latLng.latitude, latLng.longitude)
-                ).icon(IconFactory.getInstance(context).fromResource(R.drawable.ic_location_search_maker))
-            )
+            val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+                .withPoint(latLng.toMapbox())
+                .withIconImage(BitmapFactory.decodeResource(context.resources, R.drawable.ic_location_search_maker))
+            pointAnnotationManager?.create(pointAnnotationOptions)
         } else {
             googleMap?.addMarker(
-                MarkerOptions().position(
-                    LatLng(latLng.latitude, latLng.longitude)
-                ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
+                MarkerOptions()
+                    .position(latLng.toGoogleMap())
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
             )
         }
     }
 
-    @Suppress("DEPRECATION")
     fun addMarker(index: Int, venue: Venue) {
         if (useMapbox) {
-            mapboxMap?.addMarker(
-                com.mapbox.mapboxsdk.annotations.MarkerOptions().position(
-                    com.mapbox.mapboxsdk.geometry.LatLng(venue.location.lat, venue.location.lng)
-                ).icon(IconFactory.getInstance(context).fromResource(R.drawable.ic_location_search_maker))
-            )
+            val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+                .withPoint(Point.fromLngLat(venue.location.lng, venue.location.lat))
+                .withIconImage(BitmapFactory.decodeResource(context.resources, R.drawable.ic_location_search_maker))
+            pointAnnotationManager?.create(pointAnnotationOptions)
         } else {
             googleMap?.addMarker(
                 MarkerOptions().zIndex(index.toFloat()).position(
@@ -76,7 +89,7 @@ class MixinMapView(
 
     fun moveBounds(bound: MixinLatLngBounds) {
         if (useMapbox) {
-            mapboxMap?.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bound.toMapbox(), 64.dp))
+            mapboxMap?.cameraForCoordinateBounds(bound.toMapbox(), mapboxBoundsEdgeInsets)?.let { mapboxMap?.setCamera(it) }
         } else {
             googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bound.toGoogleMap(), 64.dp))
         }
@@ -84,7 +97,7 @@ class MixinMapView(
 
     fun moveCamera(latLng: MixinLatLng) {
         if (useMapbox) {
-            mapboxMap?.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(latLng.toMapbox(), MAPBOX_ZOOM_LEVEL.toDouble()))
+            mapboxMap?.flyTo(CameraOptions.Builder().center(latLng.toMapbox()).zoom(MAPBOX_ZOOM_LEVEL.toDouble()).build())
         } else {
             googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng.toGoogleMap(), GOOGLE_MAP_ZOOM_LEVEL))
         }
@@ -92,81 +105,63 @@ class MixinMapView(
 
     fun clear() {
         if (useMapbox) {
-            @Suppress("DEPRECATION")
-            mapboxMap?.clear()
+            pointAnnotationManager?.deleteAll()
         } else {
             googleMap?.clear()
         }
     }
 
-    fun getMapboxStyle(): Style.Builder = Style.Builder().fromUri(
+    fun getMapboxStyle() =
         if (context.isNightMode()) {
             MAPBOX_STYLE_NIGHT
         } else {
             MAPBOX_STYLE
         }
-    )
 
     fun onCreate(savedInstanceState: Bundle?) {
-        if (useMapbox) {
-            mapboxView?.onCreate(savedInstanceState)
-        } else {
+        if (!useMapbox) {
             googleMapView.onCreate(savedInstanceState)
         }
     }
 
     fun onStart() {
-        if (useMapbox) {
-            mapboxView?.onStart()
-        } else {
+        if (!useMapbox) {
             googleMapView.onStart()
         }
     }
 
     fun onResume() {
-        if (useMapbox) {
-            mapboxView?.onResume()
-        } else {
+        if (!useMapbox) {
             googleMapView.onResume()
         }
     }
 
     fun onPause() {
-        if (useMapbox) {
-            mapboxView?.onPause()
-        } else {
+        if (!useMapbox) {
             googleMapView.onPause()
         }
     }
 
     fun onStop() {
-        if (useMapbox) {
-            mapboxView?.onStop()
-        } else {
-            googleMapView.onStop()
+        if (!useMapbox) {
+            googleMapView.onStart()
         }
     }
 
     fun onDestroy() {
-        if (useMapbox) {
-            mapboxView?.onDestroy()
-        } else {
+        if (!useMapbox) {
             googleMapView.onDestroy()
         }
     }
 
     fun onLowMemory() {
-        if (useMapbox) {
-            mapboxView?.onLowMemory()
-        } else {
+        if (!useMapbox) {
             googleMapView.onLowMemory()
         }
     }
 
     fun onSaveInstanceState(savedInstanceState: Bundle) {
-        if (useMapbox) {
-            mapboxView?.onSaveInstanceState(savedInstanceState)
-        } else {
+        if (!useMapbox) {
             googleMapView.onSaveInstanceState(savedInstanceState)
         }
     }
@@ -186,12 +181,10 @@ fun useMapbox() = Lingver.getInstance().getLanguage() == "zh" &&
 
 data class MixinLatLng(val latitude: Double, val longitude: Double) {
     fun toGoogleMap() = LatLng(latitude, longitude)
-    fun toMapbox() = com.mapbox.mapboxsdk.geometry.LatLng(latitude, longitude)
+    fun toMapbox(): Point = Point.fromLngLat(longitude, latitude)
 }
 
 data class MixinLatLngBounds(val southwest: MixinLatLng, val northeast: MixinLatLng) {
     fun toGoogleMap() = LatLngBounds(LatLng(southwest.latitude, southwest.longitude), LatLng(northeast.latitude, northeast.longitude))
-    fun toMapbox(): com.mapbox.mapboxsdk.geometry.LatLngBounds = com.mapbox.mapboxsdk.geometry.LatLngBounds.from(
-        northeast.latitude, northeast.longitude, southwest.latitude, southwest.longitude
-    )
+    fun toMapbox() = CoordinateBounds(Point.fromLngLat(southwest.longitude, southwest.latitude), Point.fromLngLat(northeast.longitude, northeast.latitude))
 }

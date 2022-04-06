@@ -9,9 +9,9 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.maps.MapView
-import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.maps.MapView
+import com.mapbox.maps.ResourceOptionsManager
+import com.mapbox.maps.plugin.gestures.gestures
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -32,8 +32,7 @@ import one.mixin.android.websocket.toLocationData
 
 class LocationHolder constructor(val binding: ItemChatLocationBinding) :
     BaseViewHolder(binding.root),
-    OnMapReadyCallback,
-    com.mapbox.mapboxsdk.maps.OnMapReadyCallback {
+    OnMapReadyCallback {
     private val dp16 = itemView.context.dpToPx(16f)
 
     private var mixinMapView: MixinMapView
@@ -54,14 +53,14 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         binding.locationLayout.round(6.dp)
         var mapBoxView: MapView? = null
         if (useMapbox) {
-            Mapbox.getInstance(itemView.context, BuildConfig.MAPBOX_PUBLIC_TOKEN)
+            ResourceOptionsManager.getDefault(itemView.context, BuildConfig.MAPBOX_PUBLIC_TOKEN)
             val stub = binding.mapboxStub
             mapBoxView = stub.inflate() as MapView
         }
         mixinMapView = MixinMapView(binding.root.context, binding.googleMap, mapBoxView)
         mixinMapView.onCreate(null)
         if (useMapbox) {
-            mapBoxView?.getMapAsync(this)
+            initMapbox(mapBoxView)
         } else {
             binding.googleMap.getMapAsync(this)
         }
@@ -85,12 +84,15 @@ class LocationHolder constructor(val binding: ItemChatLocationBinding) :
         setMapLocation()
     }
 
-    override fun onMapReady(mapboxMap: MapboxMap) {
+    private fun initMapbox(mapboxView: MapView?) {
+        val mapboxMap = mapboxView?.getMapboxMap() ?: return
+
         mixinMapView.mapboxMap = mapboxMap
-        mapboxMap.setStyle(mixinMapView.getMapboxStyle())
-        with(mapboxMap) {
-            uiSettings.isZoomGesturesEnabled = false
-            uiSettings.isScrollGesturesEnabled = false
+        mapboxMap.loadStyleUri(mixinMapView.getMapboxStyle())
+        mapboxView.gestures.updateSettings {
+            rotateEnabled = false
+            rotateEnabled = false
+            pitchEnabled = false
         }
         if (onResumeCalled) {
             mixinMapView.onResume()
