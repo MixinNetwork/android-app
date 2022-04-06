@@ -60,18 +60,19 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     suspend fun suspendFindContactByConversationId(conversationId: String): User?
 
+    @Suppress("unused")
     @Query(
         """
         SELECT * FROM users 
         WHERE user_id != :id 
         AND relationship = 'FRIEND' 
         AND identity_number != '0'
-        AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
+        AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX OR phone like '%' || :phone || '%' $ESCAPE_SUFFIX)
         ORDER BY 
             full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE DESC
         """
     )
-    suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String): List<User>
+    suspend fun fuzzySearchUser(username: String, identityNumber: String, phone: String, id: String): List<User>
 
     @Query(
         """

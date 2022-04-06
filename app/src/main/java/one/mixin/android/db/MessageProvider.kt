@@ -532,6 +532,7 @@ class MessageProvider {
         suspend fun fuzzySearchUser(
             username: String?,
             identityNumber: String?,
+            phone: String?,
             id: String?,
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
@@ -541,11 +542,11 @@ class MessageProvider {
         WHERE user_id != ? 
         AND relationship = 'FRIEND' 
         AND identity_number != '0'
-        AND (full_name LIKE '%' || ? || '%'  ESCAPE '\' OR identity_number like '%' || ? || '%'  ESCAPE '\')
+        AND (full_name LIKE '%' || ? || '%'  ESCAPE '\' OR identity_number like '%' || ? || '%'  ESCAPE '\' OR phone like '%' || ? || '%'  ESCAPE '\')
         ORDER BY 
             full_name = ? COLLATE NOCASE OR identity_number = ? COLLATE NOCASE DESC
-            """
-            val _statement = RoomSQLiteQuery.acquire(_sql, 5)
+        """
+            val _statement = RoomSQLiteQuery.acquire(_sql, 6)
             var _argIndex = 1
             if (id == null) {
                 _statement.bindNull(_argIndex)
@@ -565,12 +566,18 @@ class MessageProvider {
                 _statement.bindString(_argIndex, identityNumber)
             }
             _argIndex = 4
+            if (phone == null) {
+                _statement.bindNull(_argIndex)
+            } else {
+                _statement.bindString(_argIndex, phone)
+            }
+            _argIndex = 5
             if (username == null) {
                 _statement.bindNull(_argIndex)
             } else {
                 _statement.bindString(_argIndex, username)
             }
-            _argIndex = 5
+            _argIndex = 6
             if (identityNumber == null) {
                 _statement.bindNull(_argIndex)
             } else {
