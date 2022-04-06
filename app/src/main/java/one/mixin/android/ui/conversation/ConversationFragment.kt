@@ -97,6 +97,7 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.callPhone
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.config
@@ -121,6 +122,7 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.observeOnce
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
@@ -805,6 +807,14 @@ class ConversationFragment() :
                         }
                     }
                 }
+            }
+
+            override fun onEmailClick(email: String) {
+                requireContext().openEmail(email)
+            }
+
+            override fun onPhoneClick(phoneNumber: String) {
+                requireContext().callPhone(phoneNumber)
             }
 
             override fun onAddClick() {

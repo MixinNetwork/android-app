@@ -24,9 +24,12 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
     }
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_PHONE, AutoLinkMode.MODE_URL)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
         binding.chatTv.setMentionModeColor(LINK_COLOR)
+        binding.chatTv.setBotModeColor(LINK_COLOR)
+        binding.chatTv.setEmailModeColor(LINK_COLOR)
+        binding.chatTv.setPhoneModeColor(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxWidth = itemView.context.maxItemWidth()
     }
@@ -112,6 +115,12 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
                 }
                 AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
                     onItemListener.onMentionClick(matchedText)
+                }
+                AutoLinkMode.MODE_PHONE -> {
+                    onItemListener.onPhoneClick(matchedText)
+                }
+                AutoLinkMode.MODE_EMAIL -> {
+                    onItemListener.onEmailClick(matchedText)
                 }
                 else -> {
                 }

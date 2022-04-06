@@ -34,9 +34,11 @@ import one.mixin.android.databinding.ViewUrlBottomBinding
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.callPhone
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.screenHeight
@@ -286,6 +288,14 @@ class ChatHistoryActivity : BaseActivity() {
                             showUserBottom(supportFragmentManager, user, conversationId)
                         }
                 }
+            }
+
+            override fun onEmailClick(email: String) {
+                this@ChatHistoryActivity.openEmail(email)
+            }
+
+            override fun onPhoneClick(phoneNumber: String) {
+                this@ChatHistoryActivity.callPhone(phoneNumber)
             }
 
             override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {

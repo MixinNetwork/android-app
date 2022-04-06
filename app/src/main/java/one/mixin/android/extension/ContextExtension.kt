@@ -1091,3 +1091,22 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
     }
     startActivity(chooser)
 }
+
+fun Context.openEmail(email: String) {
+    try {
+        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
+        startActivity(intent)
+    } catch (e: Exception) {
+        Timber.e(e)
+    }
+}
+
+fun Context.callPhone(phone: String) {
+    try {
+        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+        intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    } catch (e: Exception) {
+        Timber.e(e)
+    }
+}

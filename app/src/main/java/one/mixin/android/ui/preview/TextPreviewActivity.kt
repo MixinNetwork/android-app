@@ -20,7 +20,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityPreviewTextBinding
+import one.mixin.android.extension.callPhone
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -53,7 +55,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
 
         binding.text.requestFocus()
         binding.text.movementMethod = LinkMovementMethod()
-        binding.text.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        binding.text.addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_PHONE, AutoLinkMode.MODE_URL)
         binding.text.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         binding.text.setMentionModeColor(BaseViewHolder.LINK_COLOR)
         binding.text.setSelectedStateColor(BaseViewHolder.SELECT_COLOR)
@@ -70,6 +72,12 @@ class TextPreviewActivity : BlazeBaseActivity() {
                             showUserBottom(supportFragmentManager, user, messageItem.conversationId)
                         }
                     }
+                }
+                AutoLinkMode.MODE_PHONE -> {
+                    this@TextPreviewActivity.callPhone(matchedText)
+                }
+                AutoLinkMode.MODE_EMAIL -> {
+                    this@TextPreviewActivity.openEmail(matchedText)
                 }
                 else -> {
                 }

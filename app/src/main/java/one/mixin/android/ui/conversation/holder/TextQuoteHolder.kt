@@ -27,10 +27,12 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
     private val dp6 = itemView.context.dpToPx(6f)
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_BOT)
+        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_PHONE, AutoLinkMode.MODE_URL)
         binding.chatTv.setUrlModeColor(LINK_COLOR)
         binding.chatTv.setMentionModeColor(LINK_COLOR)
         binding.chatTv.setBotModeColor(LINK_COLOR)
+        binding.chatTv.setEmailModeColor(LINK_COLOR)
+        binding.chatTv.setPhoneModeColor(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
         binding.chatMsgContent.setMaxWidth(itemView.context.maxItemWidth() - dp16)
@@ -109,6 +111,12 @@ class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseM
                 }
                 AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
                     onItemListener.onMentionClick(matchedText)
+                }
+                AutoLinkMode.MODE_PHONE -> {
+                    onItemListener.onPhoneClick(matchedText)
+                }
+                AutoLinkMode.MODE_EMAIL -> {
+                    onItemListener.onEmailClick(matchedText)
                 }
                 else -> {
                 }
