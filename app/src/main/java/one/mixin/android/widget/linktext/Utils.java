@@ -14,8 +14,6 @@ class Utils {
                 return RegexParser.HASHTAG_PATTERN;
             case MODE_MENTION:
                 return RegexParser.MENTION_PATTERN;
-            case MODE_URL:
-                return RegexParser.URL_PATTERN;
             case MODE_PHONE:
                 return RegexParser.PHONE_PATTERN;
             case MODE_EMAIL:

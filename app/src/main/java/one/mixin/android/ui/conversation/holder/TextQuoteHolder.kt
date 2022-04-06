@@ -11,6 +11,7 @@ import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -24,15 +25,9 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 
 class TextQuoteHolder constructor(val binding: ItemChatTextQuoteBinding) : BaseMentionHolder(binding.root) {
     private val dp16 = itemView.context.dpToPx(16f)
-    private val dp6 = itemView.context.dpToPx(6f)
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_PHONE, AutoLinkMode.MODE_URL)
-        binding.chatTv.setUrlModeColor(LINK_COLOR)
-        binding.chatTv.setMentionModeColor(LINK_COLOR)
-        binding.chatTv.setBotModeColor(LINK_COLOR)
-        binding.chatTv.setEmailModeColor(LINK_COLOR)
-        binding.chatTv.setPhoneModeColor(LINK_COLOR)
+        binding.chatTv.initChatMode(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         binding.chatName.maxWidth = itemView.context.maxItemWidth() - dp16
         binding.chatMsgContent.setMaxWidth(itemView.context.maxItemWidth() - dp16)

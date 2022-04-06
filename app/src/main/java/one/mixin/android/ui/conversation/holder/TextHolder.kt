@@ -11,6 +11,7 @@ import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -23,12 +24,7 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root) {
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_PHONE, AutoLinkMode.MODE_URL)
-        binding.chatTv.setUrlModeColor(LINK_COLOR)
-        binding.chatTv.setMentionModeColor(LINK_COLOR)
-        binding.chatTv.setBotModeColor(LINK_COLOR)
-        binding.chatTv.setEmailModeColor(LINK_COLOR)
-        binding.chatTv.setPhoneModeColor(LINK_COLOR)
+        binding.chatTv.initChatMode(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
     }
