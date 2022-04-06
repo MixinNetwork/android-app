@@ -91,4 +91,12 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
     fun roundClose() {
         binding.rightIv.setImageResource(R.drawable.ic_close)
     }
+
+    fun centerTitle() {
+        binding.titleLl.updateLayoutParams<LayoutParams> {
+            marginStart = 0
+            addRule(CENTER_IN_PARENT, TRUE)
+            removeRule(END_OF)
+        }
+    }
 }

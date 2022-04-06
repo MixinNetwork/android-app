@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.graphics.Bitmap
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -16,9 +17,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_USER_ID
-import one.mixin.android.Constants.MY_QR
 import one.mixin.android.Constants.Scheme.TRANSFER
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentQrBottomSheetBinding
@@ -26,12 +25,13 @@ import one.mixin.android.databinding.ViewQrBottomBinding
 import one.mixin.android.extension.capture
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.shareMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.User
 import one.mixin.android.widget.BadgeCircleImageView.Companion.END_BOTTOM
 import one.mixin.android.widget.BottomSheet
+import java.io.File
 
 @AndroidEntryPoint
 class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -61,8 +61,9 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
-        binding.title.leftIb.setOnClickListener { dismiss() }
-        binding.title.rightAnimator.setOnClickListener { showBottom() }
+        binding.title.centerTitle()
+        binding.title.leftIv.setOnClickListener { dismiss() }
+        binding.title.rightIv.setOnClickListener { showBottom() }
         if (type == TYPE_MY_QR) {
             binding.title.titleTv.text = getString(R.string.contact_my_qr_title)
             binding.tipTv.text = getString(R.string.contact_my_qr_tip)
@@ -71,52 +72,45 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.tipTv.text = getString(R.string.contact_receive_tip)
         }
         bottomViewModel.findUserById(userId).observe(
-            this,
-            { user ->
-                if (user == null) {
-                    bottomViewModel.refreshUser(userId, true)
-                } else {
-                    binding.badgeView.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
-                    if (type == TYPE_RECEIVE_QR) {
-                        binding.badgeView.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
-                        binding.badgeView.pos = END_BOTTOM
-                    }
-                    binding.qr.post {
-                        Observable.create<Pair<Bitmap, Int>> { e ->
-                            val account = Session.getAccount() ?: return@create
-                            val code = when (type) {
-                                TYPE_MY_QR -> account.codeUrl
-                                TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
-                                else -> ""
-                            }
+            this
+        ) { user ->
+            if (user == null) {
+                bottomViewModel.refreshUser(userId, true)
+            } else {
+                binding.badgeView.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
+                binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
+                if (type == TYPE_RECEIVE_QR) {
+                    binding.badgeView.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
+                    binding.badgeView.pos = END_BOTTOM
+                }
+                binding.qr.post {
+                    Observable.create<Pair<Bitmap, Int>> { e ->
+                        val account = Session.getAccount() ?: return@create
+                        val code = when (type) {
+                            TYPE_MY_QR -> account.codeUrl
+                            TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
+                            else -> ""
+                        }
 
-                            val r = code.generateQRCode(binding.qr.width)
-                            e.onNext(r)
-                        }.subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .autoDispose(stopScope)
-                            .subscribe(
-                                { r ->
-                                    binding.badgeView.layoutParams = binding.badgeView.layoutParams.apply {
+                        val r = code.generateQRCode(binding.qr.width)
+                        e.onNext(r)
+                    }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { r ->
+                                binding.badgeView.layoutParams =
+                                    binding.badgeView.layoutParams.apply {
                                         width = r.second
                                         height = r.second
                                     }
-                                    binding.qr.setImageBitmap(r.first)
-                                },
-                                {
-                                }
-                            )
-                    }
+                                binding.qr.setImageBitmap(r.first)
+                            },
+                            {
+                            }
+                        )
                 }
             }
-        )
-    }
-
-    private fun getName(user: User): String {
-        return when (type) {
-            TYPE_MY_QR -> "${BuildConfig.VERSION_CODE}-$MY_QR"
-            TYPE_RECEIVE_QR -> "$TYPE_RECEIVE_QR-${user.userId}"
-            else -> ""
         }
     }
 
@@ -135,9 +129,13 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         if (granted) {
                             lifecycleScope.launch(Dispatchers.IO) {
                                 if (!isAdded) return@launch
-                                val path = binding.bottomLl.capture(requireContext()) ?: return@launch
+                                val path = binding.bottomLl.capture(requireContext())
                                 withContext(Dispatchers.Main) {
-                                    toast(getString(R.string.save_to, path))
+                                    if (path.isNullOrBlank()) {
+                                        toast(getString(R.string.save_failure))
+                                    } else {
+                                        toast(getString(R.string.save_to, path))
+                                    }
                                 }
                             }
                         } else {
@@ -149,6 +147,15 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 )
             bottomSheet.dismiss()
+        }
+        viewBinding.share.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.IO) {
+                if (!isAdded) return@launch
+                val path = binding.bottomLl.capture(requireContext()) ?: return@launch
+                withContext(Dispatchers.Main) {
+                    requireContext().shareMedia(false, File(path).toUri().toString())
+                }
+            }
         }
         viewBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
         bottomSheet.show()

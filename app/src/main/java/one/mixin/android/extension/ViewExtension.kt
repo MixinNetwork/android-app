@@ -37,6 +37,7 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
+import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -279,7 +280,7 @@ fun View.capture(context: Context): String? {
         MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
         outFile.absolutePath
     } catch (e: FileNotFoundException) {
-        e.printStackTrace()
+        reportException(e)
         null
     }
 }
