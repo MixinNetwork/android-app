@@ -144,6 +144,7 @@
     <string name="size">Size</string>
     <string name="exit_without_save">Exit without save?</string>
     <string name="verify_to_continue">Enter your PIN to continue</string>
+    <string name="share_qr_code">Share QR Code</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

@@ -71,6 +71,15 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             binding.title.titleTv.text = getString(R.string.contact_receive_money)
             binding.tipTv.text = getString(R.string.contact_receive_tip)
         }
+        binding.shareBtn.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.IO) {
+                if (!isAdded) return@launch
+                val path = binding.bottomLl.capture(requireContext()) ?: return@launch
+                withContext(Dispatchers.Main) {
+                    requireContext().shareMedia(false, File(path).toUri().toString())
+                }
+            }
+        }
         bottomViewModel.findUserById(userId).observe(
             this
         ) { user ->
@@ -147,15 +156,6 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 )
             bottomSheet.dismiss()
-        }
-        viewBinding.share.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                if (!isAdded) return@launch
-                val path = binding.bottomLl.capture(requireContext()) ?: return@launch
-                withContext(Dispatchers.Main) {
-                    requireContext().shareMedia(false, File(path).toUri().toString())
-                }
-            }
         }
         viewBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
         bottomSheet.show()

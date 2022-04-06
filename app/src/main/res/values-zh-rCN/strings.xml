@@ -134,6 +134,7 @@
     <string name="action_draw">绘制</string>
     <string name="size">大小</string>
     <string name="exit_without_save">不保存就退出？</string>
+    <string name="share_qr_code">分享二维码</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
