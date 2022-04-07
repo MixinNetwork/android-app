@@ -676,7 +676,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private suspend fun showTransfer(text: String): Boolean {
         val uri = text.toUri()
-        val amount = uri.getQueryParameter("amount")?.toDoubleOrNull()?.toString() ?: return false
+        val amount = uri.getQueryParameter("amount") ?: return false
+        if (amount.toDoubleOrNull() == null) return false
         val userId = uri.getQueryParameter("recipient")
         if (userId == null || !userId.isUUID()) {
             return false
