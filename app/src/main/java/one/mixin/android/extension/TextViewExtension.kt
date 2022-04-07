@@ -169,7 +169,7 @@ fun EditText.clearCharacterStyle() {
 }
 
 fun AutoLinkTextView.initChatMode(@ColorInt linkColor: Int) {
-    addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_PHONE, AutoLinkMode.MODE_URL)
+    addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_URL)
     setUrlModeColor(linkColor)
     setMentionModeColor(linkColor)
     setBotModeColor(linkColor)
