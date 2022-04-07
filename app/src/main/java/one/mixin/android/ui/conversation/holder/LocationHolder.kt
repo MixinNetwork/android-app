@@ -13,6 +13,7 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatLocationBinding

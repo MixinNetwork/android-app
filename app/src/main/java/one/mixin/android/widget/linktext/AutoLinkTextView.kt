@@ -20,8 +20,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Colors.HIGHLIGHTED
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.mentionNumberPattern
@@ -88,7 +88,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             val start = sp.indexOf(keyWord, 0, true)
             if (start >= 0) {
                 sp.setSpan(
-                    BackgroundColorSpan(BaseViewHolder.HIGHLIGHTED),
+                    BackgroundColorSpan(HIGHLIGHTED),
                     start,
                     start + keyWord.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

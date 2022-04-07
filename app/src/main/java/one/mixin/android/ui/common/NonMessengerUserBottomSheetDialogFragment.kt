@@ -10,9 +10,9 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.ARGS_USER
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.databinding.FragmentNonMessengerUserBottomSheetBinding
 import one.mixin.android.extension.openAsUrlOrWeb
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -61,7 +61,7 @@ class NonMessengerUserBottomSheetDialogFragment : MixinBottomSheetDialogFragment
             title.rightIv.setOnClickListener { dismiss() }
             detailTv.movementMethod = LinkMovementMethod()
             detailTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-            detailTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+            detailTv.setUrlModeColor(LINK_COLOR)
             detailTv.setAutoLinkOnClickListener { _, url ->
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
                 dismiss()

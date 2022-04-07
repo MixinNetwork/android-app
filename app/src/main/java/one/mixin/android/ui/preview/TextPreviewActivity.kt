@@ -18,16 +18,17 @@ import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityPreviewTextBinding
 import one.mixin.android.extension.callPhone
+import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.showUserBottom
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
@@ -55,10 +56,7 @@ class TextPreviewActivity : BlazeBaseActivity() {
 
         binding.text.requestFocus()
         binding.text.movementMethod = LinkMovementMethod()
-        binding.text.addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_PHONE, AutoLinkMode.MODE_URL)
-        binding.text.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        binding.text.setMentionModeColor(BaseViewHolder.LINK_COLOR)
-        binding.text.setSelectedStateColor(BaseViewHolder.SELECT_COLOR)
+        binding.text.initChatMode(LINK_COLOR)
         binding.text.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {

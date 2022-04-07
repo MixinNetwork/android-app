@@ -3,6 +3,8 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import one.mixin.android.Constants.Colors.LINK_COLOR
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatHyperlinkBinding
 import one.mixin.android.extension.dp

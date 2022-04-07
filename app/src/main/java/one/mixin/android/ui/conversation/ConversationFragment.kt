@@ -69,6 +69,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -1614,7 +1615,7 @@ class ConversationFragment() :
 
         binding.groupDesc.movementMethod = LinkMovementMethod()
         binding.groupDesc.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        binding.groupDesc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        binding.groupDesc.setUrlModeColor(LINK_COLOR)
         binding.groupDesc.setAutoLinkOnClickListener { _, url ->
             url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
         }
