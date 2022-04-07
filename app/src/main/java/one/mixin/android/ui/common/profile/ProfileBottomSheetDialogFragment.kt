@@ -20,6 +20,7 @@ import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -46,7 +47,6 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
@@ -115,7 +115,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         binding.apply {
             detailTv.movementMethod = LinkMovementMethod()
             detailTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-            detailTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+            detailTv.setUrlModeColor(LINK_COLOR)
             detailTv.setAutoLinkOnClickListener { _, url ->
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 dismiss()

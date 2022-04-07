@@ -1,5 +1,6 @@
 package one.mixin.android
 
+import android.graphics.Color
 import okhttp3.Dns
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
@@ -159,6 +160,12 @@ object Constants {
         const val WEB_DEBUG = "web_debug"
         const val DB_DEBUG = "db_debug"
         const val DB_DEBUG_WARNING = "db_debug_warning"
+    }
+
+    object Colors {
+        val HIGHLIGHTED = Color.parseColor("#CCEF8C")
+        val LINK_COLOR = Color.parseColor("#5FA7E4")
+        val SELECT_COLOR = Color.parseColor("#660D94FC")
     }
 
     const val DEVICE_ID = "device_id"

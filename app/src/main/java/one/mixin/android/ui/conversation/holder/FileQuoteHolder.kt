@@ -8,6 +8,8 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.exoplayer2.util.MimeTypes
+import one.mixin.android.Constants.Colors.HIGHLIGHTED
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatFileQuoteBinding
 import one.mixin.android.extension.dp

@@ -20,8 +20,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Colors.HIGHLIGHTED
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.mentionNumberPattern
@@ -88,7 +88,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             val start = sp.indexOf(keyWord, 0, true)
             if (start >= 0) {
                 sp.setSpan(
-                    BackgroundColorSpan(BaseViewHolder.HIGHLIGHTED),
+                    BackgroundColorSpan(HIGHLIGHTED),
                     start,
                     start + keyWord.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -232,19 +232,41 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         text: CharSequence,
         autoLinkItems: MutableList<AutoLinkItem>
     ): List<AutoLinkItem> {
-
-        if (autoLinkModes == null) {
-            throw NullPointerException("Please add at least one mode")
-        }
-
-        for (anAutoLinkMode in autoLinkModes!!) {
+        for (anAutoLinkMode in requireNotNull(autoLinkModes)) {
             val regex = Utils.getRegexByAutoLinkMode(anAutoLinkMode, customRegex)
             val pattern = Pattern.compile(regex)
             val matcher = pattern.matcher(text)
 
-            if (anAutoLinkMode == AutoLinkMode.MODE_PHONE) {
-                while (matcher.find()) {
-                    if (matcher.group().length > MIN_PHONE_NUMBER_LENGTH)
+            when {
+                anAutoLinkMode == AutoLinkMode.MODE_PHONE -> {
+                    while (matcher.find()) {
+                        if (matcher.group().length > MIN_PHONE_NUMBER_LENGTH && !autoLinkItems.any { matcher.start() >= it.startPoint && matcher.end() <= it.endPoint })
+                            autoLinkItems.add(
+                                AutoLinkItem(
+                                    matcher.start(),
+                                    matcher.end(),
+                                    matcher.group(),
+                                    anAutoLinkMode
+                                )
+                            )
+                    }
+                }
+                anAutoLinkMode == AutoLinkMode.MODE_URL || anAutoLinkMode == AutoLinkMode.MODE_PHONE -> {
+                    while (matcher.find()) {
+                        if (!autoLinkItems.any { matcher.start() >= it.startPoint && matcher.end() <= it.endPoint }) {
+                            autoLinkItems.add(
+                                AutoLinkItem(
+                                    matcher.start(),
+                                    matcher.end(),
+                                    matcher.group(),
+                                    anAutoLinkMode
+                                )
+                            )
+                        }
+                    }
+                }
+                anAutoLinkMode != AutoLinkMode.MODE_MENTION -> {
+                    while (matcher.find()) {
                         autoLinkItems.add(
                             AutoLinkItem(
                                 matcher.start(),
@@ -253,28 +275,19 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                                 anAutoLinkMode
                             )
                         )
+                    }
                 }
-            } else if (anAutoLinkMode != AutoLinkMode.MODE_MENTION) {
-                while (matcher.find()) {
-                    autoLinkItems.add(
-                        AutoLinkItem(
-                            matcher.start(),
-                            matcher.end(),
-                            matcher.group(),
-                            anAutoLinkMode
+                anAutoLinkMode != AutoLinkMode.MODE_BOT -> {
+                    while (matcher.find()) {
+                        autoLinkItems.add(
+                            AutoLinkItem(
+                                matcher.start(),
+                                matcher.end(),
+                                matcher.group(),
+                                anAutoLinkMode
+                            )
                         )
-                    )
-                }
-            } else if (anAutoLinkMode != AutoLinkMode.MODE_BOT) {
-                while (matcher.find()) {
-                    autoLinkItems.add(
-                        AutoLinkItem(
-                            matcher.start(),
-                            matcher.end(),
-                            matcher.group(),
-                            anAutoLinkMode
-                        )
-                    )
+                    }
                 }
             }
         }

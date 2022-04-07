@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.extension.bottomPadding
 import one.mixin.android.extension.dp

@@ -20,6 +20,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.MentionTextView
 import one.mixin.android.widget.NoUnderLineSpan
+import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
 
 fun TextView.highlightLinkText(
@@ -165,6 +166,15 @@ fun EditText.clearCharacterStyle() {
             setSelection(curString.length)
         }
     }
+}
+
+fun AutoLinkTextView.initChatMode(@ColorInt linkColor: Int) {
+    addAutoLinkMode(AutoLinkMode.MODE_BOT, AutoLinkMode.MODE_EMAIL, AutoLinkMode.MODE_PHONE, AutoLinkMode.MODE_URL)
+    setUrlModeColor(linkColor)
+    setMentionModeColor(linkColor)
+    setBotModeColor(linkColor)
+    setEmailModeColor(linkColor)
+    setPhoneModeColor(linkColor)
 }
 
 var TextView.textColor: Int

@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.widget.FrameLayout
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSnapshotBinding
 import one.mixin.android.extension.loadImage

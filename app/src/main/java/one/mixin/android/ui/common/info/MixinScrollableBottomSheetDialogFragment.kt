@@ -16,11 +16,11 @@ import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.scope
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.MixinBottomSheetDialog
@@ -119,7 +119,7 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     ) {
         detailsTv.movementMethod = LinkMovementMethod()
         detailsTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        detailsTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        detailsTv.setUrlModeColor(LINK_COLOR)
         detailsTv.setAutoLinkOnClickListener { _, url ->
             url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
             dismiss()

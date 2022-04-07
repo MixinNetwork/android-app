@@ -957,6 +957,10 @@ class ConversationAdapter(
 
         open fun onMentionClick(identityNumber: String) {}
 
+        open fun onPhoneClick(phoneNumber: String) {}
+
+        open fun onEmailClick(email: String) {}
+
         open fun onUrlClick(url: String) {}
 
         open fun onUrlLongClick(url: String) {}

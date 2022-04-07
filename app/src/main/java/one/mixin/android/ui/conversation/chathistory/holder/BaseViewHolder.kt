@@ -14,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -31,9 +32,6 @@ abstract class BaseViewHolder constructor(containerView: View) :
     companion object {
         private val colors: IntArray =
             MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
-        val HIGHLIGHTED = Color.parseColor("#CCEF8C")
-        val LINK_COLOR = Color.parseColor("#5FA7E4")
-        val SELECT_COLOR = Color.parseColor("#660D94FC")
         fun getColorById(id: String?) = colors[(id ?: "0").getColorCode(CodeType.Name(colors.size))]
     }
 

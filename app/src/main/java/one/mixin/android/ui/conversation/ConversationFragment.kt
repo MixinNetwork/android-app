@@ -69,6 +69,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -97,6 +98,7 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.callPhone
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.config
@@ -121,6 +123,7 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.observeOnce
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
@@ -805,6 +808,14 @@ class ConversationFragment() :
                         }
                     }
                 }
+            }
+
+            override fun onEmailClick(email: String) {
+                requireContext().openEmail(email)
+            }
+
+            override fun onPhoneClick(phoneNumber: String) {
+                requireContext().callPhone(phoneNumber)
             }
 
             override fun onAddClick() {
@@ -1604,7 +1615,7 @@ class ConversationFragment() :
 
         binding.groupDesc.movementMethod = LinkMovementMethod()
         binding.groupDesc.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        binding.groupDesc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        binding.groupDesc.setUrlModeColor(LINK_COLOR)
         binding.groupDesc.setAutoLinkOnClickListener { _, url ->
             url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
         }

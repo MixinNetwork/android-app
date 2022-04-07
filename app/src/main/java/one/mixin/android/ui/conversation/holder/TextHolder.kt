@@ -5,12 +5,15 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import one.mixin.android.Constants.Colors.LINK_COLOR
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ItemChatTextBinding
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.doubleClickVibrate
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -23,10 +26,7 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHolder(binding.root) {
 
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_BOT)
-        binding.chatTv.setUrlModeColor(LINK_COLOR)
-        binding.chatTv.setMentionModeColor(LINK_COLOR)
-        binding.chatTv.setBotModeColor(LINK_COLOR)
+        binding.chatTv.initChatMode(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         binding.chatLayout.setMaxWidth(itemView.context.maxItemWidth())
     }
@@ -94,6 +94,12 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
                 }
                 AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
                     onItemListener.onMentionClick(matchedText)
+                }
+                AutoLinkMode.MODE_PHONE -> {
+                    onItemListener.onPhoneClick(matchedText)
+                }
+                AutoLinkMode.MODE_EMAIL -> {
+                    onItemListener.onEmailClick(matchedText)
                 }
                 else -> {
                 }

@@ -3,11 +3,12 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import one.mixin.android.MixinApplication
+import one.mixin.android.Constants.Colors.LINK_COLOR
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatHyperlinkBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -19,14 +20,8 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 
 class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseViewHolder(binding.root) {
 
-    private val dp24 by lazy {
-        MixinApplication.appContext.dpToPx(30f)
-    }
-
     init {
-        binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        binding.chatTv.setUrlModeColor(LINK_COLOR)
-        binding.chatTv.setMentionModeColor(LINK_COLOR)
+        binding.chatTv.initChatMode(LINK_COLOR)
         binding.chatTv.setSelectedStateColor(SELECT_COLOR)
         (binding.chatLayout.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxWidth = itemView.context.maxItemWidth()
     }
@@ -112,6 +107,12 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
                 }
                 AutoLinkMode.MODE_MENTION, AutoLinkMode.MODE_BOT -> {
                     onItemListener.onMentionClick(matchedText)
+                }
+                AutoLinkMode.MODE_PHONE -> {
+                    onItemListener.onPhoneClick(matchedText)
+                }
+                AutoLinkMode.MODE_EMAIL -> {
+                    onItemListener.onEmailClick(matchedText)
                 }
                 else -> {
                 }

@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import androidx.constraintlayout.widget.ConstraintLayout
+import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatCallBinding
 import one.mixin.android.extension.formatMillis

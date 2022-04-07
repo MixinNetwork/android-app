@@ -14,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.ConversationResponse
@@ -24,7 +25,6 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.linktext.AutoLinkMode
@@ -101,7 +101,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         }
         binding.detailTv.movementMethod = LinkMovementMethod()
         binding.detailTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        binding.detailTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        binding.detailTv.setUrlModeColor(LINK_COLOR)
         binding.detailTv.setAutoLinkOnClickListener { _, url ->
             url.openAsUrlOrWeb(requireContext(), c.conversationId, parentFragmentManager, lifecycleScope)
             dismiss()
