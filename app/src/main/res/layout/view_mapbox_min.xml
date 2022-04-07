@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.mapbox.mapboxsdk.maps.MapView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.mapbox.maps.MapView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mapbox"
     android:layout_width="260dp"
     android:layout_height="180dp"
-    app:mapbox_renderTextureMode="true"
-    android:visibility="gone"
+    app:mapbox_mapSurface="texture_view"
     app:liteMode="true"
     app:uiCompass="false"
     app:uiMapToolbar="false"

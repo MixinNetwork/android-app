@@ -70,9 +70,7 @@ buildscript {
         ext.indicatorseekbarVersion = '2.1.2'
         ext.emojiVerison = '1.2.0-alpha03'
 
-        ext.mapboxSdkVersion= '9.6.1'
-        ext.mapboxMarkerVersion= '0.4.0'
-        ext.mapboxLocationVersion= '0.11.0'
+        ext.mapboxSdkVersion= '10.4.0'
 
         ext.junitVersion = '4.13.2'
         ext.testCoreVersion = '1.4.0'
