@@ -183,7 +183,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
         binding.apply {
             largeAmountTv.text = "$accountSymbol$largeAmount"
             if (largeAmount <= 0.0) {
-                largeAmountDescTv.text = getString(R.string.setting_transfer_large_summary_greater, "$accountSymbol 0")
+                largeAmountDescTv.text = getString(R.string.setting_transfer_large_summary_greater, "${accountSymbol}0")
             } else {
                 largeAmountDescTv.text = getString(R.string.setting_transfer_large_summary, "$accountSymbol$largeAmount")
             }
