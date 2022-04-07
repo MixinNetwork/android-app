@@ -4,6 +4,7 @@
     android:id="@+id/mapbox"
     android:layout_width="260dp"
     android:layout_height="180dp"
+    app:mapbox_mapSurface="texture_view"
     app:liteMode="true"
     app:uiCompass="false"
     app:uiMapToolbar="false"
