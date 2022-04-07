@@ -182,10 +182,11 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
         if (viewDestroyed()) return
         binding.apply {
             largeAmountTv.text = "$accountSymbol$largeAmount"
-            largeAmountDescTv.text = getString(
-                R.string.setting_transfer_large_summary,
-                "$accountSymbol$largeAmount"
-            )
+            if (largeAmount <= 0.0) {
+                largeAmountDescTv.text = getString(R.string.setting_transfer_large_summary_greater, "$accountSymbol 0")
+            } else {
+                largeAmountDescTv.text = getString(R.string.setting_transfer_large_summary, "$accountSymbol$largeAmount")
+            }
         }
     }
 }
