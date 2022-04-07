@@ -238,61 +238,34 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
             val matcher = pattern.matcher(text)
 
             when {
-                anAutoLinkMode == AutoLinkMode.MODE_PHONE -> {
+                anAutoLinkMode == AutoLinkMode.MODE_EMAIL || anAutoLinkMode == AutoLinkMode.MODE_URL -> {
                     while (matcher.find()) {
-                        if (matcher.group().length > MIN_PHONE_NUMBER_LENGTH && !autoLinkItems.any { matcher.start() >= it.startPoint && matcher.end() <= it.endPoint })
-                            autoLinkItems.add(
-                                AutoLinkItem(
-                                    matcher.start(),
-                                    matcher.end(),
-                                    matcher.group(),
-                                    anAutoLinkMode
-                                )
-                            )
-                    }
-                }
-                anAutoLinkMode == AutoLinkMode.MODE_URL || anAutoLinkMode == AutoLinkMode.MODE_PHONE -> {
-                    while (matcher.find()) {
-                        if (!autoLinkItems.any { matcher.start() >= it.startPoint && matcher.end() <= it.endPoint }) {
-                            autoLinkItems.add(
-                                AutoLinkItem(
-                                    matcher.start(),
-                                    matcher.end(),
-                                    matcher.group(),
-                                    anAutoLinkMode
-                                )
-                            )
+                        val item = AutoLinkItem(matcher.start(), matcher.end(), matcher.group(), anAutoLinkMode)
+                        if (!autoLinkItems.any { item.startPoint >= it.startPoint && item.endPoint <= it.endPoint }) {
+                            // Remove link contained by url
+                            autoLinkItems.removeAll(autoLinkItems.filter { it.autoLinkMode != AutoLinkMode.MODE_MENTION && it.startPoint >= matcher.start() && it.endPoint <= matcher.end() })
+                            autoLinkItems.add(item)
                         }
                     }
                 }
                 anAutoLinkMode != AutoLinkMode.MODE_MENTION -> {
                     while (matcher.find()) {
-                        autoLinkItems.add(
-                            AutoLinkItem(
-                                matcher.start(),
-                                matcher.end(),
-                                matcher.group(),
-                                anAutoLinkMode
-                            )
-                        )
-                    }
-                }
-                anAutoLinkMode != AutoLinkMode.MODE_BOT -> {
-                    while (matcher.find()) {
-                        autoLinkItems.add(
-                            AutoLinkItem(
-                                matcher.start(),
-                                matcher.end(),
-                                matcher.group(),
-                                anAutoLinkMode
-                            )
-                        )
+                        if (anAutoLinkMode != AutoLinkMode.MODE_PHONE || matcher.group().length > MIN_PHONE_NUMBER_LENGTH) {
+                            addLinkItems(autoLinkItems, AutoLinkItem(matcher.start(), matcher.end(), matcher.group(), anAutoLinkMode))
+                        }
                     }
                 }
             }
         }
 
         return autoLinkItems
+    }
+
+    private fun addLinkItems(autoLinkItems: MutableList<AutoLinkItem>, item: AutoLinkItem) {
+        // Skip if the current link is contain
+        if (!autoLinkItems.any { item.startPoint >= it.startPoint && item.endPoint <= it.endPoint }) {
+            autoLinkItems.add(item)
+        }
     }
 
     private fun getColorByMode(autoLinkMode: AutoLinkMode): Int {
@@ -363,7 +336,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
         internal val TAG = AutoLinkTextView::class.java.simpleName
 
-        private const val MIN_PHONE_NUMBER_LENGTH = 8
+        private const val MIN_PHONE_NUMBER_LENGTH = 4
 
         private const val DEFAULT_COLOR = Color.RED
 
