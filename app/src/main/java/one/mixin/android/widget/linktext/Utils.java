@@ -12,13 +12,13 @@ class Utils {
         return regex != null && !regex.isEmpty() && regex.length() > 2;
     }
 
-    private static Map<String, Pattern> petterns = new HashMap<>();
+    private static final Map<String, Pattern> petterns = new HashMap<>();
 
     static Pattern getPatternByAutoLinkMode(AutoLinkMode anAutoLinkMode, String customRegex){
         Pattern p = petterns.get(anAutoLinkMode.name());
-        if(p==null){
-            p = Pattern.compile(getRegexByAutoLinkMode(anAutoLinkMode,customRegex));
-            petterns.put(anAutoLinkMode.name(),p);
+        if (p == null) {
+            p = Pattern.compile(getRegexByAutoLinkMode(anAutoLinkMode, customRegex));
+            petterns.put(anAutoLinkMode.name(), p);
         }
         return p;
     }
