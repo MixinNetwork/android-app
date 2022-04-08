@@ -336,7 +336,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
         internal val TAG = AutoLinkTextView::class.java.simpleName
 
-        private const val MIN_PHONE_NUMBER_LENGTH = 4
+        private const val MIN_PHONE_NUMBER_LENGTH = 6
 
         private const val DEFAULT_COLOR = Color.RED
 
