@@ -25,6 +25,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.simpleMarkwon
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.mentionNumberPattern
+import one.mixin.android.widget.linktext.RegexParser.DECIMAL_PATTERN
 import org.commonmark.node.Node
 import java.util.LinkedList
 import java.util.regex.Pattern
@@ -248,11 +249,22 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                         }
                     }
                 }
-                anAutoLinkMode != AutoLinkMode.MODE_MENTION -> {
+                anAutoLinkMode == AutoLinkMode.MODE_PHONE -> {
                     while (matcher.find()) {
                         if (anAutoLinkMode != AutoLinkMode.MODE_PHONE || matcher.group().length > MIN_PHONE_NUMBER_LENGTH) {
                             addLinkItems(autoLinkItems, AutoLinkItem(matcher.start(), matcher.end(), matcher.group(), anAutoLinkMode))
                         }
+                    }
+                    val deciPattern = Pattern.compile(DECIMAL_PATTERN)
+                    val deciMatcher = deciPattern.matcher(text)
+                    while (deciMatcher.find()) {
+                        // Culling decimals
+                        autoLinkItems.removeAll(autoLinkItems.filter { it.autoLinkMode == AutoLinkMode.MODE_PHONE && it.startPoint >= deciMatcher.start() && it.endPoint <= deciMatcher.end() })
+                    }
+                }
+                anAutoLinkMode != AutoLinkMode.MODE_MENTION -> {
+                    while (matcher.find()) {
+                        addLinkItems(autoLinkItems, AutoLinkItem(matcher.start(), matcher.end(), matcher.group(), anAutoLinkMode))
                     }
                 }
             }
