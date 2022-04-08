@@ -234,8 +234,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         autoLinkItems: MutableList<AutoLinkItem>
     ): List<AutoLinkItem> {
         for (anAutoLinkMode in requireNotNull(autoLinkModes)) {
-            val regex = Utils.getRegexByAutoLinkMode(anAutoLinkMode, customRegex)
-            val pattern = Pattern.compile(regex)
+            val pattern = Utils.getPatternByAutoLinkMode(anAutoLinkMode, customRegex)
             val matcher = pattern.matcher(text)
 
             when {
