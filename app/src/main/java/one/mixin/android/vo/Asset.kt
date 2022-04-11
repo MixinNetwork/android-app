@@ -73,9 +73,9 @@ fun Asset.toPriceAndChange(): PriceAndChange {
     return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
 }
 
-fun Asset.toAssetItem(): AssetItem = AssetItem(
+fun Asset.toAssetItem(chainIconUrl: String? = null): AssetItem = AssetItem(
     assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
-    confirmations, null, null, null, null, assetKey, reserve
+    confirmations, chainIconUrl, null, null, null, assetKey, reserve
 )
 
 fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl, priceUsd, changeUsd)

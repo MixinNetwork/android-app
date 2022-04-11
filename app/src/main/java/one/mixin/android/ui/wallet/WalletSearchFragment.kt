@@ -23,6 +23,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletSearchBinding
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navigate
@@ -34,7 +35,7 @@ import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.SearchDefaultAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.TopAssetItem
+import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -69,7 +70,7 @@ class WalletSearchFragment : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? =
+    ): View =
         getPersistentView(inflater, container, R.layout.fragment_wallet_search)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -143,16 +144,15 @@ class WalletSearchFragment : BaseFragment() {
         if (viewDestroyed()) return@launch
 
         viewModel.observeTopAssets().observe(
-            viewLifecycleOwner,
-            {
-                searchDefaultAdapter.topAssets = it
-                if (binding.searchEt.et.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
-                    binding.rvVa.displayedChild = POS_DEFAULT
-                }
-
-                checkRecent()
+            viewLifecycleOwner
+        ) {
+            searchDefaultAdapter.topAssets = it
+            if (binding.searchEt.et.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
+                binding.rvVa.displayedChild = POS_DEFAULT
             }
-        )
+
+            checkRecent()
+        }
         searchDefaultAdapter.recentAssets = loadRecentSearchAssets()
     }
 
@@ -191,35 +191,63 @@ class WalletSearchFragment : BaseFragment() {
         }
     }
 
+    private val defaultIconUrl = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"
+
     private fun search(query: String) {
         currentSearch?.cancel()
         currentSearch = lifecycleScope.launch {
             if (viewDestroyed()) return@launch
 
-            searchAdapter.clear()
+            searchAdapter.submitList(null)
             binding.pb.isVisible = true
 
-            var localAssets = viewModel.fuzzySearchAssets(query)
-            searchAdapter.localAssets = localAssets
+            val localAssets = viewModel.fuzzySearchAssets(query)
+            searchAdapter.submitList(localAssets)
 
-            val pair = viewModel.queryAsset(query)
-            val remoteAssets = pair.first
-            if (localAssets.isNullOrEmpty()) {
-                searchAdapter.remoteAssets = remoteAssets
-            } else {
-                localAssets = viewModel.fuzzySearchAssets(query)
-                val filtered = mutableListOf<TopAssetItem>()
-                remoteAssets?.forEach { remote ->
-                    val exists = localAssets?.find { local ->
-                        local.assetId == remote.assetId
-                    }
-                    if (exists == null) {
-                        filtered.add(remote)
+            val remoteAssets = viewModel.queryAsset(query)
+            val result = localAssets?.plus(
+                remoteAssets.filterNot { r ->
+                    localAssets.any { l ->
+                        l.assetId == r.assetId
                     }
                 }
-                searchAdapter.localAssets = localAssets
-                searchAdapter.remoteAssets = filtered
-            }
+            )?.sortedWith(
+                Comparator { o1, o2 ->
+                    if (o1 == null && o2 == null) return@Comparator 0
+                    if (o1 == null) return@Comparator 1
+                    if (o2 == null) return@Comparator -1
+
+                    val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
+                    val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
+                    if (equal2Keyword1 && !equal2Keyword2) {
+                        return@Comparator -1
+                    } else if (!equal2Keyword1 && equal2Keyword2) {
+                        return@Comparator 1
+                    }
+
+                    val capitalization1 = o1.priceFiat() * BigDecimal(o1.balance)
+                    val capitalization2 = o2.priceFiat() * BigDecimal(o2.balance)
+                    if (capitalization1 != capitalization2) {
+                        if (capitalization2 > capitalization1) {
+                            return@Comparator 1
+                        } else if (capitalization2 < capitalization1) {
+                            return@Comparator -1
+                        }
+                    }
+
+                    val hasIcon1 = o1.iconUrl != defaultIconUrl
+                    val hasIcon2 = o2.iconUrl != defaultIconUrl
+                    if (hasIcon1 && !hasIcon2) {
+                        return@Comparator -1
+                    } else if (!hasIcon1 && hasIcon2) {
+                        return@Comparator 1
+                    }
+
+                    return@Comparator o1.name.compareTo(o2.name)
+                }
+            )
+
+            searchAdapter.submitList(result)
             binding.pb.isVisible = false
 
             if (localAssets.isNullOrEmpty() && remoteAssets.isNullOrEmpty()) {
@@ -260,7 +288,7 @@ class WalletSearchFragment : BaseFragment() {
         }
     }
 
-    private fun getPersistentView(inflater: LayoutInflater?, container: ViewGroup?, @Suppress("SameParameterValue") layout: Int): View? {
+    private fun getPersistentView(inflater: LayoutInflater?, container: ViewGroup?, @Suppress("SameParameterValue") layout: Int): View {
         if (rootView == null) {
             rootView = inflater?.inflate(layout, container, false)
         } else {

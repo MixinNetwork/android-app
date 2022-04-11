@@ -40,9 +40,9 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.vo.toSnapshot
-import one.mixin.android.vo.toTopAssetItem
 import javax.inject.Inject
 
 @HiltViewModel
@@ -183,23 +183,23 @@ internal constructor(
         jobManager.addJobInBackground(RefreshAssetsJob(assetId))
     }
 
-    suspend fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<AssetItem>?> =
+    suspend fun queryAsset(query: String): List<AssetItem> =
         withContext(Dispatchers.IO) {
             val response = try {
                 assetRepository.queryAssets(query)
             } catch (t: Throwable) {
                 ErrorHandler.handleError(t)
-                return@withContext Pair(null, null)
+                return@withContext emptyList()
             }
             if (response.isSuccess) {
                 val assetList = response.data as List<Asset>
-                val topAssetList = arrayListOf<TopAssetItem>()
-                assetList.mapTo(topAssetList) { asset ->
+                val assetItemList = arrayListOf<AssetItem>()
+                assetList.mapTo(assetItemList) { asset ->
                     var chainIconUrl = assetRepository.getIconUrl(asset.chainId)
                     if (chainIconUrl == null) {
                         chainIconUrl = fetchAsset(asset.chainId)
                     }
-                    asset.toTopAssetItem(chainIconUrl)
+                    asset.toAssetItem(chainIconUrl)
                 }
                 val existsSet = ArraySet<AssetItem>()
                 val needUpdatePrice = arrayListOf<PriceAndChange>()
@@ -213,11 +213,9 @@ internal constructor(
                 if (needUpdatePrice.isNotEmpty()) {
                     assetRepository.suspendUpdatePrices(needUpdatePrice)
                 }
-                return@withContext Pair(topAssetList, existsSet)
-            } else {
-                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                return@withContext assetItemList
             }
-            return@withContext Pair(null, null)
+            return@withContext emptyList<AssetItem>()
         }
 
     private suspend fun fetchAsset(assetId: String) = withContext(Dispatchers.IO) {
