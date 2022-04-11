@@ -2,13 +2,28 @@ package one.mixin.android.widget.linktext;
 
 import timber.log.Timber;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 class Utils {
 
     private static boolean isValidRegex(String regex) {
         return regex != null && !regex.isEmpty() && regex.length() > 2;
     }
 
-    static String getRegexByAutoLinkMode(AutoLinkMode anAutoLinkMode, String customRegex) {
+    private static final Map<String, Pattern> petterns = new HashMap<>();
+
+    static Pattern getPatternByAutoLinkMode(AutoLinkMode anAutoLinkMode, String customRegex){
+        Pattern p = petterns.get(anAutoLinkMode.name());
+        if (p == null) {
+            p = Pattern.compile(getRegexByAutoLinkMode(anAutoLinkMode, customRegex));
+            petterns.put(anAutoLinkMode.name(), p);
+        }
+        return p;
+    }
+
+    private static String getRegexByAutoLinkMode(AutoLinkMode anAutoLinkMode, String customRegex) {
         switch (anAutoLinkMode) {
             case MODE_HASHTAG:
                 return RegexParser.HASHTAG_PATTERN;
