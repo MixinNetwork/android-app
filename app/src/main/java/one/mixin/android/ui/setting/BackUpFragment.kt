@@ -269,6 +269,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 if (viewDestroyed()) return@withContext
                 binding.backupProgress.isVisible = true
                 binding.backupInfo.isInvisible = true
+                binding.backupBn.isVisible = canUserAccessBackupDirectory(requireContext())
             }
             findBackupApi29(requireContext(), coroutineContext)
         } else {
