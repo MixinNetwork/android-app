@@ -110,7 +110,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun setListData() {
         val names = resources.getStringArray(R.array.currency_names)
-        val symbols = resources.getStringArray(R.array.currency_symbols)
+        val symbols = resources.getStringArray(R.array.currency_symbols).map { it.trim() }
         val flagArray = resources.obtainTypedArray(R.array.currency_flags)
         val flags = arrayListOf<Int>()
         for (i in names.indices) {
