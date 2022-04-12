@@ -250,9 +250,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                 }
                 anAutoLinkMode == AutoLinkMode.MODE_PHONE -> {
                     while (matcher.find()) {
-                        if (anAutoLinkMode != AutoLinkMode.MODE_PHONE || matcher.group().length > MIN_PHONE_NUMBER_LENGTH) {
                             addLinkItems(autoLinkItems, AutoLinkItem(matcher.start(), matcher.end(), matcher.group(), anAutoLinkMode))
-                        }
                     }
                     val deciPattern = Pattern.compile(DECIMAL_PATTERN)
                     val deciMatcher = deciPattern.matcher(text)
@@ -346,8 +344,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     companion object {
 
         internal val TAG = AutoLinkTextView::class.java.simpleName
-
-        private const val MIN_PHONE_NUMBER_LENGTH = 6
 
         private const val DEFAULT_COLOR = Color.RED
 
