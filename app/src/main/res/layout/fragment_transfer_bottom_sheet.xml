@@ -23,10 +23,9 @@
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="64dp"
-                android:layout_marginEnd="64dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
                 android:gravity="center"
-                android:singleLine="true"
                 android:textColor="?attr/text_primary"
                 android:textSize="@dimen/wallet_balance_text" />
 
@@ -35,9 +34,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginStart="32dp"
+                android:layout_marginStart="24dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
+                android:layout_marginEnd="24dp"
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp" />
 
