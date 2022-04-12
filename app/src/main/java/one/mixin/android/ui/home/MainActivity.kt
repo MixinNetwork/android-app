@@ -18,7 +18,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.DBUtil
-import androidx.work.WorkManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
@@ -73,7 +72,6 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.enqueueUniqueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -89,7 +87,9 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.ReduceFts4Job
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
+import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshExternalSchemeJob
+import one.mixin.android.job.RefreshFcmJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -137,8 +137,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
-import one.mixin.android.worker.RefreshContactWorker
-import one.mixin.android.worker.RefreshFcmWorker
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -343,11 +341,8 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(ReduceFts4Job())
         }
 
-        WorkManager.getInstance(this@MainActivity)
-            .enqueueUniqueOneTimeNetworkWorkRequest<RefreshContactWorker>("RefreshContactWorker")
-        WorkManager.getInstance(this@MainActivity)
-            .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
-        WorkManager.getInstance(this@MainActivity).pruneWork()
+        jobManager.addJobInBackground(RefreshContactJob())
+        jobManager.addJobInBackground(RefreshFcmJob())
     }
 
     @SuppressLint("RestrictedApi")
