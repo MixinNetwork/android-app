@@ -151,6 +151,22 @@ class ChannelManager {
             }
         }
 
+        @RequiresApi(Build.VERSION_CODES.O)
+        fun readChannelProp(context: Context) {
+            val existingChannels =
+                context.notificationManager.notificationChannels ?: return
+            try {
+                context.notificationManager.notificationChannelGroups.forEach {
+                    context.notificationManager.deleteNotificationChannelGroup(it.id)
+                }
+                existingChannels.forEach {
+                 Timber.e("name:${it.group}-audioAttributes:${it.audioAttributes}-sound:${it.sound}-importance${it.importance}")
+                }
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
+
         fun getChannelId(@ChannelCategory category: Int): String {
             val currentUserVersion = MixinApplication.appContext.defaultSharedPreferences.getInt(CHANNEL_CURRENT_USER_VERSION, 0)
             return when (category) {

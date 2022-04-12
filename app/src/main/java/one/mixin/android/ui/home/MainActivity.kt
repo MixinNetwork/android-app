@@ -124,6 +124,7 @@ import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.ChannelManager.Companion.readChannelProp
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.PropertyHelper
@@ -287,6 +288,7 @@ class MainActivity : BlazeBaseActivity() {
         refreshExternalSchemes()
         sendSafetyNetRequest()
         checkBatteryOptimization()
+        readChannelProp(this@MainActivity)
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
