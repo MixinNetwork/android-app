@@ -138,9 +138,6 @@ class ChannelManager {
             val existingChannels =
                 context.notificationManager.notificationChannels ?: return
             try {
-                context.notificationManager.notificationChannelGroups.forEach {
-                    context.notificationManager.deleteNotificationChannelGroup(it.id)
-                }
                 existingChannels.forEach {
                     if (it.id.startsWith(CHANNEL_GROUP) || it.id.startsWith(CHANNEL_MESSAGE) || it.id.startsWith(CHANNEL_SILENCE_MESSAGE)) {
                         context.notificationManager.deleteNotificationChannel(it.id)
@@ -156,11 +153,8 @@ class ChannelManager {
             val existingChannels =
                 context.notificationManager.notificationChannels ?: return
             try {
-                context.notificationManager.notificationChannelGroups.forEach {
-                    context.notificationManager.deleteNotificationChannelGroup(it.id)
-                }
                 existingChannels.forEach {
-                 Timber.e("name:${it.group}-audioAttributes:${it.audioAttributes}-sound:${it.sound}-importance${it.importance}")
+                    Timber.e("name:${it.group}-audioAttributes:${it.audioAttributes}-sound:${it.sound}-importance${it.importance}")
                 }
             } catch (e: Exception) {
                 Timber.e(e)

@@ -1,7 +1,6 @@
 package one.mixin.android.util
 
 import android.os.Build
-
 import android.text.TextUtils
 import timber.log.Timber
 import java.io.BufferedReader
@@ -69,9 +68,12 @@ object RomUtil {
             sName = ROM_OPPO
         } else if (!TextUtils.isEmpty(getProp(KEY_VERSION_VIVO).also { sVersion = it })) {
             sName = ROM_VIVO
-        } else if (!TextUtils.isEmpty(getProp(KEY_VERSION_SMARTISAN).also {
-                sVersion = it
-            })) {
+        } else if (!TextUtils.isEmpty(
+                getProp(KEY_VERSION_SMARTISAN).also {
+                    sVersion = it
+                }
+            )
+        ) {
             sName = ROM_SMARTISAN
         } else {
             sVersion = Build.DISPLAY
