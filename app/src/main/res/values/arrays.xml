@@ -8,46 +8,46 @@
     </string-array>
 
     <integer-array name="currency_flags">
-        <item>@drawable/ic_flag_cny</item>
-        <item>@drawable/ic_flag_usd</item>
-        <item>@drawable/ic_flag_jpy</item>
-        <item>@drawable/ic_flag_eur</item>
-        <item>@drawable/ic_flag_krw</item>
-        <item>@drawable/ic_flag_hkd</item>
-        <item>@drawable/ic_flag_gbp</item>
+        <item>@drawable/ic_flag_aed</item>
         <item>@drawable/ic_flag_aud</item>
-        <item>@drawable/ic_flag_sgd</item>
+        <item>@drawable/ic_flag_cny</item>
+        <item>@drawable/ic_flag_eur</item>
+        <item>@drawable/ic_flag_gbp</item>
+        <item>@drawable/ic_flag_hkd</item>
+        <item>@drawable/ic_flag_jpy</item>
+        <item>@drawable/ic_flag_krw</item>
         <item>@drawable/ic_flag_myr</item>
         <item>@drawable/ic_flag_php</item>
-        <item>@drawable/ic_flag_aed</item>
+        <item>@drawable/ic_flag_sgd</item>
+        <item>@drawable/ic_flag_usd</item>
     </integer-array>
     <string-array name="currency_names">
-        <item>CNY</item>
-        <item>USD</item>
-        <item>JPY</item>
-        <item>EUR</item>
-        <item>KRW</item>
-        <item>HKD</item>
-        <item>GBP</item>
+        <item>AED</item>
         <item>AUD</item>
-        <item>SGD</item>
+        <item>CNY</item>
+        <item>EUR</item>
+        <item>GBP</item>
+        <item>HKD</item>
+        <item>JPY</item>
+        <item>KRW</item>
         <item>MYR</item>
         <item>PHP</item>
-        <item>AED</item>
+        <item>SGD</item>
+        <item>USD</item>
     </string-array>
     <string-array name="currency_symbols">
-        <item>¥</item>
-        <item>$</item>
+        <item>AED&#160;</item>
+        <item>A$</item>
         <item>¥</item>
         <item>€</item>
-        <item>₩</item>
-        <item>HK$</item>
         <item>£</item>
-        <item>A$</item>
-        <item>S$</item>
+        <item>HK$</item>
+        <item>¥</item>
+        <item>₩</item>
         <item>RM</item>
         <item>₱</item>
-        <item>AED&#160;</item>
+        <item>S$</item>
+        <item>$</item>
     </string-array>
 
     <string-array name="language_names">
