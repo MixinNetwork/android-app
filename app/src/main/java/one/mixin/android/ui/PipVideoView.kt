@@ -41,6 +41,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
@@ -265,7 +266,7 @@ class PipVideoView {
                 FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END)
             )
             setOnClickListener {
-                if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+                if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
                     toast(R.string.need_background_permission)
                 }
                 MediaPagerActivity.show(

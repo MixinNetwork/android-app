@@ -68,6 +68,7 @@ import one.mixin.android.R
 import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.video.MediaController
@@ -878,7 +879,7 @@ val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
 }
 
 fun Context.checkInlinePermissions(): Boolean {
-    if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
         return false
     }
     if (Settings.canDrawOverlays(this)) {
@@ -888,7 +889,7 @@ fun Context.checkInlinePermissions(): Boolean {
 }
 
 fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
-    if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
         var intent = XiaomiUtilities.getPermissionManagerIntent()
         if (intent != null) {
             try {
