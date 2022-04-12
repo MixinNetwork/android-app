@@ -48,7 +48,7 @@
             android:textColor="?attr/text_primary"
             app:layout_constraintStart_toStartOf="@id/backup_title"
             app:layout_constraintTop_toBottomOf="@id/backup_title"
-            tools:text="@string/backup_never"/>
+            tools:text="@string/never"/>
 
         <ProgressBar
             android:id="@+id/backup_progress"

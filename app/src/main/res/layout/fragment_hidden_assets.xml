@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="@string/asset_no_hidden"
+                android:text="@string/no_hidden_asset"
                 android:textColor="?attr/text_minor"
                 android:textSize="16sp"/>
         </RelativeLayout>

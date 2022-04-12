@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/add_people_title" />
+        app:titleText="@string/add_people" />
 
     <EditText
         android:id="@+id/search_et"
@@ -38,7 +38,7 @@
         android:layout_below="@id/search_et"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/add_people_tip"
+        android:text="@string/my_mixin_id"
         android:textColor="?attr/text_primary"
         android:textSize="12sp" />
 

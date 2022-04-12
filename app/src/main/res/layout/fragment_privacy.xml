@@ -185,7 +185,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:text="@string/auto_immediately"
+                    android:text="@string/immediately"
                     android:textColor="?attr/text_minor"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>

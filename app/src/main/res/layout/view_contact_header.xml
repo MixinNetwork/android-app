@@ -205,7 +205,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/center_add_contact"
             android:layout_toEndOf="@+id/add_contact_iv"
-            android:text="@string/contact_add_contact_desc" />
+            android:text="@string/add_people_hint" />
     </RelativeLayout>
 
     <RelativeLayout

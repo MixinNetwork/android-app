@@ -819,13 +819,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             UserRelationship.STRANGER.name -> {
                 binding.addTv.visibility = VISIBLE
                 binding.addTv.setCompoundDrawables(null, null, null, null)
-                binding.addTv.text = getString(
+                "+ ${getString(
                     if (user.isBot()) {
                         R.string.add_bot
                     } else {
                         R.string.add_contact
                     }
-                )
+                )}".also { binding.addTv.text = it }
                 binding.addTv.setOnClickListener {
                     updateRelationship(UserRelationship.FRIEND.name)
                     if (user.isBot()) {
