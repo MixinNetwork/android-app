@@ -14,6 +14,7 @@ import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.db.contants.VIDEOS
 import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
@@ -567,6 +568,7 @@ interface MessageDao : BaseDao<Message> {
         if (userId != message.userId) {
             conversationDao.unseenMessageCount(message.conversationId, userId)
         }
+        InvalidateFlow.emit(message.conversationId)
     }
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)

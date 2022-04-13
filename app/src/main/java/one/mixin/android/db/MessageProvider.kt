@@ -1055,7 +1055,7 @@ class MessageProvider {
         countStatement: RoomSQLiteQuery,
         scope: CoroutineScope,
         conversationId: String
-    ) : FastLimitOffsetDataSource<MessageItem>(database, statement, countStatement, scope, conversationId, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
+    ) : FastLimitOffsetDataSource<MessageItem>(database, statement, countStatement, scope, conversationId, false) {
         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
             return convertToMessageItems(cursor)
         }

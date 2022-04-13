@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.session.Session
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -227,6 +228,7 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         if (userId != message.userId) {
             conversationDao().unseenMessageCount(message.conversationId, userId)
         }
+        InvalidateFlow.emit(message.conversationId)
     }
 }
 
