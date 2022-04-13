@@ -96,7 +96,7 @@ buildscript {
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.5.1'
         ext.balloonVersion = '1.4.1'
-        ext.markdownVersion = '0.2.0'
+        ext.markdownVersion = '0.3.1'
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20220320'
