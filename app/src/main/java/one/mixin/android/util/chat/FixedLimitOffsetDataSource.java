@@ -30,7 +30,7 @@ public abstract class FixedLimitOffsetDataSource<T> extends PositionalDataSource
         mDb = db;
         mTotalCount = unreadCount + FIXED_LOAD_SIZE / 2;
         mSourceQuery = query;
-        mLimitOffsetQuery = "SELECT * FROM ( " + mSourceQuery.getSql() + " ) LIMIT ? OFFSET ?";
+        mLimitOffsetQuery = mSourceQuery.getSql() + " LIMIT ? OFFSET ?";
         mObserver = new InvalidationTracker.Observer(tables) {
             @Override
             public void onInvalidated(@NonNull Set<String> tables) {
