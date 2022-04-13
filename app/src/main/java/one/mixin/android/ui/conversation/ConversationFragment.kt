@@ -1159,8 +1159,6 @@ class ConversationFragment() :
                 val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
                 if (imeHeight > 0 && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                     binding.inputLayout.openInputArea(binding.chatControl.chatEt)
-                } else {
-                    binding.inputLayout.forceClose(binding.chatControl.chatEt)
                 }
             }
         }
@@ -1192,14 +1190,6 @@ class ConversationFragment() :
         paused = true
         binding.inputLayout.setOnKeyboardShownListener(null)
         binding.inputLayout.setOnKeyBoardHiddenListener(null)
-        if (binding.chatControl.getVisibleContainer() == null) {
-            ViewCompat.getRootWindowInsets(binding.inputArea)?.let { windowInsetsCompat ->
-                val imeHeight = windowInsetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom
-                if (imeHeight <= 0) {
-                    binding.inputLayout.forceClose()
-                }
-            }
-        }
         MixinApplication.conversationId = null
     }
 
