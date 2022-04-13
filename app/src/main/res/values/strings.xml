@@ -21,7 +21,7 @@
     <string name="address">Address</string>
     <string name="amount">Amount</string>
     <string name="action_transfer">Transfer</string>
-    <string name="admin">admin</string>
+    <string name="admin">Admin</string>
     <string name="owner">owner</string>
     <string name="action_share">Share</string>
     <string name="action_done">Done</string>
@@ -65,7 +65,7 @@
     <string name="capital_no_result">NO RESULT</string>
     <string name="send_to">Send to %1$s</string>
     <string name="action_transfer_send">Send</string>
-    <string name="action_transfer_receive">Receive</string>
+    <string name="action_receive">Receive</string>
     <string name="developer">Developer</string>
     <string name="mixin_id" translatable="false">Mixin ID</string>
     <string name="action_later">Later</string>
@@ -263,7 +263,7 @@
     <string name="contact_new_group_chat_title">New Group Chat</string>
     <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
     <string name="contact_add_contact_title">Add Contact</string>
-    <string name="contact_add_contact_desc">Add people by Mixin ID or phone number</string>
+    <string name="add_people_hint">Add people by Mixin ID or phone number</string>
     <string name="contact_qr_mixin">Mixin QR Code</string>
     <string name="contact_qr_desc">Scan a friend\'s Mixin QR code</string>
     <string name="contact_invite_title">Invite People</string>
@@ -281,8 +281,8 @@
     <string name="contact_my_share_apps">My shared apps</string>
     <string name="contact_receive_money">Receive Money</string>
     <string name="contact_receive_tip">Scan QR code payment</string>
-    <string name="add_contact">+ Add Contact</string>
-    <string name="add_bot">+ Add Bot</string>
+    <string name="add_contact">Add Contact</string>
+    <string name="add_bot">Add Bot</string>
     <string name="contact_search_hint">Name, Mixin ID</string>
     <string name="contact_share_apps_title">%1$s\'s Shared Apps</string>
     <string name="contact_share_apps_no_app">NO APP</string>
@@ -332,7 +332,7 @@
     <string name="hold_to_record_audio">Hold to record, release to send</string>
     <string name="chat_call_duration">Duration: %1$s</string>
     <string name="chat_call_canceled">Cancelled</string>
-    <string name="chat_call_canceled_by_caller">Call Cancelled by caller</string>
+    <string name="chat_call_canceled_by_caller">Cancelled by caller</string>
     <string name="chat_call_declined">Declined</string>
     <string name="chat_call_declined_other">Call declined</string>
     <string name="chat_call_local_busy">Line busy</string>
@@ -357,10 +357,10 @@
     <string name="chat_recall_delete_alert">Messages you selected will be deleted for everyone on the latest version of Mixin in this chat.</string>
     <string name="chat_recall_delete_more">Learn More</string>
     <string name="chat_go_check">View</string>
-    <string name="chat_app_card_suspicious_link">Suspicious Link</string>
-    <string name="chat_app_card_suspicious_link_tips">The link is not in the corresponding resource patterns.</string>
+    <string name="web_suspicious_link">Suspicious Link</string>
+    <string name="web_suspicious_link_tips">The link is not in the corresponding resource patterns.</string>
     <string name="chat_app_card_back_to_chat">Back To Chat</string>
-    <string name="chat_app_card_continue_open_url">Continue Open URL</string>
+    <string name="web_continue_open_url">Continue Open URL</string>
     <string name="chat_tap_join">Tap to join</string>
     <string name="chat_group_call_invite">%1$s has invited you to a group call</string>
     <string name="chat_group_call_decline">%1$s has declined group call</string>
@@ -370,7 +370,7 @@
     <string name="chat_group_call_remote_peer_closed">Peer connection has been closed, please try again</string>
     <string name="chat_group_call_mute">Your mic will be off to start</string>
     <string name="chat_call_title">Call</string>
-    <string name="chat_call_add">Add</string>
+    <string name="action_add">Add</string>
     <string name="chat_call_bad_network_you">Connection is unstable</string>
     <string name="chat_not_found">Message not found</string>
     <string name="chat_transcript">Transcript</string>
@@ -402,9 +402,9 @@
     <string name="contact_mute_1week">1 Week</string>
     <string name="contact_mute_1year">1 Year</string>
     <!--Add people-->
-    <string name="add_people_title">Add People</string>
+    <string name="add_people">Add People</string>
     <string name="add_people_search_hint">Mixin ID or Phone number</string>
-    <string name="add_people_tip">My Mixin ID: %1$s</string>
+    <string name="my_mixin_id">My Mixin ID: %1$s</string>
     <!--wallet-->
     <string name="wallet">Wallet</string>
     <string name="wallet_password_set_pin">Set PIN</string>
@@ -457,8 +457,8 @@
     <string name="transactions_id">Transaction Id</string>
     <string name="transactions_type">Transaction Type</string>
     <string name="transactions_status">Status</string>
-    <string name="asset_no_hidden">No hidden assets</string>
-    <string name="asset_none">N/A</string>
+    <string name="no_hidden_asset">No hidden assets</string>
+    <string name="no_applicable">N/A</string>
     <string name="wallet_pay_with_biometrics">Pay with Biometrics</string>
     <string name="wallet_pin_open_biometrics">Please enter PIN to open Biometrics</string>
     <string name="wallet_pin_modify_biometrics">Please enter PIN to Modify Pay with PIN interval</string>
@@ -693,9 +693,9 @@
     <string name="setting_battery_optimize_title">To ensure that Mixin receives messages properly, please set Mixin\'s battery optimization policy to \"Don\'t Optimize\"</string>
     <string name="go_set">Go settings</string>
     <!--about-->
-    <string name="about_follow_twitter">Follow us on Twitter</string>
-    <string name="about_follow_facebook">Follow us on Facebook</string>
-    <string name="about_help_center">Help center</string>
+    <string name="follow_twitter">Follow us on Twitter</string>
+    <string name="follow_facebook">Follow us on Facebook</string>
+    <string name="help_center">Help center</string>
     <string name="about_version">Version %1$s</string>
     <string name="conversation_delete">Delete</string>
     <string name="chat_group_create">%1$s created group \"%2$s\"</string>
@@ -784,7 +784,7 @@
     <string name="auth_assets_more">%1$s and more</string>
     <string name="auth_permission_contacts_read">Read Contacts</string>
     <string name="auth_permission_contacts_read_description">access your contacts list</string>
-    <string name="auth_authorization">Authorization</string>
+    <string name="authorizations">Authorizations</string>
     <string name="auth_refuse">Refuse</string>
     <string name="auth_messages_represent">Represent Messages</string>
     <string name="auth_messages_represent_description">allow bot to send messages represent of you</string>
@@ -857,15 +857,14 @@
     <string name="send_file">Send \"%1$s\" to %2$s?</string>
     <string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
     <string name="default_time" translatable="false">00:00</string>
-    <string name="action_open_in_browser">Open in browser</string>
-    <string name="action_view_auth">View Authorization</string>
+    <string name="open_in_browser">Open in browser</string>
+    <string name="action_view_authorization">View Authorization</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_update">Update</string>
     <string name="action_reload">Reload</string>
     <string name="slide_to_cancel">Slide to Cancel</string>
     <string name="gallery_all_media">All Media</string>
     <string name="gallery_no_media_yet">No media yet</string>
-    <string name="account_memo">Memo</string>
     <string name="bot_not_auth_yet">No permission has been granted to this bot</string>
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_address">Address</string>
@@ -880,16 +879,16 @@
     </plurals>
     <string name="deposit_reserve">Deposit at least %1$s for the first time.</string>
     <string name="bottom_withdrawal_title">%1$s Withdrawal</string>
-    <string name="bottom_withdrawal_change_amount">Change Amount</string>
+    <string name="change_amount">Change Amount</string>
     <string name="bottom_withdrawal_address_tips">For the first withdrawal to a new address, please try small amounts! If you withdraw the assets to the wrong address, that would not be recovered!</string>
     <string name="bottom_withdrawal_address_continue">Continue</string>
-    <string name="bottom_withdrawal_least_tip">Minimum withdraw amount is %1$s %2$s</string>
-    <string name="bottom_deposit_title">%1$s Deposit</string>
-    <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens.</string>
-    <string name="bottom_deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, etc.</string>
-    <string name="bottom_deposit_tip_btc">This address only supports BTC.</string>
-    <string name="bottom_deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens.</string>
-    <string name="bottom_deposit_tip_common">This address only supports %1$s.</string>
+    <string name="withdrawal_minimum_amount">Minimum withdraw amount is %1$s %2$s</string>
+    <string name="deposit_title">%1$s Deposit</string>
+    <string name="deposit_tip_eos">This address supports all base on EOS tokens.</string>
+    <string name="deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, etc.</string>
+    <string name="deposit_tip_btc">This address only supports BTC.</string>
+    <string name="deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens.</string>
+    <string name="deposit_tip_common">This address only supports %1$s.</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chosen is correct. If you transfer to the wrong person, your assets will be lost!</string>
     <!--sticker-->
     <string name="sticker_manager">Manager Sticker</string>
@@ -954,7 +953,7 @@
     <string name="backup_title">Last Backup</string>
     <string name="backup_des">Back up your messages to external storage. You can restore them when you reinstall Mixin. Messages you back up are not protected while in external storage.</string>
     <string name="backup_external_storage">External storage: %1$s</string>
-    <string name="backup_never">Never</string>
+    <string name="never">Never</string>
     <string name="backup">Backup</string>
     <string name="backup_media">Include media files</string>
     <string name="backup_choose_folder">Choose folder</string>
@@ -1007,7 +1006,7 @@
     <string name="circle_all_conversation">All Conversations</string>
     <string name="circle_mixin">Mixin</string>
     <string name="circle_menu_edit_name">Edit Circle Name</string>
-    <string name="circle_menu_edit_conversation">Edit Conversation</string>
+    <string name="circle_menu_edit_conversation">Edit Conversations</string>
     <string name="circle_action_menu_delete">Delete</string>
     <string name="circle_action_menu_sort">Sort</string>
     <string name="circles">Circles</string>
@@ -1018,11 +1017,9 @@
     <string name="circle_empty_start">Add Conversations</string>
     <string name="circle_limit">The number has reached the limit</string>
     <!--  bot  -->
-    <string name="bots">Bots</string>
+    <string name="bots_capital">Bots</string>
     <string name="bot_dock_empty">Long press and drag the bot to the top</string>
     <string name="bot_internal_scan">Scan QR</string>
-    <string name="bot_internal_camera">Camera</string>
-    <string name="bot_internal_wallet">Wallet</string>
     <string name="bot_empty_tip">Please add your favorite bot first.</string>
     <!-- share -->
     <string name="share_message_description">Are you sure you want to send a %2$s from %1$s ?</string>
@@ -1059,7 +1056,7 @@
     <string name="automatically_lock">Automatically lock</string>
     <string name="app_locked">Mixin Locked</string>
     <string name="touch_fingerprint_sensor">Touch the fingerprint sensor</string>
-    <string name="auto_immediately">Immediately</string>
+    <string name="immediately">Immediately</string>
     <string name="auto_after_1_minute">After 1 minute</string>
     <string name="auto_after_30_minutes">After 30 minutes</string>
     <string name="enable_immediately">Enabled immediately</string>

@@ -82,7 +82,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
+            backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.never))
             backupChoose.setOnClickListener {
                 chooseFolder()
             }
@@ -288,7 +288,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 binding.backupProgress.isVisible = false
                 binding.backupInfo.isInvisible = false
                 if (info == null) {
-                    backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
+                    backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.never))
                     backupPath.isVisible = false
                 } else {
                     val time = info.lastModified.run {

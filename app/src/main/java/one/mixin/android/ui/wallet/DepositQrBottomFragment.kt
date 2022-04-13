@@ -59,7 +59,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             title.rightIv.setOnClickListener { dismiss() }
             when (type) {
                 TYPE_TAG -> {
-                    title.titleTv.text = getString(R.string.account_memo)
+                    title.titleTv.text = getString(R.string.memo)
                     addrTv.text = asset.tag
                 }
                 else -> {

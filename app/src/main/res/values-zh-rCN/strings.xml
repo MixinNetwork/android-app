@@ -14,7 +14,7 @@
     <string name="notification">通知</string>
     <string name="none">无</string>
     <string name="fee">手续费</string>
-    <string name="memo">备注</string>
+    <string name="memo">Memo（备注）</string>
     <string name="date">日期</string>
     <string name="label">标题</string>
     <string name="address">地址</string>
@@ -61,7 +61,7 @@
     <string name="capital_no_result">没有结果</string>
     <string name="send_to">发送给 %1$s</string>
     <string name="action_transfer_send">转出</string>
-    <string name="action_transfer_receive">转入</string>
+    <string name="action_receive">转入</string>
     <string name="developer">开发者</string>
     <string name="action_later">稍后</string>
     <string name="action_save_to_music">保存到音乐库</string>
@@ -242,7 +242,7 @@
     <string name="contact_new_group_chat_title">新群聊</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
     <string name="contact_add_contact_title">添加联系人</string>
-    <string name="contact_add_contact_desc">通过 Mixin ID 或手机号添加联系人</string>
+    <string name="add_people_hint">通过 Mixin ID 或手机号添加联系人</string>
     <string name="contact_qr_mixin">Mixin 二维码</string>
     <string name="contact_qr_desc">扫描好友的二维码</string>
     <string name="contact_invite_title">邀请好友</string>
@@ -329,10 +329,10 @@
     <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的设备都将删除被选中的消息</string>
     <string name="chat_recall_delete_more">了解更多</string>
     <string name="chat_go_check">查看</string>
-    <string name="chat_app_card_suspicious_link">可疑链接</string>
-    <string name="chat_app_card_suspicious_link_tips">该链接不在对应的机器人域名白名单内。</string>
+    <string name="web_suspicious_link">可疑链接</string>
+    <string name="web_suspicious_link_tips">该链接不在对应的机器人域名白名单内。</string>
     <string name="chat_app_card_back_to_chat">返回聊天</string>
-    <string name="chat_app_card_continue_open_url">继续访问</string>
+    <string name="web_continue_open_url">继续访问</string>
     <string name="chat_tap_join">点击加入</string>
     <string name="chat_group_call_invite">%1$s 邀请你加入群组语音</string>
     <string name="chat_group_call_decline">%1$s 已拒绝群组语音</string>
@@ -342,7 +342,7 @@
     <string name="chat_group_call_remote_peer_closed">连接已结束，请重试</string>
     <string name="chat_group_call_mute">你的麦克风在开始时会被关闭</string>
     <string name="chat_call_title">语音</string>
-    <string name="chat_call_add">添加</string>
+    <string name="action_add">添加</string>
     <string name="chat_call_bad_network_you">当前通话网络不佳</string>
     <string name="chat_not_found">找不到该消息</string>
     <string name="chat_transcript">聊天记录</string>
@@ -378,9 +378,9 @@
         <item quantity="other">%1$d位联系人</item>
     </plurals>
     <!--Add people-->
-    <string name="add_people_title">添加朋友</string>
+    <string name="add_people">添加朋友</string>
     <string name="add_people_search_hint">Mixin ID 或手机号</string>
-    <string name="add_people_tip">我的 Mixin ID: %1$s</string>
+    <string name="my_mixin_id">我的 Mixin ID: %1$s</string>
     <!--wallet-->
     <string name="wallet">钱包</string>
     <string name="wallet_password_set_pin">设置密码</string>
@@ -433,8 +433,8 @@
     <string name="transactions_id">交易编号</string>
     <string name="transactions_type">交易类型</string>
     <string name="transactions_status">交易状态</string>
-    <string name="asset_no_hidden">没有隐藏的资产</string>
-    <string name="asset_none">暂无价格</string>
+    <string name="no_hidden_asset">没有隐藏的资产</string>
+    <string name="no_applicable">暂无价格</string>
     <string name="wallet_pay_with_biometrics">用生物识别支付</string>
     <string name="wallet_pin_open_biometrics">请输入密码来启用生物识别支付</string>
     <string name="wallet_pin_modify_biometrics">请输入密码来修改支付密码使用间隔</string>
@@ -664,9 +664,9 @@
     <string name="setting_battery_optimize_title">为了保证 Mixin 能够正常收到消息，请将 Mixin 的电池优化策略设置为“不优化”</string>
     <string name="go_set">去设置</string>
     <!--about-->
-    <string name="about_follow_twitter">关注我们的 Twitter</string>
-    <string name="about_follow_facebook">关注我们的 Facebook</string>
-    <string name="about_help_center">帮助中心</string>
+    <string name="follow_twitter">关注我们的 Twitter</string>
+    <string name="follow_facebook">关注我们的 Facebook</string>
+    <string name="help_center">帮助中心</string>
     <string name="about_version">版本 %1$s</string>
     <string name="conversation_delete">删除</string>
     <string name="chat_group_create">%1$s创建了群组\"%2$s\"</string>
@@ -756,7 +756,7 @@
     <string name="auth_assets_more">%1$s 等</string>
     <string name="auth_permission_contacts_read">查看联系人</string>
     <string name="auth_permission_contacts_read_description">访问你的联系人列表</string>
-    <string name="auth_authorization">授权</string>
+    <string name="authorizations">授权</string>
     <string name="auth_refuse">拒绝</string>
     <string name="auth_messages_represent">代发消息</string>
     <string name="auth_messages_represent_description">允许机器人代表你发消息</string>
@@ -829,15 +829,14 @@
     <string name="action_send_silence">静音发送</string>
     <string name="send_file">将 \"%1$s\" 发送给 %2$s?</string>
     <string name="send_file_group">将 \"%1$s\" 发送给 \"%2$s\"?</string>
-    <string name="action_open_in_browser">在浏览器中打开</string>
-    <string name="action_view_auth">查看授权</string>
+    <string name="open_in_browser">在浏览器中打开</string>
+    <string name="action_view_authorization">查看授权</string>
     <string name="action_refresh">刷新</string>
     <string name="action_update">升级</string>
     <string name="action_reload">重新载入</string>
     <string name="slide_to_cancel">滑动取消</string>
     <string name="gallery_all_media">全部</string>
     <string name="gallery_no_media_yet">还没有图片或视频</string>
-    <string name="account_memo">Memo（备注）</string>
     <string name="bot_not_auth_yet">还未授权此机器人任何权限</string>
     <string name="withdrawal_label">地址名称，例如 OceanOne</string>
     <string name="withdrawal_address">提现地址</string>
@@ -851,16 +850,16 @@
     </plurals>
     <string name="deposit_reserve">首次充值至少 %1$s ！</string>
     <string name="bottom_withdrawal_title">%1$s 提现</string>
-    <string name="bottom_withdrawal_change_amount">修改金额</string>
+    <string name="change_amount">修改金额</string>
     <string name="bottom_withdrawal_address_tips">首次提现到新地址，建议小额尝试！如果您提现到错误的地址资产将无法找回！</string>
     <string name="bottom_withdrawal_address_continue">继续提现</string>
-    <string name="bottom_withdrawal_least_tip">提现金额最小 %1$s %2$s</string>
-    <string name="bottom_deposit_title">%1$s 充值</string>
-    <string name="bottom_deposit_tip_eos">支持所有基于 EOS 发行的代币。</string>
-    <string name="bottom_deposit_tip_eth">支持所有符合 ERC-20 标准的代币，例如 ETH、XIN 等。</string>
-    <string name="bottom_deposit_tip_btc">该充值地址仅支持 BTC。</string>
-    <string name="bottom_deposit_tip_trx">支持 TRX 和所有符合 TRC-10 TRC-20 标准的代币。</string>
-    <string name="bottom_deposit_tip_common">该充值地址仅支持 %1$s。</string>
+    <string name="withdrawal_minimum_amount">提现金额最小 %1$s %2$s</string>
+    <string name="deposit_title">%1$s 充值</string>
+    <string name="deposit_tip_eos">支持所有基于 EOS 发行的代币。</string>
+    <string name="deposit_tip_eth">支持所有符合 ERC-20 标准的代币，例如 ETH、XIN 等。</string>
+    <string name="deposit_tip_btc">该充值地址仅支持 BTC。</string>
+    <string name="deposit_tip_trx">支持 TRX 和所有符合 TRC-10 TRC-20 标准的代币。</string>
+    <string name="deposit_tip_common">该充值地址仅支持 %1$s。</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s 不是您的联系人，请确认收款人是否正确。如果您转错了人资产将无法追回！</string>
     <!--sticker-->
     <string name="sticker_manager">管理贴纸</string>
@@ -922,7 +921,7 @@
     <string name="backup_title">上次备份</string>
     <string name="backup_des">备份对话记录到外部存储以便在重新安装 Mixin 时还原对话记录，备份到外部存储的对话不会进行加密处理。</string>
     <string name="backup_external_storage">外部存储: %1$s</string>
-    <string name="backup_never">从未备份</string>
+    <string name="never">从未备份</string>
     <string name="backup">备份</string>
     <string name="backup_media">包含媒体文件</string>
     <string name="backup_choose_folder">选择文件夹</string>
@@ -984,11 +983,9 @@
     <string name="circle_empty_start">添加会话</string>
     <string name="circle_limit">已达到上限</string>
     <!--  bot  -->
-    <string name="bots">机器人</string>
+    <string name="bots_capital">机器人</string>
     <string name="bot_dock_empty">长按并拖拽机器人置顶</string>
     <string name="bot_internal_scan">扫一扫</string>
-    <string name="bot_internal_camera">相机</string>
-    <string name="bot_internal_wallet">钱包</string>
     <string name="bot_empty_tip">可以添加你喜欢的机器人</string>
     <!-- share -->
     <string name="share_message_description">你确定要发送来自%1$s的%2$s？</string>
@@ -1025,7 +1022,7 @@
     <string name="unlock_with_fingerprint">使用指纹解锁</string>
     <string name="unlock_with_fingerprint_desc">启用后，您需要使用指纹解锁以开启 Mixin。</string>
     <string name="automatically_lock">自动锁定</string>
-    <string name="auto_immediately">立即启动</string>
+    <string name="immediately">立即启动</string>
     <string name="auto_after_1_minute">1 分钟之后</string>
     <string name="auto_after_30_minutes">30 分钟之后</string>
     <string name="enable_immediately">立即启动</string>

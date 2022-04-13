@@ -87,7 +87,7 @@
             android:padding="16dp"
             android:textSize="16sp"
             android:textColor="?attr/text_primary"
-            android:text="@string/auto_immediately"/>
+            android:text="@string/immediately"/>
 
         <RadioButton
             android:id="@+id/auto_after_1_minute"
