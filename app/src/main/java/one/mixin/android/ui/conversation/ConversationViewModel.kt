@@ -356,10 +356,10 @@ internal constructor(
         Observable.just(userId).subscribeOn(Schedulers.io())
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
-    fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun cancel(id: String, conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.cancelJobByMixinJobId(id) {
             viewModelScope.launch {
-                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id)
+                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id, conversationId)
             }
         }
     }
@@ -370,7 +370,7 @@ internal constructor(
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId,
@@ -405,7 +405,7 @@ internal constructor(
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }
@@ -468,6 +468,7 @@ internal constructor(
             list.forEach { item ->
                 conversationRepository.deleteMessage(
                     item.messageId,
+                    item.conversationId,
                     item.absolutePath(),
                     item.mediaStatus == MediaStatus.DONE.name
                 )

@@ -4,12 +4,9 @@ import android.annotation.SuppressLint
 import android.database.Cursor
 import androidx.annotation.RestrictTo
 import androidx.paging.PositionalDataSource
-import androidx.room.InvalidationTracker
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.util.reportException
 import timber.log.Timber
@@ -22,14 +19,9 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
     private val countQuery: RoomSQLiteQuery,
     private val coroutineScope: CoroutineScope,
     private val conversationId: String,
-    private val inTransaction: Boolean,
-    vararg tables: String?,
+    private val inTransaction: Boolean
 ) : PositionalDataSource<T>() {
     private val limitOffsetQuery: String = sourceQuery.sql + " LIMIT ? OFFSET ?"
-    private val observer: InvalidationTracker.Observer
-    private val invalidateFlow by lazy {
-        MutableSharedFlow<Boolean>(0, 1, BufferOverflow.DROP_OLDEST)
-    }
 
     /**
      * Count number of rows query can return
@@ -139,22 +131,14 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         }
     }
 
-    private var invalidateCount = 0
-
     init {
-        observer = object : InvalidationTracker.Observer(tables) {
-            override fun onInvalidated(tables: Set<String>) {
-                coroutineScope.launch {
-                    invalidateFlow.emit(true)
-                    invalidateCount++
-                }
-            }
-        }
-        db.invalidationTracker.addWeakObserver(observer)
         coroutineScope.launch {
-            invalidateFlow.collect {
-                invalidate()
-            }
+            InvalidateFlow.collect(
+                { this@FastLimitOffsetDataSource.conversationId == conversationId },
+                {
+                    invalidate()
+                }
+            )
         }
     }
 }

@@ -150,7 +150,7 @@ internal constructor(
         conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
             ?.let { list ->
                 list.forEach { item ->
-                    conversationRepository.deleteMessage(item.messageId, item.absolutePath(MixinApplication.appContext, conversationId, item.mediaUrl))
+                    conversationRepository.deleteMessage(item.messageId, conversationId, item.absolutePath(MixinApplication.appContext, conversationId, item.mediaUrl))
                 }
             }
         categoryPath(MixinApplication.appContext, signalCategory, conversationId)?.deleteRecursively()

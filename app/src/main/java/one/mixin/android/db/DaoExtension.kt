@@ -1,7 +1,7 @@
 package one.mixin.android.db
 
-import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.session.Session
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -159,6 +159,13 @@ fun MixinDatabase.clearParticipant(
     }
 }
 
+fun JobDao.insertNoReplace(job: Job) {
+    if (findJobById(job.jobId) == null) {
+        insert(job)
+    }
+}
+
+// Message SQL
 fun MixinDatabase.deleteMessageById(messageId: String) {
     runInTransaction {
         pinMessageDao().deleteByMessageId(messageId)
@@ -168,30 +175,11 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
     }
 }
 
-fun MixinDatabase.deleteMediaMessageByConversationAndCategory(
-    conversationId: String,
-    signalCategory: String,
-    plainCategory: String,
-    encryptCategory: String,
-    limit: Int = DB_DELETE_LIMIT
-) {
-    runInTransaction {
-        pinMessageDao().deleteConversationId(conversationId)
-        mentionMessageDao().deleteMessageByConversationIdSync(conversationId, limit)
-        messageDao().deleteMediaMessageByConversationAndCategory(
-            conversationId,
-            signalCategory,
-            plainCategory,
-            encryptCategory,
-            limit
-        )
-    }
-}
-
 suspend fun MixinDatabase.deleteMessageByConversationId(conversationId: String, limit: Int) {
     pinMessageDao().deleteConversationId(conversationId)
     messageDao().deleteMessageByConversationId(conversationId, limit)
     mentionMessageDao().deleteMessageByConversationId(conversationId, limit)
+    InvalidateFlow.emit(conversationId)
 }
 
 suspend fun MessageDao.batchMarkReadAndTake(
@@ -205,21 +193,6 @@ suspend fun MessageDao.batchMarkReadAndTake(
     }
 }
 
-fun JobDao.insertNoReplace(job: Job) {
-    if (findJobById(job.jobId) == null) {
-        insert(job)
-    }
-}
-
-fun MixinDatabase.deleteMessage(id: String) {
-    runInTransaction {
-        messageDao().deleteMessageById(id)
-        pinMessageDao().deleteByMessageId(id)
-        mentionMessageDao().deleteMessage(id)
-        messageFts4Dao().deleteByMessageId(id)
-    }
-}
-
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
@@ -227,8 +200,6 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         if (userId != message.userId) {
             conversationDao().unseenMessageCount(message.conversationId, userId)
         }
+        InvalidateFlow.emit(message.conversationId)
     }
 }
-
-fun MixinDatabase.findFullNameById(userId: String): String? =
-    userDao().findFullNameById(userId)

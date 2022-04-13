@@ -634,7 +634,7 @@ class ConversationFragment() :
             }
 
             override fun onCancel(id: String) {
-                chatViewModel.cancel(id)
+                chatViewModel.cancel(id, conversationId)
             }
 
             override fun onAudioClick(messageItem: MessageItem) {

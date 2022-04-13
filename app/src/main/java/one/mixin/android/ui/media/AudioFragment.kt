@@ -50,7 +50,7 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
                     }
                 }
                 messageItem.mediaStatus == MediaStatus.PENDING.name -> {
-                    viewModel.cancel(messageItem.messageId)
+                    viewModel.cancel(messageItem.messageId, messageItem.conversationId)
                 }
                 mediaDownloaded(messageItem.mediaStatus) ->
                     if (AudioPlayer.isPlay(messageItem.messageId)) {

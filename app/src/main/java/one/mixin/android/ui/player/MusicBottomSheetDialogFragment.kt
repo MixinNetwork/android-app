@@ -35,6 +35,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
@@ -226,6 +227,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
         jobManager.cancelJobByMixinJobId(mediaItemData.mediaId) {
             lifecycleScope.launch {
                 messageDao.updateMediaStatusSuspend(MediaStatus.CANCELED.name, mediaItemData.mediaId)
+                InvalidateFlow.emit(conversationId)
             }
         }
     }

@@ -23,6 +23,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -329,6 +330,7 @@ class AudioPlayer private constructor() {
         val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
         if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
+            InvalidateFlow.emit(currentMessage.conversationId)
         }
         val message = messageDao.findNextAudioMessage(
             currentMessage.conversationId,

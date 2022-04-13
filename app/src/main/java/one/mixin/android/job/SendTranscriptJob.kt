@@ -10,6 +10,7 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MediaStatus
@@ -57,6 +58,7 @@ class SendTranscriptJob(
             }
             MessageFts4Helper.insertMessageFts4(message.id, stringBuffer.toString())
             messageDao.insert(message)
+            InvalidateFlow.emit(message.conversationId)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
                     val mediaUrl = Uri.parse(transcript.absolutePath())
@@ -98,6 +100,7 @@ class SendTranscriptJob(
         if (transcripts.any { t -> t.isAttachment() }) {
             val mediaSize = transcripts.sumOf { t -> t.mediaSize ?: 0 }
             messageDao.updateMediaSize(mediaSize, message.id)
+            InvalidateFlow.emit(message.conversationId)
             transcripts.filter { t ->
                 t.isAttachment()
             }.forEach { t ->
@@ -110,6 +113,7 @@ class SendTranscriptJob(
             }
         } else {
             messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+            InvalidateFlow.emit(message.conversationId)
             message.mediaStatus = MediaStatus.DONE.name
             message.content = GsonHelper.customGson.toJson(transcripts)
             jobManager.addJob(SendMessageJob(message))

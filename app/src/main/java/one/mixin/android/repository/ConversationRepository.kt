@@ -37,8 +37,8 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.batchMarkReadAndTake
-import one.mixin.android.db.deleteMessage
 import one.mixin.android.db.deleteMessageByConversationId
+import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
@@ -56,6 +56,7 @@ import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
@@ -220,8 +221,10 @@ internal constructor(
     fun fuzzySearchGroupParticipants(conversationId: String, username: String, identityNumber: String) =
         participantDao.fuzzySearchGroupParticipants(conversationId, username, identityNumber)
 
-    suspend fun updateMediaStatusSuspend(status: String, messageId: String) =
+    suspend fun updateMediaStatusSuspend(status: String, messageId: String, conversationId: String) {
         messageDao.updateMediaStatusSuspend(status, messageId)
+        InvalidateFlow.emit(conversationId)
+    }
 
     suspend fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) =
         withContext(SINGLE_DB_THREAD) {
@@ -399,7 +402,10 @@ internal constructor(
 
     fun updateGroupMuteUntil(conversationId: String, muteUntil: String) = conversationDao.updateGroupMuteUntil(conversationId, muteUntil)
 
-    fun updateMediaStatus(status: String, id: String) = messageDao.updateMediaStatus(status, id)
+    fun updateMediaStatus(status: String, id: String, conversationId: String) {
+        messageDao.updateMediaStatus(status, id)
+        InvalidateFlow.emit(conversationId)
+    }
 
     suspend fun getConversationNameById(cid: String) = conversationDao.getConversationNameById(cid)
 
@@ -409,6 +415,7 @@ internal constructor(
         repeat((count / DB_DELETE_LIMIT) + 1) {
             messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
         }
+        InvalidateFlow.emit(conversationId)
     }
 
     suspend fun deleteMessageByConversationId(conversationId: String, deleteConversation: Boolean = false) {
@@ -446,14 +453,16 @@ internal constructor(
             if (deleteConversation) {
                 conversationDao.deleteConversationById(conversationId)
             }
+            InvalidateFlow.emit(conversationId)
         }
     }
 
-    fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
+    fun deleteMessage(id: String, conversationId: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
         if (!mediaUrl.isNullOrBlank() && forceDelete) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
-        appDatabase.deleteMessage(id)
+        appDatabase.deleteMessageById(id)
+        InvalidateFlow.emit(conversationId)
     }
 
     fun deleteTranscriptByMessageId(messageId: String) {
@@ -592,6 +601,7 @@ internal constructor(
 
     fun insertMessage(message: Message) {
         messageDao.insert(message)
+        InvalidateFlow.emit(message.conversationId)
     }
 
     suspend fun findPinMessageById(messageId: String) = pinMessageDao.findPinMessageById(messageId)

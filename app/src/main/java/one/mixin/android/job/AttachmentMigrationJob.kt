@@ -25,6 +25,7 @@ import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Property
 import one.mixin.android.vo.getFile
@@ -137,6 +138,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
             Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
             if (attachment.mediaUrl != toFile.name) {
                 messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
+                InvalidateFlow.emit(attachment.conversationId)
             }
         }
         propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))

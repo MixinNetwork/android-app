@@ -8,6 +8,7 @@ import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus
@@ -24,11 +25,13 @@ class ConvertDataJob(
 
     override fun onAdded() {
         messageDao.insert(message)
+        InvalidateFlow.emit(message.conversationId)
     }
 
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+        InvalidateFlow.emit(message.conversationId)
         removeJob()
     }
 
@@ -46,6 +49,7 @@ class ConvertDataJob(
             val file = MixinApplication.appContext.getDocumentPath().createDocumentTemp(message.conversationId, message.id, extensionName)
             file.copyFromInputStream(inputStream)
             messageDao.updateMediaMessageUrl(file.name, message.id)
+            InvalidateFlow.emit(message.conversationId)
 
             jobManager.addJobInBackground(
                 SendAttachmentMessageJob(

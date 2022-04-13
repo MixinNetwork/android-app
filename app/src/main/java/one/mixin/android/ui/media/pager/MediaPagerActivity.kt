@@ -775,7 +775,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     }
                 }
                 MediaStatus.PENDING.name -> {
-                    viewModel.cancel(messageItem.messageId)
+                    viewModel.cancel(messageItem.messageId, messageItem.conversationId)
                 }
             }
         }
