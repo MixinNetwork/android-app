@@ -8,7 +8,9 @@ import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
 import androidx.room.util.CursorUtil
 import androidx.room.util.DBUtil
+import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
+import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.FixedLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
 import one.mixin.android.vo.AssetItem
@@ -23,9 +25,11 @@ import java.util.concurrent.Callable
 @SuppressLint("RestrictedApi")
 class MessageProvider {
     companion object {
-        fun getMessages(conversationId: String, database: MixinDatabase, unreadCount: Int, countable: Boolean) =
+
+        fun getMessages(conversationId: String, database: MixinDatabase, scope: CoroutineScope) =
             object : DataSource.Factory<Int, MessageItem>() {
                 override fun create(): DataSource<Int, MessageItem> {
+
                     val sql =
                         """
                         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -57,14 +61,17 @@ class MessageProvider {
                     val statement = RoomSQLiteQuery.acquire(sql, 1)
                     val argIndex = 1
                     statement.bindString(argIndex, conversationId)
-                    return if (countable) {
-                        val countSql = "SELECT COUNT(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?"
-                        val countStatement = RoomSQLiteQuery.acquire(countSql, 1)
-                        countStatement.bindString(argIndex, conversationId)
-                        MixinMessageItemLimitOffsetDataSource(database, statement, countStatement)
-                    } else {
-                        FixedMessageItemLimitOffsetDataSource(database, statement, unreadCount)
-                    }
+                    val countSql =
+                        "SELECT COUNT(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?"
+                    val countStatement = RoomSQLiteQuery.acquire(countSql, 1)
+                    countStatement.bindString(argIndex, conversationId)
+                    return MixinMessageItemLimitOffsetDataSource(
+                        database,
+                        statement,
+                        countStatement,
+                        scope,
+                        conversationId
+                    )
                 }
             }
 
@@ -1046,7 +1053,9 @@ class MessageProvider {
         database: MixinDatabase,
         statement: RoomSQLiteQuery,
         countStatement: RoomSQLiteQuery,
-    ) : MixinLimitOffsetDataSource<MessageItem>(database, statement, countStatement, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
+        scope: CoroutineScope,
+        conversationId: String
+    ) : FastLimitOffsetDataSource<MessageItem>(database, statement, countStatement, scope, conversationId, false) {
         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
             return convertToMessageItems(cursor)
         }

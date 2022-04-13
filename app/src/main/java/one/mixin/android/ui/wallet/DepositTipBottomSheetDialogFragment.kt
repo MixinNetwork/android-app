@@ -44,7 +44,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         binding.apply {
-            titleTv.text = getString(R.string.bottom_deposit_title, asset.symbol)
+            titleTv.text = getString(R.string.deposit_title, asset.symbol)
             binding.assetIcon.apply {
                 bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                 badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)

@@ -536,7 +536,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 val dust = address.dust?.toDoubleOrNull()
                                 val amountDouble = amount.toDoubleOrNull()
                                 if (dust != null && amountDouble != null && amountDouble < dust) {
-                                    val errorString = getString(R.string.bottom_withdrawal_least_tip, address.dust, asset.symbol)
+                                    val errorString = getString(R.string.withdrawal_minimum_amount, address.dust, asset.symbol)
                                     showError(errorString)
                                     toast(errorString)
                                     return@launch

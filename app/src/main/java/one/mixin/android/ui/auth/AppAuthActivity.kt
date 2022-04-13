@@ -1,9 +1,12 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.auth
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.biometric.BiometricPrompt
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import com.mattprecious.swirl.SwirlView
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -27,10 +30,13 @@ class AppAuthActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAppAuthBinding
 
+    private lateinit var fingerprintManager: FingerprintManagerCompat
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        fingerprintManager = FingerprintManagerCompat.from(this)
 
         binding.swirl.setState(SwirlView.State.ON)
     }
@@ -57,12 +63,7 @@ class AppAuthActivity : BaseActivity() {
     }
 
     private fun showPrompt() {
-        showAppAuthPrompt(
-            this,
-            getString(R.string.fingerprint_confirm),
-            getString(R.string.action_cancel),
-            authCallback
-        )
+        fingerprintManager.authenticate(null, 0, null, authCallback, null)
     }
 
     private fun pressHome() {
@@ -100,7 +101,7 @@ class AppAuthActivity : BaseActivity() {
         showPrompt()
     }
 
-    private val authCallback = object : BiometricPrompt.AuthenticationCallback() {
+    private val authCallback = object : FingerprintManagerCompat.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             if (errorCode == BiometricPrompt.ERROR_CANCELED ||
                 errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
@@ -124,7 +125,7 @@ class AppAuthActivity : BaseActivity() {
             refreshSwirl(getString(R.string.not_recognized), false)
         }
 
-        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+        override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
             finish()
         }
     }

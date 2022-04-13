@@ -27,7 +27,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="70dp"
                 android:layout_marginBottom="20dp"
-                android:text="@string/bottom_deposit_title"
+                android:text="@string/deposit_title"
                 android:textColor="?attr/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -47,7 +47,7 @@
                 android:layout_gravity="center_horizontal"
                 android:gravity="center_horizontal"
                 android:textColor="?attr/text_primary"
-                android:text="@string/bottom_deposit_tip_common" />
+                android:text="@string/deposit_tip_common" />
 
             <TextView
                 android:id="@+id/warning_tv"

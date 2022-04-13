@@ -816,11 +816,11 @@ fun Context.isFirebaseDecodeAvailable() =
 
 fun Fragment.getTipsByAsset(asset: AssetItem) =
     when (asset.assetId) {
-        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)
-        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eth)
-        Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eos)
-        Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.bottom_deposit_tip_trx)
-        else -> getString(R.string.bottom_deposit_tip_common, asset.symbol)
+        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
+        Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.deposit_tip_eos)
+        Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
+        else -> getString(R.string.deposit_tip_common, asset.symbol)
     }
 
 fun Context.showConfirmDialog(

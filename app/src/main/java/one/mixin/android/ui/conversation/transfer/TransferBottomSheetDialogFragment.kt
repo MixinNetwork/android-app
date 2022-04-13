@@ -71,7 +71,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                     (t as TransferBiometricItem).let {
                         title.text =
                             getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
-                        subTitle.text = "Mixin ID: ${it.user.identityNumber}"
+                        subTitle.text = if (it.user.identityNumber == "0") it.user.userId else "Mixin ID: ${it.user.identityNumber}"
                     }
                     biometricLayout.payTv.setText(R.string.wallet_pay_with_pin)
                     biometricLayout.biometricTv.setText(R.string.wallet_pay_with_biometric)

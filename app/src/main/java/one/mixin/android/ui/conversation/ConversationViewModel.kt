@@ -11,7 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
@@ -120,26 +119,17 @@ internal constructor(
 
     var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
 
-    fun getMessages(id: String, firstKeyToLoad: Int = 0, countable: Boolean): LiveData<PagedList<MessageItem>> {
+    fun getMessages(id: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build()
-        if (!countable) {
-            return LivePagedListBuilder(
-                conversationRepository.getMessages(id, firstKeyToLoad, countable),
-                pagedListConfig
-            ).setInitialLoadKey(firstKeyToLoad)
-                .build()
-        }
-        if (keyLivePagedListBuilder == null) {
-            keyLivePagedListBuilder = KeyLivePagedListBuilder(
-                conversationRepository.getMessages(id, firstKeyToLoad, countable),
-                pagedListConfig
-            ).setFirstKeyToLoad(firstKeyToLoad)
-        }
-        return keyLivePagedListBuilder!!.build()
+
+        return KeyLivePagedListBuilder(
+            conversationRepository.getMessages(id, viewModelScope),
+            pagedListConfig
+        ).setFirstKeyToLoad(firstKeyToLoad).build()
     }
 
     suspend fun indexUnread(conversationId: String) =

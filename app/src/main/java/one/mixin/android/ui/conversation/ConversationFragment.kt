@@ -50,10 +50,8 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -120,7 +118,6 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.observeOnce
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openEmail
@@ -375,7 +372,7 @@ class ConversationFragment() :
             this.messageId = messageId
             this.unreadCount = unreadCount
             isFirstLoad = true
-            liveDataMessage(unreadCount, messageId, !keyword.isNullOrEmpty())
+            liveDataMessage(unreadCount, messageId)
         }
     }
 
@@ -1847,75 +1844,66 @@ class ConversationFragment() :
         deleteDialog?.show()
     }
 
-    private var messageLiveData: LiveData<PagedList<MessageItem>>? = null
-    private lateinit var messageObserver: Observer<PagedList<MessageItem>>
-
-    private fun bindLiveData(liveData: LiveData<PagedList<MessageItem>>, countable: Boolean) {
-        messageLiveData = liveData
-        if (countable) {
-            messageLiveData?.observe(viewLifecycleOwner, messageObserver)
-        } else {
-            messageLiveData?.observeOnce(viewLifecycleOwner, messageObserver)
-        }
-    }
-
-    private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?, countable: Boolean) {
+    private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
-        messageObserver = Observer { list ->
-            if (Session.getAccount() == null) return@Observer
+        chatViewModel.getMessages(conversationId, unreadCount)
+            .observe(
+                viewLifecycleOwner
+            ) { list ->
+                if (Session.getAccount() == null) return@observe
 
-            if (oldCount == -1) {
-                oldCount = list.size
-            } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
-                unreadTipCount += (list.size - oldCount)
-                oldCount = list.size
-            } else if (isBottom) {
-                unreadTipCount = 0
-                oldCount = list.size
-            }
-            lifecycleScope.launch {
-                conversationAdapter.hasBottomView = recipient?.relationship == UserRelationship.STRANGER.name &&
-                    (
+                if (oldCount == -1) {
+                    oldCount = list.size
+                } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
+                    unreadTipCount += (list.size - oldCount)
+                    oldCount = list.size
+                } else if (isBottom) {
+                    unreadTipCount = 0
+                    oldCount = list.size
+                }
+                chatViewModel.viewModelScope.launch {
+                    conversationAdapter.hasBottomView = (
                         (isBot && list.isEmpty()) ||
-                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))
-                        )
-            }
-            if (isFirstLoad && messageId == null && unreadCount > 0) {
-                conversationAdapter.unreadMsgId = unreadMessageId
-            } else if (lastReadMessage != null) {
-                lifecycleScope.launch {
-                    lastReadMessage?.let { id ->
-                        val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
-                            conversationId,
-                            sender.userId,
-                            id
-                        )
-                        if (unreadMsgId != null) {
-                            conversationAdapter.unreadMsgId = unreadMsgId
-                            lastReadMessage = null
+                            (
+                                !isGroup && (!list.isEmpty()) && chatViewModel.isSilence(
+                                    conversationId,
+                                    sender.userId
+                                )
+                                )
+                        ) &&
+                        recipient?.relationship == UserRelationship.STRANGER.name
+                }
+                if (isFirstLoad && messageId == null && unreadCount > 0) {
+                    conversationAdapter.unreadMsgId = unreadMessageId
+                } else if (lastReadMessage != null) {
+                    chatViewModel.viewModelScope.launch {
+                        lastReadMessage?.let { id ->
+                            val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
+                                conversationId,
+                                sender.userId,
+                                id
+                            )
+                            if (unreadMsgId != null) {
+                                conversationAdapter.unreadMsgId = unreadMsgId
+                                lastReadMessage = null
+                            }
                         }
                     }
                 }
-            }
-            if (list.size > 0) {
-                if (isFirstMessage) {
-                    isFirstMessage = false
+                if (list.size > 0) {
+                    if (isFirstMessage) {
+                        isFirstMessage = false
+                    }
+                    conversationAdapter.submitList(list)
                 }
                 chatViewModel.markMessageRead(conversationId, (activity as? BubbleActivity)?.isBubbled == true)
             }
-            conversationAdapter.submitList(list) {
-                if (countable) return@submitList
-
-                liveDataMessage(unreadCount, unreadMessageId, true)
-            }
-        }
-        bindLiveData(chatViewModel.getMessages(conversationId, unreadCount, countable), countable)
     }
 
     private var unreadCount = 0
     private fun bindData() {
         unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
-        liveDataMessage(unreadCount, initialPositionMessageId, !keyword.isNullOrEmpty())
+        liveDataMessage(unreadCount, initialPositionMessageId)
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner

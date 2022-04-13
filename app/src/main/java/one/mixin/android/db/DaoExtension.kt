@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import one.mixin.android.Constants.DB_DELETE_LIMIT
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
@@ -214,6 +215,7 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
+        InvalidateFlow.emit(message.conversationId)
     }
 }
 

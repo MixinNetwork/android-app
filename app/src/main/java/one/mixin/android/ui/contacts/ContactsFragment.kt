@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
@@ -24,9 +23,9 @@ import one.mixin.android.databinding.ViewContactHeaderBinding
 import one.mixin.android.databinding.ViewContactListEmptyBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
@@ -40,7 +39,6 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import one.mixin.android.worker.RefreshContactWorker
 import java.util.Collections
 import javax.inject.Inject
 
@@ -181,9 +179,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                         contactAdapter.hideEmptyFooter()
                         jobManager.addJobInBackground(UploadContactsJob())
                         fetchContacts()
-                        context?.let { context ->
-                            WorkManager.getInstance(context).enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
-                        }
+                        jobManager.addJobInBackground(RefreshContactJob())
                     } else {
                         context?.openPermissionSetting()
                     }

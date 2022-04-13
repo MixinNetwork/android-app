@@ -283,18 +283,22 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         if (address == null || currentAsset == null) return
 
         chatViewModel.observeAddress(address!!.addressId).observe(
-            this,
-            {
-                address = it
-                binding.titleView.setSubTitle(getString(R.string.send_to, it.label), it.displayAddress().formatPublicKey())
-                binding.memoRl.isVisible = isInnerTransfer()
+            this
+        ) {
+            address = it
+            binding.titleView.setSubTitle(
+                getString(R.string.send_to, it.label),
+                it.displayAddress().formatPublicKey()
+            )
+            binding.memoRl.isVisible = isInnerTransfer()
 
-                binding.feeTv.visibility = VISIBLE
-                val reserveDouble = it.reserve.toDoubleOrNull()
-                val dustDouble = it.dust?.toDoubleOrNull()
-                val color = requireContext().colorFromAttribute(R.attr.text_primary)
+            binding.feeTv.visibility = VISIBLE
+            val reserveDouble = it.reserve.toDoubleOrNull()
+            val dustDouble = it.dust?.toDoubleOrNull()
+            val color = requireContext().colorFromAttribute(R.attr.text_primary)
 
-                val networkSpan = SpannableStringBuilder(getString(R.string.withdrawal_network_fee)).apply {
+            val networkSpan =
+                SpannableStringBuilder(getString(R.string.withdrawal_network_fee)).apply {
                     bold {
                         append(' ')
                         color(color) {
@@ -302,29 +306,29 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
                         }
                     }
                 }
-                val dustSpan = if (dustDouble != null && dustDouble > 0) {
-                    SpannableStringBuilder().apply {
-                        append(getString(R.string.withdrawal_minimum_withdrawal))
-                        color(color) {
-                            bold {
-                                append(" ${it.dust} ${currentAsset!!.symbol}")
-                            }
+            val dustSpan = if (dustDouble != null && dustDouble > 0) {
+                SpannableStringBuilder().apply {
+                    append(getString(R.string.withdrawal_minimum_withdrawal))
+                    color(color) {
+                        bold {
+                            append(" ${it.dust} ${currentAsset!!.symbol}")
                         }
                     }
-                } else SpannableStringBuilder()
-                val reserveSpan = if (reserveDouble != null && reserveDouble > 0) {
-                    SpannableStringBuilder().apply {
-                        append(getString(R.string.withdrawal_minimum_reserve))
-                        color(color) {
-                            bold {
-                                append(" ${it.reserve} ${currentAsset!!.symbol}")
-                            }
+                }
+            } else SpannableStringBuilder()
+            val reserveSpan = if (reserveDouble != null && reserveDouble > 0) {
+                SpannableStringBuilder().apply {
+                    append(getString(R.string.withdrawal_minimum_reserve))
+                    color(color) {
+                        bold {
+                            append(" ${it.reserve} ${currentAsset!!.symbol}")
                         }
                     }
-                } else SpannableStringBuilder()
-                binding.feeTv.text = buildBulletLines(requireContext(), networkSpan, dustSpan, reserveSpan)
-            }
-        )
+                }
+            } else SpannableStringBuilder()
+            binding.feeTv.text =
+                buildBulletLines(requireContext(), networkSpan, dustSpan, reserveSpan)
+        }
     }
 
     private fun handleInnerTransfer() {
@@ -365,17 +369,19 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             binding.expandIv.isVisible = false
         }
         chatViewModel.findUserById(userId!!).observe(
-            this,
-            { u ->
-                if (u == null) {
-                    jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
-                } else {
-                    user = u
-                    binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                    binding.titleView.setSubTitle(getString(R.string.send_to, u.fullName), u.identityNumber)
-                }
+            this
+        ) { u ->
+            if (u == null) {
+                jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
+            } else {
+                user = u
+                binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                binding.titleView.setSubTitle(
+                    getString(R.string.send_to, u.fullName),
+                    u.identityNumber
+                )
             }
-        )
+        }
 
         chatViewModel.assetItemsWithBalance().observe(
             this,
@@ -546,7 +552,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             val dust = address!!.dust?.toDoubleOrNull()
             val amountDouble = amount.toDoubleOrNull()
             if (dust != null && amountDouble != null && amountDouble < dust) {
-                toast(getString(R.string.bottom_withdrawal_least_tip, address!!.dust, currentAsset!!.symbol))
+                toast(getString(R.string.withdrawal_minimum_amount, address!!.dust, currentAsset!!.symbol))
                 return@launch
             }
         }
