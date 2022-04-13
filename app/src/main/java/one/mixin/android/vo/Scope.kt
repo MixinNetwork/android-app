@@ -36,7 +36,7 @@ data class Scope(val name: String, val desc: String) : Parcelable {
 fun Scope.convertName(ctx: Context): String {
     val id = when (name) {
         Scope.SCOPES[0] -> R.string.auth_public_profile
-        Scope.SCOPES[1] -> R.string.auth_phone_number
+        Scope.SCOPES[1] -> R.string.phone_number
         Scope.SCOPES[2] -> R.string.auth_messages_represent
         Scope.SCOPES[3] -> R.string.auth_permission_contacts_read
         Scope.SCOPES[4] -> R.string.auth_assets

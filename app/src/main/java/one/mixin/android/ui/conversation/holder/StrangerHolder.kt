@@ -15,7 +15,7 @@ class StrangerHolder constructor(val binding: ItemChatStrangerBinding) : BaseVie
         } else {
             binding.strangerInfo.setText(R.string.stranger_from)
             binding.strangerBlockBn.setText(R.string.setting_block)
-            binding.strangerAddBn.setText(R.string.contact_add_contact_title)
+            binding.strangerAddBn.setText(R.string.add_contact)
         }
         binding.strangerBlockBn.setOnClickListener {
             if (isBot) {

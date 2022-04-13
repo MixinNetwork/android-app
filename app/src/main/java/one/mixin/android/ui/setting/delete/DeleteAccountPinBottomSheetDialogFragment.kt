@@ -43,7 +43,7 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
         binding.biometricLayout.measureAllChildren = false
 
         val learn: String =
-            MixinApplication.get().getString(R.string.setting_delete_account_pin_content_more)
+            MixinApplication.get().getString(R.string.action_learn_more)
         val info = MixinApplication.get().getString(R.string.setting_delete_account_pin_content, localDateString(System.currentTimeMillis() + 60 * 60 * 1000 * 24 * 30L))
         val learnUrl = MixinApplication.get().getString(R.string.setting_delete_account_url)
         binding.content.highlightLinkText(info, arrayOf(learn), arrayOf(learnUrl))

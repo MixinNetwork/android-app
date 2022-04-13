@@ -178,7 +178,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
     class HeaderViewHolder(val binding: ItemContactHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind() {
-            binding.header.text = itemView.context.getString(R.string.contact_capital_item_title)
+            binding.header.text = itemView.context.getString(R.string.capital_search_title_contacts)
         }
 
         fun bind(user: User) {

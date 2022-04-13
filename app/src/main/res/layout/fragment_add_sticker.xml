@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:rightText="@string/action_done"
-        app:titleText="@string/sticker_add" />
+        app:titleText="@string/add_sticker" />
 
     <one.mixin.android.widget.SquareLayout
         android:layout_width="match_parent"

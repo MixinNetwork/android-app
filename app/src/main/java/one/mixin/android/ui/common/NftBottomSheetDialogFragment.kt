@@ -123,7 +123,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         val title = if (isSender) {
             "${getString(R.string.multisig_senders)} ${t.sendersThreshold}/${t.senders.size}"
         } else {
-            getString(R.string.multisig_receivers, "${t.receiversThreshold}/${t.receivers.size}")
+            getString(R.string.multisig_receivers_threshold, "${t.receiversThreshold}/${t.receivers.size}")
         }
         UserListBottomSheetDialogFragment.newInstance(userList, title)
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
@@ -135,7 +135,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             requireContext().getString(
                 // Todo replace string
                 if (t.action == SignatureAction.cancel.name) {
-                    R.string.multisig_revoke_transaction
+                    R.string.log_pin_multisig_unlock
                 } else {
                     R.string.multisig_transaction
                 }

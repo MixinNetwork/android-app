@@ -181,7 +181,7 @@ class GroupFragment : BaseFragment() {
     private fun handleAddOrRemove() = lifecycleScope.launch {
         if (dialog == null) {
             val title =
-                if (from == TYPE_ADD) R.string.group_adding else R.string.group_removing
+                if (from == TYPE_ADD) R.string.adding else R.string.group_removing
             dialog = indeterminateProgressDialog(
                 message = R.string.pb_dialog_message,
                 title = title
@@ -205,7 +205,7 @@ class GroupFragment : BaseFragment() {
         binding.titleView.setSubTitle(
             when (from) {
                 TYPE_REMOVE -> getString(R.string.group_info_remove_member)
-                else -> getString(R.string.group_add_participants)
+                else -> getString(R.string.add_participants)
             },
             "$size/$MAX_USER"
         )

@@ -90,7 +90,7 @@ class InviteFragment : BaseFragment() {
                         startActivity(
                             Intent.createChooser(
                                 sendIntent,
-                                resources.getText(R.string.invite_title)
+                                resources.getText(R.string.group_invite)
                             )
                         )
                     }

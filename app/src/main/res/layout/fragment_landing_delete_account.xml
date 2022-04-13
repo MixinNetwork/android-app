@@ -58,7 +58,7 @@
                 android:layout_width="116dp"
                 android:layout_height="40dp"
                 android:layout_marginBottom="16dp"
-                android:text="@string/action_continue"
+                android:text="@string/wallet_transaction_continue"
                 android:textColor="@color/white"
                 android:layout_marginTop="32dp"
                 android:textSize="14sp" />

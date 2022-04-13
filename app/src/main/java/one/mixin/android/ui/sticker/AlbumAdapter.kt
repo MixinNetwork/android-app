@@ -120,13 +120,13 @@ interface StickerListener {
 
 fun TextView.updateAlbumAdd(ctx: Context, added: Boolean, action: (() -> Unit)? = null) {
     if (added) {
-        text = ctx.getString(R.string.sticker_store_added)
+        text = ctx.getString(R.string.added)
         textColor = ctx.getColor(R.color.colorAccent)
         setBackgroundResource(R.drawable.bg_round_gray_btn)
         isEnabled = false
         setOnClickListener(null)
     } else {
-        text = ctx.getString(R.string.sticker_store_action_add)
+        text = ctx.getString(R.string.action_add)
         textColor = ctx.getColor(R.color.white)
         setBackgroundResource(R.drawable.bg_round_blue_btn)
         isEnabled = true

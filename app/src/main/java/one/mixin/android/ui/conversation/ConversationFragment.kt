@@ -1743,7 +1743,7 @@ class ConversationFragment() :
             ErrorHandler.handleMixinError(
                 r.errorCode,
                 r.errorDescription,
-                getString(R.string.sticker_add_failed)
+                getString(R.string.add_sticker_failed)
             )
         }
     }

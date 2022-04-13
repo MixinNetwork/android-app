@@ -65,7 +65,7 @@ class ChannelManager {
                 notificationManager.createNotificationChannelGroup(
                     NotificationChannelGroup(
                         CHANNEL_MESSAGE_GROUP,
-                        context.getString(R.string.notification_channel_group)
+                        context.getString(R.string.messages)
                     )
                 )
         }

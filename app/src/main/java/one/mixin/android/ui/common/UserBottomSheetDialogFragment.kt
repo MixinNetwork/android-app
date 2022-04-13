@@ -309,7 +309,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         }
         val transactionMenu = menu {
-            title = getString(R.string.contact_other_transactions)
+            title = getString(R.string.wallet_transactions_title)
             action = {
                 if (showUserTransactionAction != null) {
                     showUserTransactionAction?.invoke()
@@ -861,10 +861,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun showMuteDialog() {
         val choices = arrayOf(
-            getString(R.string.contact_mute_1hour),
-            getString(R.string.contact_mute_8hours),
-            getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year)
+            getString(R.string.one_hour),
+            getString(R.string.eight_hours),
+            getString(R.string.one_week),
+            getString(R.string.one_year)
         )
         var duration = MUTE_1_HOUR
         var whichItem = 0

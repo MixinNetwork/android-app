@@ -163,7 +163,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                     errorBtn.setOnClickListener { callback?.onDismiss() }
                 }
                 ErrorAction.Continue -> {
-                    errorBtn.text = getString(R.string.action_continue)
+                    errorBtn.text = getString(R.string.wallet_transaction_continue)
                     errorBtn.setOnClickListener { showPin(true) }
                 }
             }
@@ -200,7 +200,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
 
                 override fun onTick(l: Long) {
                     errorBtn.text =
-                        context.getString(R.string.wallet_transaction_continue_count, l / 1000)
+                        context.getString(R.string.wallet_transaction_continue_count_down, l / 1000)
                 }
 
                 override fun onFinish() {

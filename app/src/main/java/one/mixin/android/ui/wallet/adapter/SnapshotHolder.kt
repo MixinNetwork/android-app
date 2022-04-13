@@ -20,7 +20,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
         val isPositive = snapshot.amount.toFloat() > 0
         when (snapshot.type) {
             SnapshotType.pending.name -> {
-                binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmations, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
+                binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
                 binding.avatar.setNet()
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
@@ -29,7 +29,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 binding.avatar.setNet()
             }
             SnapshotType.transfer.name -> {
-                binding.name.setText(R.string.filters_transfer)
+                binding.name.setText(R.string.action_transfer)
                 binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId ?: "")
                 binding.avatar.setOnClickListener {
                     listener?.onUserClick(snapshot.opponentId!!)
@@ -37,15 +37,15 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 binding.avatar.setTextSize(12f)
             }
             SnapshotType.withdrawal.name -> {
-                binding.name.setText(R.string.filters_withdrawal)
+                binding.name.setText(R.string.withdrawal)
                 binding.avatar.setNet()
             }
             SnapshotType.fee.name -> {
-                binding.name.setText(R.string.filters_fee)
+                binding.name.setText(R.string.fee)
                 binding.avatar.setNet()
             }
             SnapshotType.rebate.name -> {
-                binding.name.setText(R.string.filters_rebate)
+                binding.name.setText(R.string.action_rebate)
                 binding.avatar.setNet()
             }
             SnapshotType.raw.name -> {

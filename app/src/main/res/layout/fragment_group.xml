@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:rightText="@string/action_next"
-        app:titleText="@string/group_add_participants" />
+        app:titleText="@string/add_participants" />
 
     <EditText
         android:id="@+id/search_et"

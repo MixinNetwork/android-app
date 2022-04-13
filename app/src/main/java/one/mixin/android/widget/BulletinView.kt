@@ -36,7 +36,7 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
             Type.NewWallet -> {
                 titleView.setText(R.string.notification_new_wallet_title)
                 contentView.setText(R.string.notification_new_wallet_content)
-                settingView.setText(R.string.action_continue)
+                settingView.setText(R.string.wallet_transaction_continue)
             }
             Type.Notification -> {
                 titleView.setText(R.string.notification_title)
@@ -44,9 +44,9 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
                 settingView.setText(R.string.notification)
             }
             else -> {
-                titleView.setText(R.string.setting_emergency)
+                titleView.setText(R.string.log_category_emergency)
                 contentView.setText(R.string.setting_emergency_content)
-                settingView.setText(R.string.action_continue)
+                settingView.setText(R.string.wallet_transaction_continue)
             }
         }
     }

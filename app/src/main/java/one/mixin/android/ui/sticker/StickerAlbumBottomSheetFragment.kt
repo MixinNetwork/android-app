@@ -133,7 +133,7 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
                     }
                 }
             } else {
-                text = getString(R.string.sticker_store_add_stickers)
+                text = getString(R.string.add_stickers)
                 setBackgroundResource(R.drawable.bg_round_blue_btn)
                 setOnClickListener {
                     lifecycleScope.launch {

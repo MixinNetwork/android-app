@@ -85,7 +85,7 @@
             android:paddingStart="@dimen/margin20"
             android:paddingEnd="@dimen/margin20"
             android:enabled="true"
-            android:text="@string/action_continue"
+            android:text="@string/wallet_transaction_continue"
             android:textSize="14sp" />
     </LinearLayout>
 

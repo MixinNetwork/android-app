@@ -3,7 +3,6 @@
     <!--common-->
     <string name="action_confirm">Sahkan</string>
     <string name="action_change">Ubah</string>
-    <string name="action_continue">Teruskan</string>
     <string name="action_cancel">Batal</string>
     <string name="action_search">Cari</string>
     <string name="action_next">Seterusnya</string>
@@ -14,7 +13,6 @@
     <string name="notification">Pemberitahuan</string>
     <string name="none">Tiada</string>
     <string name="fee">Bayaran</string>
-    <string name="memo">Memo</string>
     <string name="date">Tarikh</string>
     <string name="label">Label</string>
     <string name="address">Alamat</string>
@@ -34,7 +32,7 @@
     <string name="welcome">Welcome to Mixin</string>
     <string name="not_logged_in">Tidak log masuk</string>
     <string name="got_it">Faham</string>
-    <string name="got_it_count">Faham (%1$d)</string>
+    <string name="got_it_count_down">Faham (%1$d)</string>
     <string name="action_exit">Keluar</string>
     <string name="receiver">Penerima</string>
     <string name="sender">Penghantar</string>
@@ -57,7 +55,6 @@
     <string name="successful">Berjaya</string>
     <string name="capital_no_result">TIADA KEPUTUSAN</string>
     <string name="send_to">Hantar ke %1$s</string>
-    <string name="action_transfer_send">Hantar</string>
     <string name="action_receive">Terima</string>
     <string name="developer">Pemaju</string>
     <string name="mixin_id">Mixin ID</string>
@@ -81,7 +78,7 @@
     <string name="capital_no_post">TIADA POST</string>
     <string name="capital_no_file">TIADA FAIL</string>
     <string name="capital_no_link">TIADA Pautan</string>
-    <string name="media_date_patten">BBB hh, tttt</string>
+    <string name="date_format_date">BBB hh, tttt</string>
     <string name="action_restart">MULA SEMULA</string>
     <string name="update_downloaded">Kemas kini baru sahaja dimuat turun.</string>
     <string name="language">Bahasa</string>
@@ -121,7 +118,7 @@
     <string name="error_no_connection">Tiada sambungan rangkaian</string>
     <string name="error_connection_timeout">Tamat masa sambungan rangkaian</string>
     <string name="error_network">Ralat rangkaian</string>
-    <string name="error_server_5xx">Pelayan sedang dalam penyelenggaraan: %1$d</string>
+    <string name="error_server_5xx_code">Pelayan sedang dalam penyelenggaraan: %1$d</string>
     <string name="error_data">Kesalahan data</string>
     <string name="error_unknown_with_code">RALAT: %1$d</string>
     <string name="error_unknown_with_message">RALAT: %1$s</string>
@@ -173,7 +170,6 @@
     <string name="error_retry_upload">Gagal memuat naik semula.</string>
     <string name="error_not_supported_audio_format">Tidak disokong format audio, sila buka oleh aplikasi lain.</string>
     <!--home-->
-    <string name="contacts">Kenalan</string>
     <string name="search_hint">aset, kenalan dan mesej</string>
     <string name="conversation_waiting">Menunggu mesej ini.</string>
     <string name="conversation_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini.</string>
@@ -190,7 +186,6 @@
     <string name="capital_search_title_chat">SEMBANG</string>
     <string name="capital_search_title_contacts">KENALAN</string>
     <string name="capital_search_title_messages">CARI MESEJ</string>
-    <string name="search_related_message">%1$d mesej berkaitan</string>
     <string name="search_tip">Cari ID Mixin atau Nombor Telefon: %1$s</string>
     <!--landing-->
     <string name="landing_enter_mobile_number">Masukkan nombor telefon bimbit anda</string>
@@ -218,7 +213,6 @@
     <!--contacts-->
     <string name="contact_new_group_chat_title">Kumpulan Sembang Baharu</string>
     <string name="contact_new_group_chat_desc">Buat kumpulan sembang dengan sehingga rakan</string>
-    <string name="contact_add_contact_title">Tambah Kenalan</string>
     <string name="add_people_hint">Tambahkan orang menggunakan ID Mixin atau nombor telefon</string>
     <string name="contact_qr_mixin">Kod QR Mixin</string>
     <string name="contact_qr_desc">Imbas kod QR Mixin rakan anda</string>
@@ -227,8 +221,6 @@
     <string name="contact_mobile">Mudah alih: %1$s</string>
     <string name="contact_empty">Kenalan Telefon</string>
     <string name="contact_empty_tip">Mixin perlu mengakses kenalan anda untuk membantu anda berhubung dengan orang lain di Mixin.</string>
-    <string name="contact_capital_item_title">KENALAN</string>
-    <string name="bot_capital_item_title">BOT</string>
     <string name="contact_sq_scan_title">Ekstrak Kod QR</string>
     <string name="contact_save_image">Menyimpan imej</string>
     <string name="contact_my_qr_title">Kod QR saya</string>
@@ -298,7 +290,6 @@
     </plurals>
     <string name="chat_capital_audio_discard_ok">BUANG</string>
     <string name="chat_capital_audio_discard_cancel">TERUSKAN</string>
-    <string name="chat_delete_message">Padamkan %1$d mesej?</string>
     <string name="chat_delete_for_me">Padamkan untuk saya</string>
     <string name="chat_delete_for_everyone">Padamkan untuk Semua Orang</string>
     <string name="chat_recall_me">Anda memadamkan mesej ini</string>
@@ -329,17 +320,15 @@
     <string name="contact_other_remove_bot">Keluarkan Bot</string>
     <string name="contact_other_report">Lapor</string>
     <string name="contact_other_report_warning">Adakah anda ingin melaporkan dan menyekat kenalan ini?</string>
-    <string name="contact_other_transactions">Urus Niaga</string>
     <string name="contact_less_invite">Jemput ke Mixin</string>
     <string name="contact_less_invite_content">Hei, saya menggunakan Mixin Messenger untuk sembang. Muat turun di sini: https://mixin.one/messenger .</string>
     <string name="contact_mute_title">Senyapkan pemberitahuan untuk…</string>
-    <string name="contact_mute_1hour">1 jam</string>
-    <string name="contact_mute_8hours">8 jam</string>
-    <string name="contact_mute_1week">1 minggu</string>
-    <string name="contact_mute_1year">1 tahun</string>
+    <string name="one_hour">1 jam</string>
+    <string name="eight_hours">8 jam</string>
+    <string name="one_week">1 minggu</string>
+    <string name="one_year">1 tahun</string>
     <!--Add people-->
     <string name="add_people">Tambah orang</string>
-    <string name="add_people_search_hint">Mixin ID atau Nombor telefon</string>
     <string name="my_mixin_id">ID Mixin Saya: %1$s</string>
     <!--wallet-->
     <string name="wallet">Dompet</string>
@@ -355,14 +344,13 @@
     <string name="wallet_password_unsafe">PIN terlalu mudah dan tidak selamat.</string>
     <string name="wallet_bottom_show_hidden">Semua aset tersembunyi</string>
     <string name="wallet_hidden_assets">Aset Tersembunyi</string>
-    <string name="wallet_bottom_deposit">Deposit</string>
     <string name="wallet_bottom_transfer_to">Pindahkan ke %1$s</string>
     <string name="wallet_transactions_title">Urus Niaga</string>
     <string name="wallet_transactions_show">Tunjuk</string>
     <string name="wallet_transactions_hide">Sembunyii</string>
     <string name="wallet_transaction_title">Urus Niaga</string>
     <string name="wallet_transaction_continue">Teruskan</string>
-    <string name="wallet_transaction_continue_count">Teruskan (%1$d)</string>
+    <string name="wallet_transaction_continue_count_down">Teruskan (%1$d)</string>
     <string name="wallet_transaction_tip_title">Pengesahan Jumlah Besar</string>
     <string name="wallet_transaction_current_value">nilai sekarang %1$s</string>
     <string name="wallet_transaction_that_time_value">nilai maka %1$s</string>
@@ -394,7 +382,7 @@
     <string name="transactions_type">Jenis Transaksi</string>
     <string name="transactions_status">Status</string>
     <string name="no_hidden_asset">Tiada aset tersembunyi</string>
-    <string name="no_applicable">N/A</string>
+    <string name="not_applicable">N/A</string>
     <string name="wallet_pay_with_biometrics">Bayar dengan Biometrik</string>
     <string name="wallet_pin_open_biometrics">Sila masukkan PIN untuk membuka Biometrik</string>
     <string name="wallet_pin_modify_biometrics">Sila masukkan PIN untuk Ubahsuai Bayar dengan selang PIN</string>
@@ -434,30 +422,27 @@
     <string name="log_pin_verification">Sahkan</string>
     <string name="log_pin_raw_transfer">Pindahkan ke alamat Mixin</string>
     <string name="log_pin_user_transfer">Pindahkan ke pengguna atau bot</string>
-    <string name="log_pin_withdrawal">Pengeluaran</string>
-    <string name="log_pin_add_address">Tambah alamat</string>
+    <string name="add_address">Tambah alamat</string>
     <string name="log_pin_delete_address">Padamkan alamat</string>
-    <string name="log_pin_add_emergency">Tambahkan kenalan kecemasan</string>
+    <string name="add_emergency_contact">Tambahkan kenalan kecemasan</string>
     <string name="log_pin_delete_emergency">Padamkan kenalan kecemasan</string>
     <string name="log_pin_read_emergency">Lihat kenalan kecemasan</string>
-    <string name="log_pin_update_phone">Tukar nombor telefon</string>
     <string name="log_pin_update_pin">Kemas kini PIN</string>
     <string name="log_pin_multisig_sign">Transaksi Multisig</string>
     <string name="log_pin_multisig_unlock">Batalkan Urus Niaga Multisig</string>
-    <string name="log_pin_modification">Pengubahsuaian PIN</string>
-    <string name="log_emergency_modification">Pengubahsuaian kenalan kecemasan</string>
-    <string name="log_phone_modification">Pengubahsuaian nombor telefon</string>
+    <string name="pin_modification">Pengubahsuaian PIN</string>
+    <string name="log_emergency_contact_modification">Pengubahsuaian kenalan kecemasan</string>
+    <string name="log_phone_number_modification">Pengubahsuaian nombor telefon</string>
     <string name="log_login_phone">Log masuk dengan nombor telefon</string>
     <string name="log_login_emergency">Log masuk dengan kenalan kecemasan</string>
-    <string name="log_login_desktop">Log masuk aplikasi desktop</string>
+    <string name="log_login_desktop_app">Log masuk aplikasi desktop</string>
     <!--group-->
-    <string name="group_add_participants">Tambah Peserta</string>
+    <string name="add_participants">Tambah Peserta</string>
     <string name="group_new_title">Kumpulan Baharu</string>
     <string name="group_new_photo">Foto Kumpulan</string>
     <string name="group_new_name">Nama kumpulan</string>
     <string name="group_new_name_tip">nama kumpulan baharu</string>
     <string name="group_new_notice">Makluman Kumpulan</string>
-    <string name="group_new_notice_tip">mengenai</string>
     <string name="group_info_title">Maklumat Kumpulan</string>
     <string name="group_info_not_in">Anda bukan lagi peserta dalam kumpulan ini</string>
     <string name="group_info_clear_chat">Kosongkan Sembang</string>
@@ -473,7 +458,7 @@
     <string name="group_pop_menu_make_admin">Buat pentadbir kumpulan</string>
     <string name="group_pop_menu_dismiss_admin">Ketepikan pentadbir</string>
     <string name="group_info_remove_tip">Alih keluar %1$s dari kumpulan \"%2$s\"?</string>
-    <string name="group_adding">Menambah…</string>
+    <string name="adding">Menambah…</string>
     <string name="group_removing">Mengalih keluar &#8230;</string>
     <string name="group_creating">Membuat &#8230;</string>
     <string name="state_connecting">Menyambung</string>
@@ -488,13 +473,12 @@
     </plurals>
     <string name="group_click_create_tip">Tidak dapat membuat. Ketuk untuk mencuba semula.</string>
     <!--setting-->
-    <string name="setting_title">Tetapan</string>
+    <string name="settings">Tetapan</string>
     <string name="setting_blocked">Disekat</string>
     <string name="setting_conversation">Perbualan</string>
     <string name="setting_privacy_tip">Tukar siapa yang boleh menambahkan anda ke perbualan dan kumpulan.</string>
     <string name="setting_my_contacts">Kenalan Saya</string>
     <string name="setting_block">Sekat</string>
-    <string name="setting_unblock">Buka sekatan</string>
     <string name="setting_block_tip">Pengguna yang disekat tidak dapat mengirim anda pesan atau menambahkan anda ke kumpulan.</string>
     <string name="setting_conversation_tip">Anda boleh mengehadkan siapa yang boleh menghantar mesej kepada saya.</string>
     <string name="setting_conversation_group_tip">Siapa yang boleh menambahkan saya ke kumpulan.</string>
@@ -515,10 +499,8 @@
     <string name="setting_incognito">Papan Kekunci Inkognito</string>
     <string name="setting_incognito_prompt">Lumpuhkan pembelajaran peribadi papan kekunci</string>
     <string name="setting_no_blocked">Tiada pengguna yang disekat</string>
-    <string name="setting_authentications">Kebenaran</string>
     <string name="setting_no_auth_app">Tiada aplikasi autentik</string>
     <string name="setting_permissions">Kebenaran</string>
-    <string name="setting_emergency">Kenalan Kecemasan</string>
     <string name="setting_emergency_content">Kenalan kecemasan direka untuk membantu anda log masuk ke akaun anda sekiranya anda tersesat dan tidak dapat semula nombor telefon bimbit anda.</string>
     <string name="setting_emergency_warning">Perhatian: Kontak Kecemasan tidak dapat membantu anda memulih semula PIN</string>
     <string name="setting_emergency_desc">Apabila anda kehilangan nombor telefon bimbit, sila hubungi kenalan kecemasan anda melalui telefon atau cara lain untuk mendapatkan ID Mixin dan kod pengesahan. Baca Kenalan Kecemasan kami untuk mengetahui lebih lanjut.</string>
@@ -538,7 +520,6 @@
     <string name="setting_emergency_enable">Bolehkan Kenalan Kecemasan</string>
     <string name="setting_revoke">Batal akses</string>
     <string name="setting_auth_access">Diluluskan: %1$s, Akses Terakhir: %2$s</string>
-    <string name="setting_backup">Sandar</string>
     <string name="setting_clearing">Kosongkan…</string>
     <string name="setting_data_storage">Penggunaan Data dan Storan</string>
     <string name="setting_storage">Penggunaan Storan</string>
@@ -583,7 +564,7 @@
     <string name="setting_notification_confirmation">Pemberitahuan dan Pengesahan</string>
     <string name="setting_appearance">Penampilan</string>
     <string name="setting_theme">Tema</string>
-    <string name="setting_phone_number">Nombor telefon</string>
+    <string name="phone_number">Nombor telefon</string>
     <string name="setting_phone_number_privacy">Siapa yang dapat mencari saya dengan nombor saya</string>
     <string name="setting_transfer_large_summary">Tunjukkan dialog pengesahan apabila pemindahan lebih dari atau sama dengan %1$s</string>
     <string name="setting_duplicate_transfer_desc">Paparkan dialog pengesahan apabila anda memindahkan jumlah yang sama kepada orang yang sama dalam masa 6 jam</string>
@@ -604,13 +585,11 @@
     <string name="follow_facebook">Ikuti kami di Facebook</string>
     <string name="help_center">Pusat bantuan</string>
     <string name="about_version">Versi %1$s</string>
-    <string name="conversation_delete">Padam</string>
     <string name="chat_group_create">%1$s membuat kumpulan \"%2$s\"</string>
     <string name="chat_group_add">%1$s menambahkan %2$s</string>
     <string name="chat_group_remove">%1$s mengalih keluar %2$s</string>
     <string name="chat_group_exit">Tinggal %1$s</string>
     <string name="chat_group_join">%1$s menyertai kumpulan melalui pautan jemputan</string>
-    <string name="chat_you_start">Anda</string>
     <string name="chat_you">anda</string>
     <string name="chat_group_checking">Memeriksa pautan</string>
     <string name="chat_expired">Tamat tempoh</string>
@@ -618,7 +597,6 @@
     <string name="bottom_sheet_check_payment_info">Memeriksa maklumat pembayaran</string>
     <string name="bottom_sheet_invalid_payment">Pembayaran tidak sah</string>
     <string name="bottom_sheet_check_trace_failed">Periksa maklumat jejak gagal, sila cuba lagi</string>
-    <string name="group_wait">Sila tunggu sebentar</string>
     <string name="group_invite">Jemput ke Kumpulan melalui Pautan</string>
     <!-- invite -->
     <string name="invite_info">Sesiapa sahaja yang mempunyai Mixin boleh mengikuti pautan ini untuk menyertai kumpulan ini. Kongsi sahaja dengan orang yang anda percayai.</string>
@@ -626,11 +604,9 @@
     <string name="invite_share">Kongsi pautan</string>
     <string name="invite_copy">Salin pautan</string>
     <string name="invite_forward">Teruskan kepada rakan</string>
-    <string name="invite_title">Jemput ke Kumpulan melalui Pautan</string>
     <string name="invite_invalid">Pautan Tidak Sah</string>
     <string name="invite_qr_code">kod QR</string>
     <string name="conversation_pin">Sematkan ke atas</string>
-    <string name="conversation_pin_clear">Kosongkan Pin</string>
     <string name="group_role">Anda sekarang adalah pentadbir</string>
     <string name="loading_init">Memulakan…</string>
     <string name="loading_wait">Sila tunggu sebentar</string>
@@ -668,14 +644,12 @@
     <string name="notification_group">Pemberitahuan Kumpulan</string>
     <string name="notification_message">Pemberitahuan Mesej</string>
     <string name="notification_node">Nod Pemesejan</string>
-    <string name="notification_reply">Balas</string>
     <string name="notification_mark">tanda sebagai telah dibaca</string>
     <string name="notification_title">Hidupkan Pemberitahuan</string>
     <string name="notification_content">Jangan terlepas mesej daripada rakan anda.</string>
     <!--auth-->
     <string name="auth_request">Meminta akses ke anda</string>
     <string name="auth_public_profile">Profil awam (diperlukan)</string>
-    <string name="auth_phone_number">Nombor telefon</string>
     <string name="auth_assets">Baca Aset</string>
     <string name="auth_app_read">Aplikasi baca</string>
     <string name="auth_apps_read_description">akses senarai aplikasi anda</string>
@@ -729,17 +703,16 @@
     <string name="withdrawal_addr_memo">Destinasi Tag atau Nombor ID atau nota. Sekiranya tidak, anda boleh menetapkannya Tiada Memo.</string>
     <string name="withdrawal_addr_no_memo">Sekiranya anda diminta untuk mengisi Tag Destinasi atau Nombor ID atau nota, anda boleh Menambah Memo.</string>
     <string name="withdrawal_addr_memo_link">Tiada Memo</string>
-    <string name="withdrawal_addr_no_memo_link">Tambah Memo</string>
+    <string name="add_memo">Tambah Memo</string>
     <string name="withdrawal_addr_tag">Destinasi Tag atau Nombor ID atau nota. Sekiranya tidak, anda boleh menetapkannya Tiada Tag.</string>
     <string name="withdrawal_addr_no_tag">Sekiranya anda diminta untuk mengisi Tag Destinasi atau Nombor ID atau nota, anda boleh Menambah Tag.</string>
     <string name="withdrawal_addr_tag_link">Tiada Tag</string>
-    <string name="withdrawal_addr_no_tag_link">Tambah Tag</string>
+    <string name="add_tag">Tambah Tag</string>
     <string name="withdrawal_addr_memo_hint">Memo</string>
-    <string name="withdrawal_addr_tag_hint">Tag</string>
     <string name="withdrawal_with_pwd">Pengeluaran dengan PIN</string>
     <string name="withdrawal_with_biometric">Pengeluaran dengan Biometrik</string>
     <string name="withdrawal_to">Pengeluaran ke %1$s</string>
-    <string name="group_info_add">Tambahkan keterangan kumpulan</string>
+    <string name="add_group_description">Tambahkan keterangan kumpulan</string>
     <string name="group_info_edit">Edit keterangan kumpulan</string>
     <string name="group_info_show_more_omit"> tunjuk lebih banyak</string>
     <string name="group_info_show_more">tunjuk lebih banyak</string>
@@ -763,10 +736,10 @@
         <item quantity="other">Deposit akan tiba setelah sekurang-kurangnya %1$d pengesahan sekatan</item>
     </plurals>
     <string name="deposit_reserve">Deposit sekurang-kurangnya %1$s untuk pertama kalinya.</string>
-    <string name="bottom_withdrawal_title">%1$s Pengeluaran</string>
+    <string name="withdrawal_title">%1$s Pengeluaran</string>
     <string name="change_amount">Tukar Jumlah</string>
-    <string name="bottom_withdrawal_address_tips">Untuk pengeluaran pertama ke alamat baharu, sila cuba jumlah kecil! Sekiranya anda mengeluarkan aset ke alamat yang salah, itu tidak akan dapat dipulihkan!</string>
-    <string name="bottom_withdrawal_address_continue">Teruskan</string>
+    <string name="withdrawal_address_tips">Untuk pengeluaran pertama ke alamat baharu, sila cuba jumlah kecil! Sekiranya anda mengeluarkan aset ke alamat yang salah, itu tidak akan dapat dipulihkan!</string>
+    <string name="action_continue_withdrawal">Teruskan</string>
     <string name="withdrawal_minimum_amount">Jumlah pengeluaran minimum ialah %1$s %2$s</string>
     <string name="deposit_title">Deposit %1$s</string>
     <string name="deposit_tip_eos">Alamat ini menyokong semua asas pada token EOS, seperti EOS, IQ, dll.</string>
@@ -777,8 +750,8 @@
     <string name="bottom_transfer_stranger_tip">ID Mixin %1$s tidak ada dalam senarai kenalan anda. Pastikan penerima yang anda pilih betul. Sekiranya anda pindah ke orang yang salah, aset anda akan hilang!</string>
     <!--sticker-->
     <string name="sticker_manager">Pengurus Pelekat</string>
-    <string name="sticker_add">Tambah Pelekat</string>
-    <string name="sticker_add_failed">Penambahan pelekat gagal</string>
+    <string name="add_sticker">Tambah Pelekat</string>
+    <string name="add_sticker_failed">Penambahan pelekat gagal</string>
     <string name="sticker_add_invalid_size">Memerlukan saiz fail pelekat lebih besar daripada 1KB dan kurang dari 1MB, lebar dan tinggi antara 128px dan 1024px.</string>
     <string name="sticker_add_invalid_format">Format pelekat tidak sah</string>
     <string name="sticker_search_giphy">Cari GIPHY</string>
@@ -787,17 +760,13 @@
     <!--filter-->
     <string name="filters_title">Penapis</string>
     <string name="filters_apply">Guna</string>
-    <string name="filters_all">Semua</string>
-    <string name="filters_transfer">Pindah</string>
+    <string name="all">Semua</string>
     <string name="filters_deposit">Deposit</string>
-    <string name="filters_withdrawal">Pengeluaran</string>
-    <string name="filters_fee">Bayaran</string>
-    <string name="filters_rebate">Rebat</string>
     <string name="filters_raw">Mentah</string>
     <string name="capital_filters_by">DITAPIS DENGAN</string>
     <string name="capital_sort_by">DISUSUN MENGIKUT</string>
     <!--Pending-->
-    <plurals name="pending_confirmations" tools:ignore="UnusedQuantity">
+    <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d/%2$d pengesahan</item>
     </plurals>
     <!-- webrtc -->
@@ -812,8 +781,7 @@
     <string name="call_speaker">Penceramah</string>
     <string name="call_action_hang_up">Letak gagang</string>
     <string name="call_action_decline">Tolak</string>
-    <string name="call_action_accept">Terima</string>
-    <string name="call_action_mute">Senyap</string>
+    <string name="action_accept">Terima</string>
     <string name="call_group_full">Sokong sehingga %1$d suara kumpulan orang</string>
     <string name="call_pip_permission">Anda tidak dapat meminimumkan panggilan suara kerana Mixin tidak diberi kuasa menggunakan tetingkap terapung</string>
     <!-- restore&backup -->
@@ -844,7 +812,6 @@
     <string name="backup_failure_tip">Kegagalan sandaran, sila cuba lagi.</string>
     <string name="backup_success_tip">Kejayaan sandaran</string>
     <!-- shortcut -->
-    <string name="shortcut_wallet_label">Dompet</string>
     <string name="shortcut_scan_label">Imbas</string>
     <string name="divide">, </string>
     <!-- live -->
@@ -853,9 +820,8 @@
     <string name="multisig_pay_pin">Multisig dengan PIN</string>
     <string name="multisig_pay_biometric">Gunakan Biometric Multisig</string>
     <string name="multisig_transaction">Urus niaga Multisig</string>
-    <string name="multisig_revoke_transaction">Batalkan Urus Niaga Multisig</string>
     <string name="multisig_senders">Pengirim</string>
-    <string name="multisig_receivers">Penerima (%1$s)</string>
+    <string name="multisig_receivers_threshold">Penerima (%1$s)</string>
     <string name="multisig_state_signed">Pautan multisig ini sudah ditandatangani oleh anda sendiri, anda tidak boleh membuat operasi pendua.</string>
     <string name="multisig_state_unlocked">Pautan multisig ini telah dibuka kuncinya oleh seseorang, anda tidak boleh membuat operasi pendua.</string>
     <string name="desktop_upgrade">Sila tingkatkan Mixin Messenger Desktop kepada versi terkini.</string>
@@ -865,28 +831,26 @@
         <item quantity="other">Tepat hingga %1$d meter</item>
     </plurals>
     <string name="location_unnamed">Lokasi tidak dinamakan</string>
-    <string name="location_distance">%1$s %2$s jauh</string>
+    <string name="location_distance_away">%1$s %2$s jauh</string>
     <string name="location_kilometre">km</string>
     <string name="location_metre">m</string>
     <string name="location_empty">Tidak ada hasil untuk \"%1$s\" Cuba carian baru</string>
     <!--  circle  -->
     <string name="circle_bottom">Buat lingkaran untuk kumpulan sembang yang berbeza &#13;\ndan beralih antara mereka dengan segera</string>
-    <string name="circle_action_add">Tambah Lingkaran</string>
+    <string name="add_circle">Tambah Lingkaran</string>
     <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d Perbualan</item>
     </plurals>
     <string name="circle_all_conversation">Semua Perbualan</string>
-    <string name="circle_mixin">Mixin</string>
     <string name="circle_menu_edit_name">Edit Nama Lingkaran</string>
     <string name="circle_menu_edit_conversation">Edit Perbualan</string>
-    <string name="circle_action_menu_delete">Padam</string>
     <string name="circle_action_menu_sort">Susun</string>
     <string name="circles">Lingkaran</string>
     <string name="circle_title">Lingkaran %1$s</string>
     <string name="circle_info">Sekiranya anda ingin menapis perbualan, sila&#13;\ntetapkan lingkaran untuk perbualan terlebih dahulu.</string>
     <string name="circle_delete_tip">Padamkan \"%1$s\"?</string>
     <string name="circle_empty_info">Anda boleh menambahkan kenalan atau kumpulan ke lingkaran semasa.</string>
-    <string name="circle_empty_start">Tambah Perbualan</string>
+    <string name="add_conversations">Tambah Perbualan</string>
     <string name="circle_limit">Jumlahnya sudah mencapai had</string>
     <!--  bot  -->
     <string name="bots_capital">Bot</string>

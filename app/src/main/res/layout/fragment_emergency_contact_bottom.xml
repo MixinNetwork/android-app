@@ -24,7 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/setting_emergency"
+                android:text="@string/log_category_emergency"
                 android:textSize="18sp"
                 android:layout_marginTop="70dp"
                 android:textColor="?attr/text_primary"

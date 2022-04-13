@@ -29,7 +29,7 @@ open class ErrorHandler {
                     is IOException -> when (throwable) {
                         is SocketTimeoutException -> toast(R.string.error_connection_timeout)
                         is UnknownHostException -> toast(R.string.error_no_connection)
-                        is ServerErrorException -> toast(getString(R.string.error_server_5xx, throwable.code))
+                        is ServerErrorException -> toast(getString(R.string.error_server_5xx_code, throwable.code))
                         is ClientErrorException -> {
                             handleErrorCode(throwable.code, ctx)
                         }
@@ -73,7 +73,7 @@ open class ErrorHandler {
                         toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
                     }
                     SERVER, INSUFFICIENT_POOL -> {
-                        toast(getString(R.string.error_server_5xx, code))
+                        toast(getString(R.string.error_server_5xx_code, code))
                     }
                     TIME_INACCURATE -> { }
                     else -> {
@@ -239,7 +239,7 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_forbidden)
         }
         ErrorHandler.SERVER, ErrorHandler.INSUFFICIENT_POOL -> {
-            getString(R.string.error_server_5xx, code)
+            getString(R.string.error_server_5xx_code, code)
         }
         ErrorHandler.TIME_INACCURATE -> "${ErrorHandler.TIME_INACCURATE} TIME_INACCURATE"
 

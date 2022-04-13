@@ -217,7 +217,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/memo" />
+                        android:text="@string/wallet_transfer_memo" />
 
                     <TextView
                         android:id="@+id/memo_tv"

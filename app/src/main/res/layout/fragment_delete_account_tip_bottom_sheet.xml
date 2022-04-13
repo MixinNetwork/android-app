@@ -80,7 +80,7 @@
                 android:layout_marginTop="12dp"
                 android:padding="12dp"
                 android:layout_marginBottom="50dp"
-                android:text="@string/setting_delete_account_continue"
+                android:text="@string/wallet_transaction_continue"
                 android:textColor="@color/selector_tv_blue"
                 android:foreground="?android:attr/selectableItemBackground"
                 android:textSize="14sp" />

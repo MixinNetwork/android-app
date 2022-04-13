@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_help_outline"
-        app:titleText="@string/setting_emergency" />
+        app:titleText="@string/log_category_emergency" />
 
     <LinearLayout
         android:layout_width="match_parent"

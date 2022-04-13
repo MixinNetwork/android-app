@@ -8,7 +8,7 @@
         android:title="@string/circle_menu_edit_conversation" />
     <item
         android:id="@+id/delete"
-        android:title="@string/circle_action_menu_delete" />
+        android:title="@string/action_delete" />
     <item
         android:id="@+id/sort"
         android:title="@string/circle_action_menu_sort" />

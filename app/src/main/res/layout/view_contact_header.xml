@@ -196,7 +196,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/center_add_contact"
             android:layout_toEndOf="@+id/add_contact_iv"
-            android:text="@string/contact_add_contact_title" />
+            android:text="@string/add_contact" />
 
         <TextView
             android:id="@+id/add_contact_desc_iv"

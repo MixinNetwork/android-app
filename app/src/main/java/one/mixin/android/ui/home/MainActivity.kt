@@ -558,7 +558,7 @@ class MainActivity : BlazeBaseActivity() {
             clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
-            alertDialog = alert(getString(R.string.group_wait)).show()
+            alertDialog = alert(getString(R.string.loading_wait)).show()
             val conversationId = intent.extras!!.getString("conversation_id")!!
             clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {
@@ -812,7 +812,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun addCircle() {
         editDialog {
-            titleText = this@MainActivity.getString(R.string.circle_action_add)
+            titleText = this@MainActivity.getString(R.string.add_circle)
             maxTextCount = 64
             defaultEditEnable = false
             editMaxLines = EditDialog.MAX_LINE.toInt()

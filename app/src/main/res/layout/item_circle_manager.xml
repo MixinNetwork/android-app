@@ -37,7 +37,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:singleLine="true"
-        android:text="@string/circle_mixin"
+        android:text="@string/app_name"
         android:textColor="?attr/text_primary"
         app:layout_constraintBottom_toTopOf="@id/circle_subtitle"
         app:layout_constraintEnd_toEndOf="parent"

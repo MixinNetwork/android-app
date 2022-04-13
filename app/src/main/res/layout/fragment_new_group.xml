@@ -119,7 +119,7 @@
             android:layout_toEndOf="@id/notice_tv"
             android:background="@null"
             android:gravity="center_vertical|end"
-            android:hint="@string/group_new_notice_tip"
+            android:hint="@string/about"
             android:textColor="?attr/text_minor"
             android:textColorHint="?attr/text_remarks"
             tools:ignore="Autofill,TextFields" />

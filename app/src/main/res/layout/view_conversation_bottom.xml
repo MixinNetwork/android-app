@@ -43,7 +43,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/conversation_delete"
+        android:text="@string/action_delete"
         app:drawableStartCompat="@drawable/ic_msg_delete" />
 
 </LinearLayout>

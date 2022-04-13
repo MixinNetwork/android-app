@@ -34,7 +34,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@id/delete_icon"
-                android:text="@string/conversation_delete"
+                android:text="@string/action_delete"
                 android:textColor="@color/white" />
 
             <ImageView
@@ -54,7 +54,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="8dp"
                 android:layout_toStartOf="@id/delete_icon_copy"
-                android:text="@string/conversation_delete"
+                android:text="@string/action_delete"
                 android:textColor="@color/white"
                 tools:ignore="RelativeOverlap" />
         </RelativeLayout>

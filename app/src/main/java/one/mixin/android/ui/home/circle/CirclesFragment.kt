@@ -334,7 +334,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             }
             binding.apply {
                 if (conversationCircleItem == null) {
-                    circleTitle.setText(R.string.circle_mixin)
+                    circleTitle.setText(R.string.app_name)
                     circleSubtitle.setText(R.string.circle_all_conversation)
                     circleUnreadTv.isVisible =
                         currentCircleId != null && allUnread != 0 && allUnread != null

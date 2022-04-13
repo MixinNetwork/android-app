@@ -59,7 +59,7 @@ class MultisigsBottomSheetDialogFragment :
         binding.apply {
             if (t is Multi2MultiBiometricItem) {
                 if (t.action == SignatureAction.cancel.name) {
-                    title.text = getString(R.string.multisig_revoke_transaction)
+                    title.text = getString(R.string.log_pin_multisig_unlock)
                     arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
                 } else {
                     title.text = getString(R.string.multisig_transaction)
@@ -115,7 +115,7 @@ class MultisigsBottomSheetDialogFragment :
         val title = if (isSender) {
             getString(R.string.multisig_senders)
         } else {
-            getString(R.string.multisig_receivers, "${t.threshold}/${t.receivers.size}")
+            getString(R.string.multisig_receivers_threshold, "${t.threshold}/${t.receivers.size}")
         }
         UserListBottomSheetDialogFragment.newInstance(userList, title)
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
@@ -127,7 +127,7 @@ class MultisigsBottomSheetDialogFragment :
             requireContext().getString(
                 if (t is Multi2MultiBiometricItem) {
                     if (t.action == SignatureAction.cancel.name) {
-                        R.string.multisig_revoke_transaction
+                        R.string.log_pin_multisig_unlock
                     } else {
                         R.string.multisig_transaction
                     }

@@ -58,7 +58,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
                 String.format(
                     getText(R.string.chat_pin_message),
                     if (id == messageItem.userId) {
-                        getText(R.string.chat_you_start)
+                        getText(R.string.you)
                     } else {
                         messageItem.userFullName
                     },
@@ -75,7 +75,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
                 String.format(
                     getText(R.string.chat_pin_message),
                     if (id == messageItem.userId) {
-                        getText(R.string.chat_you_start)
+                        getText(R.string.you)
                     } else {
                         messageItem.userFullName
                     },

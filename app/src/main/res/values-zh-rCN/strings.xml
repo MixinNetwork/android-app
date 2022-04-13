@@ -3,7 +3,6 @@
     <!--common-->
     <string name="action_confirm">确认</string>
     <string name="action_change">更改</string>
-    <string name="action_continue">继续</string>
     <string name="action_cancel">取消</string>
     <string name="action_search">搜索</string>
     <string name="action_next">下一步</string>
@@ -14,7 +13,6 @@
     <string name="notification">通知</string>
     <string name="none">无</string>
     <string name="fee">手续费</string>
-    <string name="memo">Memo（备注）</string>
     <string name="date">日期</string>
     <string name="label">标题</string>
     <string name="address">地址</string>
@@ -37,7 +35,7 @@
     <string name="capital_other">其他</string>
     <string name="not_logged_in">还没有登录</string>
     <string name="got_it">知道了</string>
-    <string name="got_it_count">知道了（%1$d）</string>
+    <string name="got_it_count_down">知道了（%1$d）</string>
     <string name="action_exit">退出</string>
     <string name="receiver">至</string>
     <string name="sender">来自</string>
@@ -60,7 +58,6 @@
     <string name="successful">成功</string>
     <string name="capital_no_result">没有结果</string>
     <string name="send_to">发送给 %1$s</string>
-    <string name="action_transfer_send">转出</string>
     <string name="action_receive">转入</string>
     <string name="developer">开发者</string>
     <string name="action_later">稍后</string>
@@ -83,7 +80,7 @@
     <string name="capital_no_post">没有文章</string>
     <string name="capital_no_file">没有文件</string>
     <string name="capital_no_link">没有链接</string>
-    <string name="media_date_patten">yyyy年MM月dd日</string>
+    <string name="date_format_date">yyyy年MM月dd日</string>
     <string name="action_restart">重启应用</string>
     <string name="update_downloaded">一个更新刚下载完成。</string>
     <string name="language">语言</string>
@@ -140,7 +137,7 @@
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
     <string name="error_network">网络错误</string>
-    <string name="error_server_5xx">服务器出错，请稍后重试: %1$d</string>
+    <string name="error_server_5xx_code">服务器出错，请稍后重试: %1$d</string>
     <string name="error_data">数据错误</string>
     <string name="error_unknown_with_code">错误：%1$d</string>
     <string name="error_unknown_with_message">错误：%1$s</string>
@@ -195,7 +192,6 @@
     <string name="error_not_supported_audio_format">不支持的音频格式，请用其他app打开。</string>
     <string name="error_transcript_forward">请在所有附件下载完成之后再转发</string>
     <!--home-->
-    <string name="contacts">联系人</string>
     <string name="search_hint">搜索资产，联系人，消息</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="conversation_not_support">不支持此类型消息。请升级 Mixin 查看。</string>
@@ -213,7 +209,6 @@
     <string name="capital_search_title_chat">会话</string>
     <string name="capital_search_title_contacts">联系人</string>
     <string name="capital_search_title_messages">搜索消息</string>
-    <string name="search_related_message">%1$d 条相关的消息</string>
     <string name="search_tip">搜索 Mixin ID 或者手机号：%1$s</string>
     <!--landing-->
     <string name="landing_enter_mobile_number">输入你的手机号码</string>
@@ -242,7 +237,6 @@
     <!--contacts-->
     <string name="contact_new_group_chat_title">新群聊</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
-    <string name="contact_add_contact_title">添加联系人</string>
     <string name="add_people_hint">通过 Mixin ID 或手机号添加联系人</string>
     <string name="contact_qr_mixin">Mixin 二维码</string>
     <string name="contact_qr_desc">扫描好友的二维码</string>
@@ -251,8 +245,6 @@
     <string name="contact_mobile">手机: %1$s</string>
     <string name="contact_empty">手机联系人</string>
     <string name="contact_empty_tip">Mixin 需要访问你的通讯录来帮助你更快找到你的朋友。</string>
-    <string name="contact_capital_item_title">联系人</string>
-    <string name="bot_capital_item_title">机器人</string>
     <string name="contact_sq_scan_title">识别二维码</string>
     <string name="contact_save_image">保存图片</string>
     <string name="contact_my_qr_title">我的二维码</string>
@@ -323,7 +315,6 @@
     </plurals>
     <string name="chat_capital_audio_discard_ok">放弃</string>
     <string name="chat_capital_audio_discard_cancel">继续</string>
-    <string name="chat_delete_message">删除 %1$d 条消息吗?</string>
     <string name="chat_delete_for_me">删除</string>
     <string name="chat_delete_for_everyone">撤回</string>
     <string name="chat_recall_me">你撤回了一条消息</string>
@@ -347,7 +338,6 @@
     <string name="action_add">添加</string>
     <string name="chat_call_bad_network_you">当前通话网络不佳</string>
     <string name="chat_not_found">找不到该消息</string>
-    <string name="chat_transcript">聊天记录</string>
     <string name="chat_import_content">导入聊天记录到%1$s？</string>
     <string name="chat_forward_title">转发消息</string>
     <string name="chat_import_fail_content">导入聊天记录失败！是否按文件发送？</string>
@@ -368,20 +358,18 @@
     <string name="contact_other_remove_bot">删除机器人</string>
     <string name="contact_other_report">举报</string>
     <string name="contact_other_report_warning">确定要举报这个联系人？</string>
-    <string name="contact_other_transactions">转账记录</string>
     <string name="contact_less_invite">邀请至 Mixin</string>
     <string name="contact_less_invite_content">我正在使用 Mixin 聊天。\n 下载：https://mixin.one</string>
     <string name="contact_mute_title">静音通知</string>
-    <string name="contact_mute_1hour">1 小时</string>
-    <string name="contact_mute_8hours">8 小时</string>
-    <string name="contact_mute_1week">1 星期</string>
-    <string name="contact_mute_1year">1 年</string>
+    <string name="one_hour">1 小时</string>
+    <string name="eight_hours">8 小时</string>
+    <string name="one_week">1 星期</string>
+    <string name="one_year">1 年</string>
     <plurals name="contact_count" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d位联系人</item>
     </plurals>
     <!--Add people-->
     <string name="add_people">添加朋友</string>
-    <string name="add_people_search_hint">Mixin ID 或手机号</string>
     <string name="my_mixin_id">我的 Mixin ID: %1$s</string>
     <!--wallet-->
     <string name="wallet">钱包</string>
@@ -397,14 +385,13 @@
     <string name="wallet_password_unsafe">密码过于简单不安全</string>
     <string name="wallet_bottom_show_hidden">所有隐藏的资产</string>
     <string name="wallet_hidden_assets">隐藏资产</string>
-    <string name="wallet_bottom_deposit">充值</string>
     <string name="wallet_bottom_transfer_to">转账给 %1$s</string>
     <string name="wallet_transactions_title">转账记录</string>
     <string name="wallet_transactions_show">显示</string>
     <string name="wallet_transactions_hide">隐藏</string>
     <string name="wallet_transaction_title">交易详情</string>
     <string name="wallet_transaction_continue">继续</string>
-    <string name="wallet_transaction_continue_count">继续 （%1$d）</string>
+    <string name="wallet_transaction_continue_count_down">继续 （%1$d）</string>
     <string name="wallet_transaction_tip_title">大额转账确认</string>
     <string name="wallet_transaction_current_value">价值 %1$s</string>
     <string name="wallet_transaction_that_time_value">当时价值 %1$s</string>
@@ -436,7 +423,7 @@
     <string name="transactions_type">交易类型</string>
     <string name="transactions_status">交易状态</string>
     <string name="no_hidden_asset">没有隐藏的资产</string>
-    <string name="no_applicable">暂无价格</string>
+    <string name="not_applicable">暂无价格</string>
     <string name="wallet_pay_with_biometrics">用生物识别支付</string>
     <string name="wallet_pin_open_biometrics">请输入密码来启用生物识别支付</string>
     <string name="wallet_pin_modify_biometrics">请输入密码来修改支付密码使用间隔</string>
@@ -468,7 +455,6 @@
     <string name="wallet_withdrawal_changed">手续费已从 %1$s 变更为 %2$s，要更新手续费并继续提现吗？</string>
     <string name="wallet_refresh_address_failed">手续费已变更且刷新失败，请重试。</string>
     <string name="wallet_address_add_tip">Mixin 不支持提现到</string>
-    <string name="wallet_pin_tops">了解更多</string>
     <string name="wallet_pin_tops_desc">注意密码丢失无法找回，6 位数字密码是基于去中心化密钥派生协议 Throttled Identity Protocol，\n阅读文档以了解更多。</string>
     <!--pin logs-->
     <string name="logs">日志</string>
@@ -480,30 +466,27 @@
     <string name="log_pin_verification">验证密码</string>
     <string name="log_pin_raw_transfer">给主网地址转账</string>
     <string name="log_pin_user_transfer">给用户或机器人转账</string>
-    <string name="log_pin_withdrawal">提现</string>
-    <string name="log_pin_add_address">添加地址</string>
+    <string name="add_address">添加地址</string>
     <string name="log_pin_delete_address">删除地址</string>
-    <string name="log_pin_add_emergency">添加紧急联系人</string>
+    <string name="add_emergency_contact">添加紧急联系人</string>
     <string name="log_pin_delete_emergency">删除紧急联系人</string>
     <string name="log_pin_read_emergency">查看紧急联系人</string>
-    <string name="log_pin_update_phone">修改手机号码</string>
     <string name="log_pin_update_pin">修改密码</string>
     <string name="log_pin_multisig_sign">签名多重签名交易</string>
     <string name="log_pin_multisig_unlock">撤销多重签名交易</string>
-    <string name="log_pin_modification">修改密码</string>
-    <string name="log_emergency_modification">修改紧急联系人</string>
-    <string name="log_phone_modification">你的手机号已变更</string>
+    <string name="pin_modification">修改密码</string>
+    <string name="log_emergency_contact_modification">修改紧急联系人</string>
+    <string name="log_phone_number_modification">你的手机号已变更</string>
     <string name="log_login_phone">通过手机号登录</string>
     <string name="log_login_emergency">通过紧急联系人登录</string>
-    <string name="log_login_desktop">登录桌面端</string>
+    <string name="log_login_desktop_app">登录桌面端</string>
     <!--group-->
-    <string name="group_add_participants">添加成员</string>
+    <string name="add_participants">添加成员</string>
     <string name="group_new_title">新建群组</string>
     <string name="group_new_photo">群组头像</string>
     <string name="group_new_name">群组名称</string>
     <string name="group_new_name_tip">新群组名称</string>
     <string name="group_new_notice">群组公告</string>
-    <string name="group_new_notice_tip">关于</string>
     <string name="group_info_title">群组信息</string>
     <string name="group_info_not_in">你不在此群组</string>
     <string name="group_info_clear_chat">清除聊天记录</string>
@@ -519,7 +502,7 @@
     <string name="group_pop_menu_make_admin">设定为群组管理员</string>
     <string name="group_pop_menu_dismiss_admin">撤销管理员身份</string>
     <string name="group_info_remove_tip">将 %1$s 自 \"%2$s\" 群组移除?</string>
-    <string name="group_adding">正在添加…</string>
+    <string name="adding">正在添加…</string>
     <string name="group_removing">正在移除…</string>
     <string name="group_creating">正在创建…</string>
     <string name="state_connecting">正在连接</string>
@@ -536,13 +519,12 @@
     <string name="group_click_create_tip">不能创建，请点击重试</string>
     <string name="groups_in_common">共同群组</string>
     <!--setting-->
-    <string name="setting_title">设置</string>
+    <string name="settings">设置</string>
     <string name="setting_blocked">已屏蔽</string>
     <string name="setting_conversation">会话</string>
     <string name="setting_privacy_tip">谁可以给你发消息或邀请你加入群聊。</string>
     <string name="setting_my_contacts">我的联系人</string>
     <string name="setting_block">屏蔽</string>
-    <string name="setting_unblock">解除屏蔽</string>
     <string name="setting_block_tip">被屏蔽的用户不能给你发送消息或者邀请你加入群聊</string>
     <string name="setting_conversation_tip">你可以限制谁给你发消息。</string>
     <string name="setting_conversation_group_tip">谁能加我进入群组。</string>
@@ -565,9 +547,7 @@
     <string name="setting_incognito_prompt">禁止键盘个性化学习</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_no_auth_app">没有授权任何机器人</string>
-    <string name="setting_authentications">授权</string>
     <string name="setting_permissions">权限列表</string>
-    <string name="setting_emergency">紧急联系人</string>
     <string name="setting_emergency_content">紧急联系人旨在帮助你在丢失且无法找回手机号的情况下登录你的账号。</string>
     <string name="setting_emergency_warning">注意：紧急联系人无法帮助找回支付密码</string>
     <string name="setting_emergency_desc">请放心，即使您的手机号丢失无法找回钱包资产也很安全，请牢记您的支付密码，阅读紧急联系人了解更多。</string>
@@ -587,7 +567,6 @@
     <string name="setting_emergency_enable">启用紧急联系人</string>
     <string name="setting_revoke">取消授权</string>
     <string name="setting_auth_access">授权时间：%1$s, 上次访问：%2$s</string>
-    <string name="setting_backup">备份</string>
     <string name="setting_clearing">正在清理…</string>
     <string name="setting_data_storage">数据与存储空间</string>
     <string name="setting_storage">储存空间</string>
@@ -634,7 +613,7 @@
     <string name="setting_appearance">外观</string>
     <string name="setting_diagnosis">网络诊断</string>
     <string name="setting_theme">主题</string>
-    <string name="setting_phone_number">手机号码</string>
+    <string name="phone_number">手机号码</string>
     <string name="setting_phone_number_privacy">谁可以通过手机号找到你</string>
     <string name="setting_transfer_large_summary">当转账金额大于或等于 %1$s 时显示确认弹窗</string>
     <string name="setting_transfer_large_summary_greater">当转账金额大于 %1$s 时显示确认弹窗</string>
@@ -658,10 +637,8 @@
     <string name="setting_delete_account_content_2">本地信息和备份不会被自动删除</string>
     <string name="setting_delete_account_content_3">转账记录不会被删除</string>
     <string name="setting_delete_account_tip">你的 Mixin 钱包还有一些资产，可以提现至其他钱包或交易所，账户一旦注销，这些资产将和钱包一起被\n弃用无法找回。</string>
-    <string name="setting_delete_account_continue">继续</string>
     <string name="setting_delete_account_pin_title">输入你的密码以注销你的账户</string>
     <string name="setting_delete_account_pin_content">如果您继续，您的个人资料和账户信息将在%1$s被删除。阅读我们的文件以了解更多。</string>
-    <string name="setting_delete_account_pin_content_more">了解更多</string>
     <string name="setting_delete_account_send">我们将发送4位验证码到手机 %1$s</string>
     <string name="setting_battery_optimize_title">为了保证 Mixin 能够正常收到消息，请将 Mixin 的电池优化策略设置为“不优化”</string>
     <string name="go_set">去设置</string>
@@ -670,13 +647,11 @@
     <string name="follow_facebook">关注我们的 Facebook</string>
     <string name="help_center">帮助中心</string>
     <string name="about_version">版本 %1$s</string>
-    <string name="conversation_delete">删除</string>
     <string name="chat_group_create">%1$s创建了群组\"%2$s\"</string>
     <string name="chat_group_add">%1$s添加了%2$s</string>
     <string name="chat_group_remove">%1$s移除了%2$s</string>
     <string name="chat_group_exit">%1$s离开了群组</string>
     <string name="chat_group_join">%1$s通过邀请链接加入群组</string>
-    <string name="chat_you_start">您</string>
     <string name="chat_you">您</string>
     <string name="chat_group_checking">正在检查链接</string>
     <string name="chat_expired">已过期</string>
@@ -684,7 +659,6 @@
     <string name="bottom_sheet_check_payment_info">请检查支付信息</string>
     <string name="bottom_sheet_invalid_payment">无效支付信息</string>
     <string name="bottom_sheet_check_trace_failed">检查支付信息失败，请重试</string>
-    <string name="group_wait">请稍等</string>
     <string name="group_invite">群邀请链接</string>
     <!-- invite -->
     <string name="invite_info">Mixin 使用者可以使用此链接加入这个群组，请只跟您信任的人共享链接。</string>
@@ -692,11 +666,9 @@
     <string name="invite_share">分享邀请链接</string>
     <string name="invite_copy">复制邀请链接</string>
     <string name="invite_forward">转发给好友</string>
-    <string name="invite_title">群邀请链接</string>
     <string name="invite_invalid">邀请链接</string>
     <string name="invite_qr_code">二维码</string>
     <string name="conversation_pin">置顶</string>
-    <string name="conversation_pin_clear">取消置顶</string>
     <string name="group_role">你现在成为管理员</string>
     <string name="loading_init">初始化…</string>
     <string name="loading_wait">请稍等</string>
@@ -734,12 +706,11 @@
     <string name="bot_interact_info">点击下列按钮与机器人互动</string>
     <string name="bot_interact_open">打开主页</string>
     <string name="bot_interact_hi">打招呼</string>
-    <string name="notification_channel_group">消息</string>
+    <string name="messages">消息</string>
     <string name="notification_group">群组通知</string>
     <string name="notification_message">消息通知</string>
     <string name="notification_silence">静音通知</string>
     <string name="notification_node">消息节点</string>
-    <string name="notification_reply">回复</string>
     <string name="notification_mark">标记为已读</string>
     <string name="notification_title">打开通知</string>
     <string name="notification_content">不再遗漏好友的消息。</string>
@@ -748,7 +719,6 @@
     <!--auth-->
     <string name="auth_request">需要访问你的</string>
     <string name="auth_public_profile">个人资料(必须)</string>
-    <string name="auth_phone_number">手机号码</string>
     <string name="auth_assets">查看资产</string>
     <string name="auth_app_read">查看应用</string>
     <string name="auth_apps_read_description">访问你的应用列表</string>
@@ -813,17 +783,16 @@
     <string name="withdrawal_addr_memo">地址标签、数字 ID 或备注。如果没有，点击不使用 Memo（备注）。</string>
     <string name="withdrawal_addr_no_memo">如果你需要填写地址标签、数字 ID 或备注，点击添加 Memo（备注）。</string>
     <string name="withdrawal_addr_memo_link">点击不使用 Memo（备注）</string>
-    <string name="withdrawal_addr_no_memo_link">点击添加 Memo（备注）</string>
+    <string name="add_memo">点击添加 Memo（备注）</string>
     <string name="withdrawal_addr_tag">地址标签、数字 ID 或备注。如果没有，点击不使用 Tag（标签）。</string>
     <string name="withdrawal_addr_no_tag">如果你需要填写地址标签、数字 ID 或备注，点击添加 Tag（标签）。</string>
     <string name="withdrawal_addr_tag_link">点击不使用 Tag（标签）</string>
-    <string name="withdrawal_addr_no_tag_link">点击添加 Tag（标签）</string>
+    <string name="add_tag">点击添加 Tag（标签）</string>
     <string name="withdrawal_addr_memo_hint">Memo（备注）</string>
-    <string name="withdrawal_addr_tag_hint">Tag（标签）</string>
     <string name="withdrawal_with_pwd">用密码提现</string>
     <string name="withdrawal_with_biometric">用生物识别提现</string>
     <string name="withdrawal_to">提现到 %1$s</string>
-    <string name="group_info_add">添加群公告</string>
+    <string name="add_group_description">添加群公告</string>
     <string name="group_info_edit">编辑群公告</string>
     <string name="group_info_show_more_omit"> 显示更多</string>
     <string name="group_info_show_more">显示更多</string>
@@ -851,10 +820,10 @@
         <item quantity="other">充值到账需要 %1$d 个区块确认。</item>
     </plurals>
     <string name="deposit_reserve">首次充值至少 %1$s ！</string>
-    <string name="bottom_withdrawal_title">%1$s 提现</string>
+    <string name="withdrawal_title">%1$s 提现</string>
     <string name="change_amount">修改金额</string>
-    <string name="bottom_withdrawal_address_tips">首次提现到新地址，建议小额尝试！如果您提现到错误的地址资产将无法找回！</string>
-    <string name="bottom_withdrawal_address_continue">继续提现</string>
+    <string name="withdrawal_address_tips">首次提现到新地址，建议小额尝试！如果您提现到错误的地址资产将无法找回！</string>
+    <string name="action_continue_withdrawal">继续提现</string>
     <string name="withdrawal_minimum_amount">提现金额最小 %1$s %2$s</string>
     <string name="deposit_title">%1$s 充值</string>
     <string name="deposit_tip_eos">支持所有基于 EOS 发行的代币。</string>
@@ -865,8 +834,8 @@
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s 不是您的联系人，请确认收款人是否正确。如果您转错了人资产将无法追回！</string>
     <!--sticker-->
     <string name="sticker_manager">管理贴纸</string>
-    <string name="sticker_add">添加贴纸</string>
-    <string name="sticker_add_failed">添加贴纸失败</string>
+    <string name="add_sticker">添加贴纸</string>
+    <string name="add_sticker_failed">添加贴纸失败</string>
     <string name="sticker_add_invalid_size">贴纸要求大于 1KB 且小于 1MB，宽高大于 128 像素且小于 1024 像素。</string>
     <string name="sticker_add_invalid_format">贴纸格式不支持</string>
     <string name="sticker_search_giphy">搜索 GIPHY</string>
@@ -874,17 +843,13 @@
     <!--filter-->
     <string name="filters_title">筛选</string>
     <string name="filters_apply">应用</string>
-    <string name="filters_all">全部</string>
-    <string name="filters_transfer">转账</string>
+    <string name="all">全部</string>
     <string name="filters_deposit">充值</string>
-    <string name="filters_withdrawal">提现</string>
-    <string name="filters_fee">手续费</string>
-    <string name="filters_rebate">退款</string>
     <string name="filters_raw">其他</string>
     <string name="capital_filters_by">筛选</string>
     <string name="capital_sort_by">排序</string>
     <!--Pending-->
-    <plurals name="pending_confirmations" tools:ignore="UnusedQuantity">
+    <plurals name="pending_confirmation" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d/%2$d 区块确认数</item>
     </plurals>
     <!-- webrtc -->
@@ -899,8 +864,7 @@
     <string name="call_speaker">扬声器</string>
     <string name="call_action_hang_up">挂断</string>
     <string name="call_action_decline">挂断</string>
-    <string name="call_action_accept">接听</string>
-    <string name="call_action_mute">静音</string>
+    <string name="action_accept">接听</string>
     <string name="call_group_full">群组语音最多支持%1$d人</string>
     <string name="call_pip_permission">你的手机没有授权 Mixin 获得浮窗权限，语音通话最小化不能正常使用</string>
 
@@ -937,7 +901,6 @@
     <string name="backup_failure_tip">备份异常，请重试。</string>
     <string name="backup_success_tip">备份成功</string>
     <!-- shortcut -->
-    <string name="shortcut_wallet_label">钱包</string>
     <string name="shortcut_scan_label">扫码</string>
     <string name="divide">、</string>
     <!-- live -->
@@ -946,9 +909,8 @@
     <string name="multisig_pay_pin">通过密码签名</string>
     <string name="multisig_pay_biometric">使用生物识别签名</string>
     <string name="multisig_transaction">多重签名交易</string>
-    <string name="multisig_revoke_transaction">撤销多重签名交易</string>
     <string name="multisig_senders">交易发起人</string>
-    <string name="multisig_receivers">交易接收人（%1$s）</string>
+    <string name="multisig_receivers_threshold">交易接收人（%1$s）</string>
     <string name="multisig_state_signed">您已经对这笔交易进行了签名，您无法再次签名。</string>
     <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>
 
@@ -960,29 +922,27 @@
         <item quantity="other">精确到 %1$d 米</item>
     </plurals>
     <string name="location_unnamed">未命名地点</string>
-    <string name="location_distance">距离您 %1$s %2$s</string>
+    <string name="location_distance_away">距离您 %1$s %2$s</string>
     <string name="location_kilometre">千米</string>
     <string name="location_metre">米</string>
     <string name="location_empty">找不到 \"%1$s\"\n换个名字试试吧</string>
     <string name="location_enable_title">需要开启 GPS 启用定位功能</string>
     <!--  circle  -->
     <string name="circle_bottom">为不同对话创建 圈子 \n然后在它们之间快速切换</string>
-    <string name="circle_action_add">添加圈子</string>
+    <string name="add_circle">添加圈子</string>
     <plurals name="circle_subtitle" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d 会话</item>
     </plurals>
     <string name="circle_all_conversation">所有会话</string>
-    <string name="circle_mixin">Mixin</string>
     <string name="circle_menu_edit_name">编辑名称</string>
     <string name="circle_menu_edit_conversation">管理圈子</string>
-    <string name="circle_action_menu_delete">删除</string>
     <string name="circle_action_menu_sort">排序</string>
     <string name="circles">圈子</string>
     <string name="circle_title">%1$s\'的圈子</string>
     <string name="circle_info">新建一个圈子可以过滤会话</string>
     <string name="circle_delete_tip">确认删除 \"%1$s\" ?</string>
     <string name="circle_empty_info">您可以添加联系人或者群组到当前圈子</string>
-    <string name="circle_empty_start">添加会话</string>
+    <string name="add_conversations">添加会话</string>
     <string name="circle_limit">已达到上限</string>
     <!--  bot  -->
     <string name="bots_capital">机器人</string>
@@ -1072,9 +1032,8 @@
 
     <!--  sticker store  -->
     <string name="sticker_store">表情商店</string>
-    <string name="sticker_store_action_add">添加</string>
-    <string name="sticker_store_added">已添加</string>
-    <string name="sticker_store_add_stickers">添加所有表情</string>
+    <string name="added">已添加</string>
+    <string name="add_stickers">添加所有表情</string>
     <string name="sticker_store_remove_stickers">移除所有表情</string>
     <string name="sticker_my">我的表情</string>
     <string name="sticker_capital_none">还未添加任何表情</string>

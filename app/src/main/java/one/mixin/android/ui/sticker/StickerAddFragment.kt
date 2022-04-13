@@ -101,7 +101,7 @@ class StickerAddFragment : BaseFragment() {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(
                     message = R.string.pb_dialog_message,
-                    title = R.string.group_adding
+                    title = R.string.adding
                 ).apply {
                     setCancelable(false)
                 }
@@ -156,7 +156,7 @@ class StickerAddFragment : BaseFragment() {
             }
             getStickerAddRequest(mimeType, uri)
         } catch (e: Exception) {
-            handleBack(R.string.sticker_add_failed)
+            handleBack(R.string.add_sticker_failed)
             null
         } ?: return@launch
 
@@ -216,7 +216,7 @@ class StickerAddFragment : BaseFragment() {
             val path = uri.getFilePath(requireContext())
             if (path == null) {
                 withContext(Dispatchers.Main) {
-                    handleBack(R.string.sticker_add_failed)
+                    handleBack(R.string.add_sticker_failed)
                 }
                 return@withContext null
             }

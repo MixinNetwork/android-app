@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_help_outline"
-        app:titleText="@string/wallet_bottom_deposit" />
+        app:titleText="@string/filters_deposit" />
 
     <ScrollView
         android:layout_width="match_parent"

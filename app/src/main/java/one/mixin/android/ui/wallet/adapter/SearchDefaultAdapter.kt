@@ -108,7 +108,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         binding.nameTv.text = name
         binding.symbolTv.text = symbol
         if (priceUsd == "0") {
-            binding.priceTv.setText(R.string.no_applicable)
+            binding.priceTv.setText(R.string.not_applicable)
             binding.changeTv.visibility = View.GONE
         } else {
             binding.changeTv.visibility = View.VISIBLE

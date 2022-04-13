@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        app:titleText="@string/invite_title" />
+        app:titleText="@string/group_invite" />
 
     <TextView
         android:id="@+id/invite_info"

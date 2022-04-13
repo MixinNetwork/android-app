@@ -82,7 +82,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     calculationByDistance(LatLng(value.latitude, value.longitude), LatLng(location.latitude, location.longitude)).distanceFormat()
                 }?.let {
                     if (binding.locationSubTitle.text == null)
-                        binding.locationSubTitle.text = getString(R.string.location_distance, it.first, getString(it.second))
+                        binding.locationSubTitle.text = getString(R.string.location_distance_away, it.first, getString(it.second))
                 }
             }
             field = value

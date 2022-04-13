@@ -376,7 +376,7 @@ class ConversationListFragment : LinkFragment() {
                     binding.emptyView.startBn.setText(R.string.empty_start)
                 } else {
                     binding.emptyView.infoTv.setText(R.string.circle_empty_info)
-                    binding.emptyView.startBn.setText(R.string.circle_empty_start)
+                    binding.emptyView.startBn.setText(R.string.add_conversations)
                 }
                 binding.emptyView.root.isVisible = true
             } else {
@@ -473,7 +473,7 @@ class ConversationListFragment : LinkFragment() {
                 .show()
         }
         if (hasPin) {
-            viewBinding.pinTv.setText(R.string.conversation_pin_clear)
+            viewBinding.pinTv.setText(R.string.action_unpin)
             viewBinding.pinTv.setOnClickListener {
                 messagesViewModel.updateConversationPinTimeById(conversationId, circleId, null)
                 bottomSheet.dismiss()
@@ -794,7 +794,7 @@ class ConversationListFragment : LinkFragment() {
                             String.format(
                                 getText(R.string.chat_pin_message),
                                 if (Session.getAccountId() == conversationItem.participantUserId) {
-                                    getText(R.string.chat_you_start)
+                                    getText(R.string.you)
                                 } else {
                                     conversationItem.senderFullName
                                 },
@@ -810,7 +810,7 @@ class ConversationListFragment : LinkFragment() {
                         binding.msgTv.text = String.format(
                             getText(R.string.chat_pin_message),
                             if (id == conversationItem.senderId) {
-                                getText(R.string.chat_you_start)
+                                getText(R.string.you)
                             } else {
                                 conversationItem.senderFullName
                             },
@@ -826,7 +826,7 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_create),
                                     if (id == conversationItem.senderId) {
-                                        getText(R.string.chat_you_start)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.name
                                     },
@@ -838,7 +838,7 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_add),
                                     if (id == conversationItem.senderId) {
-                                        getText(R.string.chat_you_start)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.senderFullName
                                     },
@@ -854,7 +854,7 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_remove),
                                     if (id == conversationItem.senderId) {
-                                        getText(R.string.chat_you_start)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.senderFullName
                                     },
@@ -870,7 +870,7 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_join),
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.chat_you_start)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -881,7 +881,7 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_exit),
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.chat_you_start)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -1039,10 +1039,10 @@ class ConversationListFragment : LinkFragment() {
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
         val choices = arrayOf(
-            getString(R.string.contact_mute_1hour),
-            getString(R.string.contact_mute_8hours),
-            getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year)
+            getString(R.string.one_hour),
+            getString(R.string.eight_hours),
+            getString(R.string.one_week),
+            getString(R.string.one_year)
         )
         var duration = MUTE_8_HOURS
         var whichItem = 0

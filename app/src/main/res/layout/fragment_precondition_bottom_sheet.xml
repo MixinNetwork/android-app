@@ -64,7 +64,7 @@
                 android:paddingEnd="@dimen/margin20"
                 android:layout_gravity="center_horizontal|bottom"
                 android:layout_marginTop="32dp"
-                android:text="@string/action_continue"
+                android:text="@string/wallet_transaction_continue"
                 android:textSize="14sp"/>
 
             <TextView

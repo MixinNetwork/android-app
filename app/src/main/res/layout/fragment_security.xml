@@ -59,7 +59,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_emergency"
+                    android:text="@string/log_category_emergency"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_authentications"
+                    android:text="@string/authorizations"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 

@@ -116,7 +116,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 String.format(
                     getText(R.string.chat_pin_message),
                     if (Session.getAccountId() == message.userId) {
-                        getText(R.string.chat_you_start)
+                        getText(R.string.you)
                     } else {
                         message.userFullName
                     },
@@ -133,7 +133,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 String.format(
                     getText(R.string.chat_pin_message),
                     if (Session.getAccountId() == message.userId) {
-                        getText(R.string.chat_you_start)
+                        getText(R.string.you)
                     } else {
                         message.userFullName
                     },

@@ -71,7 +71,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="@string/action_transfer_send"
+                android:text="@string/action_send"
                 android:textColor="@color/wallet_blue_secondary" />
 
             <View

@@ -139,7 +139,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         }
 
         if (asset.assetId == RIPPLE_CHAIN_ID) {
-            binding.tagEt.setHint(R.string.withdrawal_addr_tag_hint)
+            binding.tagEt.setHint(R.string.wallet_transfer_tag)
         } else {
             binding.tagEt.setHint(R.string.withdrawal_addr_memo_hint)
         }
@@ -211,9 +211,9 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.withdrawal_addr_no_tag_link)
+                    getString(R.string.add_tag)
                 } else {
-                    getString(R.string.withdrawal_addr_no_memo_link)
+                    getString(R.string.add_memo)
                 }
             )
         }

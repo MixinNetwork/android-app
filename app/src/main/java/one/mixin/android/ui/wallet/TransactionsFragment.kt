@@ -351,7 +351,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                             orderByAmount = orderByAmount
                         )
                     )
-                    groupInfoMemberTitle.setText(R.string.filters_transfer)
+                    groupInfoMemberTitle.setText(R.string.action_transfer)
                     walletTransactionsEmpty.setText(R.string.wallet_transactions_empty)
                 }
                 R.id.filters_radio_deposit -> {
@@ -375,21 +375,21 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                             orderByAmount = orderByAmount
                         )
                     )
-                    groupInfoMemberTitle.setText(R.string.filters_withdrawal)
+                    groupInfoMemberTitle.setText(R.string.withdrawal)
                     walletTransactionsEmpty.setText(R.string.wallet_withdrawals_empty)
                 }
                 R.id.filters_radio_fee -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
-                    groupInfoMemberTitle.setText(R.string.filters_fee)
+                    groupInfoMemberTitle.setText(R.string.fee)
                     walletTransactionsEmpty.setText(R.string.wallet_fees_empty)
                 }
                 R.id.filters_radio_rebate -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
-                    groupInfoMemberTitle.setText(R.string.filters_rebate)
+                    groupInfoMemberTitle.setText(R.string.action_rebate)
                     walletTransactionsEmpty.setText(R.string.wallet_rebates_empty)
                 }
                 R.id.filters_radio_raw -> {

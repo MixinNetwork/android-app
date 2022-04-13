@@ -35,7 +35,7 @@ fun TextView.highlightLinkText(
     for (i in texts.indices) {
         val text = texts[i]
         val link = links[i]
-        val start = source.indexOf(text)
+        val start = source.indexOf(text, ignoreCase = true)
         require(start != -1) { "start index can not be -1" }
         sp.setSpan(
             NoUnderLineSpan(link, onItemListener),

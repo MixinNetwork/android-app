@@ -195,7 +195,7 @@ class CircleManagerFragment : BaseFragment() {
 
     private fun addCircle() {
         editDialog {
-            titleText = this@CircleManagerFragment.getString(R.string.circle_action_add)
+            titleText = this@CircleManagerFragment.getString(R.string.add_circle)
             maxTextCount = 64
             defaultEditEnable = false
             editMaxLines = EditDialog.MAX_LINE.toInt()

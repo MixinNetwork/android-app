@@ -33,7 +33,7 @@
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:drawablePadding="@dimen/activity_horizontal_margin"
             android:gravity="center_vertical"
-            android:text="@string/group_add_participants"
+            android:text="@string/add_participants"
             android:textColor="@color/colorBlue"
             app:drawableStartCompat="@drawable/ic_add" />
     </RelativeLayout>

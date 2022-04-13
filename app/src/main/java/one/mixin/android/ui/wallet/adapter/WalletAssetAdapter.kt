@@ -94,7 +94,7 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetIt
             binding.symbolTv.text = asset.symbol
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
-                binding.priceTv.setText(R.string.no_applicable)
+                binding.priceTv.setText(R.string.not_applicable)
                 binding.changeTv.visibility = GONE
             } else {
                 binding.changeTv.visibility = VISIBLE

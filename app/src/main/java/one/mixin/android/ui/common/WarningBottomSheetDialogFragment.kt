@@ -73,7 +73,7 @@ class WarningBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                 override fun onTick(l: Long) {
                     continueTv.text =
-                        requireContext().getString(R.string.got_it_count, l / 1000)
+                        requireContext().getString(R.string.got_it_count_down, l / 1000)
                 }
 
                 override fun onFinish() {

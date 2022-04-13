@@ -4,7 +4,7 @@
         android:shortcutId="wallet"
         android:enabled="true"
         android:icon="@mipmap/ic_adaptive_shortcut_wallet"
-        android:shortcutShortLabel="@string/shortcut_wallet_label">
+        android:shortcutShortLabel="@string/wallet">
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="one.mixin.messenger"

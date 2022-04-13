@@ -95,7 +95,7 @@
                 android:checked="true"
                 android:gravity="center"
                 android:textColor="@color/selector_sort_tv"
-                android:text="@string/filters_all" />
+                android:text="@string/all" />
 
             <one.mixin.android.widget.CheckedFlowItem
                 android:id="@+id/filters_radio_transfer"
@@ -106,7 +106,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/filters_transfer"
+                android:text="@string/action_transfer"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -130,7 +130,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/filters_withdrawal"
+                android:text="@string/withdrawal"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -142,7 +142,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/filters_fee"
+                android:text="@string/fee"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -154,7 +154,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/filters_rebate"
+                android:text="@string/action_rebate"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem

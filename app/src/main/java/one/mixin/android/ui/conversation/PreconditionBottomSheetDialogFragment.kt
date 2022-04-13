@@ -196,15 +196,15 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showFirstWithdrawalTip(t: WithdrawBiometricItem) {
-        binding.titleTv.text = getString(R.string.bottom_withdrawal_title, t.asset.symbol)
-        binding.warningTv.text = getString(R.string.bottom_withdrawal_address_tips)
+        binding.titleTv.text = getString(R.string.withdrawal_title, t.asset.symbol)
+        binding.warningTv.text = getString(R.string.withdrawal_address_tips)
         binding.continueTv.text = getString(R.string.change_amount)
         binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
         binding.continueTv.setOnClickListener {
             callback?.onCancel()
             dismiss()
         }
-        binding.cancelTv.text = getString(R.string.bottom_withdrawal_address_continue)
+        binding.cancelTv.text = getString(R.string.action_continue_withdrawal)
         binding.cancelTv.setTextColor(resources.getColor(R.color.colorDarkBlue, null))
         binding.cancelTv.setOnClickListener {
             callback?.onSuccess()
@@ -255,13 +255,13 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
             override fun onTick(l: Long) {
                 if (isAdded) {
-                    binding.continueTv.text = getString(R.string.wallet_transaction_continue_count, l / 1000)
+                    binding.continueTv.text = getString(R.string.wallet_transaction_continue_count_down, l / 1000)
                 }
             }
 
             override fun onFinish() {
                 if (isAdded) {
-                    binding.continueTv.text = getString(R.string.action_continue)
+                    binding.continueTv.text = getString(R.string.wallet_transaction_continue)
                     binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
                     binding.continueTv.isEnabled = true
                 }

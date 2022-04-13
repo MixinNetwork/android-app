@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:rightIcon="@drawable/ic_settings_black_24dp"
-        app:titleText="@string/contacts" />
+        app:titleText="@string/contact" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/contact_recycler_view"

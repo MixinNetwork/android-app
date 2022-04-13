@@ -86,7 +86,7 @@ class StickerManagementFragment : BaseFragment() {
                     stickerViewModel.removeStickers(stickerAdapter.checkedList)
                 }
             } else {
-                binding.titleView.rightTv.text = getString(R.string.conversation_delete)
+                binding.titleView.rightTv.text = getString(R.string.action_delete)
             }
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.notifyDataSetChanged()
@@ -119,7 +119,7 @@ class StickerManagementFragment : BaseFragment() {
                 }
 
                 override fun onDelete() {
-                    binding.titleView.rightTv.text = getString(R.string.conversation_delete)
+                    binding.titleView.rightTv.text = getString(R.string.action_delete)
                 }
             }
         )
