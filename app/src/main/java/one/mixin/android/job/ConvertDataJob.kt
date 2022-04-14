@@ -25,6 +25,7 @@ class ConvertDataJob(
 
     override fun onAdded() {
         messageDao.insert(message)
+        InvalidateFlow.emit(message.conversationId)
     }
 
     override fun cancel() {

@@ -58,6 +58,7 @@ class SendTranscriptJob(
             }
             MessageFts4Helper.insertMessageFts4(message.id, stringBuffer.toString())
             messageDao.insert(message)
+            InvalidateFlow.emit(message.conversationId)
             transcriptMessages.forEach { transcript ->
                 if (transcript.isAttachment()) {
                     val mediaUrl = Uri.parse(transcript.absolutePath())

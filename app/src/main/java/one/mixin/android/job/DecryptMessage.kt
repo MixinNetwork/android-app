@@ -340,6 +340,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 MessageStatus.READ.name
                             )
                         )
+                        InvalidateFlow.emit(data.conversationId)
                         if (message.category.endsWith("_TEXT")) {
                             messageMentionDao.findMessageMentionById(message.id)?.let { mention ->
                                 messageMentionDao.insert(
@@ -364,6 +365,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                                 MessageStatus.READ.name
                             )
                         )
+                        InvalidateFlow.emit(data.conversationId)
                     }
                     if (index == transferPinData.messageIds.size - 1) {
                         RxBus.publish(PinMessageEvent(data.conversationId, messageId))
@@ -787,6 +789,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     MessageStatus.UNKNOWN.name
                 )
             )
+            InvalidateFlow.emit(data.conversationId)
             return null
         }
         val stringBuilder = StringBuilder()
@@ -1124,6 +1127,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
     private fun insertInvalidMessage(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, data.data, data.createdAt, MessageStatus.UNKNOWN.name)
         messageDao.insert(message)
+        InvalidateFlow.emit(data.conversationId)
     }
 
     private fun insertFailedMessage(data: BlazeMessageData) {

@@ -415,6 +415,7 @@ internal constructor(
         repeat((count / DB_DELETE_LIMIT) + 1) {
             messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
         }
+        InvalidateFlow.emit(conversationId)
     }
 
     suspend fun deleteMessageByConversationId(conversationId: String, deleteConversation: Boolean = false) {
@@ -452,6 +453,7 @@ internal constructor(
             if (deleteConversation) {
                 conversationDao.deleteConversationById(conversationId)
             }
+            InvalidateFlow.emit(conversationId)
         }
     }
 
@@ -598,6 +600,7 @@ internal constructor(
 
     fun insertMessage(message: Message) {
         messageDao.insert(message)
+        InvalidateFlow.emit(message.conversationId)
     }
 
     suspend fun findPinMessageById(messageId: String) = pinMessageDao.findPinMessageById(messageId)

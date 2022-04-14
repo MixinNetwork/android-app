@@ -69,6 +69,7 @@ class ConvertVideoJob(
         val mId = messageDao.findMessageIdById(message.id)
         if (mId == null) {
             messageDao.insert(message)
+            InvalidateFlow.emit(message.conversationId)
         }
     }
 

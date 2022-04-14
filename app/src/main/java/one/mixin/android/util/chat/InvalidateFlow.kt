@@ -3,6 +3,7 @@ package one.mixin.android.util.chat
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 
@@ -17,7 +18,7 @@ object InvalidateFlow {
         }
     }
 
-    suspend fun collect(collector: FlowCollector<String>) {
-        invalidateFlow.collect(collector)
+    suspend fun collect(predicate: suspend (String) -> Boolean, collector: FlowCollector<String>) {
+        invalidateFlow.filter(predicate).collect(collector)
     }
 }

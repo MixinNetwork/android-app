@@ -40,6 +40,7 @@ class SendGiphyJob(
             time, MediaStatus.PENDING, MessageStatus.SENDING.name
         )
         messageDao.insert(message)
+        InvalidateFlow.emit(message.conversationId)
     }
 
     override fun onRun() {
