@@ -197,6 +197,7 @@ object Constants {
 
     const val PAGE_SIZE = 15
     const val CONVERSATION_PAGE_SIZE = 15
+    const val FIXED_LOAD_SIZE = 45
 
     const val BIOMETRICS_ALIAS = "biometrics_alias"
     const val BIOMETRICS_PIN = "biometrics_pin"

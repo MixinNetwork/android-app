@@ -36,6 +36,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
@@ -271,11 +272,11 @@ class ChatWebSocket(
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
         val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
-            makeMessageStatus(data.status, data.messageId)
+            makeMessageStatus(data.status, data.messageId, data.conversationId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
             if (data.userId == accountId && data.category.isEmpty()) {
-                makeMessageStatus(data.status, data.messageId)
+                makeMessageStatus(data.status, data.messageId, data.conversationId)
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
@@ -284,7 +285,7 @@ class ChatWebSocket(
         }
     }
 
-    private fun makeMessageStatus(status: String, messageId: String) {
+    private fun makeMessageStatus(status: String, messageId: String, conversationId: String) {
         val currentStatus = messageDao.findMessageStatusById(messageId)
         if (currentStatus == MessageStatus.SENDING.name) {
             messageDao.updateMessageStatus(status, messageId)
@@ -293,6 +294,7 @@ class ChatWebSocket(
         } else if (currentStatus == MessageStatus.DELIVERED.name && status == MessageStatus.READ.name) {
             messageDao.updateMessageStatus(status, messageId)
         }
+        InvalidateFlow.emit(conversationId)
     }
 
     private var webSocketObserver: WebSocketObserver? = null
