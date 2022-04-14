@@ -369,6 +369,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowid(): Long
 
+    @Query("SELECT id FROM messages WHERE id = :messageId")
+    suspend fun exists(messageId: String): String?
+
     // DELETE COUNT
     @Query(
         """

@@ -300,6 +300,9 @@
     <string name="detect_qr_tip">检测到一个 Mixin 二维码，点击识别</string>
     <string name="Developer">开发者</string>
     <string name="Device_unsupported">当前设备不支持</string>
+    <string name="deep_clean">深度清理</string>
+    <string name="deep_cleaning">正在清理&#8230;</string>
+    <string name="deep_cleaning_deleted">正在清理，已删除 %1$s</string>
     <string name="Diagnosis_Complete">诊断完成</string>
     <string name="Disable_db_debug">已关闭 db 调试</string>
     <string name="disable_disappearing_message">%1$s禁用了限时消息</string>

@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.collection.ArraySet
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -36,6 +37,9 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.StorageCleanJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.util.viewBinding
@@ -43,6 +47,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
@@ -54,6 +59,8 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
         }
     }
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
     private val viewModel by viewModels<SettingStorageViewModel>()
     private val binding by viewBinding(FragmentStorageBinding::bind)
 
@@ -67,8 +74,21 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             bRv.adapter = adapter
             menuView.adapter = menuAdapter
+            titleView.rightIb.setOnClickListener {
+                if (viewDestroyed()) return@setOnClickListener
+                val popMenu = PopupMenu(requireActivity(), it)
+                popMenu.menuInflater.inflate(R.menu.deep_clean, popMenu.menu)
+                popMenu.setOnMenuItemClickListener { menu ->
+                    if (menu.itemId == R.id.clean) {
+                        if (!StorageCleanJob.isRunning) {
+                            jobManager.addJobInBackground(StorageCleanJob())
+                        }
+                    }
+                    return@setOnMenuItemClickListener true
+                }
+                popMenu.show()
+            }
         }
-
         lifecycleScope.launch {
             val list = measureTimeMillis("Storage") { viewModel.getConversationStorageUsage(requireContext()) }
             binding.progress.isVisible = false

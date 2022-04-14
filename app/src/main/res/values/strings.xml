@@ -307,6 +307,9 @@
 	<string name="detect_qr_tip">Detected a Mixin QR code, tap to recognize</string>
 	<string name="Developer">Developer</string>
 	<string name="Device_unsupported">Device unsupported</string>
+	<string name="deep_clean">Deep clean</string>
+	<string name="deep_cleaning">Cleaning up&#8230;</string>
+	<string name="deep_cleaning_deleted">Cleaning up, %1$s deleted</string>
 	<string name="Diagnosis_Complete">Diagnosis Complete</string>
 	<string name="Disable_db_debug">Disable db debug</string>
 	<string name="disable_disappearing_message">%1$s disabled disappearing message</string>
