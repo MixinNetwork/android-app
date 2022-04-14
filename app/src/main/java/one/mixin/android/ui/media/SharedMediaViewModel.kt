@@ -168,10 +168,10 @@ class SharedMediaViewModel @Inject constructor(
         }
     }
 
-    fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun cancel(id: String, conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.cancelJobByMixinJobId(id) {
             viewModelScope.launch {
-                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id)
+                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id, conversationId)
             }
         }
     }

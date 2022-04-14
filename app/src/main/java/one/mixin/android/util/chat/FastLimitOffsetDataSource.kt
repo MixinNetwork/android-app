@@ -133,13 +133,12 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
 
     init {
         coroutineScope.launch {
-            InvalidateFlow.collect { conversationId ->
-                if (this@FastLimitOffsetDataSource.conversationId == conversationId) {
+            InvalidateFlow.collect(
+                { this@FastLimitOffsetDataSource.conversationId == conversationId },
+                {
                     invalidate()
-                } else {
-                    Timber.d("drop")
                 }
-            }
+            )
         }
     }
 }
