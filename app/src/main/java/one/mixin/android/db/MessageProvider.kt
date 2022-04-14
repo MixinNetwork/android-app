@@ -11,7 +11,6 @@ import androidx.room.util.DBUtil
 import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
-import one.mixin.android.util.chat.FixedLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
@@ -21,13 +20,22 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import java.util.concurrent.Callable
+import java.util.concurrent.atomic.AtomicBoolean
 
 @SuppressLint("RestrictedApi")
 class MessageProvider {
     companion object {
 
-        fun getMessages(conversationId: String, database: MixinDatabase, scope: CoroutineScope) =
+        fun getMessages(scope: CoroutineScope, database: MixinDatabase, conversationId: String, count: Int?) =
             object : DataSource.Factory<Int, MessageItem>() {
+                private val firstLoad: AtomicBoolean = AtomicBoolean(true)
+                private val fastCountCallback = fun(): Int? { // Message provider is only called for the first time
+                    return if (count != null && firstLoad.compareAndSet(true, false)) {
+                        count
+                    } else {
+                        null
+                    }
+                }
                 override fun create(): DataSource<Int, MessageItem> {
 
                     val sql =
@@ -70,7 +78,8 @@ class MessageProvider {
                         statement,
                         countStatement,
                         scope,
-                        conversationId
+                        conversationId,
+                        fastCountCallback
                     )
                 }
             }
@@ -1054,18 +1063,9 @@ class MessageProvider {
         statement: RoomSQLiteQuery,
         countStatement: RoomSQLiteQuery,
         scope: CoroutineScope,
-        conversationId: String
-    ) : FastLimitOffsetDataSource<MessageItem>(database, statement, countStatement, scope, conversationId, false) {
-        override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
-            return convertToMessageItems(cursor)
-        }
-    }
-
-    private class FixedMessageItemLimitOffsetDataSource(
-        database: MixinDatabase,
-        statement: RoomSQLiteQuery,
-        unreadCount: Int,
-    ) : FixedLimitOffsetDataSource<MessageItem>(database, statement, unreadCount, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
+        conversationId: String,
+        fastCountCallback: () -> Int?
+    ) : FastLimitOffsetDataSource<MessageItem>(scope, database, statement, countStatement, conversationId, fastCountCallback) {
         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
             return convertToMessageItems(cursor)
         }

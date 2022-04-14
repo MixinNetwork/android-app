@@ -106,7 +106,7 @@ internal constructor(
 ) {
 
     @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String, scope: CoroutineScope) = MessageProvider.getMessages(conversationId, appDatabase, scope)
+    fun getMessages(scope: CoroutineScope, conversationId: String, count: Int?) = MessageProvider.getMessages(scope, appDatabase, conversationId, count)
 
     suspend fun getChatMessages(conversationId: String, offset: Int, limit: Int): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 

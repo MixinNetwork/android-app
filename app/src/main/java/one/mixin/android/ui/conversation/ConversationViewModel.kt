@@ -11,6 +11,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.FIXED_LOAD_SIZE
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.handleMixinResponse
@@ -119,17 +121,24 @@ internal constructor(
 
     var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
 
-    fun getMessages(id: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build()
 
-        return KeyLivePagedListBuilder(
-            conversationRepository.getMessages(id, viewModelScope),
+        return LivePagedListBuilder(
+            conversationRepository.getMessages(
+                viewModelScope, conversationId,
+                if (firstKeyToLoad > PAGE_SIZE) {
+                    firstKeyToLoad + FIXED_LOAD_SIZE / 2
+                } else {
+                    null
+                }
+            ),
             pagedListConfig
-        ).setFirstKeyToLoad(firstKeyToLoad).build()
+        ).setInitialLoadKey(firstKeyToLoad).build()
     }
 
     suspend fun indexUnread(conversationId: String) =
