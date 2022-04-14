@@ -7,6 +7,8 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.User
@@ -214,6 +216,7 @@ fun MixinDatabase.deleteMessage(id: String) {
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
+        remoteMessageStatusDao().insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
         remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
         InvalidateFlow.emit(message.conversationId)
     }

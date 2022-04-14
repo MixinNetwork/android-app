@@ -21,7 +21,9 @@ import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.SearchMessageItem
 
 @Dao
@@ -568,6 +570,7 @@ interface MessageDao : BaseDao<Message> {
     fun insertAndNotifyConversation(message: Message, remoteMessageStatusDao: RemoteMessageStatusDao, userId: String?) {
         insert(message)
         if (userId != message.userId) {
+            remoteMessageStatusDao.insert(RemoteMessageStatus(message.id, message.conversationId, MessageStatus.DELIVERED.name))
             remoteMessageStatusDao.updateConversationUnseen(message.conversationId)
         }
         InvalidateFlow.emit(message.conversationId)
