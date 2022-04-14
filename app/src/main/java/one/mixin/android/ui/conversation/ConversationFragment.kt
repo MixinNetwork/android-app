@@ -1836,6 +1836,7 @@ class ConversationFragment() :
 
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
+        var firstReturn = true
         chatViewModel.getMessages(conversationId, unreadCount)
             .observe(
                 viewLifecycleOwner
@@ -1845,7 +1846,11 @@ class ConversationFragment() :
                 if (oldCount == -1) {
                     oldCount = list.size
                 } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
-                    unreadTipCount += (list.size - oldCount)
+                    if (firstReturn) {
+                        firstReturn = false
+                    } else { // The size returned the second time is the real data.
+                        unreadTipCount += (list.size - oldCount)
+                    }
                     oldCount = list.size
                 } else if (isBottom) {
                     unreadTipCount = 0

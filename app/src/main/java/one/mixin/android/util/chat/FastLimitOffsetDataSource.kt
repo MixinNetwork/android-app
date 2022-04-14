@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.util.chat
 
 import android.annotation.SuppressLint
@@ -14,12 +16,12 @@ import timber.log.Timber
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 abstract class FastLimitOffsetDataSource<T> protected constructor(
+    coroutineScope: CoroutineScope,
     private val db: RoomDatabase,
     private val sourceQuery: RoomSQLiteQuery,
     private val countQuery: RoomSQLiteQuery,
-    private val coroutineScope: CoroutineScope,
     private val conversationId: String,
-    private val inTransaction: Boolean
+    private val fastCountCallback: () -> Int?
 ) : PositionalDataSource<T>() {
     private val limitOffsetQuery: String = sourceQuery.sql + " LIMIT ? OFFSET ?"
 
@@ -48,39 +50,40 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         params: LoadInitialParams,
         callback: LoadInitialCallback<T>
     ) {
-        val totalCount = countItems()
+        val fastCont = fastCountCallback.invoke()
+        val totalCount = fastCont ?: countItems()
         if (totalCount == 0) {
             callback.onResult(emptyList(), 0, 0)
             return
         }
-
         // bound the size requested, based on known count
         val firstLoadPosition = computeInitialLoadPosition(params, totalCount)
         val firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount)
         val list = loadRange(firstLoadPosition, firstLoadSize)
-        if (list != null) {
-            try {
-                callback.onResult(list, firstLoadPosition, totalCount)
-            } catch (e: IllegalArgumentException) {
-                // workaround with paging initial load size NOT to be a multiple of page size
-                Timber.w(e)
-                try {
-                    callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
-                } catch (iae: IllegalArgumentException) {
-                    // workaround with paging incorrect tiling
-                    val message = (
-                        "MixinLimitOffsetDataSource " +
-                            "firstLoadPosition: " + firstLoadPosition +
-                            ", list size: " + list.size +
-                            ", count: " + totalCount
-                        )
-                    reportException(message, iae)
-                    Timber.w(iae)
-                }
+        try {
+            callback.onResult(list, firstLoadPosition, totalCount)
+            if (fastCont != null) { // If quick return needs to activate the next query
+                invalidate()
             }
-        } else {
-            // null list, or size doesn't match request - DB modified between count and load
-            invalidate()
+        } catch (e: IllegalArgumentException) {
+            // workaround with paging initial load size NOT to be a multiple of page size
+            Timber.w(e)
+            try {
+                callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
+                if (fastCont != null) {
+                    invalidate()
+                }
+            } catch (iae: IllegalArgumentException) {
+                // workaround with paging incorrect tiling
+                val message = (
+                    "MixinLimitOffsetDataSource " +
+                        "firstLoadPosition: " + firstLoadPosition +
+                        ", list size: " + list.size +
+                        ", count: " + totalCount
+                    )
+                reportException(message, iae)
+                Timber.w(iae)
+            }
         }
     }
 
@@ -89,17 +92,13 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         callback: LoadRangeCallback<T>
     ) {
         val list = loadRange(params.startPosition, params.loadSize)
-        if (list != null) {
-            callback.onResult(list)
-        } else {
-            invalidate()
-        }
+        callback.onResult(list)
     }
 
     /**
      * Return the rows from startPos to startPos + loadCount
      */
-    private fun loadRange(startPosition: Int, loadCount: Int): List<T>? {
+    private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
         val sqLiteQuery = RoomSQLiteQuery.acquire(
             limitOffsetQuery,
             sourceQuery.argCount + 2
@@ -107,27 +106,13 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         sqLiteQuery.copyArgumentsFrom(sourceQuery)
         sqLiteQuery.bindLong(sqLiteQuery.argCount - 1, loadCount.toLong())
         sqLiteQuery.bindLong(sqLiteQuery.argCount, startPosition.toLong())
-        return if (inTransaction) {
-            db.beginTransaction()
-            var cursor: Cursor? = null
-            try {
-                cursor = db.query(sqLiteQuery)
-                val rows = convertRows(cursor)
-                db.setTransactionSuccessful()
-                rows
-            } finally {
-                cursor?.close()
-                db.endTransaction()
-                sqLiteQuery.release()
-            }
-        } else {
-            val cursor = db.query(sqLiteQuery)
-            try {
-                convertRows(cursor)
-            } finally {
-                cursor.close()
-                sqLiteQuery.release()
-            }
+
+        val cursor = db.query(sqLiteQuery)
+        try {
+            return convertRows(cursor)
+        } finally {
+            cursor.close()
+            sqLiteQuery.release()
         }
     }
 

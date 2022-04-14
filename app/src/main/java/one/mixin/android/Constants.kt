@@ -195,7 +195,8 @@ object Constants {
     const val BATCH_SIZE = 700
     const val MARK_LIMIT = 10000
 
-    const val PAGE_SIZE = 15
+    const val PAGE_SIZE = 16
+    const val FIXED_LOAD_SIZE = 48
     const val CONVERSATION_PAGE_SIZE = 15
 
     const val BIOMETRICS_ALIAS = "biometrics_alias"

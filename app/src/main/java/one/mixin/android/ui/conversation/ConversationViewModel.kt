@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.FIXED_LOAD_SIZE
 import one.mixin.android.Constants.MARK_LIMIT
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -53,8 +54,8 @@ import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.KeyLivePagedListBuilder
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.chat.KeyLivePagedListBuilder
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
@@ -121,7 +122,7 @@ internal constructor(
 
     var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
 
-    fun getMessages(id: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
@@ -129,9 +130,16 @@ internal constructor(
             .build()
 
         return KeyLivePagedListBuilder(
-            conversationRepository.getMessages(id, viewModelScope),
+            conversationRepository.getMessages(
+                viewModelScope, conversationId,
+                if (firstKeyToLoad > PAGE_SIZE) {
+                    firstKeyToLoad + FIXED_LOAD_SIZE / 2
+                } else {
+                    FIXED_LOAD_SIZE
+                }
+            ),
             pagedListConfig
-        ).setFirstKeyToLoad(firstKeyToLoad).build()
+        ).setInitialLoadKey(firstKeyToLoad).build()
     }
 
     suspend fun indexUnread(conversationId: String) =
