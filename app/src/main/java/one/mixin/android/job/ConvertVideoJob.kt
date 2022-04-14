@@ -10,6 +10,7 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.EncryptCategory
@@ -113,6 +114,7 @@ class ConvertVideoJob(
         )
         if (!error) {
             messageDao.updateMediaMessageUrl(videoFile.name, messageId)
+            InvalidateFlow.emit(conversationId)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }
 
@@ -122,6 +124,7 @@ class ConvertVideoJob(
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, messageId)
+        InvalidateFlow.emit(conversationId)
         removeJob()
     }
 }

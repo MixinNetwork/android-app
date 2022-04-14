@@ -27,8 +27,7 @@ import one.mixin.android.vo.SearchMessageItem
 @Dao
 interface MessageDao : BaseDao<Message> {
     companion object {
-        const val PREFIX_MESSAGE_ITEM =
-        """
+        const val PREFIX_MESSAGE_ITEM = """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
@@ -53,8 +52,7 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN message_mentions mm ON m.id = mm.message_id 
         LEFT JOIN pin_messages pm ON m.id = pm.message_id
         """
-        private const val CHAT_CATEGORY =
-        "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
+        private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT')"
     }
 
     // Read SQL
@@ -471,6 +469,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET media_url = :mediaUrl WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaMessageUrl(mediaUrl: String, id: String)
 
+    @Query("UPDATE messages SET media_url = :mediaUrl, media_size = :mediaSize, media_status = :mediaStatus WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
+    fun updateMedia(messageId: String, mediaUrl: String, mediaSize: Long, mediaStatus: String)
+
     @Query("UPDATE messages SET media_url = :mediaUrl WHERE media_url = :oldMediaUrl AND category != 'MESSAGE_RECALL'")
     fun updateMediaUrl(mediaUrl: String, oldMediaUrl: String)
 
@@ -567,7 +568,7 @@ interface MessageDao : BaseDao<Message> {
     fun insertAndNotifyConversation(message: Message, conversationDao: ConversationDao, userId: String?) {
         insert(message)
         if (userId != message.userId) {
-        conversationDao.unseenMessageCount(message.conversationId, userId)
+            conversationDao.unseenMessageCount(message.conversationId, userId)
         }
         InvalidateFlow.emit(message.conversationId)
     }

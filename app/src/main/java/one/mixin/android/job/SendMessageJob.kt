@@ -12,6 +12,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -76,7 +77,7 @@ open class SendMessageJob(
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {
             if (message.isRecall()) {
-                recallMessage()
+                recallMessage(message.conversationId)
             } else if (!message.isPin()) {
                 if (message.isText()) {
                     message.content?.let { content ->
@@ -97,7 +98,7 @@ open class SendMessageJob(
         }
     }
 
-    private fun recallMessage() {
+    private fun recallMessage(conversationId: String) {
         recallMessageId ?: return
         messageMentionDao.deleteMessage(recallMessageId)
         messageFts4Dao.deleteByMessageId(recallMessageId)
@@ -124,6 +125,7 @@ open class SendMessageJob(
         }
         pinMessageDao.deleteByMessageId(recallMessageId)
         messageDao.recallMessage(recallMessageId)
+        InvalidateFlow.emit(conversationId)
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

@@ -56,6 +56,7 @@ import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
@@ -220,8 +221,10 @@ internal constructor(
     fun fuzzySearchGroupParticipants(conversationId: String, username: String, identityNumber: String) =
         participantDao.fuzzySearchGroupParticipants(conversationId, username, identityNumber)
 
-    suspend fun updateMediaStatusSuspend(status: String, messageId: String) =
+    suspend fun updateMediaStatusSuspend(status: String, messageId: String, conversationId: String) {
         messageDao.updateMediaStatusSuspend(status, messageId)
+        InvalidateFlow.emit(conversationId)
+    }
 
     suspend fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) =
         withContext(SINGLE_DB_THREAD) {
@@ -399,7 +402,10 @@ internal constructor(
 
     fun updateGroupMuteUntil(conversationId: String, muteUntil: String) = conversationDao.updateGroupMuteUntil(conversationId, muteUntil)
 
-    fun updateMediaStatus(status: String, id: String) = messageDao.updateMediaStatus(status, id)
+    fun updateMediaStatus(status: String, id: String, conversationId: String) {
+        messageDao.updateMediaStatus(status, id)
+        InvalidateFlow.emit(conversationId)
+    }
 
     suspend fun getConversationNameById(cid: String) = conversationDao.getConversationNameById(cid)
 

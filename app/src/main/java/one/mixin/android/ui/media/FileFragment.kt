@@ -44,7 +44,7 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
                 }
             }
             messageItem.mediaStatus == MediaStatus.PENDING.name -> {
-                viewModel.cancel(messageItem.messageId)
+                viewModel.cancel(messageItem.messageId, messageItem.conversationId)
             }
             messageItem.mediaStatus == MediaStatus.EXPIRED.name -> {}
             else -> requireContext().openMedia(messageItem)

@@ -7,6 +7,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.encodeBlurHash
 import one.mixin.android.extension.getImagePath
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMediaMessage
@@ -54,6 +55,7 @@ class SendGiphyJob(
             time, MediaStatus.PENDING, MessageStatus.SENDING.name
         )
         messageDao.updateGiphyMessage(messageId, file.name, mediaSize, thumbnail)
+        InvalidateFlow.emit(message.conversationId)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 }
