@@ -1,5 +1,7 @@
 package one.mixin.android.ui.url
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
@@ -30,6 +32,13 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
         private const val CONVERSATIONS = "conversations"
+
+        fun show(context: Context, data: Uri) {
+            Intent(context, UrlInterpreterActivity::class.java).apply {
+                setData(data)
+                context.startActivity(this)
+            }
+        }
     }
 
     override fun getDefaultThemeId(): Int {
