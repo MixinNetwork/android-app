@@ -117,6 +117,9 @@ class AppAuthActivity : BaseActivity() {
                 errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
                 errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON
             ) {
+                if (errorCode == BiometricPrompt.ERROR_CANCELED) {
+                    reportException(IllegalStateException("Unlock app meet $errString"))
+                }
                 pressHome()
             } else if (errorCode == BiometricPrompt.ERROR_LOCKOUT ||
                 errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
