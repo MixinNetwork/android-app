@@ -63,13 +63,13 @@ class RestoreActivity : BaseActivity() {
         )
         alertDialogBuilder()
             .setMessage(R.string.restore_message)
-            .setNegativeButton(R.string.restore_action_capital_skip) { dialog, _ ->
+            .setNegativeButton(R.string.SKIP) { dialog, _ ->
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)
                 dialog.dismiss()
                 finish()
             }
-            .setPositiveButton(R.string.restore_authorization) { dialog, _ ->
+            .setPositiveButton(R.string.authorization) { dialog, _ ->
                 RxPermissions(this)
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(stopScope)
@@ -121,7 +121,7 @@ class RestoreActivity : BaseActivity() {
                 when (error) {
                     Result.FAILURE -> {
                         setMessage(
-                            R.string.restore_failure
+                            R.string.Failure
                         )
                     }
                     Result.NOT_FOUND -> {
@@ -140,9 +140,9 @@ class RestoreActivity : BaseActivity() {
             }
             .setNegativeButton(
                 if (userBackup) {
-                    R.string.restore_action_capital_choose
+                    R.string.CHOOSE
                 } else {
-                    R.string.restore_action_capital_retry
+                    R.string.RETRY
                 }
             ) { dialog, _ ->
                 if (userBackup) {
@@ -170,7 +170,7 @@ class RestoreActivity : BaseActivity() {
                 }
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.restore_action_capital_skip) { dialog, _ ->
+            .setPositiveButton(R.string.SKIP) { dialog, _ ->
                 dialog.dismiss()
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)

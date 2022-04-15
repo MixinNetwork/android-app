@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightText="@string/action_create"
+        app:rightText="@string/Create"
         app:titleText="@string/group_new_title" />
 
     <RelativeLayout
@@ -119,7 +119,7 @@
             android:layout_toEndOf="@id/notice_tv"
             android:background="@null"
             android:gravity="center_vertical|end"
-            android:hint="@string/about"
+            android:hint="@string/About"
             android:textColor="?attr/text_minor"
             android:textColorHint="?attr/text_remarks"
             tools:ignore="Autofill,TextFields" />

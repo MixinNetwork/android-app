@@ -99,7 +99,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
                     R.drawable.image_holder
                 )
-                binding.replyContentTv.setText(R.string.photo)
+                binding.replyContentTv.setText(R.string.Photo)
                 setIcon(R.drawable.ic_type_pic)
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -113,7 +113,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     absolutePath(quoteMessageItem.mediaUrl, quoteMessageItem.type, quoteMessageItem.conversationId),
                     R.drawable.image_holder
                 )
-                binding.replyContentTv.setText(R.string.video)
+                binding.replyContentTv.setText(R.string.Video)
                 setIcon(R.drawable.ic_type_video)
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -127,7 +127,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     quoteMessageItem.thumbUrl,
                     R.drawable.image_holder
                 )
-                binding.replyContentTv.setText(R.string.live)
+                binding.replyContentTv.setText(R.string.Live)
                 setIcon(R.drawable.ic_type_live)
                 binding.replyIv.visibility = View.VISIBLE
                 binding.replyAvatar.visibility = View.GONE
@@ -142,7 +142,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         binding.replyContentTv.text = it
                     },
                     {
-                        binding.replyContentTv.setText(R.string.document)
+                        binding.replyContentTv.setText(R.string.Document)
                     }
                 )
                 setIcon(R.drawable.ic_type_file)
@@ -154,7 +154,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_POST") -> {
-                binding.replyContentTv.setText(R.string.post)
+                binding.replyContentTv.setText(R.string.Post)
                 setIcon(R.drawable.ic_type_file)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -164,7 +164,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_TRANSCRIPT") -> {
-                binding.replyContentTv.setText(R.string.transcript)
+                binding.replyContentTv.setText(R.string.Transcript)
                 setIcon(R.drawable.ic_type_transcript)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -174,7 +174,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_LOCATION") -> {
-                binding.replyContentTv.setText(R.string.location)
+                binding.replyContentTv.setText(R.string.Location)
                 setIcon(R.drawable.ic_type_location)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
@@ -189,7 +189,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         binding.replyContentTv.text = it.toLong().formatMillis()
                     },
                     {
-                        binding.replyContentTv.setText(R.string.audio)
+                        binding.replyContentTv.setText(R.string.Audio)
                     }
                 )
                 setIcon(R.drawable.ic_type_audio)
@@ -201,7 +201,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     8.dp
             }
             quoteMessageItem.type.endsWith("_STICKER") -> {
-                binding.replyContentTv.setText(R.string.sticker)
+                binding.replyContentTv.setText(R.string.Sticker)
                 setIcon(R.drawable.ic_type_stiker)
                 binding.replyIv.loadImageCenterCrop(
                     quoteMessageItem.assetUrl,
@@ -231,7 +231,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     16.dp
             }
             quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessageItem.type == MessageCategory.APP_CARD.name -> {
-                binding.replyContentTv.setText(R.string.extensions)
+                binding.replyContentTv.setText(R.string.Extensions)
                 setIcon(R.drawable.ic_type_touch_app)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE

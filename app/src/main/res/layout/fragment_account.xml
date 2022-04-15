@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_account" />
+        app:titleText="@string/Account" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -36,7 +36,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_privacy"
+                    android:text="@string/Privacy"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_security"
+                    android:text="@string/Security"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 

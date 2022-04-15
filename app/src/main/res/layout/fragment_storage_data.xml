@@ -107,7 +107,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="3dp"
-                android:text="@string/setting_data_audio"
+                android:text="@string/Audios"
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"

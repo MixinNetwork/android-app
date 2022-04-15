@@ -14,7 +14,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/action_save"/>
+        android:text="@string/Save"/>
 
     <TextView
         android:id="@+id/show_in_chat"
@@ -38,7 +38,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/action_share"/>
+        android:text="@string/Share"/>
 
     <TextView
             android:id="@+id/decode"
@@ -62,5 +62,5 @@
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:textColor="?attr/text_primary"
-            android:text="@string/action_cancel"/>
+            android:text="@string/Cancel"/>
 </LinearLayout>

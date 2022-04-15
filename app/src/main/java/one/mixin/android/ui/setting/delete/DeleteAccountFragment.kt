@@ -118,11 +118,11 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                     phone
                 )
             )
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
                 callback.invoke()
             }
-            .setPositiveButton(R.string.wallet_transaction_continue) { dialog, _ ->
+            .setPositiveButton(R.string.Continue) { dialog, _ ->
                 lifecycleScope.launch {
                     verify(phone)
                     dialog.dismiss()

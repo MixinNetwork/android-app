@@ -30,9 +30,9 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
 
     result.append("${context.getString(R.string.app_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
         .append("${context.getString(R.string.manufacturer)}: ${Build.MANUFACTURER}").appendLine()
-        .append("${context.getString(R.string.model)}: ${Build.MODEL}").appendLine()
+        .append("${context.getString(R.string.Model)}: ${Build.MODEL}").appendLine()
         .append("${context.getString(R.string.system_version)}: ${Build.VERSION.RELEASE}").appendLine()
-        .append("${context.getString(R.string.time)}: ${Instant.now().toString().timeFormat()}").appendLine()
+        .append("${context.getString(R.string.Time)}: ${Instant.now().toString().timeFormat()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
@@ -126,7 +126,7 @@ private fun getExportIp(result: StringBuilder, context: Context) {
         val dataAddress = dataIp.substring(0, dataIp.indexOf("<br>"))
         val ips = dataAddress.split(" ").toTypedArray()
         result.append("${context.getString(R.string.export_ip)}: ${ips[0]}").appendLine()
-            .append("${context.getString(R.string.operator)}: ${ips[1]}").appendLine()
+            .append("${context.getString(R.string.Operator)}: ${ips[1]}").appendLine()
     } catch (e: Exception) {
         Timber.i("Get export ip from $EXPORT_IP_PRIMARY meet ${e.localizedMessage}")
         try {

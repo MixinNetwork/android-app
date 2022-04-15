@@ -83,11 +83,11 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
             opRl.setOnClickListener {
                 alertDialogBuilder()
                     .setMessage(R.string.setting_mobile_contact_warning)
-                    .setPositiveButton(R.string.action_delete) { dialog, _ ->
+                    .setPositiveButton(R.string.Delete) { dialog, _ ->
                         deleteContacts()
                         dialog.dismiss()
                     }
-                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
+                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
                     .show()
             }
         }

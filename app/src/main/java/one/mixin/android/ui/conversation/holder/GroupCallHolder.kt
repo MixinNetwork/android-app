@@ -42,7 +42,7 @@ class GroupCallHolder constructor(val binding: ItemChatSystemBinding) : BaseView
         }
         val isMe = meId == messageItem.userId
         val name = if (isMe) {
-            context.getString(R.string.you)
+            context.getString(R.string.You)
         } else {
             messageItem.userFullName
         }

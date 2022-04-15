@@ -114,7 +114,7 @@ class NewGroupFragment : BaseFragment() {
         if (dialog == null) {
             dialog = indeterminateProgressDialog(
                 message = R.string.pb_dialog_message,
-                title = R.string.group_creating
+                title = R.string.Creating
             ).apply {
                 setCancelable(false)
             }

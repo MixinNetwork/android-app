@@ -85,7 +85,7 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 0 -> R.string.enable_immediately
                 1 -> R.string.enable_after_1_minute
                 2 -> R.string.enable_after_30_minutes
-                else -> R.string.disabled
+                else -> R.string.Disabled
             }
         )
     }

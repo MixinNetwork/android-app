@@ -31,15 +31,15 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
 
     init {
         closeIv.setOnLongClickListener {
-            showTip(it, R.string.action_close)
+            showTip(it, R.string.Close)
             true
         }
         copyIv.setOnLongClickListener {
-            showTip(it, R.string.action_copy)
+            showTip(it, R.string.Copy)
             true
         }
         deleteIv.setOnLongClickListener {
-            showTip(it, R.string.action_delete)
+            showTip(it, R.string.Delete)
             true
         }
         addStickerIv.setOnLongClickListener {
@@ -47,24 +47,24 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
             true
         }
         forwardIv.setOnLongClickListener {
-            showTip(it, R.string.action_forward)
+            showTip(it, R.string.Forward)
             true
         }
         replyIv.setOnLongClickListener {
-            showTip(it, R.string.action_reply)
+            showTip(it, R.string.Reply)
             true
         }
         shareIv.setOnLongClickListener {
-            showTip(it, R.string.action_share)
+            showTip(it, R.string.Share)
             true
         }
         pinIv.setOnLongClickListener {
             showTip(
                 it,
                 if (it.tag == PinAction.PIN) {
-                    R.string.action_pin
+                    R.string.Pin
                 } else {
-                    R.string.action_unpin
+                    R.string.Unpin
                 }
             )
             true

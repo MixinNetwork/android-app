@@ -198,7 +198,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 setAdapter()
                 refreshUsers()
             } else {
-                binding.title.text = getString(R.string.chat_call_title)
+                binding.title.text = getString(R.string.Call)
                 binding.avatarLl.isVisible = true
                 binding.usersRv.isVisible = false
                 val callee = callState.user
@@ -525,7 +525,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             "$groupName"
         } else {
             getString(
-                R.string.chat_call_title
+                R.string.Call
             )
         }
         binding.callStatus.text = content
@@ -601,7 +601,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 )
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+            .setPositiveButton(R.string.OK) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()
@@ -703,7 +703,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             permissionAlert = AlertDialog.Builder(requireContext())
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.call_pip_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Setting) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(

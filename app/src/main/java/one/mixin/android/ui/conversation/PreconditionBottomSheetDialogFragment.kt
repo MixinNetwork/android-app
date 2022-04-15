@@ -261,7 +261,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
             override fun onFinish() {
                 if (isAdded) {
-                    binding.continueTv.text = getString(R.string.wallet_transaction_continue)
+                    binding.continueTv.text = getString(R.string.Continue)
                     binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
                     binding.continueTv.isEnabled = true
                 }

@@ -52,7 +52,7 @@ class AppAuthSettingFragment : BaseFragment(R.layout.fragment_app_auth_setting) 
                     showAppAuthPrompt(
                         this@AppAuthSettingFragment.requireActivity(),
                         getString(R.string.fingerprint_confirm),
-                        getString(R.string.action_cancel),
+                        getString(R.string.Cancel),
                         authCallback
                     )
                 }

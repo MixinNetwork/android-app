@@ -59,7 +59,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         checkState(t)
 
         binding.apply {
-            title.text = getString(R.string.action_transfer)
+            title.text = getString(R.string.Transfer)
             arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
             biometricLayout.payTv.setText(R.string.multisig_pay_pin)
             biometricLayout.biometricTv.setText(R.string.multisig_pay_biometric)
@@ -121,7 +121,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     private fun showUserList(userList: ArrayList<User>, isSender: Boolean) {
         val title = if (isSender) {
-            "${getString(R.string.multisig_senders)} ${t.sendersThreshold}/${t.senders.size}"
+            "${getString(R.string.Senders)} ${t.sendersThreshold}/${t.senders.size}"
         } else {
             getString(R.string.multisig_receivers_threshold, "${t.receiversThreshold}/${t.receivers.size}")
         }

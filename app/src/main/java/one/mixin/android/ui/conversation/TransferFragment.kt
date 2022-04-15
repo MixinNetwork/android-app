@@ -444,9 +444,9 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
         }
 
         if (!isInnerTransfer() && asset.assetId == RIPPLE_CHAIN_ID) {
-            binding.transferMemo.setHint(R.string.wallet_transfer_tag)
+            binding.transferMemo.setHint(R.string.Tag)
         } else {
-            binding.transferMemo.setHint(R.string.wallet_transfer_memo)
+            binding.transferMemo.setHint(R.string.Memo)
         }
         binding.assetName.text = asset.name
         binding.assetDesc.text = asset.balance.numberFormat()

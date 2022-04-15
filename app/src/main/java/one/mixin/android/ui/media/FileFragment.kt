@@ -57,7 +57,7 @@ class FileFragment : BaseFragment(R.layout.layout_recycler_view) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.emptyIv.setImageResource(R.drawable.ic_empty_file)
-        binding.emptyTv.setText(R.string.capital_no_file)
+        binding.emptyTv.setText(R.string.NO_FILE)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter

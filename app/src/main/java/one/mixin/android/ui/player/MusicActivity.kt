@@ -97,7 +97,7 @@ class MusicActivity : BaseActivity() {
             permissionAlert = AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Setting) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(

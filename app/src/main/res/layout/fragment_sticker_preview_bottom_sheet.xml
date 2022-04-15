@@ -27,7 +27,7 @@
             android:layout_width="180dp"
             android:layout_height="180dp"
             android:layout_gravity="center"
-            android:contentDescription="@string/sticker" />
+            android:contentDescription="@string/Sticker" />
     </one.mixin.android.widget.gallery.internal.ui.widget.SquareFrameLayout>
 
     <ViewAnimator
@@ -89,7 +89,7 @@
                     android:paddingBottom="4dp"
                     android:layout_marginEnd="20dp"
                     android:textColor="@color/white"
-                    android:text="@string/action_add"
+                    android:text="@string/Add"
                     android:background="@drawable/bg_round_blue_btn_solid" />
             </RelativeLayout>
 

@@ -42,11 +42,11 @@ class SharedMediaFragment : BaseFragment(R.layout.fragment_shared_media) {
         ) { tab, position ->
             tab.text = getString(
                 when (position) {
-                    0 -> R.string.media
-                    1 -> R.string.audio
-                    2 -> R.string.post
-                    3 -> R.string.links
-                    else -> R.string.files
+                    0 -> R.string.Media
+                    1 -> R.string.Audio
+                    2 -> R.string.Post
+                    3 -> R.string.Links
+                    else -> R.string.Files
                 }
             )
             binding.viewPager.setCurrentItem(tab.position, true)

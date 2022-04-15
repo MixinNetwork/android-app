@@ -54,7 +54,7 @@ class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantI
                     binding.desc.isVisible = true
                 }
                 ParticipantRole.ADMIN.name -> {
-                    binding.desc.setText(R.string.admin)
+                    binding.desc.setText(R.string.Admin)
                     binding.desc.isVisible = true
                 }
                 else -> {

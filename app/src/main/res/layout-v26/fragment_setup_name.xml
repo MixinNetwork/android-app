@@ -72,7 +72,7 @@
             android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
             app:backgroundTint="@color/colorBlue"
-            android:contentDescription="@string/action_next" />
+            android:contentDescription="@string/Next" />
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <View

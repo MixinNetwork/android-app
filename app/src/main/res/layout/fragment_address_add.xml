@@ -85,7 +85,7 @@
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:layout_toStartOf="@id/addr_iv"
                     android:background="@null"
-                    android:hint="@string/withdrawal_address"
+                    android:hint="@string/Address"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
@@ -172,7 +172,7 @@
                 android:layout_marginTop="@dimen/margin16"
                 android:layout_marginBottom="20dp"
                 android:enabled="false"
-                android:text="@string/action_save"
+                android:text="@string/Save"
                 android:textColor="?attr/text_minor"
                 android:textSize="14sp" />
         </LinearLayout>

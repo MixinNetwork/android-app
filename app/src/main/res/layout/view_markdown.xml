@@ -15,7 +15,7 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/action_forward"
+        android:text="@string/Forward"
         android:textColor="?attr/text_primary" />
 
     <TextView

@@ -30,7 +30,7 @@
         android:background="@drawable/bg_round_white"
         android:gravity="center"
         android:padding="10dp"
-        android:text="@string/setting_block"
+        android:text="@string/Block"
         android:textColor="@color/colorBlue"
         android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@id/stranger_add_bn"

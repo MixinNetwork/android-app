@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/bottom_bottom_margin"
-        android:text="@string/wallet_transaction_continue"
+        android:text="@string/Continue"
         android:textColor="@color/selector_tv"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"

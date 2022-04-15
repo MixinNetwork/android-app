@@ -21,7 +21,7 @@
         android:gravity="center_vertical"
         android:singleLine="true"
         android:imeOptions="actionSearch"
-        android:hint="@string/action_search"
+        android:hint="@string/Search"
         android:paddingStart="@dimen/activity_horizontal_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:textColor="?attr/text_primary"

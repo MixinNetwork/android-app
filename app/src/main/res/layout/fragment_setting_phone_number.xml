@@ -122,7 +122,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/nobody"
+                android:text="@string/Nobody"
                 tools:ignore="RelativeOverlap" />
 
         <ImageView

@@ -288,13 +288,13 @@ interface TransactionInterface {
             dateTv.text = snapshot.createdAt.fullDate()
             when (snapshot.type) {
                 SnapshotType.deposit.name -> {
-                    senderTitle.text = fragment.getString(R.string.sender)
+                    senderTitle.text = fragment.getString(R.string.Sender)
                     senderTv.text = snapshot.sender
                     receiverTitle.text = fragment.getString(R.string.transaction_hash)
                     receiverTv.text = snapshot.transactionHash
                 }
                 SnapshotType.pending.name -> {
-                    senderTitle.text = fragment.getString(R.string.sender)
+                    senderTitle.text = fragment.getString(R.string.Sender)
                     senderTv.text = snapshot.sender
                     receiverTitle.text = fragment.getString(R.string.transaction_hash)
                     receiverTv.text = snapshot.transactionHash
@@ -319,9 +319,9 @@ interface TransactionInterface {
                 }
                 else -> {
                     if (!asset.tag.isNullOrEmpty()) {
-                        receiverTitle.text = fragment.getString(R.string.address)
+                        receiverTitle.text = fragment.getString(R.string.Address)
                     } else {
-                        receiverTitle.text = fragment.getString(R.string.receiver)
+                        receiverTitle.text = fragment.getString(R.string.Receiver)
                     }
                     senderTitle.text = fragment.getString(R.string.transaction_hash)
                     senderTv.text = snapshot.transactionHash
@@ -350,12 +350,12 @@ interface TransactionInterface {
 
     fun getSnapshotType(fragment: Fragment, type: String): String {
         val s = when (type) {
-            SnapshotType.transfer.name -> R.string.action_transfer
-            SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.filters_deposit
-            SnapshotType.withdrawal.name -> R.string.withdrawal
-            SnapshotType.fee.name -> R.string.fee
-            SnapshotType.rebate.name -> R.string.action_rebate
-            SnapshotType.raw.name -> R.string.filters_raw
+            SnapshotType.transfer.name -> R.string.Transfer
+            SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.Deposit
+            SnapshotType.withdrawal.name -> R.string.Withdrawal
+            SnapshotType.fee.name -> R.string.Fee
+            SnapshotType.rebate.name -> R.string.Rebate
+            SnapshotType.raw.name -> R.string.Raw
             else -> R.string.not_applicable
         }
         return fragment.requireContext().getString(s)

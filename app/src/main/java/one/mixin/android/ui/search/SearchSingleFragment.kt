@@ -93,9 +93,9 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         val header = LayoutInflater.from(requireContext()).inflate(R.layout.view_head_search_single, binding.searchRv, false)
         val headerBinding = ViewHeadSearchSingleBinding.bind(header)
         val text = when (type) {
-            TypeAsset -> requireContext().getString(R.string.capital_search_title_assets)
-            TypeUser -> requireContext().getText(R.string.capital_search_title_contacts)
-            TypeChat -> requireContext().getText(R.string.capital_search_title_chat)
+            TypeAsset -> requireContext().getString(R.string.ASSETS)
+            TypeUser -> requireContext().getText(R.string.CONTACTS)
+            TypeChat -> requireContext().getText(R.string.CHATS)
             TypeMessage -> requireContext().getText(R.string.capital_search_title_messages)
         }
         headerBinding.titleTv.text = text

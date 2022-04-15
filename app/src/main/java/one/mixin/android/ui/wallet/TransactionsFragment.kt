@@ -251,7 +251,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
         bottomBinding.apply {
-            hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
+            hide.setText(if (asset.hidden == true) R.string.Show else R.string.Hide)
             hide.setOnClickListener {
                 lifecycleScope.launch(Dispatchers.IO) {
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
@@ -351,7 +351,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                             orderByAmount = orderByAmount
                         )
                     )
-                    groupInfoMemberTitle.setText(R.string.action_transfer)
+                    groupInfoMemberTitle.setText(R.string.Transfer)
                     walletTransactionsEmpty.setText(R.string.wallet_transactions_empty)
                 }
                 R.id.filters_radio_deposit -> {
@@ -363,7 +363,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                             orderByAmount = orderByAmount
                         )
                     )
-                    groupInfoMemberTitle.setText(R.string.filters_deposit)
+                    groupInfoMemberTitle.setText(R.string.Deposit)
                     walletTransactionsEmpty.setText(R.string.wallet_deposits_empty)
                 }
                 R.id.filters_radio_withdrawal -> {
@@ -375,28 +375,28 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                             orderByAmount = orderByAmount
                         )
                     )
-                    groupInfoMemberTitle.setText(R.string.withdrawal)
+                    groupInfoMemberTitle.setText(R.string.Withdrawal)
                     walletTransactionsEmpty.setText(R.string.wallet_withdrawals_empty)
                 }
                 R.id.filters_radio_fee -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
-                    groupInfoMemberTitle.setText(R.string.fee)
+                    groupInfoMemberTitle.setText(R.string.Fee)
                     walletTransactionsEmpty.setText(R.string.wallet_fees_empty)
                 }
                 R.id.filters_radio_rebate -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
-                    groupInfoMemberTitle.setText(R.string.action_rebate)
+                    groupInfoMemberTitle.setText(R.string.Rebate)
                     walletTransactionsEmpty.setText(R.string.wallet_rebates_empty)
                 }
                 R.id.filters_radio_raw -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
-                    groupInfoMemberTitle.setText(R.string.filters_raw)
+                    groupInfoMemberTitle.setText(R.string.Raw)
                     walletTransactionsEmpty.setText(R.string.wallet_raw_empty)
                 }
             }

@@ -127,7 +127,7 @@ object NotificationGenerator : Injector() {
         ).setCategory(CATEGORY_MESSAGE)
         supportsNougat {
             val remoteInput = RemoteInput.Builder(KEY_REPLY)
-                .setLabel(context.getString(R.string.action_reply))
+                .setLabel(context.getString(R.string.Reply))
                 .build()
             val sendIntent = Intent(context, SendService::class.java)
             sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
@@ -158,7 +158,7 @@ object NotificationGenerator : Injector() {
             )
             val action = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
-                context.getString(R.string.action_reply),
+                context.getString(R.string.Reply),
                 pendingIntent
             )
                 .addRemoteInput(remoteInput)

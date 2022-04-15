@@ -19,7 +19,7 @@
 
     <TextView
         android:id="@+id/search_header_more"
-        android:text="@string/action_more"
+        android:text="@string/More"
         android:textColor="@color/wallet_blue_secondary"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"

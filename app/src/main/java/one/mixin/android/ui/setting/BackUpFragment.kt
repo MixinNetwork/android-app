@@ -82,7 +82,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.never))
+            backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.Never))
             backupChoose.setOnClickListener {
                 chooseFolder()
             }
@@ -172,7 +172,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                     Result.NO_AVAILABLE_MEMORY ->
                         alertDialogBuilder()
                             .setMessage(R.string.backup_no_available_memory)
-                            .setNegativeButton(R.string.capital_ok) { dialog, _ -> dialog.dismiss() }
+                            .setNegativeButton(R.string.OK) { dialog, _ -> dialog.dismiss() }
                             .show()
                     Result.FAILURE -> toast(R.string.backup_failure_tip)
                     else -> reportException(IllegalStateException("Backup result $result"))
@@ -221,7 +221,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 PropertyHelper.updateKeyValue(BACKUP_MEDIA, checked.toString())
             }
         }
-        builder.setPositiveButton(R.string.backup) { dialog, _ ->
+        builder.setPositiveButton(R.string.Backup) { dialog, _ ->
             jobManager.addJobInBackground(BackupJob(force = true, backupMedia = checked))
             dialog.dismiss()
         }
@@ -288,7 +288,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
                 binding.backupProgress.isVisible = false
                 binding.backupInfo.isInvisible = false
                 if (info == null) {
-                    backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.never))
+                    backupInfo.text = getString(R.string.backup_external_storage, getString(R.string.Never))
                     backupPath.isVisible = false
                 } else {
                     val time = info.lastModified.run {

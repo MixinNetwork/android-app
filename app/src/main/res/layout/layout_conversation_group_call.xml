@@ -34,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="@string/group_call"
+            android:text="@string/Group_Call"
             android:textSize="16sp"
             android:textColor="?text_primary"/>
 

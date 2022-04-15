@@ -95,7 +95,7 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
         val networkAvailable = requireContext().networkConnected()
         if (networkAvailable) {
             progressBar.isVisible = true
-            stateTv.setText(R.string.state_connecting)
+            stateTv.setText(R.string.Connecting)
         } else {
             progressBar.isVisible = false
             stateTv.setText(R.string.state_network_unavailable)

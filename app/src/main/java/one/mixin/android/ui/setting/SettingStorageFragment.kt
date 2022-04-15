@@ -79,7 +79,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     private val dialog: Dialog by lazy {
         indeterminateProgressDialog(
             message = R.string.pb_dialog_message,
-            title = R.string.setting_clearing
+            title = R.string.Clearing
         ).apply {
             setCancelable(false)
         }
@@ -101,10 +101,10 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     private val menuDialog: AlertDialog by lazy {
         alertDialogBuilder()
             .setView(menuView)
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.setting_storage_bn_clear) { dialog, _ ->
+            .setPositiveButton(R.string.Clear) { dialog, _ ->
                 var sum = 0L
                 var size = 0L
                 selectSet.forEach { sum += it.count; size += it.mediaSize }
@@ -126,7 +126,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
 
     private val confirmDialog: AlertDialog by lazy {
         alertDialogBuilder()
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
@@ -238,12 +238,12 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
             itemBinding.apply {
                 checkView.setName(
                     when (storageUsage.type) {
-                        IMAGE -> R.string.photo
-                        DATA -> R.string.files
-                        VIDEO -> R.string.video
-                        AUDIO -> R.string.audio
-                        TRANSCRIPT -> R.string.transcript
-                        else -> R.string.unknown
+                        IMAGE -> R.string.Photo
+                        DATA -> R.string.Files
+                        VIDEO -> R.string.Video
+                        AUDIO -> R.string.Audio
+                        TRANSCRIPT -> R.string.Transcript
+                        else -> R.string.Unknown
                     }
                 )
                 checkView.setSize(storageUsage.mediaSize)

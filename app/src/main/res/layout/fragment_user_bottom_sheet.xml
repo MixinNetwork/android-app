@@ -158,7 +158,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/action_transfer"
+                        android:contentDescription="@string/Transfer"
                         android:src="@drawable/ic_menu_transfer" />
                 </FrameLayout>
 
@@ -173,7 +173,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/action_share"
+                        android:contentDescription="@string/Share"
                         android:src="@drawable/ic_user_bot" />
                 </FrameLayout>
 
@@ -204,7 +204,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/action_more"
+                        android:contentDescription="@string/More"
                         android:src="@drawable/ic_arrow_down_info" />
                 </FrameLayout>
             </LinearLayout>

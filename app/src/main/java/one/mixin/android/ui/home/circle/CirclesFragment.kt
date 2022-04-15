@@ -299,10 +299,10 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
     private fun delete(conversationCircleItem: ConversationCircleItem) {
         alertDialogBuilder()
             .setMessage(getString(R.string.circle_delete_tip, conversationCircleItem.name))
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.action_confirm) { _, _ ->
+            .setPositiveButton(R.string.Confirm) { _, _ ->
                 lifecycleScope.launch(errorHandler) {
                     val response = conversationViewModel.deleteCircle(conversationCircleItem.circleId)
                     if (response.isSuccess) {

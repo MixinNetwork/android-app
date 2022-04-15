@@ -64,7 +64,7 @@
                 android:paddingEnd="@dimen/margin20"
                 android:layout_gravity="center_horizontal|bottom"
                 android:layout_marginTop="32dp"
-                android:text="@string/wallet_transaction_continue"
+                android:text="@string/Continue"
                 android:textSize="14sp"/>
 
             <TextView
@@ -76,7 +76,7 @@
                 android:layout_marginTop="@dimen/margin16"
                 android:layout_gravity="center_horizontal"
                 android:textColor="@color/colorDarkBlue"
-                android:text="@string/action_cancel"/>
+                android:text="@string/Cancel"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

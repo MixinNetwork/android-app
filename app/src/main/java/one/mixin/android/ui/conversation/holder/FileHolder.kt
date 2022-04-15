@@ -83,7 +83,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         )
         when (messageItem.mediaStatus) {
             MediaStatus.EXPIRED.name -> {
-                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.chat_expired))
+                binding.bottomLayout.fileSizeTv.clearBindIdAndSetText(binding.root.context.getString(R.string.Expired))
             }
             MediaStatus.PENDING.name -> {
                 messageItem.mediaSize?.notNullWithElse(

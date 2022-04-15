@@ -58,13 +58,13 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
                 String.format(
                     getText(R.string.chat_pin_message),
                     if (id == messageItem.userId) {
-                        getText(R.string.you)
+                        getText(R.string.You)
                     } else {
                         messageItem.userFullName
                     },
                     pinMessage?.let { msg ->
                         " \"${msg.content}\""
-                    } ?: getText(R.string.chat_pin_empty_message)
+                    } ?: getText(R.string.a_message)
                 ),
                 MentionRenderCache.singleton.getMentionRenderContext(
                     messageItem.mentions
@@ -75,7 +75,7 @@ class PinMessageHolder constructor(val binding: ItemChatSystemBinding) :
                 String.format(
                     getText(R.string.chat_pin_message),
                     if (id == messageItem.userId) {
-                        getText(R.string.you)
+                        getText(R.string.You)
                     } else {
                         messageItem.userFullName
                     },

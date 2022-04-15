@@ -125,7 +125,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 "USER_TRANSFER" ->
                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_user_transfer))
                 "WITHDRAWAL" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.withdrawal))
+                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.Withdrawal))
                 "ADD_ADDRESS" ->
                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.add_address))
                 "DELETE_ADDRESS" ->

@@ -19,7 +19,7 @@
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             android:src="@drawable/ic_close_black"
-            android:contentDescription="@string/action_close" />
+            android:contentDescription="@string/Close" />
 
         <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"

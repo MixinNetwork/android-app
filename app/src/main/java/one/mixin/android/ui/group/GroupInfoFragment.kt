@@ -304,8 +304,8 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
     private fun showConfirmDialog(message: String, @Suppress("SameParameterValue") type: Int, user: User? = null) {
         alertDialogBuilder()
             .setMessage(message)
-            .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 showPb()
                 when (type) {
                     TYPE_REMOVE -> {

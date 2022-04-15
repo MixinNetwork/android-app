@@ -116,13 +116,13 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 String.format(
                     getText(R.string.chat_pin_message),
                     if (Session.getAccountId() == message.userId) {
-                        getText(R.string.you)
+                        getText(R.string.You)
                     } else {
                         message.userFullName
                     },
                     pinMessage?.let { msg ->
                         " \"${msg.content}\""
-                    } ?: getText(R.string.chat_pin_empty_message)
+                    } ?: getText(R.string.a_message)
                 ),
                 MentionRenderCache.singleton.getMentionRenderContext(
                     message.mentions
@@ -133,7 +133,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                 String.format(
                     getText(R.string.chat_pin_message),
                     if (Session.getAccountId() == message.userId) {
-                        getText(R.string.you)
+                        getText(R.string.You)
                     } else {
                         message.userFullName
                     },

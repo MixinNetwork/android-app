@@ -85,7 +85,7 @@
             android:paddingStart="@dimen/margin20"
             android:paddingEnd="@dimen/margin20"
             android:enabled="true"
-            android:text="@string/wallet_transaction_continue"
+            android:text="@string/Continue"
             android:textSize="14sp" />
     </LinearLayout>
 
@@ -110,7 +110,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="20dp"
             android:textColor="@color/textRemarks"
-            android:text="@string/action_done" />
+            android:text="@string/Done" />
 
         <TextView
             android:id="@+id/enable_biometric_tv"

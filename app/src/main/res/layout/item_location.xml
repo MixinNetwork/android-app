@@ -13,7 +13,7 @@
         android:background="@drawable/bg_menu"
         android:padding="4dp"
         app:tint="?attr/icon_default"
-        android:contentDescription="@string/location" />
+        android:contentDescription="@string/Location" />
 
     <TextView
         android:id="@+id/title"

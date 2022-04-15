@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_add_black_24dp"
-        app:titleText="@string/address"/>
+        app:titleText="@string/Address"/>
 
     <TextView
         android:id="@+id/empty_tv"
@@ -36,7 +36,7 @@
             android:background="?attr/bg_white"
             android:drawablePadding="8dp"
             android:inputType="text"
-            android:hint="@string/label"
+            android:hint="@string/Label"
             android:gravity="center_vertical"
             android:imeOptions="actionDone"
             android:maxLines="1"

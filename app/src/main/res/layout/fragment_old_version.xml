@@ -51,7 +51,7 @@
         android:minHeight="40dp"
         android:paddingStart="@dimen/margin12"
         android:paddingEnd="@dimen/margin12"
-        android:text="@string/action_update"
+        android:text="@string/Update"
         android:textColor="@color/white"
         android:textSize="16sp"/>
 </RelativeLayout>

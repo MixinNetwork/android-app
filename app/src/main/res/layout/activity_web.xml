@@ -27,7 +27,7 @@
                 android:id="@+id/close"
                 android:textColor="?attr/text_primary"
                 android:layout_alignParentStart="true"
-                android:text="@string/web_action_close"
+                android:text="@string/Close"
                 android:padding="8dp"
                 android:foreground="?android:attr/selectableItemBackground"
                 android:layout_width="wrap_content"

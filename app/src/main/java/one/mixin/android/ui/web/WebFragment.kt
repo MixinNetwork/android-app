@@ -895,7 +895,7 @@ class WebFragment : BaseFragment() {
         val bottomSheet = builder.create()
         viewBinding.closeIv.setOnClickListener { bottomSheet.dismiss() }
         val shareMenu = menu {
-            title = getString(if (isBot()) R.string.about else R.string.action_share)
+            title = getString(if (isBot()) R.string.About else R.string.Share)
             icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
             action = {
                 if (isBot()) {
@@ -915,7 +915,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val forwardMenu = menu {
-            title = getString(R.string.action_forward)
+            title = getString(R.string.Forward)
             icon = R.drawable.ic_web_forward
             action = {
                 if (appCard?.shareable == false || !shareable) {
@@ -963,7 +963,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val refreshMenu = menu {
-            title = getString(R.string.action_refresh)
+            title = getString(R.string.Refresh)
             icon = R.drawable.ic_web_refresh
             action = {
                 refresh()
@@ -1091,7 +1091,7 @@ class WebFragment : BaseFragment() {
             permissionAlert = AlertDialog.Builder(requireContext())
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Setting) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(

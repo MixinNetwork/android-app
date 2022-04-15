@@ -20,10 +20,10 @@ class MenuAdapter(
 
     private val buildInMenus = arrayListOf<Menu>().apply {
         val transferMenu =
-            Menu(MenuType.Transfer, R.string.action_transfer, R.drawable.ic_menu_transfer, null)
+            Menu(MenuType.Transfer, R.string.Transfer, R.drawable.ic_menu_transfer, null)
         val voiceMenu = Menu(
             MenuType.Voice,
-            if (isGroup) R.string.group_call else R.string.voice,
+            if (isGroup) R.string.Group_Call else R.string.Voice,
             R.drawable.ic_menu_call,
             null
         )
@@ -37,10 +37,10 @@ class MenuAdapter(
         } else {
             add(voiceMenu)
         }
-        add(Menu(MenuType.Camera, R.string.camera, R.drawable.ic_menu_camera, null))
-        add(Menu(MenuType.File, R.string.document, R.drawable.ic_menu_file, null))
-        add(Menu(MenuType.Contact, R.string.contact, R.drawable.ic_menu_contact, null))
-        add(Menu(MenuType.Location, R.string.location, R.drawable.ic_menu_location, null))
+        add(Menu(MenuType.Camera, R.string.Camera, R.drawable.ic_menu_camera, null))
+        add(Menu(MenuType.File, R.string.Document, R.drawable.ic_menu_file, null))
+        add(Menu(MenuType.Contact, R.string.Contact, R.drawable.ic_menu_contact, null))
+        add(Menu(MenuType.Location, R.string.Location, R.drawable.ic_menu_location, null))
     }
 
     var onMenuListener: OnMenuListener? = null

@@ -64,7 +64,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
         binding.replyNameTv.setTextColor(BaseViewHolder.getColorById(messageItem.userId))
         when {
             messageItem.isImage() -> {
-                binding.replyViewTv.setText(R.string.photo)
+                binding.replyViewTv.setText(R.string.Photo)
                 setIcon(R.drawable.ic_type_pic)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.absolutePath(), R.drawable.image_holder)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
@@ -72,7 +72,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.isVideo() -> {
-                binding.replyViewTv.setText(R.string.video)
+                binding.replyViewTv.setText(R.string.Video)
                 setIcon(R.drawable.ic_type_video)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.absolutePath(), R.drawable.image_holder)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
@@ -80,7 +80,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.isLive() -> {
-                binding.replyViewTv.setText(R.string.live)
+                binding.replyViewTv.setText(R.string.Live)
                 setIcon(R.drawable.ic_type_live)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.thumbUrl, R.drawable.image_holder)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
@@ -88,7 +88,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.isSticker() -> {
-                binding.replyViewTv.setText(R.string.sticker)
+                binding.replyViewTv.setText(R.string.Sticker)
                 setIcon(R.drawable.ic_type_stiker)
                 binding.replyViewIv.loadImageCenterCrop(messageItem.assetUrl, R.drawable.image_holder)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
@@ -96,7 +96,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.isContact() -> {
-                binding.replyViewTv.setText(R.string.contact)
+                binding.replyViewTv.setText(R.string.Contact)
                 setIcon(R.drawable.ic_type_contact)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyAvatar.setInfo(
@@ -109,21 +109,21 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyViewIv.visibility = View.INVISIBLE
             }
             messageItem.isData() -> {
-                binding.replyViewTv.setText(R.string.document)
+                binding.replyViewTv.setText(R.string.Document)
                 setIcon(R.drawable.ic_type_file)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.isPost() -> {
-                binding.replyViewTv.setText(R.string.post)
+                binding.replyViewTv.setText(R.string.Post)
                 setIcon(R.drawable.ic_type_file)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.isTranscript() -> {
-                binding.replyViewTv.setText(R.string.transcript)
+                binding.replyViewTv.setText(R.string.Transcript)
                 setIcon(R.drawable.ic_type_transcript)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
@@ -137,7 +137,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.isLocation() -> {
-                binding.replyViewTv.setText(R.string.location)
+                binding.replyViewTv.setText(R.string.Location)
                 setIcon(R.drawable.ic_type_location)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
@@ -156,7 +156,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type == MessageCategory.APP_CARD.name || messageItem.type == MessageCategory.APP_BUTTON_GROUP.name -> {
-                binding.replyViewTv.setText(R.string.extensions)
+                binding.replyViewTv.setText(R.string.Extensions)
                 setIcon(R.drawable.ic_type_touch_app)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE

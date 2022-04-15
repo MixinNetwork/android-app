@@ -1297,10 +1297,10 @@ class ConversationFragment() :
                 alertDialogBuilder()
                     .setTitle(getString(R.string.chat_audio_discard_warning_title))
                     .setMessage(getString(R.string.chat_audio_discard_warning))
-                    .setNeutralButton(getString(R.string.chat_capital_audio_discard_cancel)) { dialog, _ ->
+                    .setNeutralButton(getString(R.string.CONTINUE)) { dialog, _ ->
                         dialog.dismiss()
                     }
-                    .setNegativeButton(getString(R.string.chat_capital_audio_discard_ok)) { dialog, _ ->
+                    .setNegativeButton(getString(R.string.DISCARD)) { dialog, _ ->
                         activity?.finish()
                         dialog.dismiss()
                     }
@@ -1676,8 +1676,8 @@ class ConversationFragment() :
                             )
                         }
                     )
-                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.action_send) { dialog, _ ->
+                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.Send) { dialog, _ ->
                         sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
@@ -1789,7 +1789,7 @@ class ConversationFragment() :
             permissionAlert = AlertDialog.Builder(requireContext())
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.web_floating_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Setting) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(
@@ -2358,19 +2358,19 @@ class ConversationFragment() :
                     if (send) {
                         sendVideoMessage(uri)
                     } else {
-                        showPreview(uri, getString(R.string.action_send), true) { sendVideoMessage(uri) }
+                        showPreview(uri, getString(R.string.Send), true) { sendVideoMessage(uri) }
                     }
                 } else if (item.isGif || item.isWebp) {
                     if (send) {
                         sendImageMessage(uri)
                     } else {
-                        showPreview(uri, getString(R.string.action_send), false) { sendImageMessage(uri) }
+                        showPreview(uri, getString(R.string.Send), false) { sendImageMessage(uri) }
                     }
                 } else {
                     if (send) {
                         sendImageMessage(uri)
                     } else {
-                        getEditorResult.launch(Pair(uri, getString(R.string.action_send)))
+                        getEditorResult.launch(Pair(uri, getString(R.string.Send)))
                     }
                 }
                 releaseChatControl(FLING_DOWN)
@@ -2690,12 +2690,12 @@ class ConversationFragment() :
                 if (data.hasExtra(IS_VIDEO)) {
                     sendVideoMessage(it)
                 } else {
-                    getEditorResult.launch(Pair(it, getString(R.string.action_send)))
+                    getEditorResult.launch(Pair(it, getString(R.string.Send)))
                 }
             }
         } else if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
-                getEditorResult.launch(Pair(imageUri, getString(R.string.action_send)))
+                getEditorResult.launch(Pair(imageUri, getString(R.string.Send)))
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
@@ -2717,8 +2717,8 @@ class ConversationFragment() :
                             )
                         }
                     )
-                    .setNegativeButton(R.string.action_cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.action_send) { dialog, _ ->
+                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.Send) { dialog, _ ->
                         sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
@@ -2820,7 +2820,7 @@ class ConversationFragment() :
         }
         items.add(
             BottomSheetItem(
-                getString(R.string.action_open),
+                getString(R.string.Open),
                 {
                     requireContext().openMedia(messageItem)
                     bottomSheet?.dismiss()
@@ -3045,8 +3045,8 @@ class ConversationFragment() :
 
         val selectItem = selectItems[0]
         this.selectItem = selectItem
-        snackbar = Snackbar.make(binding.barLayout, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
-            .setAction(R.string.chat_go_check) {
+        snackbar = Snackbar.make(binding.barLayout, getString(R.string.Forward_success), Snackbar.LENGTH_LONG)
+            .setAction(R.string.View) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                 (view.findViewById<TextView>(R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))

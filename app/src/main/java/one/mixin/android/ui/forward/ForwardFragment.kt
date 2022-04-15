@@ -314,7 +314,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             }
         }
         if (errList.isEmpty()) {
-            toast(R.string.message_sent)
+            toast(R.string.Message_sent)
         }
         if (action is ForwardAction.System) {
             finishAndOpenChat(selectItems[0])
@@ -639,7 +639,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
         val err = sendMessageInternal(SelectItem(cid, null))
         if (err.isNullOrEmpty()) {
-            toast(R.string.message_sent)
+            toast(R.string.Message_sent)
         }
         MainActivity.reopen(requireContext())
         activity?.finish()
@@ -712,7 +712,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         } else {
             shareImageData.url.toUri()
         }
-        getEditorResult.launch(Pair(uri, getString(R.string.action_share)))
+        getEditorResult.launch(Pair(uri, getString(R.string.Share)))
     }
 
     private suspend fun sendImageByUri(uri: Uri) {

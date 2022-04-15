@@ -103,7 +103,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:contentDescription="@string/chat_expired" />
+                android:contentDescription="@string/Expired" />
 
             <one.mixin.android.widget.WaveformView
                 android:id="@+id/audio_waveform"

@@ -659,7 +659,7 @@ fun Context.openUrl(url: String) {
             .setShowTitle(true)
             .setActionButton(
                 BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
-                this.getString(R.string.action_share),
+                this.getString(R.string.Share),
                 pendingIntent
             )
             .build()
@@ -831,9 +831,9 @@ fun Context.showConfirmDialog(
 ) {
     alertDialogBuilder()
         .setMessage(message)
-        .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+        .setNegativeButton(R.string.Cancel) { dialog, _ ->
             dialog.dismiss()
-        }.setPositiveButton(R.string.capital_ok) { dialog, _ ->
+        }.setPositiveButton(R.string.OK) { dialog, _ ->
             action.invoke()
             dialog.dismiss()
         }.create().apply {
@@ -964,7 +964,7 @@ fun Activity.showPipPermissionNotification(targetActivity: Class<*>, title: Stri
     supportsOreo {
         val channel = NotificationChannel(
             CallActivity.CHANNEL_PIP_PERMISSION,
-            getString(R.string.capital_other),
+            getString(R.string.OTHER),
             NotificationManager.IMPORTANCE_HIGH
         )
         notificationManager.createNotificationChannel(channel)
@@ -1103,7 +1103,7 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
         }
         type = if (isVideo) "video/*" else "image/*"
     }
-    val name = getString(if (isVideo) R.string.video else R.string.photo)
+    val name = getString(if (isVideo) R.string.Video else R.string.Photo)
     val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
     val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
     resInfoList.forEach {

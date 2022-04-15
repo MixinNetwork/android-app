@@ -14,7 +14,7 @@
         android:layout_marginEnd="16dp"
         android:layout_centerVertical="true"
         android:src="@drawable/ic_delete_red"
-        android:contentDescription="@string/action_delete"/>
+        android:contentDescription="@string/Delete"/>
 
     <ImageView
         android:id="@+id/sticker_iv"
@@ -22,7 +22,7 @@
         android:layout_height="50dp"
         android:layout_toEndOf="@id/delete_iv"
         android:layout_centerVertical="true"
-        android:contentDescription="@string/sticker"/>
+        android:contentDescription="@string/Sticker"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -65,5 +65,5 @@
         android:layout_marginEnd="20dp"
         android:src="@drawable/ic_sort"
         android:padding="8dp"
-        android:contentDescription="@string/capital_sort_by"/>
+        android:contentDescription="@string/SORT_BY"/>
 </RelativeLayout>

@@ -75,7 +75,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
                 notificationReset.isVisible = true
                 notificationReset.setOnClickListener {
                     ChannelManager.resetChannelSound(requireContext())
-                    toast(R.string.successful)
+                    toast(R.string.Successful)
                 }
             }
         }

@@ -58,7 +58,7 @@
                 android:layout_width="116dp"
                 android:layout_height="40dp"
                 android:layout_marginBottom="16dp"
-                android:text="@string/wallet_transaction_continue"
+                android:text="@string/Continue"
                 android:textColor="@color/white"
                 android:layout_marginTop="32dp"
                 android:textSize="14sp" />
@@ -70,7 +70,7 @@
                 android:layout_gravity="center_horizontal|bottom"
                 android:padding="12dp"
                 android:layout_marginBottom="50dp"
-                android:text="@string/action_cancel"
+                android:text="@string/Cancel"
                 android:textColor="@color/selector_tv_blue"
                 android:foreground="?android:attr/selectableItemBackground"
                 android:textSize="14sp" />

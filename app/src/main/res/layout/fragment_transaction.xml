@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/ph"
         app:need_divider="false"
-        app:titleText="@string/wallet_transaction_title" />
+        app:titleText="@string/Transaction" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -156,7 +156,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/transactions_status" />
+                        android:text="@string/Status" />
 
                     <TextView
                         android:id="@+id/transaction_status_tv"
@@ -177,7 +177,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/sender" />
+                        android:text="@string/Sender" />
 
                     <TextView
                         android:id="@+id/sender_tv"
@@ -198,7 +198,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/receiver" />
+                        android:text="@string/Receiver" />
 
                     <TextView
                         android:id="@+id/receiver_tv"
@@ -217,7 +217,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/wallet_transfer_memo" />
+                        android:text="@string/Memo" />
 
                     <TextView
                         android:id="@+id/memo_tv"
@@ -236,7 +236,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/date" />
+                        android:text="@string/Date" />
 
                     <TextView
                         android:id="@+id/date_tv"
@@ -255,7 +255,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/trace" />
+                        android:text="@string/Trace" />
 
                     <TextView
                         android:id="@+id/trace_tv"

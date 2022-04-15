@@ -110,7 +110,7 @@ class GroupFragment : BaseFragment() {
             activity?.onBackPressed()
         }
         if (from == TYPE_ADD || from == TYPE_REMOVE) {
-            binding.titleView.rightTv.text = getString(R.string.action_done)
+            binding.titleView.rightTv.text = getString(R.string.Done)
             updateTitle(alreadyUsers?.size ?: 0)
         } else if (from == TYPE_CREATE) {
             updateTitle(0)
@@ -181,7 +181,7 @@ class GroupFragment : BaseFragment() {
     private fun handleAddOrRemove() = lifecycleScope.launch {
         if (dialog == null) {
             val title =
-                if (from == TYPE_ADD) R.string.adding else R.string.group_removing
+                if (from == TYPE_ADD) R.string.Adding else R.string.Removing
             dialog = indeterminateProgressDialog(
                 message = R.string.pb_dialog_message,
                 title = title

@@ -121,7 +121,7 @@ class ForwardActivity : BlazeBaseActivity() {
                 replaceFragment(
                     ForwardFragment.newInstance(
                         forwardMessageList,
-                        ForwardAction.System(conversationId, getString(R.string.action_share))
+                        ForwardAction.System(conversationId, getString(R.string.Share))
                     ),
                     R.id.container, ForwardFragment.TAG
                 )

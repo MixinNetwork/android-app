@@ -147,45 +147,45 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) : Bas
                 transcripts.forEach {
                     when {
                         it.isImage() -> {
-                            str.append("${it.name}: [${itemView.context.getString(R.string.photo)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.Photo)}]\n")
                         }
                         it.isVideo() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.video)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Video)}]\n")
                         }
                         it.isData() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.document)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Document)}]\n")
                         }
                         it.isAudio() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.audio)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Audio)}]\n")
                         }
                         it.isPost() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.post)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Post)}]\n")
                         }
                         it.isLocation() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.location)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Location)}]\n")
                         }
                         it.isTranscript() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.transcript)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Transcript)}]\n")
                         }
                         it.isContact() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.contact)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Contact)}]\n")
                         }
                         it.isLive() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.live)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Live)}]\n")
                         }
                         it.isSticker() -> {
-                            str.append("${it. name}: [${itemView.context.getString(R.string.sticker)}]\n")
+                            str.append("${it. name}: [${itemView.context.getString(R.string.Sticker)}]\n")
                         }
                         it.type == MessageCategory.APP_CARD.name -> {
                             try {
                                 val cardData = Gson().fromJson(it.content, AppCardData::class.java)
                                 if (cardData.title.isBlank()) {
-                                    str.append("${it.name}: [${itemView.context.getString(R.string.card)}]\n")
+                                    str.append("${it.name}: [${itemView.context.getString(R.string.Card)}]\n")
                                 } else {
                                     str.append("${it.name}: [${cardData.title}]\n")
                                 }
                             } catch (e: Exception) {
-                                str.append("${it. name}: [${itemView.context.getString(R.string.card)}]\n")
+                                str.append("${it. name}: [${itemView.context.getString(R.string.Card)}]\n")
                             }
                         }
                         else -> str.append("${it. name}: ${it.content}\n")

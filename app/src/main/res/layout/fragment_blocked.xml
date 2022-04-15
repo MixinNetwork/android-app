@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_blocked"/>
+        app:titleText="@string/Blocked"/>
 
     <ViewAnimator
         android:id="@+id/block_va"

@@ -63,7 +63,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                     addrTv.text = asset.tag
                 }
                 else -> {
-                    title.titleTv.text = getString(R.string.address)
+                    title.titleTv.text = getString(R.string.Address)
                     addrTv.text = asset.destination
                 }
             }

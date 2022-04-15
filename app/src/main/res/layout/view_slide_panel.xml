@@ -24,7 +24,7 @@
                 android:layout_gravity="center"
                 android:textColor="@color/colorDarkBlue"
                 android:textSize="18sp"
-                android:text="@string/action_cancel"/>
+                android:text="@string/Cancel"/>
 
         <LinearLayout
                 android:id="@+id/slide_ll"

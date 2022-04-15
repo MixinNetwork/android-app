@@ -12,7 +12,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/settings" />
+        app:titleText="@string/Settings" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -38,7 +38,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_account"
+                    android:text="@string/Account"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_privacy" />
@@ -80,7 +80,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/backup"
+                    android:text="@string/Backup"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_backup" />
@@ -127,7 +127,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_appearance"
+                    android:text="@string/Appearance"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_appearance" />
@@ -179,7 +179,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_feedback"
+                    android:text="@string/Feedback"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_feedback" />
@@ -226,7 +226,7 @@
                     android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/about"
+                    android:text="@string/About"
                     tools:ignore="RelativeOverlap"
                     android:drawablePadding="@dimen/margin12"
                     app:drawableStartCompat="@drawable/ic_setting_about" />

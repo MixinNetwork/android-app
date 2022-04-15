@@ -61,7 +61,7 @@
         android:minHeight="40dp"
         android:paddingStart="@dimen/margin12"
         android:paddingEnd="@dimen/margin12"
-        android:text="@string/action_send"
+        android:text="@string/Send"
         android:textColor="@color/white"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"

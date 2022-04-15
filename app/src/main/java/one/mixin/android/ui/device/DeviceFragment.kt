@@ -190,7 +190,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     private val loadOuting: Dialog by lazy {
         indeterminateProgressDialog(
             message = R.string.pb_dialog_message,
-            title = R.string.setting_desktop_logout
+            title = R.string.Logout
         ).apply {
             setCancelable(false)
         }

@@ -146,7 +146,7 @@ class ChatHistoryActivity : BaseActivity() {
         binding.titleView.setSubTitle(
             getString(
                 if (isTranscript) {
-                    R.string.transcript
+                    R.string.Transcript
                 } else {
                     R.string.pinned_message
                 }
@@ -682,7 +682,7 @@ class ChatHistoryActivity : BaseActivity() {
         }
         items.add(
             BottomSheetItem(
-                getString(R.string.action_open),
+                getString(R.string.Open),
                 {
                     openMedia(messageItem)
                     bottomSheet?.dismiss()
@@ -729,7 +729,7 @@ class ChatHistoryActivity : BaseActivity() {
             lifecycleScope.launch {
                 if (conversationRepository.hasUploadedAttachmentSuspend(transcriptId) > 0) {
                     alert(getString(R.string.error_transcript_forward))
-                        .setPositiveButton(R.string.capital_ok) { dialog, _ ->
+                        .setPositiveButton(R.string.OK) { dialog, _ ->
                             dialog.dismiss()
                         }.show()
                     bottomSheet.dismiss()

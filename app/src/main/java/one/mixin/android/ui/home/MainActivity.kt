@@ -376,7 +376,7 @@ class MainActivity : BlazeBaseActivity() {
         delay(2000)
         MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.setting_emergency_change_mobile))
-            .setPositiveButton(R.string.action_change) { dialog, _ ->
+            .setPositiveButton(R.string.Change) { dialog, _ ->
                 supportFragmentManager.inTransaction {
                     setCustomAnimations(
                         R.anim.slide_in_bottom,
@@ -389,7 +389,7 @@ class MainActivity : BlazeBaseActivity() {
                     dialog.dismiss()
                 }
             }
-            .setNegativeButton(R.string.action_later) { dialog, _ ->
+            .setNegativeButton(R.string.Later) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()
@@ -502,7 +502,7 @@ class MainActivity : BlazeBaseActivity() {
             getString(R.string.update_downloaded),
             Snackbar.LENGTH_INDEFINITE
         ).apply {
-            setAction(getString(R.string.action_restart)) { appUpdateManager.completeUpdate() }
+            setAction(getString(R.string.RESTART)) { appUpdateManager.completeUpdate() }
             setActionTextColor(getColor(R.color.colorAccent))
             show()
         }

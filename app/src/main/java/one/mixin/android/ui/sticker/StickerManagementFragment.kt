@@ -81,12 +81,12 @@ class StickerManagementFragment : BaseFragment() {
         binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         binding.titleView.rightAnimator.setOnClickListener {
             if (stickerAdapter.editing) {
-                binding.titleView.rightTv.text = getString(R.string.action_select)
+                binding.titleView.rightTv.text = getString(R.string.Select)
                 if (stickerAdapter.checkedList.isNotEmpty()) {
                     stickerViewModel.removeStickers(stickerAdapter.checkedList)
                 }
             } else {
-                binding.titleView.rightTv.text = getString(R.string.action_delete)
+                binding.titleView.rightTv.text = getString(R.string.Delete)
             }
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.notifyDataSetChanged()
@@ -119,7 +119,7 @@ class StickerManagementFragment : BaseFragment() {
                 }
 
                 override fun onDelete() {
-                    binding.titleView.rightTv.text = getString(R.string.action_delete)
+                    binding.titleView.rightTv.text = getString(R.string.Delete)
                 }
             }
         )
@@ -145,7 +145,7 @@ class StickerManagementFragment : BaseFragment() {
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.checkedList.clear()
             stickerAdapter.notifyDataSetChanged()
-            binding.titleView.rightTv.text = getString(R.string.action_select)
+            binding.titleView.rightTv.text = getString(R.string.Select)
 
             return true
         }

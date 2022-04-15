@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_account" />
+        app:titleText="@string/Account" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -36,7 +36,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/pin"
+                    android:text="@string/PIN"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/authorizations"
+                    android:text="@string/Authorizations"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
@@ -95,7 +95,7 @@
                 android:id="@+id/logs"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:text="@string/logs"
+                android:text="@string/Logs"
                 style="@style/NormalTextStyle"
                 android:gravity="center_vertical"
                 android:paddingStart="@dimen/activity_horizontal_margin"

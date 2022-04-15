@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_help_outline"
-        app:titleText="@string/filters_deposit" />
+        app:titleText="@string/Deposit" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -117,7 +117,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text="@string/address"
+                    android:text="@string/Address"
                     android:textColor="?attr/text_assist"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

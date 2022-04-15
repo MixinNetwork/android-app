@@ -78,7 +78,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
     private fun verify(pinCode: String) = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
             message = getString(R.string.pb_dialog_message),
-            title = getString(R.string.wallet_verifying)
+            title = getString(R.string.Verifying)
         )
         dialog.setCancelable(false)
         dialog.show()

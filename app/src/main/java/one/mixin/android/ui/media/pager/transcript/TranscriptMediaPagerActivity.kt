@@ -407,7 +407,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             }
             type = if (isVideo) "video/*" else "image/*"
         }
-        val name = getString(if (isVideo) R.string.video else R.string.photo)
+        val name = getString(if (isVideo) R.string.Video else R.string.Photo)
         val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
         val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
         resInfoList.forEach {
@@ -520,7 +520,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             permissionAlert = AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.call_pip_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Setting) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(

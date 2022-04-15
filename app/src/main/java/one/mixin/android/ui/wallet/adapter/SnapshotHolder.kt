@@ -25,11 +25,11 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
             SnapshotType.deposit.name -> {
-                binding.name.setText(R.string.filters_deposit)
+                binding.name.setText(R.string.Deposit)
                 binding.avatar.setNet()
             }
             SnapshotType.transfer.name -> {
-                binding.name.setText(R.string.action_transfer)
+                binding.name.setText(R.string.Transfer)
                 binding.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId ?: "")
                 binding.avatar.setOnClickListener {
                     listener?.onUserClick(snapshot.opponentId!!)
@@ -37,19 +37,19 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 binding.avatar.setTextSize(12f)
             }
             SnapshotType.withdrawal.name -> {
-                binding.name.setText(R.string.withdrawal)
+                binding.name.setText(R.string.Withdrawal)
                 binding.avatar.setNet()
             }
             SnapshotType.fee.name -> {
-                binding.name.setText(R.string.fee)
+                binding.name.setText(R.string.Fee)
                 binding.avatar.setNet()
             }
             SnapshotType.rebate.name -> {
-                binding.name.setText(R.string.action_rebate)
+                binding.name.setText(R.string.Rebate)
                 binding.avatar.setNet()
             }
             SnapshotType.raw.name -> {
-                binding.name.setText(R.string.filters_raw)
+                binding.name.setText(R.string.Raw)
                 binding.avatar.setNet()
             }
             else -> {

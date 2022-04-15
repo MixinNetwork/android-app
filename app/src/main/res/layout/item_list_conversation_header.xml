@@ -14,7 +14,7 @@
         android:src="@drawable/ic_close_grey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="@string/action_close" />
+        android:contentDescription="@string/Close" />
 
     <TextView
         android:id="@+id/header_title"
@@ -53,7 +53,7 @@
         android:paddingTop="8dp"
         android:paddingEnd="16dp"
         android:paddingBottom="8dp"
-        android:text="@string/notification"
+        android:text="@string/Notifications"
         android:textColor="@color/white"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"

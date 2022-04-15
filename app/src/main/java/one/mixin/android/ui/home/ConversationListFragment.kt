@@ -436,9 +436,9 @@ class ConversationListFragment : LinkFragment() {
         builder.setCustomView(viewBinding.root)
         viewBinding.muteTv.setText(
             if (isMute) {
-                R.string.action_un_mute
+                R.string.Unmute
             } else {
-                R.string.action_mute
+                R.string.Mute
             }
         )
         val bottomSheet = builder.create()
@@ -454,11 +454,11 @@ class ConversationListFragment : LinkFragment() {
             alertDialogBuilder()
                 .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
-                .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
                     dialog.dismiss()
                     bottomSheet.dismiss()
                 }
-                .setPositiveButton(R.string.action_confirm) { _, _ ->
+                .setPositiveButton(R.string.Confirm) { _, _ ->
                     val lm = binding.messageRv.layoutManager as LinearLayoutManager
                     val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
                     val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
@@ -473,7 +473,7 @@ class ConversationListFragment : LinkFragment() {
                 .show()
         }
         if (hasPin) {
-            viewBinding.pinTv.setText(R.string.action_unpin)
+            viewBinding.pinTv.setText(R.string.Unpin)
             viewBinding.pinTv.setOnClickListener {
                 messagesViewModel.updateConversationPinTimeById(conversationId, circleId, null)
                 bottomSheet.dismiss()
@@ -794,13 +794,13 @@ class ConversationListFragment : LinkFragment() {
                             String.format(
                                 getText(R.string.chat_pin_message),
                                 if (Session.getAccountId() == conversationItem.participantUserId) {
-                                    getText(R.string.you)
+                                    getText(R.string.You)
                                 } else {
                                     conversationItem.senderFullName
                                 },
                                 pinMessage?.let { msg ->
                                     " \"${msg.content}\""
-                                } ?: getText(R.string.chat_pin_empty_message)
+                                } ?: getText(R.string.a_message)
                             ),
                             MentionRenderCache.singleton.getMentionRenderContext(
                                 conversationItem.mentions
@@ -810,7 +810,7 @@ class ConversationListFragment : LinkFragment() {
                         binding.msgTv.text = String.format(
                             getText(R.string.chat_pin_message),
                             if (id == conversationItem.senderId) {
-                                getText(R.string.you)
+                                getText(R.string.You)
                             } else {
                                 conversationItem.senderFullName
                             },
@@ -826,7 +826,7 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_create),
                                     if (id == conversationItem.senderId) {
-                                        getText(R.string.you)
+                                        getText(R.string.You)
                                     } else {
                                         conversationItem.name
                                     },
@@ -838,12 +838,12 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_add),
                                     if (id == conversationItem.senderId) {
-                                        getText(R.string.you)
+                                        getText(R.string.You)
                                     } else {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.chat_you)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -854,12 +854,12 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_remove),
                                     if (id == conversationItem.senderId) {
-                                        getText(R.string.you)
+                                        getText(R.string.You)
                                     } else {
                                         conversationItem.senderFullName
                                     },
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.chat_you)
+                                        getText(R.string.you)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -870,7 +870,7 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_join),
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.you)
+                                        getText(R.string.You)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -881,7 +881,7 @@ class ConversationListFragment : LinkFragment() {
                                 String.format(
                                     getText(R.string.chat_group_exit),
                                     if (id == conversationItem.participantUserId) {
-                                        getText(R.string.you)
+                                        getText(R.string.You)
                                     } else {
                                         conversationItem.participantFullName
                                     }
@@ -1048,10 +1048,10 @@ class ConversationListFragment : LinkFragment() {
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 if (conversationItem.isGroupConversation()) {
                     lifecycleScope.launch {
                         handleMixinResponse(
@@ -1120,7 +1120,7 @@ class ConversationListFragment : LinkFragment() {
                             conversationItem.conversationId,
                             response.data!!.muteUntil
                         )
-                        toast(getString(R.string.action_un_mute) + " ${conversationItem.groupName}")
+                        toast(getString(R.string.Unmute) + " ${conversationItem.groupName}")
                     }
                 )
             }
@@ -1140,7 +1140,7 @@ class ConversationListFragment : LinkFragment() {
                                 conversationItem.ownerId,
                                 response.data!!.muteUntil
                             )
-                            toast(getString(R.string.action_un_mute) + " ${conversationItem.name}")
+                            toast(getString(R.string.Unmute) + " ${conversationItem.name}")
                         }
                     )
                 }

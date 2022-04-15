@@ -146,29 +146,29 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun getMessageCategory(): String {
         return when (shareMessage.category) {
             ShareCategory.Text -> {
-                getString(R.string.message)
+                getString(R.string.Message)
             }
             ShareCategory.Image -> {
-                getString(R.string.photo)
+                getString(R.string.Photo)
             }
             ShareCategory.Contact -> {
-                getString(R.string.contact)
+                getString(R.string.Contact)
             }
             ShareCategory.Post -> {
-                getString(R.string.post)
+                getString(R.string.Post)
             }
             ShareCategory.AppCard -> {
-                getString(R.string.card)
+                getString(R.string.Card)
             }
             ShareCategory.Live -> {
-                getString(R.string.live)
+                getString(R.string.Live)
             }
             else -> throw IllegalArgumentException()
         }
     }
 
     private fun sendMessage() {
-        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(R.string.action_send)))
+        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(R.string.Send)))
         dismiss()
     }
 

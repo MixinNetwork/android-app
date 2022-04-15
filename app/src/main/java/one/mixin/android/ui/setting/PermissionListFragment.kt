@@ -87,7 +87,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
 
     private fun showDialog(app: App) {
         alertDialogBuilder()
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))

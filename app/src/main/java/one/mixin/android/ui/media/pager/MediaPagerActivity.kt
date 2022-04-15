@@ -567,7 +567,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             permissionAlert = AlertDialog.Builder(this)
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.call_pip_permission)
-                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                .setPositiveButton(R.string.Setting) { dialog, _ ->
                     try {
                         startActivity(
                             Intent(

@@ -269,13 +269,13 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 )
             ) {
                 menu {
-                    title = getString(R.string.action_un_mute)
+                    title = getString(R.string.Unmute)
                     subtitle = getString(R.string.mute_until, conversation.muteUntil?.localTime())
                     action = { unMute() }
                 }
             } else {
                 menu {
-                    title = getString(R.string.action_mute)
+                    title = getString(R.string.Mute)
                     action = { mute() }
                 }
             }
@@ -289,7 +289,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.circles)
+                    title = getString(R.string.Circles)
                     action = {
                         startCircleManager()
                         dismiss()
@@ -402,7 +402,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     },
                     successBlock = { response ->
                         bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
-                        toast(getString(R.string.action_un_mute) + " ${conversation.name}")
+                        toast(getString(R.string.Unmute) + " ${conversation.name}")
                     }
                 )
             }
@@ -420,10 +420,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     lifecycleScope.launch {

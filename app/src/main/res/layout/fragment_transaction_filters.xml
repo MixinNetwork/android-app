@@ -9,7 +9,7 @@
         android:id="@+id/filters_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:title_text="@string/filters_title" />
+        app:title_text="@string/Filters" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
             android:layout_marginStart="@dimen/margin20"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:text="@string/capital_sort_by"
+            android:text="@string/SORT_BY"
             android:textColor="@color/selector_sort_tv" />
 
         <one.mixin.android.widget.CheckedFlowLayout
@@ -47,7 +47,7 @@
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:checked="true"
                 android:gravity="center"
-                android:text="@string/time"
+                android:text="@string/Time"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -59,7 +59,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/amount"
+                android:text="@string/Amount"
                 android:textColor="@color/selector_sort_tv" />
         </one.mixin.android.widget.CheckedFlowLayout>
 
@@ -69,7 +69,7 @@
             android:layout_marginStart="@dimen/margin20"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:text="@string/capital_filters_by"
+            android:text="@string/FILTERS_BY"
             android:textColor="@color/selector_sort_tv" />
 
         <one.mixin.android.widget.CheckedFlowLayout
@@ -95,7 +95,7 @@
                 android:checked="true"
                 android:gravity="center"
                 android:textColor="@color/selector_sort_tv"
-                android:text="@string/all" />
+                android:text="@string/All" />
 
             <one.mixin.android.widget.CheckedFlowItem
                 android:id="@+id/filters_radio_transfer"
@@ -106,7 +106,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/action_transfer"
+                android:text="@string/Transfer"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -118,7 +118,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/filters_deposit"
+                android:text="@string/Deposit"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -130,7 +130,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/withdrawal"
+                android:text="@string/Withdrawal"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -142,7 +142,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/fee"
+                android:text="@string/Fee"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -154,7 +154,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/action_rebate"
+                android:text="@string/Rebate"
                 android:textColor="@color/selector_sort_tv" />
 
             <one.mixin.android.widget.CheckedFlowItem
@@ -166,7 +166,7 @@
                 android:layout_marginBottom="@dimen/margin20"
                 android:background="@drawable/bg_selector_wallet_round_gray"
                 android:gravity="center"
-                android:text="@string/filters_raw"
+                android:text="@string/Raw"
                 android:textColor="@color/selector_sort_tv" />
         </one.mixin.android.widget.CheckedFlowLayout>
 
@@ -178,7 +178,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/margin16"
             android:layout_marginBottom="@dimen/margin20"
-            android:text="@string/filters_apply"
+            android:text="@string/Apply"
             android:textColor="@color/white"
             android:textSize="14sp" />
     </LinearLayout>

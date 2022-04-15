@@ -98,9 +98,9 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
 
     private suspend fun getInfo(value: Int): String {
         val list = mutableListOf<String>()
-        if (autoDownloadPhoto(value)) list.add(getString(R.string.setting_data_photo))
-        if (autoDownloadVideo(value)) list.add(getString(R.string.setting_data_video))
-        if (autoDownloadDocument(value)) list.add(getString(R.string.setting_data_documents))
+        if (autoDownloadPhoto(value)) list.add(getString(R.string.Photos))
+        if (autoDownloadVideo(value)) list.add(getString(R.string.Videos))
+        if (autoDownloadDocument(value)) list.add(getString(R.string.Documents))
         val divide = getString(R.string.divide)
         if (list.isEmpty()) return getString(R.string.setting_data_noting)
         val str = StringBuffer()
@@ -118,15 +118,15 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
         menuDialog?.dismiss()
         val menuBinding = ViewStotageDataBinding.inflate(requireContext().layoutInflater, null, false).apply {
             this.checkPhoto.apply {
-                setName(R.string.setting_data_photo)
+                setName(R.string.Photos)
                 isChecked = autoDownloadPhoto(value)
             }
             this.checkVideo.apply {
-                setName(R.string.setting_data_video)
+                setName(R.string.Videos)
                 isChecked = autoDownloadVideo(value)
             }
             this.checkDocument.apply {
-                setName(R.string.setting_data_documents)
+                setName(R.string.Documents)
                 isChecked = autoDownloadDocument(value)
             }
         }

@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/importChat"
-        android:text="@string/chat_import"
+        android:text="@string/Import"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/selector_tv_blue"

@@ -66,6 +66,6 @@
             android:background="?android:attr/selectableItemBackground"
             android:padding="@dimen/margin16"
             android:src="@drawable/ic_bottom_album"
-            android:contentDescription="@string/action_save" />
+            android:contentDescription="@string/Save" />
     </FrameLayout>
 </LinearLayout>

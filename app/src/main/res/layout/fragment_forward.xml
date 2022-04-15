@@ -10,7 +10,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/action_forward"/>
+        app:titleText="@string/Forward"/>
 
     <EditText
         android:id="@+id/search_et"
@@ -19,7 +19,7 @@
         android:background="?attr/bg_white"
         android:drawablePadding="8dp"
         android:inputType="text"
-        android:hint="@string/action_search"
+        android:hint="@string/Search"
         android:imeOptions="actionDone"
         android:maxLines="1"
         android:paddingEnd="@dimen/margin_start"
@@ -92,7 +92,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:pressedTranslationZ="1dp"
             app:rippleColor="#a6a6a6"
-            android:contentDescription="@string/action_forward" />
+            android:contentDescription="@string/Forward" />
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/forward_group"

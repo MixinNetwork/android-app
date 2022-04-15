@@ -71,7 +71,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="@string/action_send"
+                android:text="@string/Send"
                 android:textColor="@color/wallet_blue_secondary" />
 
             <View
@@ -90,7 +90,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="@string/action_receive"
+                    android:text="@string/Receive"
                     android:textColor="@color/wallet_blue_secondary" />
 
                 <ProgressBar
@@ -126,7 +126,7 @@
             android:background="@drawable/mixin_ripple_small"
             android:padding="8dp"
             android:src="@drawable/ic_sort"
-            android:contentDescription="@string/capital_sort_by" />
+            android:contentDescription="@string/SORT_BY" />
 
         <TextView
             android:id="@+id/group_info_member_title"

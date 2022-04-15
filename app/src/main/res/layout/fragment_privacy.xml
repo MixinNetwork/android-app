@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_account" />
+        app:titleText="@string/Account" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -36,7 +36,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_blocked"
+                    android:text="@string/Blocked"
                     tools:ignore="RelativeOverlap" />
 
                 <TextView
@@ -46,7 +46,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:text="@string/none"
+                    android:text="@string/None"
                     android:textColor="?attr/text_minor"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
@@ -65,7 +65,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_conversation"
+                    android:text="@string/Conversation"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 

@@ -139,7 +139,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         }
 
         if (asset.assetId == RIPPLE_CHAIN_ID) {
-            binding.tagEt.setHint(R.string.wallet_transfer_tag)
+            binding.tagEt.setHint(R.string.Tag)
         } else {
             binding.tagEt.setHint(R.string.withdrawal_addr_memo_hint)
         }

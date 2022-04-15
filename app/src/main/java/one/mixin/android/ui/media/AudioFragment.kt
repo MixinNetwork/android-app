@@ -68,7 +68,7 @@ class AudioFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.recyclerView.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         binding.recyclerView.adapter = adapter
         binding.emptyIv.setImageResource(R.drawable.ic_empty_audio)
-        binding.emptyTv.setText(R.string.capital_no_audio)
+        binding.emptyTv.setText(R.string.NO_AUDIO)
         viewModel.getAudioMessages(conversationId).observe(
             viewLifecycleOwner
         ) {

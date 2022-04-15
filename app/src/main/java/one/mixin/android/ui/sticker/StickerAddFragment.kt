@@ -101,7 +101,7 @@ class StickerAddFragment : BaseFragment() {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(
                     message = R.string.pb_dialog_message,
-                    title = R.string.adding
+                    title = R.string.Adding
                 ).apply {
                     setCancelable(false)
                 }

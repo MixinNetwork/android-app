@@ -12,7 +12,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightText="@string/action_next"
+        app:rightText="@string/Next"
         app:titleText="@string/add_participants" />
 
     <EditText
@@ -21,7 +21,7 @@
         android:layout_height="50dp"
         android:background="?attr/bg_white"
         android:drawablePadding="8dp"
-        android:hint="@string/action_search"
+        android:hint="@string/Search"
         android:imeOptions="actionSearch"
         android:inputType="text"
         android:maxLines="1"

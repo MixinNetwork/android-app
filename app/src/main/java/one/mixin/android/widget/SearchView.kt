@@ -44,7 +44,7 @@ class SearchView : FrameLayout {
         typedArray.recycle()
 
         binding.searchEt.apply {
-            hint = resources.getString(R.string.action_search)
+            hint = resources.getString(R.string.Search)
             addTextChangedListener(watcher)
             setOnEditorActionListener(onEditorActionListener)
         }

@@ -18,7 +18,7 @@
         android:layout_below="@+id/ph"
         app:left_icon="@drawable/ic_close_black"
         app:need_divider="false"
-        app:titleText="@string/action_transfer"/>
+        app:titleText="@string/Transfer"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -200,7 +200,7 @@
                     android:layout_marginStart="@dimen/margin16"
                     android:layout_marginEnd="@dimen/margin16"
                     android:layout_toStartOf="@id/memo_iv"
-                    android:hint="@string/wallet_transfer_memo"
+                    android:hint="@string/Memo"
                     android:background="@null"
                     android:inputType="text"
                     android:maxLength="140"
@@ -250,7 +250,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="@string/wallet_transaction_continue"
+                    android:text="@string/Continue"
                     android:textColor="?attr/text_minor"
                     android:textSize="14sp" />
 

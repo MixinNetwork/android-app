@@ -113,7 +113,7 @@ class MultisigsBottomSheetDialogFragment :
 
     private fun showUserList(userList: ArrayList<User>, isSender: Boolean) {
         val title = if (isSender) {
-            getString(R.string.multisig_senders)
+            getString(R.string.Senders)
         } else {
             getString(R.string.multisig_receivers_threshold, "${t.threshold}/${t.receivers.size}")
         }
