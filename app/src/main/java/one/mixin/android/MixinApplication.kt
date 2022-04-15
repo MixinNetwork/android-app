@@ -247,7 +247,7 @@ open class MixinApplication :
             val appAuth = defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)
             if (appAuth != -1) {
                 if (appAuth == 0) {
-                    AppAuthActivity.show(this)
+                    AppAuthActivity.show(activity)
                 } else {
                     val enterBackground = defaultSharedPreferences.getLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
                     val now = System.currentTimeMillis()
@@ -257,7 +257,7 @@ open class MixinApplication :
                         Constants.INTERVAL_30_MINS
                     }
                     if (now - enterBackground > offset) {
-                        AppAuthActivity.show(this)
+                        AppAuthActivity.show(activity)
                     }
                 }
             }

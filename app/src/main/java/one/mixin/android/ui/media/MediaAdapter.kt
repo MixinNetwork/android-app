@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemMediaBinding
 import one.mixin.android.extension.formatMillis
@@ -51,10 +50,6 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
         params.height = size
         itemView.layoutParams = params
         val imageView = binding.thumbnailIv
-        imageView.updateLayoutParams<ViewGroup.LayoutParams> {
-            width = size
-            height = size
-        }
         if (item.isImage()) {
             val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
             if (isGif) {

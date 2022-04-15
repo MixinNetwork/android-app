@@ -75,16 +75,15 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.emptyIv.setImageResource(R.drawable.ic_empty_media)
         binding.emptyTv.setText(R.string.capital_no_media)
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(
-            viewLifecycleOwner,
-            {
-                if (it.size <= 0) {
-                    (view as ViewAnimator).displayedChild = 1
-                } else {
-                    (view as ViewAnimator).displayedChild = 0
-                }
-                adapter.submitList(it)
+            viewLifecycleOwner
+        ) {
+            if (it.size <= 0) {
+                (view as ViewAnimator).displayedChild = 1
+            } else {
+                (view as ViewAnimator).displayedChild = 0
             }
-        )
+            adapter.submitList(it)
+        }
     }
 
     private fun different2Next(pos: Int): Boolean {

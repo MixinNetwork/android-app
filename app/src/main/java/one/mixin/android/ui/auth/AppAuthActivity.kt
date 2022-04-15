@@ -2,10 +2,10 @@
 
 package one.mixin.android.ui.auth
 
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
+import android.hardware.fingerprint.FingerprintManager
 import android.os.Bundle
-import androidx.biometric.BiometricPrompt
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import com.mattprecious.swirl.SwirlView
 import one.mixin.android.Constants
@@ -16,14 +16,16 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.reportException
 
 class AppAuthActivity : BaseActivity() {
     companion object {
-        fun show(context: Context) {
-            Intent(context, AppAuthActivity::class.java).apply {
+        fun show(activity: Activity) {
+            Intent(activity, AppAuthActivity::class.java).apply {
+                data = if (activity is UrlInterpreterActivity) activity.intent.data else null
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(this)
+                activity.startActivity(this)
             }
         }
     }
@@ -91,6 +93,14 @@ class AppAuthActivity : BaseActivity() {
         binding.swirl.setState(SwirlView.State.ERROR)
     }
 
+    private fun finishAndCheckNeed2GoUrlInterpreter() {
+        val data = intent.data
+        if (data != null) {
+            UrlInterpreterActivity.show(this, data)
+        }
+        finish()
+    }
+
     private val resetSwirlRunnable = Runnable {
         binding.info.text = getString(R.string.fingerprint_confirm)
         binding.info.setTextColor(colorFromAttribute(R.attr.text_minor))
@@ -103,19 +113,21 @@ class AppAuthActivity : BaseActivity() {
 
     private val authCallback = object : FingerprintManagerCompat.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            if (errorCode == BiometricPrompt.ERROR_CANCELED ||
-                errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
-                errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON
+            if (errorCode == FingerprintManager.FINGERPRINT_ERROR_CANCELED ||
+                errorCode == FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED
             ) {
+                if (errorCode == FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
+                    reportException(IllegalStateException("Unlock app meet $errString"))
+                }
                 pressHome()
-            } else if (errorCode == BiometricPrompt.ERROR_LOCKOUT ||
-                errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
+            } else if (errorCode == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT ||
+                errorCode == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT
             ) {
                 showError(errString)
-            } else if (errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
+            } else if (errorCode == FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS) {
                 defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
                 defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                finish()
+                finishAndCheckNeed2GoUrlInterpreter()
             } else {
                 refreshSwirl(errString, true)
             }
@@ -126,7 +138,7 @@ class AppAuthActivity : BaseActivity() {
         }
 
         override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
-            finish()
+            finishAndCheckNeed2GoUrlInterpreter()
         }
     }
 }
