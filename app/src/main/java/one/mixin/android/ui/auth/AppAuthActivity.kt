@@ -4,8 +4,8 @@ package one.mixin.android.ui.auth
 
 import android.app.Activity
 import android.content.Intent
+import android.hardware.fingerprint.FingerprintManager
 import android.os.Bundle
-import androidx.biometric.BiometricPrompt
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat
 import com.mattprecious.swirl.SwirlView
 import one.mixin.android.Constants
@@ -113,19 +113,18 @@ class AppAuthActivity : BaseActivity() {
 
     private val authCallback = object : FingerprintManagerCompat.AuthenticationCallback() {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            if (errorCode == BiometricPrompt.ERROR_CANCELED ||
-                errorCode == BiometricPrompt.ERROR_USER_CANCELED ||
-                errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON
+            if (errorCode == FingerprintManager.FINGERPRINT_ERROR_CANCELED ||
+                errorCode == FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED
             ) {
-                if (errorCode == BiometricPrompt.ERROR_CANCELED) {
+                if (errorCode == FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
                     reportException(IllegalStateException("Unlock app meet $errString"))
                 }
                 pressHome()
-            } else if (errorCode == BiometricPrompt.ERROR_LOCKOUT ||
-                errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
+            } else if (errorCode == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT ||
+                errorCode == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT
             ) {
                 showError(errString)
-            } else if (errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
+            } else if (errorCode == FingerprintManager.FINGERPRINT_ERROR_NO_FINGERPRINTS) {
                 defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
                 defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
                 finishAndCheckNeed2GoUrlInterpreter()
