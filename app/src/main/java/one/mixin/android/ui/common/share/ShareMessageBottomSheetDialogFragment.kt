@@ -43,7 +43,6 @@ import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
-import java.lang.IllegalArgumentException
 
 @AndroidEntryPoint
 class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -131,6 +130,13 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         {
                         }
                     )
+            } else if (shareMessage.category == ShareCategory.AppCard) {
+                val appCardData = GsonHelper.customGson.fromJson(shareMessage.content, AppCardData::class.java)
+                if (appCardData.title.length in 1..36 && appCardData.description.length in 1..128) {
+                    sendMessage()
+                } else {
+                    toast(R.string.error_data)
+                }
             } else {
                 sendMessage()
             }
