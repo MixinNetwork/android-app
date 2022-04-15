@@ -120,7 +120,7 @@
     <string name="storage_low_message">Your phone is low on storage, which can seriously affect your Mixin experience and may even result in corrupted or lost chats and other important data. So it\'s recommended to uninstall unused apps to clear up enough space</string>
     <string name="website" translatable="false">https://mixin.one/messenger</string>
     <string name="upload_timeout">Upload timeout</string>
-    <string name="copy_link">Copy Link</string>
+    <string name="copy_link">Copy</string>
     <string name="type_message">Type message</string>
     <string name="action_floating">Floating</string>
     <string name="action_cancel_floating">Cancel Floating</string>
