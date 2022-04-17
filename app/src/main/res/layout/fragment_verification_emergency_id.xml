@@ -13,7 +13,7 @@
         android:layout_marginTop="@dimen/margin12"
         android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
-        android:contentDescription="@string/landing_back_content_desc"
+        android:contentDescription="@string/Landing_back"
         app:srcCompat="@drawable/ic_arrow_back" />
 
     <TextView
@@ -25,7 +25,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="@dimen/margin12"
         android:layout_marginEnd="16dp"
-        android:text="@string/setting_emergency_contact_mixin_id"
+        android:text="@string/Enter_your_emergency_contact_Mixin_ID"
         android:textColor="?attr/text_primary"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -46,7 +46,7 @@
             android:id="@+id/id_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/mixin_id"
+            android:hint="@string/Mixin_ID"
             android:inputType="number"
             android:lines="1"
             android:textSize="16sp"

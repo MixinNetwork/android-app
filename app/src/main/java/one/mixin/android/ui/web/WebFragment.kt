@@ -670,7 +670,7 @@ class WebFragment : BaseFragment() {
                     startActivityForResult(intent, FILE_CHOOSER)
                 } catch (e: ActivityNotFoundException) {
                     uploadMessage = null
-                    toast(R.string.error_file_chooser)
+                    toast(R.string.File_chooser_error)
                     return false
                 }
                 return true
@@ -1027,7 +1027,7 @@ class WebFragment : BaseFragment() {
                 val app = requireNotNull(app)
                 lifecycleScope.launch {
                     bottomSheet.dismiss()
-                    val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                    val pb = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                         setCancelable(false)
                     }
                     val auth = bottomViewModel.getAuthorizationByAppId(app.appId)
@@ -1179,7 +1179,7 @@ class WebFragment : BaseFragment() {
                                 )
                             }
                         } catch (e: Exception) {
-                            withContext(Dispatchers.Main) { if (isAdded) toast(R.string.save_failure) }
+                            withContext(Dispatchers.Main) { if (isAdded) toast(R.string.Save_failure) }
                         }
                     }
                 } else {

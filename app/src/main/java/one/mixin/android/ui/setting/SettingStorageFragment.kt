@@ -78,7 +78,7 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
 
     private val dialog: Dialog by lazy {
         indeterminateProgressDialog(
-            message = R.string.pb_dialog_message,
+            message = R.string.Please_wait_a_bit,
             title = R.string.Clearing
         ).apply {
             setCancelable(false)

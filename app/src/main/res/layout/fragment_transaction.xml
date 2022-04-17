@@ -115,7 +115,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/transactions_id" />
+                        android:text="@string/Transactions_Id" />
 
                     <TextView
                         android:id="@+id/transaction_id_tv"
@@ -135,7 +135,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/transactions_type" />
+                        android:text="@string/Transactions_Type" />
 
                     <TextView
                         android:id="@+id/transaction_type_tv"

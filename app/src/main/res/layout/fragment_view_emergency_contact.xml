@@ -10,7 +10,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/log_category_emergency"
+        app:titleText="@string/Emergency_Contact"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_help_outline"/>
 

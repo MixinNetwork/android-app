@@ -14,7 +14,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/wallet_bottom_show_hidden" />
+        android:text="@string/All_hidden_assets" />
 
     <TextView
         android:id="@+id/transactions_tv"
@@ -26,5 +26,5 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/wallet_all_transactions" />
+        android:text="@string/All_Transactions" />
 </LinearLayout>

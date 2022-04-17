@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="16dp"
-                android:text="@string/setting_delete_account"
+                android:text="@string/Delete_my_account"
                 android:textColor="?attr/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -68,7 +68,7 @@
                 android:layout_height="40dp"
                 android:layout_gravity="center_horizontal|bottom"
                 android:layout_marginTop="42dp"
-                android:text="@string/setting_delete_view_wallet"
+                android:text="@string/View_Wallet"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
 

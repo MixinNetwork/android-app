@@ -781,10 +781,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showError(@StringRes errorRes: Int = R.string.link_error) {
+    private fun showError(@StringRes errorRes: Int = R.string.This_link_is_invalid) {
         binding.apply {
-            if (errorRes == R.string.link_error) {
-                linkErrorInfo.text = "${getString(R.string.link_error)}\n\n$url"
+            if (errorRes == R.string.This_link_is_invalid) {
+                linkErrorInfo.text = "${getString(R.string.This_link_is_invalid)}\n\n$url"
             } else {
                 linkErrorInfo.setText(errorRes)
             }
@@ -820,7 +820,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         when (error) {
             is SocketTimeoutException -> showError(R.string.error_connection_timeout)
             is UnknownHostException -> showError(R.string.error_no_connection)
-            is IOException -> showError(R.string.error_network)
+            is IOException -> showError(R.string.Network_error)
             else -> {
                 ErrorHandler.handleError(error)
                 showError()

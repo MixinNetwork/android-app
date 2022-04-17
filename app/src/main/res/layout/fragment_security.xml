@@ -59,7 +59,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/log_category_emergency"
+                    android:text="@string/Emergency_Contact"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 

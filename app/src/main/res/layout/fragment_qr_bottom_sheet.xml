@@ -14,7 +14,7 @@
         app:need_divider="false"
         app:left_icon="@drawable/ic_close_black"
         app:right_icon="@drawable/ic_more"
-        app:titleText="@string/contact_my_qr_title"/>
+        app:titleText="@string/My_QR_Code"/>
 
     <LinearLayout
         android:id="@+id/bottom_ll"
@@ -64,7 +64,7 @@
             android:background="?attr/bg_white"
             android:gravity="center_horizontal"
             android:paddingBottom="24dp"
-            android:text="@string/contact_my_qr_tip"
+            android:text="@string/scan_code_add_me"
             android:textColor="?attr/text_minor"
             android:textSize="13sp"/>
     </LinearLayout>
@@ -76,7 +76,7 @@
         android:layout_height="40dp"
         android:layout_gravity="center_horizontal|bottom"
         android:layout_marginBottom="40dp"
-        android:text="@string/share_qr_code"
+        android:text="@string/Share_QR_Code"
         android:textColor="@color/white"
         android:textSize="14sp" />
 </LinearLayout>

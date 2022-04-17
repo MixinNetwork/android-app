@@ -39,12 +39,12 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
                 settingView.setText(R.string.Continue)
             }
             Type.Notification -> {
-                titleView.setText(R.string.notification_title)
+                titleView.setText(R.string.Turn_On_Notifications)
                 contentView.setText(R.string.notification_content)
                 settingView.setText(R.string.Notifications)
             }
             else -> {
-                titleView.setText(R.string.log_category_emergency)
+                titleView.setText(R.string.Emergency_Contact)
                 contentView.setText(R.string.setting_emergency_content)
                 settingView.setText(R.string.Continue)
             }

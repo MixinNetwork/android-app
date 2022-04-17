@@ -85,7 +85,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                             }
                         },
                         {
-                            toast(R.string.save_failure)
+                            toast(R.string.Save_failure)
                         }
                     )
             }

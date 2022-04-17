@@ -48,7 +48,7 @@
         android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center"
         android:padding="10dp"
-        android:text="@string/add_contact"
+        android:text="@string/Add_Contact"
         android:textColor="@color/colorBlue"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"

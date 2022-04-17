@@ -52,7 +52,7 @@
             android:layout_height="@dimen/bottom_button_height"
             android:background="?attr/bg_white"
             android:gravity="center"
-            android:text="@string/contact_less_invite"
+            android:text="@string/Invite_to_Mixin"
             android:textColor="@color/colorBlue"
             tools:ignore="RelativeOverlap"/>
 </LinearLayout>

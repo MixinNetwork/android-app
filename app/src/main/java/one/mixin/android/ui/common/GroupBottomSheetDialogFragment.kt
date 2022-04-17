@@ -8,7 +8,6 @@ import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -204,14 +203,14 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         val list = menuList {
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_other_shared_media)
+                    title = getString(R.string.Shared_Media)
                     action = {
                         SharedMediaActivity.show(requireContext(), conversationId)
                         dismiss()
                     }
                 }
                 menu {
-                    title = getString(R.string.contact_other_search_conversation)
+                    title = getString(R.string.Search_Conversation)
                     action = {
                         startSearchConversation()
                         dismiss()
@@ -223,7 +222,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         if (me != null) {
             if (me.role == ParticipantRole.OWNER.name || me.role == ParticipantRole.ADMIN.name) {
                 val announcementString = if (TextUtils.isEmpty(conversation.announcement)) {
-                    getString(R.string.add_group_description)
+                    getString(R.string.Add_group_description)
                 } else {
                     getString(R.string.group_info_edit)
                 }
@@ -325,10 +324,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.group_info_clear_chat)
+                    title = getString(R.string.Clear_chat)
                     style = MenuStyle.Danger
                     action = {
-                        requireContext().showConfirmDialog(getString(R.string.group_info_clear_chat)) {
+                        requireContext().showConfirmDialog(getString(R.string.Clear_chat)) {
                             bottomViewModel.deleteMessageByConversationId(conversationId)
                             dismiss()
                         }

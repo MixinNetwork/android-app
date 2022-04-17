@@ -136,7 +136,7 @@ class SendAttachmentMessageJob(
             MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.absolutePath()))
         } catch (e: FileNotFoundException) {
             MixinApplication.appScope.launch(Dispatchers.Main) {
-                toast(R.string.error_file_exists)
+                toast(R.string.File_does_not_exit)
             }
             null
         }
@@ -170,7 +170,7 @@ class SendAttachmentMessageJob(
             Timber.e(e)
             if (e is SocketTimeoutException) {
                 MixinApplication.appScope.launch(Dispatchers.Main) {
-                    toast(R.string.upload_timeout)
+                    toast(R.string.Upload_timeout)
                 }
             }
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)

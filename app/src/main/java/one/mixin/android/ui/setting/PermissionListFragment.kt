@@ -92,7 +92,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
             }
             .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                val pb = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                     setCancelable(false)
                 }
                 viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe(

@@ -292,7 +292,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         supportsOreo {
             val channel = NotificationChannel(
                 BlazeMessageService.CHANNEL_NODE,
-                MixinApplication.get().getString(R.string.notification_node),
+                MixinApplication.get().getString(R.string.Messaging_Node),
                 NotificationManager.IMPORTANCE_LOW
             )
             channel.lockscreenVisibility = Notification.VISIBILITY_SECRET

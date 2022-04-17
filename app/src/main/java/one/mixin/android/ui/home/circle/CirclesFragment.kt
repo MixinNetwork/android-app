@@ -261,7 +261,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
 
     private fun rename(conversationCircleItem: ConversationCircleItem) {
         editDialog {
-            titleText = this@CirclesFragment.getString(R.string.circle_menu_edit_name)
+            titleText = this@CirclesFragment.getString(R.string.Edit_Circle_Name)
             editText = conversationCircleItem.name
             maxTextCount = 64
             editMaxLines = EditDialog.MAX_LINE.toInt()
@@ -335,7 +335,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             binding.apply {
                 if (conversationCircleItem == null) {
                     circleTitle.setText(R.string.app_name)
-                    circleSubtitle.setText(R.string.circle_all_conversation)
+                    circleSubtitle.setText(R.string.All_Conversations)
                     circleUnreadTv.isVisible =
                         currentCircleId != null && allUnread != 0 && allUnread != null
                     circleUnreadTv.text = "$allUnread"

@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/groups_in_common" />
+        app:titleText="@string/Groups_In_Common" />
 
     <ViewAnimator
         android:id="@+id/va"
@@ -32,14 +32,14 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:src="@drawable/ic_search_empty"
-                android:contentDescription="@string/capital_no_result" />
+                android:contentDescription="@string/NO_RESULT" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
-                android:text="@string/capital_no_result"
+                android:text="@string/NO_RESULT"
                 android:textColor="?attr/text_minor" />
         </LinearLayout>
 

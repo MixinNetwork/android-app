@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/profile_phone"
+                    android:text="@string/Change_Phone_Number"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
@@ -95,7 +95,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_delete_account"
+                    android:text="@string/Delete_my_account"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 

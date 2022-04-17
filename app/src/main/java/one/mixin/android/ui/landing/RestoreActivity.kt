@@ -133,7 +133,7 @@ class RestoreActivity : BaseActivity() {
                     }
                     else -> {
                         setMessage(
-                            R.string.restore_not_support
+                            R.string.Not_support
                         )
                     }
                 }

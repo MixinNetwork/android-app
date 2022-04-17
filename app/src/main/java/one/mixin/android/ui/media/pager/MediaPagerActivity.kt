@@ -322,7 +322,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.Save_failure)
                     }
                 )
             bottomSheet.dismiss()
@@ -360,13 +360,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                             lifecycleScope.launch(Dispatchers.IO) {
                                 val path = item.absolutePath()
                                 if (path == null) {
-                                    toast(R.string.save_failure)
+                                    toast(R.string.Save_failure)
                                     return@launch
                                 }
                                 val file = Uri.parse(item.absolutePath()).toFile()
                                 if (!file.exists()) {
                                     withContext(Dispatchers.Main) {
-                                        toast(R.string.error_file_exists)
+                                        toast(R.string.File_does_not_exit)
                                     }
                                     return@launch
                                 }
@@ -394,7 +394,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.Save_failure)
                     }
                 )
             bottomSheet.dismiss()
@@ -661,7 +661,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             binding.lockTv.text = getString(R.string.click_unlock)
             binding.lockTv.textColor = getColor(R.color.colorAccent)
         } else {
-            binding.lockTv.text = getString(R.string.click_lock)
+            binding.lockTv.text = getString(R.string.Click_to_lock)
             binding.lockTv.textColor = getColor(R.color.white)
         }
         binding.lockTv.removeCallbacks(hideLockRunnable)

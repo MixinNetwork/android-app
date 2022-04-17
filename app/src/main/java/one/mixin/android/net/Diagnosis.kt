@@ -29,7 +29,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     val result = StringBuilder()
 
     result.append("${context.getString(R.string.app_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
-        .append("${context.getString(R.string.manufacturer)}: ${Build.MANUFACTURER}").appendLine()
+        .append("${context.getString(R.string.Manufacturer)}: ${Build.MANUFACTURER}").appendLine()
         .append("${context.getString(R.string.Model)}: ${Build.MODEL}").appendLine()
         .append("${context.getString(R.string.system_version)}: ${Build.VERSION.RELEASE}").appendLine()
         .append("${context.getString(R.string.Time)}: ${Instant.now().toString().timeFormat()}").appendLine()
@@ -38,15 +38,15 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     result.clear()
 
     result.append("${context.getString(R.string.is_network_available)}: ${context.networkConnected()}").appendLine()
-    result.append("${context.getString(R.string.network_type)}: ${context.networkType()}").appendLine()
+    result.append("${context.getString(R.string.Network_Type)}: ${context.networkType()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
 
     getExportIp(result, context)
     val ipAddress = getIpAddress()
-    result.append("${context.getString(R.string.local_ip)}: $ipAddress").appendLine()
-        .append("${context.getString(R.string.network_operator)}: ${context.getNetworkOperatorName()}").appendLine()
+    result.append("${context.getString(R.string.Local_IP)}: $ipAddress").appendLine()
+        .append("${context.getString(R.string.Network_Operator)}: ${context.getNetworkOperatorName()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())
     result.clear()
@@ -84,7 +84,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
         diagnosisCallback(result.appendLine().toString())
         result.clear()
     }
-    diagnosisCallback(context.getString(R.string.diagnosis_complete))
+    diagnosisCallback(context.getString(R.string.Diagnosis_Complete))
 }
 
 fun ping(domain: String, count: Int = 1, timeout: Int = 10): String? {

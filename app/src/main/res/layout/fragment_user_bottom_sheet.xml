@@ -94,7 +94,7 @@
                 android:gravity="center"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:text="@string/add_contact"
+                android:text="@string/Add_Contact"
                 android:textColor="@color/wallet_blue"
                 android:visibility="gone" />
 
@@ -188,7 +188,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/contact_other_send"
+                        android:contentDescription="@string/Send_Message"
                         android:src="@drawable/ic_user_send" />
                 </FrameLayout>
 

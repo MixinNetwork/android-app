@@ -418,7 +418,7 @@ fun Fragment.openCamera(output: Uri) {
     if (intent.resolveActivity(requireContext().packageManager) != null) {
         startActivityForResult(intent, REQUEST_CAMERA)
     } else {
-        toast(R.string.error_no_camera)
+        toast(R.string.No_camera)
     }
 }
 
@@ -449,12 +449,12 @@ fun Context.openMedia(messageItem: MessageItem) {
                     messageItem.absolutePath()
                 }
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exit)
                     return@let
                 }
                 val file = File(path)
                 if (!file.exists()) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exit)
                 } else {
                     intent.setDataAndType(getUriForFile(file), messageItem.mediaMimeType)
                     startActivity(intent)
@@ -464,7 +464,7 @@ fun Context.openMedia(messageItem: MessageItem) {
     } catch (e: ActivityNotFoundException) {
         toast(R.string.error_unable_to_open_media)
     } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exit)
     }
 }
 
@@ -486,12 +486,12 @@ fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
                     messageItem.absolutePath()
                 }
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exit)
                     return@let
                 }
                 val file = File(path)
                 if (!file.exists()) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exit)
                 } else {
                     intent.setDataAndType(getUriForFile(file), messageItem.mediaMimeType)
                     startActivity(intent)
@@ -501,7 +501,7 @@ fun Context.openMedia(messageItem: ChatHistoryMessageItem) {
     } catch (e: ActivityNotFoundException) {
         toast(R.string.error_unable_to_open_media)
     } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exit)
     }
 }
 
@@ -584,7 +584,7 @@ fun Context.getAttachment(local: Uri, mimeType: String? = null): Attachment? {
             return Attachment(resultUri, fileName, mimeType ?: contentResolver.getType(uri) ?: "", fileSize)
         }
     } catch (e: SecurityException) {
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exit)
     } finally {
         cursor?.close()
     }
@@ -1093,7 +1093,7 @@ fun Context.shareMedia(isVideo: Boolean, url: String) {
         if (ContentResolver.SCHEME_FILE == uri.scheme) {
             val path = uri.getFilePath(this@shareMedia)
             if (path == null) {
-                toast(R.string.error_file_exists)
+                toast(R.string.File_does_not_exit)
                 return
             }
             uri = getUriForFile(File(path))

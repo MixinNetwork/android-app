@@ -90,7 +90,7 @@ class InviteFragment : BaseFragment() {
                         startActivity(
                             Intent.createChooser(
                                 sendIntent,
-                                resources.getText(R.string.group_invite)
+                                resources.getText(R.string.Invite_to_Group_via_Link)
                             )
                         )
                     }

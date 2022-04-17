@@ -44,7 +44,7 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
 
     private val conversationId: String by lazy { requireArguments().getString(CONVERSATION_ID)!! }
 
-    override fun getTitleResId() = R.string.contact_other_share
+    override fun getTitleResId() = R.string.Share_Contact_Card
 
     override suspend fun getFriends() = viewModel.getFriends()
 

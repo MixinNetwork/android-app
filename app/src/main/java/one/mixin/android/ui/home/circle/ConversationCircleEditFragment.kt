@@ -235,7 +235,7 @@ class ConversationCircleEditFragment : BaseFragment() {
 
     private fun save() = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
-            message = R.string.pb_dialog_message,
+            message = R.string.Please_wait_a_bit,
             title = R.string.Saving
         ).apply {
             setCancelable(false)

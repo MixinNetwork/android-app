@@ -102,7 +102,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
-                        android:contentDescription="@string/contact_other_send"
+                        android:contentDescription="@string/Send_Message"
                         android:src="@drawable/ic_user_send" />
                 </FrameLayout>
 

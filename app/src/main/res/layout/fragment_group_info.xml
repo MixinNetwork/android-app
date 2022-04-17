@@ -10,7 +10,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/group_info_title" />
+        app:titleText="@string/Group_Info" />
 
     <one.mixin.android.widget.SearchView
         android:id="@+id/search_et"

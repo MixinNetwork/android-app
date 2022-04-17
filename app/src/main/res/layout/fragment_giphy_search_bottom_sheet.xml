@@ -30,7 +30,7 @@
             android:background="@null"
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
-            android:hint="@string/sticker_search_giphy"
+            android:hint="@string/Search_GIPHY"
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1"
@@ -67,6 +67,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/sticker_no_result" />
+            android:text="@string/No_result" />
     </ViewAnimator>
 </one.mixin.android.widget.BottomSheetRelativeLayout>

@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
-        android:contentDescription="@string/landing_back_content_desc"
+        android:contentDescription="@string/Landing_back"
         android:padding="@dimen/margin12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.023"
@@ -71,7 +71,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:padding="@dimen/margin12"
-                android:text="@string/landing_resend_code_enable"
+                android:text="@string/Resend_code"
                 android:textColor="?attr/text_minor" />
 
             <TextView
@@ -82,7 +82,7 @@
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="@dimen/margin20"
                 android:padding="@dimen/margin12"
-                android:text="@string/landing_verification_need_help"
+                android:text="@string/Need_help"
                 android:visibility="gone"
                 android:textColor="@color/colorRed" />
         </LinearLayout>

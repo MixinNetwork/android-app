@@ -137,17 +137,17 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 "READ_EMERGENCY" ->
                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_read_emergency))
                 "UPDATE_PHONE" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.profile_phone))
+                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.Change_Phone_Number))
                 "UPDATE_PIN" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_update_pin))
+                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.Update_PIN))
                 "MULTISIG_SIGN" ->
                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_multisig_sign))
                 "MULTISIG_UNLOCK" ->
                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_multisig_unlock))
                 "ACTIVITY_PIN_MODIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_pin_change), context.getString(R.string.pin_modification))
+                    return Pair(context.getString(R.string.log_category_pin_change), context.getString(R.string.PIN_modification))
                 "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_emergency), context.getString(R.string.log_emergency_contact_modification))
+                    return Pair(context.getString(R.string.Emergency_Contact), context.getString(R.string.log_emergency_contact_modification))
                 "ACTIVITY_PHONE_MODIFICATION" ->
                     return Pair(context.getString(R.string.log_category_phone_change), context.getString(R.string.log_phone_number_modification))
                 "ACTIVITY_LOGIN_BY_PHONE" ->

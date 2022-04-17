@@ -39,11 +39,11 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
 
-        binding.biometricLayout.biometricTv.setText(R.string.verify_by_biometric)
+        binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         binding.biometricLayout.measureAllChildren = false
 
         val learn: String =
-            MixinApplication.get().getString(R.string.action_learn_more)
+            MixinApplication.get().getString(R.string.Learn_more)
         val info = MixinApplication.get().getString(R.string.setting_delete_account_pin_content, localDateString(System.currentTimeMillis() + 60 * 60 * 1000 * 24 * 30L))
         val learnUrl = MixinApplication.get().getString(R.string.setting_delete_account_url)
         binding.content.highlightLinkText(info, arrayOf(learn), arrayOf(learnUrl))
@@ -59,9 +59,9 @@ class DeleteAccountPinBottomSheetDialogFragment : BiometricBottomSheetDialogFrag
     }
 
     override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.verify_by_biometric),
+        getString(R.string.Verify_by_Biometric),
         "",
         "",
-        getString(R.string.verify_by_PIN)
+        getString(R.string.Verify_with_PIN)
     )
 }

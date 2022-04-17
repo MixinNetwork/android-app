@@ -141,7 +141,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
         if (asset.assetId == RIPPLE_CHAIN_ID) {
             binding.tagEt.setHint(R.string.Tag)
         } else {
-            binding.tagEt.setHint(R.string.withdrawal_addr_memo_hint)
+            binding.tagEt.setHint(R.string.withdrawal_memo)
         }
         if (asset.chainId == EOS_CHAIN_ID) {
             binding.tipTv.isVisible = true

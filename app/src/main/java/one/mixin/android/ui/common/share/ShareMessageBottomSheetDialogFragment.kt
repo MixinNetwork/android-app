@@ -146,7 +146,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun getMessageCategory(): String {
         return when (shareMessage.category) {
             ShareCategory.Text -> {
-                getString(R.string.Message)
+                getString(R.string.message)
             }
             ShareCategory.Image -> {
                 getString(R.string.Photo)

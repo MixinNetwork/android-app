@@ -57,7 +57,7 @@ class UrlInterpreterActivity : BaseActivity() {
             return
         }
         if (Session.getAccount() == null) {
-            toast(R.string.not_logged_in)
+            toast(R.string.Not_logged_in)
             finish()
             return
         }

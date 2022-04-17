@@ -23,7 +23,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin12"
         android:layout_below="@id/icon"
-        android:text="@string/app_locked"
+        android:text="@string/Mixin_Locked"
         android:textSize="26sp"
         android:textColor="?attr/text_primary" />
 
@@ -48,6 +48,6 @@
             android:layout_gravity="center_horizontal"
             android:textSize="16sp"
             android:textColor="?attr/text_minor"
-            android:text="@string/touch_fingerprint_sensor"/>
+            android:text="@string/Touch_the_fingerprint_sensor"/>
     </LinearLayout>
 </RelativeLayout>

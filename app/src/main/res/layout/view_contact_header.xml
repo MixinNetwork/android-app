@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="8dp"
-                android:text="@string/contact_receive_money"
+                android:text="@string/Receive_Money"
                 android:textColor="?attr/text_primary"
                 app:drawableStartCompat="@drawable/ic_contacts_receive" />
         </FrameLayout>
@@ -116,7 +116,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:drawablePadding="8dp"
-                android:text="@string/contact_my_qr_title"
+                android:text="@string/My_QR_Code"
                 android:textColor="?attr/text_primary"
                 app:drawableStartCompat="@drawable/ic_contacts_qr" />
         </FrameLayout>
@@ -154,7 +154,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/center_new_group"
             android:layout_toEndOf="@+id/new_group_iv"
-            android:text="@string/contact_new_group_chat_title" />
+            android:text="@string/New_Group_Chat" />
 
         <TextView
             android:id="@+id/new_group_desc_iv"
@@ -196,7 +196,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/center_add_contact"
             android:layout_toEndOf="@+id/add_contact_iv"
-            android:text="@string/add_contact" />
+            android:text="@string/Add_Contact" />
 
         <TextView
             android:id="@+id/add_contact_desc_iv"
@@ -205,7 +205,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/center_add_contact"
             android:layout_toEndOf="@+id/add_contact_iv"
-            android:text="@string/add_people_hint" />
+            android:text="@string/Add_people_hint" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -239,7 +239,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/center_qr"
             android:layout_toEndOf="@+id/qr_iv"
-            android:text="@string/contact_qr_mixin" />
+            android:text="@string/Mixin_QR_Code" />
 
         <TextView
             android:id="@+id/qr_desc_iv"
@@ -248,7 +248,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/center_qr"
             android:layout_toEndOf="@+id/qr_iv"
-            android:text="@string/contact_qr_desc" />
+            android:text="@string/scan_contact_qr_code" />
 
     </RelativeLayout>
 
@@ -283,7 +283,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/center_invite"
             android:layout_toEndOf="@+id/invite_iv"
-            android:text="@string/contact_invite_title" />
+            android:text="@string/Invite_people" />
 
         <TextView
             android:id="@+id/invite_desc_iv"

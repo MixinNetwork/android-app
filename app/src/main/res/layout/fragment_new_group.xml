@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:rightText="@string/Create"
-        app:titleText="@string/group_new_title" />
+        app:titleText="@string/New_Group" />
 
     <RelativeLayout
         android:visibility="gone"
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_photo"
+            android:text="@string/Group_Photo"
             tools:ignore="RelativeOverlap" />
 
         <ImageView
@@ -67,7 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_name"
+            android:text="@string/Group_Name"
             tools:ignore="RelativeOverlap" />
 
         <EditText
@@ -83,7 +83,7 @@
             android:lines="1"
             android:maxLength="25"
             android:gravity="center_vertical|end"
-            android:hint="@string/group_new_name_tip"
+            android:hint="@string/new_group_name"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
             android:ellipsize="end"
@@ -105,7 +105,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_notice"
+            android:text="@string/Group_Notice"
             tools:ignore="RelativeOverlap" />
 
         <EditText

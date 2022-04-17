@@ -73,7 +73,7 @@
             android:id="@+id/asset_key_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/asset_key"
+            android:text="@string/Asset_Key"
             android:gravity="end"
             android:textColor="?attr/text_minor"
             android:layout_marginTop="@dimen/margin20"

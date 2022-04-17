@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/contact_my_share_apps" />
+        app:titleText="@string/My_shared_apps" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_above="@id/empty_tv"
                 android:layout_centerHorizontal="true"
-                android:text="@string/contact_share_apps_no_app"
+                android:text="@string/NO_APPS"
                 android:textSize="20sp"
                 android:layout_marginBottom="8dp"
                 android:textColor="?attr/text_minor" />

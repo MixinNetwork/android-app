@@ -113,7 +113,7 @@ class NewGroupFragment : BaseFragment() {
     private fun createGroup() = lifecycleScope.launch {
         if (dialog == null) {
             dialog = indeterminateProgressDialog(
-                message = R.string.pb_dialog_message,
+                message = R.string.Please_wait_a_bit,
                 title = R.string.Creating
             ).apply {
                 setCancelable(false)

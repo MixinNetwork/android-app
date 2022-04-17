@@ -66,7 +66,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
             }
             deleteRl.setOnClickListener {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.setting_emergency_remove_tip))
+                    .setMessage(getString(R.string.Remove_emergency_contact_confirmation))
                     .setNegativeButton(R.string.Cancel) { dialog, _ ->
                         dialog.dismiss()
                     }

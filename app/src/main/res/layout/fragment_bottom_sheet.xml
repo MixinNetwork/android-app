@@ -13,7 +13,7 @@
             android:gravity="center"
             android:visibility="gone"
             android:textColor="?attr/text_primary"
-            android:text="@string/link_error"/>
+            android:text="@string/This_link_is_invalid"/>
 
     <RelativeLayout
             android:id="@+id/link_loading"
@@ -31,7 +31,7 @@
                 android:layout_marginBottom="@dimen/margin16"
                 android:layout_above="@+id/pb"
                 android:textColor="?attr/text_primary"
-                android:text="@string/chat_group_checking"/>
+                android:text="@string/Checking_link"/>
 
         <ProgressBar
                 android:id="@+id/pb"

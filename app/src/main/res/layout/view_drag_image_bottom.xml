@@ -26,7 +26,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/show_in_chat"/>
+        android:text="@string/Show_in_chat"/>
 
     <TextView
         android:id="@+id/share_image"

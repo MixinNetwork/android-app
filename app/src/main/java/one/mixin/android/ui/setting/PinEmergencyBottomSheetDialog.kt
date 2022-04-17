@@ -30,7 +30,7 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
 
         binding.apply {
             title.setText(R.string.setting_emergency_pin_tip)
-            biometricLayout.biometricTv.setText(R.string.verify_by_biometric)
+            biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         }
     }
 
@@ -44,7 +44,7 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
     }
 
     override fun getBiometricInfo() =
-        BiometricInfo(getString(R.string.verify_by_biometric), "", "", getString(R.string.verify_by_PIN))
+        BiometricInfo(getString(R.string.Verify_by_Biometric), "", "", getString(R.string.Verify_with_PIN))
 
     var pinEmergencyCallback: PinEmergencyCallback? = null
 

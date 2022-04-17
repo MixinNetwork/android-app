@@ -135,7 +135,7 @@
                         android:dropDownWidth="100dp"
                         android:dropDownHorizontalOffset="-12dp"
                         android:ellipsize="end"
-                        android:hint="@string/wallet_transfer_amount"
+                        android:hint="@string/Transfer_Amount"
                         android:inputType="numberDecimal"
                         android:popupBackground="@android:color/transparent"
                         android:singleLine="true"

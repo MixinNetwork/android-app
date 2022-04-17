@@ -101,7 +101,7 @@ class CallNotificationBuilder {
                     )
                 }
                 CallService.CallState.STATE_CONNECTED -> {
-                    builder.setContentText(context.getString(R.string.call_notification_connected))
+                    builder.setContentText(context.getString(R.string.Ongoing_voice_call))
                     val action = if (isGroupCall) {
                         ACTION_KRAKEN_END
                     } else ACTION_CALL_LOCAL_END

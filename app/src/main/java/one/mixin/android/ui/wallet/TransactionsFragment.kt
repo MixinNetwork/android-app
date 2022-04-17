@@ -338,8 +338,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             when (currentType) {
                 R.id.filters_radio_all -> {
                     bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
-                    groupInfoMemberTitle.setText(R.string.wallet_transactions_title)
-                    walletTransactionsEmpty.setText(R.string.wallet_transactions_empty)
+                    groupInfoMemberTitle.setText(R.string.Transactions)
+                    walletTransactionsEmpty.setText(R.string.No_transactions)
                 }
                 R.id.filters_radio_transfer -> {
                     bindLiveData(
@@ -352,7 +352,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                         )
                     )
                     groupInfoMemberTitle.setText(R.string.Transfer)
-                    walletTransactionsEmpty.setText(R.string.wallet_transactions_empty)
+                    walletTransactionsEmpty.setText(R.string.No_transactions)
                 }
                 R.id.filters_radio_deposit -> {
                     bindLiveData(
@@ -364,7 +364,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                         )
                     )
                     groupInfoMemberTitle.setText(R.string.Deposit)
-                    walletTransactionsEmpty.setText(R.string.wallet_deposits_empty)
+                    walletTransactionsEmpty.setText(R.string.No_deposits)
                 }
                 R.id.filters_radio_withdrawal -> {
                     bindLiveData(
@@ -376,28 +376,28 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                         )
                     )
                     groupInfoMemberTitle.setText(R.string.Withdrawal)
-                    walletTransactionsEmpty.setText(R.string.wallet_withdrawals_empty)
+                    walletTransactionsEmpty.setText(R.string.No_withdrawals)
                 }
                 R.id.filters_radio_fee -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
                     groupInfoMemberTitle.setText(R.string.Fee)
-                    walletTransactionsEmpty.setText(R.string.wallet_fees_empty)
+                    walletTransactionsEmpty.setText(R.string.No_fees)
                 }
                 R.id.filters_radio_rebate -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
                     groupInfoMemberTitle.setText(R.string.Rebate)
-                    walletTransactionsEmpty.setText(R.string.wallet_rebates_empty)
+                    walletTransactionsEmpty.setText(R.string.No_rebates)
                 }
                 R.id.filters_radio_raw -> {
                     bindLiveData(
                         walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
                     )
                     groupInfoMemberTitle.setText(R.string.Raw)
-                    walletTransactionsEmpty.setText(R.string.wallet_raw_empty)
+                    walletTransactionsEmpty.setText(R.string.No_raws)
                 }
             }
         }

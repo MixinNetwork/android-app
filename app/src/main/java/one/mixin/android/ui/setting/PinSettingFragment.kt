@@ -60,7 +60,7 @@ class PinSettingFragment : BaseFragment(R.layout.fragment_pin_setting) {
                 timeRl.visibility = GONE
             }
             val url = Constants.HelpLink.TIP
-            val target = getString(R.string.action_learn_more)
+            val target = getString(R.string.Learn_more)
             val desc = getString(R.string.wallet_pin_tops_desc)
             tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }

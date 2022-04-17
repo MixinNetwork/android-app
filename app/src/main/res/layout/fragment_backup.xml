@@ -29,7 +29,7 @@
 
         <TextView
             android:id="@+id/backup_title"
-            android:text="@string/backup_title"
+            android:text="@string/Last_Backup"
             android:layout_marginStart="@dimen/margin16"
             android:textSize="16sp"
             android:textColor="@color/colorDarkBlue"
@@ -79,7 +79,7 @@
 
         <Button
             android:id="@+id/backup_choose"
-            android:text="@string/backup_choose_folder"
+            android:text="@string/Choose_folder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorDarkBlue"
@@ -149,7 +149,7 @@
 
         <Button
             android:id="@+id/delete_bn"
-            android:text="@string/backup_action_delete"
+            android:text="@string/Backup_delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorDarkBlue"

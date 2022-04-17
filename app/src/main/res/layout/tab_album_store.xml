@@ -14,7 +14,7 @@
         android:src="@drawable/ic_sticker_store"
         android:scaleType="centerInside"
         android:layout_gravity="center"
-        android:contentDescription="@string/sticker_store" />
+        android:contentDescription="@string/Sticker_Store" />
 
     <ImageView
         android:id="@+id/dot_iv"

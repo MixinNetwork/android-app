@@ -100,7 +100,7 @@ class StickerAddFragment : BaseFragment() {
         binding.titleView.rightAnimator.setOnClickListener {
             if (dialog == null) {
                 dialog = indeterminateProgressDialog(
-                    message = R.string.pb_dialog_message,
+                    message = R.string.Please_wait_a_bit,
                     title = R.string.Adding
                 ).apply {
                     setCancelable(false)
@@ -151,7 +151,7 @@ class StickerAddFragment : BaseFragment() {
             val uri = url.toUri()
             val mimeType = getMimeType(uri, true)
             if (mimeType?.isStickerSupport() != true) {
-                handleBack(R.string.sticker_add_invalid_format)
+                handleBack(R.string.Invalid_sticker_format)
                 return@launch
             }
             getStickerAddRequest(mimeType, uri)

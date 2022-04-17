@@ -77,8 +77,8 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun savePreference(currency: Currency) = lifecycleScope.launch {
         val pb = indeterminateProgressDialog(
-            message = R.string.pb_dialog_message,
-            title = R.string.currency_switch
+            message = R.string.Please_wait_a_bit,
+            title = R.string.Switching_currency
         ).apply {
             setCancelable(false)
         }

@@ -21,7 +21,7 @@
         android:layout_above="@id/des_tv"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin12"
-        android:text="@string/update_mixin"
+        android:text="@string/Update_Mixin"
         android:textStyle="bold"
         android:textColor="?text_primary"
         android:textSize="20sp" />

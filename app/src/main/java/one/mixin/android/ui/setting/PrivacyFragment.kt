@@ -59,7 +59,7 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
                 {
                     incognito.isVisible = true
                     incognitoFollower.isVisible = true
-                    incognito.setContent(R.string.setting_incognito)
+                    incognito.setContent(R.string.Incognito_Keyboard)
                     incognito.isChecked =
                         defaultSharedPreferences.getBoolean(Constants.Account.PREF_INCOGNITO_KEYBOARD, false)
                     incognito.setOnCheckedChangeListener { _, isChecked ->

@@ -67,7 +67,7 @@
         android:minHeight="40dp"
         android:paddingStart="@dimen/margin12"
         android:paddingEnd="@dimen/margin12"
-        android:text="@string/web_contact_developer"
+        android:text="@string/Contact_Developer"
         android:textColor="?text_blue"
         android:textSize="16sp" />
 </RelativeLayout>

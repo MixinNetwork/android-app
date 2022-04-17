@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="@string/loading_init"
+        android:text="@string/Initializing"
         android:textColor="?attr/color_accent"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"

@@ -33,7 +33,7 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
 
-        binding.biometricLayout.biometricTv.setText(R.string.verify_by_biometric)
+        binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
         binding.biometricLayout.measureAllChildren = false
         callback = object : BiometricBottomSheetDialogFragment.Callback() {
             override fun onSuccess() {
@@ -51,10 +51,10 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     }
 
     override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.verify_by_biometric),
+        getString(R.string.Verify_by_Biometric),
         "",
         "",
-        getString(R.string.verify_by_PIN)
+        getString(R.string.Verify_with_PIN)
     )
 
     fun setContinueCallback(callback: (DialogFragment) -> Unit): VerifyBottomSheetDialogFragment {

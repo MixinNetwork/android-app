@@ -98,7 +98,7 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
             stateTv.setText(R.string.Connecting)
         } else {
             progressBar.isVisible = false
-            stateTv.setText(R.string.state_network_unavailable)
+            stateTv.setText(R.string.Network_unavailable)
         }
         stateLayout.setOnClickListener {
             DiagnosisActivity.show(requireContext())
@@ -108,7 +108,7 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     private fun setSyncing() {
         progressBar.visibility = VISIBLE
         stateLayout.setBackgroundResource(R.color.stateGreen)
-        stateTv.setText(R.string.state_syncing)
+        stateTv.setText(R.string.Syncing_messages)
         stateLayout.setOnClickListener(null)
     }
 }

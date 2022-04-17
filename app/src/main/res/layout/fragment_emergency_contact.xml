@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:rightIcon="@drawable/ic_help_outline"
-        app:titleText="@string/log_category_emergency" />
+        app:titleText="@string/Emergency_Contact" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_emergency_enable"
+            android:text="@string/Enable_Emergency_Contact"
             android:textColor="@color/colorDarkBlue"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
@@ -112,7 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_emergency_bottom_change"
+            android:text="@string/Change_emergency_contact"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>
 
@@ -131,7 +131,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_emergency_bottom_remove"
+            android:text="@string/Remove_emergency_contact"
             android:textColor="@color/colorRed"
             tools:ignore="RelativeOverlap" />
 

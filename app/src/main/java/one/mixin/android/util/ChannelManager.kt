@@ -48,7 +48,7 @@ class ChannelManager {
         fun createNodeChannel(notificationManager: NotificationManager) {
             val channel = NotificationChannel(
                 BlazeMessageService.CHANNEL_NODE,
-                MixinApplication.get().getString(R.string.notification_node),
+                MixinApplication.get().getString(R.string.Messaging_Node),
                 NotificationManager.IMPORTANCE_LOW
             )
             channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
@@ -76,7 +76,7 @@ class ChannelManager {
                 val messageChannel =
                     NotificationChannel(
                         getChannelId(MESSAGES),
-                        context.getString(R.string.notification_message),
+                        context.getString(R.string.Message_Notification),
                         NotificationManager.IMPORTANCE_HIGH
                     )
 
@@ -96,8 +96,8 @@ class ChannelManager {
                 messageChannel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
                 val groupChannel = copyChannel(messageChannel, getChannelId(GROUP))
                 val silenceChannel = copyChannel(messageChannel, getChannelId(SILENCE))
-                groupChannel.name = context.getString(R.string.notification_group)
-                silenceChannel.name = context.getString(R.string.notification_silence)
+                groupChannel.name = context.getString(R.string.Group_Notification)
+                silenceChannel.name = context.getString(R.string.Silence_Notification)
                 silenceChannel.setSound(null, null)
                 silenceChannel.enableVibration(false)
 

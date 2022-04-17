@@ -43,7 +43,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
         binding.apply {
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             titleView.rightAnimator.setOnClickListener { verify(binding.pin.code()) }
-            titleView.setSubTitle(getString(R.string.wallet_password_old_title), "1/5")
+            titleView.setSubTitle(getString(R.string.Old_PIN), "1/5")
             disableTitleRight()
             pin.setListener(this@OldPasswordFragment)
             keyboard.setKeyboardKeys(KEYS)
@@ -77,7 +77,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
-            message = getString(R.string.pb_dialog_message),
+            message = getString(R.string.Please_wait_a_bit),
             title = getString(R.string.Verifying)
         )
         dialog.setCancelable(false)

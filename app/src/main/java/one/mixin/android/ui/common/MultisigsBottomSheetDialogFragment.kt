@@ -71,7 +71,7 @@ class MultisigsBottomSheetDialogFragment :
             }
             subTitle.text = t.memo
             biometricLayout.payTv.setText(R.string.multisig_pay_pin)
-            biometricLayout.biometricTv.setText(R.string.multisig_pay_biometric)
+            biometricLayout.biometricTv.setText(R.string.Use_Biometric_Multisig)
         }
 
         lifecycleScope.launch {

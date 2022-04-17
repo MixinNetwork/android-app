@@ -55,7 +55,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             TypeAsset.index -> holder.bind(context.getText(R.string.ASSETS).toString(), data.assetShowMore())
             TypeUser.index -> holder.bind(context.getText(R.string.CONTACTS).toString(), data.userShowMore())
             TypeChat.index -> holder.bind(context.getText(R.string.CHATS).toString(), data.chatShowMore())
-            TypeMessage.index -> holder.bind(context.getText(R.string.capital_search_title_messages).toString(), data.messageShowMore())
+            TypeMessage.index -> holder.bind(context.getText(R.string.SEARCH_MESSAGES).toString(), data.messageShowMore())
         }
     }
 

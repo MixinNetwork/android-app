@@ -37,7 +37,7 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         setBiometricLayout()
 
         binding.title.setText(getTipTextRes())
-        binding.biometricLayout.biometricTv.setText(R.string.verify_by_biometric)
+        binding.biometricLayout.biometricTv.setText(R.string.Verify_by_Biometric)
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
@@ -61,10 +61,10 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
     }
 
     override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.verify_by_biometric),
+        getString(R.string.Verify_by_Biometric),
         "",
         "",
-        getString(R.string.verify_by_PIN)
+        getString(R.string.Verify_with_PIN)
     )
 
     private fun getTipTextRes(): Int =

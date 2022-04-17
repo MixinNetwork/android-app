@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        app:titleText="@string/group_invite" />
+        app:titleText="@string/Invite_to_Group_via_Link" />
 
     <TextView
         android:id="@+id/invite_info"
@@ -98,7 +98,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_copy" />
+            android:text="@string/Copy_invite" />
 
     </LinearLayout>
 
@@ -123,7 +123,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_qr_code" />
+            android:text="@string/QR_code" />
 
     </LinearLayout>
 
@@ -148,7 +148,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_share" />
+            android:text="@string/Share_Link" />
 
     </LinearLayout>
 

@@ -323,7 +323,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         mCountDownTimer = object : CountDownTimer(60000, 1000) {
 
             override fun onTick(l: Long) {
-                binding.verificationResendTv.text = getString(R.string.landing_resend_code_disable, l / 1000)
+                binding.verificationResendTv.text = getString(R.string.Resend_code_in, l / 1000)
             }
 
             override fun onFinish() {
@@ -338,7 +338,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     private fun resetCountDown() {
-        binding.verificationResendTv.setText(R.string.landing_resend_code_enable)
+        binding.verificationResendTv.setText(R.string.Resend_code)
         binding.verificationResendTv.isEnabled = true
         context?.let {
             binding.verificationResendTv.setTextColor(ContextCompat.getColor(it, R.color.colorBlue))

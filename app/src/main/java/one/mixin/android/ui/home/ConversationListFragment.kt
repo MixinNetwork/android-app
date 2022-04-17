@@ -298,7 +298,7 @@ class ConversationListFragment : LinkFragment() {
                         )
                     ) {
                         if (!requireContext().networkConnected()) {
-                            toast(R.string.error_network)
+                            toast(R.string.Network_error)
                             return
                         }
                         lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
@@ -657,7 +657,7 @@ class ConversationListFragment : LinkFragment() {
                         setConversationName(conversationItem)
                         binding.msgTv.setText(
                             if (conversationItem.isSignal()) {
-                                R.string.conversation_waiting
+                                R.string.Waiting_for_this_message
                             } else {
                                 R.string.chat_decryption_failed
                             }

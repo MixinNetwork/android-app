@@ -90,14 +90,14 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     val filePath = absolutePath()
     if (filePath == null) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath"))
-        toast(R.string.save_failure)
+        toast(R.string.Save_failure)
         return
     }
 
     val file = filePath.toUri().toFile()
     if (!file.exists()) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath"))
-        toast(R.string.error_file_exists)
+        toast(R.string.File_does_not_exit)
         return
     }
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {

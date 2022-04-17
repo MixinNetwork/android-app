@@ -64,6 +64,6 @@
             android:visibility="gone"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
-            android:text="@string/wallet_transfer_no_available_assets"/>
+            android:text="@string/No_Available_Assets"/>
     </FrameLayout>
 </one.mixin.android.widget.BottomSheetLinearLayout>

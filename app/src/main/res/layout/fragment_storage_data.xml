@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_storage"/>
+        app:titleText="@string/Storage_Usage"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_storage"
+                android:text="@string/Storage_Usage"
                 tools:ignore="RelativeOverlap"/>
         </RelativeLayout>
 
@@ -144,7 +144,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="3dp"
-                android:text="@string/setting_data_noting"
+                android:text="@string/No_media"
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -167,7 +167,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_data_roaming"
+                android:text="@string/When_roaming"
                 app:layout_constraintBottom_toTopOf="@id/storage_roaming_info"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -181,7 +181,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="3dp"
-                android:text="@string/setting_data_noting"
+                android:text="@string/No_media"
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"

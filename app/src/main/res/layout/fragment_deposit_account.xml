@@ -34,7 +34,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="8dp"
-                    android:text="@string/withdrawal_addr_memo_hint"
+                    android:text="@string/withdrawal_memo"
                     android:textColor="?attr/text_assist"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

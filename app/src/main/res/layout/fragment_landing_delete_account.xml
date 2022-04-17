@@ -32,7 +32,7 @@
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/landing_delete_title"
+                android:text="@string/login_and_abort_account_deletion"
                 android:textColor="?attr/text_primary"
                 android:layout_marginTop="32dp"
                 android:layout_marginStart="72dp"

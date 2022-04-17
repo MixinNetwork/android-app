@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
-                android:text="@string/setting_logs_empty"
+                android:text="@string/No_logs"
                 android:textColor="?attr/text_minor" />
         </LinearLayout>
 

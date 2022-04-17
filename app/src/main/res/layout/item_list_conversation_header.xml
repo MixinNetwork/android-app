@@ -21,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="@string/notification_title"
+        android:text="@string/Turn_On_Notifications"
         android:textColor="?attr/text_primary"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"

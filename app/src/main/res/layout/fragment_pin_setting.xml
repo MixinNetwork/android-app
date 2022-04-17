@@ -61,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/wallet_pay_with_biometrics"
+            android:text="@string/Pay_with_Biometrics"
             tools:ignore="RelativeOverlap" />
 
         <androidx.appcompat.widget.SwitchCompat
@@ -99,7 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop=".5dp"
             android:layout_centerVertical="true"
-            android:text="@string/wallet_pin_pay_interval"
+            android:text="@string/Pay_with_PIN_interval"
             android:gravity="center_vertical"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin" />
@@ -136,7 +136,7 @@
         android:id="@+id/change_tv"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:text="@string/wallet_password_change"
+        android:text="@string/Change_PIN"
         style="@style/NormalTextStyle"
         android:gravity="center_vertical"
         android:paddingStart="@dimen/activity_horizontal_margin"

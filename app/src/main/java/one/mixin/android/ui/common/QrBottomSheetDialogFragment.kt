@@ -65,10 +65,10 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.title.leftIv.setOnClickListener { dismiss() }
         binding.title.rightIv.setOnClickListener { showBottom() }
         if (type == TYPE_MY_QR) {
-            binding.title.titleTv.text = getString(R.string.contact_my_qr_title)
-            binding.tipTv.text = getString(R.string.contact_my_qr_tip)
+            binding.title.titleTv.text = getString(R.string.My_QR_Code)
+            binding.tipTv.text = getString(R.string.scan_code_add_me)
         } else if (type == TYPE_RECEIVE_QR) {
-            binding.title.titleTv.text = getString(R.string.contact_receive_money)
+            binding.title.titleTv.text = getString(R.string.Receive_Money)
             binding.tipTv.text = getString(R.string.contact_receive_tip)
         }
         binding.shareBtn.setOnClickListener {
@@ -141,7 +141,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 val path = binding.bottomLl.capture(requireContext())
                                 withContext(Dispatchers.Main) {
                                     if (path.isNullOrBlank()) {
-                                        toast(getString(R.string.save_failure))
+                                        toast(getString(R.string.Save_failure))
                                     } else {
                                         toast(getString(R.string.save_to, path))
                                     }
@@ -152,7 +152,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.Save_failure)
                     }
                 )
             bottomSheet.dismiss()

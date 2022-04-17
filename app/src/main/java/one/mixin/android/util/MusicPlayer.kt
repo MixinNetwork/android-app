@@ -184,7 +184,7 @@ class MusicPlayer private constructor() {
                 }
             } else {
                 if (error is ExoPlaybackException && error.type == TYPE_SOURCE) {
-                    toast(R.string.player_playback_failed)
+                    toast(R.string.Playback_failed)
                 }
 
                 status = STATUS_PAUSE
@@ -241,7 +241,7 @@ class MusicPlayer private constructor() {
             toast(R.string.error_bad_data)
             return
         } else if (!messageItem.absolutePath()!!.fileExists()) {
-            toast(R.string.error_file_exists)
+            toast(R.string.File_does_not_exit)
             return
         }
 

@@ -87,7 +87,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
 
                 override fun onFinish() {
-                    continueTv.text = getString(R.string.got_it)
+                    continueTv.text = getString(R.string.Got_it)
                     continueTv.isEnabled = true
                     continueTv.textColor = requireContext().getColor(R.color.white)
                 }

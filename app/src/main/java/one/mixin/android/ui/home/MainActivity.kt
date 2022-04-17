@@ -485,7 +485,7 @@ class MainActivity : BlazeBaseActivity() {
                         .setTitle(R.string.storage_low_title)
                         .setMessage(R.string.storage_low_message)
                         .setCancelable(false)
-                        .setNegativeButton(getString(R.string.know)) { dialog, _ ->
+                        .setNegativeButton(getString(R.string.I_know)) { dialog, _ ->
                             dialog.dismiss()
                         }
                         .show()
@@ -812,7 +812,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun addCircle() {
         editDialog {
-            titleText = this@MainActivity.getString(R.string.add_circle)
+            titleText = this@MainActivity.getString(R.string.Add_circle)
             maxTextCount = 64
             defaultEditEnable = false
             editMaxLines = EditDialog.MAX_LINE.toInt()
@@ -826,7 +826,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun createCircle(name: String) {
         lifecycleScope.launch(errorHandler) {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             handleMixinResponse(

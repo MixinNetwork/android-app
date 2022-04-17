@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/margin16"
-                android:text="@string/capital_no_result"
+                android:text="@string/NO_RESULT"
                 android:textColor="?attr/text_minor" />
         </LinearLayout>
     </ViewAnimator>

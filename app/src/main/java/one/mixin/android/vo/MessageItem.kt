@@ -222,14 +222,14 @@ suspend fun MessageItem.saveToLocal(context: Context) {
     val filePath = absolutePath()
     if (filePath == null) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath)}"))
-        toast(R.string.save_failure)
+        toast(R.string.Save_failure)
         return
     }
 
     val file = filePath.toUri().toFile()
     if (!file.exists()) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath)}"))
-        toast(R.string.save_failure)
+        toast(R.string.Save_failure)
         return
     }
 

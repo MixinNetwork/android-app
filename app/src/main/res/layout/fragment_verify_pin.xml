@@ -17,7 +17,7 @@
         android:layout_marginTop="8dp"
         android:padding="8dp"
         android:background="@drawable/mixin_ripple"
-        android:contentDescription="@string/landing_back_content_desc"
+        android:contentDescription="@string/Landing_back"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.023"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,7 +33,7 @@
         android:layout_marginTop="32dp"
         android:gravity="center_horizontal"
         android:layout_below="@id/close_iv"
-        android:text="@string/verify_pin"
+        android:text="@string/Verify_PIN"
         android:textColor="?attr/text_primary"
         android:textSize="18sp"/>
 

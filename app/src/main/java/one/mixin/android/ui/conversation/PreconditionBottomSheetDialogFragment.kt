@@ -116,7 +116,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
-        binding.titleTv.text = getString(R.string.transfer_duplicate_title)
+        binding.titleTv.text = getString(R.string.Duplicate_transfer_confirmation)
         binding.warningTv.text = getString(R.string.wallet_transfer_recent_tip, time, t.user.fullName, amount)
         binding.continueTv.setOnClickListener {
             if (shouldShowTransferTip(t)) {
@@ -143,7 +143,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
-        binding.titleTv.text = getString(R.string.withdraw_duplicate_title)
+        binding.titleTv.text = getString(R.string.Duplicate_withdraw_confirmation)
         binding.warningTv.text = getString(
             R.string.wallet_withdrawal_recent_tip,
             time,
@@ -179,7 +179,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showLargeAmountTip(t: TransferBiometricItem) {
-        binding.titleTv.text = getString(R.string.wallet_transaction_tip_title)
+        binding.titleTv.text = getString(R.string.Large_Amount_Confirmation)
         val fiatAmount =
             (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
         binding.warningTv.text = getString(

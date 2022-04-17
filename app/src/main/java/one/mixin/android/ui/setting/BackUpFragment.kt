@@ -234,7 +234,7 @@ class BackUpFragment : BaseFragment(R.layout.fragment_backup) {
     private fun chooseFolder() {
         val builder = alertDialogBuilder()
         builder.setMessage(R.string.backup_choose_a_folder)
-        builder.setPositiveButton(R.string.backup_choose_folder) { _, _ ->
+        builder.setPositiveButton(R.string.Choose_folder) { _, _ ->
             chooseFolderResult.launch(
                 defaultSharedPreferences.getString(
                     PREF_BACKUP_DIRECTORY,

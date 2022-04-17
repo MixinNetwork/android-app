@@ -93,7 +93,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
         editDialog {
             titleText = this@NotificationsFragment.getString(
                 if (isNotification) {
-                    R.string.setting_notification_transfer_amount
+                    R.string.Transfer_Amount_count_down
                 } else {
                     R.string.wallet_transaction_tip_title_with_symbol
                 },
@@ -102,9 +102,9 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
             editText = amount
             editHint = this@NotificationsFragment.getString(
                 if (isNotification) {
-                    R.string.wallet_transfer_amount
+                    R.string.Transfer_Amount
                 } else {
-                    R.string.wallet_transaction_tip_title
+                    R.string.Large_Amount_Confirmation
                 }
             )
             editInputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
@@ -112,7 +112,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
             rightAction = {
                 val result = it.toDoubleOrNull()
                 if (result == null) {
-                    toast(R.string.error_data)
+                    toast(R.string.Data_error)
                 } else {
                     savePreference(it.toDouble(), isNotification)
                 }
@@ -122,8 +122,8 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
 
     private fun savePreference(threshold: Double, isNotification: Boolean) = lifecycleScope.launch {
         val pb = indeterminateProgressDialog(
-            message = R.string.pb_dialog_message,
-            title = if (isNotification) R.string.setting_notification_transfer else R.string.wallet_transaction_tip_title
+            message = R.string.Please_wait_a_bit,
+            title = if (isNotification) R.string.Transfer_Notifications else R.string.Large_Amount_Confirmation
         ).apply {
             setCancelable(false)
         }

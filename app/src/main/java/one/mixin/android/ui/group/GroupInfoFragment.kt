@@ -107,7 +107,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                             choices.add(getString(R.string.group_pop_menu_dismiss_admin))
                         } else {
                             choices.add(getString(R.string.group_pop_menu_remove, participant.fullName))
-                            choices.add(getString(R.string.group_pop_menu_make_admin))
+                            choices.add(getString(R.string.Make_group_admin))
                         }
                     } else if (role == ParticipantRole.ADMIN.name) {
                         if (userRole != ParticipantRole.OWNER.name && userRole != ParticipantRole.ADMIN.name) {
@@ -327,7 +327,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
 
     private fun showPb() {
         if (dialog == null) {
-            dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message)).apply {
+            dialog = indeterminateProgressDialog(message = getString(R.string.Please_wait_a_bit)).apply {
                 setCancelable(false)
             }
         }

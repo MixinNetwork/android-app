@@ -169,7 +169,7 @@ object NotificationGenerator : Injector() {
             notificationBuilder.addAction(action)
             val readAction = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
-                context.getString(R.string.notification_mark),
+                context.getString(R.string.Mark_as_read),
                 pendingIntent
             ).setSemanticAction(SEMANTIC_ACTION_MARK_AS_READ)
                 .setShowsUserInterface(false)

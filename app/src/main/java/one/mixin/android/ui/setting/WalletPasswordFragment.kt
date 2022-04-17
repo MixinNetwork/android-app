@@ -81,9 +81,9 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                 titleView.setSubTitle(getString(R.string.wallet_password_set_new_pin), "2/5")
                 tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
             } else {
-                titleView.setSubTitle(getString(R.string.wallet_password_set_pin), "1/4")
+                titleView.setSubTitle(getString(R.string.Set_PIN), "1/4")
                 val url = Constants.HelpLink.TIP
-                val target = getString(R.string.wallet_password_set_pin_target)
+                val target = getString(R.string.learn_more)
                 val desc = getString(R.string.wallet_password_set_pin_desc)
                 tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
             }
@@ -149,14 +149,14 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         lastPassword = null
         binding.pin.clear()
         binding.titleView.setSubTitle(
-            getString(if (change) R.string.wallet_password_set_new_pin else R.string.wallet_password_set_pin),
+            getString(if (change) R.string.wallet_password_set_new_pin else R.string.Set_PIN),
             getSubTitle()
         )
         if (change) {
             binding.tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
         } else {
             val url = Constants.HelpLink.TIP
-            val target = getString(R.string.wallet_password_set_pin_target)
+            val target = getString(R.string.learn_more)
             val desc = getString(R.string.wallet_password_set_pin_desc)
             binding.tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }
@@ -172,7 +172,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         lastPassword = binding.pin.code()
         binding.apply {
             pin.clear()
-            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
+            titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
             tipTv.text = getString(R.string.wallet_password_confirm_1)
         }
     }
@@ -183,7 +183,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         step = STEP3
         binding.apply {
             pin.clear()
-            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
+            titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
             tipTv.text = getString(R.string.wallet_password_confirm_2)
         }
     }
@@ -194,7 +194,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         step = STEP4
         binding.apply {
             pin.clear()
-            titleView.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
+            titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
             tipTv.text = getString(R.string.wallet_password_confirm_3)
         }
     }
@@ -239,7 +239,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                 if (checkEqual()) return
 
                 val dialog = indeterminateProgressDialog(
-                    message = getString(R.string.pb_dialog_message),
+                    message = getString(R.string.Please_wait_a_bit),
                     title = if (change) getString(R.string.changing) else getString(R.string.Creating)
                 )
                 dialog.setCancelable(false)

@@ -325,7 +325,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
     private fun renderAndSave() = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
 
-        val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
             setCancelable(false)
         }
         val file = requireContext().getImageCachePath().createImageTemp()
@@ -339,7 +339,7 @@ class ImageEditorFragment : BaseFragment(), TextEntryDialogFragment.Controller {
 
         if (saveResult.isFailure) {
             file.delete()
-            toast(R.string.save_failure)
+            toast(R.string.Save_failure)
             return@launch
         }
 

@@ -96,7 +96,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     private fun setUpdate() {
         if (viewDestroyed()) return
         binding.apply {
-            opTv.setText(R.string.setting_mobile_contact_upload)
+            opTv.setText(R.string.Upload_Phone_Contacts)
             opTv.textColorResource = R.color.colorDarkBlue
             opRl.setOnClickListener {
                 RxPermissions(requireActivity())
@@ -156,7 +156,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
         val mutableList = createContactsRequests(contacts)
         if (mutableList.isEmpty()) {
             binding.opPb.isVisible = false
-            toast(R.string.setting_mobile_contact_empty)
+            toast(R.string.Empty_address_book)
             return@launch
         }
         handleMixinResponse(

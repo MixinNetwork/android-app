@@ -49,7 +49,7 @@ interface TransactionInterface {
                     val asset = walletViewModel.simpleAssetItem(assetId)
                     val snapshot = walletViewModel.snapshotLocal(assetId, snapshotId)
                     if (asset == null || snapshot == null) {
-                        toast(R.string.error_data)
+                        toast(R.string.Data_error)
                     } else {
                         contentBinding.avatar.setOnClickListener {
                             clickAvatar(fragment, asset)
@@ -74,7 +74,7 @@ interface TransactionInterface {
                     }
                 }
             } else {
-                toast(R.string.error_data)
+                toast(R.string.Data_error)
             }
         } else {
             contentBinding.avatar.setOnClickListener {

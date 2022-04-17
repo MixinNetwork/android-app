@@ -667,7 +667,7 @@ class ConversationFragment() :
                 }
                 val path = messageItem.absolutePath()?.toUri()?.getFilePath()
                 if (path == null) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exit)
                     return
                 }
                 val file = File(path)
@@ -682,7 +682,7 @@ class ConversationFragment() :
                         MediaPagerActivity.getOptions(requireActivity(), view)
                     )
                 } else {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exit)
                 }
             }
 
@@ -1521,7 +1521,7 @@ class ConversationFragment() :
                             StickerActivity.show(requireContext(), url = it, showAdd = true)
                             closeTool()
                         } else {
-                            toast(R.string.sticker_add_invalid_format)
+                            toast(R.string.Invalid_sticker_format)
                         }
                     }
                 }
@@ -1553,7 +1553,7 @@ class ConversationFragment() :
                 )
                 toast(
                     if (action == PinAction.PIN) {
-                        R.string.pin_success
+                        R.string.Message_pinned
                     } else {
                         R.string.unpin_success
                     }
@@ -1614,7 +1614,7 @@ class ConversationFragment() :
         }
         binding.tapJoinView.root.setOnClickListener {
             if (!requireContext().networkConnected()) {
-                toast(R.string.error_network)
+                toast(R.string.Network_error)
                 return@setOnClickListener
             }
             val isBusy = callState.isBusy()
@@ -1656,7 +1656,7 @@ class ConversationFragment() :
 
                 val logFile = FileLogTree.getLogFile()
                 if (logFile == null || logFile.length() <= 0) {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.File_does_not_exit)
                     return@debugLongClick
                 }
                 val attachment = Attachment(logFile.toUri(), logFile.name, "text/plain", logFile.length())
@@ -1822,7 +1822,7 @@ class ConversationFragment() :
                 chatViewModel.sendRecallMessage(conversationId, sender, messages)
                 dialog.dismiss()
             }
-            .setNeutralButton(R.string.chat_recall_delete_more) { dialog, _ ->
+            .setNeutralButton(R.string.Learn_More) { dialog, _ ->
                 context?.openUrl(getString(R.string.chat_delete_url))
                 dialog.dismiss()
             }
@@ -2723,7 +2723,7 @@ class ConversationFragment() :
                         dialog.dismiss()
                     }.show()
             } else {
-                toast(R.string.error_file_exists)
+                toast(R.string.File_does_not_exit)
             }
         } else if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
             val intent = data ?: return
@@ -3142,7 +3142,7 @@ class ConversationFragment() :
     private fun sendFileAlert(transcriptData: TranscriptData) {
         alert(getString(R.string.chat_import_fail_content))
             .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.chat_send_file) { dialog, _ ->
+            .setPositiveButton(R.string.Send_as_file) { dialog, _ ->
                 sendFile(transcriptData)
                 dialog.dismiss()
             }
@@ -3218,7 +3218,7 @@ class ConversationFragment() :
                     }
             }
             if (nonExistent) {
-                toast(R.string.error_file_exists)
+                toast(R.string.File_does_not_exit)
             } else if (messages.isNotEmpty()) {
                 getCombineForwardResult.launch(ArrayList(messages))
             }

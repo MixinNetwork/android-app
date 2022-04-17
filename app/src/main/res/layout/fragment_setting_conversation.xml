@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_conversation_everybody"
+            android:text="@string/Everybody"
             tools:ignore="RelativeOverlap" />
 
         <ImageView
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_my_contacts"
+            android:text="@string/My_Contacts"
             tools:ignore="RelativeOverlap" />
 
         <ImageView
@@ -133,7 +133,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_conversation_everybody"
+            android:text="@string/Everybody"
             tools:ignore="RelativeOverlap" />
 
         <ImageView
@@ -174,7 +174,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_my_contacts"
+            android:text="@string/My_Contacts"
             tools:ignore="RelativeOverlap" />
 
         <ImageView

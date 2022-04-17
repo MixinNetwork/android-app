@@ -767,7 +767,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     private var dialog: Dialog? = null
     private fun showPb() {
         if (dialog == null) {
-            dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message)).apply {
+            dialog = indeterminateProgressDialog(message = getString(R.string.Please_wait_a_bit)).apply {
                 setCancelable(false)
             }
         }

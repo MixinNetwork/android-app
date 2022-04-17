@@ -105,7 +105,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/phone_number"
+                    android:text="@string/Phone_Number"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
@@ -123,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_mobile_contact"
+                    android:text="@string/Phone_Contacts"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
@@ -185,7 +185,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:text="@string/immediately"
+                    android:text="@string/Immediately"
                     android:textColor="?attr/text_minor"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>

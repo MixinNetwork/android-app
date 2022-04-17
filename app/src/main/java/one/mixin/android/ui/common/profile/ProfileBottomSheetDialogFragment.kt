@@ -158,7 +158,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         val list = menuList {
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_my_share_apps)
+                    title = getString(R.string.My_shared_apps)
                     action = {
                         activity?.addFragment(
                             this@ProfileBottomSheetDialogFragment,
@@ -172,7 +172,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.contact_my_qr_title)
+                    title = getString(R.string.My_QR_Code)
                     action = {
                         QrBottomSheetDialogFragment.newInstance(
                             account.userId,
@@ -181,7 +181,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     }
                 }
                 menu {
-                    title = getString(R.string.contact_receive_money)
+                    title = getString(R.string.Receive_Money)
                     action = {
                         QrBottomSheetDialogFragment.newInstance(
                             account.userId,
@@ -212,7 +212,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.profile_phone)
+                    title = getString(R.string.Change_Phone_Number)
                     subtitle = account.phone
                     action = { changeNumber() }
                 }
@@ -289,7 +289,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     private fun changeNumber() {
         alert(getString(R.string.profile_modify_number))
             .setNegativeButton(android.R.string.no) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.profile_phone) { dialog, _ ->
+            .setPositiveButton(R.string.Change_Phone_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {

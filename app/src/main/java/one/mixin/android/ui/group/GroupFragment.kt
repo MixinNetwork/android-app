@@ -183,7 +183,7 @@ class GroupFragment : BaseFragment() {
             val title =
                 if (from == TYPE_ADD) R.string.Adding else R.string.Removing
             dialog = indeterminateProgressDialog(
-                message = R.string.pb_dialog_message,
+                message = R.string.Please_wait_a_bit,
                 title = title
             ).apply {
                 setCancelable(false)
@@ -204,8 +204,8 @@ class GroupFragment : BaseFragment() {
     private fun updateTitle(size: Int) {
         binding.titleView.setSubTitle(
             when (from) {
-                TYPE_REMOVE -> getString(R.string.group_info_remove_member)
-                else -> getString(R.string.add_participants)
+                TYPE_REMOVE -> getString(R.string.Remove_Participants)
+                else -> getString(R.string.Add_participants)
             },
             "$size/$MAX_USER"
         )

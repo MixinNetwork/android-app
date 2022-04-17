@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:padding="6dp"
-            android:text="@string/add_circle"
+            android:text="@string/Add_circle"
             android:textColor="@color/selector_bn" />
 
         <TextView

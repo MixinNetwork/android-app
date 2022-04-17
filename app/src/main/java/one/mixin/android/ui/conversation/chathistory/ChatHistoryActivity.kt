@@ -148,7 +148,7 @@ class ChatHistoryActivity : BaseActivity() {
                 if (isTranscript) {
                     R.string.Transcript
                 } else {
-                    R.string.pinned_message
+                    R.string.Pinned_Message
                 }
             ),
             ""

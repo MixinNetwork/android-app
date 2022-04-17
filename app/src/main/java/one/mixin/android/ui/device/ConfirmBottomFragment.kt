@@ -88,7 +88,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
                 provisioningService.provisionCodeAsync().await()
             }
         } catch (t: Throwable) {
-            toast(R.string.setting_desktop_sigin_failed)
+            toast(R.string.Link_desktop_success)
             ErrorHandler.handleError(t)
             return@launch
         }
@@ -98,22 +98,22 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
                     encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code)
                 }
             } catch (t: Throwable) {
-                toast(R.string.setting_desktop_sigin_failed)
+                toast(R.string.Link_desktop_success)
                 ErrorHandler.handleError(t)
                 return@launch
             }
             confirmCallback?.invoke()
             if (success) {
-                toast(R.string.setting_desktop_sigin_success)
+                toast(R.string.Link_desktop_failed)
             } else {
-                toast(R.string.setting_desktop_sigin_failed)
+                toast(R.string.Link_desktop_success)
             }
             dismiss()
         } else {
             ErrorHandler.handleMixinError(
                 response.errorCode,
                 response.errorDescription,
-                getString(R.string.setting_desktop_sigin_failed)
+                getString(R.string.Link_desktop_success)
             )
             dismiss()
         }
@@ -128,7 +128,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
         binding.biometricLayout.apply {
-            biometricTv.setText(R.string.verify_by_biometric)
+            biometricTv.setText(R.string.Verify_by_Biometric)
             payTv.setText(R.string.login_by_PIN)
         }
     }
@@ -143,7 +143,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             val ephemeralId = uri.getQueryParameter("id")
             if (ephemeralId == null) {
-                toast(R.string.setting_desktop_sigin_failed)
+                toast(R.string.Link_desktop_success)
                 dismiss()
                 return@let
             }
@@ -155,7 +155,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
     }
 
     override fun getBiometricInfo() = BiometricInfo(
-        getString(R.string.verify_by_biometric),
+        getString(R.string.Verify_by_Biometric),
         "",
         "",
         getString(R.string.login_by_PIN)

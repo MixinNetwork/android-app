@@ -44,6 +44,6 @@
             android:layout_marginStart="8dp"
             android:textColor="?text_minor"
             android:textSize="12sp"
-            android:text="@string/chat_tap_join"/>
+            android:text="@string/Tap_to_join"/>
     </LinearLayout>
 </RelativeLayout>

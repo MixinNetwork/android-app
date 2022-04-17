@@ -15,7 +15,7 @@
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:titleText="@string/setting_notification_confirmation" />
+            app:titleText="@string/Notification_and_Confirmation" />
 
         <RelativeLayout
             android:id="@+id/transfer_rl"
@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_notification_transfer" />
+                android:text="@string/Transfer_Notifications" />
 
             <TextView
                 android:id="@+id/transfer_tv"
@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/wallet_transaction_tip_title" />
+                android:text="@string/Large_Amount_Confirmation" />
 
             <TextView
                 android:id="@+id/large_amount_tv"
@@ -106,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/transfer_duplicate_title"
+                android:text="@string/Duplicate_transfer_confirmation"
                 tools:ignore="RelativeOverlap" />
 
             <androidx.appcompat.widget.SwitchCompat
@@ -144,7 +144,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/transfer_stranger_title"
+                android:text="@string/Stranger_Transfer_Confirmation"
                 tools:ignore="RelativeOverlap" />
 
             <androidx.appcompat.widget.SwitchCompat
@@ -183,7 +183,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_notification_system" />
+                android:text="@string/System_options" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -200,7 +200,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_notification_reset" />
+                android:text="@string/Reset_notifications" />
         </RelativeLayout>
     </LinearLayout>
 </ScrollView>

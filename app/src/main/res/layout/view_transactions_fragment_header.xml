@@ -137,7 +137,7 @@
             android:gravity="bottom"
             android:paddingStart="@dimen/margin20"
             android:paddingEnd="@dimen/margin20"
-            android:text="@string/wallet_transactions_title"
+            android:text="@string/Transactions"
             android:textColor="?attr/text_primary" />
     </RelativeLayout>
 
@@ -170,7 +170,7 @@
             android:layout_below="@id/bottom_iv"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/margin16"
-            android:text="@string/wallet_transactions_empty"
+            android:text="@string/No_transactions"
             android:textColor="?attr/text_minor" />
     </RelativeLayout>
 </RelativeLayout>

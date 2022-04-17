@@ -31,7 +31,7 @@
         android:layout_marginBottom="24dp"
         android:textColor="?attr/text_primary"
         android:textSize="18sp"
-        android:text="@string/auth_request"/>
+        android:text="@string/Requests_access_to_your"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/scope_rv"

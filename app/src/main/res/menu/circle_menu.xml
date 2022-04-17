@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/rename"
-        android:title="@string/circle_menu_edit_name" />
+        android:title="@string/Edit_Circle_Name" />
     <item
         android:id="@+id/edit"
-        android:title="@string/circle_menu_edit_conversation" />
+        android:title="@string/Edit_Conversation" />
     <item
         android:id="@+id/delete"
         android:title="@string/Delete" />

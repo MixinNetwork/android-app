@@ -125,7 +125,7 @@ class CircleManagerFragment : BaseFragment() {
 
     private val onAddCircle: (item: ConversationCircleManagerItem) -> Unit = { item ->
         lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             val requests = listOf(ConversationCircleRequest(item.circleId, CircleConversationAction.ADD.name))
@@ -162,7 +162,7 @@ class CircleManagerFragment : BaseFragment() {
 
     private val onRemoveCircle: (item: ConversationCircleManagerItem) -> Unit = { item ->
         lifecycleScope.launch {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             val requests = listOf(ConversationCircleRequest(item.circleId, CircleConversationAction.REMOVE.name))
@@ -195,7 +195,7 @@ class CircleManagerFragment : BaseFragment() {
 
     private fun addCircle() {
         editDialog {
-            titleText = this@CircleManagerFragment.getString(R.string.add_circle)
+            titleText = this@CircleManagerFragment.getString(R.string.Add_circle)
             maxTextCount = 64
             defaultEditEnable = false
             editMaxLines = EditDialog.MAX_LINE.toInt()
@@ -209,7 +209,7 @@ class CircleManagerFragment : BaseFragment() {
 
     private fun createCircle(name: String) {
         lifecycleScope.launch(ErrorHandler.errorHandler) {
-            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+            val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                 setCancelable(false)
             }
             val response = bottomViewModel.createCircle(name)

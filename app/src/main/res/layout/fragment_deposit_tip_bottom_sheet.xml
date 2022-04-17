@@ -67,7 +67,7 @@
                 android:layout_gravity="center_horizontal|bottom"
                 android:layout_marginTop="42dp"
                 android:layout_marginBottom="50dp"
-                android:text="@string/got_it"
+                android:text="@string/Got_it"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
         </LinearLayout>
