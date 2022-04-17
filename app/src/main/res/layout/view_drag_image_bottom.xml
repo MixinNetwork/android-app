@@ -50,7 +50,7 @@
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-            android:text="@string/contact_sq_scan_title"/>
+            android:text="@string/Extract_QR_Code"/>
 
     <TextView
             android:id="@+id/cancel"

@@ -33,16 +33,16 @@ class CallHolder constructor(val binding: ItemChatCallBinding) : BaseViewHolder(
         binding.callTv.text = when (messageItem.type) {
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 if (isMe) {
-                    ctx.getString(R.string.chat_call_canceled)
+                    ctx.getString(R.string.Canceled)
                 } else {
-                    ctx.getString(R.string.chat_call_canceled_by_caller)
+                    ctx.getString(R.string.Canceled_by_caller)
                 }
             }
             MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                 if (isMe) {
-                    ctx.getString(R.string.chat_call_declined_other)
+                    ctx.getString(R.string.Call_declined)
                 } else {
-                    ctx.getString(R.string.chat_call_declined)
+                    ctx.getString(R.string.Declined)
                 }
             }
             MessageCategory.WEBRTC_AUDIO_END.name -> {
@@ -51,13 +51,13 @@ class CallHolder constructor(val binding: ItemChatCallBinding) : BaseViewHolder(
             }
             MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
                 if (isMe) {
-                    ctx.getString(R.string.chat_call_remote_busy)
+                    ctx.getString(R.string.Line_busy_remote)
                 } else {
-                    ctx.getString(R.string.chat_call_local_busy)
+                    ctx.getString(R.string.Line_busy)
                 }
             }
             else -> {
-                ctx.getString(R.string.chat_call_failed)
+                ctx.getString(R.string.Call_failed)
             }
         }
 

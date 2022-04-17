@@ -78,7 +78,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
             if (change) {
-                titleView.setSubTitle(getString(R.string.wallet_password_set_new_pin), "2/5")
+                titleView.setSubTitle(getString(R.string.Set_new_PIN), "2/5")
                 tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
             } else {
                 titleView.setSubTitle(getString(R.string.Set_PIN), "1/4")
@@ -149,7 +149,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         lastPassword = null
         binding.pin.clear()
         binding.titleView.setSubTitle(
-            getString(if (change) R.string.wallet_password_set_new_pin else R.string.Set_PIN),
+            getString(if (change) R.string.Set_new_PIN else R.string.Set_PIN),
             getSubTitle()
         )
         if (change) {
@@ -268,17 +268,17 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
                                         if (activity is ConversationActivity ||
                                             activity is ContactsActivity
                                         ) {
-                                            toast(R.string.wallet_set_password_success)
+                                            toast(R.string.Set_PIN_successfully)
                                             parentFragmentManager.popBackStackImmediate()
                                         } else if (activity is MainActivity) {
-                                            toast(R.string.wallet_set_password_success)
+                                            toast(R.string.Set_PIN_successfully)
                                             parentFragmentManager.popBackStackImmediate()
                                             WalletActivity.show(activity)
                                         } else {
                                             if (change) {
-                                                toast(R.string.wallet_change_password_success)
+                                                toast(R.string.Change_PIN_successfully)
                                             } else {
-                                                toast(R.string.wallet_set_password_success)
+                                                toast(R.string.Set_PIN_successfully)
                                             }
                                             parentFragmentManager.popBackStackImmediate()
                                         }

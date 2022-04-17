@@ -14,7 +14,7 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/landing_verification_cant_receive"/>
+        android:text="@string/Cant_receive_code_confirmation"/>
 
 
     <TextView
@@ -27,5 +27,5 @@
         android:paddingStart="16dp"
         android:textColor="@color/colorRed"
         android:paddingEnd="16dp"
-        android:text="@string/landing_verification_lost_mobile"/>
+        android:text="@string/Lost_your_mobile_number"/>
 </LinearLayout>

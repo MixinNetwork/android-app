@@ -299,7 +299,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         ) {
             menu {
                 title = getString(R.string.Unmute)
-                subtitle = getString(R.string.mute_until, u.muteUntil?.localTime())
+                subtitle = getString(R.string.Mute_until, u.muteUntil?.localTime())
                 action = { unMute() }
             }
         } else {
@@ -325,7 +325,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         }
         val editNameMenu = menu {
-            title = getString(R.string.edit_name)
+            title = getString(R.string.Edit_Name)
             action = { showDialog(u.fullName) }
         }
         val voiceCallMenu = menu {
@@ -707,7 +707,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             RxBus.publish(BotCloseEvent())
             dismiss()
         } else {
-            toast(R.string.error_no_connection)
+            toast(R.string.No_network_connection)
         }
     }
 
@@ -821,7 +821,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 binding.addTv.setCompoundDrawables(null, null, null, null)
                 "+ ${getString(
                     if (user.isBot()) {
-                        R.string.add_bot
+                        R.string.Add_bot
                     } else {
                         R.string.Add_Contact
                     }
@@ -843,7 +843,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
 
         editDialog {
-            titleText = this@UserBottomSheetDialogFragment.getString(R.string.edit_name)
+            titleText = this@UserBottomSheetDialogFragment.getString(R.string.Edit_Name)
             editText = name
             maxTextCount = 40
             allowEmpty = false

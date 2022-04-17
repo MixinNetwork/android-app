@@ -211,12 +211,12 @@ class WebFragment : BaseFragment() {
         webView.hitTestResult.let {
             when (it.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
-                    menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.contact_sq_scan_title)
+                    menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.Extract_QR_Code)
                     menu.getItem(0).setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
                     }
-                    menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.contact_save_image)
+                    menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.Save_image)
                     menu.getItem(1).setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
@@ -919,7 +919,7 @@ class WebFragment : BaseFragment() {
             icon = R.drawable.ic_web_forward
             action = {
                 if (appCard?.shareable == false || !shareable) {
-                    toast(R.string.link_shareable_false)
+                    toast(R.string.Disallow_sharing_link)
                 } else {
                     val currentUrl = webView.url ?: url
                     if (isBot()) {
@@ -981,7 +981,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val copyMenu = menu {
-            title = getString(R.string.copy_link)
+            title = getString(R.string.Copy_link)
             icon = R.drawable.ic_content_copy
             action = {
                 requireContext().getClipboardManager()
@@ -993,9 +993,9 @@ class WebFragment : BaseFragment() {
         val isHold = isHold()
         val floatingMenu = menu {
             title = if (isHold) {
-                getString(R.string.action_cancel_floating)
+                getString(R.string.Cancel_Floating)
             } else {
-                getString(R.string.action_floating)
+                getString(R.string.Floating)
             }
             icon = if (isHold) {
                 R.drawable.ic_web_floating_cancel

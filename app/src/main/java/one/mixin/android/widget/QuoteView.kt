@@ -48,7 +48,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             binding.replyNameTv.visibility = View.GONE
             binding.replyIv.visibility = View.GONE
             binding.replyAvatar.visibility = View.GONE
-            binding.replyContentTv.setText(R.string.chat_not_found)
+            binding.replyContentTv.setText(R.string.Message_not_found)
             binding.replyContentTv.setTypeface(null, Typeface.ITALIC)
             setIcon(R.drawable.ic_type_recall)
             return
@@ -81,9 +81,9 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             quoteMessageItem.type == MessageCategory.MESSAGE_RECALL.name -> {
                 binding.replyContentTv.setText(
                     if (quoteMessageItem.userId == Session.getAccountId()) {
-                        R.string.chat_recall_me
+                        R.string.You_deleted_this_message
                     } else {
-                        R.string.chat_recall_delete
+                        R.string.This_message_was_deleted
                     }
                 )
                 binding.replyIv.visibility = View.GONE

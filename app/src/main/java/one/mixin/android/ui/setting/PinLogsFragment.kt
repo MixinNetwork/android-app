@@ -119,31 +119,31 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
         private fun getLogDescription(context: Context, code: String): Pair<String, String> {
             when (code) {
                 "VERIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_verification))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Verify))
                 "RAW_TRANSFER" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_raw_transfer))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.log_pin_raw_transfer))
                 "USER_TRANSFER" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_user_transfer))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.log_pin_user_transfer))
                 "WITHDRAWAL" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.Withdrawal))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Withdrawal))
                 "ADD_ADDRESS" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.add_address))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.add_address))
                 "DELETE_ADDRESS" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_delete_address))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_address))
                 "ADD_EMERGENCY" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.add_emergency_contact))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Add_emergency_contact))
                 "DELETE_EMERGENCY" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_delete_emergency))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_emergency_contact))
                 "READ_EMERGENCY" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_read_emergency))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.View_emergency_contact))
                 "UPDATE_PHONE" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.Change_Phone_Number))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Change_Phone_Number))
                 "UPDATE_PIN" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.Update_PIN))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Update_PIN))
                 "MULTISIG_SIGN" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_multisig_sign))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Multisig_Transactions))
                 "MULTISIG_UNLOCK" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_multisig_unlock))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Revoke_multisig_transaction))
                 "ACTIVITY_PIN_MODIFICATION" ->
                     return Pair(context.getString(R.string.log_category_pin_change), context.getString(R.string.PIN_modification))
                 "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
@@ -151,11 +151,11 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 "ACTIVITY_PHONE_MODIFICATION" ->
                     return Pair(context.getString(R.string.log_category_phone_change), context.getString(R.string.log_phone_number_modification))
                 "ACTIVITY_LOGIN_BY_PHONE" ->
-                    return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_phone))
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.log_login_phone))
                 "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
-                    return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_emergency))
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.log_login_emergency))
                 "ACTIVITY_LOGIN_FROM_DESKTOP" ->
-                    return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_desktop_app))
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.log_login_desktop_app))
                 else ->
                     return Pair(code, code)
             }

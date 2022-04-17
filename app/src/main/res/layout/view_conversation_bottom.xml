@@ -16,7 +16,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/conversation_pin"
+        android:text="@string/Pin_to_top"
         app:drawableStartCompat="@drawable/ic_pin" />
 
     <TextView

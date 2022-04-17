@@ -90,7 +90,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="@string/Receive"
+                    android:text="@string/RECEIVE"
                     android:textColor="@color/wallet_blue_secondary" />
 
                 <ProgressBar

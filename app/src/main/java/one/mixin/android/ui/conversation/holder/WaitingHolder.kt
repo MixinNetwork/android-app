@@ -66,7 +66,7 @@ class WaitingHolder constructor(
                 MixinApplication.get().getString(
                     R.string.chat_waiting,
                     if (isMe) {
-                        MixinApplication.get().getString(R.string.chat_waiting_desktop)
+                        MixinApplication.get().getString(R.string.desktop)
                     } else {
                         messageItem.userFullName
                     },

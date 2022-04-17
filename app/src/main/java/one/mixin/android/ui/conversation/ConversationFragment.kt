@@ -465,7 +465,7 @@ class ConversationFragment() :
                 }
             }
         } else {
-            toast(R.string.error_no_connection)
+            toast(R.string.No_network_connection)
         }
     }
 
@@ -2788,7 +2788,7 @@ class ConversationFragment() :
         if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_music),
+                    getString(R.string.Save_to_Music),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -2800,7 +2800,7 @@ class ConversationFragment() :
         ) {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_gallery),
+                    getString(R.string.Save_to_Gallery),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -2810,7 +2810,7 @@ class ConversationFragment() :
         } else {
             items.add(
                 BottomSheetItem(
-                    getString(R.string.action_save_to_downloads),
+                    getString(R.string.Save_to_Downloads),
                     {
                         checkWritePermissionAndSave(messageItem)
                         bottomSheet?.dismiss()
@@ -3180,7 +3180,7 @@ class ConversationFragment() :
         } else {
             val forwardDialogLayoutBinding = generateForwardDialogLayout()
             forwardDialog = alertDialogBuilder()
-                .setMessage(getString(R.string.chat_forward_title))
+                .setMessage(getString(R.string.Forward_message))
                 .setView(forwardDialogLayoutBinding.root)
                 .create()
             forwardDialogLayoutBinding.forward.setOnClickListener {

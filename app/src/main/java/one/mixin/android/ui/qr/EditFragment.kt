@@ -260,7 +260,7 @@ class EditFragment : VisionFragment() {
 
     private fun showNoResultDialog() {
         alertDialogBuilder()
-            .setMessage(getString(R.string.qr_not_found))
+            .setMessage(getString(R.string.Qr_Code_not_found))
             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                 dialog.dismiss()
             }

@@ -135,7 +135,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             requireContext().getString(
                 // Todo replace string
                 if (t.action == SignatureAction.cancel.name) {
-                    R.string.log_pin_multisig_unlock
+                    R.string.Revoke_multisig_transaction
                 } else {
                     R.string.multisig_transaction
                 }

@@ -120,7 +120,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 dismiss()
             }
-            createdTv.text = getString(R.string.profile_join_in, account.createdAt.dayTime())
+            createdTv.text = getString(R.string.Joined_in, account.createdAt.dayTime())
             avatar.setOnClickListener {
                 if (!isAdded) return@setOnClickListener
 
@@ -192,11 +192,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.edit_name)
+                    title = getString(R.string.Edit_Name)
                     action = { editName() }
                 }
                 menu {
-                    title = getString(R.string.edit_biography)
+                    title = getString(R.string.Edit_Biography)
                     action = { editBiography() }
                 }
             }
@@ -331,7 +331,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             return
         }
         editDialog {
-            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_name)
+            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.Edit_Name)
             editText = Session.getAccount()?.fullName
             maxTextCount = 40
             allowEmpty = false
@@ -347,7 +347,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             return
         }
         editDialog {
-            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_biography)
+            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.Edit_Biography)
             editText = Session.getAccount()?.biography
             maxTextCount = 140
             allowEmpty = true

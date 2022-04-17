@@ -42,7 +42,7 @@
         android:paddingEnd="16dp"
         android:textColor="?attr/text_primary"
         android:paddingStart="16dp"
-        android:text="@string/copy_link" />
+        android:text="@string/Copy_link" />
 
 
 </LinearLayout>

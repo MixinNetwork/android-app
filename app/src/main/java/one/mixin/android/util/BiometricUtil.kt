@@ -76,7 +76,7 @@ object BiometricUtil {
 
     fun showAuthenticationScreen(activity: FragmentActivity) {
         val intent = activity.getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
-            activity.getString(R.string.wallet_biometric_screen_lock),
+            activity.getString(R.string.Screen_Lock),
             activity.getString(R.string.wallet_biometric_screen_lock_desc)
         )
         if (intent != null) {

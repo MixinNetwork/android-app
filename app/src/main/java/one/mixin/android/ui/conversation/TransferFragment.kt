@@ -559,7 +559,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
 
         val memo = binding.transferMemo.text.toString()
         if (memo.toByteArray().size > 140) {
-            toast("${binding.transferMemo.hint} ${getString(R.string.group_edit_too_long)}")
+            toast("${binding.transferMemo.hint} ${getString(R.string.Content_too_long)}")
             return@launch
         }
         binding.continueVa.displayedChild = POST_PB

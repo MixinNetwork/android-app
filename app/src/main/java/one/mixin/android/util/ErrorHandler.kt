@@ -28,12 +28,12 @@ open class ErrorHandler {
                     }
                     is IOException -> when (throwable) {
                         is SocketTimeoutException -> toast(R.string.error_connection_timeout)
-                        is UnknownHostException -> toast(R.string.error_no_connection)
+                        is UnknownHostException -> toast(R.string.No_network_connection)
                         is ServerErrorException -> toast(getString(R.string.error_server_5xx_code, throwable.code))
                         is ClientErrorException -> {
                             handleErrorCode(throwable.code, ctx)
                         }
-                        is NetworkException -> toast(R.string.error_no_connection)
+                        is NetworkException -> toast(R.string.No_network_connection)
                         else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                     }
                     is CancellationException -> {
@@ -64,7 +64,7 @@ open class ErrorHandler {
                         reportException(IllegalStateException("Force logout error code."))
                     }
                     FORBIDDEN -> {
-                        toast(R.string.error_forbidden)
+                        toast(R.string.Access_denied)
                     }
                     NOT_FOUND -> {
                         toast(getString(R.string.error_not_found, NOT_FOUND))
@@ -236,7 +236,7 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             )
         }
         ErrorHandler.FORBIDDEN -> {
-            getString(R.string.error_forbidden)
+            getString(R.string.Access_denied)
         }
         ErrorHandler.SERVER, ErrorHandler.INSUFFICIENT_POOL -> {
             getString(R.string.error_server_5xx_code, code)

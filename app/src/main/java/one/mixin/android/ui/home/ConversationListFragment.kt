@@ -373,7 +373,7 @@ class ConversationListFragment : LinkFragment() {
             if (pagedList == null || pagedList.isEmpty()) {
                 if (circleId == null) {
                     binding.emptyView.infoTv.setText(R.string.empty_info)
-                    binding.emptyView.startBn.setText(R.string.empty_start)
+                    binding.emptyView.startBn.setText(R.string.Start_Messaging)
                 } else {
                     binding.emptyView.infoTv.setText(R.string.circle_empty_info)
                     binding.emptyView.startBn.setText(R.string.add_conversations)
@@ -479,7 +479,7 @@ class ConversationListFragment : LinkFragment() {
                 bottomSheet.dismiss()
             }
         } else {
-            viewBinding.pinTv.setText(R.string.conversation_pin)
+            viewBinding.pinTv.setText(R.string.Pin_to_top)
             viewBinding.pinTv.setOnClickListener {
                 messagesViewModel.updateConversationPinTimeById(
                     conversationId,
@@ -768,10 +768,10 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.isRecall() -> {
                     setConversationName(conversationItem)
                     if (id == conversationItem.senderId) {
-                        binding.msgTv.setText(R.string.chat_recall_me)
+                        binding.msgTv.setText(R.string.You_deleted_this_message)
                     } else {
                         binding.msgTv.text =
-                            itemView.context.getString(R.string.chat_recall_delete)
+                            itemView.context.getString(R.string.This_message_was_deleted)
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_recall)
                 }

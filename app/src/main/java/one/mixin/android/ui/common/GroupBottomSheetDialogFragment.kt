@@ -8,6 +8,7 @@ import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -244,10 +245,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                             }
                         }
                         menu {
-                            title = getString(R.string.group_edit_name)
+                            title = getString(R.string.Edit_group_name)
                             action = {
                                 editDialog {
-                                    titleText = this@GroupBottomSheetDialogFragment.getString(R.string.group_edit_name)
+                                    titleText = this@GroupBottomSheetDialogFragment.getString(R.string.Edit_group_name)
                                     editText = conversation.name
                                     maxTextCount = 40
                                     allowEmpty = false
@@ -269,7 +270,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             ) {
                 menu {
                     title = getString(R.string.Unmute)
-                    subtitle = getString(R.string.mute_until, conversation.muteUntil?.localTime())
+                    subtitle = getString(R.string.Mute_until, conversation.muteUntil?.localTime())
                     action = { unMute() }
                 }
             } else {
@@ -300,10 +301,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
         val deleteMenu = if (me != null) {
             menu {
-                title = getString(R.string.group_info_exit_group)
+                title = getString(R.string.Exit_Group)
                 style = MenuStyle.Danger
                 action = {
-                    requireContext().showConfirmDialog(getString(R.string.group_info_exit_group)) {
+                    requireContext().showConfirmDialog(getString(R.string.Exit_Group)) {
                         bottomViewModel.exitGroup(conversationId)
                         dismiss()
                     }
@@ -311,10 +312,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
         } else {
             menu {
-                title = getString(R.string.group_info_delete_group)
+                title = getString(R.string.Delete_Group)
                 style = MenuStyle.Danger
                 action = {
-                    requireContext().showConfirmDialog(getString(R.string.group_info_delete_group)) {
+                    requireContext().showConfirmDialog(getString(R.string.Delete_Group)) {
                         bottomViewModel.deleteGroup(conversationId)
                         callback?.onDelete()
                     }

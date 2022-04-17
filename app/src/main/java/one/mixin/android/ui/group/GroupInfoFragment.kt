@@ -104,7 +104,7 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
                     if (role == ParticipantRole.OWNER.name) {
                         if (userRole == ParticipantRole.ADMIN.name) {
                             choices.add(getString(R.string.group_pop_menu_remove, participant.fullName))
-                            choices.add(getString(R.string.group_pop_menu_dismiss_admin))
+                            choices.add(getString(R.string.Dismiss_as_Admin))
                         } else {
                             choices.add(getString(R.string.group_pop_menu_remove, participant.fullName))
                             choices.add(getString(R.string.Make_group_admin))

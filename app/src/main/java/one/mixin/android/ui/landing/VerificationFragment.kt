@@ -203,7 +203,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                             Session.storeAccount(a)
                         }
                         withContext(Dispatchers.Main) {
-                            alert(getString(R.string.change_phone_success))
+                            alert(getString(R.string.change_phone_number_successfully))
                                 .setPositiveButton(android.R.string.ok) { dialog, _ ->
                                     dialog.dismiss()
                                     activity?.finish()
