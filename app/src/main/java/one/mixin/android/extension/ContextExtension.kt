@@ -1062,6 +1062,28 @@ inline fun <reified T> Fragment.findListener(): T? {
 val Context.notificationManager: NotificationManager
     get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+fun Context.shareFile(file: File, type: String) {
+    Intent().apply {
+        val uri = getUriForFile(file)
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
+        putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
+        setType("application/*")
+        val resInfoList = packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
+        for (resolveInfo in resInfoList) {
+            val packageName = resolveInfo.activityInfo.packageName
+            grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(Intent.createChooser(this, getString(R.string.document)))
+        } catch (ignored: ActivityNotFoundException) {
+            Timber.e(ignored)
+        }
+    }
+}
+
 fun Context.shareMedia(isVideo: Boolean, url: String) {
     var uri: Uri
     val sendIntent = Intent().apply {

@@ -64,37 +64,42 @@ class InviteFragment : BaseFragment() {
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
 
         inviteViewModel.getConversation(conversationId).observe(
-            viewLifecycleOwner,
-            {
-                it.notNullWithElse(
-                    { c ->
-                        val url = c.codeUrl
-                        binding.inviteLink.text = url
-                        binding.inviteForward.setOnClickListener {
-                            url?.let { ForwardActivity.show(requireContext(), url) }
-                        }
-                        binding.inviteCopy.setOnClickListener {
-                            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))
-                            toast(R.string.copied_to_clipboard)
-                        }
-                        binding.inviteQr.setOnClickListener {
-                            InviteQrBottomFragment.newInstance(c.name, c.iconUrl, url)
-                                .show(parentFragmentManager, InviteQrBottomFragment.TAG)
-                        }
-                        binding.inviteShare.setOnClickListener {
-                            val sendIntent = Intent()
-                            sendIntent.action = Intent.ACTION_SEND
-                            sendIntent.putExtra(Intent.EXTRA_TEXT, url)
-                            sendIntent.type = "text/plain"
-                            startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.invite_title)))
-                        }
-                    },
-                    {
-                        toast(R.string.invite_invalid)
+            viewLifecycleOwner
+        ) {
+            it.notNullWithElse(
+                { c ->
+                    val url = c.codeUrl
+                    binding.inviteLink.text = url
+                    binding.inviteForward.setOnClickListener {
+                        url?.let { ForwardActivity.show(requireContext(), url) }
                     }
-                )
-            }
-        )
+                    binding.inviteCopy.setOnClickListener {
+                        context?.getClipboardManager()
+                            ?.setPrimaryClip(ClipData.newPlainText(null, url))
+                        toast(R.string.copied_to_clipboard)
+                    }
+                    binding.inviteQr.setOnClickListener {
+                        InviteQrBottomFragment.newInstance(c.name, c.iconUrl, url)
+                            .show(parentFragmentManager, InviteQrBottomFragment.TAG)
+                    }
+                    binding.inviteShare.setOnClickListener {
+                        val sendIntent = Intent()
+                        sendIntent.action = Intent.ACTION_SEND
+                        sendIntent.putExtra(Intent.EXTRA_TEXT, url)
+                        sendIntent.type = "text/plain"
+                        startActivity(
+                            Intent.createChooser(
+                                sendIntent,
+                                resources.getText(R.string.invite_title)
+                            )
+                        )
+                    }
+                },
+                {
+                    toast(R.string.invite_invalid)
+                }
+            )
+        }
 
         binding.inviteRevoke.setOnClickListener {
             inviteViewModel.rotate(conversationId).autoDispose(stopScope).subscribe(
