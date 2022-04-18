@@ -22,6 +22,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
@@ -70,6 +71,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
@@ -77,6 +79,9 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.util.UUID
 
 @AndroidEntryPoint
@@ -155,7 +160,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val user = linkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(getUserOrAppNotFoundTip(isAppScheme))
@@ -164,7 +169,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
-                        lifecycleScope.launch {
+                        lifecycleScope.launch(errorHandler) {
                             val app = linkViewModel.findAppById(user.appId!!)
                             if (app != null) {
                                 val url = try {
@@ -202,7 +207,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 toast(R.string.cant_transfer_self)
                 dismiss()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val user = linkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(R.string.error_user_not_found)
@@ -219,7 +224,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         ) {
             if (checkHasPin()) return
 
-            lifecycleScope.launch {
+            lifecycleScope.launch(errorHandler) {
                 if (!showTransfer(url)) {
                     showError(R.string.bottom_sheet_invalid_payment)
                 } else {
@@ -235,7 +240,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else {
                 segments[0]
             }
-            lifecycleScope.launch {
+            lifecycleScope.launch(errorHandler) {
                 val result = linkViewModel.searchCode(code)
                 when (result.first) {
                     QrCodeType.conversation.name -> {
@@ -413,7 +418,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val assetId = uri.getQueryParameter("asset")
                 val addressId = uri.getQueryParameter("address")
                 if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(errorHandler) {
                         val pair = linkViewModel.findAddressById(addressId, assetId)
                         val address = pair.first
                         if (pair.second) {
@@ -456,7 +461,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     Uri.decode(this)
                 }
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(errorHandler) {
                         val asset = checkAsset(assetId)
                         if (asset != null) {
                             PinAddrBottomSheetDialogFragment.newInstance(
@@ -488,7 +493,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             val traceId = uri.getQueryParameter("trace")
             if (!traceId.isNullOrEmpty() && traceId.isUUID()) {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val result = linkViewModel.getSnapshotByTraceId(traceId)
                     if (result != null) {
                         dismiss()
@@ -504,7 +509,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (snapshotId.isNullOrEmpty() || !snapshotId.isUUID()) {
                 showError()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val result = linkViewModel.getSnapshotAndAsset(snapshotId)
                     if (result != null) {
                         dismiss()
@@ -532,7 +537,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ) {
                 showError()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val pair = linkViewModel.findAddressById(addressId, assetId)
                     val address = pair.first
                     val asset = checkAsset(assetId)
@@ -583,7 +588,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.isDonateUrl()) {
             if (checkHasPin()) return
 
-            lifecycleScope.launch {
+            lifecycleScope.launch(errorHandler) {
                 val newUrl = url.replaceFirst(":", "://")
                 if (!showTransfer(newUrl)) {
                     QrScanBottomSheetDialogFragment.newInstance(url)
@@ -602,7 +607,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 return
             }
             val userId = uri.getQueryParameter("user")
-            lifecycleScope.launch {
+            lifecycleScope.launch(errorHandler) {
                 if (userId != null) {
                     val user = linkViewModel.refreshUser(userId)
                     when {
@@ -798,5 +803,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+    }
+
+    private val errorHandler = CoroutineExceptionHandler { _, error ->
+        when (error) {
+            is SocketTimeoutException -> showError(R.string.error_connection_timeout)
+            is UnknownHostException -> showError(R.string.error_no_connection)
+            is IOException -> showError(R.string.error_network)
+            else -> ErrorHandler.handleError(error)
+        }
     }
 }
