@@ -4,11 +4,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemMediaBinding
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadGif
-import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -45,23 +46,22 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
         onClickListener: (imageView: View, messageItem: MessageItem) -> Unit
     ) {
         val binding = ItemMediaBinding.bind(itemView)
-        val params = itemView.layoutParams
-        params.width = size
-        params.height = size
-        itemView.layoutParams = params
+        itemView.updateLayoutParams<ViewGroup.LayoutParams> {
+            width = size
+            height = size
+        }
         val imageView = binding.thumbnailIv
         if (item.isImage()) {
             val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
             if (isGif) {
                 imageView.loadGif(
                     item.absolutePath(),
-                    centerCrop = true,
                     holder = R.drawable.ic_giphy_place_holder,
-                    base64Holder = item.thumbImage
+                    base64Holder = item.thumbImage,
                 )
                 binding.gifTv.isVisible = true
             } else {
-                imageView.loadImageCenterCrop(item.absolutePath(), item.thumbImage)
+                imageView.loadImage(item.absolutePath(), item.thumbImage)
                 binding.gifTv.isVisible = false
             }
             binding.videoIv.isVisible = false
@@ -76,7 +76,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
                 binding.videoIv.isVisible = false
                 binding.durationTv.isVisible = false
             }
-            imageView.loadImageCenterCrop(item.absolutePath(), R.drawable.image_holder)
+            imageView.loadImage(item.absolutePath(), R.drawable.image_holder)
         }
         itemView.setOnClickListener {
             onClickListener(binding.thumbnailIv, item)
