@@ -64,7 +64,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), Frie
     private fun requestCreateEmergency(user: User) = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(
             message = getString(R.string.Please_wait_a_bit),
-            title = getString(if (Session.hasEmergencyContact()) R.string.changing else R.string.Creating)
+            title = getString(if (Session.hasEmergencyContact()) R.string.Changing else R.string.Creating)
         )
         dialog.setCancelable(false)
         dialog.show()

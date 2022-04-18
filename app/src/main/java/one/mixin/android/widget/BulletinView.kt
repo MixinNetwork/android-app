@@ -34,8 +34,8 @@ class BulletinView(context: Context) : ConstraintLayout(context) {
         this.callback = callback
         when (type) {
             Type.NewWallet -> {
-                titleView.setText(R.string.notification_new_wallet_title)
-                contentView.setText(R.string.notification_new_wallet_content)
+                titleView.setText(R.string.Get_a_new_wallet)
+                contentView.setText(R.string.new_wallet_hint)
                 settingView.setText(R.string.Continue)
             }
             Type.Notification -> {

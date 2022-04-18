@@ -88,7 +88,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
-                mobileTitleTv.setText(R.string.landing_enter_new_mobile_number)
+                mobileTitleTv.setText(R.string.Enter_new_mobile_number)
             }
             backIv.setOnClickListener { activity?.onBackPressed() }
             countryIconIv.setOnClickListener { showCountry() }

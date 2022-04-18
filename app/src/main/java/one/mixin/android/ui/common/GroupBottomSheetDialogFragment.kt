@@ -225,7 +225,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 val announcementString = if (TextUtils.isEmpty(conversation.announcement)) {
                     getString(R.string.Add_group_description)
                 } else {
-                    getString(R.string.group_info_edit)
+                    getString(R.string.Edit_group_description)
                 }
                 list.groups.add(
                     menuGroup {
@@ -233,7 +233,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                             title = announcementString
                             action = {
                                 editDialog {
-                                    titleText = this@GroupBottomSheetDialogFragment.getString(R.string.group_info_edit)
+                                    titleText = this@GroupBottomSheetDialogFragment.getString(R.string.Edit_group_description)
                                     editText = conversation.announcement
                                     maxTextCount = 512
                                     editMaxLines = EditDialog.MAX_LINE.toInt()
@@ -412,7 +412,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     private fun showMuteDialog() {
         val choices = arrayOf(
             getString(R.string.one_hour),
-            getString(R.string.eight_hours),
+            getString(R.string.Eight_hours),
             getString(R.string.one_week),
             getString(R.string.one_year)
         )

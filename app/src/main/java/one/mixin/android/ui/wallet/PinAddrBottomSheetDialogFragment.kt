@@ -154,7 +154,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         when (type) {
             ADD -> R.string.withdrawal_addr_add
             MODIFY -> R.string.withdrawal_addr_modify
-            else -> R.string.withdrawal_addr_delete
+            else -> R.string.Delete_withdraw_Address
         },
         assetName
     )

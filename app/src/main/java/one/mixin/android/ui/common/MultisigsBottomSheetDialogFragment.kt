@@ -62,15 +62,15 @@ class MultisigsBottomSheetDialogFragment :
                     title.text = getString(R.string.Revoke_multisig_transaction)
                     arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
                 } else {
-                    title.text = getString(R.string.multisig_transaction)
+                    title.text = getString(R.string.Multisig_Transaction)
                     arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
                 }
             } else {
-                title.text = getString(R.string.multisig_transaction)
+                title.text = getString(R.string.Multisig_Transaction)
                 arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
             }
             subTitle.text = t.memo
-            biometricLayout.payTv.setText(R.string.multisig_pay_pin)
+            biometricLayout.payTv.setText(R.string.Multisig_by_PIN)
             biometricLayout.biometricTv.setText(R.string.Use_Biometric_Multisig)
         }
 
@@ -129,15 +129,15 @@ class MultisigsBottomSheetDialogFragment :
                     if (t.action == SignatureAction.cancel.name) {
                         R.string.Revoke_multisig_transaction
                     } else {
-                        R.string.multisig_transaction
+                        R.string.Multisig_Transaction
                     }
                 } else {
-                    R.string.multisig_transaction
+                    R.string.Multisig_Transaction
                 }
             ),
             t.memo ?: "",
             getDescription(),
-            getString(R.string.multisig_pay_pin)
+            getString(R.string.Multisig_by_PIN)
         )
     }
 

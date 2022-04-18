@@ -81,7 +81,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
             val language = Lingver.getInstance().getLanguage()
             val languageNames = resources.getStringArray(R.array.language_names)
             languageDescTv.text = if (Lingver.getInstance().isFollowingSystemLocale()) {
-                getString(R.string.follow_system)
+                getString(R.string.Follow_system)
             } else {
                 when (language) {
                     Locale.SIMPLIFIED_CHINESE.language -> {
@@ -114,7 +114,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
 
     private fun showLanguageAlert() {
         val choice = resources.getStringArray(R.array.language_names)
-        choice[0] = getString(R.string.follow_system)
+        choice[0] = getString(R.string.Follow_system)
         val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
             POS_FOLLOW_SYSTEM
         } else {

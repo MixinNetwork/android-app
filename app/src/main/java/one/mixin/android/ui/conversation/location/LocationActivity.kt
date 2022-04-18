@@ -213,7 +213,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
         location.notNullWithElse(
             { location ->
-                binding.locationTitle.text = location.name ?: getString(R.string.location_unnamed)
+                binding.locationTitle.text = location.name ?: getString(R.string.Unnamed_location)
                 location.address?.let { address ->
                     binding.locationSubTitle.text = address
                 }

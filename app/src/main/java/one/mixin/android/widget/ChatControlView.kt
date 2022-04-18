@@ -324,7 +324,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     fun hintEncrypt(category: EncryptCategory) {
         binding.chatEt.hint = context.getString(
             if (category.isEncrypt()) {
-                R.string.end_to_end_encryption_short
+                R.string.Encrypted
             } else if (category.isSignal()) {
                 R.string.End_to_End_Encryption
             } else {

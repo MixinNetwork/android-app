@@ -127,7 +127,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     .setNegativeButton(R.string.Cancel) { dialog, _ ->
                         dialog.dismiss()
                     }
-                    .setPositiveButton(R.string.player_action_stop_playing) { _, _ ->
+                    .setPositiveButton(R.string.Stop_Playing) { _, _ ->
                         (requireActivity() as MusicActivity).serviceStopped = true
                         viewModel.stopMusicService()
                         dismiss()

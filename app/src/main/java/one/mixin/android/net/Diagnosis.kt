@@ -31,7 +31,7 @@ fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     result.append("${context.getString(R.string.app_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
         .append("${context.getString(R.string.Manufacturer)}: ${Build.MANUFACTURER}").appendLine()
         .append("${context.getString(R.string.Model)}: ${Build.MODEL}").appendLine()
-        .append("${context.getString(R.string.system_version)}: ${Build.VERSION.RELEASE}").appendLine()
+        .append("${context.getString(R.string.System_version)}: ${Build.VERSION.RELEASE}").appendLine()
         .append("${context.getString(R.string.Time)}: ${Instant.now().toString().timeFormat()}").appendLine()
         .appendLine()
     diagnosisCallback(result.toString())

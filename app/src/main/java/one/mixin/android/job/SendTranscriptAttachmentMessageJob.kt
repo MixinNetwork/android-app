@@ -136,7 +136,7 @@ class SendTranscriptAttachmentMessageJob(
             MixinApplication.appContext.contentResolver.openInputStream(Uri.fromFile(file))
         } catch (e: FileNotFoundException) {
             MixinApplication.appScope.launch(Dispatchers.Main) {
-                toast(R.string.File_does_not_exit)
+                toast(R.string.File_does_not_exist)
             }
             return false
         }

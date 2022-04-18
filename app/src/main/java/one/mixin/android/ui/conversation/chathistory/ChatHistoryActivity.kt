@@ -581,7 +581,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     messenger.sendUnPinMessage(conversationId, Session.getAccount()!!.toUser(), list)
                                     conversationRepository.deletePinMessageByIds(list)
                                     withContext(Dispatchers.Main) {
-                                        toast(R.string.unpin_success)
+                                        toast(R.string.Message_unpinned)
                                     }
                                 }
                             }

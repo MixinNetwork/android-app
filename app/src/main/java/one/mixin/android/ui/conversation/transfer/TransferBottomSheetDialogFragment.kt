@@ -70,10 +70,10 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 is TransferBiometricItem -> {
                     (t as TransferBiometricItem).let {
                         title.text =
-                            getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
+                            getString(R.string.transfer_to, it.user.fullName ?: "")
                         subTitle.text = if (it.user.identityNumber == "0") it.user.userId else "Mixin ID: ${it.user.identityNumber}"
                     }
-                    biometricLayout.payTv.setText(R.string.wallet_pay_with_pin)
+                    biometricLayout.payTv.setText(R.string.Pay_with_PIN)
                     biometricLayout.biometricTv.setText(R.string.Biometric_Payment)
                 }
                 is WithdrawBiometricItem -> {
@@ -106,7 +106,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             is TransferBiometricItem -> {
                 BiometricInfo(
                     getString(
-                        R.string.wallet_bottom_transfer_to,
+                        R.string.transfer_to,
                         t.user.fullName
                     ),
                     getString(
@@ -114,7 +114,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                         t.user.identityNumber
                     ),
                     getDescription(),
-                    getString(R.string.wallet_pay_with_pin)
+                    getString(R.string.Pay_with_PIN)
                 )
             }
             else -> {
@@ -123,7 +123,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                     getString(R.string.withdrawal_to, t.label),
                     t.displayAddress().formatPublicKey(),
                     getDescription(),
-                    getString(R.string.wallet_pay_with_pin)
+                    getString(R.string.Pay_with_PIN)
                 )
             }
         }

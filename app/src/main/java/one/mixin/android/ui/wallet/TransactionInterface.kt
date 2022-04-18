@@ -149,7 +149,7 @@ interface TransactionInterface {
                                 ""
                             }
                             fragment.getString(
-                                R.string.wallet_transaction_that_time_value,
+                                R.string.value_then,
                                 "${Fiats.getSymbol()}$amount $pricePerUnit"
                             )
                         }
@@ -223,7 +223,7 @@ interface TransactionInterface {
         contentBinding.apply {
             thatVa.displayedChild = POS_TEXT
             thatTv.apply {
-                text = fragment.getString(R.string.click_retry)
+                text = fragment.getString(R.string.Click_to_retry)
                 setTextColor(fragment.resources.getColor(R.color.colorDarkBlue, null))
                 setOnClickListener {
                     fetchThatTimePrice(
@@ -279,7 +279,7 @@ interface TransactionInterface {
                 "(${Fiats.getSymbol()}${asset.priceFiat().priceFormat2()}/${snapshot.assetSymbol})"
 
             valueAsTv.text = fragment.getString(
-                R.string.wallet_transaction_current_value,
+                R.string.value_now,
                 "${Fiats.getSymbol()}$amount $pricePerUnit"
             )
             transactionIdTv.text = snapshot.snapshotId
@@ -290,13 +290,13 @@ interface TransactionInterface {
                 SnapshotType.deposit.name -> {
                     senderTitle.text = fragment.getString(R.string.Sender)
                     senderTv.text = snapshot.sender
-                    receiverTitle.text = fragment.getString(R.string.transaction_hash)
+                    receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
                 }
                 SnapshotType.pending.name -> {
                     senderTitle.text = fragment.getString(R.string.Sender)
                     senderTv.text = snapshot.sender
-                    receiverTitle.text = fragment.getString(R.string.transaction_hash)
+                    receiverTitle.text = fragment.getString(R.string.transaction_Hash)
                     receiverTv.text = snapshot.transactionHash
                     transactionStatus.isVisible = true
                     transactionStatusTv.text =
@@ -323,7 +323,7 @@ interface TransactionInterface {
                     } else {
                         receiverTitle.text = fragment.getString(R.string.Receiver)
                     }
-                    senderTitle.text = fragment.getString(R.string.transaction_hash)
+                    senderTitle.text = fragment.getString(R.string.transaction_Hash)
                     senderTv.text = snapshot.transactionHash
                     receiverTv.text = snapshot.receiver
                 }
@@ -356,7 +356,7 @@ interface TransactionInterface {
             SnapshotType.fee.name -> R.string.Fee
             SnapshotType.rebate.name -> R.string.Rebate
             SnapshotType.raw.name -> R.string.Raw
-            else -> R.string.not_applicable
+            else -> R.string.NA
         }
         return fragment.requireContext().getString(s)
     }

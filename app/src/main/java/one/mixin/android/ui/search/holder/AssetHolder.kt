@@ -27,7 +27,7 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
         binding.balance.highLight(target)
         binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
         if (asset.priceUsd == "0") {
-            binding.priceTv.setText(R.string.not_applicable)
+            binding.priceTv.setText(R.string.NA)
             binding.changeTv.visibility = View.GONE
         } else {
             binding.changeTv.visibility = View.VISIBLE

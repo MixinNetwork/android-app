@@ -109,7 +109,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyViewIv.visibility = View.INVISIBLE
             }
             messageItem.isData() -> {
-                binding.replyViewTv.setText(R.string.Document)
+                binding.replyViewTv.setText(R.string.File)
                 setIcon(R.drawable.ic_type_file)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE

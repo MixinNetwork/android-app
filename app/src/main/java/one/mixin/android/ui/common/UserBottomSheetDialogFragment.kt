@@ -862,7 +862,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private fun showMuteDialog() {
         val choices = arrayOf(
             getString(R.string.one_hour),
-            getString(R.string.eight_hours),
+            getString(R.string.Eight_hours),
             getString(R.string.one_week),
             getString(R.string.one_year)
         )

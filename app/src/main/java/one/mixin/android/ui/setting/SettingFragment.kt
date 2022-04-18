@@ -61,7 +61,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 sendIntent.action = Intent.ACTION_SEND
                 sendIntent.putExtra(
                     Intent.EXTRA_TEXT,
-                    getString(R.string.setting_share_text, Session.getAccount()?.identityNumber)
+                    getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber)
                 )
                 sendIntent.type = "text/plain"
                 startActivity(

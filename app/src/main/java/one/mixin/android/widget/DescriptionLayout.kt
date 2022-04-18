@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Layout
 import android.text.StaticLayout
@@ -28,6 +29,7 @@ class DescriptionLayout : ViewGroup {
         requestLayout()
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val childCount = childCount
         if (childCount != 2) {
@@ -60,13 +62,13 @@ class DescriptionLayout : ViewGroup {
             lineWidth + secondView.measuredWidth <= w - paddingWidth -> {
                 val height = lineHeight * 3
                 setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                secondView.setText(R.string.group_info_show_more_omit)
+                secondView.text = " ${context.getString(R.string.show_more)}"
                 TAIL
             }
             else -> {
                 val height = lineHeight * 3
                 setMeasuredDimension(w + paddingWidth, height + paddingHeight)
-                secondView.setText(R.string.group_info_show_more)
+                secondView.setText(R.string.show_more)
                 BOTTOM
             }
         }

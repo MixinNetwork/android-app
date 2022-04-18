@@ -195,7 +195,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         binding.apply {
             pin.clear()
             titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
-            tipTv.text = getString(R.string.wallet_password_confirm_3)
+            tipTv.text = getString(R.string.fourth_pin_confirm_hint)
         }
     }
 
@@ -240,7 +240,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
                 val dialog = indeterminateProgressDialog(
                     message = getString(R.string.Please_wait_a_bit),
-                    title = if (change) getString(R.string.changing) else getString(R.string.Creating)
+                    title = if (change) getString(R.string.Changing) else getString(R.string.Creating)
                 )
                 dialog.setCancelable(false)
                 dialog.show()

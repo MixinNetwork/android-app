@@ -305,7 +305,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                                 }
                                 val file = Uri.parse(path).toFile()
                                 if (!file.exists()) {
-                                    toast(R.string.File_does_not_exit)
+                                    toast(R.string.File_does_not_exist)
                                     return@async
                                 }
                                 val outFile = when {
@@ -397,7 +397,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
             if (ContentResolver.SCHEME_FILE == uri.scheme) {
                 val path = uri.getFilePath(this@TranscriptMediaPagerActivity)
                 if (path == null) {
-                    toast(R.string.File_does_not_exit)
+                    toast(R.string.File_does_not_exist)
                     return
                 }
                 uri = getUriForFile(File(path))
@@ -611,7 +611,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     private val onLockClickListener = View.OnClickListener {
         isLocked = !isLocked
         if (isLocked) {
-            binding.lockTv.text = getString(R.string.click_unlock)
+            binding.lockTv.text = getString(R.string.Click_to_unlock)
             binding.lockTv.textColor = getColor(R.color.colorAccent)
         } else {
             binding.lockTv.text = getString(R.string.Click_to_lock)

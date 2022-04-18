@@ -78,7 +78,7 @@ class MobileContactFragment : BaseFragment(R.layout.fragment_setting_mobile_cont
     private fun setDelete() {
         if (viewDestroyed()) return
         binding.apply {
-            opTv.setText(R.string.setting_mobile_contact_delete)
+            opTv.setText(R.string.Delete_Synced_Contact)
             opTv.textColorResource = R.color.colorRed
             opRl.setOnClickListener {
                 alertDialogBuilder()

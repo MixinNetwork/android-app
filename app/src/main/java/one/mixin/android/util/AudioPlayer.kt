@@ -226,7 +226,7 @@ class AudioPlayer private constructor() {
             toast(R.string.error_bad_data)
             return
         } else if (!messageItem.absolutePath()!!.fileExists()) {
-            toast(R.string.File_does_not_exit)
+            toast(R.string.File_does_not_exist)
             return
         }
         if (id != messageItem.messageId) {

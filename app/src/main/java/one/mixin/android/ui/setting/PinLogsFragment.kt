@@ -121,13 +121,13 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 "VERIFICATION" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Verify))
                 "RAW_TRANSFER" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.log_pin_raw_transfer))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer_to_Mixin_address))
                 "USER_TRANSFER" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.log_pin_user_transfer))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Transfer_to_user_or_bot))
                 "WITHDRAWAL" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Withdrawal))
                 "ADD_ADDRESS" ->
-                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.add_address))
+                    return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Add_address))
                 "DELETE_ADDRESS" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Delete_address))
                 "ADD_EMERGENCY" ->
@@ -145,17 +145,17 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 "MULTISIG_UNLOCK" ->
                     return Pair(context.getString(R.string.PIN_incorrect), context.getString(R.string.Revoke_multisig_transaction))
                 "ACTIVITY_PIN_MODIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_pin_change), context.getString(R.string.PIN_modification))
+                    return Pair(context.getString(R.string.PIN_change), context.getString(R.string.PIN_modification))
                 "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
                     return Pair(context.getString(R.string.Emergency_Contact), context.getString(R.string.log_emergency_contact_modification))
                 "ACTIVITY_PHONE_MODIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_phone_change), context.getString(R.string.log_phone_number_modification))
+                    return Pair(context.getString(R.string.Phone_number_change), context.getString(R.string.log_phone_number_modification))
                 "ACTIVITY_LOGIN_BY_PHONE" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.log_login_phone))
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_phone_number))
                 "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.log_login_emergency))
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_with_emergency_contact))
                 "ACTIVITY_LOGIN_FROM_DESKTOP" ->
-                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.log_login_desktop_app))
+                    return Pair(context.getString(R.string.Sign_in), context.getString(R.string.Sign_in_desktop_app))
                 else ->
                     return Pair(code, code)
             }

@@ -95,7 +95,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
                 if (isNotification) {
                     R.string.Transfer_Amount_count_down
                 } else {
-                    R.string.wallet_transaction_tip_title_with_symbol
+                    R.string.Large_Amount_Confirmation_with_symbol
                 },
                 accountSymbol
             )

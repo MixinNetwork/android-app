@@ -61,7 +61,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         binding.apply {
             title.text = getString(R.string.Transfer)
             arrowIv.setImageResource(R.drawable.ic_multisigs_arrow_right)
-            biometricLayout.payTv.setText(R.string.multisig_pay_pin)
+            biometricLayout.payTv.setText(R.string.Multisig_by_PIN)
             biometricLayout.biometricTv.setText(R.string.Use_Biometric_Multisig)
             nftIv.round(4.dp)
         }
@@ -137,12 +137,12 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 if (t.action == SignatureAction.cancel.name) {
                     R.string.Revoke_multisig_transaction
                 } else {
-                    R.string.multisig_transaction
+                    R.string.Multisig_Transaction
                 }
             ),
             t.memo ?: "",
             "",
-            getString(R.string.wallet_pay_with_pin)
+            getString(R.string.Pay_with_PIN)
         )
     }
 

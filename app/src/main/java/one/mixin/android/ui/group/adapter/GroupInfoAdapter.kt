@@ -50,7 +50,7 @@ class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantI
             binding.verifyIv.visibility = if (participant.isVerified != null && participant.isVerified) VISIBLE else GONE
             when (participant.role) {
                 ParticipantRole.OWNER.name -> {
-                    binding.desc.setText(R.string.owner)
+                    binding.desc.setText(R.string.Owner)
                     binding.desc.isVisible = true
                 }
                 ParticipantRole.ADMIN.name -> {

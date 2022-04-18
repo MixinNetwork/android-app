@@ -142,7 +142,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         binding.replyContentTv.text = it
                     },
                     {
-                        binding.replyContentTv.setText(R.string.Document)
+                        binding.replyContentTv.setText(R.string.File)
                     }
                 )
                 setIcon(R.drawable.ic_type_file)

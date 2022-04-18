@@ -110,7 +110,7 @@ class WebActivity : BaseActivity() {
 
         binding.clear.setOnClickListener {
             alertDialogBuilder()
-                .setMessage(getString(R.string.web_delete_tip))
+                .setMessage(getString(R.string.Remove_all_floats))
                 .setNegativeButton(R.string.Cancel) { dialog, _ ->
                     dialog.dismiss()
                 }

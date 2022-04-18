@@ -126,7 +126,7 @@ class TranscriptHolder constructor(val binding: ItemChatTranscriptBinding) :
                             str.append("${it.name}: [${itemView.context.getString(R.string.Video)}]\n")
                         }
                         it.isData() -> {
-                            str.append("${it.name}: [${itemView.context.getString(R.string.Document)}]\n")
+                            str.append("${it.name}: [${itemView.context.getString(R.string.File)}]\n")
                         }
                         it.isAudio() -> {
                             str.append("${it.name}: [${itemView.context.getString(R.string.Audio)}]\n")

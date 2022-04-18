@@ -463,7 +463,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.closeIb.isVisible = true
         binding.minimizeIb.isVisible = false
         binding.declineTv.isVisible = true
-        updateTitle(getString(R.string.call_notification_incoming_voice))
+        updateTitle(getString(R.string.Incoming_voice_call))
     }
 
     private fun handleJoin() {
@@ -484,7 +484,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
         binding.declineTv.isVisible = false
-        updateTitle(getString(R.string.call_notification_outgoing))
+        updateTitle(getString(R.string.Calling))
     }
 
     private fun handleAnswering() {
@@ -495,7 +495,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.closeIb.isVisible = false
         binding.minimizeIb.isVisible = true
         binding.declineTv.isVisible = false
-        updateTitle(getString(R.string.call_connecting))
+        updateTitle(getString(R.string.in_connecting))
     }
 
     private fun handleConnected(disconnected: Boolean) {

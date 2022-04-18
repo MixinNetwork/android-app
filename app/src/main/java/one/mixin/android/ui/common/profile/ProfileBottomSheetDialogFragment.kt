@@ -202,11 +202,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             menuGroup {
                 menu {
-                    title = getString(R.string.change_profile_photo_with_camera)
+                    title = getString(R.string.Change_Profile_Photo_with_Camera)
                     action = { changePhoto(true) }
                 }
                 menu {
-                    title = getString(R.string.change_profile_photo_with_Library)
+                    title = getString(R.string.Change_Profile_Photo_with_Library)
                     action = { changePhoto(false) }
                 }
             }

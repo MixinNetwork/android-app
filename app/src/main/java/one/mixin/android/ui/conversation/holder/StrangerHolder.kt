@@ -10,8 +10,8 @@ class StrangerHolder constructor(val binding: ItemChatStrangerBinding) : BaseVie
     fun bind(onItemListener: ConversationAdapter.OnItemListener, isBot: Boolean) {
         if (isBot) {
             binding.strangerInfo.setText(R.string.bot_interact_info)
-            binding.strangerBlockBn.setText(R.string.bot_interact_open)
-            binding.strangerAddBn.setText(R.string.bot_interact_hi)
+            binding.strangerBlockBn.setText(R.string.Open_Home_page)
+            binding.strangerAddBn.setText(R.string.Say_Hi)
         } else {
             binding.strangerInfo.setText(R.string.stranger_from)
             binding.strangerBlockBn.setText(R.string.Block)

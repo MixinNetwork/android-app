@@ -33,7 +33,7 @@ class BatteryOptimizationDialogActivity : BaseActivity() {
                 dialog.dismiss()
                 finish()
             }
-            .setPositiveButton(R.string.go_set) { dialog, _ ->
+            .setPositiveButton(R.string.Go_settings) { dialog, _ ->
                 handleIgnoreBatteryOptimization(newTask)
                 dialog.dismiss()
                 finish()

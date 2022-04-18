@@ -366,7 +366,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                 val file = Uri.parse(item.absolutePath()).toFile()
                                 if (!file.exists()) {
                                     withContext(Dispatchers.Main) {
-                                        toast(R.string.File_does_not_exit)
+                                        toast(R.string.File_does_not_exist)
                                     }
                                     return@launch
                                 }
@@ -658,7 +658,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     private val onLockClickListener = View.OnClickListener {
         isLocked = !isLocked
         if (isLocked) {
-            binding.lockTv.text = getString(R.string.click_unlock)
+            binding.lockTv.text = getString(R.string.Click_to_unlock)
             binding.lockTv.textColor = getColor(R.color.colorAccent)
         } else {
             binding.lockTv.text = getString(R.string.Click_to_lock)

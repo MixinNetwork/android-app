@@ -35,18 +35,18 @@ data class Scope(val name: String, val desc: String) : Parcelable {
 
 fun Scope.convertName(ctx: Context): String {
     val id = when (name) {
-        Scope.SCOPES[0] -> R.string.auth_public_profile
+        Scope.SCOPES[0] -> R.string.Public_profile
         Scope.SCOPES[1] -> R.string.Phone_Number
-        Scope.SCOPES[2] -> R.string.auth_messages_represent
-        Scope.SCOPES[3] -> R.string.auth_permission_contacts_read
-        Scope.SCOPES[4] -> R.string.auth_assets
-        Scope.SCOPES[5] -> R.string.auth_snapshot_read
-        Scope.SCOPES[6] -> R.string.auth_app_read
-        Scope.SCOPES[7] -> R.string.auth_apps_write
-        Scope.SCOPES[8] -> R.string.auth_circles_read
-        Scope.SCOPES[9] -> R.string.auth_circles_write
-        Scope.SCOPES[10] -> R.string.auth_collectibles_read
-        else -> R.string.auth_public_profile
+        Scope.SCOPES[2] -> R.string.Represent_Messages
+        Scope.SCOPES[3] -> R.string.Read_Contacts
+        Scope.SCOPES[4] -> R.string.Read_Assets
+        Scope.SCOPES[5] -> R.string.Read_Snapshots
+        Scope.SCOPES[6] -> R.string.Read_Apps
+        Scope.SCOPES[7] -> R.string.Manage_Apps
+        Scope.SCOPES[8] -> R.string.Read_Circles
+        Scope.SCOPES[9] -> R.string.Write_Circles
+        Scope.SCOPES[10] -> R.string.Read_Collectibles
+        else -> R.string.Public_profile
     }
     return ctx.getString(id)
 }

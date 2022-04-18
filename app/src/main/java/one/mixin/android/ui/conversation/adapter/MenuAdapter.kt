@@ -38,7 +38,7 @@ class MenuAdapter(
             add(voiceMenu)
         }
         add(Menu(MenuType.Camera, R.string.Camera, R.drawable.ic_menu_camera, null))
-        add(Menu(MenuType.File, R.string.Document, R.drawable.ic_menu_file, null))
+        add(Menu(MenuType.File, R.string.File, R.drawable.ic_menu_file, null))
         add(Menu(MenuType.Contact, R.string.Contact, R.drawable.ic_menu_contact, null))
         add(Menu(MenuType.Location, R.string.Location, R.drawable.ic_menu_location, null))
     }

@@ -971,7 +971,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val openMenu = menu {
-            title = getString(R.string.open_in_browser)
+            title = getString(R.string.Open_in_browser)
             icon = R.drawable.ic_web_browser
             action = {
                 (webView.url ?: currentUrl)?.let {
@@ -1021,7 +1021,7 @@ class WebFragment : BaseFragment() {
             }
         }
         val viewAuthMenu = menu {
-            title = getString(R.string.action_view_authorization)
+            title = getString(R.string.View_Authorization)
             icon = R.drawable.ic_web_floating
             action = {
                 val app = requireNotNull(app)

@@ -186,15 +186,15 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.withdrawal_addr_tag_link)
+                    getString(R.string.No_tag)
                 } else {
-                    getString(R.string.withdrawal_addr_memo_link)
+                    getString(R.string.withdrawal_no_memo)
                 }
             )
         } else {
             binding.tagEt.isEnabled = memoEnabled
             binding.tagRl.isVisible = memoEnabled
-            binding.tagEt.setText(R.string.withdrawal_no_tag)
+            binding.tagEt.setText(R.string.No_Memo)
             binding.tagIv.isVisible = memoEnabled
             binding.info.setOnClickListener {
                 memoEnabled = true
@@ -211,9 +211,9 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.add_tag)
+                    getString(R.string.Add_tag)
                 } else {
-                    getString(R.string.add_memo)
+                    getString(R.string.Add_memo)
                 }
             )
         }

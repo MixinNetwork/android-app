@@ -198,13 +198,13 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun showFirstWithdrawalTip(t: WithdrawBiometricItem) {
         binding.titleTv.text = getString(R.string.withdrawal_title, t.asset.symbol)
         binding.warningTv.text = getString(R.string.withdrawal_address_tips)
-        binding.continueTv.text = getString(R.string.change_amount)
+        binding.continueTv.text = getString(R.string.Change_Amount)
         binding.continueTv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
         binding.continueTv.setOnClickListener {
             callback?.onCancel()
             dismiss()
         }
-        binding.cancelTv.text = getString(R.string.action_continue_withdrawal)
+        binding.cancelTv.text = getString(R.string.Continue_withdrawal)
         binding.cancelTv.setTextColor(resources.getColor(R.color.colorDarkBlue, null))
         binding.cancelTv.setOnClickListener {
             callback?.onSuccess()

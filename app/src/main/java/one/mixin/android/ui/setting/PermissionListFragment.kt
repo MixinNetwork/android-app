@@ -90,7 +90,7 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
             .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
+            .setMessage(getString(R.string.Revoke_access_with, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
                 val pb = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                     setCancelable(false)

@@ -376,7 +376,7 @@ class ConversationListFragment : LinkFragment() {
                     binding.emptyView.startBn.setText(R.string.Start_Messaging)
                 } else {
                     binding.emptyView.infoTv.setText(R.string.circle_empty_info)
-                    binding.emptyView.startBn.setText(R.string.add_conversations)
+                    binding.emptyView.startBn.setText(R.string.Add_conversations)
                 }
                 binding.emptyView.root.isVisible = true
             } else {
@@ -1040,7 +1040,7 @@ class ConversationListFragment : LinkFragment() {
     private fun showMuteDialog(conversationItem: ConversationItem) {
         val choices = arrayOf(
             getString(R.string.one_hour),
-            getString(R.string.eight_hours),
+            getString(R.string.Eight_hours),
             getString(R.string.one_week),
             getString(R.string.one_year)
         )

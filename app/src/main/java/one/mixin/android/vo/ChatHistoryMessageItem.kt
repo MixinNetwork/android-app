@@ -97,7 +97,7 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     val file = filePath.toUri().toFile()
     if (!file.exists()) {
         reportException(IllegalStateException("Save messageItem failure, category: $type, mediaUrl: $mediaUrl, absolutePath: $filePath"))
-        toast(R.string.File_does_not_exit)
+        toast(R.string.File_does_not_exist)
         return
     }
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
