@@ -132,7 +132,7 @@
     <string name="not_recognized">Not recognized</string>
     <string name="eos_contract_address">EOS contract address</string>
     <string name="action_export_md">Export markdown</string>
-    <string name="action_export_pdf">Export pdf</string>
+    <string name="action_export_pdf">Export PDF</string>
     <string name="action_notice">Notice</string>
     <string name="action_close">Close</string>
     <string name="action_add_sticker">Add sticker</string>

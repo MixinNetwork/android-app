@@ -124,7 +124,7 @@
     <string name="not_recognized">无法识别</string>
     <string name="eos_contract_address">EOS 合约地址</string>
     <string name="action_export_md">导出为 Markdown</string>
-    <string name="action_export_pdf">导出为 Pdf</string>
+    <string name="action_export_pdf">导出为 PDF</string>
     <string name="action_notice">注意</string>
     <string name="action_close">关闭</string>
     <string name="action_reply">回复</string>
