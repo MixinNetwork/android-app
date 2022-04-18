@@ -3,6 +3,7 @@ package one.mixin.android.extension
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -65,9 +66,13 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.job.BlazeMessageService
+import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.video.MediaController
@@ -1109,4 +1114,39 @@ fun Context.callPhone(phone: String) {
     } catch (e: Exception) {
         Timber.e(e)
     }
+}
+
+fun Context.createBlazeNotification(): Notification {
+    val exitIntent = Intent(this, ExitBroadcastReceiver::class.java).apply {
+        action = BlazeMessageService.ACTION_TO_BACKGROUND
+    }
+    val exitPendingIntent = PendingIntent.getBroadcast(
+        this, 0, exitIntent,
+        PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val builder = NotificationCompat.Builder(this, BlazeMessageService.CHANNEL_NODE)
+        .setContentTitle(getString(R.string.app_name))
+        .setContentText(getString(R.string.background_connection_enabled))
+        .setPriority(NotificationCompat.PRIORITY_MIN)
+        .setWhen(0)
+        .setDefaults(0)
+        .setSound(null)
+        .setDefaults(0)
+        .setOnlyAlertOnce(true)
+        .setColor(ContextCompat.getColor(this, R.color.colorLightBlue))
+        .setSmallIcon(R.drawable.ic_msg_default)
+        .addAction(R.drawable.ic_close_black, getString(R.string.action_exit), exitPendingIntent)
+    val pendingIntent = PendingIntent.getActivity(
+        this, 0, MainActivity.getWakeUpIntent(this),
+        PendingIntent.FLAG_IMMUTABLE
+    )
+
+    builder.setContentIntent(pendingIntent)
+
+    supportsOreo {
+        ChannelManager.createNodeChannel(notificationManager)
+    }
+
+    return builder.build()
 }

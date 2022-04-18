@@ -1,13 +1,10 @@
 package one.mixin.android.job
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
-import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -19,22 +16,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.createBlazeNotification
+import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.notificationManager
-import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
-import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
-import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -70,6 +63,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val intent = Intent(ctx, BlazeMessageService::class.java)
             ctx.stopService(intent)
         }
+
+        fun isRunning(context: Context) = context.isServiceRunning(BlazeMessageService::class.java)
     }
 
     @Inject
@@ -158,37 +153,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     @SuppressLint("NewApi")
     private fun setForegroundIfNecessary() {
-        val exitIntent = Intent(this, ExitBroadcastReceiver::class.java).apply {
-            action = ACTION_TO_BACKGROUND
-        }
-        val exitPendingIntent = PendingIntent.getBroadcast(
-            this, 0, exitIntent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.background_connection_enabled))
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-            .setWhen(0)
-            .setDefaults(0)
-            .setSound(null)
-            .setDefaults(0)
-            .setOnlyAlertOnce(true)
-            .setColor(ContextCompat.getColor(this, R.color.colorLightBlue))
-            .setSmallIcon(R.drawable.ic_msg_default)
-            .addAction(R.drawable.ic_close_black, getString(R.string.action_exit), exitPendingIntent)
-        val pendingIntent = PendingIntent.getActivity(
-            this, 0, MainActivity.getWakeUpIntent(this),
-            PendingIntent.FLAG_IMMUTABLE
-        )
-
-        builder.setContentIntent(pendingIntent)
-
-        supportsOreo {
-            createNodeChannel(notificationManager)
-        }
-        startForeground(FOREGROUND_ID, builder.build())
+        val notification = createBlazeNotification()
+        startForeground(FOREGROUND_ID, notification)
     }
 
     private fun startAckJob() {

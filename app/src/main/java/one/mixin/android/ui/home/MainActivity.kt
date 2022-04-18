@@ -137,6 +137,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.MaterialSearchView
+import one.mixin.android.worker.ReminderNotificationWorker
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -343,6 +344,8 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
+
+        ReminderNotificationWorker.schedule(this@MainActivity)
     }
 
     @SuppressLint("RestrictedApi")
