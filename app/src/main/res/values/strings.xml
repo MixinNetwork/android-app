@@ -131,8 +131,8 @@
     <string name="disabled">Disabled</string>
     <string name="not_recognized">Not recognized</string>
     <string name="eos_contract_address">EOS contract address</string>
-    <string name="action_save_md">Save markdown</string>
-    <string name="action_save_pdf">Save pdf</string>
+    <string name="action_export_md">Export markdown</string>
+    <string name="action_export_pdf">Export pdf</string>
     <string name="action_notice">Notice</string>
     <string name="action_close">Close</string>
     <string name="action_add_sticker">Add sticker</string>
@@ -329,6 +329,7 @@
     <string name="save_success">Save success</string>
     <string name="save_to">Save to %1$s</string>
     <string name="save_failure">Save failure</string>
+    <string name="export_failure">export failure</string>
     <string name="hold_to_record_audio">Hold to record, release to send</string>
     <string name="chat_call_duration">Duration: %1$s</string>
     <string name="chat_call_canceled">Cancelled</string>

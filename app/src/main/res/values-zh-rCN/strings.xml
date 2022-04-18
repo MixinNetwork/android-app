@@ -123,8 +123,8 @@
     <string name="disabled">已停用</string>
     <string name="not_recognized">无法识别</string>
     <string name="eos_contract_address">EOS 合约地址</string>
-    <string name="action_save_md">保存为 Markdown</string>
-    <string name="action_save_pdf">保存为 Pdf</string>
+    <string name="action_export_md">导出为 Markdown</string>
+    <string name="action_export_pdf">导出为 Pdf</string>
     <string name="action_notice">注意</string>
     <string name="action_close">关闭</string>
     <string name="action_reply">回复</string>
@@ -302,6 +302,7 @@
     <string name="save_success">保存成功</string>
     <string name="save_to">保存到 %1$s</string>
     <string name="save_failure">保存失败</string>
+    <string name="export_failure">导出失败</string>
     <string name="hold_to_record_audio">长按说话，松手发送</string>
     <string name="chat_call_duration">通话时长 %1$s</string>
     <string name="chat_call_canceled">已取消</string>

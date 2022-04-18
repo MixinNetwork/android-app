@@ -25,10 +25,11 @@ import one.mixin.android.databinding.ActivityMarkdownBinding
 import one.mixin.android.databinding.ViewMarkdownBinding
 import one.mixin.android.extension.createPdfTemp
 import one.mixin.android.extension.createPostTemp
-import one.mixin.android.extension.getPublicDocumentPath
+import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.shareFile
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
@@ -139,7 +140,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.export_failure)
                     }
                 )
         }
@@ -160,7 +161,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
-                        toast(R.string.save_failure)
+                        toast(R.string.export_failure)
                     }
                 )
         }
@@ -172,17 +173,17 @@ class MarkdownActivity : BaseActivity() {
             val markdown = intent.getStringExtra(CONTENT) ?: return@launch
             try {
                 withContext(Dispatchers.IO) {
-                    val path = getPublicDocumentPath()
+                    val path = getOtherPath()
                     val file = path.createPostTemp()
                     file.outputStream().writer().use { writer ->
                         writer.write(markdown)
                     }
                     withContext(Dispatchers.Main) {
-                        toast(getString(R.string.save_to, file.absolutePath))
+                        this@MarkdownActivity.shareFile(file, "text/*")
                     }
                 }
             } catch (e: Exception) {
-                toast(R.string.save_failure)
+                toast(R.string.export_failure)
             }
             dismissAction()
         }
@@ -202,7 +203,7 @@ class MarkdownActivity : BaseActivity() {
             binding.recyclerView.adapter?.itemCount ?: 0
         )
 
-        val pdfFile = this@MarkdownActivity.getPublicDocumentPath()
+        val pdfFile = this@MarkdownActivity.getOtherPath()
             .createPdfTemp()
         val flavour = GFMFlavourDescriptor()
         val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
@@ -223,14 +224,14 @@ class MarkdownActivity : BaseActivity() {
             this@MarkdownActivity, pdfHtml, pdfFile,
             object : PrintPdfCallback {
                 override fun onSuccess() {
-                    toast(getString(R.string.save_to, pdfFile.absoluteFile))
+                    this@MarkdownActivity.shareFile(pdfFile, "application/pdf")
                     dismissAction.invoke()
                     dialog.dismiss()
                 }
 
                 override fun onFailure(error: CharSequence?) {
                     dialog.dismiss()
-                    toast(R.string.save_failure)
+                    toast(R.string.export_failure)
                 }
             }
         )
