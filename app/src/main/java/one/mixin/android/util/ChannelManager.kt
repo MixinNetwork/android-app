@@ -9,6 +9,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.annotation.IntDef
 import androidx.annotation.RequiresApi
 import one.mixin.android.MixinApplication
@@ -20,6 +21,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.supportsQ
 import one.mixin.android.job.BlazeMessageService
+import one.mixin.android.util.RomUtil.isEmui
 import timber.log.Timber
 
 class ChannelManager {
@@ -78,8 +80,12 @@ class ChannelManager {
                         NotificationManager.IMPORTANCE_HIGH
                     )
 
-                val uri = Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/raw/mixin")
                 messageChannel.group = CHANNEL_MESSAGE_GROUP
+                val uri = if (isEmui) {
+                    Settings.System.DEFAULT_NOTIFICATION_URI
+                } else {
+                    Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/raw/mixin")
+                }
                 messageChannel.setSound(
                     uri,
                     AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -138,13 +144,23 @@ class ChannelManager {
             val existingChannels =
                 context.notificationManager.notificationChannels ?: return
             try {
-                context.notificationManager.notificationChannelGroups.forEach {
-                    context.notificationManager.deleteNotificationChannelGroup(it.id)
-                }
                 existingChannels.forEach {
                     if (it.id.startsWith(CHANNEL_GROUP) || it.id.startsWith(CHANNEL_MESSAGE) || it.id.startsWith(CHANNEL_SILENCE_MESSAGE)) {
                         context.notificationManager.deleteNotificationChannel(it.id)
                     }
+                }
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        fun readChannelProp(context: Context) {
+            val existingChannels =
+                context.notificationManager.notificationChannels ?: return
+            try {
+                existingChannels.forEach {
+                    Timber.e("name:${it.group}-audioAttributes:${it.audioAttributes}-sound:${it.sound}-importance${it.importance}")
                 }
             } catch (e: Exception) {
                 Timber.e(e)
