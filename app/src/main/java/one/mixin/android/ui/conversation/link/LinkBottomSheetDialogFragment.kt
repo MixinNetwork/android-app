@@ -810,7 +810,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             is SocketTimeoutException -> showError(R.string.error_connection_timeout)
             is UnknownHostException -> showError(R.string.error_no_connection)
             is IOException -> showError(R.string.error_network)
-            else -> ErrorHandler.handleError(error)
+            else -> {
+                ErrorHandler.handleError(error)
+                showError()
+            }
         }
     }
 }
