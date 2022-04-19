@@ -66,8 +66,8 @@ class BottomSheetViewModel @Inject internal constructor(
     private val assetRepository: AssetRepository,
     private val conversationRepo: ConversationRepository
 ) : ViewModel() {
-    fun searchCode(code: String): Observable<Pair<String, Any>> {
-        return accountRepository.searchCode(code).observeOn(AndroidSchedulers.mainThread())
+    suspend fun searchCode(code: String) = withContext(Dispatchers.IO) {
+        accountRepository.searchCode(code)
     }
 
     fun join(code: String): Observable<MixinResponse<ConversationResponse>> =

@@ -21,8 +21,8 @@ import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
@@ -71,6 +71,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
@@ -78,6 +79,9 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.util.UUID
 
 @AndroidEntryPoint
@@ -156,7 +160,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val user = linkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(getUserOrAppNotFoundTip(isAppScheme))
@@ -165,7 +169,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
-                        lifecycleScope.launch {
+                        lifecycleScope.launch(errorHandler) {
                             val app = linkViewModel.findAppById(user.appId!!)
                             if (app != null) {
                                 val url = try {
@@ -203,7 +207,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 toast(R.string.cant_transfer_self)
                 dismiss()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val user = linkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(R.string.error_user_not_found)
@@ -220,7 +224,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         ) {
             if (checkHasPin()) return
 
-            lifecycleScope.launch {
+            lifecycleScope.launch(errorHandler) {
                 if (!showTransfer(url)) {
                     showError(R.string.bottom_sheet_invalid_payment)
                 } else {
@@ -236,162 +240,175 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             } else {
                 segments[0]
             }
-            linkViewModel.searchCode(code).autoDispose(scopeProvider).subscribe(
-                { result ->
-                    when (result.first) {
-                        QrCodeType.conversation.name -> {
-                            val response = result.second as ConversationResponse
-                            val found = response.participants.find { it.userId == Session.getAccountId() }
-                            if (found != null) {
-                                linkViewModel.refreshConversation(response.conversationId)
-                                toast(R.string.group_already_in)
-                                context?.let { ConversationActivity.show(it, response.conversationId) }
-                                dismiss()
-                            } else {
-                                lifecycleScope.launch {
-                                    val avatarUserIds = mutableListOf<String>()
-                                    val notExistsUserIdList = mutableListOf<String>()
-                                    for (p in response.participants) {
-                                        val u = linkViewModel.suspendFindUserById(p.userId)
-                                        if (u == null) {
-                                            notExistsUserIdList.add(p.userId)
-                                        }
-                                        if (avatarUserIds.size < 4) {
-                                            avatarUserIds.add(p.userId)
-                                        }
-                                    }
-                                    val avatar4List = avatarUserIds.take(4)
-                                    val iconUrl = if (notExistsUserIdList.isNotEmpty()) {
-                                        linkViewModel.refreshUsers(notExistsUserIdList, response.conversationId, avatar4List)
-                                        null
-                                    } else {
-                                        val avatarUsers = linkViewModel.findMultiUsersByIds(avatar4List.toSet())
-                                        linkViewModel.startGenerateAvatar(response.conversationId, avatar4List)
-
-                                        val name = getIconUrlName(response.conversationId, avatarUsers)
-                                        val f = requireContext().getGroupAvatarPath(name, false)
-                                        f.absolutePath
-                                    }
-                                    val joinGroupConversation = JoinGroupConversation(
-                                        response.conversationId,
-                                        response.name,
-                                        response.announcement,
-                                        response.participants.size,
-                                        iconUrl
-                                    )
-                                    JoinGroupBottomSheetDialogFragment.newInstance(joinGroupConversation, code)
-                                        .showNow(parentFragmentManager, JoinGroupBottomSheetDialogFragment.TAG)
-                                    dismiss()
+            lifecycleScope.launch(errorHandler) {
+                val result = linkViewModel.searchCode(code)
+                when (result.first) {
+                    QrCodeType.conversation.name -> {
+                        val response = result.second as ConversationResponse
+                        val found =
+                            response.participants.find { it.userId == Session.getAccountId() }
+                        if (found != null) {
+                            linkViewModel.refreshConversation(response.conversationId)
+                            toast(R.string.group_already_in)
+                            context?.let { ConversationActivity.show(it, response.conversationId) }
+                            dismiss()
+                        } else {
+                            val avatarUserIds = mutableListOf<String>()
+                            val notExistsUserIdList = mutableListOf<String>()
+                            for (p in response.participants) {
+                                val u = linkViewModel.suspendFindUserById(p.userId)
+                                if (u == null) {
+                                    notExistsUserIdList.add(p.userId)
+                                }
+                                if (avatarUserIds.size < 4) {
+                                    avatarUserIds.add(p.userId)
                                 }
                             }
-                        }
-                        QrCodeType.user.name -> {
-                            val user = result.second as User
-                            val account = Session.getAccount()
-                            if (account != null && account.userId == (result.second as User).userId) {
-                                toast("It's your QR Code, please try another.")
+                            val avatar4List = avatarUserIds.take(4)
+                            val iconUrl = if (notExistsUserIdList.isNotEmpty()) {
+                                linkViewModel.refreshUsers(
+                                    notExistsUserIdList,
+                                    response.conversationId,
+                                    avatar4List
+                                )
+                                null
                             } else {
-                                showUserBottom(parentFragmentManager, user)
+                                val avatarUsers =
+                                    linkViewModel.findMultiUsersByIds(avatar4List.toSet())
+                                linkViewModel.startGenerateAvatar(
+                                    response.conversationId,
+                                    avatar4List
+                                )
+
+                                val name = getIconUrlName(response.conversationId, avatarUsers)
+                                val f = requireContext().getGroupAvatarPath(name, false)
+                                f.absolutePath
                             }
+                            val joinGroupConversation = JoinGroupConversation(
+                                response.conversationId,
+                                response.name,
+                                response.announcement,
+                                response.participants.size,
+                                iconUrl
+                            )
+                            JoinGroupBottomSheetDialogFragment.newInstance(
+                                joinGroupConversation,
+                                code
+                            ).showNow(
+                                parentFragmentManager,
+                                JoinGroupBottomSheetDialogFragment.TAG
+                            )
                             dismiss()
                         }
-                        QrCodeType.authorization.name -> {
-                            val authorization = result.second as AuthorizationResponse
-                            lifecycleScope.launch {
-                                val assets = linkViewModel.simpleAssetsWithBalance()
-                                activity?.let {
-                                    val scopes = authorization.getScopes(it, assets)
-                                    AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
-                                        .showNow(parentFragmentManager, AuthBottomSheetDialogFragment.TAG)
-                                    authOrPay = true
-                                    dismiss()
-                                }
-                            }
-                        }
-                        QrCodeType.multisig_request.name -> {
-                            if (checkHasPin()) return@subscribe
-
-                            val multisigs = result.second as MultisigsResponse
-                            lifecycleScope.launch {
-                                val asset = checkAsset(multisigs.assetId)
-                                if (asset != null) {
-                                    val multisigsBiometricItem = Multi2MultiBiometricItem(
-                                        requestId = multisigs.requestId,
-                                        action = multisigs.action,
-                                        senders = multisigs.senders,
-                                        receivers = multisigs.receivers,
-                                        threshold = multisigs.threshold,
-                                        asset = asset,
-                                        amount = multisigs.amount,
-                                        pin = null,
-                                        traceId = null,
-                                        memo = multisigs.memo,
-                                        state = multisigs.state
-                                    )
-                                    MultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem)
-                                        .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
-                                    dismiss()
-                                } else {
-                                    showError()
-                                }
-                            }
-                        }
-                        QrCodeType.non_fungible_request.name -> {
-                            if (checkHasPin()) return@subscribe
-                            val nfoResponse = result.second as NonFungibleOutputResponse
-                            lifecycleScope.launch {
-                                val nftBiometricItem = NftBiometricItem(
-                                    requestId = nfoResponse.requestId,
-                                    action = nfoResponse.action,
-                                    tokenId = nfoResponse.tokenId,
-                                    senders = nfoResponse.senders,
-                                    receivers = nfoResponse.receivers,
-                                    sendersThreshold = nfoResponse.sendersThreshold,
-                                    receiversThreshold = nfoResponse.receiversThreshold,
-                                    rawTransaction = nfoResponse.rawTransaction,
-                                    amount = nfoResponse.amount,
-                                    pin = null,
-                                    memo = nfoResponse.memo,
-                                    state = nfoResponse.state
-                                )
-                                NftBottomSheetDialogFragment.newInstance(nftBiometricItem)
-                                    .showNow(parentFragmentManager, NftBottomSheetDialogFragment.TAG)
-                                dismiss()
-                            }
-                        }
-                        QrCodeType.payment.name -> {
-                            if (checkHasPin()) return@subscribe
-
-                            val paymentCodeResponse = result.second as PaymentCodeResponse
-                            lifecycleScope.launch {
-                                val asset = checkAsset(paymentCodeResponse.assetId)
-                                if (asset != null) {
-                                    val multisigsBiometricItem = One2MultiBiometricItem(
-                                        threshold = paymentCodeResponse.threshold,
-                                        senders = arrayOf(Session.getAccountId()!!),
-                                        receivers = paymentCodeResponse.receivers,
-                                        asset = asset,
-                                        amount = paymentCodeResponse.amount,
-                                        pin = null,
-                                        traceId = paymentCodeResponse.traceId,
-                                        memo = paymentCodeResponse.memo,
-                                        state = paymentCodeResponse.status
-                                    )
-                                    MultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem)
-                                        .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
-                                    dismiss()
-                                } else {
-                                    showError()
-                                }
-                            }
-                        }
-                        else -> showError()
                     }
-                },
-                {
-                    showError()
+                    QrCodeType.user.name -> {
+                        val user = result.second as User
+                        val account = Session.getAccount()
+                        if (account != null && account.userId == (result.second as User).userId) {
+                            toast("It's your QR Code, please try another.")
+                        } else {
+                            showUserBottom(parentFragmentManager, user)
+                        }
+                        dismiss()
+                    }
+                    QrCodeType.authorization.name -> {
+                        val authorization = result.second as AuthorizationResponse
+                        val assets = linkViewModel.simpleAssetsWithBalance()
+                        activity?.let {
+                            val scopes = authorization.getScopes(it, assets)
+                            AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
+                                .showNow(
+                                    parentFragmentManager,
+                                    AuthBottomSheetDialogFragment.TAG
+                                )
+                            authOrPay = true
+                            dismiss()
+                        }
+                    }
+                    QrCodeType.multisig_request.name -> {
+                        if (checkHasPin())return@launch
+
+                        val multisigs = result.second as MultisigsResponse
+                        val asset = checkAsset(multisigs.assetId)
+                        if (asset != null) {
+                            val multisigsBiometricItem = Multi2MultiBiometricItem(
+                                requestId = multisigs.requestId,
+                                action = multisigs.action,
+                                senders = multisigs.senders,
+                                receivers = multisigs.receivers,
+                                threshold = multisigs.threshold,
+                                asset = asset,
+                                amount = multisigs.amount,
+                                pin = null,
+                                traceId = null,
+                                memo = multisigs.memo,
+                                state = multisigs.state
+                            )
+                            MultisigsBottomSheetDialogFragment.newInstance(
+                                multisigsBiometricItem
+                            )
+                                .showNow(
+                                    parentFragmentManager,
+                                    MultisigsBottomSheetDialogFragment.TAG
+                                )
+                            dismiss()
+                        } else {
+                            showError()
+                        }
+                    }
+                    QrCodeType.non_fungible_request.name -> {
+                        if (checkHasPin()) return@launch
+                        val nfoResponse = result.second as NonFungibleOutputResponse
+                        val nftBiometricItem = NftBiometricItem(
+                            requestId = nfoResponse.requestId,
+                            action = nfoResponse.action,
+                            tokenId = nfoResponse.tokenId,
+                            senders = nfoResponse.senders,
+                            receivers = nfoResponse.receivers,
+                            sendersThreshold = nfoResponse.sendersThreshold,
+                            receiversThreshold = nfoResponse.receiversThreshold,
+                            rawTransaction = nfoResponse.rawTransaction,
+                            amount = nfoResponse.amount,
+                            pin = null,
+                            memo = nfoResponse.memo,
+                            state = nfoResponse.state
+                        )
+                        NftBottomSheetDialogFragment.newInstance(nftBiometricItem)
+                            .showNow(parentFragmentManager, NftBottomSheetDialogFragment.TAG)
+                        dismiss()
+                    }
+                    QrCodeType.payment.name -> {
+                        if (checkHasPin()) return@launch
+
+                        val paymentCodeResponse = result.second as PaymentCodeResponse
+                        val asset = checkAsset(paymentCodeResponse.assetId)
+                        if (asset != null) {
+                            val multisigsBiometricItem = One2MultiBiometricItem(
+                                threshold = paymentCodeResponse.threshold,
+                                senders = arrayOf(Session.getAccountId()!!),
+                                receivers = paymentCodeResponse.receivers,
+                                asset = asset,
+                                amount = paymentCodeResponse.amount,
+                                pin = null,
+                                traceId = paymentCodeResponse.traceId,
+                                memo = paymentCodeResponse.memo,
+                                state = paymentCodeResponse.status
+                            )
+                            MultisigsBottomSheetDialogFragment.newInstance(
+                                multisigsBiometricItem
+                            )
+                                .showNow(
+                                    parentFragmentManager,
+                                    MultisigsBottomSheetDialogFragment.TAG
+                                )
+                            dismiss()
+                        } else {
+                            showError()
+                        }
+                    }
+                    else -> showError()
                 }
-            )
+            }
         } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true) || url.startsWith(Scheme.ADDRESS, true)) {
             if (checkHasPin()) return
 
@@ -401,7 +418,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val assetId = uri.getQueryParameter("asset")
                 val addressId = uri.getQueryParameter("address")
                 if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(errorHandler) {
                         val pair = linkViewModel.findAddressById(addressId, assetId)
                         val address = pair.first
                         if (pair.second) {
@@ -444,7 +461,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     Uri.decode(this)
                 }
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(errorHandler) {
                         val asset = checkAsset(assetId)
                         if (asset != null) {
                             PinAddrBottomSheetDialogFragment.newInstance(
@@ -476,7 +493,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val uri = Uri.parse(url)
             val traceId = uri.getQueryParameter("trace")
             if (!traceId.isNullOrEmpty() && traceId.isUUID()) {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val result = linkViewModel.getSnapshotByTraceId(traceId)
                     if (result != null) {
                         dismiss()
@@ -492,7 +509,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (snapshotId.isNullOrEmpty() || !snapshotId.isUUID()) {
                 showError()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val result = linkViewModel.getSnapshotAndAsset(snapshotId)
                     if (result != null) {
                         dismiss()
@@ -520,7 +537,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ) {
                 showError()
             } else {
-                lifecycleScope.launch {
+                lifecycleScope.launch(errorHandler) {
                     val pair = linkViewModel.findAddressById(addressId, assetId)
                     val address = pair.first
                     val asset = checkAsset(assetId)
@@ -571,7 +588,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.isDonateUrl()) {
             if (checkHasPin()) return
 
-            lifecycleScope.launch {
+            lifecycleScope.launch(errorHandler) {
                 val newUrl = url.replaceFirst(":", "://")
                 if (!showTransfer(newUrl)) {
                     QrScanBottomSheetDialogFragment.newInstance(url)
@@ -590,7 +607,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 return
             }
             val userId = uri.getQueryParameter("user")
-            lifecycleScope.launch {
+            lifecycleScope.launch(errorHandler) {
                 if (userId != null) {
                     val user = linkViewModel.refreshUser(userId)
                     when {
@@ -786,5 +803,17 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
 
         override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+    }
+
+    private val errorHandler = CoroutineExceptionHandler { _, error ->
+        when (error) {
+            is SocketTimeoutException -> showError(R.string.error_connection_timeout)
+            is UnknownHostException -> showError(R.string.error_no_connection)
+            is IOException -> showError(R.string.error_network)
+            else -> {
+                ErrorHandler.handleError(error)
+                showError()
+            }
+        }
     }
 }
