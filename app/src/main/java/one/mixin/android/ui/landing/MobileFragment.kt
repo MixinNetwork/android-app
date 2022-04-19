@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
+import android.text.Selection
 import android.text.TextWatcher
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
@@ -70,7 +71,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     private val binding by viewBinding(FragmentMobileBinding::bind)
 
     private lateinit var countryPicker: CountryPicker
-    private lateinit var mCountry: Country
+    private var mCountry: Country? = null
     private val phoneUtil = PhoneNumberUtil.getInstance()
     private var phoneNumber: Phonenumber.PhoneNumber? = null
 
@@ -91,7 +92,8 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             }
             backIv.setOnClickListener { activity?.onBackPressed() }
             countryIconIv.setOnClickListener { showCountry() }
-            countryCodeTv.setOnClickListener { showCountry() }
+            countryCodeEt.addTextChangedListener(countryCodeWatcher)
+            countryCodeEt.showSoftInputOnFocus = false
             mobileFab.setOnClickListener { showDialog() }
             mobileEt.showSoftInputOnFocus = false
             mobileEt.addTextChangedListener(mWatcher)
@@ -103,16 +105,18 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
             countryPicker = CountryPicker.newInstance()
             countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
-                Unit
                 mCountry = Country()
-                mCountry.code = code
-                mCountry.dialCode = dialCode
-                mCountry.flag = flagResId
+                mCountry?.code = code
+                mCountry?.dialCode = dialCode
+                mCountry?.flag = flagResId
                 countryIconIv.setImageResource(flagResId)
-                countryCodeTv.text = dialCode
+                countryCodeEt.setText(dialCode)
                 handleEditView(mobileEt.text.toString())
                 activity?.supportFragmentManager?.popBackStackImmediate()
                 countryIconIv.hideKeyboard()
+
+                mobileEt.requestFocus()
+                mobileEt.setSelection(mobileEt.text?.length ?: 0)
             }
             getUserCountryInfo()
 
@@ -139,7 +143,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             .setMessage(
                 getString(
                     R.string.landing_invitation_dialog_content,
-                    mCountry.dialCode + " " + binding.mobileEt.text.toString()
+                    mCountry?.dialCode + " " + binding.mobileEt.text.toString()
                 )
             )
             .setNegativeButton(R.string.action_change) { dialog, _ -> dialog.dismiss() }
@@ -255,11 +259,13 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
 
     private fun handleEditView(str: String) {
         binding.apply {
+            val country = mCountry ?: return
+
             mobileEt.setSelection(mobileEt.text.toString().length)
             val validResult =
-                isValidNumber(phoneUtil, mCountry.dialCode + str, mCountry.code, mCountry.dialCode)
+                isValidNumber(phoneUtil, country.dialCode + str, country.code, country.dialCode)
             phoneNumber = validResult.second
-            if (str.isNotEmpty() && validResult.first) {
+            if ((countryCodeEt.text?.length ?: 0) > 1 && str.isNotEmpty() && validResult.first) {
                 mobileFab.visibility = VISIBLE
             } else {
                 mobileFab.visibility = INVISIBLE
@@ -268,10 +274,12 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun getUserCountryInfo() {
-        mCountry = countryPicker.getUserCountryInfo(context)
-        binding.countryIconIv.setImageResource(mCountry.flag)
-        binding.countryCodeTv.text = mCountry.dialCode
-        countryPicker.setLocationCountry(mCountry)
+        countryPicker.getUserCountryInfo(context).apply {
+            mCountry = this
+            binding.countryIconIv.setImageResource(flag)
+            binding.countryCodeEt.setText(dialCode)
+            countryPicker.setLocationCountry(this)
+        }
     }
 
     private fun showCountry() {
@@ -289,32 +297,72 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     return
                 }
                 binding.apply {
-                    val editable = mobileEt.text
-                    val start = mobileEt.selectionStart
-                    val end = mobileEt.selectionEnd
-                    try {
-                        if (position == 11) {
-                            if (editable.isNullOrEmpty()) return
-
-                            if (start == end) {
-                                if (start == 0) {
-                                    mobileEt.text?.delete(0, end)
-                                } else {
-                                    mobileEt.text?.delete(start - 1, end)
+                    if (mobileEt.isFocused) {
+                        val editable = mobileEt.text
+                        val start = mobileEt.selectionStart
+                        val end = mobileEt.selectionEnd
+                        try {
+                            if (position == 11) {
+                                if (editable.isNullOrEmpty()) {
+                                    countryCodeEt.requestFocus()
+                                    countryCodeEt.setSelection(countryCodeEt.text?.length ?: 0)
+                                    return
                                 }
-                                if (start > 0) {
-                                    mobileEt.setSelection(start - 1)
+
+                                if (start == end) {
+                                    if (start == 0) {
+                                        mobileEt.text?.delete(0, end)
+                                    } else {
+                                        mobileEt.text?.delete(start - 1, end)
+                                    }
+                                    if (start > 0) {
+                                        mobileEt.setSelection(start - 1)
+                                    }
+                                } else {
+                                    mobileEt.text?.delete(start, end)
+                                    mobileEt.setSelection(start)
                                 }
                             } else {
-                                mobileEt.text?.delete(start, end)
-                                mobileEt.setSelection(start)
+                                mobileEt.text = editable?.insert(start, value)
+                                mobileEt.setSelection(start + 1)
                             }
-                        } else {
-                            mobileEt.text = editable?.insert(start, value)
-                            mobileEt.setSelection(start + 1)
+                        } catch (e: IndexOutOfBoundsException) {
+                            Timber.w(e)
                         }
-                    } catch (e: IndexOutOfBoundsException) {
-                        Timber.w(e)
+                    } else if (countryCodeEt.isFocused) {
+                        val editable = countryCodeEt.text
+                        val start = countryCodeEt.selectionStart
+                        val end = countryCodeEt.selectionEnd
+                        Timber.d("@@@ start: $start, end: $end")
+                        try {
+                            if (position == 11) {
+                                if (editable.isNullOrEmpty() || editable.toString() == "+") return
+
+                                if (start == end) {
+                                    if (start <= 1) {
+                                        countryCodeEt.text?.delete(1, end)
+                                    } else {
+                                        countryCodeEt.text?.delete(start - 1, end)
+                                    }
+                                    if (start > 1) {
+                                        countryCodeEt.setSelection(start - 1)
+                                    }
+                                } else {
+                                    countryCodeEt.text?.delete(start, end)
+                                    countryCodeEt.setSelection(start)
+                                }
+                            } else {
+                                countryCodeEt.text = editable?.insert(start, value)
+                                if (start == 4) {
+                                    mobileEt.requestFocus()
+                                    mobileEt.setSelection(mobileEt.text?.length ?: 0)
+                                } else {
+                                    countryCodeEt.setSelection(start + 1)
+                                }
+                            }
+                        } catch (e: IndexOutOfBoundsException) {
+                            Timber.w(e)
+                        }
                     }
                 }
             }
@@ -325,19 +373,69 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     return
                 }
                 binding.apply {
-                    val editable = mobileEt.text
-                    if (position == 11) {
-                        if (editable.isNullOrEmpty()) return
+                    if (mobileEt.isFocused) {
+                        val editable = mobileEt.text
+                        if (position == 11) {
+                            if (editable.isNullOrEmpty()) {
+                                countryCodeEt.requestFocus()
+                                countryCodeEt.setSelection(countryCodeEt.text?.length ?: 0)
+                                return
+                            }
 
-                        mobileEt.text?.clear()
-                    } else {
-                        val start = mobileEt.selectionStart
-                        mobileEt.text = editable?.insert(start, value)
-                        mobileEt.setSelection(start + 1)
+                            mobileEt.text?.clear()
+                        } else {
+                            val start = mobileEt.selectionStart
+                            mobileEt.text = editable?.insert(start, value)
+                            mobileEt.setSelection(start + 1)
+                        }
+                    } else if (countryCodeEt.isFocused) {
+                        val editable = countryCodeEt.text
+                        if (position == 11) {
+                            if (editable.isNullOrEmpty() || editable.toString() == "+") return
+
+                            countryCodeEt.text?.clear()
+                        } else {
+                            val start = countryCodeEt.selectionStart
+                            countryCodeEt.text = editable?.insert(start, value)
+                            if (start == 4) {
+                                mobileEt.requestFocus()
+                                mobileEt.setSelection(mobileEt.text?.length ?: 0)
+                            } else {
+                                countryCodeEt.setSelection(start + 1)
+                            }
+                        }
                     }
                 }
             }
         }
+
+    private val countryCodeWatcher: TextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        }
+
+        override fun afterTextChanged(s: Editable?) {
+            val et = binding.countryCodeEt
+            if (!s.toString().startsWith("+")) {
+                et.setText("+")
+                Selection.setSelection(et.text, et.text?.length ?: 0)
+            }
+            val country = countryPicker.getCountryByDialCode(et.text.toString())
+            if (mCountry?.dialCode == country?.dialCode) {
+                return
+            }
+            mCountry = country
+            binding.apply {
+                if (country == null) {
+                    countryIconIv.setImageResource(R.drawable.ic_arrow_down_info)
+                } else {
+                    countryIconIv.setImageResource(country.flag)
+                }
+            }
+        }
+    }
 
     private val mWatcher: TextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
