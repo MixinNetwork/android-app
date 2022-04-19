@@ -333,7 +333,6 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                         val editable = countryCodeEt.text
                         val start = countryCodeEt.selectionStart
                         val end = countryCodeEt.selectionEnd
-                        Timber.d("@@@ start: $start, end: $end")
                         try {
                             if (position == 11) {
                                 if (editable.isNullOrEmpty() || editable.toString() == "+") return
