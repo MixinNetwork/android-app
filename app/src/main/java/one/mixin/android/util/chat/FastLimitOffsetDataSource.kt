@@ -21,12 +21,13 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
     private val db: RoomDatabase,
     private val sourceQuery: RoomSQLiteQuery,
     private val countQuery: RoomSQLiteQuery,
+    private val offsetStatement: RoomSQLiteQuery,
     private val conversationId: String,
     private val fastCountCallback: () -> Int?
 ) : PositionalDataSource<T>() {
-    private val limitOffsetQuery: String = sourceQuery.sql + " LIMIT ? OFFSET ?"
 
     private val DEBUG = false
+
     /**
      * Count number of rows query can return
      */
@@ -98,18 +99,30 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         callback.onResult(list)
     }
 
+    private fun offsetRawId(startPosition: Int): Long {
+        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
+        offsetQuery.bindString(1, conversationId)
+        offsetQuery.bindLong(2, startPosition.toLong())
+        val cursor = db.query(offsetQuery)
+        return try {
+            if (cursor.moveToFirst()) {
+                cursor.getLong(0)
+            } else 0L
+        } finally {
+            cursor.close()
+            offsetQuery.release()
+        }
+    }
     /**
      * Return the rows from startPos to startPos + loadCount
      */
     private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
         log("loadRange $startPosition $loadCount")
-        val sqLiteQuery = RoomSQLiteQuery.acquire(
-            limitOffsetQuery,
-            sourceQuery.argCount + 2
-        )
+        val sqLiteQuery = RoomSQLiteQuery.copyFrom(sourceQuery)
         sqLiteQuery.copyArgumentsFrom(sourceQuery)
-        sqLiteQuery.bindLong(sqLiteQuery.argCount - 1, loadCount.toLong())
-        sqLiteQuery.bindLong(sqLiteQuery.argCount, startPosition.toLong())
+        sqLiteQuery.bindString(1, conversationId)
+        sqLiteQuery.bindLong(2, offsetRawId(startPosition))
+        sqLiteQuery.bindLong(3, loadCount.toLong())
 
         val cursor = measureTime("query") { db.query(sqLiteQuery) }
         try {
