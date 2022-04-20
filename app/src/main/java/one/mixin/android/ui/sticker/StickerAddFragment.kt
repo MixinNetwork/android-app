@@ -36,7 +36,8 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.maxSizeScale
+import one.mixin.android.extension.scaleDown
+import one.mixin.android.extension.scaleUp
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toBytes
@@ -50,6 +51,8 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
 import java.io.File
+import java.lang.Integer.max
+import java.lang.Integer.min
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -59,10 +62,10 @@ class StickerAddFragment : BaseFragment() {
         const val ARGS_URL = "args_url"
         const val ARGS_FROM_MANAGEMENT = "args_from_management"
 
-        const val MIN_SIZE = 64
-        const val MAX_SIZE = 512
+        const val MIN_SIZE = 128
+        const val MAX_SIZE = 1024
         const val MIN_FILE_SIZE = 1024
-        const val MAX_FILE_SIZE = 800 * 1024
+        const val MAX_FILE_SIZE = 1024 * 1024
 
         fun newInstance(url: String, fromManagement: Boolean = false) = StickerAddFragment().apply {
             arguments = bundleOf(
@@ -239,18 +242,24 @@ class StickerAddFragment : BaseFragment() {
                 .load(url)
                 .submit()
                 .get(10, TimeUnit.SECONDS)
-            if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
+
+            val ratio = bitmap.width / bitmap.height.toFloat()
+            if (ratio >= (MIN_SIZE / MAX_SIZE.toFloat()) && ratio <= (MAX_SIZE / MIN_SIZE.toFloat())) {
+                if (min(bitmap.width, bitmap.height) < MIN_SIZE) {
+                    bitmap = bitmap.scaleUp(MIN_SIZE)
+                } else if (max(bitmap.width, bitmap.height) > MAX_SIZE) {
+                    bitmap = bitmap.scaleDown(MAX_SIZE)
+                }
+                StickerAddRequest(
+                    Base64.encodeToString(
+                        if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(),
+                        Base64.NO_WRAP
+                    )
+                )
+            } else {
                 handleBack(R.string.sticker_add_invalid_size)
                 return@withContext null
             }
-
-            bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
-            StickerAddRequest(
-                Base64.encodeToString(
-                    if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(),
-                    Base64.NO_WRAP
-                )
-            )
         }
     }
 

@@ -895,7 +895,7 @@
     <string name="sticker_manager">Manager Sticker</string>
     <string name="sticker_add">Add Sticker</string>
     <string name="sticker_add_failed">Add sticker failed</string>
-    <string name="sticker_add_invalid_size">Requires stickers file size larger than 1KB and less than 800KB, width and height between 64px and 512px.</string>
+    <string name="sticker_add_invalid_size">Requires stickers file size larger than 1KB and less than 1MB, width and height between 128px and 1024px.</string>
     <string name="sticker_add_invalid_format">Invalid sticker format</string>
     <string name="sticker_search_giphy">Search GIPHY</string>
     <string name="sticker_no_result">No result</string>
