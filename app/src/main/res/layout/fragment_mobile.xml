@@ -60,13 +60,15 @@
             app:layout_constraintTop_toTopOf="@+id/mobile_et"
             tools:ignore="ContentDescription" />
 
-        <TextView
-            android:id="@+id/country_code_tv"
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/country_code_et"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:minWidth="48dp"
+            android:minHeight="@dimen/btn_min_height"
+            android:gravity="center"
+            android:inputType="number"
+            android:textSize="16sp"
             android:textColor="?attr/text_primary"
             app:layout_constraintBottom_toBottomOf="@+id/mobile_et"
             app:layout_constraintStart_toEndOf="@+id/country_icon_iv"
@@ -88,7 +90,7 @@
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toEndOf="@+id/country_code_tv"
+            app:layout_constraintStart_toEndOf="@+id/country_code_et"
             app:layout_constraintTop_toBottomOf="@+id/mobile_title_tv" />
 
         <TextView
