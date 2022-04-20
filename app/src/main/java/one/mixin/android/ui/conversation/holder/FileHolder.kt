@@ -22,7 +22,6 @@ import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.isSecret
 
 class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(binding.root) {
@@ -103,7 +102,7 @@ class FileHolder constructor(val binding: ItemChatFileBinding) : BaseViewHolder(
         binding.chatTime.load(
             isMe,
             messageItem.createdAt,
-            MessageStatus.DELIVERED.name,
+            messageItem.status,
             false,
             isRepresentative = isRepresentative,
             isSecret = messageItem.isSecret(),

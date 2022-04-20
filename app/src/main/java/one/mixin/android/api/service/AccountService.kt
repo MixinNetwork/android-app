@@ -69,7 +69,7 @@ interface AccountService {
     suspend fun logout(@Body request: LogoutRequest): MixinResponse<Unit>
 
     @GET("codes/{id}")
-    fun code(@Path("id") id: String): Observable<MixinResponse<JsonObject>>
+    suspend fun code(@Path("id") id: String): MixinResponse<JsonObject>
 
     @POST("pin/update")
     fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>
