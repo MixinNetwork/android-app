@@ -1,6 +1,7 @@
 package one.mixin.android.widget.bubble
 
 import android.content.Context
+import android.graphics.drawable.Animatable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -106,6 +107,9 @@ class TimeBubble(context: Context, attributeSet: AttributeSet) :
                     AppCompatResources.getDrawable(context, it)
                 }
             )
+            if (status == MessageStatus.SENDING.name) {
+                (binding.chatStatus.drawable as Animatable).start()
+            }
         }
     }
 }
