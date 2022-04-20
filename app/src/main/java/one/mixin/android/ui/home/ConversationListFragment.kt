@@ -3,6 +3,7 @@ package one.mixin.android.ui.home
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.drawable.Animatable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -948,6 +949,9 @@ class ConversationListFragment : LinkFragment() {
                     it?.setBounds(0, 0, itemView.context.dpToPx(14f), itemView.context.dpToPx(14f))
                     binding.msgStatus.setImageDrawable(it)
                     binding.msgStatus.visibility = VISIBLE
+                    if (conversationItem.messageStatus == MessageStatus.SENDING.name) {
+                        (it as Animatable).start()
+                    }
                 }
             } else {
                 binding.msgStatus.visibility = GONE
