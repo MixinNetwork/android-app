@@ -9,10 +9,10 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.View.GONE
-import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -111,7 +111,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                 mCountry?.flag = flagResId
                 countryIconIv.setImageResource(flagResId)
                 countryCodeEt.setText(dialCode)
-                handleEditView(mobileEt.text.toString())
+                handleEditView()
                 activity?.supportFragmentManager?.popBackStackImmediate()
                 countryIconIv.hideKeyboard()
 
@@ -257,19 +257,19 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         captchaView?.hide()
     }
 
-    private fun handleEditView(str: String) {
+    private fun handleEditView() {
         binding.apply {
-            val country = mCountry ?: return
-
-            mobileEt.setSelection(mobileEt.text.toString().length)
-            val validResult =
-                isValidNumber(phoneUtil, country.dialCode + str, country.code, country.dialCode)
-            phoneNumber = validResult.second
-            if ((countryCodeEt.text?.length ?: 0) > 1 && str.isNotEmpty() && validResult.first) {
-                mobileFab.visibility = VISIBLE
-            } else {
-                mobileFab.visibility = INVISIBLE
+            val country = mCountry
+            if (country == null) {
+                mobileFab.isVisible = false
+                return
             }
+
+            val mobileText = mobileEt.text.toString()
+            mobileEt.setSelection(mobileText.length)
+            val validResult = isValidNumber(phoneUtil, country.dialCode + mobileText, country.code, country.dialCode)
+            phoneNumber = validResult.second
+            mobileFab.isVisible = (countryCodeEt.text?.length ?: 0) > 1 && mobileText.isNotEmpty() && validResult.first
         }
     }
 
@@ -423,6 +423,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
             }
             val country = countryPicker.getCountryByDialCode(et.text.toString())
             if (mCountry?.dialCode == country?.dialCode) {
+                handleEditView()
                 return
             }
             mCountry = country
@@ -433,6 +434,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
                     countryIconIv.setImageResource(country.flag)
                 }
             }
+            handleEditView()
         }
     }
 
@@ -444,7 +446,7 @@ class MobileFragment : BaseFragment(R.layout.fragment_mobile) {
         }
 
         override fun afterTextChanged(s: Editable?) {
-            handleEditView(s.toString())
+            handleEditView()
         }
     }
 }
