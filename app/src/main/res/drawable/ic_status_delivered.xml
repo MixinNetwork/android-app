@@ -1,6 +1,6 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="12dp"
-    android:height="12dp"
+    android:width="11dp"
+    android:height="11dp"
     android:tint="@color/color_chat_date"
     android:viewportWidth="14"
     android:viewportHeight="14">
