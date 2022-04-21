@@ -792,7 +792,7 @@ class MessageProvider {
             return CoroutinesRoom.execute(
                 db, false, cancellationSignal,
                 Callable<List<ChatMinimal>> {
-                    val _cursor = DBUtil.query(db, _statement, false, null)
+                    val _cursor = DBUtil.query(db, _statement, false, cancellationSignal)
                     try {
                         val _cursorIndexOfConversationId = 0
                         val _cursorIndexOfGroupIconUrl = 1
