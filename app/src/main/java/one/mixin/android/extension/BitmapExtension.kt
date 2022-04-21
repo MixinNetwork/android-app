@@ -113,24 +113,20 @@ private fun decodeLuminanceSource(source: LuminanceSource): String? {
     return results[0].text
 }
 
-fun Bitmap.maxSizeScale(maxWidth: Int, maxHeight: Int): Bitmap {
-    if (maxHeight > 0 && maxWidth > 0) {
-        val width = this.width
-        val height = this.height
-        val ratioBitmap = width.toFloat() / height.toFloat()
-        val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
+fun Bitmap.scaleUp(minSize: Int): Bitmap {
+    if (minSize <= 0 || (width >= minSize && height >= minSize)) return this
 
-        var finalWidth = maxWidth
-        var finalHeight = maxHeight
-        if (ratioMax > ratioBitmap) {
-            finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
-        } else {
-            finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
-        }
-        return Bitmap.createScaledBitmap(this, finalWidth, finalHeight, true)
-    } else {
-        return this
-    }
+    val small = if (width > height) height else width
+    val ratio = small / minSize.toFloat()
+    return Bitmap.createScaledBitmap(this, (width / ratio).toInt(), (height / ratio).toInt(), true)
+}
+
+fun Bitmap.scaleDown(maxSize: Int): Bitmap {
+    if (maxSize <= 0 || (width <= maxSize && height <= maxSize)) return this
+
+    val large = if (width > height) width else height
+    val ratio = large / maxSize.toFloat()
+    return Bitmap.createScaledBitmap(this, (width / ratio).toInt(), (height / ratio).toInt(), true)
 }
 
 fun Bitmap.base64Encode(format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG): String? {

@@ -779,7 +779,7 @@
     <string name="sticker_manager">Pengurus Pelekat</string>
     <string name="sticker_add">Tambah Pelekat</string>
     <string name="sticker_add_failed">Penambahan pelekat gagal</string>
-    <string name="sticker_add_invalid_size">Memerlukan saiz fail pelekat lebih besar daripada 1KB dan kurang dari 800KB, lebar dan tinggi antara 64px dan 512px.</string>
+    <string name="sticker_add_invalid_size">Memerlukan saiz fail pelekat lebih besar daripada 1KB dan kurang dari 1MB, lebar dan tinggi antara 128px dan 1024px.</string>
     <string name="sticker_add_invalid_format">Format pelekat tidak sah</string>
     <string name="sticker_search_giphy">Cari GIPHY</string>
     <string name="sticker_no_result">Tiada keputusan</string>

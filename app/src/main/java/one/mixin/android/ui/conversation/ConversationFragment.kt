@@ -1527,6 +1527,7 @@ class ConversationFragment() :
                         val mimeType = getMimeType(uri, true)
                         if (mimeType?.isImageSupport() == true) {
                             StickerActivity.show(requireContext(), url = it, showAdd = true)
+                            closeTool()
                         } else {
                             toast(R.string.sticker_add_invalid_format)
                         }

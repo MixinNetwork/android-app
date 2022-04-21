@@ -738,7 +738,7 @@
     <string name="sticker_manager">Stiker Manajer</string>
     <string name="sticker_add">Tambahkan Stiker</string>
     <string name="sticker_add_failed">Gagal menambahkan stiker</string>
-    <string name="sticker_add_invalid_size">Memerlukan ukuran file stiker yang lebih besar dari 1KB dan kurang dari 800KB, lebar dan tinggi antara 64px dan 512px.</string>
+    <string name="sticker_add_invalid_size">Memerlukan ukuran file stiker yang lebih besar dari 1KB dan kurang dari 1MB, lebar dan tinggi antara 128px dan 1024px.</string>
     <string name="sticker_add_invalid_format">Format stiker tidak valid</string>
     <string name="sticker_search_giphy">Cari GIPHY</string>
     <string name="sticker_no_result">Tidak ada hasil</string>
