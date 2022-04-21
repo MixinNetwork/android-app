@@ -53,8 +53,10 @@ import one.mixin.android.widget.gallery.MimeType
 import java.io.File
 import java.lang.Integer.max
 import java.lang.Integer.min
+import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 
+@Suppress("BlockingMethodInNonBlockingContext")
 @AndroidEntryPoint
 class StickerAddFragment : BaseFragment() {
     companion object {
@@ -221,12 +223,24 @@ class StickerAddFragment : BaseFragment() {
                 handleBack(R.string.sticker_add_invalid_size)
                 return@withContext null
             }
+
             val byteArray = if (mimeType == MimeType.GIF.toString()) {
-                Glide.with(MixinApplication.appContext)
-                    .`as`(ByteArray::class.java)
+                val gifDrawable = Glide.with(MixinApplication.appContext)
+                    .asGif()
                     .load(url)
                     .submit()
                     .get(10, TimeUnit.SECONDS)
+                val w = gifDrawable.intrinsicWidth
+                val h = gifDrawable.intrinsicHeight
+                if (min(w, h) >= MIN_SIZE && max(w, h) <= MAX_SIZE) {
+                    val buffer = gifDrawable.buffer
+                    val bytes = ByteArray(buffer.capacity())
+                    (buffer.duplicate().clear() as ByteBuffer).get(bytes)
+                    bytes
+                } else {
+                    handleBack(R.string.sticker_add_invalid_size)
+                    return@withContext null
+                }
             } else {
                 Glide.with(MixinApplication.appContext)
                     .asFile()
