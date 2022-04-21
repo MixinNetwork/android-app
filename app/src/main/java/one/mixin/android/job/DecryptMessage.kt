@@ -391,7 +391,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.recallPinMessage(msg.id, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
-                messagesFts4Dao.deleteByMessageId(msg.id)
                 messageDao.takeUnseen(accountId, msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
@@ -411,6 +410,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                     notificationManager.cancel(msg.conversationId.hashCode())
                 }
                 InvalidateFlow.emit(msg.conversationId)
+                messagesFts4Dao.deleteByMessageId(msg.id)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
