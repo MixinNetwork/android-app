@@ -64,10 +64,12 @@ class StickerAddFragment : BaseFragment() {
         const val ARGS_URL = "args_url"
         const val ARGS_FROM_MANAGEMENT = "args_from_management"
 
-        const val MIN_SIZE = 128
-        const val MAX_SIZE = 1024
-        const val MIN_FILE_SIZE = 1024
-        const val MAX_FILE_SIZE = 1024 * 1024
+        private const val MIN_SIZE = 128
+        private const val MAX_SIZE = 1024
+        private const val RATIO_MIN_MAX = MIN_SIZE / MAX_SIZE.toFloat()
+        private const val RATIO_MAX_MIN = MAX_SIZE / MIN_SIZE.toFloat()
+        private const val MIN_FILE_SIZE = 1024
+        private const val MAX_FILE_SIZE = 1024 * 1024
 
         fun newInstance(url: String, fromManagement: Boolean = false) = StickerAddFragment().apply {
             arguments = bundleOf(
@@ -258,7 +260,7 @@ class StickerAddFragment : BaseFragment() {
                 .get(10, TimeUnit.SECONDS)
 
             val ratio = bitmap.width / bitmap.height.toFloat()
-            if (ratio >= (MIN_SIZE / MAX_SIZE.toFloat()) && ratio <= (MAX_SIZE / MIN_SIZE.toFloat())) {
+            if (ratio in RATIO_MIN_MAX..RATIO_MAX_MIN) {
                 if (min(bitmap.width, bitmap.height) < MIN_SIZE) {
                     bitmap = bitmap.scaleUp(MIN_SIZE)
                 } else if (max(bitmap.width, bitmap.height) > MAX_SIZE) {
