@@ -32,7 +32,7 @@ class ChatHolder constructor(val binding: ItemSearchContactBinding) : NormalHold
             onItemClickListener?.onChatClick(chat)
         }
         binding.root.setOnLongClickListener {
-            return@setOnLongClickListener onItemClickListener?.onChatLongClick(chat, binding.root) ?: false
+            return@setOnLongClickListener onItemClickListener?.onChatLongClick(chat, binding.searchName) ?: false
         }
     }
 }
