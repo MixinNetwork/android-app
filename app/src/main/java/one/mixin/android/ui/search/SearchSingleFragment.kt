@@ -78,9 +78,13 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
     private var searchJob: Job? = null
     private var cancellationSignal: CancellationSignal? = null
+    private lateinit var searchChatPopupMenu: SearchChatPopupMenu
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        searchChatPopupMenu = SearchChatPopupMenu(requireContext(), lifecycleScope, searchViewModel) {
+            onTextChanged(binding.searchEt.text.toString())
+        }
         binding.backIb.setOnClickListener {
             binding.searchEt.hideKeyboard()
             requireActivity().onBackPressed()
@@ -120,6 +124,11 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
             override fun onUserClick(user: User) {
                 binding.searchRv.hideKeyboard()
                 context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+            }
+
+            override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
+                searchChatPopupMenu.showPopupMenu(chatMinimal, anchor)
+                return true
             }
         }
 

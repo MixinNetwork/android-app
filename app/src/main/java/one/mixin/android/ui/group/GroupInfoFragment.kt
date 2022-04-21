@@ -203,13 +203,12 @@ class GroupInfoFragment : BaseFragment(R.layout.fragment_group_info) {
         filter()
 
         groupViewModel.getConversationById(conversationId).observe(
-            viewLifecycleOwner,
-            {
-                it?.let {
-                    conversation = it
-                }
+            viewLifecycleOwner
+        ) {
+            it?.let {
+                conversation = it
             }
-        )
+        }
 
         binding.searchEt.et.addTextChangedListener(
             object : TextWatcher {

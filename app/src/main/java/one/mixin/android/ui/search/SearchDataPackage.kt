@@ -69,7 +69,7 @@ class SearchDataPackage(
         userList?.size ?: 0
     }
 
-    private fun chatCount() = if (chatLimit) {
+    fun chatCount() = if (chatLimit) {
         min(chatList?.size ?: 0, LIMIT_COUNT)
     } else {
         chatList?.size ?: 0
