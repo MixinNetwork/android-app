@@ -19,6 +19,7 @@ import one.mixin.android.extension.getStackTraceString
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.EncryptCategory
@@ -198,6 +199,7 @@ class SendTranscriptAttachmentMessageJob(
                 getTranscripts(parentId ?: transcriptMessage.transcriptId, transcripts)
                 msg.content = GsonHelper.customGson.toJson(transcripts)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, parentId ?: transcriptMessage.transcriptId)
+                InvalidateFlow.emit(msg.conversationId)
                 jobManager.addJob(SendMessageJob(msg))
             }
         }

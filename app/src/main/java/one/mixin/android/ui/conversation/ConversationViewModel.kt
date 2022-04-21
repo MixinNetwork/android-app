@@ -11,7 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
@@ -21,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.FIXED_LOAD_SIZE
 import one.mixin.android.Constants.MARK_LIMIT
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -54,8 +54,8 @@ import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.KeyLivePagedListBuilder
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.chat.KeyLivePagedListBuilder
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
@@ -122,26 +122,24 @@ internal constructor(
 
     var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
 
-    fun getMessages(id: String, firstKeyToLoad: Int = 0, countable: Boolean): LiveData<PagedList<MessageItem>> {
+    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build()
-        if (!countable) {
-            return LivePagedListBuilder(
-                conversationRepository.getMessages(id, firstKeyToLoad, countable),
-                pagedListConfig
-            ).setInitialLoadKey(firstKeyToLoad)
-                .build()
-        }
-        if (keyLivePagedListBuilder == null) {
-            keyLivePagedListBuilder = KeyLivePagedListBuilder(
-                conversationRepository.getMessages(id, firstKeyToLoad, countable),
-                pagedListConfig
-            ).setFirstKeyToLoad(firstKeyToLoad)
-        }
-        return keyLivePagedListBuilder!!.build()
+
+        return KeyLivePagedListBuilder(
+            conversationRepository.getMessages(
+                viewModelScope, conversationId,
+                if (firstKeyToLoad > PAGE_SIZE) {
+                    firstKeyToLoad + FIXED_LOAD_SIZE / 2
+                } else {
+                    FIXED_LOAD_SIZE
+                }
+            ),
+            pagedListConfig
+        ).setInitialLoadKey(firstKeyToLoad).build()
     }
 
     suspend fun indexUnread(conversationId: String) =
@@ -366,10 +364,10 @@ internal constructor(
         Observable.just(userId).subscribeOn(Schedulers.io())
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
-    fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun cancel(id: String, conversationId: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.cancelJobByMixinJobId(id) {
             viewModelScope.launch {
-                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id)
+                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id, conversationId)
             }
         }
     }
@@ -380,7 +378,7 @@ internal constructor(
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId,
@@ -415,7 +413,7 @@ internal constructor(
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }
@@ -478,6 +476,7 @@ internal constructor(
             list.forEach { item ->
                 conversationRepository.deleteMessage(
                     item.messageId,
+                    item.conversationId,
                     item.absolutePath(),
                     item.mediaStatus == MediaStatus.DONE.name
                 )

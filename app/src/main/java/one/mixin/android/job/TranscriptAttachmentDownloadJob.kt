@@ -19,6 +19,7 @@ import one.mixin.android.extension.getTranscriptFile
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.TranscriptMessage
@@ -104,6 +105,7 @@ class TranscriptAttachmentDownloadJob(
         if (transcriptMessageDao.hasUploadedAttachment(transcriptMessage.transcriptId) == 0) {
             messageDao.findMessageById(transcriptMessage.transcriptId)?.let {
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, transcriptMessage.transcriptId)
+                InvalidateFlow.emit(it.conversationId)
             }
         }
     }

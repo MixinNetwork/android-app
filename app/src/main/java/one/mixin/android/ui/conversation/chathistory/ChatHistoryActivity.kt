@@ -459,7 +459,8 @@ class ChatHistoryActivity : BaseActivity() {
                             lifecycleScope.launch(Dispatchers.IO) {
                                 conversationRepository.updateMediaStatusSuspend(
                                     MediaStatus.CANCELED.name,
-                                    messageId
+                                    messageId,
+                                    conversationId
                                 )
                             }
                         }
@@ -752,7 +753,7 @@ class ChatHistoryActivity : BaseActivity() {
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
-                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId,
@@ -795,7 +796,7 @@ class ChatHistoryActivity : BaseActivity() {
                         onError.invoke()
                     }
                 } else {
-                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id, it.conversationId)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }

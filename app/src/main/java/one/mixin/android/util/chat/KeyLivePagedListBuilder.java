@@ -1,14 +1,14 @@
-package one.mixin.android.util;
+package one.mixin.android.util.chat;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.arch.core.executor.ArchTaskExecutor;
-import androidx.lifecycle.ComputableLiveData;
 import androidx.lifecycle.LiveData;
 import androidx.paging.DataSource;
 import androidx.paging.PagedList;
+import timber.log.Timber;
 
 import java.util.concurrent.Executor;
 
@@ -168,14 +168,14 @@ public final class KeyLivePagedListBuilder<Key, Value> {
             @NonNull final DataSource.Factory<Key, Value> dataSourceFactory,
             @NonNull final Executor notifyExecutor,
             @NonNull final Executor fetchExecutor) {
-        return new ComputableLiveData<PagedList<Value>>(fetchExecutor) {
+        return new FastComputableLiveData<PagedList<Value>>(fetchExecutor) {
             @Nullable
             private PagedList<Value> mList;
             @Nullable
             private DataSource<Key, Value> mDataSource;
 
             private final DataSource.InvalidatedCallback mCallback =
-                    () -> invalidate();
+                    this::invalidate;
 
             @SuppressWarnings("unchecked") // for casting getLastKey to Key
             @Override
