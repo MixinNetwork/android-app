@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/pin"
+        android:title="@string/conversation_pin" />
+    <item
+        android:id="@+id/mute"
+        android:title="@string/action_mute" />
+    <item
+        android:id="@+id/delete"
+        android:title="@string/conversation_delete" />
+</menu>

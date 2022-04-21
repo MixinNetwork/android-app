@@ -735,7 +735,8 @@ class MessageProvider {
             val _sql = """
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName,
         ou.identity_number AS ownerIdentityNumber, c.owner_id AS userId, ou.full_name AS fullName, ou.avatar_url AS avatarUrl,
-        ou.is_verified AS isVerified, ou.app_id AS appId
+        ou.is_verified AS isVerified, ou.app_id AS appId, ou.mute_until AS ownerMuteUntil, c.mute_until AS muteUntil,
+        c.pin_time AS pinTime 
         FROM conversations c
         INNER JOIN users ou ON ou.user_id = c.owner_id
         LEFT JOIN messages m ON c.last_message_id = m.id
@@ -750,7 +751,7 @@ class MessageProvider {
                         OR ou.identity_number = ? COLLATE NOCASE)) DESC,
             c.pin_time DESC, 
             m.created_at DESC
-            """
+        """
             val _statement = RoomSQLiteQuery.acquire(_sql, 6)
             var _argIndex = 1
             if (query == null) {
@@ -803,6 +804,9 @@ class MessageProvider {
                         val _cursorIndexOfAvatarUrl = 7
                         val _cursorIndexOfIsVerified = 8
                         val _cursorIndexOfAppId = 9
+                        val _cursorIndexOfOwnerMuteUntil = 10
+                        val _cursorIndexOfMuteUntil = 11
+                        val _cursorIndexOfPinTime = 12
                         val _result: MutableList<ChatMinimal> = java.util.ArrayList(_cursor.count)
                         while (_cursor.moveToNext()) {
                             val _item: ChatMinimal
@@ -869,11 +873,38 @@ class MessageProvider {
                             } else {
                                 _cursor.getString(_cursorIndexOfAppId)
                             }
+                            val _tmpOwnerMuteUntil: String?
+                            _tmpOwnerMuteUntil = if (_cursor.isNull(_cursorIndexOfOwnerMuteUntil)) {
+                                null
+                            } else {
+                                _cursor.getString(_cursorIndexOfOwnerMuteUntil)
+                            }
+                            val _tmpMuteUntil: String?
+                            _tmpMuteUntil = if (_cursor.isNull(_cursorIndexOfMuteUntil)) {
+                                null
+                            } else {
+                                _cursor.getString(_cursorIndexOfMuteUntil)
+                            }
+                            val _tmpPinTime: String?
+                            _tmpPinTime = if (_cursor.isNull(_cursorIndexOfPinTime)) {
+                                null
+                            } else {
+                                _cursor.getString(_cursorIndexOfPinTime)
+                            }
                             _item = ChatMinimal(
                                 _tmpCategory!!,
-                                _tmpConversationId!!, _tmpGroupIconUrl, _tmpGroupName,
+                                _tmpConversationId!!,
+                                _tmpGroupIconUrl,
+                                _tmpGroupName,
                                 _tmpOwnerIdentityNumber!!,
-                                _tmpUserId!!, _tmpFullName, _tmpAvatarUrl, _tmpIsVerified, _tmpAppId
+                                _tmpUserId!!,
+                                _tmpFullName,
+                                _tmpAvatarUrl,
+                                _tmpIsVerified,
+                                _tmpAppId,
+                                _tmpOwnerMuteUntil,
+                                _tmpMuteUntil,
+                                _tmpPinTime
                             )
                             _result.add(_item)
                         }

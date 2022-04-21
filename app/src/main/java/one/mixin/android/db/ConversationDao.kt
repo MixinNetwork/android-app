@@ -75,7 +75,8 @@ interface ConversationDao : BaseDao<Conversation> {
         """
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName,
         ou.identity_number AS ownerIdentityNumber, c.owner_id AS userId, ou.full_name AS fullName, ou.avatar_url AS avatarUrl,
-        ou.is_verified AS isVerified, ou.app_id AS appId
+        ou.is_verified AS isVerified, ou.app_id AS appId, ou.mute_until AS ownerMuteUntil, c.mute_until AS muteUntil,
+        c.pin_time AS pinTime 
         FROM conversations c
         INNER JOIN users ou ON ou.user_id = c.owner_id
         LEFT JOIN messages m ON c.last_message_id = m.id

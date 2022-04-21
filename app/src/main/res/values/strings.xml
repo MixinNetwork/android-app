@@ -1086,6 +1086,8 @@
     <string name="chat_pin_card_message">a card</string>
     <string name="unpin_success">Message unpinned</string>
     <string name="pin_success">Message pinned</string>
+    <string name="Chat_pinned">Chat pinned</string>
+    <string name="Chat_unpinned">Chat unpinned</string>
 
     <!--  diagnosis  -->
     <string name="app_version">App version</string>

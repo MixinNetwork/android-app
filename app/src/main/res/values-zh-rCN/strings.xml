@@ -1051,6 +1051,8 @@
     <string name="chat_pin_card_message">一个卡片</string>
     <string name="unpin_success">置顶消息已取消</string>
     <string name="pin_success">消息已置顶</string>
+    <string name="Chat_pinned">会话已置顶</string>
+    <string name="Chat_unpinned">置顶会话已取消</string>
 
     <!--  diagnosis  -->
     <string name="app_version">应用版本</string>

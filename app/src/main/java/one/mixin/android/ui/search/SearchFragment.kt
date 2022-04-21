@@ -90,6 +90,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     private var searchJob: Job? = null
     private var messageSearchJob: Job? = null
     private var cancellationSignal: CancellationSignal? = null
+    private lateinit var searchChatPopupMenu: SearchChatPopupMenu
 
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
@@ -105,6 +106,9 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        searchChatPopupMenu = SearchChatPopupMenu(requireContext(), lifecycleScope, searchViewModel) {
+            fuzzySearchChat(keyword)
+        }
         view.setOnClickListener {
             if (keyword.isNullOrBlank()) {
                 (requireActivity() as MainActivity).closeSearch()
@@ -193,6 +197,12 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 binding.searchRv.hideKeyboard()
                 context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             }
+
+            override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
+                binding.searchRv.hideKeyboard()
+                searchChatPopupMenu.showPopupMenu(chatMinimal, anchor)
+                return true
+            }
         }
         bindData()
     }
@@ -278,6 +288,21 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         (requireActivity() as MainActivity).hideSearchLoading()
     }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun fuzzySearchChat(keyword: String?) = lifecycleScope.launch {
+        if (viewDestroyed()) return@launch
+
+        (requireActivity() as MainActivity).showSearchLoading()
+
+        val cancellationSignal = CancellationSignal()
+        this@SearchFragment.cancellationSignal = cancellationSignal
+        val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
+        searchAdapter.setChatData(chatMinimals)
+        decoration.invalidateHeaders()
+
+        (requireActivity() as MainActivity).hideSearchLoading()
+    }
+
     internal class AppAdapter : ListAdapter<App, AppHolder>(App.DIFF_CALLBACK) {
         var appListener: AppListener? = null
 
@@ -311,5 +336,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         fun onMessageClick(message: SearchMessageItem)
         fun onAsset(assetItem: AssetItem)
         fun onTipClick()
+        fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean
     }
 }
