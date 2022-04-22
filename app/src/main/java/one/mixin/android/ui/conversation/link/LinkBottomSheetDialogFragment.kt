@@ -819,8 +819,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val errorHandler = CoroutineExceptionHandler { _, error ->
         when (error) {
             is SocketTimeoutException -> showError(R.string.error_connection_timeout)
-            is UnknownHostException -> showError(R.string.error_no_connection)
-            is IOException -> showError(R.string.Network_error)
+            is UnknownHostException -> showError(R.string.No_network_connection)
+            is IOException -> showError(R.string.No_network_connection)
             else -> {
                 ErrorHandler.handleError(error)
                 showError()

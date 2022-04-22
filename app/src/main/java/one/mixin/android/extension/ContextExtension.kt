@@ -1078,7 +1078,7 @@ fun Context.shareFile(file: File, type: String) {
             grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         try {
-            startActivity(Intent.createChooser(this, getString(R.string.document)))
+            startActivity(Intent.createChooser(this, getString(R.string.File)))
         } catch (ignored: ActivityNotFoundException) {
             Timber.e(ignored)
         }

@@ -27,16 +27,16 @@ class SearchChatPopupMenu(
         val muteItem = popupMenu.menu.findItem(R.id.mute)
         val isMute = chatMinimal.isMute()
         if (isMute) {
-            muteItem.setTitle(R.string.action_un_mute)
+            muteItem.setTitle(R.string.Unmute)
         } else {
-            muteItem.setTitle(R.string.action_mute)
+            muteItem.setTitle(R.string.Mute)
         }
         val hasPin = chatMinimal.pinTime != null
         val pinItem = popupMenu.menu.findItem(R.id.pin)
         if (hasPin) {
-            pinItem.setTitle(R.string.conversation_pin_clear)
+            pinItem.setTitle(R.string.Unpin)
         } else {
-            pinItem.setTitle(R.string.conversation_pin)
+            pinItem.setTitle(R.string.Pin)
         }
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
@@ -78,11 +78,11 @@ class SearchChatPopupMenu(
                             )
                         )
                         .setMessage(context.getString(R.string.conversation_delete_tip))
-                        .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+                        .setNegativeButton(R.string.Cancel) { dialog, _ ->
                             dialog.dismiss()
                             popupMenu.dismiss()
                         }
-                        .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+                        .setPositiveButton(R.string.Confirm) { dialog, _ ->
                             searchViewModel.deleteConversation(chatMinimal.conversationId, afterAction)
                             dialog.dismiss()
                             popupMenu.dismiss()
@@ -97,19 +97,19 @@ class SearchChatPopupMenu(
 
     private fun showMuteDialog(chatMinimal: ChatMinimal) {
         val choices = arrayOf(
-            context.getString(R.string.contact_mute_1hour),
-            context.getString(R.string.contact_mute_8hours),
-            context.getString(R.string.contact_mute_1week),
-            context.getString(R.string.contact_mute_1year)
+            context.getString(R.string.one_hour),
+            context.getString(R.string.Eight_hours),
+            context.getString(R.string.one_week),
+            context.getString(R.string.one_year)
         )
         var duration = Constants.Mute.MUTE_8_HOURS
         var whichItem = 0
         context.alertDialogBuilder()
             .setTitle(context.getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.action_cancel) { dialog, _ ->
+            .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.action_confirm) { dialog, _ ->
+            .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 if (chatMinimal.isGroupConversation()) {
                     lifecycleScope.launch {
                         handleMixinResponse(
@@ -180,7 +180,7 @@ class SearchChatPopupMenu(
                             response.data!!.muteUntil
                         )
                         afterAction.invoke()
-                        toast(context.getString(R.string.action_un_mute) + " ${chatMinimal.groupName}")
+                        toast(context.getString(R.string.Unmute) + " ${chatMinimal.groupName}")
                     }
                 )
             }
@@ -201,7 +201,7 @@ class SearchChatPopupMenu(
                                 response.data!!.muteUntil
                             )
                             afterAction.invoke()
-                            toast(context.getString(R.string.action_un_mute) + " ${chatMinimal.fullName}")
+                            toast(context.getString(R.string.Unmute) + " ${chatMinimal.fullName}")
                         }
                     )
                 }
