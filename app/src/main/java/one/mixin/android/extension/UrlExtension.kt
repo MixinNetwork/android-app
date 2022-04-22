@@ -127,6 +127,7 @@ Google Available: ${context.isGooglePlayServicesAvailable()}
                     content
                 )
             )
+            toast(R.string.copied_to_clipboard)
             dialog.dismiss()
         }.show()
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
