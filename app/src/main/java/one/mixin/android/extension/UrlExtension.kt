@@ -1,15 +1,21 @@
 package one.mixin.android.extension
 
+import android.annotation.SuppressLint
+import android.content.ClipData
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -82,6 +88,7 @@ fun String.isMixinUrl(): Boolean {
     }
 }
 
+@SuppressLint("HardwareIds")
 fun String.openAsUrl(
     context: Context,
     supportFragmentManager: FragmentManager,
@@ -99,6 +106,29 @@ fun String.openAsUrl(
                 Timber.e(IllegalStateException(err))
             }
         )
+    } else if (startsWith(Constants.Scheme.INFO, true)) {
+        val content = """
+Brand: ${Build.BRAND} 
+App Version: ${BuildConfig.VERSION_NAME}
+App ID: ${BuildConfig.APPLICATION_ID}
+Device ID: ${Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)} 
+Model: ${Build.MODEL} 
+ID: ${Build.ID} 
+SDK: ${Build.VERSION.SDK_INT}  
+Incremental: ${Build.VERSION.INCREMENTAL} 
+Version Code: ${Build.VERSION.RELEASE}
+User ID: ${Session.getAccountId()}
+Google Available: ${context.isGooglePlayServicesAvailable()}
+"""
+        context.alert(content).setPositiveButton(R.string.copy) { dialog, _ ->
+            context.getClipboardManager().setPrimaryClip(
+                ClipData.newPlainText(
+                    null,
+                    content
+                )
+            )
+            dialog.dismiss()
+        }.show()
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
