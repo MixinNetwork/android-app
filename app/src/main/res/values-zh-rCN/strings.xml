@@ -49,7 +49,7 @@
     <string name="Hidden">隐藏</string>
     <string name="Shown">显示</string>
     <string name="UNDO">撤销</string>
-    <string name="add_success">添加成功</string>
+    <string name="Add_success">添加成功</string>
     <string name="Symbol">符号</string>
     <string name="Chain">所属公链</string>
     <string name="Asset_Key">资产标识</string>
@@ -87,7 +87,7 @@
     <string name="Try_Again">请重试</string>
     <string name="OK">好的</string>
     <string name="Verify_with_PIN">用密码来验证</string>
-    <string name="login_by_PIN">用密码来登录</string>
+    <string name="Login_with_PIN">用密码来登录</string>
     <string name="Verify_by_Biometric">用生物识别来验证</string>
     <string name="transfer_without_pin">转账前请先设置密码</string>
     <string name="Voice_call">语音通话</string>
@@ -99,7 +99,7 @@
     <string name="Follow_system">跟随系统</string>
     <string name="Nobody">没有人</string>
     <string name="scam_warning">警告：此账号被大量用户举报，请谨防网络诈骗，注意个人财产安全</string>
-    <string name="add_shortcut">添加到桌面</string>
+    <string name="Add_to_Home_screen">添加到桌面</string>
     <string name="Waiting">等待中</string>
     <string name="End_to_End_Encryption">端到端加密</string>
     <string name="Encrypted">端到端加密</string>
@@ -110,7 +110,7 @@
     <string name="storage_low_message">手机存储空间严重不足，建议清理不重要的视频和文件、卸载不常用的软件，以免影响 Mixin 的使用体验，甚至可能造成聊天丢失或数据损坏</string>
     <string name="Upload_timeout">上传超时</string>
     <string name="Copy_link">复制链接</string>
-    <string name="type_message">输入消息</string>
+    <string name="Type_message">输入消息</string>
     <string name="Floating">浮窗</string>
     <string name="Cancel_Floating">取消浮窗</string>
     <string name="quote">引用</string>
@@ -119,9 +119,9 @@
     <string name="bold">粗体</string>
     <string name="Disabled">已停用</string>
     <string name="Not_recognized">无法识别</string>
-    <string name="eos_contract_address">EOS 合约地址</string>
-    <string name="action_export_md">导出为 Markdown</string>
-    <string name="action_export_pdf">导出为 PDF</string>
+    <string name="EOS_contract_address">EOS 合约地址</string>
+    <string name="Export_Markdown">导出为 Markdown</string>
+    <string name="Export_PDF">导出为 PDF</string>
     <string name="Notice">注意</string>
     <string name="Close">关闭</string>
     <string name="Reply">回复</string>
@@ -147,8 +147,8 @@
     <string name="error_authentication">错误 %1$d：请重新登录</string>
     <string name="can_not_recognize_qr_code">无法识别二维码</string>
     <string name="No_camera">没有相机</string>
-    <string name="error_image">文件错误</string>
-    <string name="error_format">不支持该格式</string>
+    <string name="File_error">文件错误</string>
+    <string name="Format_not_supported">不支持该格式</string>
     <string name="error_full_group">错误 %1$d：群组已满</string>
     <string name="error_insufficient_balance">错误 %1$d：余额不足</string>
     <string name="error_invalid_pin_format">错误 %1$d：无效密码格式</string>
@@ -162,7 +162,7 @@
     <string name="File_does_not_exist">文件不存在</string>
     <string name="error_address_exists">地址不存在，请确保地址是否添加成功</string>
     <string name="error_address_not_sync">地址刷新失败，请重试</string>
-    <string name="error_asset_exists">没有相关资产</string>
+    <string name="Asset_does_not_exist">没有相关资产</string>
     <string name="error_pin_check_too_many_request">你已经尝试了超过5次，请等待24小时后再次尝试。</string>
     <string name="error_used_phone">错误 %1$d：电话号码已经被占用。</string>
     <string name="error_insufficient_transaction_fee_with_amount">错误 %1$d：手续费不足。请确保钱包至少有 %2$s 当作手续费。</string>
@@ -176,19 +176,19 @@
     <string name="error_bad_data">错误 %1$d：请求数据不合法</string>
     <string name="error_permission">请开启相关权限</string>
     <string name="error_user_invalid_format">用户数据不合法</string>
-    <string name="error_share">分享出错</string>
+    <string name="Share_error">分享出错</string>
     <string name="error_recaptcha_is_invalid">错误 %1$d：验证失败</string>
-    <string name="error_recaptcha_timeout">验证超时</string>
+    <string name="Recaptcha_timeout">验证超时</string>
     <string name="error_old_version">错误 %1$d：请更新 Mixin(%2$s) 至最新版。</string>
     <string name="File_chooser_error">文件选择错误</string>
-    <string name="error_duration_short">时间太短</string>
+    <string name="Duration_is_too_short">时间太短</string>
     <string name="error_too_many_stickers">错误 %1$d：贴纸数已达上限</string>
     <string name="error_too_small_withdraw_amount">错误 %1$d：提现金额太小</string>
     <string name="error_invalid_code_too_frequent">错误 %1$d：发送验证码太频繁，请稍后再试</string>
     <string name="error_invalid_emergency_contact">错误 %1$d：紧急联系人不正确</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR %1$d: 提现备注格式不正确</string>
     <string name="error_favorite_limit">ERROR %1$d: 已达到上限</string>
-    <string name="error_retry_upload">重新上传失败。</string>
+    <string name="Retry_upload_failed">重新上传失败。</string>
     <string name="error_not_supported_audio_format">不支持的音频格式，请用其他app打开。</string>
     <string name="error_transcript_forward">请在所有附件下载完成之后再转发</string>
     <!--home-->
@@ -292,10 +292,10 @@
     <plurals name="title_participants" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d 成员</item>
     </plurals>
-    <string name="save_success">保存成功</string>
-    <string name="save_to">保存到 %1$s</string>
+    <string name="Save_success">保存成功</string>
+    <string name="Save_to">保存到 %1$s</string>
     <string name="Save_failure">保存失败</string>
-    <string name="export_failure">导出失败</string>
+    <string name="Export_failure">导出失败</string>
     <string name="hold_to_record_audio">长按说话，松手发送</string>
     <string name="chat_call_duration">通话时长 %1$s</string>
     <string name="Canceled">已取消</string>
@@ -397,8 +397,8 @@
     <string name="value_then">当时价值 %1$s</string>
     <string name="wallet_transaction_that_time_no_value">当时价值 暂无</string>
     <string name="wallet_transaction_that_time_value_tip">交易时的价值</string>
-    <string name="Duplicate_transfer_confirmation">重复转账确认</string>
-    <string name="Duplicate_withdraw_confirmation">重复提现确认</string>
+    <string name="Duplicate_Transfer_Confirmation">重复转账确认</string>
+    <string name="Duplicate_Withdraw_Confirmation">重复提现确认</string>
     <string name="Stranger_Transfer_Confirmation">陌生人转账确认</string>
     <string name="Large_Amount_Confirmation_with_symbol">大额转账确认(%1$s)</string>
     <string name="wallet_transaction_tip">确定给 %1$s 转价值 %2$s 的 %3$s ？</string>
@@ -474,8 +474,8 @@
     <string name="Multisig_Transactions">签名多重签名交易</string>
     <string name="Revoke_multisig_transaction">撤销多重签名交易</string>
     <string name="PIN_modification">修改密码</string>
-    <string name="log_emergency_contact_modification">修改紧急联系人</string>
-    <string name="log_phone_number_modification">你的手机号已变更</string>
+    <string name="Emergency_contact_modification">修改紧急联系人</string>
+    <string name="Phone_number_modification">你的手机号已变更</string>
     <string name="Sign_with_phone_number">通过手机号登录</string>
     <string name="Sign_with_emergency_contact">通过紧急联系人登录</string>
     <string name="Sign_in_desktop_app">登录桌面端</string>
@@ -660,11 +660,11 @@
     <string name="Invite_to_Group_via_Link">群邀请链接</string>
     <!-- invite -->
     <string name="invite_info">Mixin 使用者可以使用此链接加入这个群组，请只跟您信任的人共享链接。</string>
-    <string name="invite_revoke">重置邀请链接</string>
+    <string name="Revoke_Link">重置邀请链接</string>
     <string name="Share_Link">分享邀请链接</string>
     <string name="Copy_invite">复制邀请链接</string>
-    <string name="invite_forward">转发给好友</string>
-    <string name="invite_invalid">邀请链接</string>
+    <string name="Forward_to_friend">转发给好友</string>
+    <string name="Invalid_Link">邀请链接</string>
     <string name="QR_code">二维码</string>
     <string name="Pin_to_top">置顶</string>
     <string name="group_role">你现在成为管理员</string>
@@ -761,7 +761,7 @@
     <!--pay-->
     <string name="pay_paid">此付款链接已由某人支付，您无法进行重复付款。</string>
 
-    <string name="background_connection_enabled">消息节点正在运行</string>
+    <string name="Messaging_node_running">消息节点正在运行</string>
 
     <!--withdrawal-->
     <string name="Withdrawal">提现</string>
@@ -785,13 +785,13 @@
     <string name="withdrawal_addr_tag">地址标签、数字 ID 或备注。如果没有，点击不使用 Tag（标签）。</string>
     <string name="withdrawal_addr_no_tag">如果你需要填写地址标签、数字 ID 或备注，点击添加 Tag（标签）。</string>
     <string name="No_tag">点击不使用 Tag（标签）</string>
-    <string name="Add_tag">点击添加 Tag（标签）</string>
+    <string name="Add_Tag">点击添加 Tag（标签）</string>
     <string name="withdrawal_memo">Memo（备注）</string>
     <string name="withdrawal_with_pwd">用密码提现</string>
     <string name="withdrawal_with_biometric">用生物识别提现</string>
     <string name="withdrawal_to">提现到 %1$s</string>
     <string name="Add_group_description">添加群公告</string>
-    <string name="Edit_group_description">编辑群公告</string>
+    <string name="Edit_Group_Description">编辑群公告</string>
     <string name="show_more">显示更多</string>
     <string name="Send">发送</string>
     <string name="Send_Without_Sound">静音发送</string>
@@ -831,7 +831,7 @@
     <!--sticker-->
     <string name="Manager_Sticker">管理贴纸</string>
     <string name="Add_sticker">添加贴纸</string>
-    <string name="add_sticker_failed">添加贴纸失败</string>
+    <string name="Add_sticker_failed">添加贴纸失败</string>
     <string name="sticker_add_invalid_size">贴纸要求大于 1KB 且小于 1MB，宽高大于 128 像素且小于 1024 像素。</string>
     <string name="Invalid_sticker_format">贴纸格式不支持</string>
     <string name="Search_GIPHY">搜索 GIPHY</string>
@@ -931,7 +931,7 @@
     </plurals>
     <string name="All_Conversations">所有会话</string>
     <string name="Edit_Circle_Name">编辑名称</string>
-    <string name="Edit_Conversation">管理圈子</string>
+    <string name="Edit_Conversations">管理圈子</string>
     <string name="Sort">排序</string>
     <string name="Circles">圈子</string>
     <string name="circle_title">%1$s\'的圈子</string>
@@ -982,9 +982,9 @@
     <string name="Immediately">立即启动</string>
     <string name="After_1_minute">1 分钟之后</string>
     <string name="After_30_minutes">30 分钟之后</string>
-    <string name="enable_immediately">立即启动</string>
-    <string name="enable_after_1_minute">在 1 分钟之后启动</string>
-    <string name="enable_after_30_minutes">在 30 分钟后启动</string>
+    <string name="Enable_immediately">立即启动</string>
+    <string name="Enable_after_1_minute">在 1 分钟之后启动</string>
+    <string name="Enable_after_30_minutes">在 30 分钟后启动</string>
 
     <!--  Pin message  -->
     <string name="Unpin_All_Messages">取消置顶所有消息</string>
@@ -1012,7 +1012,7 @@
     <string name="Chat_unpinned">置顶会话已取消</string>
 
     <!--  diagnosis  -->
-    <string name="app_version">应用版本</string>
+    <string name="App_version">应用版本</string>
     <string name="Manufacturer">生产商</string>
     <string name="Model">手机型号</string>
     <string name="System_version">系统版本</string>
@@ -1028,7 +1028,7 @@
     <!--  sticker store  -->
     <string name="Sticker_Store">表情商店</string>
     <string name="Added">已添加</string>
-    <string name="add_stickers">添加所有表情</string>
+    <string name="Add_stickers">添加所有表情</string>
     <string name="Remove_Stickers">移除所有表情</string>
     <string name="My_Stickers">我的表情</string>
     <string name="NO_STICKERS">还未添加任何表情</string>

@@ -126,7 +126,7 @@ class ForwardActivity : BlazeBaseActivity() {
                     R.id.container, ForwardFragment.TAG
                 )
             } else {
-                toast(R.string.error_share)
+                toast(R.string.Share_error)
                 finish()
             }
         }

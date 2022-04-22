@@ -116,7 +116,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
-        binding.titleTv.text = getString(R.string.Duplicate_transfer_confirmation)
+        binding.titleTv.text = getString(R.string.Duplicate_Transfer_Confirmation)
         binding.warningTv.text = getString(R.string.wallet_transfer_recent_tip, time, t.user.fullName, amount)
         binding.continueTv.setOnClickListener {
             if (shouldShowTransferTip(t)) {
@@ -143,7 +143,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
-        binding.titleTv.text = getString(R.string.Duplicate_withdraw_confirmation)
+        binding.titleTv.text = getString(R.string.Duplicate_Withdraw_Confirmation)
         binding.warningTv.text = getString(
             R.string.wallet_withdrawal_recent_tip,
             time,

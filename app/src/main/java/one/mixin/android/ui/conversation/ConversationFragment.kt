@@ -624,7 +624,7 @@ class ConversationFragment() :
                         { granted ->
                             if (granted) {
                                 chatViewModel.retryUpload(messageId) {
-                                    toast(R.string.error_retry_upload)
+                                    toast(R.string.Retry_upload_failed)
                                 }
                             } else {
                                 context?.openPermissionSetting()
@@ -1737,13 +1737,13 @@ class ConversationFragment() :
             }
             withContext(Dispatchers.Main) {
                 closeTool()
-                toast(R.string.add_success)
+                toast(R.string.Add_success)
             }
         } else {
             ErrorHandler.handleMixinError(
                 r.errorCode,
                 r.errorDescription,
-                getString(R.string.add_sticker_failed)
+                getString(R.string.Add_sticker_failed)
             )
         }
     }
@@ -1995,8 +1995,8 @@ class ConversationFragment() :
                         scrollToDown()
                         markRead()
                     }
-                    -1 -> toast(R.string.error_image)
-                    -2 -> toast(R.string.error_format)
+                    -1 -> toast(R.string.File_error)
+                    -2 -> toast(R.string.Format_not_supported)
                 }
             }
         }

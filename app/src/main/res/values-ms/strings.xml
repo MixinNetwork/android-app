@@ -46,7 +46,7 @@
     <string name="Hidden">Sembunyi</string>
     <string name="Shown">Tunjukkan</string>
     <string name="UNDO">BUAT ASAL</string>
-    <string name="add_success">Menambah kejayaan</string>
+    <string name="Add_success">Menambah kejayaan</string>
     <string name="Symbol">Simbol</string>
     <string name="Chain">Rantai</string>
     <string name="Asset_Key">Kunci Aset</string>
@@ -96,7 +96,7 @@
     <string name="Follow_system">Ikut Sistem</string>
     <string name="Nobody">Tiada siapa</string>
     <string name="scam_warning">Amaran: Ramai pengguna melaporkan akaun ini sebagai penipuan. Sila berhati-hati, terutamanya jika ia meminta wang kepada anda</string>
-    <string name="add_shortcut">Tambahkan ke Skrin utama</string>
+    <string name="Add_to_Home_screen">Tambahkan ke Skrin utama</string>
     <string name="Waiting">Menunggu</string>
     <string name="End_to_End_Encryption">Disulitkan</string>
     <string name="end_to_end_encryption_tip">Panggilan ini dijamin dengan penyulitan hujung ke hujung. Tidak ada orang di luar panggilan ini yang dapat melihat atau mendengarnya. Mixin pun tak boleh.</string>
@@ -106,14 +106,14 @@
     <string name="storage_low_message">Storan telefon anda hampir penuh, yang boleh menjejaskan pengalaman Mixin anda secara serius dan boleh mengakibatkan sembang yang rosak atau hilang dan data penting lain. Oleh itu, disarankan untuk nyahpasang aplikasi yang tidak digunakan untuk memberi lebih ruang</string>
     <string name="Upload_timeout">Tamat masa muat naik</string>
     <string name="Copy_link">Salin pautan</string>
-    <string name="type_message">Taipkan mesej</string>
+    <string name="Type_message">Taipkan mesej</string>
     <string name="Floating">Terapung</string>
     <string name="Cancel_Floating">Batal Terapung</string>
     <string name="quote">petikan</string>
     <string name="strikethrough">mencoret</string>
     <string name="italic">Italik</string>
     <string name="bold">tebal</string>
-    <string name="eos_contract_address">alamat kontrak EOS</string>
+    <string name="EOS_contract_address">alamat kontrak EOS</string>
     <!--error-->
     <string name="No_network_connection">Tiada sambungan rangkaian</string>
     <string name="error_connection_timeout">Tamat masa sambungan rangkaian</string>
@@ -128,8 +128,8 @@
     <string name="error_authentication">RALAT %1$d: Log masuk untuk meneruskan</string>
     <string name="can_not_recognize_qr_code">Tidak dapat mengenali kod QR</string>
     <string name="No_camera">Tiada kamera</string>
-    <string name="error_image">Ralat fail</string>
-    <string name="error_format">Format tidak disokong</string>
+    <string name="File_error">Ralat fail</string>
+    <string name="Format_not_supported">Format tidak disokong</string>
     <string name="error_full_group">RALAT %1$d: Kumpulan sembang penuh.</string>
     <string name="error_insufficient_balance">RALAT %1$d: Baki tidak mencukupi</string>
     <string name="error_invalid_pin_format">RALAT %1$d: Format PIN tidak sah</string>
@@ -143,7 +143,7 @@
     <string name="error_unable_to_open_media">Tidak dapat mencari aplikasi yang dapat buka media ini.</string>
     <string name="error_open_location">Tidak dapat mencari aplikasi peta</string>
     <string name="File_does_not_exist">Fail tidak wujud</string>
-    <string name="error_asset_exists">Aset tidak wujud</string>
+    <string name="Asset_does_not_exist">Aset tidak wujud</string>
     <string name="error_pin_check_too_many_request">Anda telah mencuba lebih dari 5 kali, sila tunggu sekurang-kurangnya 24 jam untuk mencuba lagi.</string>
     <string name="error_used_phone">RALAT %1$d: Telefon digunakan oleh orang lain.</string>
     <string name="error_blockchain">RALAT %1$d: Rantai blok tidak diselaraskan, sila cuba sebentar lagi.</string>
@@ -155,19 +155,19 @@
     <string name="error_bad_data">RALAT %1$d: Data permintaan mempunyai medan yang tidak sah</string>
     <string name="error_permission">Sila buka kebenaran yang diperlukan</string>
     <string name="error_user_invalid_format">Id pengguna tidak sah</string>
-    <string name="error_share">Kongsi ralat</string>
+    <string name="Share_error">Kongsi ralat</string>
     <string name="error_recaptcha_is_invalid">RALAT %1$d: Recaptcha tidak sah</string>
-    <string name="error_recaptcha_timeout">Tamat masa Recaptcha</string>
+    <string name="Recaptcha_timeout">Tamat masa Recaptcha</string>
     <string name="error_old_version">RALAT %1$d: Sila kemas kini Mixin(%2$s) untuk terus menggunakan perkhidmatan ini.</string>
     <string name="File_chooser_error">Ralat pemilih fail</string>
-    <string name="error_duration_short">Jangka masa terlalu pendek</string>
+    <string name="Duration_is_too_short">Jangka masa terlalu pendek</string>
     <string name="error_too_many_stickers">RALAT %1$d: Terlalu banyak pelekat</string>
     <string name="error_too_small_withdraw_amount">RALAT %1$d: Jumlah penarikan terlalu kecil</string>
     <string name="error_invalid_code_too_frequent">RALAT %1$d: Hantar kod pengesahan terlalu kerap, sila cuba sebentar lagi.</string>
     <string name="error_invalid_emergency_contact">RALAT %1$d: Kenalan kecemasan tidak sah</string>
     <string name="error_withdrawal_memo_format_incorrect">RALAT %1$d: Penarikan format memo tidak betul.</string>
     <string name="error_favorite_limit">RALAT %1$d: Angka telah mencapai had.</string>
-    <string name="error_retry_upload">Gagal memuat naik semula.</string>
+    <string name="Retry_upload_failed">Gagal memuat naik semula.</string>
     <string name="error_not_supported_audio_format">Tidak disokong format audio, sila buka oleh aplikasi lain.</string>
     <!--home-->
     <string name="search_hint">aset, kenalan dan mesej</string>
@@ -268,8 +268,8 @@
     <plurals name="title_participants" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d peserta</item>
     </plurals>
-    <string name="save_success">Simpan kejayaan</string>
-    <string name="save_to">Simpan ke %1$s</string>
+    <string name="Save_success">Simpan kejayaan</string>
+    <string name="Save_to">Simpan ke %1$s</string>
     <string name="Save_failure">Simpan kegagalan</string>
     <string name="hold_to_record_audio">Tahan untuk merakam, lepaskan untuk hantar</string>
     <string name="chat_call_duration">Tempoh: %1$s</string>
@@ -356,8 +356,8 @@
     <string name="value_then">nilai maka %1$s</string>
     <string name="wallet_transaction_that_time_no_value">nilai maka N/A</string>
     <string name="wallet_transaction_that_time_value_tip">nilai sejarah pada masa urus niaga</string>
-    <string name="Duplicate_transfer_confirmation">Pengesahan Pemindahan Pendua</string>
-    <string name="Duplicate_withdraw_confirmation">Pengesahan Pengunduran Pendua</string>
+    <string name="Duplicate_Transfer_Confirmation">Pengesahan Pemindahan Pendua</string>
+    <string name="Duplicate_Withdraw_Confirmation">Pengesahan Pengunduran Pendua</string>
     <string name="Stranger_Transfer_Confirmation">Pengesahan Pemindahan Orang Asing</string>
     <string name="Large_Amount_Confirmation_with_symbol">Pengesahan Jumlah Besar(%1$s)</string>
     <string name="wallet_transaction_tip">Adakah anda pasti mahu memindahkan %3$s bernilai %2$s ke %1$s？</string>
@@ -430,8 +430,8 @@
     <string name="Multisig_Transactions">Transaksi Multisig</string>
     <string name="Revoke_multisig_transaction">Batalkan Urus Niaga Multisig</string>
     <string name="PIN_modification">Pengubahsuaian PIN</string>
-    <string name="log_emergency_contact_modification">Pengubahsuaian kenalan kecemasan</string>
-    <string name="log_phone_number_modification">Pengubahsuaian nombor telefon</string>
+    <string name="Emergency_contact_modification">Pengubahsuaian kenalan kecemasan</string>
+    <string name="Phone_number_modification">Pengubahsuaian nombor telefon</string>
     <string name="Sign_with_phone_number">Log masuk dengan nombor telefon</string>
     <string name="Sign_with_emergency_contact">Log masuk dengan kenalan kecemasan</string>
     <string name="Sign_in_desktop_app">Log masuk aplikasi desktop</string>
@@ -598,11 +598,11 @@
     <string name="Invite_to_Group_via_Link">Jemput ke Kumpulan melalui Pautan</string>
     <!-- invite -->
     <string name="invite_info">Sesiapa sahaja yang mempunyai Mixin boleh mengikuti pautan ini untuk menyertai kumpulan ini. Kongsi sahaja dengan orang yang anda percayai.</string>
-    <string name="invite_revoke">Batal Pautan</string>
+    <string name="Revoke_Link">Batal Pautan</string>
     <string name="Share_Link">Kongsi pautan</string>
     <string name="Copy_invite">Salin pautan</string>
-    <string name="invite_forward">Teruskan kepada rakan</string>
-    <string name="invite_invalid">Pautan Tidak Sah</string>
+    <string name="Forward_to_friend">Teruskan kepada rakan</string>
+    <string name="Invalid_Link">Pautan Tidak Sah</string>
     <string name="QR_code">kod QR</string>
     <string name="Pin_to_top">Sematkan ke atas</string>
     <string name="group_role">Anda sekarang adalah pentadbir</string>
@@ -685,7 +685,7 @@
     <string name="Card">Kad</string>
     <!--pay-->
     <string name="pay_paid">Pautan pembayaran ini telah dibayar oleh seseorang, anda tidak boleh membuat pembayaran pendua.</string>
-    <string name="background_connection_enabled">Nod pesanan berjalan</string>
+    <string name="Messaging_node_running">Nod pesanan berjalan</string>
     <!--withdrawal-->
     <string name="Withdrawal">Pengeluaran</string>
     <string name="withdrawal_addr_add">+ Tambah Alamat</string>
@@ -705,13 +705,13 @@
     <string name="withdrawal_addr_tag">Destinasi Tag atau Nombor ID atau nota. Sekiranya tidak, anda boleh menetapkannya Tiada Tag.</string>
     <string name="withdrawal_addr_no_tag">Sekiranya anda diminta untuk mengisi Tag Destinasi atau Nombor ID atau nota, anda boleh Menambah Tag.</string>
     <string name="No_tag">Tiada Tag</string>
-    <string name="Add_tag">Tambah Tag</string>
+    <string name="Add_Tag">Tambah Tag</string>
     <string name="withdrawal_memo">Memo</string>
     <string name="withdrawal_with_pwd">Pengeluaran dengan PIN</string>
     <string name="withdrawal_with_biometric">Pengeluaran dengan Biometrik</string>
     <string name="withdrawal_to">Pengeluaran ke %1$s</string>
     <string name="Add_group_description">Tambahkan keterangan kumpulan</string>
-    <string name="Edit_group_description">Edit keterangan kumpulan</string>
+    <string name="Edit_Group_Description">Edit keterangan kumpulan</string>
     <string name="show_more">tunjuk lebih banyak</string>
     <string name="Send">Hantar</string>
     <string name="send_file">Hantar \"%1$s\" ke %2$s?</string>
@@ -747,7 +747,7 @@
     <!--sticker-->
     <string name="Manager_Sticker">Pengurus Pelekat</string>
     <string name="Add_sticker">Tambah Pelekat</string>
-    <string name="add_sticker_failed">Penambahan pelekat gagal</string>
+    <string name="Add_sticker_failed">Penambahan pelekat gagal</string>
     <string name="sticker_add_invalid_size">Memerlukan saiz fail pelekat lebih besar daripada 1KB dan kurang dari 1MB, lebar dan tinggi antara 128px dan 1024px.</string>
     <string name="Invalid_sticker_format">Format pelekat tidak sah</string>
     <string name="Search_GIPHY">Cari GIPHY</string>
@@ -839,7 +839,7 @@
     </plurals>
     <string name="All_Conversations">Semua Perbualan</string>
     <string name="Edit_Circle_Name">Edit Nama Lingkaran</string>
-    <string name="Edit_Conversation">Edit Perbualan</string>
+    <string name="Edit_Conversations">Edit Perbualan</string>
     <string name="Sort">Susun</string>
     <string name="Circles">Lingkaran</string>
     <string name="circle_title">Lingkaran %1$s</string>

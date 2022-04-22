@@ -325,7 +325,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
                                 MediaScannerConnection.scanFile(this@TranscriptMediaPagerActivity, arrayOf(outFile.toString()), null, null)
-                                runOnUiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
+                                runOnUiThread { toast(getString(R.string.Save_to, outFile.absolutePath)) }
                             }
                         } else {
                             openPermissionSetting()

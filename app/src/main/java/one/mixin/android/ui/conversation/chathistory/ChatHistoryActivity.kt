@@ -434,7 +434,7 @@ class ChatHistoryActivity : BaseActivity() {
                                 { granted ->
                                     if (granted) {
                                         retryUpload(messageId) {
-                                            toast(R.string.error_retry_upload)
+                                            toast(R.string.Retry_upload_failed)
                                         }
                                     } else {
                                         this@ChatHistoryActivity.openPermissionSetting()

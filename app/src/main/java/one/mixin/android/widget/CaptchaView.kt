@@ -42,7 +42,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             webView.loadUrl("about:blank")
             hide()
             webView.webViewClient = object : WebViewClient() {}
-            toast(R.string.error_recaptcha_timeout)
+            toast(R.string.Recaptcha_timeout)
             callback.onStop()
         }
     }

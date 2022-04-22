@@ -96,7 +96,7 @@ class InviteFragment : BaseFragment() {
                     }
                 },
                 {
-                    toast(R.string.invite_invalid)
+                    toast(R.string.Invalid_Link)
                 }
             )
         }

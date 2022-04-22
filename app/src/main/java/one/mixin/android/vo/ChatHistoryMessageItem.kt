@@ -113,7 +113,7 @@ fun ChatHistoryMessageItem.saveToLocal(context: Context) {
     }
     outFile.copyFromInputStream(FileInputStream(file))
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-    toast(MixinApplication.appContext.getString(R.string.save_to, outFile.absolutePath))
+    toast(MixinApplication.appContext.getString(R.string.Save_to, outFile.absolutePath))
 }
 
 fun ChatHistoryMessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {

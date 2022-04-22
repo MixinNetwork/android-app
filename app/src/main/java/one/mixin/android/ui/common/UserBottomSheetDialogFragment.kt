@@ -488,7 +488,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         list.groups.add(
             menuGroup {
                 menu {
-                    title = getString(R.string.add_shortcut)
+                    title = getString(R.string.Add_to_Home_screen)
                     action = {
                         addShortcut()
                         dismiss()

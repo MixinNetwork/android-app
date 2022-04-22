@@ -140,7 +140,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
-                        toast(R.string.export_failure)
+                        toast(R.string.Export_failure)
                     }
                 )
         }
@@ -161,7 +161,7 @@ class MarkdownActivity : BaseActivity() {
                         }
                     },
                     {
-                        toast(R.string.export_failure)
+                        toast(R.string.Export_failure)
                     }
                 )
         }
@@ -183,7 +183,7 @@ class MarkdownActivity : BaseActivity() {
                     }
                 }
             } catch (e: Exception) {
-                toast(R.string.export_failure)
+                toast(R.string.Export_failure)
             }
             dismissAction()
         }
@@ -231,7 +231,7 @@ class MarkdownActivity : BaseActivity() {
 
                 override fun onFailure(error: CharSequence?) {
                     dialog.dismiss()
-                    toast(R.string.export_failure)
+                    toast(R.string.Export_failure)
                 }
             }
         )

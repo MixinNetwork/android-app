@@ -129,7 +129,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         setBiometricLayout()
         binding.biometricLayout.apply {
             biometricTv.setText(R.string.Verify_by_Biometric)
-            payTv.setText(R.string.login_by_PIN)
+            payTv.setText(R.string.Login_with_PIN)
         }
     }
 
@@ -158,7 +158,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         getString(R.string.Verify_by_Biometric),
         "",
         "",
-        getString(R.string.login_by_PIN)
+        getString(R.string.Login_with_PIN)
     )
 
     private suspend fun encryptKey(

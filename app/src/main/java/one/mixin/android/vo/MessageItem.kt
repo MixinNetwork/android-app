@@ -250,7 +250,7 @@ suspend fun MessageItem.saveToLocal(context: Context) {
     MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
     toast(
         MixinApplication.appContext.getString(
-            R.string.save_to,
+            R.string.Save_to,
             outFile.absolutePath
         )
     )

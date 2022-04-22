@@ -387,7 +387,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
                                 MediaScannerConnection.scanFile(this@MediaPagerActivity, arrayOf(outFile.toString()), null, null)
-                                withContext(Dispatchers.Main) { toast(getString(R.string.save_to, outFile.absolutePath)) }
+                                withContext(Dispatchers.Main) { toast(getString(R.string.Save_to, outFile.absolutePath)) }
                             }
                         } else {
                             openPermissionSetting()
@@ -768,7 +768,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 MediaStatus.CANCELED.name -> {
                     if (Session.getAccountId() == messageItem.userId) {
                         viewModel.retryUpload(messageItem.messageId) {
-                            toast(R.string.error_retry_upload)
+                            toast(R.string.Retry_upload_failed)
                         }
                     } else {
                         viewModel.retryDownload(messageItem.messageId)

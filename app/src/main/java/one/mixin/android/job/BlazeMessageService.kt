@@ -168,7 +168,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
         val builder = NotificationCompat.Builder(this, CHANNEL_NODE)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.background_connection_enabled))
+            .setContentText(getString(R.string.Messaging_node_running))
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setWhen(0)
             .setDefaults(0)

@@ -5,7 +5,7 @@
         android:title="@string/Edit_Circle_Name" />
     <item
         android:id="@+id/edit"
-        android:title="@string/Edit_Conversation" />
+        android:title="@string/Edit_Conversations" />
     <item
         android:id="@+id/delete"
         android:title="@string/Delete" />

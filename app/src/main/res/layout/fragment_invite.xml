@@ -73,7 +73,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_forward" />
+            android:text="@string/Forward_to_friend" />
 
     </LinearLayout>
 
@@ -173,7 +173,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/invite_revoke" />
+            android:text="@string/Revoke_Link" />
 
     </LinearLayout>
 

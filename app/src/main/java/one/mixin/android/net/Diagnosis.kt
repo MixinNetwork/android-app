@@ -28,7 +28,7 @@ import java.util.Enumeration
 fun diagnosis(context: Context, diagnosisCallback: (String) -> Unit) {
     val result = StringBuilder()
 
-    result.append("${context.getString(R.string.app_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
+    result.append("${context.getString(R.string.App_version)}: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})").appendLine()
         .append("${context.getString(R.string.Manufacturer)}: ${Build.MANUFACTURER}").appendLine()
         .append("${context.getString(R.string.Model)}: ${Build.MODEL}").appendLine()
         .append("${context.getString(R.string.System_version)}: ${Build.VERSION.RELEASE}").appendLine()

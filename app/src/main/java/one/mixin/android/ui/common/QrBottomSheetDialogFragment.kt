@@ -143,7 +143,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     if (path.isNullOrBlank()) {
                                         toast(getString(R.string.Save_failure))
                                     } else {
-                                        toast(getString(R.string.save_to, path))
+                                        toast(getString(R.string.Save_to, path))
                                     }
                                 }
                             }

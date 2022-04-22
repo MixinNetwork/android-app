@@ -286,7 +286,7 @@ class EditFragment : VisionFragment() {
             File(path).copy(outFile)
         }
         MediaScannerConnection.scanFile(context, arrayOf(outFile.toString()), null, null)
-        toast(getString(R.string.save_to, outFile.absolutePath))
+        toast(getString(R.string.Save_to, outFile.absolutePath))
     }
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {

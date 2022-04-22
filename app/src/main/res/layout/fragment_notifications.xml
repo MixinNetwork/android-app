@@ -106,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/Duplicate_transfer_confirmation"
+                android:text="@string/Duplicate_Transfer_Confirmation"
                 tools:ignore="RelativeOverlap" />
 
             <androidx.appcompat.widget.SwitchCompat

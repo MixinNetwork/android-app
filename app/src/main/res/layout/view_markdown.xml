@@ -29,7 +29,7 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/action_export_md"
+        android:text="@string/Export_Markdown"
         android:textColor="?attr/text_primary" />
 
     <TextView
@@ -43,7 +43,7 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/action_export_pdf"
+        android:text="@string/Export_PDF"
         android:textColor="?attr/text_primary" />
 
 </LinearLayout>

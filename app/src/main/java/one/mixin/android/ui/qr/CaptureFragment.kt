@@ -344,7 +344,7 @@ class CaptureFragment() : BaseCameraxFragment() {
             startImageAnalysis()
         } else {
             if (binding.op.time < CaptureActivity.MIN_DURATION) {
-                toast(R.string.error_duration_short)
+                toast(R.string.Duration_is_too_short)
                 event.outputResults.outputUri.path?.apply {
                     File(this).delete()
                 }

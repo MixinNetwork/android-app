@@ -1173,7 +1173,7 @@ class WebFragment : BaseFragment() {
                             withContext(Dispatchers.Main) {
                                 if (isAdded) toast(
                                     getString(
-                                        R.string.save_to,
+                                        R.string.Save_to,
                                         outFile.absolutePath
                                     )
                                 )

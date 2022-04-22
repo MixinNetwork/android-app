@@ -150,7 +150,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
                 bold {
                     append(" ")
                     color(requireContext().colorFromAttribute(R.attr.text_primary)) {
-                        append(getString(R.string.eos_contract_address))
+                        append(getString(R.string.EOS_contract_address))
                     }
                 }
             }
@@ -211,7 +211,7 @@ class AddressAddFragment() : BaseFragment(R.layout.fragment_address_add) {
             )
             binding.info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.Add_tag)
+                    getString(R.string.Add_Tag)
                 } else {
                     getString(R.string.Add_memo)
                 }

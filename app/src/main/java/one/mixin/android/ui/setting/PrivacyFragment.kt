@@ -82,9 +82,9 @@ class PrivacyFragment : BaseFragment(R.layout.fragment_privacy) {
     fun setLockDesc() {
         binding.lockDescTv.text = getString(
             when (defaultSharedPreferences.getInt(Constants.Account.PREF_APP_AUTH, -1)) {
-                0 -> R.string.enable_immediately
-                1 -> R.string.enable_after_1_minute
-                2 -> R.string.enable_after_30_minutes
+                0 -> R.string.Enable_immediately
+                1 -> R.string.Enable_after_1_minute
+                2 -> R.string.Enable_after_30_minutes
                 else -> R.string.Disabled
             }
         )

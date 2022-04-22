@@ -52,7 +52,7 @@
     <string name="Hidden">Hidden</string>
     <string name="Shown">Shown</string>
     <string name="UNDO">UNDO</string>
-    <string name="add_success">Add success</string>
+    <string name="Add_success">Add success</string>
     <string name="GIF" translatable="false">GIF</string>
     <string name="Symbol">Symbol</string>
     <string name="Chain">Chain</string>
@@ -92,7 +92,7 @@
     <string name="Try_Again">Try Again</string>
     <string name="OK">OK</string>
     <string name="Verify_with_PIN">Verify with PIN</string>
-    <string name="login_by_PIN">Login with PIN</string>
+    <string name="Login_with_PIN">Login with PIN</string>
     <string name="Verify_by_Biometric">Verify by Biometric</string>
     <string name="transfer_without_pin">You must setup PIN for transfer</string>
     <string name="Voice_call">Voice call</string>
@@ -105,7 +105,7 @@
     <string name="Follow_system">Follow System</string>
     <string name="Nobody">Nobody</string>
     <string name="scam_warning">Warning: Many users reported this account as a scam. Please be careful, especially if it asks you for money</string>
-    <string name="add_shortcut">Add to Home screen</string>
+    <string name="Add_to_Home_screen">Add to Home screen</string>
     <string name="Waiting">Waiting</string>
     <string name="End_to_End_Encryption">End-to-end Encrypted</string>
     <string name="Encrypted">Encrypted</string>
@@ -117,7 +117,7 @@
     <string name="website" translatable="false">https://mixin.one/messenger</string>
     <string name="Upload_timeout">Upload timeout</string>
     <string name="Copy_link">Copy Link</string>
-    <string name="type_message">Type message</string>
+    <string name="Type_message">Type message</string>
     <string name="Floating">Floating</string>
     <string name="Cancel_Floating">Cancel Floating</string>
     <string name="quote">quote</string>
@@ -126,9 +126,9 @@
     <string name="bold">bold</string>
     <string name="Disabled">Disabled</string>
     <string name="Not_recognized">Not recognized</string>
-    <string name="eos_contract_address">EOS contract address</string>
-    <string name="action_export_md">Export markdown</string>
-    <string name="action_export_pdf">Export PDF</string>
+    <string name="EOS_contract_address">EOS contract address</string>
+    <string name="Export_Markdown">Export Markdown</string>
+    <string name="Export_PDF">Export PDF</string>
     <string name="Notice">Notice</string>
     <string name="Close">Close</string>
     <string name="Reply">Reply</string>
@@ -155,8 +155,8 @@
     <string name="error_authentication">ERROR %1$d: Sign in to continue</string>
     <string name="can_not_recognize_qr_code">Can not recognize the QR code</string>
     <string name="No_camera">No camera</string>
-    <string name="error_image">File error</string>
-    <string name="error_format">Format not supported</string>
+    <string name="File_error">File error</string>
+    <string name="Format_not_supported">Format not supported</string>
     <string name="error_full_group">ERROR %1$d: The group chat is full.</string>
     <string name="error_insufficient_balance">ERROR %1$d: Insufficient balance</string>
     <string name="error_invalid_pin_format">ERROR %1$d: Invalid PIN format</string>
@@ -174,7 +174,7 @@
     <string name="File_does_not_exist">File does not exist</string>
     <string name="error_address_exists">The address does not exist, please make sure that the address is added successfully</string>
     <string name="error_address_not_sync">Address refresh failed, please try again</string>
-    <string name="error_asset_exists">Asset does not exist</string>
+    <string name="Asset_does_not_exist">Asset does not exist</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
     <string name="error_used_phone">ERROR %1$d: Phone is used by someone else.</string>
     <string name="error_insufficient_transaction_fee_with_amount">ERROR %1$d: Insufficient transaction fee. Please make sure your wallet has %2$s as fee</string>
@@ -188,19 +188,19 @@
     <string name="error_bad_data">ERROR %1$d: The request data has invalid field</string>
     <string name="error_permission">Please open the necessary permissions</string>
     <string name="error_user_invalid_format">Invalid user id</string>
-    <string name="error_share">Share error.</string>
+    <string name="Share_error">Share error.</string>
     <string name="error_recaptcha_is_invalid">ERROR %1$d: Recaptcha is invalid</string>
-    <string name="error_recaptcha_timeout">Recaptcha timeout</string>
+    <string name="Recaptcha_timeout">Recaptcha timeout</string>
     <string name="error_old_version">ERROR %1$d: Please update Mixin(%2$s) to continue use the service.</string>
     <string name="File_chooser_error">File chooser error</string>
-    <string name="error_duration_short">Duration is too short</string>
+    <string name="Duration_is_too_short">Duration is too short</string>
     <string name="error_too_many_stickers">ERROR %1$d: Too many stickers</string>
     <string name="error_too_small_withdraw_amount">ERROR %1$d: Withdraw amount too small</string>
     <string name="error_invalid_code_too_frequent">ERROR %1$d: Send verification code too frequent, please try again later.</string>
     <string name="error_invalid_emergency_contact">ERROR %1$d: Invalid emergency contact</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR %1$d: Withdrawal memo format incorrect.</string>
     <string name="error_favorite_limit">ERROR %1$d: The number has reached the limit.</string>
-    <string name="error_retry_upload">Retry upload failed.</string>
+    <string name="Retry_upload_failed">Retry upload failed.</string>
     <string name="error_not_supported_audio_format">Not supported audio format, please open by other app.</string>
     <string name="error_transcript_forward">Please forward all attachments after they have been downloaded</string>
     <!--home-->
@@ -318,10 +318,10 @@
         <item quantity="one">%1$d participant</item>
         <item quantity="other">%1$d participants</item>
     </plurals>
-    <string name="save_success">Save success</string>
-    <string name="save_to">Save to %1$s</string>
+    <string name="Save_success">Save success</string>
+    <string name="Save_to">Save to %1$s</string>
     <string name="Save_failure">Save failure</string>
-    <string name="export_failure">export failure</string>
+    <string name="Export_failure">Export failure</string>
     <string name="hold_to_record_audio">Hold to record, release to send</string>
     <string name="chat_call_duration">Duration: %1$s</string>
     <string name="Canceled">Cancelled</string>
@@ -420,8 +420,8 @@
     <string name="value_then">value then %1$s</string>
     <string name="wallet_transaction_that_time_no_value">value then N/A</string>
     <string name="wallet_transaction_that_time_value_tip">historical value at the time of transaction</string>
-    <string name="Duplicate_transfer_confirmation">Duplicate Transfer Confirmation</string>
-    <string name="Duplicate_withdraw_confirmation">Duplicate Withdraw Confirmation</string>
+    <string name="Duplicate_Transfer_Confirmation">Duplicate Transfer Confirmation</string>
+    <string name="Duplicate_Withdraw_Confirmation">Duplicate Withdraw Confirmation</string>
     <string name="Stranger_Transfer_Confirmation">Stranger Transfer Confirmation</string>
     <string name="Large_Amount_Confirmation_with_symbol">Large Amount Confirmation(%1$s)</string>
     <string name="wallet_transaction_tip">Are you sure you want to transfer %3$s worth %2$s to %1$s ？</string>
@@ -500,8 +500,8 @@
     <string name="Multisig_Transactions">Multisig Transaction</string>
     <string name="Revoke_multisig_transaction">Revoke Multisig Transaction</string>
     <string name="PIN_modification">PIN modification</string>
-    <string name="log_emergency_contact_modification">Emergency contact modification</string>
-    <string name="log_phone_number_modification">Phone number modification</string>
+    <string name="Emergency_contact_modification">Emergency contact modification</string>
+    <string name="Phone_number_modification">Phone number modification</string>
     <string name="Sign_with_phone_number">Sign in with phone number</string>
     <string name="Sign_with_emergency_contact">Sign in with emergency contact</string>
     <string name="Sign_in_desktop_app">Sign in desktop app</string>
@@ -688,11 +688,11 @@
     <string name="Invite_to_Group_via_Link">Invite to Group via Link</string>
     <!-- invite -->
     <string name="invite_info">Anyone with Mixin can follow this link to join this group. Only share it with people you trust.</string>
-    <string name="invite_revoke">Revoke Link</string>
+    <string name="Revoke_Link">Revoke Link</string>
     <string name="Share_Link">Share Link</string>
     <string name="Copy_invite">Copy Link</string>
-    <string name="invite_forward">Forward to friend</string>
-    <string name="invite_invalid">Invalid Link</string>
+    <string name="Forward_to_friend">Forward to friend</string>
+    <string name="Invalid_Link">Invalid Link</string>
     <string name="QR_code">QR code</string>
     <string name="Pin_to_top">Pin to top</string>
     <string name="group_role">You\' re now an admin</string>
@@ -787,7 +787,7 @@
     <string name="Transcript">Transcript</string>
     <!--pay-->
     <string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
-    <string name="background_connection_enabled">Messaging node running</string>
+    <string name="Messaging_node_running">Messaging node running</string>
 
     <!--withdrawal-->
     <string name="Withdrawal">Withdrawal</string>
@@ -811,13 +811,13 @@
     <string name="withdrawal_addr_tag">Destination Tag or ID Number or notes. If not, you can set it No Tag.</string>
     <string name="withdrawal_addr_no_tag">If you are required to fill in Destination Tag or ID Number or notes, you can Add Tag.</string>
     <string name="No_tag">No Tag</string>
-    <string name="Add_tag">Add Tag</string>
+    <string name="Add_Tag">Add Tag</string>
     <string name="withdrawal_memo">Memo</string>
     <string name="withdrawal_with_pwd">Withdrawal with PIN</string>
     <string name="withdrawal_with_biometric">Withdrawal with Biometric</string>
     <string name="withdrawal_to">Withdrawal to %1$s</string>
     <string name="Add_group_description">Add group description</string>
-    <string name="Edit_group_description">Edit group description</string>
+    <string name="Edit_Group_Description">Edit group description</string>
     <string name="show_more">show more</string>
     <string name="Send">Send</string>
     <string name="Send_Without_Sound">Send Without Sound</string>
@@ -859,7 +859,7 @@
     <!--sticker-->
     <string name="Manager_Sticker">Manager Sticker</string>
     <string name="Add_sticker">Add Sticker</string>
-    <string name="add_sticker_failed">Add sticker failed</string>
+    <string name="Add_sticker_failed">Add sticker failed</string>
     <string name="sticker_add_invalid_size">Requires stickers file size larger than 1KB and less than 1MB, width and height between 128px and 1024px.</string>
     <string name="Invalid_sticker_format">Invalid sticker format</string>
     <string name="Search_GIPHY">Search GIPHY</string>
@@ -964,7 +964,7 @@
     </plurals>
     <string name="All_Conversations">All Conversations</string>
     <string name="Edit_Circle_Name">Edit Circle Name</string>
-    <string name="Edit_Conversation">Edit Conversations</string>
+    <string name="Edit_Conversations">Edit Conversations</string>
     <string name="Sort">Sort</string>
     <string name="Circles">Circles</string>
     <string name="circle_title">%1$s\'s Circles</string>
@@ -1015,9 +1015,9 @@
     <string name="Immediately">Immediately</string>
     <string name="After_1_minute">After 1 minute</string>
     <string name="After_30_minutes">After 30 minutes</string>
-    <string name="enable_immediately">Enabled immediately</string>
-    <string name="enable_after_1_minute">Enabled after 1 minute</string>
-    <string name="enable_after_30_minutes">Enabled after 30 minutes</string>
+    <string name="Enable_immediately">Enabled immediately</string>
+    <string name="Enable_after_1_minute">Enabled after 1 minute</string>
+    <string name="Enable_after_30_minutes">Enabled after 30 minutes</string>
 
     <!--  Pin message  -->
     <string name="Unpin_All_Messages">Unpin All Messages</string>
@@ -1046,7 +1046,7 @@
     <string name="Chat_unpinned">Chat unpinned</string>
 
     <!--  diagnosis  -->
-    <string name="app_version">App version</string>
+    <string name="App_version">App version</string>
     <string name="Manufacturer">Manufacturer</string>
     <string name="Model">Model</string>
     <string name="System_version">System version</string>
@@ -1062,7 +1062,7 @@
     <!--  sticker store  -->
     <string name="Sticker_Store">Sticker Store</string>
     <string name="Added">Added</string>
-    <string name="add_stickers">Add Stickers</string>
+    <string name="Add_stickers">Add Stickers</string>
     <string name="Remove_Stickers">Remove Stickers</string>
     <string name="My_Stickers">My Stickers</string>
     <string name="NO_STICKERS">NO STICKER</string>

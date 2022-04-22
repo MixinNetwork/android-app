@@ -582,7 +582,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         }
                     } else {
-                        showError(R.string.error_asset_exists)
+                        showError(R.string.Asset_does_not_exist)
                     }
                 }
             }

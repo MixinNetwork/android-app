@@ -46,7 +46,7 @@
     <string name="Hidden">Tersembunyi</string>
     <string name="Shown">Ditampilkan</string>
     <string name="UNDO">URUNG</string>
-    <string name="add_success">Berhasil menambahkan</string>
+    <string name="Add_success">Berhasil menambahkan</string>
     <string name="Symbol">Simbol</string>
     <string name="Chain">Chain</string>
     <string name="Asset_Key">Kode Aset</string>
@@ -94,7 +94,7 @@
     <string name="Follow_system">Otomatis</string>
     <string name="Nobody">Tak seorangpun</string>
     <string name="scam_warning">Peringatan: Banyak pengguna yang melaporkan akun ini sebagai scam. Harap berhati-hati, terutama jika meminta uang Anda</string>
-    <string name="add_shortcut">Tambahkan ke layar Beranda</string>
+    <string name="Add_to_Home_screen">Tambahkan ke layar Beranda</string>
     <string name="Waiting">Menunggu</string>
     <string name="End_to_End_Encryption">Terenkripsi end-to-end</string>
     <string name="end_to_end_encryption_tip">Panggilan ini diamankan dengan enkripsi end-to-end. Tak seorangpun di luar panggilan ini yang dapat melihat atau mendengarkannya. Bahkan Mixin sekalipun.</string>
@@ -117,8 +117,8 @@
     <string name="error_authentication">KESALAHAN %1$d: Masuk untuk melanjutkan</string>
     <string name="can_not_recognize_qr_code">Tidak dapat mengenal kode QR</string>
     <string name="No_camera">Tidak ada kamera</string>
-    <string name="error_image">Kesalahan file</string>
-    <string name="error_format">Format tidak didukung</string>
+    <string name="File_error">Kesalahan file</string>
+    <string name="Format_not_supported">Format tidak didukung</string>
     <string name="error_full_group">KESALAHAN %1$d: Obrolan grup sudah penuh.</string>
     <string name="error_insufficient_balance">KESALAHAN %1$d: Saldo tidak cukup</string>
     <string name="error_invalid_pin_format">KESALAHAN %1$d: Format PIN tidak valid</string>
@@ -132,7 +132,7 @@
     <string name="error_unable_to_open_media">Tidak dapat menemukan aplikasi yang dapat membuka media ini.</string>
     <string name="error_open_location">Tidak dapat menemukan aplikasi peta</string>
     <string name="File_does_not_exist">File tidak ada</string>
-    <string name="error_asset_exists">Aset tidak ada</string>
+    <string name="Asset_does_not_exist">Aset tidak ada</string>
     <string name="error_pin_check_too_many_request">Anda telah mencoba lebih dari 5 kali, harap tunggu setidaknya 24 jam untuk mencoba lagi.</string>
     <string name="error_used_phone">KESALAHAN %1$d: Ponsel digunakan oleh orang lain.</string>
     <string name="error_blockchain">KESALAHAN %1$d: Blockchain tidak sinkron, coba lagi nanti.</string>
@@ -144,19 +144,19 @@
     <string name="error_bad_data">KESALAHAN %1$d: Data permintaan memiliki bidang yang tidak valid</string>
     <string name="error_permission">Harap buka izin yang diperlukan</string>
     <string name="error_user_invalid_format">ID pengguna tidak valid</string>
-    <string name="error_share">Bagikan kesalahan.</string>
+    <string name="Share_error">Bagikan kesalahan.</string>
     <string name="error_recaptcha_is_invalid">KESALAHAN %1$d: Recaptcha tidak valid</string>
-    <string name="error_recaptcha_timeout">Batas waktu recaptcha</string>
+    <string name="Recaptcha_timeout">Batas waktu recaptcha</string>
     <string name="error_old_version">KESALAHAN %1$d: Harap perbarui Mixin(%2$s) untuk terus menggunakan layanan.</string>
     <string name="File_chooser_error">Kesalahan pemilih file</string>
-    <string name="error_duration_short">Durasi terlalu pendek</string>
+    <string name="Duration_is_too_short">Durasi terlalu pendek</string>
     <string name="error_too_many_stickers">KESALAHAN %1$d: Terlalu banyak stiker</string>
     <string name="error_too_small_withdraw_amount">KESALAHAN %1$d: Jumlah penarikan dana terlalu kecil</string>
     <string name="error_invalid_code_too_frequent">KESALAHAN %1$d: Terlalu sering mengirim kode verifikasi, coba lagi nanti.</string>
     <string name="error_invalid_emergency_contact">KESALAHAN %1$d: Kontak darurat tidak valid</string>
     <string name="error_withdrawal_memo_format_incorrect">KESALAHAN %1$d: Format memo penarikan salah.</string>
     <string name="error_favorite_limit">KESALAHAN %1$d: Jumlahnya telah mencapai batas.</string>
-    <string name="error_retry_upload">Unggahan ulang gagal.</string>
+    <string name="Retry_upload_failed">Unggahan ulang gagal.</string>
     <string name="error_not_supported_audio_format">Tidak mendukung format audio, harap buka dengan aplikasi lain.</string>
     <!--home-->
     <string name="search_hint">aset, kontak, dan pesan</string>
@@ -256,8 +256,8 @@
     <plurals name="title_participants" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d peserta</item>
     </plurals>
-    <string name="save_success">Berhasil menyimpan</string>
-    <string name="save_to">Simpan ke %1$s</string>
+    <string name="Save_success">Berhasil menyimpan</string>
+    <string name="Save_to">Simpan ke %1$s</string>
     <string name="Save_failure">Gagal menyimpan</string>
     <string name="hold_to_record_audio">Tahan untuk merekam, lepaskan untuk mengirim</string>
     <string name="chat_call_duration">Durasi: %1$s</string>
@@ -340,8 +340,8 @@
     <string name="Continue">Lanjutkan</string>
     <string name="wallet_transaction_continue_count_down">Lanjutkan (%1$d)</string>
     <string name="Large_Amount_Confirmation">Konfirmasi Jumlah Besar</string>
-    <string name="Duplicate_transfer_confirmation">Konfirmasi Transfer Ganda</string>
-    <string name="Duplicate_withdraw_confirmation">Konfirmasi Penarikan Ganda</string>
+    <string name="Duplicate_Transfer_Confirmation">Konfirmasi Transfer Ganda</string>
+    <string name="Duplicate_Withdraw_Confirmation">Konfirmasi Penarikan Ganda</string>
     <string name="Large_Amount_Confirmation_with_symbol">Konfirmasi Jumlah Besar(%1$s)</string>
     <string name="wallet_transaction_tip">Yakin ingin mentransfer %3$s senilai %2$s ke %1$s？</string>
     <string name="wallet_transfer_recent_tip">Anda telah mentransfer %3$s ke %2$s %1$s. Ingin mentransfernya lagi?</string>
@@ -407,8 +407,8 @@
     <string name="Multisig_Transactions">Transaksi Multisig</string>
     <string name="Revoke_multisig_transaction">Cabut Transaksi Multisig</string>
     <string name="PIN_modification">Modifikasi PIN</string>
-    <string name="log_emergency_contact_modification">Modifikasi kontak darurat</string>
-    <string name="log_phone_number_modification">Modifikasi nomor telepon</string>
+    <string name="Emergency_contact_modification">Modifikasi kontak darurat</string>
+    <string name="Phone_number_modification">Modifikasi nomor telepon</string>
     <string name="Sign_with_phone_number">Masuk dengan nomor telepon</string>
     <string name="Sign_with_emergency_contact">Masuk dengan kontak darurat</string>
     <string name="Sign_in_desktop_app">Masuk aplikasi desktop</string>
@@ -561,11 +561,11 @@
     <string name="Invite_to_Group_via_Link">Undang ke Grup melalui Tautan</string>
     <!-- invite -->
     <string name="invite_info">Siapapun yang memiliki Mixin dapat mengikuti tautan ini untuk bergabung dengan grup ini. Hanya bagikan dengan orang yang Anda percaya.</string>
-    <string name="invite_revoke">Cabut Tautan</string>
+    <string name="Revoke_Link">Cabut Tautan</string>
     <string name="Share_Link">Bagikan Tautan</string>
     <string name="Copy_invite">Salin Tautan</string>
-    <string name="invite_forward">Teruskan ke teman</string>
-    <string name="invite_invalid">Tautan Tidak Valid</string>
+    <string name="Forward_to_friend">Teruskan ke teman</string>
+    <string name="Invalid_Link">Tautan Tidak Valid</string>
     <string name="Pin_to_top">Sematkan ke ke atas</string>
     <string name="group_role">Anda sekarang adalah admin</string>
     <string name="Initializing">Memulai &#8230;</string>
@@ -646,7 +646,7 @@
     <!--pay-->
     <string name="pay_paid">Tautan pembayaran ini telah dibayar oleh seseorang, Anda tidak dapat melakukan pembayaran ganda.</string>
 
-    <string name="background_connection_enabled">Node perpesanan sedang berjalan</string>
+    <string name="Messaging_node_running">Node perpesanan sedang berjalan</string>
 
     <!--withdrawal-->
     <string name="Withdrawal">Penarikan</string>
@@ -667,13 +667,13 @@
     <string name="withdrawal_addr_tag">Tag Tujuan atau Nomor ID atau catatan. Jika tidak, Anda dapat mengaturnya Tanpa Tag.</string>
     <string name="withdrawal_addr_no_tag">Jika Anda diminta untuk mengisi Tag Tujuan atau Nomor ID atau catatan, Anda dapat Menambahkan Tag.</string>
     <string name="No_tag">Tanpa Tag</string>
-    <string name="Add_tag">Tambahkan Tag</string>
+    <string name="Add_Tag">Tambahkan Tag</string>
     <string name="withdrawal_memo">Memo</string>
     <string name="withdrawal_with_pwd">Penarikan dengan PIN</string>
     <string name="withdrawal_with_biometric">Penarikan dengan Biometrik</string>
     <string name="withdrawal_to">Penarikan ke %1$s</string>
     <string name="Add_group_description">Tambahkan deskripsi grup</string>
-    <string name="Edit_group_description">Edit deskripsi grup</string>
+    <string name="Edit_Group_Description">Edit deskripsi grup</string>
     <string name="show_more">tampilkan lebih banyak</string>
     <string name="Send">Kirim</string>
     <string name="send_file">Kirim \"%1$s\" ke %2$s?</string>
@@ -706,7 +706,7 @@
     <!--sticker-->
     <string name="Manager_Sticker">Stiker Manajer</string>
     <string name="Add_sticker">Tambahkan Stiker</string>
-    <string name="add_sticker_failed">Gagal menambahkan stiker</string>
+    <string name="Add_sticker_failed">Gagal menambahkan stiker</string>
     <string name="sticker_add_invalid_size">Memerlukan ukuran file stiker yang lebih besar dari 1KB dan kurang dari 1MB, lebar dan tinggi antara 128px dan 1024px.</string>
     <string name="Invalid_sticker_format">Format stiker tidak valid</string>
     <string name="Search_GIPHY">Cari GIPHY</string>
@@ -798,7 +798,7 @@
     </plurals>
     <string name="All_Conversations">Semua Percakapan</string>
     <string name="Edit_Circle_Name">Edit Nama Lingkaran</string>
-    <string name="Edit_Conversation">Edit Percakapan</string>
+    <string name="Edit_Conversations">Edit Percakapan</string>
     <string name="Sort">Urutkan</string>
     <string name="Circles">Lingkaran</string>
     <string name="circle_title">Lingkaran %1$s</string>

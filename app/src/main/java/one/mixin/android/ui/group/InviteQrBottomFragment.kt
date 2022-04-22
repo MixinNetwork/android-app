@@ -77,7 +77,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                                     if (!isAdded) return@launch
                                     val path = contentLl.capture(requireContext())
                                     withContext(Dispatchers.Main) {
-                                        toast(getString(R.string.save_to, path))
+                                        toast(getString(R.string.Save_to, path))
                                     }
                                 }
                             } else {

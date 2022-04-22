@@ -328,7 +328,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
             } else if (category.isSignal()) {
                 R.string.End_to_End_Encryption
             } else {
-                R.string.type_message
+                R.string.Type_message
             }
         )
     }
