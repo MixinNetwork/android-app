@@ -138,9 +138,9 @@ open class Injector {
         return bm.data
     }
 
-    protected fun syncUser(userId: String, conversationId: String? = null): User? {
+    protected fun syncUser(userId: String, conversationId: String? = null, sync: Boolean = true): User? {
         var user = userDao.findUser(userId)
-        if (user == null) {
+        if (user == null && sync) {
             try {
                 val call = userApi.getUserById(userId).execute()
                 val response = call.body()
