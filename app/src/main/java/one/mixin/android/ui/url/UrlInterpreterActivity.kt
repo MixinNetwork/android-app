@@ -70,6 +70,7 @@ class UrlInterpreterActivity : BaseActivity() {
     }
 
     private fun interpretIntent(uri: Uri) {
+        Timber.e("interpretIntent uri: $uri")
         when (uri.host) {
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
             CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS, CONVERSATIONS -> {

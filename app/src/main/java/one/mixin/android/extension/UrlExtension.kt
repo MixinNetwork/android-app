@@ -47,6 +47,7 @@ fun String.openAsUrlOrQrScan(
 }
 
 fun String.isMixinUrl(): Boolean {
+    Timber.e("isMixinUrl $this")
     return if (startsWith(Constants.Scheme.HTTPS_PAY, true) ||
         startsWith(Constants.Scheme.PAY, true) ||
         startsWith(Constants.Scheme.USERS, true) ||
@@ -91,6 +92,7 @@ fun String.openAsUrl(
     host: String? = null,
     extraAction: () -> Unit,
 ) {
+    Timber.e("openAsUrl $this")
     if (startsWith(Constants.Scheme.SEND, true)) {
         val uri = Uri.parse(this)
         uri.handleSchemeSend(

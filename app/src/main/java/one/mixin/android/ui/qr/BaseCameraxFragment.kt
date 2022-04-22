@@ -461,10 +461,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
     abstract fun fromScan(): Boolean
 
     private fun handleAnalysis(analysisResult: String) {
+        Timber.e("Scan result: $analysisResult")
         if (viewDestroyed()) return
 
         requireContext().heavyClickVibrate()
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
+        Timber.e("forScanResult: $forScanResult")
         if (forScanResult) {
             val scanResult = if (analysisResult.isDonateUrl()) {
                 val index = analysisResult.indexOf("?")
@@ -480,10 +482,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
             return
         }
         if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
+            Timber.e("show confirm bottom sheet")
             ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
                 activity?.finish()
             }
         } else {
+            Timber.e("check external schemes")
             if (fromScan()) {
                 val externalSchemes = requireContext().defaultSharedPreferences.getStringSet(PREF_EXTERNAL_SCHEMES, emptySet())
                 if (!externalSchemes.isNullOrEmpty() && analysisResult.matchResourcePattern(externalSchemes)) {

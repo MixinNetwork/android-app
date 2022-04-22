@@ -144,6 +144,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
 
+        Timber.e("LinkBottom url: $url")
+
         val isUserScheme = url.startsWith(Scheme.USERS, true) || url.startsWith(Scheme.HTTPS_USERS, true)
         val isAppScheme = url.startsWith(Scheme.APPS, true) || url.startsWith(Scheme.HTTPS_APPS, true)
         if (isUserScheme || isAppScheme) {
@@ -775,6 +777,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun showError(@StringRes errorRes: Int = R.string.link_error) {
+        Timber.e("showError ${getString(errorRes)}")
         binding.apply {
             linkErrorInfo.setText(errorRes)
             linkLoading.visibility = GONE
@@ -783,6 +786,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun showError(error: String) {
+        Timber.e("showError string $error")
         binding.apply {
             linkErrorInfo.text = error
             linkLoading.visibility = GONE
@@ -806,6 +810,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val errorHandler = CoroutineExceptionHandler { _, error ->
+        Timber.e("handle error: $error, message: ${error.message}")
         when (error) {
             is SocketTimeoutException -> showError(R.string.error_connection_timeout)
             is UnknownHostException -> showError(R.string.error_no_connection)
