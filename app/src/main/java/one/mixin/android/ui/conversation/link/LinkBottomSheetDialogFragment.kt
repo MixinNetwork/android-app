@@ -66,6 +66,7 @@ import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment.Companion.FROM_LINK
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
@@ -644,6 +645,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     showError(err)
                 }
             )
+        } else if (url.startsWith(Scheme.DEVICE, true)) {
+            contentView.post {
+                ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url)
+                dismiss()
+            }
         } else {
             showError()
         }
@@ -774,9 +780,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return linkViewModel.findAssetItemById(assetId)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun showError(@StringRes errorRes: Int = R.string.link_error) {
         binding.apply {
-            linkErrorInfo.setText(errorRes)
+            if (errorRes == R.string.link_error) {
+                linkErrorInfo.text = "${getString(R.string.link_error)}\n\n$url"
+            } else {
+                linkErrorInfo.setText(errorRes)
+            }
             linkLoading.visibility = GONE
             linkErrorInfo.visibility = VISIBLE
         }
