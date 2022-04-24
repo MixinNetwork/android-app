@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -19,12 +18,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.*
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
+import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 import one.mixin.android.widget.DebugClickHandler
 
@@ -69,7 +70,7 @@ fun AboutPage() {
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            MixinTopAppBar(
                 modifier = Modifier.debugClickable(
                     onDebugClick = {
                         showDatabase.value = !showDatabase.value
@@ -87,11 +88,14 @@ fun AboutPage() {
                     MixinBackButton()
                 },
                 title = {
-                    Text(text = stringResource(id = R.string.about))
-                    // TODO subtitle
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(text = stringResource(id = R.string.about))
+                        VersionName()
+                    }
                 },
-                backgroundColor = MixinAppTheme.colors.background,
-                elevation = 0.dp
             )
         }
     ) {
@@ -174,6 +178,25 @@ private fun AboutTile(
     ) {
         Text(text = text, color = MixinAppTheme.colors.accent)
     }
+}
+
+@Composable
+private fun VersionName() {
+    val context = LocalContext.current
+    val versionName = remember {
+        context.packageManager?.getPackageInfo(
+            context.packageName,
+            0
+        )?.versionName ?: "Unknown"
+    }
+    Text(
+        text = stringResource(
+            R.string.about_version,
+            versionName
+        ),
+        color = MixinAppTheme.colors.textSubtitle,
+        fontSize = 10.sp
+    )
 }
 
 @Preview

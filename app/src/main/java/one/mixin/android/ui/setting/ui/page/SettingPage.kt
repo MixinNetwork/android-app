@@ -20,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
+import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
 @Composable
@@ -31,11 +32,7 @@ fun SettingPage() {
         Scaffold(
             backgroundColor = MixinAppTheme.colors.backgroundWindow,
             topBar = {
-                val settingNavController = LocalSettingNav.current
-                TopAppBar(
-                    contentColor = MixinAppTheme.colors.textPrimary,
-                    backgroundColor = MixinAppTheme.colors.background,
-                    elevation = 0.dp,
+                MixinTopAppBar(
                     navigationIcon = {
                         MixinBackButton()
                     },
