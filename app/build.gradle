@@ -53,11 +53,19 @@ android {
             jniLibs {
                 useLegacyPackaging = true
             }
+
+            resources {
+                excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            }
         }
 
         kotlinOptions {
             jvmTarget = '11'
-            freeCompilerArgs += ['-Xopt-in=kotlin.contracts.ExperimentalContracts']
+            freeCompilerArgs += [
+                    '-Xopt-in=kotlin.contracts.ExperimentalContracts',
+                    "-P",
+                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+            ]
         }
 
         lintOptions{
@@ -80,6 +88,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        compose true
     }
 
     sourceSets {
@@ -173,6 +182,10 @@ android {
         }
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion composeVersion
+    }
+
     configurations.all {
         resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
     }
@@ -207,6 +220,7 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
+    implementation "androidx.navigation:navigation-compose:${navigationVersion}"
 
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
@@ -323,6 +337,14 @@ dependencies {
     implementation "com.github.warkiz.widget:indicatorseekbar:$indicatorseekbarVersion"
     implementation "org.bouncycastle:bcprov-jdk15on:${bcVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
+
+    // compose
+    debugImplementation "androidx.compose.ui:ui-tooling:${composeVersion}"
+    implementation "androidx.compose.ui:ui:${composeVersion}"
+    implementation "androidx.compose.material:material:${composeVersion}"
+    implementation "androidx.compose.ui:ui-tooling-preview:${composeVersion}"
+    implementation 'androidx.activity:activity-compose:1.3.1'
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
 
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
 
