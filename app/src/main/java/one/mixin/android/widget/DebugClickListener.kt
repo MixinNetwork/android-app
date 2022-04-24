@@ -4,13 +4,18 @@ import android.os.Handler
 import android.os.SystemClock
 import android.view.View
 
-abstract class DebugClickListener : View.OnClickListener {
+abstract class DebugClickHandler {
+
     private var isSingleEvent = false
     private var timestampLastClick: Long
     private var clickCount: Int = 0
     private val handler: Handler
     private val runnable: Runnable
-    override fun onClick(v: View) {
+
+    protected abstract fun onDebugClick()
+    protected abstract fun onSingleClick()
+
+    fun onClick() {
         if (SystemClock.elapsedRealtime() - timestampLastClick < DEBUG_INTERVAL) {
             isSingleEvent = false
             clickCount++
@@ -27,9 +32,6 @@ abstract class DebugClickListener : View.OnClickListener {
         }
     }
 
-    abstract fun onDebugClick()
-    abstract fun onSingleClick()
-
     companion object {
         private const val CLICK_INTERVAL = 300L
         private const val DEBUG_INTERVAL = 1500L
@@ -44,4 +46,13 @@ abstract class DebugClickListener : View.OnClickListener {
             }
         }
     }
+
+}
+
+abstract class DebugClickListener : DebugClickHandler(), View.OnClickListener {
+
+    override fun onClick(v: View) {
+        onClick()
+    }
+
 }

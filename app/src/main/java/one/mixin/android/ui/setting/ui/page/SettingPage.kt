@@ -12,12 +12,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
+import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
 
 @Composable
@@ -29,14 +31,13 @@ fun SettingPage() {
         Scaffold(
             backgroundColor = MixinAppTheme.colors.backgroundWindow,
             topBar = {
+                val settingNavController = LocalSettingNav.current
                 TopAppBar(
                     contentColor = MixinAppTheme.colors.textPrimary,
                     backgroundColor = MixinAppTheme.colors.background,
                     elevation = 0.dp,
                     navigationIcon = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
-                        }
+                        MixinBackButton()
                     },
                     title = {
                         Text(text = stringResource(id = R.string.setting_title))
