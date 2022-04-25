@@ -135,6 +135,7 @@
     <string name="size">大小</string>
     <string name="exit_without_save">不保存就退出？</string>
     <string name="share_qr_code">分享二维码</string>
+    <string name="data_loading">数据加载中，请稍后&#8230;</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
