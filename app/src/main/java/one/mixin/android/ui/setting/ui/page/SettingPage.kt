@@ -5,6 +5,8 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,7 +52,11 @@ fun SettingPage() {
             }
         ) {
             val settingNavController = LocalSettingNav.current
-            Column(modifier = Modifier.padding(it)) {
+            Column(
+                modifier = Modifier
+                    .padding(it)
+                    .verticalScroll(rememberScrollState())
+            ) {
                 val context = LocalContext.current
                 SettingTile(
                     icon = R.drawable.ic_setting_privacy,
