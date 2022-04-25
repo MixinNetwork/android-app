@@ -24,6 +24,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.*
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
+import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -70,6 +71,7 @@ fun AboutPage() {
 
     Scaffold(
         topBar = {
+            val context = LocalContext.current
             MixinTopAppBar(
                 modifier = Modifier.debugClickable(
                     onDebugClick = {
@@ -81,7 +83,7 @@ fun AboutPage() {
                         }
                     },
                     onClick = {
-                        // TODO DiagnosisFragment
+                        DiagnosisActivity.show(context)
                     }
                 ),
                 navigationIcon = {

@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
@@ -16,6 +15,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.setting.ui.page.AboutPage
 import one.mixin.android.ui.setting.ui.page.SettingPage
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -63,7 +64,8 @@ private class SettingNavControllerImpl(
 val LocalSettingNav =
     compositionLocalOf { SettingNavigationController() }
 
-class SettingActivity2 : ComponentActivity() {
+@AndroidEntryPoint
+class SettingActivity2 : BlazeBaseActivity() {
 
 
     companion object {

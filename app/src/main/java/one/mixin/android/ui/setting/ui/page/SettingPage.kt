@@ -1,24 +1,31 @@
 package one.mixin.android.ui.setting.ui.page
 
+import android.content.Intent
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
+import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.compose.MixinBackButton
 import one.mixin.android.ui.setting.ui.compose.MixinTopAppBar
 import one.mixin.android.ui.setting.ui.theme.MixinAppTheme
@@ -44,6 +51,7 @@ fun SettingPage() {
         ) {
             val settingNavController = LocalSettingNav.current
             Column(modifier = Modifier.padding(it)) {
+                val context = LocalContext.current
                 SettingTile(
                     icon = R.drawable.ic_setting_privacy,
                     title = stringResource(id = R.string.setting_account)
@@ -83,17 +91,40 @@ fun SettingPage() {
                     settingNavController.navigation(SettingDestination.Desktop)
                 }
                 Box(modifier = Modifier.height(16.dp))
+
+                val scope = rememberCoroutineScope()
+                val viewModel = hiltViewModel<SettingViewModel>()
+
                 SettingTile(
                     icon = R.drawable.ic_setting_feedback,
                     title = stringResource(id = R.string.setting_feedback)
                 ) {
-                    settingNavController.navigation(SettingDestination.Feedback)
+                    scope.launch {
+                        val userTeamMixin = viewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                        if (userTeamMixin == null) {
+                            toast(R.string.error_data)
+                        } else {
+                            ConversationActivity.show(context, recipientId = Constants.TEAM_MIXIN_USER_ID)
+                        }
+                    }
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_share,
                     title = stringResource(id = R.string.setting_share)
                 ) {
-                    settingNavController.navigation(SettingDestination.Share)
+                    val sendIntent = Intent()
+                    sendIntent.action = Intent.ACTION_SEND
+                    sendIntent.putExtra(
+                        Intent.EXTRA_TEXT,
+                        context.getString(R.string.setting_share_text, Session.getAccount()?.identityNumber)
+                    )
+                    sendIntent.type = "text/plain"
+                    context.startActivity(
+                        Intent.createChooser(
+                            sendIntent,
+                            context.resources.getText(R.string.setting_share)
+                        )
+                    )
                 }
                 Box(modifier = Modifier.height(16.dp))
                 SettingTile(
@@ -141,14 +172,10 @@ fun SettingTile(
 @Composable
 fun DefaultPreview() {
     MixinAppTheme {
-        SettingPage()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DarkThemePreview() {
-    MixinAppTheme(darkTheme = true) {
-        SettingPage()
+        SettingTile(
+            icon = R.drawable.ic_setting_about,
+            title = stringResource(id = R.string.about)
+        ) {
+        }
     }
 }
