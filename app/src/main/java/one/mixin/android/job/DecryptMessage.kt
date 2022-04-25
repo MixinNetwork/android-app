@@ -891,6 +891,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         if (!transcripts.any { t -> t.isAttachment() }) {
             message.mediaStatus = MediaStatus.DONE.name
         }
+        transcripts.mapNotNull { it.userId }.distinct().forEach { userId ->
+            syncUser(userId, forceSync = false)
+        }
         return message
     }
 
