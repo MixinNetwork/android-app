@@ -2627,6 +2627,9 @@ class ConversationFragment() :
         if (viewDestroyed()) return@launch
 
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
+        if (index < 0 || index >= conversationAdapter.itemCount) {
+            return@launch
+        }
         findMessageAction?.invoke(index)
         if (index == 0) {
             scrollTo(
