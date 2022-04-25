@@ -6,6 +6,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.webkit.WebView
 import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -119,6 +120,7 @@ Incremental: ${Build.VERSION.INCREMENTAL}
 Version Code: ${Build.VERSION.RELEASE}
 User ID: ${Session.getAccountId()}
 Google Available: ${context.isGooglePlayServicesAvailable()}
+User-agent: ${WebView(context).settings.userAgentString}
 """
         context.alert(content).setPositiveButton(R.string.copy) { dialog, _ ->
             context.getClipboardManager().setPrimaryClip(
