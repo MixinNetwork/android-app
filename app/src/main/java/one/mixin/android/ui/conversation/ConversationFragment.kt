@@ -2628,6 +2628,7 @@ class ConversationFragment() :
 
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
         if (index < 0 || index >= conversationAdapter.itemCount) {
+            toast(R.string.data_loading)
             return@launch
         }
         findMessageAction?.invoke(index)
