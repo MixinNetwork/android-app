@@ -892,7 +892,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             message.mediaStatus = MediaStatus.DONE.name
         }
         transcripts.mapNotNull { it.userId }.distinct().forEach { userId ->
-            syncUser(userId, sync = false)
+            syncUser(userId, forceSync = false)
         }
         return message
     }
