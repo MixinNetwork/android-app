@@ -1838,7 +1838,7 @@ class ConversationFragment() :
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
         var firstReturn = true
-        chatViewModel.getMessages(conversationId, unreadCount)
+        chatViewModel.getMessages(lifecycleScope, conversationId, unreadCount)
             .observe(
                 viewLifecycleOwner
             ) { list ->
