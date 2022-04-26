@@ -272,10 +272,10 @@ class ChatWebSocket(
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
         val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
-            makeMessageStatus(data.status, data.messageId, data.conversationId)
+            makeMessageStatus(data.status, data.messageId, data.conversationId) // Ack of the server, conversationId is ""
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
-            if (data.userId == accountId && data.category.isEmpty()) {
+            if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
                 makeMessageStatus(data.status, data.messageId, data.conversationId)
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))

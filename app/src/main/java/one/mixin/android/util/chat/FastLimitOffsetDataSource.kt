@@ -10,7 +10,6 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.util.reportException
 import timber.log.Timber
 
@@ -24,8 +23,6 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
     private val conversationId: String,
     private val fastCountCallback: () -> Int?
 ) : PositionalDataSource<T>() {
-
-    private val DEBUG = false
 
     /**
      * Count number of rows query can return
@@ -61,7 +58,6 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         // bound the size requested, based on known count
         val firstLoadPosition = computeInitialLoadPosition(params, totalCount)
         val firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount)
-        log("loadInitial")
         val list = loadRange(firstLoadPosition, firstLoadSize)
         try {
             callback.onResult(list, firstLoadPosition, totalCount)
@@ -123,31 +119,16 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
      * Return the rows from startPos to startPos + loadCount
      */
     private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
-        log("loadRange $startPosition $loadCount")
         val ids = itemIds(startPosition, loadCount)
-        log("ids: $ids")
         val sqLiteQuery = querySql(ids)
-        val cursor = measureTime("query") { db.query(sqLiteQuery) }
+        val cursor = db.query(sqLiteQuery)
         try {
-            return measureTime("convert") { convertRows(cursor) }
+            return convertRows(cursor)
         } finally {
             cursor.close()
             sqLiteQuery.release()
         }
     }
-
-    private fun log(content: String) {
-        if (DEBUG) {
-            Timber.e(content)
-        }
-    }
-
-    private inline fun <T> measureTime(tag: String, block: () -> T): T =
-        if (DEBUG) {
-            measureTimeMillis(tag, block)
-        } else {
-            block.invoke()
-        }
 
     init {
         coroutineScope.launch {
