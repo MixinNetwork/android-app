@@ -23,6 +23,17 @@ fun reportException(msg: String, e: Throwable) {
     )
 }
 
+fun reportLog(msg: String) {
+    FirebaseCrashlytics.getInstance().log(msg)
+    Crashes.trackError(
+        Exception(),
+        ArrayMap<String, String>().apply {
+            put("log", msg)
+        },
+        null
+    )
+}
+
 fun reportExoPlayerException(prefix: String, error: PlaybackException) {
     val cause = error.cause
     if (cause is HttpDataSource.InvalidResponseCodeException && cause.responseCode == 404) {

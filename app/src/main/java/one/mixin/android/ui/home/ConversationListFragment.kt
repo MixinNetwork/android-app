@@ -90,6 +90,7 @@ import one.mixin.android.util.NotificationBulletin
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.util.reportException
+import one.mixin.android.util.reportLog
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ConversationItem
@@ -311,10 +312,12 @@ class ConversationListFragment : LinkFragment() {
                             }
                         ) {
                             Timber.e("show ${item.conversationCategory}")
+                            reportLog("show ${item.conversationCategory}")
                             val user = if (item.isContactConversation()) {
                                 messagesViewModel.suspendFindUserById(item.ownerId)
                             } else null
                             Timber.e("show ${user?.userId}")
+                            reportLog("show ${user?.userId}")
                             val messageId =
                                 if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
                                     messagesViewModel.findFirstUnreadMessageId(
@@ -323,6 +326,7 @@ class ConversationListFragment : LinkFragment() {
                                     )
                                 } else null
                             Timber.e("show ${item.unseenMessageCount} messageId:$messageId")
+                            reportLog("show ${item.unseenMessageCount} messageId:$messageId")
                             ConversationActivity.fastShow(
                                 requireContext(),
                                 conversationId = item.conversationId,
