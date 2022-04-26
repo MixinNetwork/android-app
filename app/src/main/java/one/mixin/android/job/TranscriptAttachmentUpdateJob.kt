@@ -15,6 +15,7 @@ class TranscriptAttachmentUpdateJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GRO
     companion object {
         private const val GROUP_ID = "TranscriptAttachmentUpdateJob"
         private const val EACH = 10
+        private const val serialVersionUID = -26059L
     }
 
     override fun onRun() = runBlocking {

@@ -42,6 +42,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
     companion object {
         private const val GROUP_ID = "attachment_migration"
         private const val EACH = 10
+        private const val serialVersionUID = 1L
     }
 
     override fun onRun() = runBlocking {

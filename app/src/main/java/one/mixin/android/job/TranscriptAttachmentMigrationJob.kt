@@ -16,6 +16,7 @@ import java.nio.file.Files
 class TranscriptAttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
         private const val GROUP_ID = "transcript_attachment_migration"
+        private const val serialVersionUID = -30L
     }
 
     override fun onRun() = runBlocking {

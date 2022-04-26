@@ -10,6 +10,7 @@ class ReduceFts4Job :
     BaseJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP_ID).persist()) {
     companion object {
         private const val GROUP_ID = "ReduceFts4Job"
+        private const val serialVersionUID = 6628149652658479376L
     }
 
     override fun onRun() = runBlocking {

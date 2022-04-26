@@ -11,6 +11,7 @@ class InitializeJob(val botId: String, private val botName: String) :
     BaseJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP_ID).requireWebSocketConnected().persist()) {
     companion object {
         private const val GROUP_ID = "InitializeJob"
+        private const val serialVersionUID = -463133913336L
     }
 
     override fun onRun(): Unit = runBlocking {
