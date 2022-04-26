@@ -67,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginTop="3dp"
-                android:text="@string/setting_data_info"
+                android:text="@string/auto_download_hint"
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"

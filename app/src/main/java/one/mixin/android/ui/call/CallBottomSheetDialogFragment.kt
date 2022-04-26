@@ -511,7 +511,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         if (disconnected) {
             stopTimer()
-            updateTitle(getString(R.string.chat_call_bad_network_you))
+            updateTitle(getString(R.string.Connection_unstable))
         } else {
             startTimer()
         }

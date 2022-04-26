@@ -132,7 +132,7 @@
     <string name="error_unable_to_open_media">Tidak dapat menemukan aplikasi yang dapat membuka media ini.</string>
     <string name="error_open_location">Tidak dapat menemukan aplikasi peta</string>
     <string name="File_does_not_exist">File tidak ada</string>
-    <string name="Asset_does_not_exist">Aset tidak ada</string>
+    <string name="Asset_not_found">Aset tidak ada</string>
     <string name="error_pin_check_too_many_request">Anda telah mencoba lebih dari 5 kali, harap tunggu setidaknya 24 jam untuk mencoba lagi.</string>
     <string name="error_used_phone">KESALAHAN %1$d: Ponsel digunakan oleh orang lain.</string>
     <string name="error_blockchain">KESALAHAN %1$d: Blockchain tidak sinkron, coba lagi nanti.</string>
@@ -165,7 +165,7 @@
     <string name="TEXT_QR_CODE">KODE QR TEKS</string>
     <string name="detect_qr_tip">Mendeteksi kode QR Mixin, ketuk untuk mengenali</string>
     <string name="conversation_delete_tip">Setelah dihapus, semua pesan obrolan ini akan dibersihkan</string>
-    <string name="Qr_Code_not_found">Kode Qr tidak ditemukan</string>
+    <string name="QR_Code_not_found">Kode Qr tidak ditemukan</string>
     <string name="Flash_unit_not_available">Unit flash tidak tersedia</string>
     <!--search-->
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">
@@ -193,7 +193,7 @@
     <string name="Privacy_Policy">Kebijakan Privasi</string>
     <string name="Terms_of_Service">Ketentuan Layanan</string>
     <string name="Need_help">Butuh bantuan?</string>
-    <string name="Cant_receive_code_confirmation">Tidak dapat menerima kode?</string>
+    <string name="Cant_receive_the_code">Tidak dapat menerima kode?</string>
     <string name="Lost_your_mobile_number">Kehilangan nomor ponsel Anda?</string>
     <string name="Version_Update">Periksa Pembaruan</string>
     <string name="Update_Mixin">Perbarui Mixin</string>
@@ -295,7 +295,7 @@
     <string name="chat_group_call_cancel">%1$s telah membatalkan panggilan grup</string>
     <string name="group_call_end_with_duration">Panggilan grup berakhir, durasi: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Sambungan peer telah ditutup, coba lagi</string>
-    <string name="chat_call_bad_network_you">Sambungan tidak stabil</string>
+    <string name="Connection_unstable">Sambungan tidak stabil</string>
     <string name="Message_not_found">Pesan tidak ditemukan</string>
     <!--contact-->
     <string name="Send_Message">Kirim Pesan</string>
@@ -316,7 +316,6 @@
     <string name="one_week">1 Minggu</string>
     <string name="one_year">1 Tahun</string>
     <!--Add people-->
-    <string name="Add_people">Tambahkan Orang</string>
     <string name="my_mixin_id">ID Mixin saya: %1$s</string>
     <!--wallet-->
     <string name="Wallet">Wallet</string>
@@ -330,7 +329,6 @@
     <string name="wallet_password_confirm_2">Harap konfirmasikan kembali PIN 6 digit Anda. Konfirmasi ketiga jarang ditemukan di tempat lain, jadi harap diingat. PIN tidak dapat dipulihkan jika hilang.</string>
     <string name="fourth_pin_confirm_hint">Ya, ada konfirmasi PIN keempat, dan saya berjanji ini yang terakhir untuk memastikan Anda mengingat PIN Anda. PIN tidak dapat dipulihkan jika hilang.</string>
     <string name="wallet_password_unsafe">PIN-nya terlalu sederhana dan tidak aman.</string>
-    <string name="All_hidden_assets">Semua aset tersembunyi</string>
     <string name="Hidden_Assets">Aset Tersembunyi</string>
     <string name="transfer_to">Transfer ke %1$s</string>
     <string name="Transactions">Transaksi</string>
@@ -361,18 +359,18 @@
     <string name="All_Transactions">Semua Transaksi</string>
     <string name="Enter_your_PIN">Masukkan PIN Anda</string>
     <string name="pin_check_tip">Anda akan ditanya secara berkala untuk membantu Anda mengingatnya.</string>
-    <string name="Transactions_Id">ID Transaksi</string>
-    <string name="Transactions_Type">Jenis Transaksi</string>
+    <string name="Transaction_Id">ID Transaksi</string>
+    <string name="Transaction_Type">Jenis Transaksi</string>
     <string name="Status">Status</string>
     <string name="No_hidden_asset">Tidak ada aset tersembunyi</string>
     <string name="NA">N/A</string>
     <string name="Pay_with_Biometrics">Bayar dengan Biometrik</string>
     <string name="wallet_pin_open_biometrics">Harap masukkan PIN untuk membuka Biometrik</string>
     <string name="wallet_pin_modify_biometrics">Harap masukkan PIN untuk Mengubah Pembayaran dengan interval PIN</string>
-    <plurals name="wallet_pin_pay_interval_minutes" tools:ignore="UnusedQuantity">
+    <plurals name="Minute" tools:ignore="UnusedQuantity">
         <item quantity="other">%d Menit</item>
     </plurals>
-    <plurals name="wallet_pin_pay_interval_hours" tools:ignore="UnusedQuantity">
+    <plurals name="Hour" tools:ignore="UnusedQuantity">
         <item quantity="other">%d Jam</item>
     </plurals>
     <string name="Pay_with_PIN_interval">Bayar dengan interval PIN</string>
@@ -442,7 +440,7 @@
     <string name="group_cant_send">Anda tidak dapat mengirim pesan ke grup ini karena Anda bukan lagi peserta.</string>
     <string name="empty_info">Anda dapat mengobrol dengan kontak yang memasang Mixin di telepon mereka</string>
     <string name="Start_Messaging">Mulai Mengirim Pesan</string>
-    <string name="group_join">+ Bergabung dengan grup</string>
+    <string name="Join_group">Bergabung dengan grup</string>
     <string name="group_already_in">Anda sudah bergabung dalam grup</string>
     <plurals name="group_participants_count" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d Peserta</item>
@@ -497,7 +495,7 @@
     <string name="Data_and_Storage_Usage">Penggunaan Data dan Penyimpanan</string>
     <string name="Storage_Usage">Penggunaan Penyimpanan</string>
     <string name="setting_data_title">Download otomatis media</string>
-    <string name="setting_data_info">Pesan suara selalu diunduh otomatis untuk pengalaman komunikasi terbaik</string>
+    <string name="auto_download_hint">Pesan suara selalu diunduh otomatis untuk pengalaman komunikasi terbaik</string>
     <string name="setting_data_mobile">Saat menggunakan data seluler</string>
     <string name="setting_data_wifi">Saat tersambung melalui Wi-Fi</string>
     <string name="When_roaming">Saat roaming</string>
@@ -519,7 +517,7 @@
     <string name="Link_desktop_failed">Berhasil menautkan desktop</string>
     <string name="Link_desktop_success">Gagal menautkan desktsktopop</string>
     <string name="setting_desktop_logout_failed">Gagal keluar dari desktop.</string>
-    <string name="setting_desktop_confirm">Konfirmasikan masuk ke\nMixin Messenger Desktop</string>
+    <string name="setting_desktop_confirm">Konfirmasikan masuk ke Mixin Messenger Desktop</string>
     <string name="Account">Akun</string>
     <string name="Privacy">Privasi</string>
     <string name="Security">Keamanan</string>
@@ -546,7 +544,6 @@
     <string name="Follow_us_on_facebook">Ikuti kami di Facebook</string>
     <string name="Help_center">Pusat bantuan</string>
     <string name="about_version">Versi %1$s</string>
-    <string name="chat_group_create">%1$s membuat grup \"%2$s\"</string>
     <string name="chat_group_add">%1$s menambahkan %2$s</string>
     <string name="chat_group_remove">%1$s menghapus %2$s</string>
     <string name="chat_group_exit">%1$s keluar</string>
@@ -598,7 +595,7 @@
     <string name="invite_you_to_a_voice_call">meminta panggilan audio dengan Anda</string>
     <string name="New_Messages">Pesan Baru</string>
     <string name="stranger_from">Pengirim tidak ada dalam kontak Anda</string>
-    <string name="bot_interact_info">Klik tombol untuk berinteraksi dengan bot</string>
+    <string name="chat_app_reception_title">Klik tombol untuk berinteraksi dengan bot</string>
     <string name="Open_Home_page">Buka Beranda</string>
     <string name="Say_Hi">Katakan Hai</string>
     <string name="Group_Notification">Notifikasi Grup</string>
@@ -650,7 +647,6 @@
 
     <!--withdrawal-->
     <string name="Withdrawal">Penarikan</string>
-    <string name="withdrawal_addr_add">+ Tambahkan Alamat</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baru</string>
     <string name="withdrawal_addr_modify">Ubah Alamat %1$s</string>
     <string name="Delete_withdraw_Address">Hapus Alamat %1$s</string>
@@ -693,11 +689,10 @@
         <item quantity="other">Deposit akan tiba setelah setidaknya %1$d konfirmasi block</item>
     </plurals>
     <string name="deposit_reserve">Deposit minimal %1$s untuk pertama kali.</string>
-    <string name="withdrawal_title">%1$s Penarikan</string>
+    <string name="symbol_withdrawal">%1$s Penarikan</string>
     <string name="Change_Amount">Ubah Jumlah</string>
     <string name="withdrawal_address_tips">Untuk penarikan pertama ke alamat baru, harap coba jumlah yang kecil.</string>
     <string name="withdrawal_minimum_amount">Jumlah penarikan minimum adalah %1$s %2$s</string>
-    <string name="deposit_title">%1$s Deposit</string>
     <string name="deposit_tip_eos">Alamat ini mendukung semua token berbasis EOS, seperti EOS, IQ, dll.</string>
     <string name="deposit_tip_eth">Alamat ini mendukung semua token ERC-20, seperti ETH, XIN, dll.</string>
     <string name="deposit_tip_btc">Alamat ini hanya mendukung BTC.</string>
@@ -705,7 +700,7 @@
     <string name="deposit_tip_common">Alamat ini hanya mendukung %1$s.</string>
     <!--sticker-->
     <string name="Manager_Sticker">Stiker Manajer</string>
-    <string name="Add_sticker">Tambahkan Stiker</string>
+    <string name="Add_Sticker">Tambahkan Stiker</string>
     <string name="Add_sticker_failed">Gagal menambahkan stiker</string>
     <string name="sticker_add_invalid_size">Memerlukan ukuran file stiker yang lebih besar dari 1KB dan kurang dari 1MB, lebar dan tinggi antara 128px dan 1024px.</string>
     <string name="Invalid_sticker_format">Format stiker tidak valid</string>

@@ -824,13 +824,12 @@ class ConversationListFragment : LinkFragment() {
                         SystemConversationAction.CREATE.name -> {
                             binding.msgTv.text =
                                 String.format(
-                                    getText(R.string.chat_group_create),
+                                    getText(R.string.created_this_group),
                                     if (id == conversationItem.senderId) {
                                         getText(R.string.You)
                                     } else {
                                         conversationItem.name
-                                    },
-                                    conversationItem.groupName
+                                    }
                                 )
                         }
                         SystemConversationAction.ADD.name -> {

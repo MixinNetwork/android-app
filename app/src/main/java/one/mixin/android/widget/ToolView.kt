@@ -43,7 +43,7 @@ class ToolView constructor(context: Context, attrs: AttributeSet) : RelativeLayo
             true
         }
         addStickerIv.setOnLongClickListener {
-            showTip(it, R.string.Add_sticker)
+            showTip(it, R.string.Add_Sticker)
             true
         }
         forwardIv.setOnLongClickListener {

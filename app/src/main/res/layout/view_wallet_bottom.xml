@@ -14,7 +14,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/All_hidden_assets" />
+        android:text="@string/Hidden_Assets" />
 
     <TextView
         android:id="@+id/transactions_tv"

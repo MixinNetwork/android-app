@@ -143,7 +143,7 @@
     <string name="error_unable_to_open_media">Tidak dapat mencari aplikasi yang dapat buka media ini.</string>
     <string name="error_open_location">Tidak dapat mencari aplikasi peta</string>
     <string name="File_does_not_exist">Fail tidak wujud</string>
-    <string name="Asset_does_not_exist">Aset tidak wujud</string>
+    <string name="Asset_not_found">Aset tidak wujud</string>
     <string name="error_pin_check_too_many_request">Anda telah mencuba lebih dari 5 kali, sila tunggu sekurang-kurangnya 24 jam untuk mencuba lagi.</string>
     <string name="error_used_phone">RALAT %1$d: Telefon digunakan oleh orang lain.</string>
     <string name="error_blockchain">RALAT %1$d: Rantai blok tidak diselaraskan, sila cuba sebentar lagi.</string>
@@ -176,7 +176,7 @@
     <string name="TEXT_QR_CODE">KOD QR TEKS</string>
     <string name="detect_qr_tip">Mengesan kod QR Mixin, ketuk untuk mengenali</string>
     <string name="conversation_delete_tip">Setelah dipadamkan, semua mesej sembang ini akan dihapus</string>
-    <string name="Qr_Code_not_found">Kod Qr tidak dijumpai</string>
+    <string name="QR_Code_not_found">Kod Qr tidak dijumpai</string>
     <string name="Flash_unit_not_available">Unit denyar tidak tersedia</string>
     <!--search-->
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">
@@ -204,7 +204,7 @@
     <string name="Privacy_Policy">Dasar Privasi</string>
     <string name="Terms_of_Service">Terma Perkhidmatan</string>
     <string name="Need_help">Perlukan bantuan?</string>
-    <string name="Cant_receive_code_confirmation">Tidak dapat menerima kod?</string>
+    <string name="Cant_receive_the_code">Tidak dapat menerima kod?</string>
     <string name="Lost_your_mobile_number">Kehilangan nombor telefon bimbit anda?</string>
     <string name="Version_Update">Kemas kini Versi</string>
     <string name="Update_Mixin">Kemas kini Mixin</string>
@@ -307,7 +307,7 @@
     <string name="chat_group_call_cancel">%1$s telah membatalkan panggilan kumpulan</string>
     <string name="group_call_end_with_duration">Panggilan kumpulan berakhir, tempoh: %1$s</string>
     <string name="chat_group_call_remote_peer_closed">Sambungan rakan telah ditutup, sila cuba lagi</string>
-    <string name="chat_call_bad_network_you">Sambungan tidak stabil</string>
+    <string name="Connection_unstable">Sambungan tidak stabil</string>
     <string name="Message_not_found">Mesej tidak dijumpai</string>
     <!--contact-->
     <string name="Send_Message">Menghantar mesej</string>
@@ -328,7 +328,6 @@
     <string name="one_week">1 minggu</string>
     <string name="one_year">1 tahun</string>
     <!--Add people-->
-    <string name="Add_people">Tambah orang</string>
     <string name="my_mixin_id">ID Mixin Saya: %1$s</string>
     <!--wallet-->
     <string name="Wallet">Dompet</string>
@@ -342,7 +341,6 @@
     <string name="wallet_password_confirm_2">Sila sahkan PIN 6 digit anda sekali lagi. Sangat jarang untuk melihat pengesahan ketiga di tempat lain, jadi sila ingat bahawa PIN tidak dapat dipulihkan sekiranya hilang.</string>
     <string name="fourth_pin_confirm_hint">Ya, terdapat pengesahan PIN keempat, dan saya berjanji ia adalah yang terakhir untuk memastikan anda mengingati PIN anda. PIN tidak dapat dipulihkan sekiranya hilang.</string>
     <string name="wallet_password_unsafe">PIN terlalu mudah dan tidak selamat.</string>
-    <string name="All_hidden_assets">Semua aset tersembunyi</string>
     <string name="Hidden_Assets">Aset Tersembunyi</string>
     <string name="transfer_to">Pindahkan ke %1$s</string>
     <string name="Transactions">Urus Niaga</string>
@@ -378,18 +376,18 @@
     <string name="All_Transactions">Semua Urus Niaga</string>
     <string name="Enter_your_PIN">Masukkan PIN anda</string>
     <string name="pin_check_tip">Anda akan diminta tentang ia secara berkala untuk membantu anda mengingatnya.</string>
-    <string name="Transactions_Id">Id Urus Niaga</string>
-    <string name="Transactions_Type">Jenis Transaksi</string>
+    <string name="Transaction_Id">Id Urus Niaga</string>
+    <string name="Transaction_Type">Jenis Transaksi</string>
     <string name="Status">Status</string>
     <string name="No_hidden_asset">Tiada aset tersembunyi</string>
     <string name="NA">N/A</string>
     <string name="Pay_with_Biometrics">Bayar dengan Biometrik</string>
     <string name="wallet_pin_open_biometrics">Sila masukkan PIN untuk membuka Biometrik</string>
     <string name="wallet_pin_modify_biometrics">Sila masukkan PIN untuk Ubahsuai Bayar dengan selang PIN</string>
-    <plurals name="wallet_pin_pay_interval_minutes" tools:ignore="UnusedQuantity">
+    <plurals name="Minute" tools:ignore="UnusedQuantity">
         <item quantity="other">%d Menit</item>
     </plurals>
-    <plurals name="wallet_pin_pay_interval_hours" tools:ignore="UnusedQuantity">
+    <plurals name="Hour" tools:ignore="UnusedQuantity">
         <item quantity="other">%d Jam</item>
     </plurals>
     <string name="Pay_with_PIN_interval">Bayar dengan selang PIN</string>
@@ -465,7 +463,7 @@
     <string name="group_cant_send">Anda tidak dapat menghantar mesej kepada kumpulan ini kerana anda bukan lagi peserta.</string>
     <string name="empty_info">Anda boleh bersembang dengan kenalan yang memasang Mixin di telefon mereka</string>
     <string name="Start_Messaging">Mulakan Pemesejan</string>
-    <string name="group_join">+ Sertai kumpulan</string>
+    <string name="Join_group">Sertai kumpulan</string>
     <string name="group_already_in">Anda sudah berada dalam kumpulan</string>
     <plurals name="group_participants_count" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d Peserta</item>
@@ -522,7 +520,7 @@
     <string name="Data_and_Storage_Usage">Penggunaan Data dan Storan</string>
     <string name="Storage_Usage">Penggunaan Storan</string>
     <string name="setting_data_title">Muat turun automatik media</string>
-    <string name="setting_data_info">Mesej suara selalu dimuat turun secara automatik untuk pengalaman komunikasi terbaik</string>
+    <string name="auto_download_hint">Mesej suara selalu dimuat turun secara automatik untuk pengalaman komunikasi terbaik</string>
     <string name="setting_data_mobile">Semasa menggunakan data mudah alih</string>
     <string name="setting_data_wifi">Semasa disambungkan di Wi-Fi</string>
     <string name="When_roaming">Semasa perayauan</string>
@@ -583,7 +581,6 @@
     <string name="Follow_us_on_facebook">Ikuti kami di Facebook</string>
     <string name="Help_center">Pusat bantuan</string>
     <string name="about_version">Versi %1$s</string>
-    <string name="chat_group_create">%1$s membuat kumpulan \"%2$s\"</string>
     <string name="chat_group_add">%1$s menambahkan %2$s</string>
     <string name="chat_group_remove">%1$s mengalih keluar %2$s</string>
     <string name="chat_group_exit">Tinggal %1$s</string>
@@ -603,7 +600,7 @@
     <string name="Copy_invite">Salin pautan</string>
     <string name="Forward_to_friend">Teruskan kepada rakan</string>
     <string name="Invalid_Link">Pautan Tidak Sah</string>
-    <string name="QR_code">kod QR</string>
+    <string name="QR_Code">kod QR</string>
     <string name="Pin_to_top">Sematkan ke atas</string>
     <string name="group_role">Anda sekarang adalah pentadbir</string>
     <string name="Initializing">Memulakan…</string>
@@ -636,7 +633,7 @@
     <string name="invite_you_to_a_voice_call">tanya anda panggilan audio</string>
     <string name="New_Messages">Mesej Baharu</string>
     <string name="stranger_from">Pengirim tidak ada dalam kenalan anda</string>
-    <string name="bot_interact_info">Klik butang untuk berinteraksi dengan bot</string>
+    <string name="chat_app_reception_title">Klik butang untuk berinteraksi dengan bot</string>
     <string name="Open_Home_page">Buka laman Utama</string>
     <string name="Say_Hi">Ucap hai</string>
     <string name="Group_Notification">Pemberitahuan Kumpulan</string>
@@ -688,7 +685,6 @@
     <string name="Messaging_node_running">Nod pesanan berjalan</string>
     <!--withdrawal-->
     <string name="Withdrawal">Pengeluaran</string>
-    <string name="withdrawal_addr_add">+ Tambah Alamat</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baharu</string>
     <string name="withdrawal_addr_modify">Ubah suai Alamat %1$s</string>
     <string name="Delete_withdraw_Address">Padamkan Alamat %1$s</string>
@@ -732,12 +728,11 @@
         <item quantity="other">Deposit akan tiba setelah sekurang-kurangnya %1$d pengesahan sekatan</item>
     </plurals>
     <string name="deposit_reserve">Deposit sekurang-kurangnya %1$s untuk pertama kalinya.</string>
-    <string name="withdrawal_title">%1$s Pengeluaran</string>
+    <string name="symbol_withdrawal">%1$s Pengeluaran</string>
     <string name="Change_Amount">Tukar Jumlah</string>
     <string name="withdrawal_address_tips">Untuk pengeluaran pertama ke alamat baharu, sila cuba jumlah kecil! Sekiranya anda mengeluarkan aset ke alamat yang salah, itu tidak akan dapat dipulihkan!</string>
     <string name="Continue_withdrawal">Teruskan</string>
     <string name="withdrawal_minimum_amount">Jumlah pengeluaran minimum ialah %1$s %2$s</string>
-    <string name="deposit_title">Deposit %1$s</string>
     <string name="deposit_tip_eos">Alamat ini menyokong semua asas pada token EOS, seperti EOS, IQ, dll.</string>
     <string name="deposit_tip_eth">Alamat ini menyokong semua token ERC-20, seperti ETH, XIN, dll.</string>
     <string name="deposit_tip_btc">Alamat ini hanya menyokong BTC.</string>
@@ -746,7 +741,7 @@
     <string name="bottom_transfer_stranger_tip">ID Mixin %1$s tidak ada dalam senarai kenalan anda. Pastikan penerima yang anda pilih betul. Sekiranya anda pindah ke orang yang salah, aset anda akan hilang!</string>
     <!--sticker-->
     <string name="Manager_Sticker">Pengurus Pelekat</string>
-    <string name="Add_sticker">Tambah Pelekat</string>
+    <string name="Add_Sticker">Tambah Pelekat</string>
     <string name="Add_sticker_failed">Penambahan pelekat gagal</string>
     <string name="sticker_add_invalid_size">Memerlukan saiz fail pelekat lebih besar daripada 1KB dan kurang dari 1MB, lebar dan tinggi antara 128px dan 1024px.</string>
     <string name="Invalid_sticker_format">Format pelekat tidak sah</string>
@@ -874,7 +869,7 @@
     <string name="Playlist">Senarai main</string>
     <string name="Now_Playing">Main sekarang</string>
     <string name="notification_channel_description">Tunjukkan muzik apa yang sedang dimainkan di Mixin Messenger</string>
-    <string name="player_delete_all_desc">Adakah anda pasti mahu menghentikan dan menutup senarai main?</string>
+    <string name="Stop_playing_this_list">Adakah anda pasti mahu menghentikan dan menutup senarai main?</string>
     <string name="Stop_Playing">Berhenti bermain</string>
     <string name="Playback_failed">Main balik gagal</string>
 </resources>

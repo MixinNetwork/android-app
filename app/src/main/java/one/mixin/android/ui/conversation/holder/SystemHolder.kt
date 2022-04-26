@@ -47,13 +47,12 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
             SystemConversationAction.CREATE.name -> {
                 binding.chatInfo.text =
                     String.format(
-                        getText(R.string.chat_group_create),
+                        getText(R.string.created_this_group),
                         if (id == messageItem.userId) {
                             getText(R.string.You)
                         } else {
                             messageItem.userFullName
-                        },
-                        messageItem.groupName
+                        }
                     )
             }
             SystemConversationAction.ADD.name -> {
@@ -114,7 +113,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                 binding.chatInfo.text = getText(R.string.group_role)
             }
             else -> {
-                val learn: String = MixinApplication.get().getString(R.string.action_learn_more)
+                val learn: String = MixinApplication.get().getString(R.string.learn_more)
                 val info = MixinApplication.get().getString(R.string.chat_not_support, learn)
                 val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
                 binding.chatInfo.highlightLinkText(

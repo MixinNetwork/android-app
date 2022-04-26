@@ -123,7 +123,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
             titleView.leftIv.setOnClickListener { dismiss() }
             titleView.rightIv.setOnClickListener {
                 alertDialogBuilder()
-                    .setMessage(getString(R.string.player_delete_all_desc))
+                    .setMessage(getString(R.string.Stop_playing_this_list))
                     .setNegativeButton(R.string.Cancel) { dialog, _ ->
                         dialog.dismiss()
                     }

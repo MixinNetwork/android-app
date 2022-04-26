@@ -123,7 +123,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/QR_code" />
+            android:text="@string/QR_Code" />
 
     </LinearLayout>
 

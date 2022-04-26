@@ -65,7 +65,7 @@
 
     <TextView
         android:id="@+id/auto_title"
-        android:text="@string/Automatically_lock"
+        android:text="@string/Auto_Lock"
         android:layout_marginStart="@dimen/margin16"
         android:layout_marginTop="@dimen/margin16"
         android:layout_marginBottom="8dp"
