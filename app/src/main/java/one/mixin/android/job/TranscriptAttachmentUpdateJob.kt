@@ -25,19 +25,19 @@ class TranscriptAttachmentUpdateJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GRO
             if (attachment.mediaUrl?.isFileUri() == true) {
                 val file = attachment.mediaUrl.toUri().toFile()
                 if (file.exists()) {
-                    Timber.d("Transcript attachment update ${attachment.mediaUrl}")
+                    Timber.e("Transcript attachment update ${attachment.mediaUrl}")
                     transcriptMessageDao.updateMediaUrl(file.name, attachment.messageId)
                 } else {
                     val newFile = File("${MixinApplication.get().getTranscriptDirPath()}${File.separator}${file.name}")
                     if (newFile.exists()) {
-                        Timber.d("Transcript attachment update ${newFile.absoluteFile}")
+                        Timber.e("Transcript attachment update ${newFile.absoluteFile}")
                         transcriptMessageDao.updateMediaUrl(file.name, attachment.messageId)
                     }
                 }
             }
         }
         if (list.size < EACH) {
-            Timber.d("Transcript attachment update completed!!!")
+            Timber.e("Transcript attachment update completed!!!")
             propertyDao.deletePropertyByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST)
         } else {
             propertyDao.updateValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST, list.last().rowid.toString())

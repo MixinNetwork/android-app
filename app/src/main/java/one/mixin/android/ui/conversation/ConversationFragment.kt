@@ -1842,6 +1842,7 @@ class ConversationFragment() :
             .observe(
                 viewLifecycleOwner
             ) { list ->
+                Timber.e("getMessages ${list.size}")
                 if (Session.getAccount() == null) return@observe
 
                 if (oldCount == -1) {
@@ -1892,13 +1893,16 @@ class ConversationFragment() :
                     }
                     conversationAdapter.submitList(list)
                 }
+                Timber.e("markMessageRead")
                 chatViewModel.markMessageRead(conversationId, sender.userId, (activity as? BubbleActivity)?.isBubbled == true)
             }
     }
 
     private var unreadCount = 0
     private fun bindData() {
+        Timber.e("bindData")
         unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
+        Timber.e("bindData $unreadCount $initialPositionMessageId")
         liveDataMessage(unreadCount, initialPositionMessageId)
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(

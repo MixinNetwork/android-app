@@ -60,7 +60,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         list.forEach { attachment ->
             val fromFile = attachment.getFile(MixinApplication.appContext) ?: return@forEach
             if (!fromFile.exists()) {
-                Timber.d("Attachment migration no exists ${fromFile.absoluteFile}")
+                Timber.e("Attachment migration no exists ${fromFile.absoluteFile}")
                 return@forEach
             }
             val toFile = when {
@@ -136,25 +136,25 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 Timber.e("Attachment migration ${e.message}")
                 reportException(e)
             }
-            Timber.d("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
+            Timber.e("Attachment migration ${fromFile.absolutePath} ${toFile.absolutePath}")
             if (attachment.mediaUrl != toFile.name) {
                 messageDao.updateMediaMessageUrl(toFile.name, attachment.messageId)
                 InvalidateFlow.emit(attachment.conversationId)
             }
         }
         propertyDao.insertSuspend(Property(PREF_MIGRATION_ATTACHMENT_OFFSET, (offset + list.size).toString(), nowInUtc()))
-        Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
+        Timber.e("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
         if (list.size < EACH) {
-            Timber.d("Attachment start delete ancient media path")
+            Timber.e("Attachment start delete ancient media path")
             MixinApplication.appContext.getAncientMediaPath()?.deleteRecursively()
-            Timber.d("Attachment delete ancient media path completed!!!")
+            Timber.e("Attachment delete ancient media path completed!!!")
             if (propertyDao.findValueByKey(PREF_MIGRATION_TRANSCRIPT_ATTACHMENT)?.toBoolean() != true) {
-                Timber.d("Attachment start delete media path")
+                Timber.e("Attachment start delete media path")
                 MixinApplication.appContext.getMediaPath(true)?.deleteRecursively()
-                Timber.d("Attachment delete media path completed!!!")
+                Timber.e("Attachment delete media path completed!!!")
             }
             propertyDao.updateValueByKey(PREF_MIGRATION_ATTACHMENT, false.toString())
-            Timber.d("Attachment migration completed!!!")
+            Timber.e("Attachment migration completed!!!")
         } else {
             jobManager.addJobInBackground(AttachmentMigrationJob())
         }
