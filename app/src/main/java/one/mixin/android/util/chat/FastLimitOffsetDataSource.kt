@@ -10,6 +10,7 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import one.mixin.android.util.debug.measureTimeMillis
 import one.mixin.android.util.reportException
 import timber.log.Timber
 
@@ -25,6 +26,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
 ) : PositionalDataSource<T>() {
     private val limitOffsetQuery: String = sourceQuery.sql + " LIMIT ? OFFSET ?"
 
+    private val DEBUG = false
     /**
      * Count number of rows query can return
      */
@@ -59,6 +61,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         // bound the size requested, based on known count
         val firstLoadPosition = computeInitialLoadPosition(params, totalCount)
         val firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount)
+        log("loadInitial")
         val list = loadRange(firstLoadPosition, firstLoadSize)
         try {
             callback.onResult(list, firstLoadPosition, totalCount)
@@ -99,6 +102,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
      * Return the rows from startPos to startPos + loadCount
      */
     private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
+        log("loadRange $startPosition $loadCount")
         val sqLiteQuery = RoomSQLiteQuery.acquire(
             limitOffsetQuery,
             sourceQuery.argCount + 2
@@ -107,14 +111,27 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         sqLiteQuery.bindLong(sqLiteQuery.argCount - 1, loadCount.toLong())
         sqLiteQuery.bindLong(sqLiteQuery.argCount, startPosition.toLong())
 
-        val cursor = db.query(sqLiteQuery)
+        val cursor = measureTime("query") { db.query(sqLiteQuery) }
         try {
-            return convertRows(cursor)
+            return measureTime("convert") { convertRows(cursor) }
         } finally {
             cursor.close()
             sqLiteQuery.release()
         }
     }
+
+    private fun log(content: String) {
+        if (DEBUG) {
+            Timber.e(content)
+        }
+    }
+
+    private inline fun <T> measureTime(tag: String, block: () -> T): T =
+        if (DEBUG) {
+            measureTimeMillis(tag, block)
+        } else {
+            block.invoke()
+        }
 
     init {
         coroutineScope.launch {
