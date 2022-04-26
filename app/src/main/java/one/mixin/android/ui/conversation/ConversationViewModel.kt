@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -122,7 +123,7 @@ internal constructor(
 
     var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
 
-    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
+    fun getMessages(scope: CoroutineScope, conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
@@ -131,7 +132,7 @@ internal constructor(
 
         return KeyLivePagedListBuilder(
             conversationRepository.getMessages(
-                viewModelScope, conversationId,
+                scope, conversationId,
                 if (firstKeyToLoad > PAGE_SIZE) {
                     firstKeyToLoad + FIXED_LOAD_SIZE / 2
                 } else {
