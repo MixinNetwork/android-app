@@ -34,6 +34,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
@@ -88,6 +89,7 @@ import one.mixin.android.util.NewWalletBulletin
 import one.mixin.android.util.NotificationBulletin
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ConversationItem
@@ -120,6 +122,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -300,10 +303,18 @@ class ConversationListFragment : LinkFragment() {
                         }
                         lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
                     } else {
-                        lifecycleScope.launch {
+                        Timber.e("onNormalItemClick ${item.conversationId}")
+                        lifecycleScope.launch(
+                            CoroutineExceptionHandler { _, error ->
+                                Timber.e(error)
+                                reportException(error)
+                            }
+                        ) {
+                            Timber.e("show ${item.conversationCategory}")
                             val user = if (item.isContactConversation()) {
                                 messagesViewModel.suspendFindUserById(item.ownerId)
                             } else null
+                            Timber.e("show ${user?.userId}")
                             val messageId =
                                 if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
                                     messagesViewModel.findFirstUnreadMessageId(
@@ -311,6 +322,7 @@ class ConversationListFragment : LinkFragment() {
                                         item.unseenMessageCount - 1
                                     )
                                 } else null
+                            Timber.e("show ${item.unseenMessageCount} messageId:$messageId")
                             ConversationActivity.fastShow(
                                 requireContext(),
                                 conversationId = item.conversationId,
