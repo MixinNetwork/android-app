@@ -19,9 +19,8 @@ import timber.log.Timber
 abstract class FastLimitOffsetDataSource<T> protected constructor(
     coroutineScope: CoroutineScope,
     private val db: RoomDatabase,
-    private val sourceQuery: RoomSQLiteQuery,
     private val countQuery: RoomSQLiteQuery,
-    private val offsetStatement: RoomSQLiteQuery,
+    private val itemStatement: RoomSQLiteQuery,
     private val conversationId: String,
     private val fastCountCallback: () -> Int?
 ) : PositionalDataSource<T>() {
@@ -99,31 +98,35 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         callback.onResult(list)
     }
 
-    private fun offsetRawId(startPosition: Int): Long {
-        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
+    private fun itemIds(startPosition: Int, loadCount: Int): String {
+        val offsetQuery = RoomSQLiteQuery.copyFrom(itemStatement)
         offsetQuery.bindString(1, conversationId)
-        offsetQuery.bindLong(2, startPosition.toLong())
+        offsetQuery.bindLong(2, loadCount.toLong())
+        offsetQuery.bindLong(3, startPosition.toLong())
         val cursor = db.query(offsetQuery)
-        return try {
-            if (cursor.moveToFirst()) {
-                cursor.getLong(0)
-            } else 0L
+        val ids = mutableListOf<String>()
+        try {
+            while (cursor.moveToNext()) {
+                val rowid = cursor.getLong(0)
+                ids.add("'$rowid'")
+            }
+            return ids.joinToString()
         } finally {
             cursor.close()
             offsetQuery.release()
         }
     }
+
+    abstract fun querySql(ids: String): RoomSQLiteQuery
+
     /**
      * Return the rows from startPos to startPos + loadCount
      */
     private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
         log("loadRange $startPosition $loadCount")
-        val sqLiteQuery = RoomSQLiteQuery.copyFrom(sourceQuery)
-        sqLiteQuery.copyArgumentsFrom(sourceQuery)
-        sqLiteQuery.bindString(1, conversationId)
-        sqLiteQuery.bindLong(2, offsetRawId(startPosition))
-        sqLiteQuery.bindLong(3, loadCount.toLong())
-
+        val ids = itemIds(startPosition, loadCount)
+        log("ids: $ids")
+        val sqLiteQuery = querySql(ids)
         val cursor = measureTime("query") { db.query(sqLiteQuery) }
         try {
             return measureTime("convert") { convertRows(cursor) }
