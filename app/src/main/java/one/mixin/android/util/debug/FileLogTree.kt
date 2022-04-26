@@ -2,6 +2,7 @@ package one.mixin.android.util.debug
 
 import android.util.Log
 import one.mixin.android.MixinApplication
+import one.mixin.android.extension.nowInUtc
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -26,7 +27,7 @@ class FileLogTree : Timber.Tree() {
                         file.createNewFile()
                     }
                     val fos = FileOutputStream(file, true)
-                    fos.write("$message\n".toByteArray(Charsets.UTF_8))
+                    fos.write("${nowInUtc()}\t$message\n".toByteArray(Charsets.UTF_8))
                     fos.close()
                 }
             } catch (e: IOException) {
