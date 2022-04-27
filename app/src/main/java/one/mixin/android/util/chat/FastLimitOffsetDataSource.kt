@@ -67,7 +67,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         val list = loadRange(firstLoadPosition, firstLoadSize)
         try {
             callback.onResult(list, firstLoadPosition, totalCount)
-            Timber.d("fastCont $conversationId, $fastCont")
+            Timber.e("fastCont $conversationId, $fastCont")
             if (fastCont != null) { // If quick return needs to activate the next query
                 invalidate()
             }
@@ -76,7 +76,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
             Timber.w(e)
             try {
                 callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
-                Timber.d("catch fastCont $conversationId, $fastCont")
+                Timber.e("catch fastCont $conversationId, $fastCont")
                 if (fastCont != null) {
                     invalidate()
                 }
@@ -118,7 +118,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         val cursor = db.query(sqLiteQuery, cancellationSignal)
         try {
             val r = convertRows(cursor)
-            Timber.d("convertRows $conversationId, ${System.currentTimeMillis() -start}")
+            Timber.e("convertRows $conversationId, ${System.currentTimeMillis() -start}")
             return r
         } finally {
             cursor.close()
