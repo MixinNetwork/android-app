@@ -31,7 +31,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
      * Count number of rows query can return
      */
     fun countItems(): Int {
-        val cursor = db.query(countQuery)
+        val cursor = db.query(countQuery, cancellationSignal)
         return try {
             if (cursor.moveToFirst()) {
                 cursor.getInt(0)
@@ -109,7 +109,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         sqLiteQuery.bindLong(sqLiteQuery.argCount - 1, loadCount.toLong())
         sqLiteQuery.bindLong(sqLiteQuery.argCount, startPosition.toLong())
 
-        val cursor = db.query(sqLiteQuery)
+        val cursor = db.query(sqLiteQuery, cancellationSignal)
         try {
             return convertRows(cursor)
         } finally {
