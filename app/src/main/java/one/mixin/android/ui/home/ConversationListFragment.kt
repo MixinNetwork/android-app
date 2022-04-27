@@ -36,6 +36,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
@@ -175,6 +176,8 @@ class ConversationListFragment : LinkFragment() {
     private var vibrated = false
     private var expanded = false
 
+    private var enterJob: Job? =null
+
     companion object {
         fun newInstance() = ConversationListFragment()
 
@@ -305,7 +308,8 @@ class ConversationListFragment : LinkFragment() {
                         lifecycleScope.launch(Dispatchers.IO) { messagesViewModel.createGroupConversation(item.conversationId) }
                     } else {
                         Timber.e("onNormalItemClick ${item.conversationId}")
-                        lifecycleScope.launch(
+                        enterJob?.cancel()
+                        enterJob = lifecycleScope.launch(
                             CoroutineExceptionHandler { _, error ->
                                 Timber.e(error)
                                 reportException(error)
