@@ -5,6 +5,7 @@ package one.mixin.android.util.chat
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.CancellationSignal
+import android.os.OperationCanceledException
 import androidx.annotation.RestrictTo
 import androidx.paging.PositionalDataSource
 import androidx.room.RoomDatabase
@@ -39,6 +40,8 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
             } else 0
             Timber.e("count $conversationId, ${System.currentTimeMillis() - start}")
             r
+        } catch (e: OperationCanceledException) {
+            0
         } finally {
             cursor.close()
             countQuery.release()
@@ -116,10 +119,12 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
 
         val start = System.currentTimeMillis()
         val cursor = db.query(sqLiteQuery, cancellationSignal)
-        try {
+        return try {
             val r = convertRows(cursor)
             Timber.e("convertRows $conversationId, ${System.currentTimeMillis() -start}")
-            return r
+            r
+        } catch (e: OperationCanceledException) {
+            arrayListOf()
         } finally {
             cursor.close()
             sqLiteQuery.release()
