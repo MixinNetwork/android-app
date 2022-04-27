@@ -188,8 +188,8 @@
     <string name="SEARCH_MESSAGES">CARI MESEJ</string>
     <string name="search_tip">Cari ID Mixin atau Nombor Telefon: %1$s</string>
     <!--landing-->
-    <string name="Enter_your_mobile_number">Masukkan nombor telefon bimbit anda</string>
-    <string name="Enter_new_mobile_number">Masukkan nombor telefon bimbit baharu anda</string>
+    <string name="Enter_your_phone_number">Masukkan nombor telefon bimbit anda</string>
+    <string name="Enter_new_phone_number">Masukkan nombor telefon bimbit baharu anda</string>
     <string name="Mobile_number">Nombor telefon bimbit</string>
     <string name="Name">Nama</string>
     <string name="landing_enter_mobile_tip">Kami tidak akan memaparkan nombor telefon bimbit anda secara terbuka.</string>
@@ -436,7 +436,6 @@
     <!--group-->
     <string name="Add_participants">Tambah Peserta</string>
     <string name="New_Group">Kumpulan Baharu</string>
-    <string name="Group_Photo">Foto Kumpulan</string>
     <string name="Group_Name">Nama kumpulan</string>
     <string name="new_group_name">nama kumpulan baharu</string>
     <string name="Group_Notice">Makluman Kumpulan</string>
@@ -446,7 +445,6 @@
     <string name="Remove_Participants">Keluarkan Peserta</string>
     <string name="Exit_Group">Keluar Kumpulan</string>
     <string name="Delete_Group">Padam Kumpulan</string>
-    <string name="Edit_group">Edit Kumpulan</string>
     <string name="Edit_group_name">Edit Nama</string>
     <string name="Content_too_long">Kandungan terlalu lama</string>
     <string name="group_pop_menu_message">Mesej %1$s</string>
@@ -555,7 +553,7 @@
     <string name="Transfer_Notifications">Pindahkan Pemberitahuan</string>
     <string name="System_options">Pilihan sistem</string>
     <string name="Reset_notifications">Tetapkan semula pemberitahuan</string>
-    <string name="setting_notification_transfer_desc">Tunjukkan pemberitahuan apabila menerima pindahan yang lebih besar dari atau sama dengan %1$s.</string>
+    <string name="setting_notification_transfer_summary">Tunjukkan pemberitahuan apabila menerima pindahan yang lebih besar dari atau sama dengan %1$s.</string>
     <string name="Transfer_Amount_count_down">Jumlah Pindahan(%1$s)</string>
     <string name="Notification_and_Confirmation">Pemberitahuan dan Pengesahan</string>
     <string name="Appearance">Penampilan</string>
@@ -686,7 +684,7 @@
     <!--withdrawal-->
     <string name="Withdrawal">Pengeluaran</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baharu</string>
-    <string name="withdrawal_addr_modify">Ubah suai Alamat %1$s</string>
+    <string name="edit_address">Ubah suai Alamat %1$s</string>
     <string name="Delete_withdraw_Address">Padamkan Alamat %1$s</string>
     <string name="withdrawal_addr_pin_add">Masukkan PIN untuk menyimpan alamat</string>
     <string name="withdrawal_addr_pin_delete">Masukkan PIN untuk menghapus alamat</string>
@@ -765,7 +763,6 @@
     <string name="Incoming_voice_call">Panggilan suara masuk</string>
     <string name="Ongoing_voice_call">Panggilan suara sedang berlangsung</string>
     <string name="CANCEL">BATAL</string>
-    <string name="DECLINE">MENOLAK</string>
     <string name="ANSWER">JAWAPAN</string>
     <string name="HANG_UP">LETAK GAGANG</string>
     <string name="in_connecting">Menyambung…</string>
@@ -773,7 +770,7 @@
     <string name="Hang_up">Letak gagang</string>
     <string name="Decline">Tolak</string>
     <string name="Accept">Terima</string>
-    <string name="call_group_full">Sokong sehingga %1$d suara kumpulan orang</string>
+    <string name="Group_call_participants_limit_hint">Sokong sehingga %1$d suara kumpulan orang</string>
     <string name="call_pip_permission">Anda tidak dapat meminimumkan panggilan suara kerana Mixin tidak diberi kuasa menggunakan tetingkap terapung</string>
     <!-- restore&backup -->
     <string name="restore_info">Pulihkan mesej anda dari storan luaran.\nSekiranya anda tidak memulihkan yang baharu, anda tidak akan dapat memulihkannya kemudian.</string>

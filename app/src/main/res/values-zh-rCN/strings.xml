@@ -211,8 +211,8 @@
     <string name="SEARCH_MESSAGES">搜索消息</string>
     <string name="search_tip">搜索 Mixin ID 或者手机号：%1$s</string>
     <!--landing-->
-    <string name="Enter_your_mobile_number">输入你的手机号码</string>
-    <string name="Enter_new_mobile_number">输入你的新手机号码</string>
+    <string name="Enter_your_phone_number">输入你的手机号码</string>
+    <string name="Enter_new_phone_number">输入你的新手机号码</string>
     <string name="Mobile_number">手机号码</string>
     <string name="Name">名称</string>
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
@@ -295,7 +295,7 @@
     <string name="Save_success">保存成功</string>
     <string name="Save_to">保存到 %1$s</string>
     <string name="Save_failure">保存失败</string>
-    <string name="Export_failure">导出失败</string>
+    <string name="Export_failed">导出失败</string>
     <string name="hold_to_record_audio">长按说话，松手发送</string>
     <string name="chat_call_duration">通话时长 %1$s</string>
     <string name="Canceled">已取消</string>
@@ -480,7 +480,6 @@
     <!--group-->
     <string name="Add_participants">添加成员</string>
     <string name="New_Group">新建群组</string>
-    <string name="Group_Photo">群组头像</string>
     <string name="Group_Name">群组名称</string>
     <string name="new_group_name">新群组名称</string>
     <string name="Group_Notice">群组公告</string>
@@ -490,7 +489,6 @@
     <string name="Remove_Participants">移除成员</string>
     <string name="Exit_Group">退出群组</string>
     <string name="Delete_Group">删除群组</string>
-    <string name="Edit_group">编辑群组</string>
     <string name="Edit_group_name">编辑名称</string>
     <string name="Content_too_long">内容过长</string>
     <string name="group_pop_menu_message">发送消息至 %1$s</string>
@@ -603,7 +601,7 @@
     <string name="Transfer_Notifications">转账通知</string>
     <string name="System_options">管理通知</string>
     <string name="Reset_notifications">重置通知设置</string>
-    <string name="setting_notification_transfer_desc">当收到不少于%1$s的转账时显示通知。</string>
+    <string name="setting_notification_transfer_summary">当收到不少于%1$s的转账时显示通知。</string>
     <string name="Transfer_Amount_count_down">转账金额(%1$s)</string>
     <string name="Notification_and_Confirmation">通知和确认</string>
     <string name="NO_APPS">没有应用</string>
@@ -768,7 +766,7 @@
     <string name="withdrawal_minimum_withdrawal">最小提现数量：</string>
     <string name="withdrawal_minimum_reserve">最少保留数量：</string>
     <string name="withdrawal_addr_new">新 %1$s 地址</string>
-    <string name="withdrawal_addr_modify">修改 %1$s 地址</string>
+    <string name="edit_address">修改 %1$s 地址</string>
     <string name="Delete_withdraw_Address">删除 %1$s 地址</string>
     <string name="withdrawal_addr_pin_add">请输入密码来完成添加</string>
     <string name="withdrawal_addr_pin_delete">请输入密码来完成删除</string>
@@ -850,7 +848,6 @@
     <string name="Incoming_voice_call">语音通话来电</string>
     <string name="Ongoing_voice_call">正在进行语音通话</string>
     <string name="CANCEL">取消</string>
-    <string name="DECLINE">挂断</string>
     <string name="ANSWER">接听</string>
     <string name="HANG_UP">挂断</string>
     <string name="in_connecting">正在连接&#8230;</string>
@@ -858,7 +855,7 @@
     <string name="Hang_up">挂断</string>
     <string name="Decline">挂断</string>
     <string name="Accept">接听</string>
-    <string name="call_group_full">群组语音最多支持%1$d人</string>
+    <string name="Group_call_participants_limit_hint">群组语音最多支持%1$d人</string>
     <string name="call_pip_permission">你的手机没有授权 Mixin 获得浮窗权限，语音通话最小化不能正常使用</string>
 
     <!-- restore&backup -->

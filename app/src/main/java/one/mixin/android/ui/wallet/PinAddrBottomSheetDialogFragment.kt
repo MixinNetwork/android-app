@@ -153,7 +153,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     private fun getTitle() = getString(
         when (type) {
             ADD -> R.string.Add_address
-            MODIFY -> R.string.withdrawal_addr_modify
+            MODIFY -> R.string.edit_address
             else -> R.string.Delete_withdraw_Address
         },
         assetName

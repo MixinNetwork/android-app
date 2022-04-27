@@ -153,7 +153,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun onFull() {
-                alert(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
+                alert(getString(R.string.Group_call_participants_limit_hint, GROUP_VOICE_MAX_COUNT))
                     .setPositiveButton(R.string.OK) { dialog, _ ->
                         dialog.dismiss()
                     }.show()

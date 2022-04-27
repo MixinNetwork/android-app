@@ -177,8 +177,8 @@
     <string name="SEARCH_MESSAGES">PESAN</string>
     <string name="search_tip">Cari ID Mixin atau Nomor telepon: %1$s</string>
     <!--landing-->
-    <string name="Enter_your_mobile_number">Masukkan nomor ponsel Anda</string>
-    <string name="Enter_new_mobile_number">Masukkan nomor ponsel baru Anda</string>
+    <string name="Enter_your_phone_number">Masukkan nomor ponsel Anda</string>
+    <string name="Enter_new_phone_number">Masukkan nomor ponsel baru Anda</string>
     <string name="Mobile_number">Nomor ponsel</string>
     <string name="Name">Nama</string>
     <string name="landing_enter_mobile_tip">Kami tidak akan pernah menampilkan nomor ponsel Anda secara publik.</string>
@@ -413,7 +413,6 @@
     <!--group-->
     <string name="Add_participants">Tambahkan Peserta</string>
     <string name="New_Group">Grup Baru</string>
-    <string name="Group_Photo">Foto Grup</string>
     <string name="Group_Name">Nama Grup</string>
     <string name="new_group_name">nama grup baru</string>
     <string name="Group_Notice">Pemberitahuan Grup</string>
@@ -423,7 +422,6 @@
     <string name="Remove_Participants">Hapus Peserta</string>
     <string name="Exit_Group">Keluar dari Grup</string>
     <string name="Delete_Group">Hapus Grup</string>
-    <string name="Edit_group">Edit Grup</string>
     <string name="Edit_group_name">Edit Nama</string>
     <string name="Content_too_long">Konten terlalu panjang</string>
     <string name="group_pop_menu_message">Kirim pesan ke %1$s</string>
@@ -530,7 +528,7 @@
     <string name="Transfer_Notifications">Notifikasi Transfer</string>
     <string name="System_options">Opsi sistem    </string>
     <string name="Reset_notifications">Reset notifikasi</string>
-    <string name="setting_notification_transfer_desc">Tampilkan notifikasi saat menerima transfer yang lebih besar dari atau sama dengan %1$s.</string>
+    <string name="setting_notification_transfer_summary">Tampilkan notifikasi saat menerima transfer yang lebih besar dari atau sama dengan %1$s.</string>
     <string name="Transfer_Amount_count_down">Jumlah Transfer(%1$s)</string>
     <string name="Notification_and_Confirmation">Notifikasi dan Konfirmasi</string>
     <string name="Appearance">Tampilan</string>
@@ -648,7 +646,7 @@
     <!--withdrawal-->
     <string name="Withdrawal">Penarikan</string>
     <string name="withdrawal_addr_new">Alamat %1$s Baru</string>
-    <string name="withdrawal_addr_modify">Ubah Alamat %1$s</string>
+    <string name="edit_address">Ubah Alamat %1$s</string>
     <string name="Delete_withdraw_Address">Hapus Alamat %1$s</string>
     <string name="withdrawal_addr_pin_add">Masukkan PIN untuk menyimpan alamat</string>
     <string name="withdrawal_addr_pin_delete">Masukkan PIN untuk menghapus alamat</string>
@@ -723,7 +721,6 @@
     <string name="Incoming_voice_call">Panggilan suara masuk</string>
     <string name="Ongoing_voice_call">Panggilan suara sedang berlangsung</string>
     <string name="CANCEL">BATAL</string>
-    <string name="DECLINE">TOLAK</string>
     <string name="ANSWER">JAWAB</string>
     <string name="HANG_UP">TUTUP</string>
     <string name="in_connecting">Menyambungkan…</string>
@@ -731,7 +728,7 @@
     <string name="Hang_up">Tutup</string>
     <string name="Decline">Tolak</string>
     <string name="Accept">Terima</string>
-    <string name="call_group_full">Mendukung hingga %1$d suara grup orang</string>
+    <string name="Group_call_participants_limit_hint">Mendukung hingga %1$d suara grup orang</string>
     <string name="call_pip_permission">Anda tidak dapat menciutkan panggilan suara karena Mixin tidak diizinkan menggunakan jendela mengambang</string>
 
     <!-- restore&backup -->

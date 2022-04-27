@@ -225,8 +225,8 @@
     <string name="search_tip">Search Mixin ID or Phone number: %1$s</string>
     <!--landing-->
     <string name="Landing_back" translatable="false">Landing back</string>
-    <string name="Enter_your_mobile_number">Enter your mobile number</string>
-    <string name="Enter_new_mobile_number">Enter your new mobile number</string>
+    <string name="Enter_your_phone_number">Enter your mobile number</string>
+    <string name="Enter_new_phone_number">Enter your new mobile number</string>
     <string name="Mobile_number">Mobile number</string>
     <string name="Name">Name</string>
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
@@ -321,7 +321,7 @@
     <string name="Save_success">Save success</string>
     <string name="Save_to">Save to %1$s</string>
     <string name="Save_failure">Save failure</string>
-    <string name="Export_failure">Export failure</string>
+    <string name="Export_failed">Export failed</string>
     <string name="hold_to_record_audio">Hold to record, release to send</string>
     <string name="chat_call_duration">Duration: %1$s</string>
     <string name="Canceled">Cancelled</string>
@@ -506,7 +506,6 @@
     <!--group-->
     <string name="Add_participants">Add Participants</string>
     <string name="New_Group">New Group</string>
-    <string name="Group_Photo">Group Photo</string>
     <string name="Group_Name">Group Name</string>
     <string name="new_group_name">new group name</string>
     <string name="Group_Notice">Group Notice</string>
@@ -516,7 +515,6 @@
     <string name="Remove_Participants">Remove Participants</string>
     <string name="Exit_Group">Exit Group</string>
     <string name="Delete_Group">Delete Group</string>
-    <string name="Edit_group">Edit Group</string>
     <string name="Edit_group_name">Edit Name</string>
     <string name="Content_too_long">Content too long</string>
     <string name="group_pop_menu_message">Message %1$s</string>
@@ -631,7 +629,7 @@
     <string name="Transfer_Notifications">Transfer Notifications</string>
     <string name="System_options">System options</string>
     <string name="Reset_notifications">Reset notifications</string>
-    <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
+    <string name="setting_notification_transfer_summary">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
     <string name="Transfer_Amount_count_down">Transfer Amount(%1$s)</string>
     <string name="Notification_and_Confirmation">Notification and Confirmation</string>
     <string name="Appearance">Appearance</string>
@@ -794,7 +792,7 @@
     <string name="withdrawal_minimum_withdrawal">Minimum withdrawal:</string>
     <string name="withdrawal_minimum_reserve">Minimum reserve:</string>
     <string name="withdrawal_addr_new">New %1$s Address</string>
-    <string name="withdrawal_addr_modify">Modify %1$s Address</string>
+    <string name="edit_address">Edit %1$s Address</string>
     <string name="Delete_withdraw_Address">Delete %1$s Address</string>
     <string name="withdrawal_addr_pin_add">Enter PIN to save address</string>
     <string name="withdrawal_addr_pin_delete">Enter PIN to delete address</string>
@@ -881,7 +879,6 @@
     <string name="Incoming_voice_call">Incoming voice call</string>
     <string name="Ongoing_voice_call">Ongoing voice call</string>
     <string name="CANCEL">CANCEL</string>
-    <string name="DECLINE">DECLINE</string>
     <string name="ANSWER">ANSWER</string>
     <string name="HANG_UP">HANG UP</string>
     <string name="in_connecting">Connecting&#8230;</string>
@@ -889,7 +886,7 @@
     <string name="Hang_up">Hang up</string>
     <string name="Decline">Decline</string>
     <string name="Accept">Accept</string>
-    <string name="call_group_full" tools:ignore="PluralsCandidate">Support up to %1$d people group voice</string>
+    <string name="Group_call_participants_limit_hint" tools:ignore="PluralsCandidate">Support up to %1$d people group voice</string>
     <string name="call_pip_permission">You can\'t minimize a voice call as Mixin isn\'t authorized to use floating windows</string>
 
     <!-- restore&backup -->

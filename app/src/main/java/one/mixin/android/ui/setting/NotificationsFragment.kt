@@ -171,7 +171,7 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
         binding.apply {
             transferTv.text = "$accountSymbol$threshold"
             transferDescTv.text = getString(
-                R.string.setting_notification_transfer_desc,
+                R.string.setting_notification_transfer_summary,
                 "$accountSymbol$threshold"
             )
         }

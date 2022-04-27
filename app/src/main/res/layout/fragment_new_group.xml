@@ -15,46 +15,6 @@
         app:titleText="@string/New_Group" />
 
     <RelativeLayout
-        android:visibility="gone"
-        android:id="@+id/photo_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:background="?attr/bg_white"
-        android:foreground="?android:attr/selectableItemBackground">
-
-        <TextView
-            android:id="@+id/photo_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/Group_Photo"
-            tools:ignore="RelativeOverlap" />
-
-        <ImageView
-            android:id="@+id/photo_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_chevron_right_gray_24dp"
-            tools:ignore="ContentDescription" />
-
-        <ImageView
-            android:id="@+id/new_group_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_toStartOf="@id/photo_iv"
-            android:src="@drawable/ic_photo_camera"
-            tools:ignore="ContentDescription" />
-    </RelativeLayout>
-
-    <RelativeLayout
         android:id="@+id/name_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"

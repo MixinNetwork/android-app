@@ -96,7 +96,7 @@ class CallNotificationBuilder {
                             declineAction,
                             R.drawable.ic_close_black,
                             R.string
-                                .DECLINE
+                                .Decline
                         )
                     )
                 }

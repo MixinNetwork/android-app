@@ -147,7 +147,7 @@ class PinLogsFragment : BaseFragment(R.layout.fragment_pin_logs) {
                 "ACTIVITY_PIN_MODIFICATION" ->
                     return Pair(context.getString(R.string.PIN_change), context.getString(R.string.PIN_modification))
                 "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
-                    return Pair(context.getString(R.string.Emergency_Contact), context.getString(R.string.Emergency_contact_modification))
+                    return Pair(context.getString(R.string.Emergency_Contact), context.getString(R.string.Change_emergency_contact))
                 "ACTIVITY_PHONE_MODIFICATION" ->
                     return Pair(context.getString(R.string.Phone_number_change), context.getString(R.string.Phone_number_modification))
                 "ACTIVITY_LOGIN_BY_PHONE" ->

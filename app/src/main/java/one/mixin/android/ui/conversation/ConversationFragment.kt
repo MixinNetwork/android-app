@@ -1101,7 +1101,7 @@ class ConversationFragment() :
                 if (event.conversationId == conversationId) {
                     if (event.errorCode == ERROR_ROOM_FULL) {
                         alertDialogBuilder()
-                            .setMessage(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
+                            .setMessage(getString(R.string.Group_call_participants_limit_hint, GROUP_VOICE_MAX_COUNT))
                             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                                 dialog.dismiss()
                             }

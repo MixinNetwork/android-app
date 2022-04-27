@@ -919,7 +919,7 @@ class WebFragment : BaseFragment() {
             icon = R.drawable.ic_web_forward
             action = {
                 if (appCard?.shareable == false || !shareable) {
-                    toast(R.string.Disallow_sharing_link)
+                    toast(R.string.app_card_shareable_false)
                 } else {
                     val currentUrl = webView.url ?: url
                     if (isBot()) {

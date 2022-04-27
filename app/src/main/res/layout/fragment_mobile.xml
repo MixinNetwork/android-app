@@ -37,7 +37,7 @@
             android:layout_marginTop="12dp"
             android:layout_marginEnd="16dp"
             android:gravity="center_horizontal"
-            android:text="@string/Enter_your_mobile_number"
+            android:text="@string/Enter_your_phone_number"
             android:textColor="?attr/text_primary"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
