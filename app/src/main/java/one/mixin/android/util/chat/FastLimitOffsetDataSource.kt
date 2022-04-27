@@ -9,6 +9,7 @@ import androidx.paging.PositionalDataSource
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import one.mixin.android.util.reportException
 import timber.log.Timber
@@ -133,9 +134,12 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
     init {
         coroutineScope.launch {
             InvalidateFlow.collect(
-                { this@FastLimitOffsetDataSource.conversationId == conversationId },
+                { conversationId ->
+                    this@FastLimitOffsetDataSource.conversationId == conversationId
+                },
                 {
                     invalidate()
+                    coroutineScope.cancel() // The current datasource is invalid
                 }
             )
         }

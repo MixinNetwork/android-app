@@ -9,6 +9,8 @@ import androidx.room.RoomSQLiteQuery
 import androidx.room.util.CursorUtil
 import androidx.room.util.DBUtil
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.plus
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
@@ -37,7 +39,7 @@ class MessageProvider {
                     }
                 }
                 override fun create(): DataSource<Int, MessageItem> {
-
+                    val coroutineScope = scope + Job() // Each data source has its own scope and is a child-scope
                     val sql =
                         """
                         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -74,7 +76,7 @@ class MessageProvider {
                         database,
                         countStatement,
                         itemStatement,
-                        scope,
+                        coroutineScope,
                         conversationId,
                         fastCountCallback
                     )
