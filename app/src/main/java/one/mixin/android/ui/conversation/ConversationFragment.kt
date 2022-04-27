@@ -340,6 +340,8 @@ class ConversationFragment() :
         requireArguments().getParcelable(TRANSCRIPT_DATA)
     }
 
+    private var conversationDraft: String? = null
+
     private var unreadTipCount: Int = 0
     private val conversationAdapter: ConversationAdapter by lazy {
         ConversationAdapter(requireActivity(), keyword, onItemListener, isGroup, encryptCategory() != EncryptCategory.PLAIN, isBot).apply {
@@ -1229,9 +1231,9 @@ class ConversationFragment() :
     override fun onStop() {
         markRead()
         AudioPlayer.pause()
-        val draftText = binding.chatControl.chatEt.text
-        if (draftText != null) {
-            chatViewModel.saveDraft(conversationId, draftText.toString())
+        val draftText = binding.chatControl.chatEt.text?.toString()
+        if (draftText != conversationDraft) {
+            chatViewModel.saveDraft(conversationId, draftText ?: "")
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
@@ -1469,19 +1471,12 @@ class ConversationFragment() :
                 binding.flagLayout.bottomCountFlag = false
             }
         }
-        chatViewModel.searchConversationById(conversationId)
-            .autoDispose(stopScope).subscribe(
-                {
-                    it?.draft?.let { str ->
-                        if (isAdded) {
-                            binding.chatControl.chatEt.setText(str)
-                        }
-                    }
-                },
-                {
-                    Timber.e(it)
-                }
-            )
+        lifecycleScope.launch {
+            conversationDraft = chatViewModel.getConversationDraftById(conversationId)
+            if (isAdded && !conversationDraft.isNullOrBlank()) {
+                binding.chatControl.chatEt.setText(conversationDraft)
+            }
+        }
         binding.toolView.closeIv.setOnClickListener { activity?.onBackPressed() }
         binding.toolView.deleteIv.setOnClickListener {
             conversationAdapter.selectSet.filter { it.isAudio() }.forEach {
