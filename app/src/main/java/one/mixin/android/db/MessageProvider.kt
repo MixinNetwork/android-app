@@ -63,20 +63,17 @@ class MessageProvider {
                         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
                         LEFT JOIN message_mentions mm ON m.id = mm.message_id
                         LEFT JOIN pin_messages pm ON m.id = pm.message_id
-                        WHERE m.conversation_id = ? 
-                        ORDER BY m.created_at DESC 
                         """
-                    val statement = RoomSQLiteQuery.acquire(sql, 1)
-                    val argIndex = 1
-                    statement.bindString(argIndex, conversationId)
-                    val countSql =
-                        "SELECT COUNT(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?"
-                    val countStatement = RoomSQLiteQuery.acquire(countSql, 1)
-                    countStatement.bindString(argIndex, conversationId)
+                    val countStatement = RoomSQLiteQuery.acquire("SELECT COUNT(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?", 1).apply {
+                        bindString(1, conversationId)
+                    }
+                    val itemStatement = RoomSQLiteQuery.acquire("SELECT m.rowid FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?", 3)
+
                     return MixinMessageItemLimitOffsetDataSource(
+                        sql,
                         database,
-                        statement,
                         countStatement,
+                        itemStatement,
                         scope,
                         conversationId,
                         fastCountCallback
@@ -1090,15 +1087,20 @@ class MessageProvider {
     }
 
     private class MixinMessageItemLimitOffsetDataSource(
+        val sql: String,
         database: MixinDatabase,
-        statement: RoomSQLiteQuery,
         countStatement: RoomSQLiteQuery,
+        itemStatement: RoomSQLiteQuery,
         scope: CoroutineScope,
         conversationId: String,
         fastCountCallback: () -> Int?
-    ) : FastLimitOffsetDataSource<MessageItem>(scope, database, statement, countStatement, conversationId, fastCountCallback) {
+    ) : FastLimitOffsetDataSource<MessageItem>(scope, database, countStatement, itemStatement, conversationId, fastCountCallback) {
         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
             return convertToMessageItems(cursor)
+        }
+
+        override fun querySql(ids: String): RoomSQLiteQuery {
+            return RoomSQLiteQuery.acquire("$sql WHERE m.rowid IN ($ids) ORDER BY m.created_at DESC", 0)
         }
     }
 
