@@ -1067,6 +1067,7 @@
 
     <!--  Pin message  -->
     <string name="unpin_all">Cancel all pinned message</string>
+    <string name="unpin_all_messages_confirmation">Are you sure you want to unpin all messages?</string>
     <string name="pinned_message">Pinned Messages</string>
     <plurals name="pinned_message_title">
         <item quantity="one">%1$d Pinned Message</item>

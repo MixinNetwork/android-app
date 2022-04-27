@@ -1033,6 +1033,7 @@
 
     <!--  Pin message  -->
     <string name="unpin_all">取消置顶所有消息</string>
+    <string name="unpin_all_messages_confirmation">确定取消置顶所有消息么？</string>
     <string name="pinned_message">置顶消息</string>
     <plurals name="pinned_message_title" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d条置顶消息</item>
