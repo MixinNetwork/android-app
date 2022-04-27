@@ -5,7 +5,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import io.reactivex.Maybe
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
@@ -116,10 +115,10 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT name FROM conversations WHERE conversation_id = :conversationId")
     suspend fun getConversationNameById(conversationId: String): String?
 
-    @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
-    fun searchConversationById(conversationId: String): Maybe<Conversation>
+    @Query("SELECT c.draft FROM conversations c WHERE c.conversation_id = :conversationId")
+    suspend fun getConversationDraftById(conversationId: String): String?
 
-    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId")
+    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft != :text")
     suspend fun saveDraft(conversationId: String, text: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
