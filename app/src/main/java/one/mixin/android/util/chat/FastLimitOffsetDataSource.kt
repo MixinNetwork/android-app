@@ -37,7 +37,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
             val r = if (cursor.moveToFirst()) {
                 cursor.getInt(0)
             } else 0
-            Timber.d("count $conversationId, ${System.currentTimeMillis() - start}")
+            Timber.e("count $conversationId, ${System.currentTimeMillis() - start}")
             r
         } finally {
             cursor.close()
@@ -67,8 +67,8 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         val list = loadRange(firstLoadPosition, firstLoadSize)
         try {
             callback.onResult(list, firstLoadPosition, totalCount)
-            Timber.e("fastCont $conversationId, $fastCont")
             if (fastCont != null) { // If quick return needs to activate the next query
+                Timber.e("fastCont invalidate $conversationId, $fastCont")
                 invalidate()
             }
         } catch (e: IllegalArgumentException) {
@@ -76,8 +76,8 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
             Timber.w(e)
             try {
                 callback.onResult(list, firstLoadPosition, firstLoadPosition + list.size)
-                Timber.e("catch fastCont $conversationId, $fastCont")
                 if (fastCont != null) {
+                    Timber.e("catch fastCont invalidate $conversationId, $fastCont")
                     invalidate()
                 }
             } catch (iae: IllegalArgumentException) {
