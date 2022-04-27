@@ -1233,7 +1233,7 @@ class ConversationFragment() :
         markRead()
         AudioPlayer.pause()
         val draftText = binding.chatControl.chatEt.text?.toString()
-        if (draftText != conversationDraft && !draftText.isNullOrBlank()) {
+        if (draftText != conversationDraft) {
             chatViewModel.saveDraft(conversationId, draftText)
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
