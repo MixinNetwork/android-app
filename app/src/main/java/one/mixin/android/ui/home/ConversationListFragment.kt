@@ -311,11 +311,14 @@ class ConversationListFragment : LinkFragment() {
                                 reportException(error)
                             }
                         ) {
+                            val start = System.currentTimeMillis()
                             Timber.e("show ${item.conversationCategory}")
                             reportLog("show ${item.conversationCategory}")
                             val user = if (item.isContactConversation()) {
                                 messagesViewModel.suspendFindUserById(item.ownerId)
                             } else null
+                            Timber.e("query user: ${System.currentTimeMillis() - start}")
+                            reportLog("query user: ${System.currentTimeMillis() - start}")
                             Timber.e("show ${user?.userId}")
                             reportLog("show ${user?.userId}")
                             val messageId =
@@ -325,6 +328,8 @@ class ConversationListFragment : LinkFragment() {
                                         item.unseenMessageCount - 1
                                     )
                                 } else null
+                            Timber.e("find first unread: ${System.currentTimeMillis() -start}")
+                            reportLog("find first unread: ${System.currentTimeMillis() -start}")
                             Timber.e("show ${item.unseenMessageCount} messageId:$messageId")
                             reportLog("show ${item.unseenMessageCount} messageId:$messageId")
                             ConversationActivity.fastShow(
