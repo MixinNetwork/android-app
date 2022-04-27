@@ -22,9 +22,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
 import one.mixin.android.ui.setting.SettingViewModel
@@ -94,7 +96,9 @@ fun SettingPage() {
                     icon = R.drawable.ic_setting_desktop,
                     title = stringResource(id = R.string.setting_desktop)
                 ) {
-                    settingNavController.navigation(SettingDestination.Desktop)
+                    context.findFragmentActivityOrNull()?.supportFragmentManager?.let { fragmentManager ->
+                        DeviceFragment.newInstance().showNow(fragmentManager, DeviceFragment.TAG)
+                    }
                 }
                 Box(modifier = Modifier.height(16.dp))
 

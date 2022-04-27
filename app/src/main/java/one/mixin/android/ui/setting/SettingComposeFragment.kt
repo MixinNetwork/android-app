@@ -38,8 +38,6 @@ enum class SettingDestination {
     Storage,
     Appearance,
     Desktop,
-    Feedback,
-    Share,
     About,
     DatabaseDebug,
     AccountPrivacy,
