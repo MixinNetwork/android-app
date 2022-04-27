@@ -1231,9 +1231,9 @@ class ConversationFragment() :
     override fun onStop() {
         markRead()
         AudioPlayer.pause()
-        val draftText = binding.chatControl.chatEt.text?.toString()
+        val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         if (draftText != conversationDraft) {
-            chatViewModel.saveDraft(conversationId, draftText ?: "")
+            chatViewModel.saveDraft(conversationId, draftText)
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stop()
