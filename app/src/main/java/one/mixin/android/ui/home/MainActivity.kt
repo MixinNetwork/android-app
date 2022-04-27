@@ -336,10 +336,10 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(BackupJob(force = true, delete = true))
         }
 
-        val ftsReduce = PropertyHelper.findValueByKey(PREF_FTS4_REDUCE)?.toBooleanStrictOrNull()
-        if (ftsReduce != false) {
-            jobManager.addJobInBackground(ReduceFts4Job())
-        }
+        // val ftsReduce = PropertyHelper.findValueByKey(PREF_FTS4_REDUCE)?.toBooleanStrictOrNull()
+        // if (ftsReduce != false) {
+        //     jobManager.addJobInBackground(ReduceFts4Job())
+        // }
 
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshFcmJob())
