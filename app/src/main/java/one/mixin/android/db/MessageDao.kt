@@ -16,6 +16,7 @@ import one.mixin.android.ui.player.MessageIdIdAndMediaStatus
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.AttachmentMigration
+import one.mixin.android.vo.CurrentStatus
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
@@ -257,8 +258,8 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id = :messageId")
     suspend fun suspendFindMessageById(messageId: String): Message?
 
-    @Query("SELECT status FROM messages WHERE id = :messageId")
-    fun findMessageStatusById(messageId: String): String?
+    @Query("SELECT conversation_id, status FROM messages WHERE id = :messageId")
+    fun findMessageStatusById(messageId: String): CurrentStatus?
 
     // id not null means message exists
     @Query("SELECT id FROM messages WHERE id = :messageId")

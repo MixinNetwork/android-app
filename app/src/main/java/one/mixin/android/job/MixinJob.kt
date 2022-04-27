@@ -21,7 +21,6 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.LinkState
@@ -256,18 +255,6 @@ abstract class MixinJob(
             }
         }
         return bm.data
-    }
-
-    protected fun makeMessageStatus(status: String, messageId: String, conversationId: String) {
-        val currentStatus = messageDao.findMessageStatusById(messageId)
-        if (currentStatus == MessageStatus.SENDING.name) {
-            messageDao.updateMessageStatus(status, messageId)
-        } else if (currentStatus == MessageStatus.SENT.name && (status == MessageStatus.DELIVERED.name || status == MessageStatus.READ.name)) {
-            messageDao.updateMessageStatus(status, messageId)
-        } else if (currentStatus == MessageStatus.DELIVERED.name && status == MessageStatus.READ.name) {
-            messageDao.updateMessageStatus(status, messageId)
-        }
-        InvalidateFlow.emit(conversationId)
     }
 
     protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {

@@ -24,6 +24,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.insertNoReplace
+import one.mixin.android.db.makeMessageStatus
 import one.mixin.android.di.isNeedSwitch
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
@@ -36,7 +37,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
@@ -272,29 +272,17 @@ class ChatWebSocket(
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
         val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
-            makeMessageStatus(data.status, data.messageId, data.conversationId) // Ack of the server, conversationId is ""
+            messageDao.makeMessageStatus(data.status, data.messageId) // Ack of the server, conversationId is ""
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
             if (data.userId == accountId && data.category.isEmpty()) { // Ack of the create message
-                makeMessageStatus(data.status, data.messageId, data.conversationId)
+                messageDao.makeMessageStatus(data.status, data.messageId)
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
         } else {
             jobDao.insertNoReplace(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
         }
-    }
-
-    private fun makeMessageStatus(status: String, messageId: String, conversationId: String) {
-        val currentStatus = messageDao.findMessageStatusById(messageId)
-        if (currentStatus == MessageStatus.SENDING.name) {
-            messageDao.updateMessageStatus(status, messageId)
-        } else if (currentStatus == MessageStatus.SENT.name && (status == MessageStatus.DELIVERED.name || status == MessageStatus.READ.name)) {
-            messageDao.updateMessageStatus(status, messageId)
-        } else if (currentStatus == MessageStatus.DELIVERED.name && status == MessageStatus.READ.name) {
-            messageDao.updateMessageStatus(status, messageId)
-        }
-        InvalidateFlow.emit(conversationId)
     }
 
     private var webSocketObserver: WebSocketObserver? = null
