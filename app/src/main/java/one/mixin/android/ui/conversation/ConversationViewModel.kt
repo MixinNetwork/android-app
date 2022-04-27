@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.content.SharedPreferences
 import android.net.Uri
+import android.os.CancellationSignal
 import androidx.annotation.RequiresPermission
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
@@ -123,7 +124,7 @@ internal constructor(
 
     var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
 
-    fun getMessages(scope: CoroutineScope, conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
+    fun getMessages(cancellationSignal: CancellationSignal, scope: CoroutineScope, conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
@@ -132,6 +133,7 @@ internal constructor(
 
         return KeyLivePagedListBuilder(
             conversationRepository.getMessages(
+                cancellationSignal,
                 scope, conversationId,
                 if (firstKeyToLoad > PAGE_SIZE) {
                     firstKeyToLoad + FIXED_LOAD_SIZE / 2

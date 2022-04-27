@@ -19,6 +19,7 @@ import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.CancellationSignal
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
@@ -1269,6 +1270,7 @@ class ConversationFragment() :
 
     override fun onDestroy() {
         super.onDestroy()
+        cancellationSignal?.cancel()
         activity?.supportFragmentManager?.let { fm ->
             val fragments = fm.fragments
             if (fragments.size > 0) {
@@ -1835,10 +1837,15 @@ class ConversationFragment() :
         deleteDialog?.show()
     }
 
+    private var cancellationSignal: CancellationSignal? = null
+
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
         var firstReturn = true
-        chatViewModel.getMessages(lifecycleScope, conversationId, unreadCount)
+        cancellationSignal?.cancel()
+        val cancellationSignal = CancellationSignal()
+        this.cancellationSignal = cancellationSignal
+        chatViewModel.getMessages(cancellationSignal, lifecycleScope, conversationId, unreadCount)
             .observe(
                 viewLifecycleOwner
             ) { list ->

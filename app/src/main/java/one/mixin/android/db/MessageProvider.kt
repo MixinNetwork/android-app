@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class MessageProvider {
     companion object {
 
-        fun getMessages(scope: CoroutineScope, database: MixinDatabase, conversationId: String, count: Int?) =
+        fun getMessages(scope: CoroutineScope, database: MixinDatabase, cancellationSignal: CancellationSignal, conversationId: String, count: Int?) =
             object : DataSource.Factory<Int, MessageItem>() {
                 private val firstLoad: AtomicBoolean = AtomicBoolean(true)
                 private val fastCountCallback = fun(): Int? { // Message provider is only called for the first time
@@ -79,6 +79,7 @@ class MessageProvider {
                         countStatement,
                         scope,
                         conversationId,
+                        cancellationSignal,
                         fastCountCallback
                     )
                 }
@@ -1095,8 +1096,9 @@ class MessageProvider {
         countStatement: RoomSQLiteQuery,
         scope: CoroutineScope,
         conversationId: String,
+        cancellationSignal: CancellationSignal,
         fastCountCallback: () -> Int?
-    ) : FastLimitOffsetDataSource<MessageItem>(scope, database, statement, countStatement, conversationId, fastCountCallback) {
+    ) : FastLimitOffsetDataSource<MessageItem>(scope, database, statement, countStatement, conversationId, cancellationSignal, fastCountCallback) {
         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
             return convertToMessageItems(cursor)
         }

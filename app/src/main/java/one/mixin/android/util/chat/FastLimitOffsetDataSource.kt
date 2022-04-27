@@ -4,6 +4,7 @@ package one.mixin.android.util.chat
 
 import android.annotation.SuppressLint
 import android.database.Cursor
+import android.os.CancellationSignal
 import androidx.annotation.RestrictTo
 import androidx.paging.PositionalDataSource
 import androidx.room.RoomDatabase
@@ -21,6 +22,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
     private val sourceQuery: RoomSQLiteQuery,
     private val countQuery: RoomSQLiteQuery,
     private val conversationId: String,
+    private val cancellationSignal: CancellationSignal,
     private val fastCountCallback: () -> Int?
 ) : PositionalDataSource<T>() {
     private val limitOffsetQuery: String = sourceQuery.sql + " LIMIT ? OFFSET ?"
