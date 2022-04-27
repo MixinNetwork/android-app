@@ -133,7 +133,7 @@ internal constructor(
 
         return KeyLivePagedListBuilder(
             conversationRepository.getMessages(
-                viewModelScope, conversationId,
+                coroutineScope, conversationId,
                 if (firstKeyToLoad > PAGE_SIZE) {
                     firstKeyToLoad + FIXED_LOAD_SIZE / 2
                 } else {
