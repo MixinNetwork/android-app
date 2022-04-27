@@ -119,7 +119,7 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun searchConversationById(conversationId: String): Maybe<Conversation>
 
-    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId")
+    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft != :text")
     suspend fun saveDraft(conversationId: String, text: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
