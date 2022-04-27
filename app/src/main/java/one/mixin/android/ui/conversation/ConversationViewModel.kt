@@ -153,6 +153,9 @@ internal constructor(
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
     fun saveDraft(conversationId: String, text: String) = MixinApplication.appScope.launch {
+        if (text.isBlank()) {
+            return@launch
+        }
         conversationRepository.saveDraft(conversationId, text)
     }
 
