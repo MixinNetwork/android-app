@@ -91,6 +91,7 @@ import one.mixin.android.util.NotificationBulletin
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.util.reportException
+import one.mixin.android.util.reportLog
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ConversationItem
@@ -102,6 +103,7 @@ import one.mixin.android.vo.explain
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isContact
+import one.mixin.android.vo.isContactConversation
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isGroupCall
 import one.mixin.android.vo.isGroupConversation
@@ -313,8 +315,35 @@ class ConversationListFragment : LinkFragment() {
                                 reportException(error)
                             }
                         ) {
-                            Timber.e("show conversation ${item.conversationId}")
-                            ConversationActivity.show(requireContext(), item.conversationId)
+                            val start = System.currentTimeMillis()
+                            Timber.e("show ${item.conversationCategory}")
+                            reportLog("show ${item.conversationCategory}")
+                            val user = if (item.isContactConversation()) {
+                                Timber.e("query user start: ${System.currentTimeMillis() - start}")
+                                messagesViewModel.suspendFindUserById(item.ownerId)
+                            } else null
+                            Timber.e("query user end: ${System.currentTimeMillis() - start}")
+                            reportLog("query user: ${System.currentTimeMillis() - start}")
+                            Timber.e("show ${user?.userId}")
+                            reportLog("show ${user?.userId}")
+                            val messageId =
+                                if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
+                                    messagesViewModel.findFirstUnreadMessageId(
+                                        item.conversationId,
+                                        item.unseenMessageCount - 1
+                                    )
+                                } else null
+                            Timber.e("find first unread: ${System.currentTimeMillis() -start}")
+                            reportLog("find first unread: ${System.currentTimeMillis() -start}")
+                            Timber.e("show ${item.unseenMessageCount} messageId:$messageId")
+                            reportLog("show ${item.unseenMessageCount} messageId:$messageId")
+                            ConversationActivity.fastShow(
+                                requireContext(),
+                                conversationId = item.conversationId,
+                                recipient = user,
+                                initialPositionMessageId = messageId,
+                                unreadCount = item.unseenMessageCount ?: 0
+                            )
                         }
                     }
                 }
