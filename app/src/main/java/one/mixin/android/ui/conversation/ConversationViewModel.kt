@@ -151,9 +151,7 @@ internal constructor(
     suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
-    fun searchConversationById(id: String) =
-        conversationRepository.searchConversationById(id)
-            .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+    suspend fun getConversationDraftById(id: String) = conversationRepository.getConversationDraftById(id)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
