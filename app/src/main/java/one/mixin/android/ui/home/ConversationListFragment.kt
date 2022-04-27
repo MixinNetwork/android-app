@@ -319,9 +319,10 @@ class ConversationListFragment : LinkFragment() {
                             Timber.e("show ${item.conversationCategory}")
                             reportLog("show ${item.conversationCategory}")
                             val user = if (item.isContactConversation()) {
+                                Timber.e("query user start: ${System.currentTimeMillis() - start}")
                                 messagesViewModel.suspendFindUserById(item.ownerId)
                             } else null
-                            Timber.e("query user: ${System.currentTimeMillis() - start}")
+                            Timber.e("query user end: ${System.currentTimeMillis() - start}")
                             reportLog("query user: ${System.currentTimeMillis() - start}")
                             Timber.e("show ${user?.userId}")
                             reportLog("show ${user?.userId}")
