@@ -22,12 +22,15 @@ class SettingActivity : BlazeBaseActivity() {
         const val EXTRA_SHOW_PIN_SETTING = "extra_show_pin_setting"
         const val EXTRA_EMERGENCY_CONTACT = "extra_emergency_contact"
         const val EXTRA_SHOW_PERMISSION_LIST = "extra_show_permission_list"
+        const val EXTRA_SHOW_COMPOSE = "extra_show_compose"
         const val EXTRA_APP = "extra_app"
         const val EXTRA_AUTH = "extra_auth"
         const val ARGS_SUCCESS = "args_success"
 
         fun show(context: Context) {
-            context.startActivity(Intent(context, SettingActivity::class.java))
+            context.startActivity(Intent(context, SettingActivity::class.java).apply {
+                putExtra(EXTRA_SHOW_COMPOSE, true)
+            })
         }
 
         fun showPinSetting(context: Context) {
@@ -60,6 +63,8 @@ class SettingActivity : BlazeBaseActivity() {
             val app = requireNotNull(intent.getParcelableExtra<App>(EXTRA_APP))
             val auth = requireNotNull(intent.getParcelableExtra<AuthorizationResponse>(EXTRA_AUTH))
             replaceFragment(PermissionListFragment.newInstance(app, auth), R.id.container, PermissionListFragment.TAG)
+        } else if (intent.getBooleanExtra(EXTRA_SHOW_COMPOSE, false)) {
+            replaceFragment(SettingComposeFragment.newInstance(), R.id.container, SettingComposeFragment.TAG)
         } else {
             val fragment = SettingFragment.newInstance()
             replaceFragment(fragment, R.id.container, SettingFragment.TAG)

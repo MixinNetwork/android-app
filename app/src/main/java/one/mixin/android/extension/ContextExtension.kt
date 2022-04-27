@@ -6,15 +6,9 @@ import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.ActivityNotFoundException
-import android.content.ClipboardManager
-import android.content.ComponentName
-import android.content.ContentResolver
-import android.content.Context
+import android.content.*
 import android.content.Context.ACTIVITY_SERVICE
 import android.content.Context.CLIPBOARD_SERVICE
-import android.content.DialogInterface
-import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -1132,4 +1126,15 @@ fun Context.callPhone(phone: String) {
     } catch (e: Exception) {
         Timber.e(e)
     }
+}
+
+fun Context.findFragmentActivityOrNull(): FragmentActivity? {
+    var ctx = this
+    while (ctx is ContextWrapper) {
+        if (ctx is FragmentActivity) {
+            return ctx
+        }
+        ctx = ctx.baseContext
+    }
+    return null
 }
