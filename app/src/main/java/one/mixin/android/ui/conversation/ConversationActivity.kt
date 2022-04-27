@@ -25,6 +25,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -41,6 +42,7 @@ class ConversationActivity : BlazeBaseActivity() {
                     ConversationFragment.TAG
                 )
             } else {
+                Timber.e("show conversation onCreate")
                 showConversation(intent)
             }
         }
@@ -90,13 +92,16 @@ class ConversationActivity : BlazeBaseActivity() {
                 }
                 bundle.putParcelable(RECIPIENT, user)
             } else {
+                Timber.e("show conversation find user")
                 val user = userRepository.suspendFindContactByConversationId(conversationId!!)
+                Timber.e("show conversation find user ${user?.userId}")
                 require(user?.userId != Session.getAccountId()) {
                     "error data conversationId: $conversationId"
                 }
                 cid = conversationId
                 bundle.putParcelable(RECIPIENT, user)
             }
+            Timber.e("show conversation find unreadCount")
             if (unreadCount == -1) {
                 unreadCount = if (!messageId.isNullOrEmpty()) {
                     conversationRepository.findMessageIndex(cid, messageId)
@@ -104,6 +109,8 @@ class ConversationActivity : BlazeBaseActivity() {
                     conversationRepository.indexUnread(cid) ?: -1
                 }
             }
+            Timber.e("show conversation find unreadCount $unreadCount")
+
             bundle.putInt(UNREAD_COUNT, unreadCount)
             val msgId = messageId ?: if (unreadCount <= 0) {
                 null
@@ -111,6 +118,7 @@ class ConversationActivity : BlazeBaseActivity() {
                 conversationRepository.findFirstUnreadMessageId(cid, unreadCount - 1)
             }
             bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId)
+            Timber.e("show conversation replaceFragment")
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
