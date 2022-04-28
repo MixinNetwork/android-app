@@ -182,9 +182,8 @@ fun MessageDao.makeMessageStatus(status: String, messageId: String) {
         findMessageStatusById(messageId)?.let { currentStatus ->
             if (messageStatus.ordinal > currentStatus.status.ordinal) {
                 updateMessageStatus(status, messageId)
-                return@let // No need to notify flow
+                InvalidateFlow.emit(currentStatus.conversationId) // Update and notify  flow
             }
-            InvalidateFlow.emit(currentStatus.conversationId)
         }
     }
 }

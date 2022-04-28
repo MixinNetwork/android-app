@@ -6,7 +6,7 @@ import one.mixin.android.vo.MessageStatus
 class MessageStatusConverter {
     @TypeConverter
     fun revertDate(value: String): MessageStatus {
-      return requireNotNull(MessageStatus.values().firstOrNull { it.name == value})
+        return requireNotNull(MessageStatus.values().firstOrNull { it.name == value })
     }
 
     @TypeConverter
