@@ -113,7 +113,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                 binding.chatInfo.text = getText(R.string.group_role)
             }
             else -> {
-                val learn: String = MixinApplication.get().getString(R.string.learn_more)
+                val learn: String = MixinApplication.get().getString(R.string.Learn_More)
                 val info = MixinApplication.get().getString(R.string.chat_not_support, learn)
                 val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
                 binding.chatInfo.highlightLinkText(

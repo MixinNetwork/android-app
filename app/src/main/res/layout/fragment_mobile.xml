@@ -82,7 +82,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="36dp"
             android:layout_marginEnd="16dp"
-            android:hint="@string/Mobile_number"
+            android:hint="@string/Phone_number"
             android:inputType="number"
             android:minHeight="@dimen/btn_min_height"
             android:textColor="?attr/text_primary"

@@ -213,7 +213,7 @@
     <!--landing-->
     <string name="Enter_your_phone_number">输入你的手机号码</string>
     <string name="Enter_new_phone_number">输入你的新手机号码</string>
-    <string name="Mobile_number">手机号码</string>
+    <string name="Phone_number">手机号码</string>
     <string name="Name">名称</string>
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
     <string name="Resend_code">重发验证码</string>
@@ -254,9 +254,8 @@
     <string name="contact_receive_tip">用 Mixin 扫描二维码给我转账</string>
     <string name="Add_Contact">添加联系人</string>
     <string name="Add_bot">添加机器人</string>
-    <string name="contact_search_hint">昵称, Mixin ID</string>
     <string name="contact_share_apps_title">%1$s 分享的应用</string>
-    <string name="contact_share_apps_tip">如果您希望分享应用，请先添加联系人。</string>
+    <string name="profile_share_app_hint">如果您希望分享应用，请先添加联系人。</string>
     <!--profile-->
     <string name="Change_Phone_Number">修改手机号</string>
     <string name="message_e2ee">此对话中的消息使用端对端加密。点击了解更多。</string>
@@ -275,7 +274,6 @@
     <!-- chat -->
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="desktop">桌面端</string>
-    <string name="Learn_more">了解更多</string>
     <string name="chat_not_support">不支持此类型消息。请升级 Mixin 查看。 %1$s。</string>
     <string name="chat_decryption_failed">此信息解密失败，请将 Mixin 升级到最新版本。</string>
     <string name="Monday">星期一</string>
@@ -376,10 +374,11 @@
     <string name="Set_new_PIN">设置新的密码</string>
     <string name="wallet_password_set_new_pin_desc">设置新的 6 位数字密码</string>
     <string name="wallet_password_set_pin_desc">设置 6 位数字密码创建你的第一个数字钱包，阅读文档以了解更多。</string>
-    <string name="learn_more">了解更多</string>
     <string name="Confirm_PIN">确认密码</string>
-    <string name="wallet_password_confirm_1">确认 6 位密码并牢记它。如果忘记，你的钱包将无法找回。</string>
-    <string name="wallet_password_confirm_2">请再次确认您的 6 位密码。 很少看到第三次确认吧！所以请牢记，密码丢失是无法找回的。</string>
+    <string name="pin_lost_hint">如果忘记，你的钱包将无法找回</string>
+    <string name="third_pin_confirm_hint">很少看到第三次确认吧！所以请牢记，密码丢失是无法找回的</string>
+    <string name="pin_confirm_hint">确认 6 位密码并牢记它</string>
+    <string name="pin_confirm_again_hint">请再次确认您的 6 位密码</string>
     <string name="fourth_pin_confirm_hint">这是最后一次确认密码，记住：密码丢失将永远无法找回！</string>
     <string name="wallet_password_unsafe">密码过于简单不安全</string>
     <string name="Hidden_Assets">隐藏资产</string>
@@ -444,9 +443,10 @@
     <string name="No_raws">暂无其他记录</string>
     <string name="wallet_already_hidden">已隐藏 %1$s</string>
     <string name="wallet_already_shown">已显示 %1$s</string>
+    <string name="Invalid_QR_Code">二维码不合法</string>
     <string name="wallet_biometric_invalid">生物识别失效，请重新设置。</string>
     <string name="wallet_transactions_asset_key_warning">资产标识不是充值地址！</string>
-    <string name="wallet_search_hint">搜索名称，符号</string>
+    <string name="search_placeholder_asset">名称，符号</string>
     <string name="Trending">热门资产</string>
     <string name="Recent_searches">最近搜索</string>
     <string name="No_Available_Assets">没有可用资产</string>
@@ -541,7 +541,7 @@
     <string name="setting_incognito_prompt">禁止键盘个性化学习</string>
     <string name="Blocked_Users">屏蔽的用户</string>
     <string name="No_blocked_users">没有屏蔽任何人</string>
-    <string name="No_auth_app">没有授权任何机器人</string>
+    <string name="NO_AUTHORIZATIONS">没有授权任何机器人</string>
     <string name="Permissions">权限列表</string>
     <string name="setting_emergency_content">紧急联系人旨在帮助你在丢失且无法找回手机号的情况下登录你的账号。</string>
     <string name="setting_emergency_warning">注意：紧急联系人无法帮助找回支付密码</string>
@@ -581,7 +581,7 @@
     </plurals>
     <string name="Clear">清理</string>
     <string name="Revoke_access_with">取消 %1$s 授权?</string>
-    <string name="Logout_of_desktop">退出桌面端</string>
+    <string name="log_out_from_desktop">退出桌面端</string>
     <string name="Scan_QR_Code">扫描二维码</string>
     <string name="Logout">退出中…</string>
     <string name="setting_desktop_signed">已登录桌面端</string>

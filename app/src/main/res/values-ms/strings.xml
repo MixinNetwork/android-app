@@ -190,7 +190,7 @@
     <!--landing-->
     <string name="Enter_your_phone_number">Masukkan nombor telefon bimbit anda</string>
     <string name="Enter_new_phone_number">Masukkan nombor telefon bimbit baharu anda</string>
-    <string name="Mobile_number">Nombor telefon bimbit</string>
+    <string name="Phone_number">Nombor telefon bimbit</string>
     <string name="Name">Nama</string>
     <string name="landing_enter_mobile_tip">Kami tidak akan memaparkan nombor telefon bimbit anda secara terbuka.</string>
     <string name="Resend_code">Hantar semula kod</string>
@@ -230,10 +230,9 @@
     <string name="contact_receive_tip">Imbas Kod QR untuk membayar saya</string>
     <string name="Add_Contact">Tambah Kenalan</string>
     <string name="Add_bot">Tambah Bot</string>
-    <string name="contact_search_hint">Nama, ID Mixin</string>
     <string name="contact_share_apps_title">Aplikasi Dikongsi %1$s</string>
     <string name="NO_APPS">TIADA APLIKASI</string>
-    <string name="contact_share_apps_tip">Sekiranya anda ingin berkongsi aplikasi, sila tambahkan sebagai kenalan terlebih dahulu.</string>
+    <string name="profile_share_app_hint">Sekiranya anda ingin berkongsi aplikasi, sila tambahkan sebagai kenalan terlebih dahulu.</string>
     <plurals name="contact_count" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d kenalan</item>
     </plurals>
@@ -253,7 +252,6 @@
     <string name="chat_waiting">Menunggu %1$s untuk berada dalam talian dan tubuhkan sesi yang disulitkan. %2$s.</string>
     <string name="desktop">desktop</string>
     <string name="chat_not_support">Mesej jenis ini tidak disokong, sila tingkatkan Mixin ke versi terkini. %1$s.</string>
-    <string name="Learn_more">Ketahui lebih lanjut</string>
     <string name="Monday">Isnin</string>
     <string name="Tuesday">Selasa</string>
     <string name="Wednesday">Rabu</string>
@@ -335,10 +333,7 @@
     <string name="Set_new_PIN">Tetapkan PIN baru</string>
     <string name="wallet_password_set_new_pin_desc">Sila tetapkan PIN 6 digit baharu.</string>
     <string name="wallet_password_set_pin_desc">Sediakan PIN dompet 6 digit untuk membuat dompet digital pertama anda, baca dokumentasi kami untuk mengetahui lebih lanjut.</string>
-    <string name="learn_more">lebih lanjut</string>
     <string name="Confirm_PIN">Sahkan PIN</string>
-    <string name="wallet_password_confirm_1">Sila sahkan PIN 6 digit dan ingat. Sekiranya hilang, tidak ada cara untuk mendapatkan semula dompet anda.</string>
-    <string name="wallet_password_confirm_2">Sila sahkan PIN 6 digit anda sekali lagi. Sangat jarang untuk melihat pengesahan ketiga di tempat lain, jadi sila ingat bahawa PIN tidak dapat dipulihkan sekiranya hilang.</string>
     <string name="fourth_pin_confirm_hint">Ya, terdapat pengesahan PIN keempat, dan saya berjanji ia adalah yang terakhir untuk memastikan anda mengingati PIN anda. PIN tidak dapat dipulihkan sekiranya hilang.</string>
     <string name="wallet_password_unsafe">PIN terlalu mudah dan tidak selamat.</string>
     <string name="Hidden_Assets">Aset Tersembunyi</string>
@@ -405,10 +400,9 @@
     <string name="wallet_already_shown">%1$s telah ditunjukkan</string>
     <string name="wallet_biometric_invalid">Keadaan biometrik tidak sah, sila tetapkan semula dalam tetapan dompet.</string>
     <string name="wallet_transactions_asset_key_warning">Kunci aset BUKAN alamat deposit!</string>
-    <string name="wallet_search_hint">Cari Nama, Simbol</string>
+    <string name="search_placeholder_asset">Cari Nama, Simbol</string>
     <string name="Trending">Sohor Kini</string>
     <string name="Recent_searches">Carian terkini</string>
-    <string name="No_Available_Assets">Tiada Aset Yang Tersedia</string>
     <string name="wallet_address_add_tip">Mixin tidak menyokong penarikan ke</string>
     <!--pin logs-->
     <string name="Logs">Log</string>
@@ -493,7 +487,7 @@
     <string name="Incognito_Keyboard">Papan Kekunci Inkognito</string>
     <string name="setting_incognito_prompt">Lumpuhkan pembelajaran peribadi papan kekunci</string>
     <string name="No_blocked_users">Tiada pengguna yang disekat</string>
-    <string name="No_auth_app">Tiada aplikasi autentik</string>
+    <string name="NO_AUTHORIZATIONS">Tiada aplikasi autentik</string>
     <string name="Permissions">Kebenaran</string>
     <string name="setting_emergency_content">Kenalan kecemasan direka untuk membantu anda log masuk ke akaun anda sekiranya anda tersesat dan tidak dapat semula nombor telefon bimbit anda.</string>
     <string name="setting_emergency_warning">Perhatian: Kontak Kecemasan tidak dapat membantu anda memulih semula PIN</string>
@@ -533,7 +527,7 @@
     </plurals>
     <string name="Clear">Kosong</string>
     <string name="Revoke_access_with">Batalkan akses %1$s?</string>
-    <string name="Logout_of_desktop">Log keluar dari desktop</string>
+    <string name="log_out_from_desktop">Log keluar dari desktop</string>
     <string name="Scan_QR_Code">Imbas Kod QR</string>
     <string name="Logout">Log keluar…</string>
     <string name="setting_desktop_signed">Anda telah masuk ke desktop anda</string>
@@ -629,7 +623,6 @@
     <string name="sent_you_a_post">hantar kiriman</string>
     <string name="sent_you_a_location">hantar lokasi</string>
     <string name="invite_you_to_a_voice_call">tanya anda panggilan audio</string>
-    <string name="New_Messages">Mesej Baharu</string>
     <string name="stranger_from">Pengirim tidak ada dalam kenalan anda</string>
     <string name="chat_app_reception_title">Klik butang untuk berinteraksi dengan bot</string>
     <string name="Open_Home_page">Buka laman Utama</string>

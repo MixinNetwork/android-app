@@ -112,7 +112,7 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .HANG_UP
+                                .Hang_up
                         )
                     )
                 }
@@ -130,7 +130,7 @@ class CallNotificationBuilder {
                             action,
                             R.drawable.ic_close_black,
                             R.string
-                                .HANG_UP
+                                .Hang_up
                         )
                     )
                 }

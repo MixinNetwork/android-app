@@ -227,7 +227,7 @@
     <string name="Landing_back" translatable="false">Landing back</string>
     <string name="Enter_your_phone_number">Enter your mobile number</string>
     <string name="Enter_new_phone_number">Enter your new mobile number</string>
-    <string name="Mobile_number">Mobile number</string>
+    <string name="Phone_number">Phone number</string>
     <string name="Name">Name</string>
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
     <string name="Resend_code">Resend code</string>
@@ -275,10 +275,9 @@
     <string name="contact_receive_tip">Scan QR code payment</string>
     <string name="Add_Contact">Add Contact</string>
     <string name="Add_bot">Add Bot</string>
-    <string name="contact_search_hint">Name, Mixin ID</string>
     <string name="contact_share_apps_title">%1$s\'s Shared Apps</string>
     <string name="NO_APPS">NO APP</string>
-    <string name="contact_share_apps_tip">If you want to share apps, please add it as contact first.</string>
+    <string name="profile_share_app_hint">If you want to share apps, please add it as contact first.</string>
     <plurals name="contact_count">
         <item quantity="one">%1$d contact</item>
         <item quantity="other">%1$d contacts</item>
@@ -297,12 +296,10 @@
     <string name="Joined_in">Joined in %1$s</string>
     <!-- chat -->
     <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %2$s.</string>
-    <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>
     <string name="desktop">desktop</string>
     <string name="chat_not_support_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
     <string name="chat_decryption_failed">This message decryption failed, please upgrade Mixin to the latest version.</string>
-    <string name="Learn_more">Learn more</string>
     <string name="Monday">Monday</string>
     <string name="Tuesday">Tuesday</string>
     <string name="Wednesday">Wednesday</string>
@@ -399,10 +396,11 @@
     <string name="Set_new_PIN">Set a new PIN</string>
     <string name="wallet_password_set_new_pin_desc">Please set a new 6 digit PIN.</string>
     <string name="wallet_password_set_pin_desc">Set a 6 digit PIN to create your first digital wallet, read the document to learn more.</string>
-    <string name="learn_more">learn more</string>
     <string name="Confirm_PIN">Confirm PIN</string>
-    <string name="wallet_password_confirm_1">Please confirm the 6 digit PIN and remember it. If lost, there is no way to recover your wallet.</string>
-    <string name="wallet_password_confirm_2">Please confirm your 6 digit PIN again. It\'s rare to see a third confirmation somewhere else, so please remember the PIN is unrecoverable if lost.</string>
+    <string name="pin_lost_hint">If lost, there is no way to recover your wallet.</string>
+    <string name="third_pin_confirm_hint">It\'s rare to see a third confirmation somewhere else, so please remember the PIN is unrecoverable if lost.</string>
+    <string name="pin_confirm_hint">Please confirm the 6 digit PIN and remember it</string>
+    <string name="pin_confirm_again_hint">Please confirm your 6 digit PIN again</string>
     <string name="fourth_pin_confirm_hint">Yes, there is a fourth PIN confirmation, and I promise it\'s the last one to ensure you have remembered your PIN. The PIN is unrecoverable if lost.</string>
     <string name="wallet_password_unsafe">The PIN is too simple and insecure.</string>
     <string name="Hidden_Assets">Hidden Assets</string>
@@ -433,6 +431,7 @@
     <string name="Biometric_Payment">Biometric Payment</string>
     <string name="Transfer_Amount">Transfer Amount</string>
     <string name="Memo">Memo</string>
+    <string name="transfer_memo">Memo (optional)</string>
     <string name="Tag">Tag</string>
     <string name="Verifying">Verifying…</string>
     <string name="Change_PIN_successfully">Change PIN successfully</string>
@@ -469,10 +468,11 @@
     <string name="No_raws">No raws</string>
     <string name="wallet_already_hidden">%1$s has been hidden</string>
     <string name="wallet_already_shown">%1$s has been shown</string>
+    <string name="Invalid_QR_Code">Invalid QR Code</string>
     <string name="wallet_biometric_invalid">Invalid biometrics state, please reset in wallet setting.</string>
     <string name="wallet_setting_currency_desc" translatable="false">%1$s (%2$s)</string>
     <string name="wallet_transactions_asset_key_warning">Asset key is NOT a deposit address!</string>
-    <string name="wallet_search_hint">Search Name, Symbol</string>
+    <string name="search_placeholder_asset">Name, Symbol</string>
     <string name="Trending">Trending</string>
     <string name="Recent_searches">Recent searches</string>
     <string name="No_Available_Assets">No Available Assets</string>
@@ -568,7 +568,7 @@
     <string name="setting_incognito_prompt">Disable keyboard personalized learning</string>
     <string name="Blocked_Users">Blocked Users</string>
     <string name="No_blocked_users">No blocked users</string>
-    <string name="No_auth_app">No auth app</string>
+    <string name="NO_AUTHORIZATIONS">NO AUTHORIZATIONS</string>
     <string name="Permissions">Permissions</string>
     <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
     <string name="setting_emergency_warning">Attention: the Emergency Contact cannot help you to recover PIN</string>
@@ -609,7 +609,7 @@
     </plurals>
     <string name="Clear">Clear</string>
     <string name="Revoke_access_with">Revoke access %1$s?</string>
-    <string name="Logout_of_desktop">Logout of desktop</string>
+    <string name="log_out_from_desktop">Log out from desktop</string>
     <string name="Scan_QR_Code">Scan QR Code</string>
     <string name="Logout">Logout…</string>
     <string name="setting_desktop_signed">You have signed onto your desktop</string>

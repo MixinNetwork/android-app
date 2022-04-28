@@ -101,7 +101,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 override fun onSearch() {
                 }
             }
-            binding.searchEt.setHint(getString(R.string.contact_search_hint))
+            binding.searchEt.setHint(getString(R.string.setting_auth_search_hint))
 
             binding.selectRv.layoutManager = LinearLayoutManager(
                 requireContext(),

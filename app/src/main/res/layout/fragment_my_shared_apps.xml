@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:gravity="center_horizontal"
-                android:text="@string/contact_share_apps_tip"
+                android:text="@string/profile_share_app_hint"
                 android:textColor="?attr/text_minor" />
         </RelativeLayout>
     </FrameLayout>

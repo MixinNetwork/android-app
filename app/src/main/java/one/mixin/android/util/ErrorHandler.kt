@@ -168,7 +168,7 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
                 ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
             )
         }
-        ErrorHandler.INVALID_QR_CODE -> "${ErrorHandler.INVALID_QR_CODE} INVALID_QR_CODE"
+        ErrorHandler.INVALID_QR_CODE -> "${ErrorHandler.INVALID_QR_CODE} ${getString(R.string.Invalid_QR_Code)}"
         ErrorHandler.NOT_FOUND -> {
             getString(R.string.error_not_found, ErrorHandler.NOT_FOUND)
         }

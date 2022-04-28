@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -83,7 +84,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             } else {
                 titleView.setSubTitle(getString(R.string.Set_PIN), "1/4")
                 val url = Constants.HelpLink.TIP
-                val target = getString(R.string.learn_more)
+                val target = getString(R.string.Learn_More)
                 val desc = getString(R.string.wallet_password_set_pin_desc)
                 tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
             }
@@ -156,12 +157,13 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             binding.tipTv.text = getString(R.string.wallet_password_set_new_pin_desc)
         } else {
             val url = Constants.HelpLink.TIP
-            val target = getString(R.string.learn_more)
+            val target = getString(R.string.Learn_More)
             val desc = getString(R.string.wallet_password_set_pin_desc)
             binding.tipTv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun toStep2(check: Boolean = false) {
         if (check && !validatePin()) {
             binding.pin.clear()
@@ -173,10 +175,11 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         binding.apply {
             pin.clear()
             titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
-            tipTv.text = getString(R.string.wallet_password_confirm_1)
+            tipTv.text = "${getString(R.string.pin_confirm_hint)}\n${getString(R.string.pin_lost_hint)}"
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun toStep3(check: Boolean = false) {
         if (check && checkEqual()) return
 
@@ -184,7 +187,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
         binding.apply {
             pin.clear()
             titleView.setSubTitle(getString(R.string.Confirm_PIN), getSubTitle())
-            tipTv.text = getString(R.string.wallet_password_confirm_2)
+            tipTv.text = "${getString(R.string.pin_confirm_again_hint)}\n${getString(R.string.third_pin_confirm_hint)}"
         }
     }
 

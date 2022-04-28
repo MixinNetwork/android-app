@@ -30,7 +30,7 @@
             android:background="@null"
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
-            android:hint="@string/contact_search_hint"
+            android:hint="@string/setting_auth_search_hint"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"

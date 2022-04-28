@@ -179,7 +179,7 @@
     <!--landing-->
     <string name="Enter_your_phone_number">Masukkan nomor ponsel Anda</string>
     <string name="Enter_new_phone_number">Masukkan nomor ponsel baru Anda</string>
-    <string name="Mobile_number">Nomor ponsel</string>
+    <string name="Phone_number">Nomor ponsel</string>
     <string name="Name">Nama</string>
     <string name="landing_enter_mobile_tip">Kami tidak akan pernah menampilkan nomor ponsel Anda secara publik.</string>
     <string name="Resend_code">Kirim ulang kode</string>
@@ -218,10 +218,9 @@
     <string name="contact_receive_tip">Pindai Kode QR untuk membayar saya</string>
     <string name="Add_Contact">Tambahkan Kontak</string>
     <string name="Add_bot">Tambahkan Bot</string>
-    <string name="contact_search_hint">Nama, ID Mixin</string>
     <string name="contact_share_apps_title">Aplikasi Bersama %1$s</string>
     <string name="NO_APPS">TIDAK ADA APLIKASI</string>
-    <string name="contact_share_apps_tip">Jika Anda ingin berbagi aplikasi, hara tambahkan sebagai kontak terlebih dahulu.</string>
+    <string name="profile_share_app_hint">Jika Anda ingin berbagi aplikasi, hara tambahkan sebagai kontak terlebih dahulu.</string>
     <plurals name="contact_count" tools:ignore="UnusedQuantity">
         <item quantity="other">%1$d kontak</item>
     </plurals>
@@ -241,7 +240,6 @@
     <string name="chat_waiting">Menunggu %1$s untuk online dan membuat sesi terenkripsi. %2$s.</string>
     <string name="desktop">desktop</string>
     <string name="chat_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru. %1$s.</string>
-    <string name="Learn_more">Pelajari selengkapnya</string>
     <string name="Monday">Senin</string>
     <string name="Tuesday">Selasa</string>
     <string name="Wednesday">Rabu</string>
@@ -323,10 +321,7 @@
     <string name="Set_new_PIN">Buat PIN baru</string>
     <string name="wallet_password_set_new_pin_desc">Harap buat PIN 6 digit baru.</string>
     <string name="wallet_password_set_pin_desc">Siapkan PIN dompet 6 digit untuk membuat dompet digital pertama Anda, baca dokumentasi kami untuk mempelajari lebih lanjut.</string>
-    <string name="learn_more">lebih lanjut</string>
     <string name="Confirm_PIN">Konfirmasikan PIN</string>
-    <string name="wallet_password_confirm_1">Harap konfirmasikan PIN 6 digit dan ingat. Jika hilang, tidak ada cara untuk memulihkan wallet Anda.</string>
-    <string name="wallet_password_confirm_2">Harap konfirmasikan kembali PIN 6 digit Anda. Konfirmasi ketiga jarang ditemukan di tempat lain, jadi harap diingat. PIN tidak dapat dipulihkan jika hilang.</string>
     <string name="fourth_pin_confirm_hint">Ya, ada konfirmasi PIN keempat, dan saya berjanji ini yang terakhir untuk memastikan Anda mengingat PIN Anda. PIN tidak dapat dipulihkan jika hilang.</string>
     <string name="wallet_password_unsafe">PIN-nya terlalu sederhana dan tidak aman.</string>
     <string name="Hidden_Assets">Aset Tersembunyi</string>
@@ -468,7 +463,7 @@
     <string name="content_live">[Siaran Langsung]</string>
     <string name="content_group_call">[Panggilan Grup]</string>
     <string name="No_blocked_users">Tidak ada pengguna yang diblokir</string>
-    <string name="No_auth_app">Tidak ada aplikasi yang diizinkan</string>
+    <string name="NO_AUTHORIZATIONS">Tidak ada aplikasi yang diizinkan</string>
     <string name="Permissions">Izin</string>
     <string name="setting_emergency_content">Kontak darurat ditujukan untuk membantu Anda masuk ke akun Anda jika Anda lupa akun dan tidak dapat mengambil kembali nomor ponsel Anda.</string>
     <string name="setting_emergency_warning">Perhatian: Kontak Darurat tidak dapat membantu Anda memulihkan PIN</string>
@@ -508,7 +503,7 @@
     </plurals>
     <string name="Clear">Bersihkan</string>
     <string name="Revoke_access_with">Cabut akses %1$s?</string>
-    <string name="Logout_of_desktop">Keluar dari desktop</string>
+    <string name="log_out_from_desktop">Keluar dari desktop</string>
     <string name="Scan_QR_Code">Pindai Kode QR</string>
     <string name="Logout">Keluar…</string>
     <string name="setting_desktop_signed">Anda telah masuk ke desktop</string>
@@ -591,7 +586,6 @@
     <string name="sent_you_a_post">mengirim postingan</string>
     <string name="sent_you_a_location">mengirim lokasi</string>
     <string name="invite_you_to_a_voice_call">meminta panggilan audio dengan Anda</string>
-    <string name="New_Messages">Pesan Baru</string>
     <string name="stranger_from">Pengirim tidak ada dalam kontak Anda</string>
     <string name="chat_app_reception_title">Klik tombol untuk berinteraksi dengan bot</string>
     <string name="Open_Home_page">Buka Beranda</string>

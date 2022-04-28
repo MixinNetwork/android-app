@@ -178,7 +178,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     private fun updateUI(loggedIn: Boolean) {
         this.loggedIn = loggedIn
         if (loggedIn) {
-            binding.authTv.text = getString(R.string.Logout_of_desktop)
+            binding.authTv.text = getString(R.string.log_out_from_desktop)
             binding.descTv.text = getString(R.string.setting_desktop_signed)
             binding.authTv.textColor = requireContext().colorFromAttribute(R.attr.text_blue)
         } else {

@@ -593,10 +593,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun showE2EETip() {
         alertDialogBuilder()
             .setMessage(R.string.end_to_end_encryption_tip)
-            .setNeutralButton(R.string.Learn_more) { dialog, _ ->
+            .setNeutralButton(R.string.Learn_More) { dialog, _ ->
                 WebActivity.show(
                     requireContext(),
-                    getString(R.string.chat_waiting_url),
+                    getString(R.string.secret_url),
                     callState.conversationId
                 )
                 dialog.dismiss()
