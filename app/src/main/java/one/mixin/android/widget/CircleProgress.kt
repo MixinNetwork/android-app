@@ -17,6 +17,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.core.view.isVisible
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
@@ -189,6 +190,9 @@ class CircleProgress @JvmOverloads constructor(
                     }
                 }
         }
+        if (isVisible) {
+            mObjectAnimatorAngle!!.resume()
+        }
         super.onAttachedToWindow()
     }
 
@@ -200,6 +204,9 @@ class CircleProgress @JvmOverloads constructor(
             }
         }
         disposable = null
+        if (isVisible) {
+            mObjectAnimatorAngle!!.pause()
+        }
         super.onDetachedFromWindow()
     }
 
