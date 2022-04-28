@@ -8,6 +8,7 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
@@ -42,6 +43,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_38_39
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_39_40
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_40_41
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_41_42
+import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.util.reportException
@@ -113,6 +115,7 @@ import one.mixin.android.vo.User
     ],
     version = CURRENT_VERSION
 )
+@TypeConverters(MessageStatusConverter::class)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
