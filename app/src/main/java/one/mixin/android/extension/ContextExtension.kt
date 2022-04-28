@@ -520,6 +520,7 @@ fun Fragment.selectMediaType(type: String, extraMimeType: Array<String>?, reques
     try {
         startActivityForResult(intent, requestCode)
     } catch (e: ActivityNotFoundException) {
+    } catch (e: SecurityException) {
     }
 }
 
