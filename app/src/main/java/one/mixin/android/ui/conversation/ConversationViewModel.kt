@@ -16,8 +16,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.FIXED_LOAD_SIZE
@@ -122,7 +124,7 @@ internal constructor(
 
     var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
 
-    fun getMessages(conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
+    fun getMessages(coroutineScope: CoroutineScope, conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
@@ -131,7 +133,7 @@ internal constructor(
 
         return KeyLivePagedListBuilder(
             conversationRepository.getMessages(
-                viewModelScope, conversationId,
+                coroutineScope, conversationId,
                 if (firstKeyToLoad > PAGE_SIZE) {
                     firstKeyToLoad + FIXED_LOAD_SIZE / 2
                 } else {
@@ -153,9 +155,6 @@ internal constructor(
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
     fun saveDraft(conversationId: String, text: String) = MixinApplication.appScope.launch {
-        if (text.isBlank()) {
-            return@launch
-        }
         conversationRepository.saveDraft(conversationId, text)
     }
 
