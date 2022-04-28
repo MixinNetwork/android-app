@@ -5,32 +5,13 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.arch.core.executor.ArchTaskExecutor;
-import androidx.lifecycle.LiveData;
 import androidx.paging.DataSource;
 import androidx.paging.PagedList;
-import timber.log.Timber;
 
 import java.util.concurrent.Executor;
 
 public final class KeyLivePagedListBuilder<Key, Value> {
-    private static class KeyHolder<Key> {
-        private Key mKey;
-
-        KeyHolder(Key key) {
-            mKey = key;
-        }
-
-        Key getKey() {
-            return mKey;
-        }
-
-        void setKey(Key key) {
-            mKey = key;
-        }
-    }
-
     private Key mInitialLoadKey;
-    private KeyHolder<Key> mFirstKeyToLoadHolder;
     private PagedList.Config mConfig;
     private DataSource.Factory<Key, Value> mDataSourceFactory;
     private PagedList.BoundaryCallback mBoundaryCallback;
@@ -56,8 +37,6 @@ public final class KeyLivePagedListBuilder<Key, Value> {
 
         mDataSourceFactory = dataSourceFactory;
         mConfig = config;
-
-        mFirstKeyToLoadHolder = new KeyHolder<>(null);
     }
 
     /**
@@ -146,23 +125,16 @@ public final class KeyLivePagedListBuilder<Key, Value> {
      */
     @NonNull
     @SuppressLint("RestrictedApi")
-    public LiveData<PagedList<Value>> build() {
-        return create(mInitialLoadKey, mFirstKeyToLoadHolder, mConfig, mBoundaryCallback, mDataSourceFactory,
+    public FastComputableLiveData<PagedList<Value>> build() {
+        return create(mInitialLoadKey, mConfig, mBoundaryCallback, mDataSourceFactory,
                 ArchTaskExecutor.getMainThreadExecutor(), mFetchExecutor);
-    }
-
-    public KeyLivePagedListBuilder<Key, Value>
-    setFirstKeyToLoad(Key firstKeyToLoad) {
-        mFirstKeyToLoadHolder.setKey(firstKeyToLoad);
-        return this;
     }
 
     @AnyThread
     @NonNull
     @SuppressLint("RestrictedApi")
-    private static <Key, Value> LiveData<PagedList<Value>> create(
+    private static <Key, Value> FastComputableLiveData<PagedList<Value>> create(
             @Nullable final Key initialLoadKey,
-            @NonNull final KeyHolder<Key> firstVisibleKey,
             @NonNull final PagedList.Config config,
             @Nullable final PagedList.BoundaryCallback boundaryCallback,
             @NonNull final DataSource.Factory<Key, Value> dataSourceFactory,
@@ -173,20 +145,13 @@ public final class KeyLivePagedListBuilder<Key, Value> {
             private PagedList<Value> mList;
             @Nullable
             private DataSource<Key, Value> mDataSource;
-
-            private final DataSource.InvalidatedCallback mCallback =
-                    this::invalidate;
+            private final DataSource.InvalidatedCallback mCallback = this::invalidate;
 
             @SuppressWarnings("unchecked") // for casting getLastKey to Key
             @Override
             protected PagedList<Value> compute() {
                 @Nullable Key initializeKey = initialLoadKey;
-                @Nullable Key firstVisibleKeyValue = firstVisibleKey.getKey();
-                PagedList.Config localConfig = config;
-
-                if (firstVisibleKeyValue != null) {
-                    initializeKey = firstVisibleKeyValue;
-                } else if (mList != null) {
+                if (mList != null) {
                     initializeKey = (Key) mList.getLastKey();
                 }
 
@@ -194,11 +159,9 @@ public final class KeyLivePagedListBuilder<Key, Value> {
                     if (mDataSource != null) {
                         mDataSource.removeInvalidatedCallback(mCallback);
                     }
-
                     mDataSource = dataSourceFactory.create();
                     mDataSource.addInvalidatedCallback(mCallback);
-
-                    mList = new PagedList.Builder<>(mDataSource, localConfig)
+                    mList = new PagedList.Builder<>(mDataSource, config)
                             .setNotifyExecutor(notifyExecutor)
                             .setFetchExecutor(fetchExecutor)
                             .setBoundaryCallback(boundaryCallback)
@@ -207,6 +170,6 @@ public final class KeyLivePagedListBuilder<Key, Value> {
                 } while (mList.isDetached());
                 return mList;
             }
-        }.getLiveData();
+        };
     }
 }

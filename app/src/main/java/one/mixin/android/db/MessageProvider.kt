@@ -8,7 +8,6 @@ import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
 import androidx.room.util.CursorUtil
 import androidx.room.util.DBUtil
-import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
@@ -26,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class MessageProvider {
     companion object {
 
-        fun getMessages(scope: CoroutineScope, database: MixinDatabase, conversationId: String, count: Int?) =
+        fun getMessages(database: MixinDatabase, conversationId: String, count: Int?) =
             object : DataSource.Factory<Int, MessageItem>() {
                 private val firstLoad: AtomicBoolean = AtomicBoolean(true)
                 private val fastCountCallback = fun(): Int? { // Message provider is only called for the first time
@@ -71,8 +70,6 @@ class MessageProvider {
                         bindString(1, conversationId)
                     }
                     return MixinMessageItemLimitOffsetDataSource(
-                        scope,
-                        conversationId,
                         database,
                         countStatement,
                         offsetStatement,
@@ -1089,14 +1086,12 @@ class MessageProvider {
     }
 
     private class MixinMessageItemLimitOffsetDataSource(
-        scope: CoroutineScope,
-        conversationId: String,
         database: MixinDatabase,
         countStatement: RoomSQLiteQuery,
         offsetStatement: RoomSQLiteQuery,
         fastCountCallback: () -> Int?,
         querySqlGenerator: (String) -> RoomSQLiteQuery
-    ) : FastLimitOffsetDataSource<MessageItem>(scope, conversationId, database, countStatement, offsetStatement, fastCountCallback, querySqlGenerator) {
+    ) : FastLimitOffsetDataSource<MessageItem>(database, countStatement, offsetStatement, fastCountCallback, querySqlGenerator) {
         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
             return convertToMessageItems(cursor)
         }

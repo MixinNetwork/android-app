@@ -8,17 +8,12 @@ import androidx.annotation.RestrictTo
 import androidx.paging.PositionalDataSource
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import one.mixin.android.util.reportException
 import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 abstract class FastLimitOffsetDataSource<T> protected constructor(
-    coroutineScope: CoroutineScope,
-    private val conversationId: String,
     private val db: RoomDatabase,
     private val countQuery: RoomSQLiteQuery,
     private val offsetStatement: RoomSQLiteQuery,
@@ -126,20 +121,6 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         } finally {
             cursor.close()
             sqLiteQuery.release()
-        }
-    }
-
-    init {
-        coroutineScope.launch {
-            InvalidateFlow.collect(
-                { conversationId ->
-                    this@FastLimitOffsetDataSource.conversationId == conversationId
-                },
-                {
-                    invalidate()
-                    coroutineScope.cancel() // The current datasource is invalid
-                }
-            )
         }
     }
 }

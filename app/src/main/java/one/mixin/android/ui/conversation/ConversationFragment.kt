@@ -193,6 +193,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
+import one.mixin.android.util.chat.InvalidateFlow
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.import.ImportChatUtil
@@ -1827,8 +1828,19 @@ class ConversationFragment() :
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
         var firstReturn = true
-        chatViewModel.getMessages(lifecycleScope, conversationId, unreadCount)
-            .observe(
+        chatViewModel.getMessages(conversationId, unreadCount)
+            .run {
+                val computableLiveData = this
+                lifecycleScope.launch {
+                    InvalidateFlow.collect(
+                        { isAdded && this@ConversationFragment.conversationId == conversationId },
+                        {
+                            computableLiveData.invalidate()
+                        }
+                    )
+                }
+                this.liveData
+            }.observe(
                 viewLifecycleOwner
             ) { list ->
                 if (Session.getAccount() == null) return@observe
