@@ -18,11 +18,12 @@ import timber.log.Timber
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 abstract class FastLimitOffsetDataSource<T> protected constructor(
     coroutineScope: CoroutineScope,
+    private val conversationId: String,
     private val db: RoomDatabase,
     private val countQuery: RoomSQLiteQuery,
-    private val itemStatement: RoomSQLiteQuery,
-    private val conversationId: String,
-    private val fastCountCallback: () -> Int?
+    private val offsetStatement: RoomSQLiteQuery,
+    private val fastCountCallback: () -> Int?,
+    private val querySqlGenerator: (String) -> RoomSQLiteQuery
 ) : PositionalDataSource<T>() {
 
     /**
@@ -96,8 +97,7 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
     }
 
     private fun itemIds(startPosition: Int, loadCount: Int): String {
-        val offsetQuery = RoomSQLiteQuery.copyFrom(itemStatement)
-        offsetQuery.bindString(1, conversationId)
+        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
         offsetQuery.bindLong(2, loadCount.toLong())
         offsetQuery.bindLong(3, startPosition.toLong())
         val cursor = db.query(offsetQuery)
@@ -114,14 +114,12 @@ abstract class FastLimitOffsetDataSource<T> protected constructor(
         }
     }
 
-    abstract fun querySql(ids: String): RoomSQLiteQuery
-
     /**
      * Return the rows from startPos to startPos + loadCount
      */
     private fun loadRange(startPosition: Int, loadCount: Int): List<T> {
         val ids = itemIds(startPosition, loadCount)
-        val sqLiteQuery = querySql(ids)
+        val sqLiteQuery = querySqlGenerator(ids)
         val cursor = db.query(sqLiteQuery)
         try {
             return convertRows(cursor)

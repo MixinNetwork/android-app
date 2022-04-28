@@ -9,8 +9,6 @@ import androidx.room.RoomSQLiteQuery
 import androidx.room.util.CursorUtil
 import androidx.room.util.DBUtil
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.plus
 import one.mixin.android.ui.search.CancellationLimitOffsetDataSource
 import one.mixin.android.util.chat.FastLimitOffsetDataSource
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
@@ -39,7 +37,7 @@ class MessageProvider {
                     }
                 }
                 override fun create(): DataSource<Int, MessageItem> {
-                    val coroutineScope = scope + Job() // Each data source has its own scope and is a child-scope
+
                     val sql =
                         """
                         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -69,17 +67,19 @@ class MessageProvider {
                     val countStatement = RoomSQLiteQuery.acquire("SELECT COUNT(1) FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ?", 1).apply {
                         bindString(1, conversationId)
                     }
-                    val itemStatement = RoomSQLiteQuery.acquire("SELECT m.rowid FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?", 3)
-
+                    val offsetStatement = RoomSQLiteQuery.acquire("SELECT m.rowid FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE conversation_id = ? ORDER BY m.created_at DESC LIMIT ? OFFSET ?", 3).apply {
+                        bindString(1, conversationId)
+                    }
                     return MixinMessageItemLimitOffsetDataSource(
-                        sql,
+                        scope,
+                        conversationId,
                         database,
                         countStatement,
-                        itemStatement,
-                        coroutineScope,
-                        conversationId,
+                        offsetStatement,
                         fastCountCallback
-                    )
+                    ) { ids ->
+                        RoomSQLiteQuery.acquire("$sql WHERE m.rowid IN ($ids) ORDER BY m.created_at DESC", 0)
+                    }
                 }
             }
 
@@ -1089,20 +1089,16 @@ class MessageProvider {
     }
 
     private class MixinMessageItemLimitOffsetDataSource(
-        val sql: String,
-        database: MixinDatabase,
-        countStatement: RoomSQLiteQuery,
-        itemStatement: RoomSQLiteQuery,
         scope: CoroutineScope,
         conversationId: String,
-        fastCountCallback: () -> Int?
-    ) : FastLimitOffsetDataSource<MessageItem>(scope, database, countStatement, itemStatement, conversationId, fastCountCallback) {
+        database: MixinDatabase,
+        countStatement: RoomSQLiteQuery,
+        offsetStatement: RoomSQLiteQuery,
+        fastCountCallback: () -> Int?,
+        querySqlGenerator: (String) -> RoomSQLiteQuery
+    ) : FastLimitOffsetDataSource<MessageItem>(scope, conversationId, database, countStatement, offsetStatement, fastCountCallback, querySqlGenerator) {
         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
             return convertToMessageItems(cursor)
-        }
-
-        override fun querySql(ids: String): RoomSQLiteQuery {
-            return RoomSQLiteQuery.acquire("$sql WHERE m.rowid IN ($ids) ORDER BY m.created_at DESC", 0)
         }
     }
 

@@ -19,7 +19,6 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.FIXED_LOAD_SIZE
@@ -121,8 +120,6 @@ internal constructor(
     private val accountRepository: AccountRepository,
     private val messenger: SendMessageHelper
 ) : ViewModel() {
-
-    var keyLivePagedListBuilder: KeyLivePagedListBuilder<Int, MessageItem>? = null
 
     fun getMessages(coroutineScope: CoroutineScope, conversationId: String, firstKeyToLoad: Int = 0): LiveData<PagedList<MessageItem>> {
         val pagedListConfig = PagedList.Config.Builder()
