@@ -10,7 +10,7 @@ import androidx.paging.PagedList;
 
 import java.util.concurrent.Executor;
 
-public final class KeyLivePagedListBuilder<Key, Value> {
+public final class FastLivePagedListBuilder<Key, Value> {
     private Key mInitialLoadKey;
     private PagedList.Config mConfig;
     private DataSource.Factory<Key, Value> mDataSourceFactory;
@@ -24,8 +24,8 @@ public final class KeyLivePagedListBuilder<Key, Value> {
      * @param dataSourceFactory DataSource factory providing DataSource generations.
      * @param config Paging configuration.
      */
-    public KeyLivePagedListBuilder(@NonNull DataSource.Factory<Key, Value> dataSourceFactory,
-                                   @NonNull PagedList.Config config) {
+    public FastLivePagedListBuilder(@NonNull DataSource.Factory<Key, Value> dataSourceFactory,
+                                    @NonNull PagedList.Config config) {
         //noinspection ConstantConditions
         if (config == null) {
             throw new IllegalArgumentException("PagedList.Config must be provided");
@@ -51,8 +51,8 @@ public final class KeyLivePagedListBuilder<Key, Value> {
      * @param dataSourceFactory DataSource.Factory providing DataSource generations.
      * @param pageSize Size of pages to load.
      */
-    public KeyLivePagedListBuilder(@NonNull DataSource.Factory<Key, Value> dataSourceFactory,
-                                   int pageSize) {
+    public FastLivePagedListBuilder(@NonNull DataSource.Factory<Key, Value> dataSourceFactory,
+                                    int pageSize) {
         this(dataSourceFactory, new PagedList.Config.Builder().setPageSize(pageSize).build());
     }
 
@@ -66,7 +66,7 @@ public final class KeyLivePagedListBuilder<Key, Value> {
      * @return this
      */
     @NonNull
-    public KeyLivePagedListBuilder<Key, Value> setInitialLoadKey(@Nullable Key key) {
+    public FastLivePagedListBuilder<Key, Value> setInitialLoadKey(@Nullable Key key) {
         mInitialLoadKey = key;
         return this;
     }
@@ -93,7 +93,7 @@ public final class KeyLivePagedListBuilder<Key, Value> {
      */
     @SuppressWarnings("unused")
     @NonNull
-    public KeyLivePagedListBuilder<Key, Value> setBoundaryCallback(
+    public FastLivePagedListBuilder<Key, Value> setBoundaryCallback(
             @Nullable PagedList.BoundaryCallback<Value> boundaryCallback) {
         mBoundaryCallback = boundaryCallback;
         return this;
@@ -109,7 +109,7 @@ public final class KeyLivePagedListBuilder<Key, Value> {
      */
     @SuppressWarnings("unused")
     @NonNull
-    public KeyLivePagedListBuilder<Key, Value> setFetchExecutor(
+    public FastLivePagedListBuilder<Key, Value> setFetchExecutor(
             @NonNull Executor fetchExecutor) {
         mFetchExecutor = fetchExecutor;
         return this;

@@ -56,7 +56,7 @@ import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.chat.FastComputableLiveData
-import one.mixin.android.util.chat.KeyLivePagedListBuilder
+import one.mixin.android.util.chat.FastLivePagedListBuilder
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
@@ -128,7 +128,7 @@ internal constructor(
             .setEnablePlaceholders(true)
             .build()
 
-        return KeyLivePagedListBuilder(
+        return FastLivePagedListBuilder(
             conversationRepository.getMessages(
                 conversationId,
                 if (firstKeyToLoad > PAGE_SIZE) {
