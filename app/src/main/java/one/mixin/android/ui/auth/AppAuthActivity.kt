@@ -116,9 +116,6 @@ class AppAuthActivity : BaseActivity() {
             if (errorCode == FingerprintManager.FINGERPRINT_ERROR_CANCELED ||
                 errorCode == FingerprintManager.FINGERPRINT_ERROR_USER_CANCELED
             ) {
-                if (errorCode == FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
-                    reportException(IllegalStateException("Unlock app meet $errString"))
-                }
                 pressHome()
             } else if (errorCode == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT ||
                 errorCode == FingerprintManager.FINGERPRINT_ERROR_LOCKOUT_PERMANENT
@@ -131,6 +128,7 @@ class AppAuthActivity : BaseActivity() {
             } else {
                 refreshSwirl(errString, true)
             }
+            reportException(IllegalStateException("Unlock app meet $errorCode, $errString"))
         }
 
         override fun onAuthenticationFailed() {
@@ -139,6 +137,10 @@ class AppAuthActivity : BaseActivity() {
 
         override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
             finishAndCheckNeed2GoUrlInterpreter()
+        }
+
+        override fun onAuthenticationHelp(helpMsgId: Int, helpString: CharSequence?) {
+            refreshSwirl(helpString.toString(), true)
         }
     }
 }
