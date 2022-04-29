@@ -102,7 +102,7 @@ class SettingDataStorageFragment : BaseFragment(R.layout.fragment_storage_data) 
         if (autoDownloadVideo(value)) list.add(getString(R.string.Videos))
         if (autoDownloadDocument(value)) list.add(getString(R.string.Documents))
         val divide = getString(R.string.divide)
-        if (list.isEmpty()) return getString(R.string.No_media)
+        if (list.isEmpty()) return getString(R.string.NO_MEDIA)
         val str = StringBuffer()
         list.forEachIndexed { index, s ->
             if (index != 0) {

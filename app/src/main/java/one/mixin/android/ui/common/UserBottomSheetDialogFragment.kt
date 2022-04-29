@@ -713,7 +713,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun reportUser(userId: String) {
         alertDialogBuilder()
-            .setMessage(getString(R.string.contact_other_report_warning))
+            .setMessage(getString(R.string.Report_and_block))
             .setNeutralButton(getString(android.R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
             }
@@ -862,7 +862,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private fun showMuteDialog() {
         val choices = arrayOf(
             getString(R.string.one_hour),
-            getString(R.string.Eight_hours),
+            resources.getQuantityString(R.plurals.Hour, 8, 8),
             getString(R.string.one_week),
             getString(R.string.one_year)
         )

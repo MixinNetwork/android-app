@@ -10,6 +10,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.core.widget.TextViewCompat
+import com.google.gson.Gson
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewQuoteBinding
@@ -26,7 +27,10 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
+import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
 import java.io.File
@@ -231,7 +235,15 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     16.dp
             }
             quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessageItem.type == MessageCategory.APP_CARD.name -> {
-                binding.replyContentTv.setText(R.string.Extensions)
+                if (quoteMessageItem.type == MessageCategory.APP_CARD.name) {
+                    val appCard = GsonHelper.customGson.fromJson(quoteMessageItem.content, AppCardData::class.java)
+                    binding.replyContentTv.text = appCard.title
+                } else if (quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name) {
+                    val buttons = Gson().fromJson(quoteMessageItem.content, Array<AppButtonData>::class.java)
+                    var content = ""
+                    buttons.map { content += "[" + it.label + "]" }
+                    binding.replyContentTv.text = content
+                }
                 setIcon(R.drawable.ic_type_touch_app)
                 binding.replyIv.visibility = View.GONE
                 binding.replyAvatar.visibility = View.GONE

@@ -479,7 +479,7 @@ class ConversationListFragment : LinkFragment() {
                 bottomSheet.dismiss()
             }
         } else {
-            viewBinding.pinTv.setText(R.string.Pin_to_top)
+            viewBinding.pinTv.setText(R.string.Pin)
             viewBinding.pinTv.setOnClickListener {
                 messagesViewModel.updateConversationPinTimeById(
                     conversationId,
@@ -1039,7 +1039,7 @@ class ConversationListFragment : LinkFragment() {
     private fun showMuteDialog(conversationItem: ConversationItem) {
         val choices = arrayOf(
             getString(R.string.one_hour),
-            getString(R.string.Eight_hours),
+            resources.getQuantityString(R.plurals.Hour, 8, 8),
             getString(R.string.one_week),
             getString(R.string.one_year)
         )

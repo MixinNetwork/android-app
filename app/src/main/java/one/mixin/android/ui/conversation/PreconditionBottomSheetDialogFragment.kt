@@ -204,7 +204,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             callback?.onCancel()
             dismiss()
         }
-        binding.cancelTv.text = getString(R.string.Continue_withdrawal)
+        binding.cancelTv.text = getString(R.string.Continue)
         binding.cancelTv.setTextColor(resources.getColor(R.color.colorDarkBlue, null))
         binding.cancelTv.setOnClickListener {
             callback?.onSuccess()

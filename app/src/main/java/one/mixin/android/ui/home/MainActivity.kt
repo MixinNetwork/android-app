@@ -558,7 +558,7 @@ class MainActivity : BlazeBaseActivity() {
             clearCodeAfterConsume(intent, TRANSFER)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
-            alertDialog = alert(getString(R.string.loading_wait)).show()
+            alertDialog = alert(getString(R.string.Please_wait_a_bit)).show()
             val conversationId = intent.extras!!.getString("conversation_id")!!
             clearCodeAfterConsume(intent, "conversation_id")
             Maybe.just(conversationId).map {

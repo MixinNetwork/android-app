@@ -1297,7 +1297,7 @@ class ConversationFragment() :
                 alertDialogBuilder()
                     .setTitle(getString(R.string.chat_audio_discard_warning_title))
                     .setMessage(getString(R.string.chat_audio_discard_warning))
-                    .setNeutralButton(getString(R.string.CONTINUE)) { dialog, _ ->
+                    .setNeutralButton(getString(R.string.Continue)) { dialog, _ ->
                         dialog.dismiss()
                     }
                     .setNegativeButton(getString(R.string.DISCARD)) { dialog, _ ->

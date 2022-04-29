@@ -142,7 +142,7 @@ class RestoreActivity : BaseActivity() {
                 if (userBackup) {
                     R.string.CHOOSE
                 } else {
-                    R.string.RETRY
+                    R.string.Retry
                 }
             ) { dialog, _ ->
                 if (userBackup) {

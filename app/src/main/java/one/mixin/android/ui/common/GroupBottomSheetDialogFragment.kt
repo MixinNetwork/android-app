@@ -172,7 +172,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
         if (!isAdded) return@launch
 
-        binding.countTv.text = requireContext().resources.getQuantityString(R.plurals.group_participants_count, participantCount, participantCount)
+        binding.countTv.text = requireContext().resources.getQuantityString(R.plurals.title_participants, participantCount, participantCount)
         if (changeMenu || me != localMe) {
             lifecycleScope.launch {
                 val circleNames = bottomViewModel.findCirclesNameByConversationId(conversationId)
@@ -412,7 +412,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     private fun showMuteDialog() {
         val choices = arrayOf(
             getString(R.string.one_hour),
-            getString(R.string.Eight_hours),
+            resources.getQuantityString(R.plurals.Hour, 8, 8),
             getString(R.string.one_week),
             getString(R.string.one_year)
         )

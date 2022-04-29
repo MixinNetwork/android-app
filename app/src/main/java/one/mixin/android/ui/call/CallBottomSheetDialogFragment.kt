@@ -592,7 +592,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun showE2EETip() {
         alertDialogBuilder()
-            .setMessage(R.string.end_to_end_encryption_tip)
+            .setTitle(R.string.call_encryption_title)
+            .setMessage(R.string.call_encryption_description)
             .setNeutralButton(R.string.Learn_More) { dialog, _ ->
                 WebActivity.show(
                     requireContext(),

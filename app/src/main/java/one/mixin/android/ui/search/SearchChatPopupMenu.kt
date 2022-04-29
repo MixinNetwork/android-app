@@ -98,7 +98,7 @@ class SearchChatPopupMenu(
     private fun showMuteDialog(chatMinimal: ChatMinimal) {
         val choices = arrayOf(
             context.getString(R.string.one_hour),
-            context.getString(R.string.Eight_hours),
+            context.resources.getQuantityString(R.plurals.Hour, 8, 8),
             context.getString(R.string.one_week),
             context.getString(R.string.one_year)
         )

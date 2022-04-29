@@ -53,7 +53,6 @@
     <string name="Time">Waktu</string>
     <string name="More">Lebih banyak</string>
     <string name="Successful">Berhasil</string>
-    <string name="NO_RESULT">TIDAK ADA HASIL</string>
     <string name="send_to">Kirim ke %1$s</string>
     <string name="RECEIVE">Terima</string>
     <string name="Developer">Pengembang</string>
@@ -97,7 +96,7 @@
     <string name="Add_to_Home_screen">Tambahkan ke layar Beranda</string>
     <string name="Waiting">Menunggu</string>
     <string name="End_to_End_Encryption">Terenkripsi end-to-end</string>
-    <string name="end_to_end_encryption_tip">Panggilan ini diamankan dengan enkripsi end-to-end. Tak seorangpun di luar panggilan ini yang dapat melihat atau mendengarkannya. Bahkan Mixin sekalipun.</string>
+    <string name="call_encryption_description">Panggilan ini diamankan dengan enkripsi end-to-end. Tak seorangpun di luar panggilan ini yang dapat melihat atau mendengarkannya. Bahkan Mixin sekalipun.</string>
     <string name="You">Anda</string>
     <string name="I_know">Saya tahu</string>
     <string name="storage_low_title">Ruang penyimpanan ponsel Anda hampir habis</string>
@@ -179,7 +178,6 @@
     <!--landing-->
     <string name="Enter_your_phone_number">Masukkan nomor ponsel Anda</string>
     <string name="Enter_new_phone_number">Masukkan nomor ponsel baru Anda</string>
-    <string name="Phone_number">Nomor ponsel</string>
     <string name="Name">Nama</string>
     <string name="landing_enter_mobile_tip">Kami tidak akan pernah menampilkan nomor ponsel Anda secara publik.</string>
     <string name="Resend_code">Kirim ulang kode</string>
@@ -202,10 +200,8 @@
     <string name="New_Group_Chat">Obrolan Grup Baru</string>
     <string name="contact_new_group_chat_desc">Buat obrolan grup dengan maksimal teman</string>
     <string name="Add_people_hint">Tambahkan orang dengan ID Mixin atau nomor telepon</string>
-    <string name="Mixin_QR_Code">Kode QR Mixin</string>
     <string name="scan_contact_qr_code">Pindai kode QR Mixin teman</string>
     <string name="Invite_people">Undang Orang</string>
-    <string name="contact_invite_desc">Kode undangan saya adalah %1$s</string>
     <string name="contact_mobile">Seluler: %1$s</string>
     <string name="Phone_Contact">Kontak Telepon</string>
     <string name="contact_empty_tip">Mixin perlu mengakses kontak Anda untuk membantu Anda terhubung dengan orang lain di Mixin.</string>
@@ -275,7 +271,6 @@
         <item quantity="other">Hapus %1$d pesan?</item>
     </plurals>
     <string name="DISCARD">BUANG</string>
-    <string name="CONTINUE">LANJUTKAN</string>
     <string name="Delete_for_me">Hapus untuk saya</string>
     <string name="Delete_for_everyone">Hapus untuk Semua Orang</string>
     <string name="You_deleted_this_message">Anda menghapus pesan ini</string>
@@ -305,12 +300,11 @@
     <string name="Remove_Contact">Hapus kontak</string>
     <string name="Remove_Bot">Hapus Bot</string>
     <string name="Report">Laporkan</string>
-    <string name="contact_other_report_warning">Ingin melaporkan dan memblokir kontak ini?</string>
+    <string name="Report_and_block">Ingin melaporkan dan memblokir kontak ini?</string>
     <string name="Invite_to_Mixin">Undang ke Mixin</string>
     <string name="contact_invite_content">Hai, saya menggunakan Mixin Messenger untuk mengobrol. Unduh di sini: https://mixin.one/messenger .</string>
     <string name="contact_mute_title">Matikan notifikasi selama…</string>
     <string name="one_hour">1 Jam</string>
-    <string name="Eight_hours">8 Jam</string>
     <string name="one_week">1 Minggu</string>
     <string name="one_year">1 Tahun</string>
     <!--Add people-->
@@ -397,11 +391,7 @@
     <string name="Delete_emergency_contact">Hapus kontak darurat</string>
     <string name="View_emergency_contact">Lihat kontak darurat</string>
     <string name="Update_PIN">Perbarui PIN</string>
-    <string name="Multisig_Transactions">Transaksi Multisig</string>
     <string name="Revoke_multisig_transaction">Cabut Transaksi Multisig</string>
-    <string name="PIN_modification">Modifikasi PIN</string>
-    <string name="Emergency_contact_modification">Modifikasi kontak darurat</string>
-    <string name="Phone_number_modification">Modifikasi nomor telepon</string>
     <string name="Sign_with_phone_number">Masuk dengan nomor telepon</string>
     <string name="Sign_with_emergency_contact">Masuk dengan kontak darurat</string>
     <string name="Sign_in_desktop_app">Masuk aplikasi desktop</string>
@@ -435,9 +425,6 @@
     <string name="Start_Messaging">Mulai Mengirim Pesan</string>
     <string name="Join_group">Bergabung dengan grup</string>
     <string name="group_already_in">Anda sudah bergabung dalam grup</string>
-    <plurals name="group_participants_count" tools:ignore="UnusedQuantity">
-        <item quantity="other">%1$d Peserta</item>
-    </plurals>
     <string name="group_click_create_tip">Tidak dapat membuat. Ketuk untuk mencoba lagi.</string>
     <!--setting-->
     <string name="Settings">Pengaturan</string>
@@ -496,7 +483,6 @@
     <string name="Audios">Audio</string>
     <string name="Videos">Video</string>
     <string name="Documents">Dokumen</string>
-    <string name="No_media">Tidak ada media</string>
     <string name="Mixin_Messenger_Desktop">Mixin Messenger Desktop</string>
     <plurals name="setting_storage_clear" tools:ignore="UnusedQuantity">
         <item quantity="other">Hapus %1$d pesan (%2$s)?</item>
@@ -551,15 +537,13 @@
     <string name="Invite_to_Group_via_Link">Undang ke Grup melalui Tautan</string>
     <!-- invite -->
     <string name="invite_info">Siapapun yang memiliki Mixin dapat mengikuti tautan ini untuk bergabung dengan grup ini. Hanya bagikan dengan orang yang Anda percaya.</string>
-    <string name="Revoke_Link">Cabut Tautan</string>
+    <string name="Reset_Link">Cabut Tautan</string>
     <string name="Share_Link">Bagikan Tautan</string>
     <string name="Copy_invite">Salin Tautan</string>
     <string name="Forward_to_friend">Teruskan ke teman</string>
     <string name="Invalid_Link">Tautan Tidak Valid</string>
-    <string name="Pin_to_top">Sematkan ke ke atas</string>
     <string name="group_role">Anda sekarang adalah admin</string>
     <string name="Initializing">Memulai &#8230;</string>
-    <string name="loading_wait">Harap tunggu sebentar</string>
     <string name="loading_time">Waktu sistem tidak normal, silakan gunakan lagi setelah perbaikan dilakukan</string>
     <string name="Upgrade_Database">Tingkatkan Database</string>
     <string name="database_upgrade_tips">Database sedang ditingkatkan, mungkin perlu beberapa menit, jangan tutup Aplikasi ini.</string>
@@ -618,7 +602,6 @@
     <string name="permission_video">Izinkan merekam video?</string>
     <string name="permission_camera">Izinkan mengambil gambar?</string>
 
-    <string name="Extensions">Ekstensi</string>
     <string name="Camera">Kamera</string>
     <string name="File">File</string>
     <string name="Voice">Suara</string>
@@ -716,7 +699,6 @@
     <string name="Ongoing_voice_call">Panggilan suara sedang berlangsung</string>
     <string name="CANCEL">BATAL</string>
     <string name="ANSWER">JAWAB</string>
-    <string name="HANG_UP">TUTUP</string>
     <string name="in_connecting">Menyambungkan…</string>
     <string name="Speaker">Speaker</string>
     <string name="Hang_up">Tutup</string>
@@ -729,8 +711,7 @@
     <string name="restore_info">Pulihkan pesan Anda dari penyimpanan eksternal.\nJika Anda tidak memulihkan yang baru, Anda tidak akan dapat memulihkannya nanti.</string>
     <string name="Backup_found">Cadangan ditemukan</string>
     <string name="SKIP">LEWATI</string>
-    <string name="RETRY">COBA LAGI</string>
-    <string name="RESTORE">PULIHKAN</string>
+    <string name="Retry">COBA LAGI</string>
     <string name="authorization">otorisasi</string>
     <string name="restore_message">Cadangkan pesan dan media Anda ke penyimpanan eksternal. Anda dapat memulihkannya saat memasang ulang Mixin. Pesan dan media Anda juga akan dicadangkan ke penyimpanan internal telepon Anda. Media dan pesan yang Anda cadangkan tidak dilindungi oleh enkripsi end-to-end Mixin saat berada di penyimpanan eksternal.</string>
     <string name="Failure">Gagal</string>

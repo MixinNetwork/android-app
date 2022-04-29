@@ -8,6 +8,7 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
+import com.google.gson.Gson
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewReplyBinding
 import one.mixin.android.extension.colorFromAttribute
@@ -18,7 +19,10 @@ import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
+import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -156,7 +160,15 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 binding.replyAvatar.visibility = View.GONE
             }
             messageItem.type == MessageCategory.APP_CARD.name || messageItem.type == MessageCategory.APP_BUTTON_GROUP.name -> {
-                binding.replyViewTv.setText(R.string.Extensions)
+                if (messageItem.type == MessageCategory.APP_CARD.name) {
+                    val appCard = GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
+                    binding.replyViewTv.text = appCard.title
+                } else if (messageItem.type == MessageCategory.APP_BUTTON_GROUP.name) {
+                    val buttons = Gson().fromJson(messageItem.content, Array<AppButtonData>::class.java)
+                    var content = ""
+                    buttons.map { content += "[" + it.label + "]" }
+                    binding.replyViewTv.text = content
+                }
                 setIcon(R.drawable.ic_type_touch_app)
                 (binding.replyViewTv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 binding.replyViewIv.visibility = View.GONE
