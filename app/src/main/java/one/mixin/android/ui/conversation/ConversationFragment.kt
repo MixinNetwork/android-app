@@ -1012,7 +1012,7 @@ class ConversationFragment() :
     }
 
     private val powerManager: PowerManager by lazy {
-        requireContext().getSystemService()!!
+        MixinApplication.appContext.getSystemService()!!
     }
 
     private val wakeLock by lazy {
