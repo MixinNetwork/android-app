@@ -89,6 +89,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     private var searchJob: Job? = null
     private var messageSearchJob: Job? = null
+    private var refreshAssetsJob: Job? = null
     private var cancellationSignal: CancellationSignal? = null
     private lateinit var searchChatPopupMenu: SearchChatPopupMenu
 
@@ -96,6 +97,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
         searchJob?.cancel()
         messageSearchJob?.cancel()
+        refreshAssetsJob?.cancel()
         cancellationSignal?.cancel()
         searchJob = fuzzySearch(keyword)
     }
@@ -264,6 +266,29 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
         }
     }
 
+    private suspend fun refreshAssetItems(assetItems: List<AssetItem>?) {
+        if (assetItems.isNullOrEmpty()) return
+
+        val newItems = withContext(Dispatchers.IO) {
+            searchViewModel.queryAssets(assetItems.map { it.assetId })
+        }
+        if (newItems.isNullOrEmpty()) return
+
+        val t = if (newItems.size == assetItems.size) {
+            newItems
+        } else {
+            val m = assetItems.toMutableList()
+            m.forEachIndexed { i, a ->
+                newItems.find { it.assetId == a.assetId }?.let {
+                    m[i] = it
+                }
+            }
+            m
+        }
+        searchAdapter.setAssetData(t)
+        decoration.invalidateHeaders()
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun fuzzySearch(keyword: String?) = lifecycleScope.launch {
         if (viewDestroyed()) return@launch
@@ -278,7 +303,12 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 searchAdapter.setMessageData(searchMessageItems)
             }
         }
+
         val assetItems = searchViewModel.fuzzySearch<AssetItem>(cancellationSignal, keyword) as List<AssetItem>?
+        refreshAssetsJob = launch {
+            refreshAssetItems(assetItems)
+        }
+
         val users = searchViewModel.fuzzySearch<User>(cancellationSignal, keyword) as List<User>?
         val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
         decoration.invalidateHeaders()

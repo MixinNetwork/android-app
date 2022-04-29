@@ -93,6 +93,17 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     @SuppressLint("NotifyDataSetChanged")
+    fun setAssetData(assetItems: List<AssetItem>?) {
+        data.assetList = assetItems
+        val end = assetItems?.size ?: 0
+        if (end > 0) {
+            notifyItemRangeChanged(0, end)
+        } else {
+            notifyDataSetChanged()
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     fun setChatData(chatMinimals: List<ChatMinimal>?) {
         data.chatList = chatMinimals
         val end = data.getCount() - data.messageCount()

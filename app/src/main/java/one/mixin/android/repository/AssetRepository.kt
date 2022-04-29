@@ -78,7 +78,7 @@ constructor(
         return assetItem
     }
 
-    private suspend fun syncAsset(assetId: String): AssetItem? {
+    suspend fun syncAsset(assetId: String): AssetItem? {
         return handleMixinResponse(
             invokeNetwork = {
                 assetService.getAssetByIdSuspend(assetId)
